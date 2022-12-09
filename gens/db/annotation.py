@@ -59,9 +59,6 @@ def query_variants(case_id: str, sample_name: str, variant_category: VariantCate
     Kwargs are optional search parameters that are passed to db.find().
     """
     db = app.config["SCOUT_DB"]
-    response = db.case.find_one({"_id": case_id})
-    if response is None:
-        raise ValueError(f"No case with id: {case_id}")
     # build query
     query = {
         "case_id": case_id,
