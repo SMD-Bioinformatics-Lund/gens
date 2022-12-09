@@ -49,7 +49,7 @@ def get_timestamps(track_type="all"):
     return results
 
 
-def query_variants(case_name: str, sample_name: str, variant_category: VariantCategory, **kwargs):
+def query_variants(case_id: str, sample_name: str, variant_category: VariantCategory, **kwargs):
     """Search the scout database for variants associated with a case.
 
     case_name :: display name for a case
@@ -58,14 +58,13 @@ def query_variants(case_name: str, sample_name: str, variant_category: VariantCa
 
     Kwargs are optional search parameters that are passed to db.find().
     """
-    # lookup case_id from the displayed name
     db = app.config["SCOUT_DB"]
-    response = db.case.find_one({"display_name": case_name})
+    response = db.case.find_one({"case_id": case_id})
     if response is None:
-        raise ValueError(f"No case with name: {case_name}")
+        raise ValueError(f"No case with name: {case_id}")
     # build query
     query = {
-        "case_id": response["_id"],
+        "case_id": case_id,
         "category": variant_category.value,
         "samples.display_name": sample_name,
     }
