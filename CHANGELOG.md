@@ -29,6 +29,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Fixed annotation tracks being hidden behind other elements
  - Increased contrast of region selector
  - Chromosome bands are displayed properly
+ - Use sample id as individual id to link out from Gens home sample list
 
 ## [2.1.0]
 ### Added
