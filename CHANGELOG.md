@@ -8,6 +8,9 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 - Document track processing and loading
+- OAuth authentication
+### Changed
+- Hide balanced variants
 
 ### Changed
  - Changes the main view's page title to be `sample_name` and adds `sample_name` and `case_id` to the header title
