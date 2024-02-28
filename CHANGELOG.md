@@ -6,28 +6,15 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## [x.x.x]
 
+## [2.2] (Changes from Stockholm)
 ### Added
-- Document track processing and loading
-- OAuth authentication
+ - Document track processing and loading
+ - OAuth authentication
 ### Changed
-- Hide balanced variants
-
-### Changed
- - Changes the main view's page title to be `sample_name` and adds `sample_name` and `case_id` to the header title
- - Updated external images used in GitHub actions, including tj-actions/branch-names to v7 (fixes a security issue)
- - Updated Python and MongoDB version used in tests workflow to 3.8 and 7 respectively
-### Fixed
+ - Use sample id instead of display name for variant retrieval
+ - Hide balanced variants
  - Fixed bug that prevented updating annotation tracks
-
-## [2.1.2]
-### Added
-- Document track processing and loading
-- OAuth authentication
-### Changed
-- Use sample id instead of display name for variant retrieval
-- Hide balanced variants
-- Keyboard pan speed increased
-- Dont shrink pan window when attemting to pan over start
+ - Don't shrink pan window when attemting to pan over start
 
 ## [2.1.1]
 ### Added
