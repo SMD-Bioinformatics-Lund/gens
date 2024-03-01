@@ -6,7 +6,11 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## [x.x.x]
 
-## [2.2] (Changes from Stockholm)
+## [unreleased]
+### Changed
+- Archive prod docker image with release tag name. Update action versions.
+
+## [2.2]
 ### Added
  - Document track processing and loading
  - OAuth authentication
