@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="gens",
-    version="3.0.0",
+    version="3.0.1",
     description="Gens is a web-based interactive tool to visualize genomic copy number profiles from WGS data.",
     license="MIT",
     author="Ronja Grosz, Markus Johansson",
