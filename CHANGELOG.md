@@ -13,12 +13,13 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Changed
 - Changed cached method from simple to file system as it would be thread safe
 ### Fixed
-- Fixed cache issue that could result in chromosome information not being updated
 - Pan able to exit chrosome when using genome build 17 
 - `--force` flag `update_one` call not being called properly
 - Incorrect total sample count on home page.
 - Some typos and documentation.
 - Labels often not being visible on larger variants.
+- Fixed cache issue that could result in chromosome information not being updated
+- Fixed max arg error when searching for some genes
 
 
 ## [2.3]
