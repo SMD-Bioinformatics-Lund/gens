@@ -10,12 +10,16 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - `--force` flag prints a warning to stderr when overwriting an existing sample.
 - `gens delete sample` command
 - Height ordering for variants track.
+### Changed
+- Changed cached method from simple to file system as it would be thread safe
 ### Fixed
+- Fixed cache issue that could result in chromosome information not being updated
 - Pan able to exit chrosome when using genome build 17 
 - `--force` flag `update_one` call not being called properly
 - Incorrect total sample count on home page.
 - Some typos and documentation.
 - Labels often not being visible on larger variants.
+
 
 ## [2.3]
 ### Added
@@ -38,13 +42,12 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Keyboard pan speed increased
 - Don't shrink pan window when attemting to pan over start
 
-## [2.1.1]
+## [2.1.1b]
 ### Added
 ### Changed
  - Changes the main view's page title to be `sample_name` and adds `sample_name` and `case_id` to the header title
  - Updated external images used in GitHub actions, including tj-actions/branch-names to v7 (fixes a security issue)
  - Updated Python and MongoDB version used in tests workflow to 3.8 and 7 respectively
-### Fixed
 
 ## [2.1.1]
 ### Added
