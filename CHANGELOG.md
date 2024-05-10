@@ -4,6 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+
 ## 3.0.1
 ### Changed
  - Added files for setting up development and deployment-like instances.
@@ -37,6 +38,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## [2.3 (Solna)]
 ### Added
+<<<<<<< HEAD
  - Link out to Scout: introduce config variable for base URL
  - Link out to Scout: case links on home sample list
  - Link out to Scout: click variant to open Scout page
@@ -45,6 +47,15 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
  - Error image background static path
  - GitHub action DockerHub push on release
+=======
+ - Document track processing and loading
+ - OAuth authentication
+### Changed
+ - Use sample id instead of display name for variant retrieval
+ - Hide balanced variants
+ - Keyboard pan speed increased
+ - Don't shrink pan window when attemting to pan over start
+>>>>>>> 09c468f (Fixed bug that prevented updating annotation tracks)
 
 ## [2.2 (Solna)]
 ### Added
@@ -63,7 +74,20 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Updated external images used in GitHub actions, including tj-actions/branch-names to v7 (fixes a security issue)
  - Updated Python and MongoDB version used in tests workflow to 3.8 and 7 respectively
 
+<<<<<<< HEAD
 ## [2.1.1 (Solna)]
+=======
+## [2.1.2 Lund only - Solna version in Unreleased/2.4]
+### Added
+### Changed
+ - Changed cached method from simple to file system as it would be thread safe
+### Fixed
+ - Fixed cache issue that could result in chromosome information not being updated
+ - Fixed max arg error when searching for some genes 
+ - Fixed bug that prevented updating annotation tracks
+
+## [2.1.1]
+>>>>>>> 09c468f (Fixed bug that prevented updating annotation tracks)
 ### Added
 ### Changed
  - Updated flask and pinned connexion to v2
