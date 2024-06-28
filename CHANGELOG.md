@@ -10,6 +10,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - `--force` flag prints a warning to stderr when overwriting an existing sample.
 ### Fixed
 - Pan able to exit chrosome when using genome build 17 
+- `--force` flag `update_one` call not being called properly
 
 ## [2.3]
 ### Added
