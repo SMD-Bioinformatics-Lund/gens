@@ -120,3 +120,15 @@ def query_sample(db, sample_id, case_id, genome_build):
         overview_file=result["overview_file"],
         created_at=result["created_at"],
     )
+
+
+def delete_sample(db, sample_id, case_id, genome_build):
+    """Remove a sample from the database."""
+    LOG.info(f'Removing sample "{sample_id}" from database')
+    db[COLLECTION].delete_one(
+        {
+            "sample_id": sample_id,
+            "case_id": case_id,
+            "genome_build": genome_build,
+        }
+    )
