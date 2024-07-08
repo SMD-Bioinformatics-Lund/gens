@@ -1,7 +1,7 @@
 """Gens default configuration."""
 # Database connection
-MONGODB_GENS_URI = "mongodb://localhost:27017"
-MONGODB_SCOUT_URI = "mongodb://localhost:27017"
+MONGODB_GENS_URI = "mongodb://mongodb:27017"
+MONGODB_SCOUT_URI = "mongodb://mongodb:27017"
 GENS_DBNAME = "gens"
 SCOUT_DBNAME = "scout"
 
