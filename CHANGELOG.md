@@ -8,6 +8,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Added
 - `--force` flag to `gens loads sample` for overwriting any existing sample in case of key conflict.
 - `--force` flag prints a warning to stderr when overwriting an existing sample.
+- `gens delete sample` command
 ### Fixed
 - Pan able to exit chrosome when using genome build 17 
 - `--force` flag `update_one` call not being called properly
