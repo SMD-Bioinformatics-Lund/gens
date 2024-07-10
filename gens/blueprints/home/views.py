@@ -39,16 +39,16 @@ def home():
     # set pagination
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * SAMPLES_PER_PAGE
-    samples, tot_samples = get_samples(db, start=start, n_samples=SAMPLES_PER_PAGE)
+    samples, total_samples = get_samples(db, start=start, n_samples=SAMPLES_PER_PAGE)
     # calculate pagination
     pagination_info = {
         "from": start + 1,
         "to": start + SAMPLES_PER_PAGE,
         "current_page": page,
         "last_page": (
-            tot_samples // SAMPLES_PER_PAGE
-            if tot_samples % SAMPLES_PER_PAGE == 0
-            else (tot_samples // SAMPLES_PER_PAGE) + 1
+            total_samples // SAMPLES_PER_PAGE
+            if total_samples % SAMPLES_PER_PAGE == 0
+            else (total_samples // SAMPLES_PER_PAGE) + 1
         ),
     }
     # parse samples
@@ -68,6 +68,7 @@ def home():
         "home.html",
         pagination=pagination_info,
         samples=samples,
+        total_samples=total_samples,
         scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
         version=version,
     )
