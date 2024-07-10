@@ -124,7 +124,7 @@ def query_sample(db, sample_id, case_id, genome_build):
 
 def delete_sample(db, sample_id, case_id, genome_build):
     """Remove a sample from the database."""
-    LOG.info(f'Store sample "{sample_id}" in database')
+    LOG.info(f'Removing sample "{sample_id}" from database')
     db[COLLECTION].delete_one(
         {
             "sample_id": sample_id,
