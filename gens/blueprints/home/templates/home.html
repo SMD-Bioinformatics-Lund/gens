@@ -20,7 +20,7 @@
 {% block content %}
 <div class="content">
   <h1>Samples</h1>
-  <p>There are {{ samples | length }} samles loaded into Gens. Click on a <em>sample_id</em> to open it</p>
+  <p>There are {{ total_samples }} samples loaded into Gens. Click on a <em>sample_id</em> to open it</p>
   <div>
     {{ samples_table(samples, pagination) }}
   </div>
