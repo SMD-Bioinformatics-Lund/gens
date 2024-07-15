@@ -161,6 +161,8 @@ export class VariantTrack extends BaseAnnotationTrack {
 
     const labelData = [];
 
+    const heightTracker = Array(200)
+
     // Draw track
     const drawTooltips = this.getResolution < 4;
     for (const variant of filteredVariants) {
