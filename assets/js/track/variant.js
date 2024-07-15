@@ -162,6 +162,7 @@ export class VariantTrack extends BaseAnnotationTrack {
     const labelData = [];
 
     const heightTracker = Array(200)
+    let actualMaxHeightOrder = 1
 
     // Draw track
     const drawTooltips = this.getResolution < 4;
