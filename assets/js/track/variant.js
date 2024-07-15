@@ -109,6 +109,8 @@ export class VariantTrack extends BaseAnnotationTrack {
     }
     this.clearTracks()
 
+    const heightTracker = Array(200)
+
     // Draw track
     const drawTooltips = this.getResolution < 4
     for (const variant of filteredVariants) {
@@ -116,7 +118,12 @@ export class VariantTrack extends BaseAnnotationTrack {
       const variantType = variant.variant_type
       const variantLength = variant.length
       const color = this.colorSchema[variantCategory] || this.colorSchema.default || 'black'
-      const heightOrder = 1
+      
+      let heightOrder = 1
+      while (heightTracker[heightOrder] > variant.start)
+        heightOrder += 1
+      heightTracker[heightOrder] = variant.end
+
       const canvasYPos = this.tracksYPos(heightOrder)
 
       // Only draw visible tracks
