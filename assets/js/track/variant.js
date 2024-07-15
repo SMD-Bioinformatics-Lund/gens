@@ -120,7 +120,7 @@ export class VariantTrack extends BaseAnnotationTrack {
       const color = this.colorSchema[variantCategory] || this.colorSchema.default || 'black'
       
       let heightOrder = 1
-      while (heightTracker[heightOrder] > variant.start)
+      while (heightTracker[heightOrder] >= variant.start)
         heightOrder += 1
       heightTracker[heightOrder] = variant.end
 
