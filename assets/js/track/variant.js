@@ -110,6 +110,7 @@ export class VariantTrack extends BaseAnnotationTrack {
     this.clearTracks()
 
     const heightTracker = Array(200)
+    let actualMaxHeightOrder = 1
 
     // Draw track
     const drawTooltips = this.getResolution < 4
@@ -123,6 +124,7 @@ export class VariantTrack extends BaseAnnotationTrack {
       while (heightTracker[heightOrder] >= variant.start)
         heightOrder += 1
       heightTracker[heightOrder] = variant.end
+      actualMaxHeightOrder = Math.max(actualMaxHeightOrder, heightOrder)
 
       const canvasYPos = this.tracksYPos(heightOrder)
 
@@ -262,5 +264,6 @@ export class VariantTrack extends BaseAnnotationTrack {
         })
       }
     }
+    this.trackData.max_height_order = actualMaxHeightOrder
   }
 }
