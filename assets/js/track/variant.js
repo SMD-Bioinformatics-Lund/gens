@@ -99,6 +99,23 @@ export class VariantTrack extends BaseAnnotationTrack {
           { start: variant.position, end: variant.end },
           { start: startPos, end: endPos }))
     }
+    filteredVariants.sort((a, b) => a.position - b.position)
+
+    let heightTracker = Array(200)
+    let actualMaxHeightOrder = 1
+    for (const variant of filteredVariants) {
+      const variantCategory = variant.sub_category // del, dup, sv, str
+      if (['dup', 'del', 'cnv'].includes(variantCategory)) {
+        let heightOrder = 1
+        while (heightTracker[heightOrder] >= variant.position)
+          heightOrder += 1
+        heightTracker[heightOrder] = variant.end
+        actualMaxHeightOrder = Math.max(actualMaxHeightOrder, heightOrder)
+      }
+    }
+    
+    this.trackData.max_height_order = actualMaxHeightOrder
+
     // dont show tracks with no data in them
     if (filteredVariants.length > 0 &&
          this.getResolution < this.maxResolution + 1
@@ -109,6 +126,8 @@ export class VariantTrack extends BaseAnnotationTrack {
     }
     this.clearTracks()
 
+    heightTracker = Array(200)
+
     // Draw track
     const drawTooltips = this.getResolution < 4
     for (const variant of filteredVariants) {
@@ -116,7 +135,14 @@ export class VariantTrack extends BaseAnnotationTrack {
       const variantType = variant.variant_type
       const variantLength = variant.length
       const color = this.colorSchema[variantCategory] || this.colorSchema.default || 'black'
-      const heightOrder = 1
+      
+      let heightOrder = 1
+      if (['dup', 'del', 'cnv'].includes(variantCategory)) {
+        while (heightTracker[heightOrder] >= variant.position)
+          heightOrder += 1
+        heightTracker[heightOrder] = variant.end
+      }
+
       const canvasYPos = this.tracksYPos(heightOrder)
 
       // Only draw visible tracks
