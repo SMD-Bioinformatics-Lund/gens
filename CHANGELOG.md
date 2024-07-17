@@ -14,6 +14,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Pan able to exit chrosome when using genome build 17 
 - `--force` flag `update_one` call not being called properly
 - Incorrect total sample count on home page.
+- Some typos and documentation.
 
 ## [2.3]
 ### Added
