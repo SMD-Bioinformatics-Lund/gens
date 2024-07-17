@@ -99,6 +99,8 @@ export class VariantTrack extends BaseAnnotationTrack {
           { start: variant.position, end: variant.end },
           { start: startPos, end: endPos }))
     }
+    filteredVariants.sort((a, b) => a.position - b.position)
+
     // dont show tracks with no data in them
     if (filteredVariants.length > 0 &&
          this.getResolution < this.maxResolution + 1
