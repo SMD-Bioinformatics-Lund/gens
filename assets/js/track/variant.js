@@ -104,11 +104,14 @@ export class VariantTrack extends BaseAnnotationTrack {
     let heightTracker = Array(200)
     let actualMaxHeightOrder = 1
     for (const variant of filteredVariants) {
-      let heightOrder = 1
-      while (heightTracker[heightOrder] >= variant.position)
-        heightOrder += 1
-      heightTracker[heightOrder] = variant.end
-      actualMaxHeightOrder = Math.max(actualMaxHeightOrder, heightOrder)
+      const variantCategory = variant.sub_category // del, dup, sv, str
+      if (['dup', 'del', 'cnv'].includes(variantCategory)) {
+        let heightOrder = 1
+        while (heightTracker[heightOrder] >= variant.position)
+          heightOrder += 1
+        heightTracker[heightOrder] = variant.end
+        actualMaxHeightOrder = Math.max(actualMaxHeightOrder, heightOrder)
+      }
     }
     
     this.trackData.max_height_order = actualMaxHeightOrder
@@ -134,9 +137,11 @@ export class VariantTrack extends BaseAnnotationTrack {
       const color = this.colorSchema[variantCategory] || this.colorSchema.default || 'black'
       
       let heightOrder = 1
-      while (heightTracker[heightOrder] >= variant.position)
-        heightOrder += 1
-      heightTracker[heightOrder] = variant.end
+      if (['dup', 'del', 'cnv'].includes(variantCategory)) {
+        while (heightTracker[heightOrder] >= variant.position)
+          heightOrder += 1
+        heightTracker[heightOrder] = variant.end
+      }
 
       const canvasYPos = this.tracksYPos(heightOrder)
 
