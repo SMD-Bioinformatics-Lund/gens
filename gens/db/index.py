@@ -96,7 +96,7 @@ def get_indexes(db, collection):
 
 
 def create_index(db, collection_name):
-    """Create indexe for collection in Gens db."""
+    """Create indexes for collection in Gens db."""
     indexes = INDEXES[collection_name]
     existing_indexes = get_indexes(db, collection_name)
     # Drop old indexes

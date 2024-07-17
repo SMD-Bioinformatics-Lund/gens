@@ -67,7 +67,7 @@ def load():
 def sample(sample_id, genome_build, baf, coverage, case_id, overview_json, force):
     """Load a sample into Gens database."""
     db = app.config["GENS_DB"]
-    # if collection is not indexed, crate index
+    # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
     # load samples
@@ -103,7 +103,7 @@ def sample(sample_id, genome_build, baf, coverage, case_id, overview_json, force
 def annotations(file, genome_build):
     """Load annotations from file into the database."""
     db = app.config["GENS_DB"]
-    # if collection is not indexed, crate index
+    # if collection is not indexed, create index
     if len(get_indexes(db, ANNOTATIONS_COLLECTION)) == 0:
         create_index(db, ANNOTATIONS_COLLECTION)
     # check if path is a directoy of a file
@@ -163,7 +163,7 @@ def annotations(file, genome_build):
 def transcripts(file, mane, genome_build):
     """Load transcripts into the database."""
     db = app.config["GENS_DB"]
-    # if collection is not indexed, crate index
+    # if collection is not indexed, create index
     if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) > 0:
         create_index(db, TRANSCRIPTS_COLLECTION)
     LOG.info("Building transcript object")
@@ -202,7 +202,7 @@ def transcripts(file, mane, genome_build):
 def chromosome_info(file, genome_build, timeout):
     """Load chromosome size information into the database."""
     db = app.config["GENS_DB"]
-    # if collection is not indexed, crate index
+    # if collection is not indexed, create index
     if len(get_indexes(db, CHROMSIZES_COLLECTION)) == 0:
         create_index(db, CHROMSIZES_COLLECTION)
     # get chromosome info from ensemble

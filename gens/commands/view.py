@@ -15,7 +15,7 @@ LOG = logging.getLogger(__name__)
 
 @click.group()
 def view():
-    """Load information into Gens database"""
+    """View information loaded into Gens database"""
 
 
 @view.command()
