@@ -371,4 +371,16 @@ export class VariantTrack extends BaseAnnotationTrack {
       }
     });
   }
+
+  drawDynamicOverlay () {
+    const ctx = this.contentCanvas.getContext('2d')
+    drawLine({
+      ctx: ctx,
+      x: 0,
+      y: 0,
+      x2: 100,
+      y2: 100,
+      color: 'black',
+    })
+  }
 }
