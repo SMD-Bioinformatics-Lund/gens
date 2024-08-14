@@ -52,6 +52,9 @@ export class VariantTrack extends BaseAnnotationTrack {
     // Initialize highlighted variant
     this.highlightedVariantId = highlightedVariantId
     initTrackTooltips(this)
+
+    // Initialize label tracking
+    this.labelData = []
   }
 
   // Draw highlight for a given region
@@ -127,6 +130,8 @@ export class VariantTrack extends BaseAnnotationTrack {
     this.clearTracks()
 
     heightTracker = Array(200)
+
+    const labelData = []
 
     // Draw track
     const drawTooltips = this.getResolution < 4
@@ -272,14 +277,40 @@ export class VariantTrack extends BaseAnnotationTrack {
       if (['dup', 'del', 'cnv'].includes(variantCategory)) {
         const textYPos = this.tracksYPos(heightOrder)
         // Draw variant type
-        drawText({
+        labelData.push({
+          text: `${variant.category} - ${variantType} ${VARIANT_TR_TABLE[variantCategory]}; length: ${variantLength}`,
+          start: variantObj.start,
+          end: variantObj.end,
+          x: (variantObj.start + variantObj.end) / 2,
+          y: textYPos + this.featureHeight,
+          fontProp: textSize
+        })
+        /* drawText({
           ctx: this.drawCtx,
           text: `${variant.category} - ${variantType} ${VARIANT_TR_TABLE[variantCategory]}; length: ${variantLength}`,
           x: scale * ((variantObj.start + variantObj.end) / 2 - this.offscreenPosition.start),
           y: textYPos + this.featureHeight,
           fontProp: textSize
-        })
+        }) */
       }
     }
+    this.labelData = labelData
+  }
+
+  drawDynamicOverlay () {
+    const ctx = this.contentCanvas.getContext('2d')
+    const scale = this.contentCanvas.width / (this.onscreenPosition.end - this.onscreenPosition.start)
+    const margin = 100
+    this.labelData.forEach((label) => {
+      if (label.start < this.onscreenPosition.end && label.end > this.onscreenPosition.start) {
+        drawText({
+          ctx: ctx,
+          text: label.text,
+          x: Math.max(margin, Math.min(this.contentCanvas.width - margin, scale * (label.x - this.onscreenPosition.start))),
+          y: label.y,
+          fontProp: label.fontProp
+        })
+      }
+    })
   }
 }

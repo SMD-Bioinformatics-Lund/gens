@@ -133,6 +133,7 @@ export class BaseAnnotationTrack {
           data: this.trackData
         })
         this.blitCanvas(this.onscreenPosition.start, this.onscreenPosition.end)
+        this.drawDynamicOverlay()
       }, false)
   }
 
@@ -242,6 +243,7 @@ export class BaseAnnotationTrack {
     }
     //  blit image from offscreen canvas to onscreen canvas
     this.blitCanvas(start, end)
+    this.drawDynamicOverlay()
   }
 
   // blit drawCanvas to content canvas.
@@ -270,6 +272,10 @@ export class BaseAnnotationTrack {
       this.contentCanvas.width, // dWidth
       this.drawCanvas.height // dHeight
     )
+  }
+
+  drawDynamicOverlay () {
+    
   }
 
   //  Classify the resolution wich can be used chose when to display variants
