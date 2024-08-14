@@ -15,6 +15,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - `--force` flag `update_one` call not being called properly
 - Incorrect total sample count on home page.
 - Some typos and documentation.
+- Labels often not being visible on larger variants.
 
 ## [2.3]
 ### Added
