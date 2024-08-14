@@ -52,6 +52,9 @@ export class VariantTrack extends BaseAnnotationTrack {
     // Initialize highlighted variant
     this.highlightedVariantId = highlightedVariantId
     initTrackTooltips(this)
+
+    // Initialize label tracking
+    this.labelData = []
   }
 
   // Draw highlight for a given region
@@ -127,6 +130,8 @@ export class VariantTrack extends BaseAnnotationTrack {
     this.clearTracks()
 
     heightTracker = Array(200)
+
+    this.labelData = []
 
     // Draw track
     const drawTooltips = this.getResolution < 4
@@ -272,14 +277,33 @@ export class VariantTrack extends BaseAnnotationTrack {
       if (['dup', 'del', 'cnv'].includes(variantCategory)) {
         const textYPos = this.tracksYPos(heightOrder)
         // Draw variant type
-        drawText({
+        this.labelData.push({
+          text: `${variant.category} - ${variantType} ${VARIANT_TR_TABLE[variantCategory]}; length: ${variantLength}`,
+          x: (variantObj.start + variantObj.end) / 2,
+          y: textYPos + this.featureHeight,
+          fontProp: textSize
+        })
+        /* drawText({
           ctx: this.drawCtx,
           text: `${variant.category} - ${variantType} ${VARIANT_TR_TABLE[variantCategory]}; length: ${variantLength}`,
           x: scale * ((variantObj.start + variantObj.end) / 2 - this.offscreenPosition.start),
           y: textYPos + this.featureHeight,
           fontProp: textSize
-        })
+        }) */
       }
     }
+  }
+
+  drawDynamicOverlay () {
+    const ctx = this.contentCanvas.getContext('2d')
+    this.labelData.forEach((label) => {
+      drawText({
+        ctx: ctx,
+        text: label.text,
+        x: Math.max(0, label.x - this.onscreenPosition.start),
+        y: label.y,
+        fontProp: label.fontProp
+      })
+    })
   }
 }
