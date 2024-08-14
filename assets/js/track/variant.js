@@ -164,6 +164,8 @@ export class VariantTrack extends BaseAnnotationTrack {
     const heightTracker = Array(200)
     let actualMaxHeightOrder = 1
 
+    this.labelData = []
+
     // Draw track
     const drawTooltips = this.getResolution < 4;
     for (const variant of filteredVariants) {
@@ -374,13 +376,14 @@ export class VariantTrack extends BaseAnnotationTrack {
 
   drawDynamicOverlay () {
     const ctx = this.contentCanvas.getContext('2d')
-    drawLine({
-      ctx: ctx,
-      x: 0,
-      y: 0,
-      x2: 100,
-      y2: 100,
-      color: 'black',
+    this.labelData.forEach((label) => {
+      drawText({
+        ctx: ctx,
+        text: label.text,
+        x: Math.max(0, label.x - this.onscreenPosition.start),
+        y: label.y,
+        fontProp: label.fontProp
+      })
     })
   }
 }
