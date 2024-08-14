@@ -300,12 +300,13 @@ export class VariantTrack extends BaseAnnotationTrack {
   drawDynamicOverlay () {
     const ctx = this.contentCanvas.getContext('2d')
     const scale = this.contentCanvas.width / (this.onscreenPosition.end - this.onscreenPosition.start)
+    const margin = 200
     this.labelData.forEach((label) => {
       if (label.start < this.onscreenPosition.end && label.end > this.onscreenPosition.start) {
         drawText({
           ctx: ctx,
           text: label.text,
-          x: Math.max(0, Math.min(this.contentCanvas.width, scale * (label.x - this.onscreenPosition.start))),
+          x: Math.max(margin, Math.min(this.contentCanvas.width - margin, scale * (label.x - this.onscreenPosition.start))),
           y: label.y,
           fontProp: label.fontProp
         })
