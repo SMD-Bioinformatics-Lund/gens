@@ -133,6 +133,7 @@ export class BaseAnnotationTrack {
           data: this.trackData
         })
         this.blitCanvas(this.onscreenPosition.start, this.onscreenPosition.end)
+        this.drawDynamicOverlay()
       }, false)
   }
 
