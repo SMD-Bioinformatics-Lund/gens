@@ -428,6 +428,14 @@ html, body {
         grid-column: 1;
         position: relative;
     }
+
+    .info-expand-button {
+        top: 0;
+        right: 0;
+        z-index: 2;
+        position: relative;
+    }
+
     .offscreen {
         visibility: hidden;
     }
