@@ -5,7 +5,6 @@ import { lightenColor } from "./base.js";
 import tippy, { followCursor } from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import { isElementOverlapping } from "./utils.js";
-import { thisExpression } from "@babel/types";
 
 export class CytogeneticIdeogram {
   constructor({ targetId, genomeBuild, x, y, width, height }) {
