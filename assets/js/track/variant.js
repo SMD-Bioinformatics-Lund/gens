@@ -3,7 +3,6 @@
 import { BaseAnnotationTrack } from "./base.js";
 import {
   isElementOverlapping,
-  isWithinElementBbox,
   isWithinElementVisibleBbox,
 } from "./utils.js";
 import { drawRect, drawLine, drawWaveLine, drawText } from "../draw.js";
