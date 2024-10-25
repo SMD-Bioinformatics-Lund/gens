@@ -6,45 +6,60 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
-- `--force` flag to `gens loads sample` for overwriting any existing sample in case of key conflict.
-- `--force` flag prints a warning to stderr when overwriting an existing sample.
-- `gens delete sample` command
-- Height ordering for variants track.
+ - `--force` flag to `gens loads sample` for overwriting any existing sample in case of key conflict.
+ - `--force` flag prints a warning to stderr when overwriting an existing sample.
+ - `gens delete sample` command
+ - Height ordering for variants track.
 ### Fixed
-- Pan able to exit chrosome when using genome build 17 
-- `--force` flag `update_one` call not being called properly
-- Incorrect total sample count on home page.
-- Some typos and documentation.
-- Labels often not being visible on larger variants.
+ - Pan able to exit chrosome when using genome build 17 
+ - `--force` flag `update_one` call not being called properly
+ - Incorrect total sample count on home page.
+ - Some typos and documentation.
+ - Labels often not being visible on larger variants.
+### Merged for Solna from Lund 2.1.2
+#### Changed
+ - Changed cached method from simple to file system as it would be thread safe
+#### Fixed
+ - Fixed cache issue that could result in chromosome information not being updated
+ - Fixed max arg error when searching for some genes
+ - Fixed bug that prevented updating annotation tracks
 
 ## [2.3]
 ### Added
-- Link out to Scout: introduce config variable for base URL
-- Link out to Scout: case links on home sample list
-- Link out to Scout: click variant to open Scout page
+ - Link out to Scout: introduce config variable for base URL
+ - Link out to Scout: case links on home sample list
+ - Link out to Scout: click variant to open Scout page
 ### Changed
-- Archive prod docker image with release tag name. Update action versions.
+ - Archive prod docker image with release tag name. Update action versions.
 ### Fixed
-- Error image background static path
-- GitHub action DockerHub push on release
+ - Error image background static path
+ - GitHub action DockerHub push on release
 
 ## [2.2]
 ### Added
-- Document track processing and loading
-- OAuth authentication
+ - Document track processing and loading
+ - OAuth authentication
 ### Changed
-- Use sample id instead of display name for variant retrieval
-- Hide balanced variants
-- Keyboard pan speed increased
-- Don't shrink pan window when attemting to pan over start
+ - Use sample id instead of display name for variant retrieval
+ - Hide balanced variants
+ - Keyboard pan speed increased
+ - Don't shrink pan window when attemting to pan over start
 
-## [2.1.1]
+## [2.1.1b]
 ### Added
 ### Changed
  - Changes the main view's page title to be `sample_name` and adds `sample_name` and `case_id` to the header title
  - Updated external images used in GitHub actions, including tj-actions/branch-names to v7 (fixes a security issue)
  - Updated Python and MongoDB version used in tests workflow to 3.8 and 7 respectively
+
+## [2.1.2 Lund only - Solna version in Unreleased/2.4]
+### Added
+### Changed
+ - Changed cached method from simple to file system as it would be thread safe
 ### Fixed
+ - Fixed cache issue that could result in chromosome information not being updated
+ - Fixed max arg error when searching for some genes 
+ - Fixed bug that prevented updating annotation tracks
 
 ## [2.1.1]
 ### Added
