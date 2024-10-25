@@ -1,10 +1,7 @@
 // Variant track definition
 
 import { BaseAnnotationTrack } from "./base.js";
-import {
-  isElementOverlapping,
-  isWithinElementVisibleBbox,
-} from "./utils.js";
+import { isElementOverlapping, isWithinElementVisibleBbox } from "./utils.js";
 import { drawRect, drawLine, drawWaveLine, drawText } from "../draw.js";
 import {
   initTrackTooltips,

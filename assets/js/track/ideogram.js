@@ -46,17 +46,19 @@ export class CytogeneticIdeogram {
       plugins: [followCursor],
     });
 
-    // register event handeler for updating popups
+    // register event handler for updating popups
+    const ctx = canvas.getContext("2d");
+
     canvas.addEventListener("mousemove", (event) => {
-      this.drawPaths !== null &&
-        this.drawPaths.bands.map((bandPath) => {
-          const ctx = canvas.getContext("2d");
+      if (this.drawPaths !== null) {
+        this.drawPaths.bands.forEach((bandPath) => {
           if (ctx.isPointInPath(bandPath.path, event.offsetX, event.offsetY)) {
-            tooltip.querySelector(".ideogram-tooltip-value").innerHTML =
-              bandPath.id;
+            tooltip.querySelector(".ideogram-tooltip-value").innerHTML = bandPath.id;
           }
         });
+      }
     });
+
     // register event for moving and zooming region marker
     this.targetElement.addEventListener("mark-region", (event) => {
       // if marking a subset of chromosome
@@ -117,14 +119,15 @@ export function setupGenericEventManager({
   ownerElement,
   targetElementIds,
 }) {
-  // pass directed from owner element to taget elements
+  // pass directed from owner element to target elements
   ownerElement.addEventListener(eventName, (event) => {
-    targetElementIds.map((id) => {
-      document
-        .getElementById(id)
-        .dispatchEvent(new CustomEvent(eventName, { detail: event.detail }));
+  targetElementIds.forEach((id) => {
+    document
+      .getElementById(id)
+      .dispatchEvent(new CustomEvent(eventName, { detail: event.detail }));
     });
   });
+
 }
 
 function createChromosomeTooltip({ bandId }) {
