@@ -224,7 +224,7 @@ export class BaseAnnotationTrack {
         Object.assign(
           {
             // build query parameters
-            sample_id: oc.sampleName,
+            sample_id: this.sampleName,
             region: `${chrom}:1-None`,
             genome_build: this.genomeBuild,
             collapsed: false, // allways get all height orders
