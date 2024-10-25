@@ -104,6 +104,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Reinstated tooltips to display additional information on genetic elements
 ### Changed
  - Use popper for positioning tooltips
+ - Prettier for code formatting
 ### Fixed
 
 ## [1.2.0]
