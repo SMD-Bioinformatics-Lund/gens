@@ -53,7 +53,8 @@ export class CytogeneticIdeogram {
       if (this.drawPaths !== null) {
         this.drawPaths.bands.forEach((bandPath) => {
           if (ctx.isPointInPath(bandPath.path, event.offsetX, event.offsetY)) {
-            tooltip.querySelector(".ideogram-tooltip-value").innerHTML = bandPath.id;
+            tooltip.querySelector(".ideogram-tooltip-value").innerHTML =
+              bandPath.id;
           }
         });
       }
@@ -121,13 +122,12 @@ export function setupGenericEventManager({
 }) {
   // pass directed from owner element to target elements
   ownerElement.addEventListener(eventName, (event) => {
-  targetElementIds.forEach((id) => {
-    document
-      .getElementById(id)
-      .dispatchEvent(new CustomEvent(eventName, { detail: event.detail }));
+    targetElementIds.forEach((id) => {
+      document
+        .getElementById(id)
+        .dispatchEvent(new CustomEvent(eventName, { detail: event.detail }));
     });
   });
-
 }
 
 function createChromosomeTooltip({ bandId }) {
