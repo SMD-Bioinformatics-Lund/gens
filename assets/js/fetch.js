@@ -1,5 +1,7 @@
 // Fetch.js
 // functions for making api requests to Gens
+/* global _apiHost */
+
 
 async function request(url, params, method = "GET") {
   // options passed to hte fetch request
