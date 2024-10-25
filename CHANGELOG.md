@@ -10,14 +10,16 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - `--force` flag prints a warning to stderr when overwriting an existing sample.
  - `gens delete sample` command
  - Height ordering for variants track.
-### Changed
- - Changed cached method from simple to file system as it would be thread safe
 ### Fixed
  - Pan able to exit chrosome when using genome build 17 
  - `--force` flag `update_one` call not being called properly
  - Incorrect total sample count on home page.
  - Some typos and documentation.
  - Labels often not being visible on larger variants.
+### Merged for Solna from Lund 2.1.2
+#### Changed
+ - Changed cached method from simple to file system as it would be thread safe
+#### Fixed
  - Fixed cache issue that could result in chromosome information not being updated
  - Fixed max arg error when searching for some genes
  - Fixed bug that prevented updating annotation tracks
