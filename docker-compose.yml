@@ -1,14 +1,14 @@
 version: "3.8"
 services:
-  markus_mongodb:
-    container_name: markus_mongodb
+  mongodb:
+    container_name: mongodb
     image: mongo
     volumes:
       - ./volumes/mongo_db/data:/data/db
     networks:
       - gens-net
-  markus_gens:
-    container_name: markus_gens
+  gens:
+    container_name: gens
     build: .
     volumes:
       - ./utils:/home/app/app/utils
