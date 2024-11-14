@@ -20,7 +20,7 @@ services:
     environment:
       - FLASK_APP=gens/app.py
       - FLASK_ENV=development
-      - MONGODB_HOST=markus_mongodb
+      - MONGODB_HOST=mongodb
       - MONGODB_PORT=27017
       - SCOUT_DBNAME=scout
       - GENS_DBNAME=gens
@@ -31,7 +31,7 @@ services:
     networks:
       - gens-net
     depends_on:
-      - markus_mongodb
+      - mongodb
     command: "flask run --host 0.0.0.0"
 networks:
   gens-net:
@@ -39,4 +39,4 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.23.0.0/24
+        - subnet: 172.24.0.0/24
