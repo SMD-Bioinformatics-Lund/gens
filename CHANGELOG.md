@@ -10,6 +10,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Changed
 ### Fixed
  - Fixed bug that prevented updating annotation tracks
+ - Fixed some typos and removed console.logs
+ - Renamed docker compose processes to not be prefixed markus_
 
 ## [2.1.2]
 ### Added
