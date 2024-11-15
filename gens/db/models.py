@@ -1,4 +1,5 @@
 """Data models returned when fetching information from SCOUT and GENS database interactions."""
+
 from datetime import datetime
 from enum import Enum
 from typing import Optional
@@ -19,6 +20,7 @@ class VariantCategory(Enum):
 @attr.s(frozen=True)
 class SampleObj:
     sample_id: str = attr.ib()
+    case_name: str = attr.ib()
     baf_file: str = attr.ib()
     coverage_file: str = attr.ib()
     genome_build: int = attr.ib(

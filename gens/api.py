@@ -1,4 +1,5 @@
 """API entry point and helper functions."""
+
 import gzip
 import json
 import logging
@@ -11,12 +12,17 @@ import cattr
 import connexion
 from flask import abort, current_app, jsonify, request
 
-from gens.db import (ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION,
-                     VariantCategory, get_chromosome_size,
-                     query_records_in_region, query_sample, query_variants)
+from gens.db import (
+    ANNOTATIONS_COLLECTION,
+    TRANSCRIPTS_COLLECTION,
+    VariantCategory,
+    get_chromosome_size,
+    query_records_in_region,
+    query_sample,
+    query_variants,
+)
 from gens.exceptions import RegionParserException
-from gens.graph import (REQUEST, get_cov, overview_chrom_dimensions,
-                        parse_region_str)
+from gens.graph import REQUEST, get_cov, overview_chrom_dimensions, parse_region_str
 
 from .constants import CHROMOSOMES, GENOME_BUILDS
 from .io import get_tabix_files
@@ -106,7 +112,7 @@ def get_annotation_data(region, source, genome_build, collapsed):
     if region == "" or source == "":
         msg = "Could not find annotation data in DB"
         LOG.error(msg)
-        retrun (jsonify({"detail": msg}), 404)
+        retrun(jsonify({"detail": msg}), 404)
 
     genome_build = request.args.get("genome_build", "38")
     res, chrom, start_pos, end_pos = parse_region_str(region, genome_build)
@@ -148,7 +154,7 @@ def get_transcript_data(region, genome_build, collapsed):
     if region == "":
         msg = "Could not find transcript in database"
         LOG.error(msg)
-        retrun (jsonify({"detail": msg}), 404)
+        retrun(jsonify({"detail": msg}), 404)
 
     # Get transcripts within span [start_pos, end_pos] or transcripts that go over the span
     transcripts = list(
@@ -205,7 +211,7 @@ def search_annotation(query: str, genome_build, annotation_type):
     return jsonify({**data, "status": response_code})
 
 
-def get_variant_data(sample_id, variant_category, **optional_kwargs):
+def get_variant_data(case_name, sample_id, variant_category, **optional_kwargs):
     """Search Scout database for variants associated with a case and return info in JSON format."""
     default_height_order = 0
     base_return = {"status": "ok"}
@@ -232,6 +238,7 @@ def get_variant_data(sample_id, variant_category, **optional_kwargs):
     try:
         variants = list(
             query_variants(
+                case_name,
                 sample_id,
                 cattr.structure(variant_category, VariantCategory),
                 **region_params,

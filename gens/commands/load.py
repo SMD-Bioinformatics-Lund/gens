@@ -7,12 +7,25 @@ from flask.cli import with_appcontext
 from pymongo import ASCENDING
 
 from gens.constants import GENOME_BUILDS
-from gens.db import (ANNOTATIONS_COLLECTION, CHROMSIZES_COLLECTION,
-                     SAMPLES_COLLECTION, TRANSCRIPTS_COLLECTION, create_index,
-                     get_indexes, register_data_update, store_sample)
-from gens.load import (ParserError, build_chromosomes_obj, build_transcripts,
-                       get_assembly_info, parse_annotation_entry,
-                       parse_annotation_file, update_height_order)
+from gens.db import (
+    ANNOTATIONS_COLLECTION,
+    CHROMSIZES_COLLECTION,
+    SAMPLES_COLLECTION,
+    TRANSCRIPTS_COLLECTION,
+    create_index,
+    get_indexes,
+    register_data_update,
+    store_sample,
+)
+from gens.load import (
+    ParserError,
+    build_chromosomes_obj,
+    build_transcripts,
+    get_assembly_info,
+    parse_annotation_entry,
+    parse_annotation_file,
+    update_height_order,
+)
 
 LOG = logging.getLogger(__name__)
 valid_genome_builds = [str(gb) for gb in GENOME_BUILDS]
@@ -46,6 +59,7 @@ def load():
     type=click.Path(exists=True),
     help="File or directory of annotation files to load into the database",
 )
+@click.option("-n", "--case-name", required=True, help="Display name of case")
 @click.option(
     "-j",
     "--overview-json",
@@ -53,7 +67,14 @@ def load():
     help="Json file that contains preprocessed overview coverage",
 )
 @with_appcontext
-def sample(sample_id, genome_build, baf, coverage, overview_json):
+def sample(
+    sample_id,
+    genome_build,
+    baf,
+    coverage,
+    case_name,
+    overview_json,
+):
     """Load a sample into Gens database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, crate index
@@ -63,6 +84,7 @@ def sample(sample_id, genome_build, baf, coverage, overview_json):
     store_sample(
         db,
         sample_id=sample_id,
+        case_name=case_name,
         genome_build=genome_build,
         baf=baf,
         coverage=coverage,

@@ -92,6 +92,12 @@ paths:
       description: Get BAF and LOG2 coverage information
       operationId: gens.api.get_coverage
       parameters:
+        - name: case_name
+          in: query
+          description: Case display name
+          required: true
+          schema:
+            type: string
         - name: sample_id
           in: query
           description: Region selector
