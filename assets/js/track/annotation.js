@@ -28,8 +28,6 @@ export class AnnotationTrack extends BaseAnnotationTrack {
 
     super(width, near, far, visibleHeight, minHeight)
 
-    console.log("annotation.js")
-
     // Set inherited variables
     // TODO use the names contentCanvas and drawCanvas
     this.drawCanvas = document.getElementById('annotation-draw')
@@ -62,8 +60,6 @@ export class AnnotationTrack extends BaseAnnotationTrack {
     this.maxResolution = 6 // define other max resolution
     this.numRenderedElements = 0
     initTrackTooltips(this)
-
-    console.log("annotation.js end")
   }
 
   // Fills the list with source files
