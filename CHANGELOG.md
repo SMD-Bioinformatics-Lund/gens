@@ -18,9 +18,16 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## [2.1.2]
 ### Added
+- Document track processing and loading
+- OAuth authentication
+
+## [2.1.1]
+### Added
 ### Changed
  - Changed cached method from simple to file system as it would be thread safe
-
+ - Changes the main view's page title to be `sample_name` and adds `sample_name` and `case_id` to the header title
+ - Updated external images used in GitHub actions, including tj-actions/branch-names to v7 (fixes a security issue)
+ - Updated Python and MongoDB version used in tests workflow to 3.8 and 7 respectively
 ### Fixed
  - Fixed cache issue that could result in chromosome information not being updated
  - Fixed max arg error when searching for some genes
@@ -32,6 +39,9 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Updated node version of github action to 17.x
 ### Fixed
  - Fixed annotation tracks being hidden behind other elements
+ - Use sample id as individual id to link out from Gens home sample list
+ - Some fixes from MHKC CG-Lund, e.g. status codes and a JSON error
+ - Removes some leading `/` that were breaking links
  - Increased contrast of region selector
  - Chromosome bands are displayed properly
  - Use sample id as individual id to link out from Gens home sample list
