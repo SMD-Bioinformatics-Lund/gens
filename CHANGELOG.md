@@ -14,6 +14,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Renamed docker compose processes to not be prefixed markus_
  - Use sample id as individual id to link out from Gens home sample list
  - Removes some leading `/` that were breaking links
+ - Changes the main view's page title to be `sample_name` and adds `sample_name` and `case_id` to the header title
 
 ## [2.1.2]
 ### Added
