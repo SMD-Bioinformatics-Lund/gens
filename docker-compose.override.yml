@@ -3,6 +3,9 @@ services:
   mongodb:
     container_name: mongodb_jakob
     image: mongo:latest
+    volumes:
+      - ./volumes/mongo_db/data:/data/db
+      - ./dump:/data/dump
   gens:
     container_name: gens_jakob
     build:
@@ -17,7 +20,8 @@ services:
     depends_on:
       - mongodb
     command: "flask run --host 0.0.0.0"
-
+    volumes:
+      - ./dump:/home/app/app/dump
 networks:
   gens-net:
     driver: bridge

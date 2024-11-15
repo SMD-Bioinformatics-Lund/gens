@@ -17,6 +17,8 @@ export class VariantTrack extends BaseAnnotationTrack {
 
     super(width, near, far, visibleHeight, minHeight, colorSchema)
 
+    console.log("variant.js")
+
     // Set inherited variables
     this.drawCanvas = document.getElementById('variant-draw')
     this.contentCanvas = document.getElementById('variant-content')
@@ -37,6 +39,8 @@ export class VariantTrack extends BaseAnnotationTrack {
     // Initialize highlighted variant
     this.highlightedVariantId = highlightedVariantId
     initTrackTooltips(this)
+
+    console.log("variant.js end")
   }
 
   // Draw highlight for a given region

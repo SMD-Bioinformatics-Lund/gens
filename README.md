@@ -26,7 +26,7 @@ pip install -r requirements.txt
 
 You also need to build the javacript and css files and put them into the directory `gens/static/js` and `gens/static/css` respectively. To build the assets you need to have node installed on your system.
 ``` bash
-# install build dependancies and build web assets.
+# install build dependencies and build web assets.
 npm install && npm run build
 # copy built assets gens/static
 cp -r build/{js,css} gens/static/

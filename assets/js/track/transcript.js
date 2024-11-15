@@ -32,6 +32,8 @@ export class TranscriptTrack extends BaseAnnotationTrack {
 
     super(width, near, far, visibleHeight, minHeight, colorSchema)
 
+    console.log("transcript.js")
+
     // Set inherited variables
     this.drawCanvas = document.getElementById('transcript-draw')
     this.contentCanvas = document.getElementById('transcript-content')
@@ -49,6 +51,8 @@ export class TranscriptTrack extends BaseAnnotationTrack {
     // Define with of the elements
     this.geneLineWidth = 2
     initTrackTooltips(this)
+
+    console.log("transcript.js end")
   }
 
   // draw feature

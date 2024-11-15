@@ -4,6 +4,8 @@
 tags
 coverage
 *.aed
+dump/
+frontend/
 
 # python
 *.pyc

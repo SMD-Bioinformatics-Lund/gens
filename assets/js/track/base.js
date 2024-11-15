@@ -108,7 +108,6 @@ export class BaseAnnotationTrack {
     this.trackTitle.style.height = this.minHeight + 'px'
 
     this.trackContainer.parentElement.addEventListener('draw', (event) => {
-      console.log('track recived draw', event.detail.region)
       this.drawTrack({ ...event.detail.region })
     })
     // Setup context menu

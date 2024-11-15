@@ -82,7 +82,6 @@ export class InteractiveCanvas extends BaseScatterTrack {
     // Setup listeners
     // update chromosome title event
     this.contentCanvas.addEventListener('update-title', event => {
-      console.log(`interactive got an ${event.type} event`)
       const len = event.detail.bands.length
       if (len > 0) { 
         const bandIds = len === 1 ? event.detail.bands[0].id : `${event.detail.bands[0].id}-${event.detail.bands[len-1].id}`
@@ -93,7 +92,6 @@ export class InteractiveCanvas extends BaseScatterTrack {
     })
     // redraw events
     this.contentCanvas.parentElement.addEventListener('draw', event => {
-      console.log('interactive got draw event')
       this.drawInteractiveContent({ ...event.detail.region, ...event.detail })
     })
     // navigation events
@@ -220,7 +218,6 @@ export class InteractiveCanvas extends BaseScatterTrack {
 
   // Draw values for interactive canvas
   async drawInteractiveContent ({ chrom, start, end, displayLoading = true, drawTitle = true }) {
-    console.log('drawing interactive canvas', chrom, start, end)
     if (displayLoading) {
       this.loadingDiv.style.display = 'block'
     } else {

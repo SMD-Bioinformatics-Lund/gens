@@ -20,7 +20,7 @@
 {% block content %}
 <div class="content">
   <h1>Samples</h1>
-  <p>There are {{ samples | length }} samles loaded into Gens. Click on a <em>sample_id</em> to open it</p>
+  <p>There are {{ samples | length }} samples loaded into Gens. Click on a <em>sample_id</em> to open it</p>
   <div>
     {{ samples_table(samples, pagination) }}
   </div>
@@ -35,7 +35,7 @@
       <tr>
         <td>Sample id</td>
         <td>Genome build</td>
-        <td>Overivew file</td>
+        <td>Overview file</td>
         <td>BAM/BAF found</td>
         <td>Import date</td>
       </tr>
