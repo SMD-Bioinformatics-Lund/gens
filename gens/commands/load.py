@@ -59,7 +59,7 @@ def load():
     type=click.Path(exists=True),
     help="File or directory of annotation files to load into the database",
 )
-@click.option("-n", "--case-name", required=True, help="Display name of case")
+@click.option("-n", "--case-name", required=True, help="Id of case")
 @click.option(
     "-j",
     "--overview-json",
@@ -72,7 +72,7 @@ def sample(
     genome_build,
     baf,
     coverage,
-    case_name,
+    case_id,
     overview_json,
 ):
     """Load a sample into Gens database."""
@@ -84,7 +84,7 @@ def sample(
     store_sample(
         db,
         sample_id=sample_id,
-        case_name=case_name,
+        case_id=case_id,
         genome_build=genome_build,
         baf=baf,
         coverage=coverage,
