@@ -1,4 +1,5 @@
 """Functions for handeling database connection."""
+
 import logging
 import os
 
@@ -31,9 +32,8 @@ def init_database_connection() -> None:
             )
         variables[var_name] = os.environ.get(var_name, app.config.get(var_name))
     # connect to database
-    client = MongoClient(
-        host=variables["MONGODB_HOST"], port=int(variables["MONGODB_PORT"])
-    )
+    scout_client = MongoClient(variables["MONGODB_SCOUT_URI"])
+    gens_client = MongoClient(variables["MONGODB_GENS_URI"])
     # store db handlers in configuration
-    app.config["SCOUT_DB"] = client[variables["SCOUT_DBNAME"]]
-    app.config["GENS_DB"] = client[variables["GENS_DBNAME"]]
+    app.config["SCOUT_DB"] = scout_client[variables["SCOUT_DBNAME"]]
+    app.config["GENS_DB"] = gens_client[variables["GENS_DBNAME"]]
