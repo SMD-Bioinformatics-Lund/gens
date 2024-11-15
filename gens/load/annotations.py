@@ -1,4 +1,5 @@
 """Annotations."""
+
 import csv
 import logging
 import re
@@ -19,27 +20,10 @@ class ParserError(Exception):
     pass
 
 
-def parse_bed(file, genome_build):
+def parse_bed(file, _genome_build):
     """Parse bed file."""
-    HEADER = (
-        "sequence",
-        "start",
-        "end",
-        "name",
-        "score",
-        "strand",
-        "null",
-        "null",
-        "color",
-    )
     with open(file) as bed:
-        bed_reader = csv.DictReader(bed, delimiter="\t")
-        # Skip bad header info
-        next(bed_reader)
-
-        # Load in annotations
-        for line in bed_reader:
-            yield dict(zip(HEADER, line))
+        return csv.DictReader(bed, delimiter="\t")
 
 
 def parse_aed(file):
