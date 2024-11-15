@@ -7,6 +7,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ## [x.x.x]
 
 ### Added
+- Document track processing and loading
 ### Changed
 ### Fixed
  - Fixed bug that prevented updating annotation tracks
