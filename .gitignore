@@ -6,6 +6,7 @@ coverage
 *.aed
 dump/
 frontend/
+docker-compose.override.yml
 
 # python
 *.pyc
