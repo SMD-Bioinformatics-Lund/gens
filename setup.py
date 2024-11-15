@@ -26,7 +26,7 @@ setup(
     zip_safe=False,
     install_requires=[
         "Click",
-        "Flask",
+        "Flask>=1.1.2, <2.3",
         "flask-caching",
         "pymongo>=3.9.0",
         "gtfparse>=1.2.0",

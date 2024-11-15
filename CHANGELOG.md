@@ -12,6 +12,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Fixed bug that prevented updating annotation tracks
  - Fixed some typos and removed console.logs
  - Renamed docker compose processes to not be prefixed markus_
+ - Use sample id as individual id to link out from Gens home sample list
 
 ## [2.1.2]
 ### Added
