@@ -59,7 +59,7 @@ def load():
     type=click.Path(exists=True),
     help="File or directory of annotation files to load into the database",
 )
-@click.option("-n", "--case-name", required=True, help="Id of case")
+@click.option("-n", "--case-id", required=True, help="Id of case")
 @click.option(
     "-j",
     "--overview-json",
