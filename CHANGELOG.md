@@ -16,6 +16,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Incorrect total sample count on home page.
  - Some typos and documentation.
  - Labels often not being visible on larger variants.
+
 ### Merged for Solna from Lund 2.1.2
 #### Changed
  - Changed cached method from simple to file system as it would be thread safe
@@ -24,7 +25,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Fixed max arg error when searching for some genes
  - Fixed bug that prevented updating annotation tracks
 
-## [2.3]
+## [2.3 (Solna)]
 ### Added
  - Link out to Scout: introduce config variable for base URL
  - Link out to Scout: case links on home sample list
@@ -35,7 +36,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Error image background static path
  - GitHub action DockerHub push on release
 
-## [2.2]
+## [2.2 (Solna)]
 ### Added
  - Document track processing and loading
  - OAuth authentication
@@ -45,23 +46,14 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Keyboard pan speed increased
  - Don't shrink pan window when attemting to pan over start
 
-## [2.1.1b]
+## [2.1.1b (Solna)]
 ### Added
 ### Changed
  - Changes the main view's page title to be `sample_name` and adds `sample_name` and `case_id` to the header title
  - Updated external images used in GitHub actions, including tj-actions/branch-names to v7 (fixes a security issue)
  - Updated Python and MongoDB version used in tests workflow to 3.8 and 7 respectively
 
-## [2.1.2 Lund only - Solna version in Unreleased/2.4]
-### Added
-### Changed
- - Changed cached method from simple to file system as it would be thread safe
-### Fixed
- - Fixed cache issue that could result in chromosome information not being updated
- - Fixed max arg error when searching for some genes 
- - Fixed bug that prevented updating annotation tracks
-
-## [2.1.1]
+## [2.1.1 (Solna)]
 ### Added
 ### Changed
  - Updated flask and pinned connexion to v2
@@ -73,7 +65,25 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Removes some leading `/` that were breaking links
  - Increased contrast of region selector
  - Chromosome bands are displayed properly
- - Use sample id as individual id to link out from Gens home sample list
+
+## [2.1.2 (Lund)]
+### Added
+### Changed
+ - Changed cached method from simple to file system as it would be thread safe
+
+### Fixed
+ - Fixed cache issue that could result in chromosome information not being updated
+ - Fixed max arg error when searching for some genes
+
+## [2.1.1 (Lund)]
+### Added
+### Changed
+ - Updated flask and pinned connexion to v2
+ - Updated node version of github action to 17.x
+### Fixed
+ - Fixed annotation tracks being hidden behind other elements
+ - Increased contrast of region selector
+ - Chromosome bands are displayed properly
 
 ## [2.1.0]
 ### Added
