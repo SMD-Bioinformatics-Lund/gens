@@ -9,7 +9,7 @@ setup(
     version="3.0.0",
     description="Gens is a web-based interactive tool to visualize genomic copy number profiles from WGS data.",
     license="MIT",
-    author="Ronja, Markus Johansson",
+    author="Ronja Grosz, Markus Johansson",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
