@@ -2,7 +2,7 @@
 # BUILDER PYTHON #
 ##################
 
-FROM python:3.8.1-slim as python-builder
+FROM python:3.8.1-slim AS python-builder
 
 # Set build variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -24,7 +24,7 @@ RUN apt-get update &&                                                     \
 # BUILDER NODE #
 ################
 
-FROM node:20.8.1-alpine as node-builder
+FROM node:20.8.1-alpine AS node-builder
 WORKDIR /usr/src/app
 COPY package.json package-lock.json webpack.config.js gulpfile.js ./
 COPY assets assets
