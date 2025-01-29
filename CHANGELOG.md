@@ -4,6 +4,9 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+### Fixed
+ - Fixed logo path in the navbar
+
 ## 3.0.0 - Merging Solnas and Lunds changes
 ### Added
  - `--force` flag to `gens loads sample` for overwriting any existing sample in case of key conflict.
