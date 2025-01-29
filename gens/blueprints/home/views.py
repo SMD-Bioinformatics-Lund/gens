@@ -2,9 +2,9 @@
 
 import logging
 import os
-from itertools import groupby
 
 from flask import Blueprint, current_app, render_template, request
+from flask_login import current_user
 
 from gens import version
 from gens.db import get_samples, get_timestamps
@@ -39,22 +39,23 @@ def home():
     # set pagination
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * SAMPLES_PER_PAGE
-    samples, tot_samples = get_samples(db, start=start, n_samples=SAMPLES_PER_PAGE)
+    samples, total_samples = get_samples(db, start=start, n_samples=SAMPLES_PER_PAGE)
     # calculate pagination
     pagination_info = {
         "from": start + 1,
         "to": start + SAMPLES_PER_PAGE,
         "current_page": page,
         "last_page": (
-            tot_samples // SAMPLES_PER_PAGE
-            if tot_samples % SAMPLES_PER_PAGE == 0
-            else (tot_samples // SAMPLES_PER_PAGE) + 1
+            total_samples // SAMPLES_PER_PAGE
+            if total_samples % SAMPLES_PER_PAGE == 0
+            else (total_samples // SAMPLES_PER_PAGE) + 1
         ),
     }
     # parse samples
     samples = [
         {
             "sample_id": smp.sample_id,
+            "case_id": smp.case_id,
             "genome_build": smp.genome_build,
             "has_overview_file": smp.overview_file is not None,
             "files_present": os.path.isfile(smp.baf_file)
@@ -65,8 +66,10 @@ def home():
     ]
     return render_template(
         "home.html",
-        samples=samples,
         pagination=pagination_info,
+        samples=samples,
+        total_samples=total_samples,
+        scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
         version=version,
     )
 
@@ -79,8 +82,22 @@ def about():
         ui_colors = current_app.config.get("UI_COLORS")
     return render_template(
         "about.html",
-        timestamps=timestamps,
-        version=version,
         config=config,
+        timestamps=timestamps,
         ui_colors=ui_colors,
+        version=version,
     )
+
+
+def public_endpoint(function):
+    """Set an endpoint as public"""
+    function.is_public = True
+    return function
+
+
+@home_bp.route("/landing")
+@public_endpoint
+def landing():
+
+    return render_template("landing.html",
+                           version=version,)

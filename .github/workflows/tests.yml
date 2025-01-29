@@ -9,17 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7]
-        mongodb-version: ["3.6"]
+        python-version: [3.8]
+        mongodb-version: ["7"]
 
     steps:
 
     # Check out Scout code
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     # Set up python
     - name: Set up Python ${{ matrix.python-version}}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version}}
 
@@ -49,9 +49,9 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci

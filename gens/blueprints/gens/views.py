@@ -9,7 +9,7 @@ from gens import version
 from gens.cache import cache
 from gens.db import query_sample
 from gens.graph import parse_region_str
-from gens.io import BAF_SUFFIX, COV_SUFFIX, _get_filepath
+from gens.io import _get_filepath
 
 LOG = logging.getLogger(__name__)
 
@@ -28,6 +28,9 @@ def display_case(sample_name):
     Renders the Gens template
     Expects sample_id as input to be able to load the sample data
     """
+    case_id = request.args.get("case_id", None)
+    individual_id = request.args.get("individual_id", sample_name)
+    
     # get genome build and region
     region = request.args.get("region", None)
     print_page = request.args.get("print_page", "false")
@@ -45,7 +48,7 @@ def display_case(sample_name):
 
     # verify that sample has been loaded
     db = current_app.config["GENS_DB"]
-    sample = query_sample(db, sample_name, genome_build)
+    sample = query_sample(db, individual_id, case_id, genome_build)
 
     # Check that BAF and Log2 file exists
     try:
@@ -69,10 +72,13 @@ def display_case(sample_name):
     return render_template(
         "gens.html",
         ui_colors=current_app.config["UI_COLORS"],
+        scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
         chrom=chrom,
         start=start_pos,
         end=end_pos,
         sample_name=sample_name,
+        individual_id=individual_id,
+        case_id=case_id,
         genome_build=genome_build,
         print_page=print_page,
         annotation=annotation,

@@ -2,7 +2,7 @@
 # BUILDER PYTHON #
 ##################
 
-FROM python:3.8.1-slim as python-builder
+FROM python:3.8.1-slim AS python-builder
 
 # Set build variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -24,7 +24,7 @@ RUN apt-get update &&                                                     \
 # BUILDER NODE #
 ################
 
-FROM node:20.8.1-alpine as node-builder
+FROM node:20.8.1-alpine AS node-builder
 WORKDIR /usr/src/app
 COPY package.json package-lock.json webpack.config.js gulpfile.js ./
 COPY assets assets
@@ -58,10 +58,29 @@ COPY utils utils
 
 # copy compiled web assetes
 COPY --from=node-builder /usr/src/app/build/css/error.min.css gens/static/css/
-COPY --from=node-builder /usr/src/app/build/css/home.min.css /usr/src/app/build/css/about.min.css gens/blueprints/home/static/
+COPY --from=node-builder /usr/src/app/build/css/home.min.css /usr/src/app/build/css/landing.min.css /usr/src/app/build/css/about.min.css gens/blueprints/home/static/
 COPY --from=node-builder /usr/src/app/build/*/gens.min.* gens/blueprints/gens/static/
 
 # make mountpoints and change ownership of app
 RUN mkdir -p /access /fs1/results /fs1/results_dev && chown -R app:app /home/app/app /access /fs1 /fs1/results_dev
 # Change the user to app
 USER app
+
+ENV GUNICORN_WORKERS=1
+ENV GUNICORN_THREADS=1
+ENV GUNICORN_BIND="0.0.0.0:5000"
+ENV GUNICORN_TIMEOUT=400
+
+CMD gunicorn \
+    --workers=$GUNICORN_WORKERS \
+    --bind=$GUNICORN_BIND  \
+    --threads=$GUNICORN_THREADS \
+    --timeout=$GUNICORN_TIMEOUT \
+    --chdir /home/app/app/ \
+    --proxy-protocol \
+    --forwarded-allow-ips="10.0.2.100,127.0.0.1" \
+    --log-syslog \
+    --access-logfile - \
+    --error-logfile - \
+    --log-level="debug" \
+    gens.wsgi:app

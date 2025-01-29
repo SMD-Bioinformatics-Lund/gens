@@ -22,7 +22,10 @@ paths:
               type: object
               properties:
                 sample_id:
-                  description: Sample id
+                  description: Sample/individual displayname
+                  type: string
+                case_id:
+                  description: Case id
                   type: string
                 baf_y_start:
                   description: Y coordinate from where to draw BAF track.
@@ -94,7 +97,13 @@ paths:
       parameters:
         - name: sample_id
           in: query
-          description: Region selector
+          description: Sample/individual displayname
+          required: true
+          schema:
+            type: string
+        - name: case_id
+          in: query
+          description: Case id
           required: true
           schema:
             type: string
@@ -216,6 +225,12 @@ paths:
       description: Get annotation data
       operationId: gens.api.get_variant_data
       parameters:
+        - name: case_id
+          in: query
+          description: Case id
+          required: true
+          schema:
+            type: string
         - name: sample_id
           in: query
           description: Unique sample identifier

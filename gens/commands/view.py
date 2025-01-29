@@ -15,7 +15,7 @@ LOG = logging.getLogger(__name__)
 
 @click.group()
 def view():
-    """Load information into Gens database"""
+    """View information loaded into Gens database"""
 
 
 @view.command()
@@ -35,6 +35,7 @@ def samples(summary):
     else:  # show all samples
         columns = (
             "Sample Id",
+            "Case Id",
             "Genome build",
             "Created at",
             "baf file",
@@ -44,6 +45,7 @@ def samples(summary):
         sample_tbl = (
             (
                 s.sample_id,
+                s.case_id,
                 str(s.genome_build),
                 s.created_at.isoformat(),
                 s.baf_file,

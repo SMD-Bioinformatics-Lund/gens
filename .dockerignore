@@ -32,6 +32,7 @@ docker-compose.yml
 
 # volumes
 volumes/
+dump/
 
 # other
 *.aed

@@ -69,6 +69,12 @@ INDEXES = {
             unique=True,
         ),
         IndexModel(
+            [("sample_id", ASCENDING), ("case_id", ASCENDING), ("genome_build", ASCENDING)],
+            name="sample__sample_id_case_id_genome_build",
+            background=True,
+            unique=True,
+        ),
+        IndexModel(
             [("created_at", ASCENDING)],
             name="sample__creation_date",
             background=True,
@@ -90,7 +96,7 @@ def get_indexes(db, collection):
 
 
 def create_index(db, collection_name):
-    """Create indexe for collection in Gens db."""
+    """Create indexes for collection in Gens db."""
     indexes = INDEXES[collection_name]
     existing_indexes = get_indexes(db, collection_name)
     # Drop old indexes
