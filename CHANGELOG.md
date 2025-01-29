@@ -7,7 +7,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ## Unreleased
 
 ### Fixed
- - `gens index` command now respect the answer the confirmation prompt.
+ - `gens index` command now respects the answer of the confirmation prompt.
 
 ## 3.0.0 - Merging Solnas and Lunds changes
 ### Added
