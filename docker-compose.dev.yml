@@ -3,7 +3,7 @@
 services:
   mongodb:
     volumes:
-      - ./volumes/mongo_db/data:/data/db
+      - ./volumes/mongodb/data:/data/db
   gens:
     build:
       context: .
