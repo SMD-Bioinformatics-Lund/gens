@@ -42,4 +42,6 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Change the user to app
 USER worker
 
+ENV FLASK_APP=./gens
+
 CMD flask run --reload --debug --host '0.0.0.0'
