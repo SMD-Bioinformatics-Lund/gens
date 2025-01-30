@@ -33,6 +33,9 @@ def parse_bed(file):
 
         # Load in annotations
         for line in bed_reader:
+            # skip comment lines
+            if line['sequence'].startswith('#'):
+                continue
             yield line
 
 
