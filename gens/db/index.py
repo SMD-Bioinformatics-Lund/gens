@@ -71,7 +71,6 @@ INDEXES = {
             [("case_id", ASCENDING), ("genome_build", ASCENDING)],
             name="case__case_id_genome_build",
             background=True,
-            unique=True,
         ),
         IndexModel(
             [("sample_id", ASCENDING), ("case_id", ASCENDING), ("genome_build", ASCENDING)],
