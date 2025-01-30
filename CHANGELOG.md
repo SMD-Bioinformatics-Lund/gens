@@ -4,6 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## Unreleased
+
+### Changed
+ - Migrated from setup.py to pyproject.toml using hatchling
+ - Updated python to version 3.13 and thawed some dependencies.
 
 ## 3.0.1
 
