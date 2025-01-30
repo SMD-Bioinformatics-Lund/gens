@@ -2,7 +2,7 @@
 # BUILDER PYTHON #
 ##################
 
-FROM python:3.8.1-slim AS python-builder
+FROM python:3.13 AS python-builder
 
 # Set build variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -34,7 +34,7 @@ RUN npm install && npm run build
 # FINAL #
 #########
 
-FROM python:3.8.1-slim
+FROM python:3.13-slim
 
 LABEL base_image="python:3.8.1-slim"
 LABEL about.home="https://github.com/Clinical-Genomics-Lund/Gens"
