@@ -14,6 +14,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Fixed issue that prevented parsing of bed files.
  - `gens index` command now respects the answer of the confirmation prompt.
  - Fixed logo path in the navbar
+ - Index for case_id and no longer unique requirement for sample_id in index
 
 ## 3.0.0 - Merging Solnas and Lunds changes
 ### Added
