@@ -2,9 +2,7 @@ version: "3.8"
 services:
   mongodb:
     container_name: mongodb
-    image: mongo
-    volumes:
-      - ./volumes/mongo_db/data:/data/db
+    image: mongo:4.4.9
     networks:
       - gens-net
   gens:
