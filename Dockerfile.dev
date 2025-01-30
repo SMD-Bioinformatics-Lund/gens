@@ -16,7 +16,7 @@ RUN npm install && npm run build
 # FINAL #
 #########
 
-FROM python:3.13
+FROM python:3.12
 
 # Create non-root user to run Gens
 RUN groupadd --gid 1000 worker \
