@@ -5,9 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 
-## Unreleased
+## 3.0.1
 
-#### Changed
+### Changed
  - Added files for setting up development and deployment-like instances.
  - Throw an error when trying to open a sample without providing a case id.
 
