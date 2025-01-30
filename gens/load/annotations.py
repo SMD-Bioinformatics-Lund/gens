@@ -26,7 +26,7 @@ class ParserError(Exception):
     pass
 
 
-def parse_bed(file, genome_build):
+def parse_bed(file):
     """Parse bed file."""
     with open(file, encoding='utf-8') as bed:
         bed_reader = csv.DictReader(bed, fieldnames=['sequence', 'start', 'end', 'name', 'score', 'strand', 'thickStart', 'thickEnd', 'color', 'block_count', 'block_sizes', 'block_starts'], delimiter="\t")
@@ -163,9 +163,9 @@ def update_height_order(db, name):
                     height_tracker += [-1] * 100
 
 
-def parse_annotation_file(file, genome_build, file_format):
+def parse_annotation_file(file, file_format):
     """Parse an annotation file in bed or aed format."""
     if file_format == "bed":
-        return parse_bed(file, genome_build)
+        return parse_bed(file)
     if file_format == "aed":
         return parse_aed(file)
