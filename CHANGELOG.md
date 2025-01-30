@@ -9,6 +9,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 #### Changed
  - Added files for setting up development and deployment-like instances.
+ - Throw a error when trying to open a sample without providing a case id.
 
 ### Fixed
  - Fixed issue that prevented parsing of bed files.
