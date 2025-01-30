@@ -1,7 +1,9 @@
 """Create indexes in the database."""
 import logging
+from typing import Any
 
-from pymongo import ASCENDING, IndexModel
+from pymongo import ASCENDING, IndexModel, MongoClient
+from pymongo.collection import Collection
 
 from .annotation import ANNOTATIONS, TRANSCRIPTS
 from .chrom_sizes import CHROMSIZES
@@ -87,7 +89,7 @@ INDEXES = {
 }
 
 
-def get_indexes(db, collection):
+def get_indexes(db: MongoClient[dict[str, Any]], collection: Collection[dict[str, Any]]) -> list[Any]:
     """Get current indexes for a collection."""
     indexes = []
     for collection_name in db.list_collection_names():

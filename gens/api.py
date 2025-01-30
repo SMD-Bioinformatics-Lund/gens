@@ -325,8 +325,8 @@ def get_multiple_coverages():
 
 
 def get_coverage(
-    sample_id,
-    case_id,
+    sample_id: str,
+    case_id: str,
     region,
     x_pos,
     y_pos,
