@@ -28,6 +28,8 @@ setup(
         "Click",
         "Flask",
         "flask-caching",
+        "flask_login",
+        "authlib",
         "pymongo>=3.9.0",
         "gtfparse>=1.2.0",
         "pysam>=0.15.4",
