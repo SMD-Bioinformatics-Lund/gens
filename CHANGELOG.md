@@ -8,6 +8,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ## Unreleased
 
 ### Fixed
+ - Fixed issue that prevented parsing of bed files.
  - `gens index` command now respects the answer of the confirmation prompt.
  - Fixed logo path in the navbar
 
