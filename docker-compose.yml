@@ -1,4 +1,4 @@
-version: "3.8"
+# example of how to run deployment version of Gens
 services:
   mongodb:
     container_name: mongodb
@@ -9,15 +9,9 @@ services:
     container_name: gens
     build: .
     volumes:
-      - ./utils:/home/app/app/utils
-      - ./gens:/home/app/app/gens
-      - ./setup.py:/home/app/app/setup.py
       - ./volumes/gens/data:/home/app/data
       - ./volumes/gens/wgs:/home/app/access/wgs
-        #- /media/isilon/backup_hopper/results/wgs:/access/wgs
     environment:
-      - FLASK_APP=gens/app.py
-      - FLASK_ENV=development
       - MONGODB_HOST=mongodb
       - MONGODB_PORT=27017
       - SCOUT_DBNAME=scout
@@ -25,16 +19,11 @@ services:
     expose:
       - '5000'
     ports:
-      - "5003:5000"
+      - "5000:5000"
     networks:
       - gens-net
     depends_on:
       - mongodb
-    command: "flask run --host 0.0.0.0"
 networks:
   gens-net:
     driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.23.0.0/24
