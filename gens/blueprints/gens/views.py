@@ -28,7 +28,9 @@ def display_case(sample_name):
     Renders the Gens template
     Expects sample_id as input to be able to load the sample data
     """
-    case_id = request.args.get("case_id", None)
+    case_id = request.args.get("case_id")
+    if case_id is None:
+        raise ValueError("You must provide a case id when opening a sample.")
     individual_id = request.args.get("individual_id", sample_name)
     
     # get genome build and region
