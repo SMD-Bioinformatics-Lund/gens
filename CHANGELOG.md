@@ -5,11 +5,6 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 
-## 3.0.2 - Patch
-
-### Fixed
-- Remove constraint on unique case IDs (constraint unique case+sample ID remains)
-
 ## 3.0.1
 
 ### Changed
