@@ -28,8 +28,8 @@ class ParserError(Exception):
 
 def parse_bed(file, genome_build):
     """Parse bed file."""
-    with open(file) as bed:
-        bed_reader = csv.DictReader(bed, delimiter="\t")
+    with open(file, encoding='utf-8') as bed:
+        bed_reader = csv.DictReader(bed, fieldnames=['sequence', 'start', 'end', 'name', 'score', 'strand', 'thickStart', 'thickEnd', 'color', 'block_count', 'block_sizes', 'block_starts'], delimiter="\t")
 
         # Load in annotations
         for line in bed_reader:
