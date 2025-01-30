@@ -4,10 +4,12 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+
 ## Unreleased
 
 ### Fixed
  - `gens index` command now respects the answer of the confirmation prompt.
+ - Fixed logo path in the navbar
 
 ## 3.0.0 - Merging Solnas and Lunds changes
 ### Added
