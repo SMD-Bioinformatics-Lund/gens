@@ -117,24 +117,19 @@ def annotations(file, genome_build):
         LOG.info(f"Processing {annot_file}")
         # base the annotation name on the filename
         annotation_name = annot_file.name[: -len(annot_file.suffix)]
-        try:
-            parser = parse_annotation_file(
-                annot_file, genome_build, file_format=annot_file.suffix[1:]
-            )
-            annotation_obj = []
-            for entry in parser:
-                try:
-                    entry_obj = parse_annotation_entry(
-                        entry, genome_build, annotation_name
-                    )
-                    annotation_obj.append(entry_obj)
-                except ParserError as err:
-                    LOG.warning(str(err))
-                    continue
-
-        except Exception as err:
-            LOG.error(f"{str(err)}")
-            raise click.UsageError(str(err))
+        parser = parse_annotation_file(
+            annot_file, file_format=annot_file.suffix[1:]
+        )
+        annotation_obj = []
+        for entry in parser:
+            try:
+                entry_obj = parse_annotation_entry(
+                    entry, genome_build, annotation_name
+                )
+                annotation_obj.append(entry_obj)
+            except ParserError as err:
+                LOG.warning(str(err))
+                continue
 
         # Remove existing annotations in database
         LOG.info(f"Remove old entry in the database")
