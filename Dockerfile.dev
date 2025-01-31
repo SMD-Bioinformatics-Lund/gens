@@ -28,7 +28,7 @@ WORKDIR /home/worker
 # Chown all the files to the app user
 COPY --chown=worker:worker gens ./gens
 COPY --chown=worker:worker utils ./utils
-COPY --chown=worker:worker setup.cfg setup.py ./
+COPY --chown=worker:worker README.md LICENSE pyproject.toml ./
 
 # copy compiled web assetes
 COPY --chown=worker:worker --from=node-builder /usr/src/app/build/css/error.min.css gens/static/css/
