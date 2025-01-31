@@ -6,6 +6,13 @@ type Point = {
 };
 
 type Element = {
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+};
+
+type DisplayElement = {
   visibleX1: number;
   visibleX2: number;
   visibleY1: number;
@@ -71,7 +78,7 @@ export function isWithinElementBbox(element: Element, point: Point) {
   );
 }
 
-export function isWithinElementVisibleBbox(element: Element, point: Point) {
+export function isWithinElementVisibleBbox(element: DisplayElement, point: Point) {
   return (
     element.visibleX1 < point.x &&
     point.x < element.visibleX2 &&

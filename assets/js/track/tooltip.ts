@@ -6,7 +6,7 @@ import {
 } from "./utils.js";
 
 // make virtual DOM element that represents a annotation element
-export function makeVirtualDOMElement({ x1, x2, y1, y2, canvas }) {
+export function makeVirtualDOMElement(x1: number, x2: number, y1: number, y2: number, canvas) {
   return {
     getBoundingClientRect: generateGetBoundingClientRect(
       x1,
@@ -19,7 +19,7 @@ export function makeVirtualDOMElement({ x1, x2, y1, y2, canvas }) {
 }
 
 // Make a virtual DOM element from a genetic element object
-export function generateGetBoundingClientRect(x1, x2, y1, y2, canvas) {
+export function generateGetBoundingClientRect(x1: number, x2: number, y1: number, y2: number, canvas) {
   const track = canvas;
   return () => ({
     width: Math.round(x2 - x1),
