@@ -7,6 +7,15 @@ import "tippy.js/dist/tippy.css";
 import { isElementOverlapping } from "./utils";
 
 export class CytogeneticIdeogram {
+  genomeBuild: number;
+  x: number;
+  y: number;
+  plotWidth: number;
+  plotHeight: number;
+  targetElement: HTMLElement;
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+
   constructor({ targetId, genomeBuild, x, y, width, height }) {
     // define core varialbes
     this.genomeBuild = genomeBuild;
@@ -79,12 +88,12 @@ export class CytogeneticIdeogram {
         const scaledStart = Math.round(start * scale);
         const scaledEnd = Math.round(end * scale);
         const bandsWithinMarkedRegion = this.drawPaths.bands.filter((band) =>
-          isElementOverlapping({ start: scaledStart, end: scaledEnd }, band),
+          isElementOverlapping({ start: scaledStart, end: scaledEnd }, band)
         );
         document.getElementById("visualization-container").dispatchEvent(
           new CustomEvent("update-title", {
             detail: { bands: bandsWithinMarkedRegion, chrom: chrom },
-          }),
+          })
         );
       } else {
         // if entire chromosome is drawn
@@ -203,6 +212,16 @@ function drawChromosome({
   bands,
   color,
   lineColor,
+}: {
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  centromere: any,
+  color: string,
+  bands: any,
+  lineColor?: string,
 }) {
   const basePosColor = "#000"; // dark green
   const bandColors = {
@@ -294,7 +313,7 @@ function drawChromosomeShape({
       y + centromereIndent,
       centromere.end,
       y,
-      centromereIndentRadius,
+      centromereIndentRadius
     );
     path.lineTo(centromere.end, y);
   }
@@ -306,7 +325,7 @@ function drawChromosomeShape({
     y + height,
     x + width - bevelWidth,
     y + height,
-    chromEndRadius,
+    chromEndRadius
   );
   // bottom line
   if (centromere) {
@@ -316,7 +335,7 @@ function drawChromosomeShape({
       y + height - centromereIndent,
       centromere.start,
       y + height,
-      centromereIndentRadius,
+      centromereIndentRadius
     );
     path.lineTo(centromere.start, y + height);
   }
