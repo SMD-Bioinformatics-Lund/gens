@@ -2,9 +2,9 @@
 // functions for making api requests to Gens
 /* global _apiHost */
 
-async function request(url, params, method = "GET") {
-  // options passed to hte fetch request
-  const options = {
+async function request(url: string, params, method: RequestType = "GET") {
+  // options passed to the fetch request
+  const options: RequestOptions = {
     method,
     headers: {
       "Content-Type": "application/json",
@@ -20,6 +20,7 @@ async function request(url, params, method = "GET") {
     }
   }
   // fetch returns a promise
+  // @ts-ignore - FIXME: This should not be global
   const response = await fetch(_apiHost + url, options);
 
   if (response.status !== 200) {
@@ -42,7 +43,8 @@ export function objectToQueryString(obj) {
 }
 
 //  A generic error handler that just returns an object with status=error and message
-function generateErrorResponse(message) {
+function generateErrorResponse(message: string): Error {
+  // @ts-ignore - FIXME: This should not take two arguments or?
   return new Error({
     status: "error",
     message,

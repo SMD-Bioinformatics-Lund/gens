@@ -20,6 +20,28 @@ import { get } from "./fetch";
 import { BaseScatterTrack } from "./track";
 
 export class InteractiveCanvas extends BaseScatterTrack {
+
+  x: number
+  y: number
+  plotWidth: number
+  titleMargin: number
+  legendMargin: number
+  leftRightPadding: number
+  topBottomPadding: number
+  extraWidth: number
+  plotHeight: number
+  titleYPos: number|null
+  titleBbox: number|null
+  canvasHeight: number
+  inputField: any
+  offscreenPosition: OffscreenPosition
+  onscreenPosition: OnscreenPosition
+
+  baf: InteractiveFeature
+  log2: InteractiveFeature
+
+  drawWidth: number
+
   constructor(
     inputField,
     lineMargin,
@@ -76,8 +98,8 @@ export class InteractiveCanvas extends BaseScatterTrack {
       this.plotWidth + 2 * this.extraWidth,
       document.body.clientWidth,
     ); // Draw-canvas width
-    this.drawCanvas.width = parseInt(this.drawWidth);
-    this.drawCanvas.height = parseInt(this.canvasHeight);
+    this.drawCanvas.width = parseInt(this.drawWidth.toString());
+    this.drawCanvas.height = parseInt(this.canvasHeight.toString());
 
     // Setup visible canvases
     this.contentCanvas = document.getElementById("interactive-content");
