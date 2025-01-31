@@ -40,6 +40,9 @@ dependencies = [
   "connexion==2.14.2",
   "flask-compress",
   "tabulate",
+  "pydantic",
+  "pydantic-settings",
+  "pydantic-extra-types",
 ]
 
 [project.urls]
