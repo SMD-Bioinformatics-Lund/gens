@@ -107,12 +107,12 @@ def overview_chrom_dimensions(x_pos, y_pos, plot_width, genome_build):
     chrom_dims = {}
     for chrom in CHROMOSOMES:
         chrom_data = get_chromosome_size(db, chrom, genome_build)
-        chrom_width = plot_width * float(chrom_data["scale"])
+        chrom_width = plot_width * chrom_data.scale
         chrom_dims[chrom] = {
             "x_pos": x_pos,
             "y_pos": y_pos,
             "width": chrom_width,
-            "size": chrom_data["size"],
+            "size": chrom_data.size,
         }
         x_pos += chrom_width
     return chrom_dims
@@ -176,7 +176,7 @@ def parse_region_str(region, genome_build):
     chrom_data = get_chromosome_size(db, chrom, genome_build)
     # Set end position if it is not set
     if end == "None":
-        end = chrom_data["size"]
+        end = chrom_data.size
 
     start = int(start)
     end = int(end)
@@ -187,9 +187,9 @@ def parse_region_str(region, genome_build):
         return None
 
     # Cap end to maximum range value for given chromosome
-    if end > chrom_data["size"]:
-        start = max(0, start - (end - chrom_data["size"]))
-        end = chrom_data["size"]
+    if end > chrom_data.size:
+        start = max(0, start - (end - chrom_data.size))
+        end = chrom_data.size
 
     resolution = "d"
     if size > 15000000:

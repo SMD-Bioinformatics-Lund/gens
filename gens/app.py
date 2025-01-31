@@ -62,7 +62,7 @@ def create_app():
 
     # register bluprints and errors
     register_blueprints(app)
-    register_errors(app)
+    #register_errors(app)
 
     @app.before_request
     def check_user():
