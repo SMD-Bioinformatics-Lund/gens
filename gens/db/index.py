@@ -3,7 +3,6 @@ import logging
 from typing import Any
 
 from pymongo import ASCENDING, IndexModel, MongoClient
-from pymongo.collection import Collection
 
 from .annotation import ANNOTATIONS, TRANSCRIPTS
 from .chrom_sizes import CHROMSIZES
@@ -89,11 +88,11 @@ INDEXES = {
 }
 
 
-def get_indexes(db: MongoClient[dict[str, Any]], collection: Collection[dict[str, Any]]) -> list[Any]:
+def get_indexes(db: MongoClient, target_collection_name: str) -> list[Any]:
     """Get current indexes for a collection."""
-    indexes = []
+    indexes: list[str] = []
     for collection_name in db.list_collection_names():
-        if collection and collection != collection_name:
+        if target_collection_name and target_collection_name != collection_name:
             continue
         for index_name in db[collection_name].index_information():
             if index_name != "_id_":
@@ -101,7 +100,7 @@ def get_indexes(db: MongoClient[dict[str, Any]], collection: Collection[dict[str
     return indexes
 
 
-def create_index(db, collection_name):
+def create_index(db: MongoClient, collection_name: str):
     """Create indexes for collection in Gens db."""
     indexes = INDEXES[collection_name]
     existing_indexes = get_indexes(db, collection_name)
@@ -117,14 +116,14 @@ def create_index(db, collection_name):
     db[collection_name].create_indexes(indexes)
 
 
-def create_indexes(db):
+def create_indexes(db: MongoClient):
     """Create indexes for Gens db."""
     LOG.info("Indexing the gens database.")
     for collection_name in INDEXES:
         create_index(db, collection_name)
 
 
-def update_indexes(db):
+def update_indexes(db: MongoClient):
     """Add missing indexes to the database."""
     LOG.info("Updating gens database indexes.")
     n_updated = 0

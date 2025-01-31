@@ -1,17 +1,17 @@
 """Writing chromosomze size information to the database."""
 
-import csv
 import logging
 import re
+from typing import Any, Optional
 
 import requests
 
 LOG = logging.getLogger(__name__)
 
 
-def build_chromosomes_obj(chromosome_data, genome_build, timeout):
+def build_chromosomes_obj(chromosome_data: dict[str, Any], genome_build: int, timeout: int) -> list[dict[str, Any]]:
     """Build chromosome object containing normalized size."""
-    chromosomes = []
+    chromosomes: list[dict[str, Any]] = []
 
     genome_size = sum(c["length"] for c in chromosome_data.values())
     for name, data in chromosome_data.items():
@@ -58,16 +58,16 @@ def build_chromosomes_obj(chromosome_data, genome_build, timeout):
 
 
 def get_assembly_info(
-    genome_build,
+    genome_build: int,
     specie: str = "homo_sapiens",
     bands: bool = True,
     synonyms: bool = True,
-    timeout=2,
+    timeout:int=2,
 ):
     """Get assembly info from ensembl."""
     base_rest_url = {"37": "grch37.rest.ensembl.org", "38": "rest.ensembl.org"}
     resp = requests.get(
-        f"https://{base_rest_url[genome_build]}/info/assembly/{specie}",
+        f"https://{base_rest_url[str(genome_build)]}/info/assembly/{specie}",
         params={
             "content-type": "application/json",
             "bands": int(bands),
@@ -80,7 +80,7 @@ def get_assembly_info(
     return resp.json()
 
 
-def get_assembly_annotation(insdc_id, data_format="embl", timeout=2):
+def get_assembly_annotation(insdc_id: str, data_format:str="embl", timeout:int=2):
     """Get assembly for id from EBI using INSDC id."""
     LOG.debug(f"Get assembly annotation for {insdc_id}")
     resp = requests.get(
@@ -92,9 +92,9 @@ def get_assembly_annotation(insdc_id, data_format="embl", timeout=2):
     return resp.text
 
 
-def parse_centromere_pos(embl_annot):
+def parse_centromere_pos(embl_annot:str) -> tuple[int, ...]:
     """Query EBI for centeromere position from embl annotation."""
-    centeromere_pos = None
+    centeromere_pos: Optional[tuple[int, ...]] = None
     for line in embl_annot.splitlines():
         if not line.startswith("FT"):
             continue
@@ -103,6 +103,9 @@ def parse_centromere_pos(embl_annot):
         if match:
             centeromere_pos = tuple(map(int, match.groups()))
     if not centeromere_pos:
-        genome_id = re.search(r"ID\s+(\w+);", embl_annot).group(1)
+        match = re.search(r"ID\s+(\w+);", embl_annot)
+        if not match or not match.group(1):
+            raise ValueError(f"Something went wrong while parsing: {embl_annot}")
+        genome_id = match.group(1)
         raise ValueError(f"No centeromere position found for {genome_id}")
     return centeromere_pos
