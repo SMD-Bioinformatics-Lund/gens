@@ -17,7 +17,8 @@
     "prettier:fix": "npm run prettier -- --write",
     "format": "npm run prettier:fix && npm run lint:fix",
     "watch": "gulp watch",
-    "test": "jest"
+    "test": "jest",
+    "tsc": "npx tsc"
   },
   "repository": {
     "type": "git",

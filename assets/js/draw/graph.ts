@@ -1,4 +1,5 @@
 // graph related objects
+import { COLORS } from "../constants";
 import { drawRect, drawLine, drawRotatedText, drawText } from "./shapes";
 
 // Draws vertical tick marks for selected values between
@@ -39,15 +40,15 @@ export function drawVerticalTicks(
     const value = numberWithCommas(step.toFixed(0));
 
     // Draw text and ticks only for the leftmost box
-    drawRotatedText(
+    drawRotatedText({
       ctx,
-      value,
-      10,
-      renderX + xStep + 8,
-      y - value.length - 3 * yMargin,
-      -Math.PI / 4,
-      titleColor,
-    );
+      text: value,
+      textSize: 10,
+      posx: renderX + xStep + 8,
+      posy: y - value.length - 3 * yMargin,
+      rotDegrees: -Math.PI / 4,
+      color: titleColor,
+    });
 
     // Draw tick line
     drawLine({
@@ -88,7 +89,7 @@ export function drawGraphLines(
       y: yPos,
       x2: x + width - 2 * lineThickness,
       y2: yPos,
-      color: "#e5e5e5",
+      color: COLORS["lightgray"],
     });
   }
 }
@@ -153,7 +154,6 @@ function drawTicks(
       x: x - lineWidth,
       y: y + (yStart - step) * ampl + 2.2,
       text: step.toFixed(1),
-      textSize: 10,
       align: "right",
     });
 

@@ -28,17 +28,17 @@ export function drawRotatedText({
   text,
   posx,
   posy,
-  rot_degrees,
   textSize,
+  rotDegrees: rot_degrees,
   color = "black",
 }: {
   ctx: CanvasRenderingContext2D;
   text: string;
   posx: number;
   posy: number;
-  rot_degrees: number;
   textSize: number;
-  color: string;
+  rotDegrees?: number;
+  color?: string;
 }) {
   ctx.save();
   ctx.fillStyle = color;
@@ -63,8 +63,8 @@ export function drawText({
   x: number;
   y: number;
   text: string;
-  fontProp: string;
-  align: CanvasTextAlign;
+  fontProp?: string;
+  align?: CanvasTextAlign;
 }) {
   ctx.save();
   ctx.font = "".concat(fontProp, "px Arial");
@@ -98,8 +98,8 @@ export function drawLine({
   y: number;
   x2: number;
   y2: number;
-  lineWidth: number;
-  color: string;
+  lineWidth?: number;
+  color?: string;
 }) {
   // transpose coordinates .5 px to become sharper
   x = Math.floor(x) + 0.5;
@@ -135,10 +135,10 @@ export function drawRect({
   width: number;
   height: number;
   lineWidth: number;
-  color: string | null;
-  fillColor: string | null;
-  open: boolean;
-  debug: boolean;
+  color?: string | null;
+  fillColor?: string | null;
+  open?: boolean;
+  debug?: boolean;
 }) {
   x = Math.floor(x) + 0.5;
   y = Math.floor(y) + 0.5;
@@ -186,8 +186,8 @@ export async function drawArrow({
   y: number;
   dir: number;
   height: number;
-  lineWidth: number;
-  color: string;
+  lineWidth?: number;
+  color?: string;
 }) {
   const width = dir * lineWidth;
   ctx.save();
@@ -220,8 +220,8 @@ export function drawWaveLine({
   y: number;
   x2: number;
   height: number;
-  color: string;
-  lineWidth: number;
+  color?: string;
+  lineWidth?: number;
 }) {
   ctx.save();
   ctx.strokeStyle = color;
