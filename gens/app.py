@@ -2,7 +2,6 @@
 Whole genome visualization of BAF and log2 ratio
 """
 import logging
-import os
 from logging.config import dictConfig
 
 import connexion
@@ -16,6 +15,7 @@ from .cache import cache
 from .db import SampleNotFoundError, init_database
 from .errors import (generic_abort_error, generic_exception_error, sample_not_found)
 from .extensions import login_manager, oauth_client
+from .config import settings, AuthMethod
 
 dictConfig(
     {
@@ -47,12 +47,7 @@ def create_app():
     app = application.app
     # configure app
     app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
-    app.config.from_object("gens.config")
-    if os.environ.get("GENS_CONFIG") is None:
-        LOG.info("Using default Gens configuration")
-        LOG.debug("No user configuration set with $GENS_CONFIG environmental variable")
-    else:
-        app.config.from_envvar("GENS_CONFIG")
+
     # initialize database and store db content
     with app.app_context():
         init_database()
@@ -67,11 +62,11 @@ def create_app():
 
     # register bluprints and errors
     register_blueprints(app)
-    register_errors(app)
+    #register_errors(app)
 
     @app.before_request
     def check_user():
-        if app.config.get("LOGIN_DISABLED") or not request.endpoint:
+        if settings.authentication == AuthMethod.DISABLED or not request.endpoint:
             return
 
         # check if the endpoint requires authentication
@@ -85,7 +80,6 @@ def create_app():
             login_url = url_for("home.landing", next=next_url)
             return redirect(login_url)
 
-
     return app
 
 
@@ -98,7 +92,7 @@ def initialize_extensions(app):
 
 def configure_extensions(app):
     # configure extensions
-    if app.config.get("GOOGLE"):
+    if settings.authentication == AuthMethod.OAUTH:
         LOG.info("Google login enabled")
         # setup connection to google oauth2
         configure_oauth_login(app)
@@ -107,18 +101,13 @@ def configure_extensions(app):
 def configure_oauth_login(app):
     """Register the Google Oauth2 login client using config settings"""
 
-    google_conf = app.config["GOOGLE"]
-    discovery_url = google_conf.get("discovery_url")
-    client_id = google_conf.get("client_id")
-    client_secret = google_conf.get("client_secret")
-
     oauth_client.init_app(app)
 
     oauth_client.register(
         name="google",
-        server_metadata_url=discovery_url,
-        client_id=client_id,
-        client_secret=client_secret,
+        server_metadata_url=str(settings.oauth_discovery_url),
+        client_id=settings.oauth_client_id,
+        client_secret=settings.oauth_secret,
         client_kwargs={"scope": "openid email profile"},
     )
 

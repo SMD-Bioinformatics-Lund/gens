@@ -6,6 +6,7 @@ from datetime import date
 from flask import Blueprint, abort, current_app, render_template, request
 
 from gens import version
+from gens.config import settings, UI_COLORS
 from gens.cache import cache
 from gens.db import query_sample
 from gens.graph import parse_region_str
@@ -67,13 +68,13 @@ def display_case(sample_name):
 
     # get annotation track
     annotation = request.args.get(
-        "annotation", current_app.config["DEFAULT_ANNOTATION_TRACK"]
+        "annotation", settings.default_annotation_track
     )
 
     _, chrom, start_pos, end_pos = parsed_region
     return render_template(
         "gens.html",
-        ui_colors=current_app.config["UI_COLORS"],
+        ui_colors=UI_COLORS,
         scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
         chrom=chrom,
         start=start_pos,
