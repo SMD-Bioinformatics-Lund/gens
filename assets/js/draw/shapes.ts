@@ -4,9 +4,11 @@
 export function drawPoints({
   ctx,
   data,
+  color, // FIXME: Currently not used?
 }: {
   ctx: CanvasRenderingContext2D;
   data: number[];
+  color: string,
 }) {
   ctx.fillStyle = "#000";
   for (let i = 0; i < data.length; i += 2) {
@@ -63,11 +65,11 @@ export function drawText({
   x: number;
   y: number;
   text: string;
-  fontProp?: string;
+  fontProp?: number|string;
   align?: CanvasTextAlign;
 }) {
   ctx.save();
-  ctx.font = "".concat(fontProp, "px Arial");
+  ctx.font = "".concat(fontProp.toString(), "px Arial");
   ctx.textAlign = align;
   ctx.textBaseline = "middle";
   ctx.fillStyle = "black";

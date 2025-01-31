@@ -11,8 +11,28 @@ import {
 } from "./draw";
 
 import { drawTrack } from "./navigation";
+import { FONTSIZES } from "./constants";
 
 export class OverviewCanvas extends BaseScatterTrack {
+
+  fullPlotWidth: number;
+  plotHeight: number;
+  titleMargin: number;
+  legendMargin: number;
+  x: number;
+  y: number;
+  leftRightPadding: number;
+  topBottomPadding: number;
+  leftmostPoint: number;
+  patternCanvas: HTMLCanvasElement;
+  baf: InteractiveFeature;
+  log2: InteractiveFeature;
+  disabledChroms: string[];
+  width: number;
+  height: number;
+  staticCanvas: HTMLElement;
+  markerElem: HTMLElement;
+
   constructor(
     xPos,
     fullPlotWidth,
@@ -74,8 +94,8 @@ export class OverviewCanvas extends BaseScatterTrack {
     this.disabledChroms = [];
     this.width = document.body.clientWidth; // Canvas width
     this.height = this.y + 2 * this.plotHeight + 2 * this.topBottomPadding; // Canvas height
-    this.drawCanvas.width = parseInt(this.width);
-    this.drawCanvas.height = parseInt(this.height);
+    this.drawCanvas.width = parseInt(this.width.toString());
+    this.drawCanvas.height = parseInt(this.height.toString());
     this.staticCanvas = document.getElementById("overview-static");
 
     // Initialize marker div element
@@ -84,6 +104,7 @@ export class OverviewCanvas extends BaseScatterTrack {
     this.markerElem.style.marginTop =
       0 - (this.plotHeight + this.topBottomPadding) * 2 + "px";
 
+    // FIXME: What does this mean? What is the type? Something to ponder here
     // Set dimensions of overview canvases
     this.staticCanvas.width = this.width;
     this.staticCanvas.height = this.height;
@@ -178,23 +199,24 @@ export class OverviewCanvas extends BaseScatterTrack {
 
     // Draw rotated y-axis legends
     if (chromCovData.x_pos < this.leftmostPoint) {
-      drawRotatedText(
+      drawRotatedText({
         ctx,
-        "B Allele Freq",
-        18,
-        chromCovData.x_pos - this.legendMargin,
-        chromCovData.y_pos + this.plotHeight / 2,
-        -Math.PI / 2,
-        this.titleColor,
-      );
-      drawRotatedText(
+        text: "B Allele Freq",
+        textSize: FONTSIZES["medium"],
+        posx: chromCovData.x_pos - this.legendMargin,
+        posy: chromCovData.y_pos + this.plotHeight / 2,
+        rotDegrees: -Math.PI / 2,
+        color: this.titleColor,
+    });
+      drawRotatedText({
         ctx,
-        "Log2 Ratio",
-        18,
-        chromCovData.x_pos - this.legendMargin,
-        chromCovData.y_pos + 1.5 * this.plotHeight,
-        -Math.PI / 2,
-        this.titleColor,
+        text: "Log2 Ratio",
+        textSize: FONTSIZES["medium"],
+        posx: chromCovData.x_pos - this.legendMargin,
+        posy: chromCovData.y_pos + 1.5 * this.plotHeight,
+        rotDegrees: -Math.PI / 2,
+        color: this.titleColor,
+      }
       );
     }
     // Draw BAF

@@ -3,5 +3,6 @@ export const COLORS = {
 }
 
 export const FONTSIZES = {
-    "small": 10
+    "small": 10,
+    "medium": 18
 }

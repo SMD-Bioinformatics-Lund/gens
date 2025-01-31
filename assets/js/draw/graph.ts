@@ -67,15 +67,27 @@ export function drawVerticalTicks(
 // yStart and yEnd with step length.
 // The amplitude scales the values to drawing size
 export function drawGraphLines(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  yStart: number,
-  yEnd: number,
-  stepLength: number,
-  yMargin: number,
-  width: number,
-  height: number,
+  {
+    ctx,
+    x,
+    y,
+    yStart,
+    yEnd,
+    stepLength,
+    yMargin,
+    width,
+    height,
+  }: {
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    yStart: number,
+    yEnd: number,
+    stepLength: number,
+    yMargin: number,
+    width: number,
+    height: number,
+  } 
 ) {
   const ampl = (height - 2 * yMargin) / (yStart - yEnd); // Amplitude for scaling y-axis to fill whole height
   const lineThickness = 1;
