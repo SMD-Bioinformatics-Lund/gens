@@ -1,32 +1,10 @@
 // functions for handling tooltips
+import { BaseAnnotationTrack } from "./base";
 import {
   getVisibleXCoordinates,
   getVisibleYCoordinates,
   isWithinElementBbox,
 } from "./utils";
-
-type ElementCoords = {
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
-};
-
-type DisplayElement = {
-  visibleX1: number;
-  visibleX2: number;
-  visibleY1: number;
-  visibleY2: number;
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
-};
-
-type ScreenPositions = {
-  start: number,
-  end: number,
-}
 
 // make virtual DOM element that represents a annotation element
 export function makeVirtualDOMElement(x1: number, x2: number, y1: number, y2: number, canvas) {
@@ -242,7 +220,7 @@ function teardownTooltips(track) {
 }
 
 // initialize event listeners for hover function
-export function initTrackTooltips(track) {
+export function initTrackTooltips(track: BaseAnnotationTrack) {
   // when mouse is leaving track
   track.trackContainer.addEventListener("mouseleave", () => {
     for (const element of track.geneticElements) {

@@ -35,6 +35,16 @@ export function lightenColor(color, percent) {
 }
 
 export class BaseScatterTrack {
+
+  caseId: string;
+  sampleName: string;
+  genomeBuild: number;
+  hgFileDir: string;
+  borderColor: string;
+  titleColor: string;
+  drawCanvas: any;
+  context: any;
+
   constructor({ caseId, sampleName, genomeBuild, hgFileDir }) {
     // setup IO
     this.caseId = caseId; // Case id to use for querying data
@@ -51,7 +61,38 @@ export class BaseScatterTrack {
 }
 
 export class BaseAnnotationTrack {
-  constructor(width, near, far, visibleHeight, minHeight, colorSchema) {
+
+  featureHeight: number;
+  featureMargin: number;
+  yPos: number;
+  arrowColor: string;
+  arrowWidth: number;
+  arrowDistance: number;
+  arrowThickness: number;
+  expanded: boolean;
+  width: number;
+  drawCanvasMultiplier: number;
+  maxHeight: number;
+  visibleHeight: number;
+  minHeight: number;
+  preventDrawingTrack: boolean;
+  colorSchema: string;
+
+  trackContainer: any;
+  drawCanvas: any;
+  contentCanvas: any;
+  trackTitle: any;
+  trackData: any;
+  
+  drawCtx: any;
+
+  offscreenPosition: {start: number|null, end: number|null, scale: number|null}
+  onscreenPosition: { start: number|null, end: number|null };
+
+  maxResolution: number;
+  geneticElements: any[];
+
+  constructor(width: number, near, far, visibleHeight: number, minHeight: number, colorSchema) {
     // Track variables
     this.featureHeight = 20; // Max height for feature
     this.featureMargin = 14; // Margin for fitting gene name under track
