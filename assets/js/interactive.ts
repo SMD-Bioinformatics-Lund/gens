@@ -20,29 +20,40 @@ import { get } from "./fetch";
 import { BaseScatterTrack } from "./track";
 
 export class InteractiveCanvas extends BaseScatterTrack {
+  x: number;
+  y: number;
+  plotWidth: number;
+  titleMargin: number;
+  legendMargin: number;
+  leftRightPadding: number;
+  topBottomPadding: number;
+  extraWidth: number;
+  plotHeight: number;
+  titleYPos: number | null;
+  titleBbox: { x: number; y: number; width: number; height: number } | null;
+  canvasHeight: number;
+  inputField: any;
+  offscreenPosition: OffscreenPosition;
+  onscreenPosition: OnscreenPosition;
 
-  x: number
-  y: number
-  plotWidth: number
-  titleMargin: number
-  legendMargin: number
-  leftRightPadding: number
-  topBottomPadding: number
-  extraWidth: number
-  plotHeight: number
-  titleYPos: number|null
-  titleBbox: number|null
-  canvasHeight: number
-  inputField: any
-  offscreenPosition: OffscreenPosition
-  onscreenPosition: OnscreenPosition
+  baf: InteractiveFeature;
+  log2: InteractiveFeature;
 
-  baf: InteractiveFeature
-  log2: InteractiveFeature
-
-  drawWidth: number
+  drawWidth: number;
 
   allowDraw: boolean;
+
+  contentCanvas: HTMLCanvasElement;
+  staticCanvas: HTMLCanvasElement;
+  loadingDiv: HTMLElement;
+  markerElem: HTMLElement;
+  markingRegion: boolean;
+  drag: boolean;
+  dragStart: any;
+  dragEnd: any;
+  scale: number;
+
+  chromosome: string;
 
   constructor(
     inputField,
@@ -52,7 +63,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
     caseId,
     sampleName,
     genomeBuild,
-    hgFileDir,
+    hgFileDir
   ) {
     super({ caseId, sampleName, genomeBuild, hgFileDir });
     // The canvas input field to display and fetch chromosome range from
@@ -64,7 +75,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
     this.topBottomPadding = 8; // margin for top and bottom in graph
     this.plotWidth = Math.min(
       1500,
-      0.9 * document.body.clientWidth - this.legendMargin,
+      0.9 * document.body.clientWidth - this.legendMargin
     ); // Width of one plot
     this.extraWidth = this.plotWidth / 1.5; // Width for loading in extra edge data
     this.plotHeight = 180; // Height of one plot
@@ -98,7 +109,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
     // Setup draw canvas
     this.drawWidth = Math.max(
       this.plotWidth + 2 * this.extraWidth,
-      document.body.clientWidth,
+      document.body.clientWidth
     ); // Draw-canvas width
     this.drawCanvas.width = parseInt(this.drawWidth.toString());
     this.drawCanvas.height = parseInt(this.canvasHeight.toString());
@@ -136,7 +147,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
 
     // Setup listeners
     // update chromosome title event
-    this.contentCanvas.addEventListener("update-title", (event) => {
+    this.contentCanvas.addEventListener("update-title", (event: Event) => {
       console.log(`interactive got an ${event.type} event`);
       const len = event.detail.bands.length;
       if (len > 0) {
@@ -150,10 +161,10 @@ export class InteractiveCanvas extends BaseScatterTrack {
             this.titleBbox.x,
             this.titleBbox.y,
             this.titleBbox.width,
-            this.titleBbox.height,
+            this.titleBbox.height
           );
         this.titleBbox = this.drawTitle(
-          `Chromosome ${event.detail.chrom}; ${bandIds}`,
+          `Chromosome ${event.detail.chrom}; ${bandIds}`
         );
         this.blitChromName({ textPosition: this.titleBbox });
       }
@@ -269,7 +280,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       0,
       0,
       this.staticCanvas.width,
-      this.staticCanvas.height,
+      this.staticCanvas.height
     );
 
     // Make content area visible
@@ -278,14 +289,14 @@ export class InteractiveCanvas extends BaseScatterTrack {
       this.x + linePadding,
       this.y + linePadding,
       this.plotWidth,
-      this.staticCanvas.height,
+      this.staticCanvas.height
     );
     // area for ticks above content area
     staticContext.clearRect(
       0,
       0,
       this.staticCanvas.width,
-      this.y + linePadding,
+      this.y + linePadding
     );
 
     // Draw rotated y-axis legends
@@ -296,7 +307,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       this.x - this.legendMargin,
       this.y + this.plotHeight / 2,
       -Math.PI / 2,
-      this.titleColor,
+      this.titleColor
     );
     drawRotatedText(
       staticContext,
@@ -305,7 +316,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       this.x - this.legendMargin,
       this.y + 1.5 * this.plotHeight,
       -Math.PI / 2,
-      this.titleColor,
+      this.titleColor
     );
 
     // Draw BAF
@@ -320,7 +331,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       this.baf.yEnd,
       this.baf.step,
       true,
-      this.borderColor,
+      this.borderColor
     );
 
     // Draw Log 2 ratio
@@ -335,7 +346,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       this.log2.yEnd,
       this.log2.step,
       true,
-      this.borderColor,
+      this.borderColor
     );
 
     // Transfer image to visible canvas
@@ -472,12 +483,17 @@ export class InteractiveCanvas extends BaseScatterTrack {
         this.allowDraw = true;
 
         this.inputField.dispatchEvent(
-          new CustomEvent("error", { detail: { error: error } }),
+          new CustomEvent("error", { detail: { error: error } })
         );
       });
   }
 
-  drawTitle(title) {
+  drawTitle(title: string): {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } {
     const ctx = this.drawCanvas.getContext("2d");
     return drawText({
       ctx,
@@ -517,7 +533,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       textPosition.x - padding / 2,
       textPosition.y,
       textPosition.width + padding,
-      textPosition.height,
+      textPosition.height
     );
     // transfer from draw canvas
     !clearOnly &&
@@ -530,7 +546,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
         textPosition.x - padding / 2, // dX
         textPosition.y, // dY
         textPosition.width + padding, // dWidth
-        textPosition.height, // dHeight
+        textPosition.height // dHeight
       );
   }
 
@@ -542,7 +558,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
     if (updateCoord) this.onscreenPosition = { start: start, end: end };
 
     const offscreenOffset = Math.round(
-      (start - this.offscreenPosition.start) * this.offscreenPosition.scale,
+      (start - this.offscreenPosition.start) * this.offscreenPosition.scale
     );
     const offscSegmentWidth = Math.round(width * this.offscreenPosition.scale);
     const onscSegmentWidth = width * this.calcScale();
@@ -552,7 +568,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       0,
       this.titleMargin / 2 - 2,
       this.contentCanvas.width,
-      this.contentCanvas.height,
+      this.contentCanvas.height
     );
     // normalize the genomic coordinates to screen coordinates
     ctx.drawImage(
@@ -564,7 +580,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       this.x, // dX
       this.titleMargin / 2, // dY
       onscSegmentWidth, // dWidth
-      this.contentCanvas.height, // dHeight
+      this.contentCanvas.height // dHeight
     );
   }
 
