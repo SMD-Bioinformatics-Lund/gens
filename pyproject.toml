@@ -1,0 +1,96 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "Gens"
+dynamic = ["version"]
+description = 'Visualise copy number profiles from WGS data'
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = ["WGS", "scout", "CNV", "cancer", "rare disease", "variant", "NGS", "browser"]
+authors = [
+  { name = "Markus Johansson", email = "markus.h.johansson@skane.se" },
+  { name = "Jakob Willforss", email = "jakob.willforss@skane.se" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "Click",
+  "Flask",
+  "flask-caching",
+  "flask_login",
+  "authlib",
+  "pymongo",
+  "gtfparse",
+  "pysam",
+  "pyyaml",
+  "attrs",
+  "cattrs",
+  "connexion==2.14.2",
+  "flask-compress",
+  "tabulate",
+]
+
+[project.urls]
+Documentation = "https://github.com/SMD-Bioinformatics-Lund/gens#readme"
+Issues = "https://github.com/SMD-Bioinformatics-Lund/gens/issues"
+Changelog = "https://github.com/SMD-Bioinformatics-Lund/gens/blob/master/CHANGELOG.md"
+
+[project.scripts]
+gens = "gens.commands:cli"
+
+[tool.hatch.version]
+path = "gens/__version__.py"
+
+[tool.hatch.build]
+include = [
+  "gens/templates/*.html",
+  "gens/static/**/*",
+  "gens/static/**/*",
+  "gens/blueprints/**/static/*",
+  "gens/openapi/openapi.yaml",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["gens"]
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/temporary tests}"
+
+[tool.coverage.run]
+source_pkgs = ["gens", "tests"]
+branch = true
+parallel = true
+omit = [
+  "gens/__version__.py",
+]
+
+[tool.coverage.paths]
+gens = ["gens",]
+tests = ["tests", "*/temporary/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+
+[tool.isort]
+profile = "black"
+src_paths = ["gens"]
