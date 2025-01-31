@@ -10,6 +10,9 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Migrated from setup.py to pyproject.toml using hatchling
  - Updated python to version 3.12 and thawed some dependencies.
 
+### Fixed
+ - Initial type hints added to command and db modules
+
 ## 3.0.1
 
 ### Changed
