@@ -1,6 +1,6 @@
 """Read and write chrom sizes."""
 
-from mongomock import MongoClient
+from pymongo import MongoClient
 
 
 CHROMSIZES = "chrom-sizes"

@@ -5,7 +5,7 @@ import logging
 import click
 from flask import current_app
 from flask.cli import with_appcontext
-from mongomock import MongoClient
+from pymongo import MongoClient
 
 from gens.db import create_indexes, update_indexes
 

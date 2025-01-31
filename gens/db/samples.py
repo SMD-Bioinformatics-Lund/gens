@@ -5,7 +5,7 @@ import itertools
 import logging
 from typing import Optional
 
-from mongomock import MongoClient
+from pymongo import MongoClient
 from pymongo import DESCENDING
 from pymongo.errors import DuplicateKeyError
 

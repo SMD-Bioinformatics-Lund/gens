@@ -3,7 +3,7 @@ import logging
 import click
 from flask import current_app as app
 from flask.cli import with_appcontext
-from mongomock import MongoClient
+from pymongo import MongoClient
 
 from gens.constants import GENOME_BUILDS
 from gens.db import (SAMPLES_COLLECTION, create_index,

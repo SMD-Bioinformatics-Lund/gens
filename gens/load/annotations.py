@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 from typing import Iterator
 
-from mongomock import MongoClient
+from pymongo import MongoClient
 from pymongo import ASCENDING
 
 from gens.constants import CHROMOSOMES
