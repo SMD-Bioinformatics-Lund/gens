@@ -8,7 +8,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
  - Migrated from setup.py to pyproject.toml using hatchling
- - Updated python to version 3.13 and thawed some dependencies.
+ - Updated python to version 3.12 and thawed some dependencies.
 
 ## 3.0.1
 
