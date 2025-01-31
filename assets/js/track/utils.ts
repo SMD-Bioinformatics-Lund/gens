@@ -1,6 +1,32 @@
 // Utility functions
 
-export function getVisibleYCoordinates({ element, minHeight = 4 }) {
+type Point = {
+  x: number;
+  y: number;
+};
+
+type Element = {
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+};
+
+type DisplayElement = {
+  visibleX1: number;
+  visibleX2: number;
+  visibleY1: number;
+  visibleY2: number;
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+};
+
+export function getVisibleYCoordinates(
+  element: { y1: number; y2: number },
+  minHeight: number = 4
+) {
   let y1 = Math.round(element.y1);
   let y2 = Math.round(element.y2);
   const height = y2 - y1;
@@ -11,12 +37,12 @@ export function getVisibleYCoordinates({ element, minHeight = 4 }) {
   return { y1, y2 };
 }
 
-export function getVisibleXCoordinates({
-  canvas,
-  feature,
-  scale,
-  minWidth = 4,
-}) {
+export function getVisibleXCoordinates(
+  canvas: any,
+  feature: { start: number; end: number },
+  scale: number,
+  minWidth: number = 4
+) {
   let x1 = Math.round(Math.max(0, feature.start - canvas.start) * scale);
   let x2 = Math.round(Math.min(canvas.end, feature.end - canvas.start) * scale);
   if (x2 - x1 < minWidth) {
@@ -30,7 +56,7 @@ export function getVisibleXCoordinates({
 // each input is an object with start/ end coordinates
 // f          >----------------<
 // s   >---------<
-export function isElementOverlapping(first, second) {
+export function isElementOverlapping(first: any, second: any) {
   if (
     (first.start > second.start && first.start < second.end) || //
     (first.end > second.start && first.end < second.end) ||
@@ -43,7 +69,7 @@ export function isElementOverlapping(first, second) {
 }
 
 // check if point is within an element
-export function isWithinElementBbox({ element, point }) {
+export function isWithinElementBbox(element: Element, point: Point) {
   return (
     element.x1 < point.x &&
     point.x < element.x2 &&
@@ -52,7 +78,7 @@ export function isWithinElementBbox({ element, point }) {
   );
 }
 
-export function isWithinElementVisibleBbox({ element, point }) {
+export function isWithinElementVisibleBbox(element: DisplayElement, point: Point) {
   return (
     element.visibleX1 < point.x &&
     point.x < element.visibleX2 &&

@@ -8,6 +8,8 @@ SCOUT_DBNAME = "scout"
 # Scout browser base URL for link out and API
 SCOUT_BASE_URL = "http://localhost:8000"
 
+LOGIN_DISABLED = True
+
 # Annotation
 DEFAULT_ANNOTATION_TRACK = (
     "Mimisbrunnr_databank_plausibly_pathogenic_CNVs_Lund_hg38.aed"

@@ -6,8 +6,9 @@
   },
   "name": "gens",
   "version": "3.0.0",
+  "type": "module",
   "description": "Interactive tool to visualize genomic copy number profiles from WGS data",
-  "main": "gens.js",
+  "main": "gens.ts",
   "scripts": {
     "build": "gulp build",
     "lint": "eslint assets",
@@ -28,27 +29,18 @@
     "url": "https://github.com/Clinical-Genomics-Lund/Gens/issues"
   },
   "homepage": "https://github.com/Clinical-Genomics-Lund/Gens#readme",
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "ts",
-      "tsx",
-      "jsx"
-    ],
-    "moduleNameMapper": {
-      "\\.(css|less|sass|scss)$": "<rootDir>/assets/__mocks__/styleMock.js",
-      "\\.(gif|tff|eot|svg)$": "<rootDir>/assets/__mocks__/fileMock.js"
-    },
-    "clearMocks": true,
-    "collectCoverage": true,
-    "coverageDirectory": "coverage",
-    "coverageProvider": "v8",
-    "verbose": false
-  },
   "devDependencies": {
     "@babel/core": "^7.13.10",
     "@babel/plugin-transform-runtime": "^7.13.10",
     "@babel/preset-env": "^7.13.10",
+    "@types/gulp": "^4.0.17",
+    "@types/gulp-rename": "^2.0.6",
+    "@types/gulp-sass": "^5.0.4",
+    "@types/gulp-sourcemaps": "^0.0.38",
+    "@types/gulp-uglify": "^3.0.11",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.12.0",
+    "@types/webpack": "^5.28.5",
     "css-loader": "^5.2.7",
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^9.1.0",
@@ -62,13 +54,19 @@
     "gulp-sass": "^5.0.0",
     "gulp-sourcemaps": "^3.0.0",
     "identity-obj-proxy": "^3.0.0",
-    "jest": "^26.6.3",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "prettier": "3.3.3",
     "process": "^0.11.10",
     "regenerator-runtime": "^0.13.7",
     "sass": "^1.32.8",
     "sass-loader": "^11.0.1",
     "style-loader": "^2.0.0",
+    "tippy": "^0.0.0",
+    "ts-jest": "^29.2.5",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3",
     "webpack": "^5.76.0",
     "webpack-cli": "^4.5.0"
   }

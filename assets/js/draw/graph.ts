@@ -1,21 +1,21 @@
 // graph related objects
-import { drawRect, drawLine, drawRotatedText, drawText } from "./shapes.js";
+import { drawRect, drawLine, drawRotatedText, drawText } from "./shapes";
 
 // Draws vertical tick marks for selected values between
 // xStart and xEnd with step length.
 // The amplitude scales the values to drawing size
-export function drawVerticalTicks({
-  ctx,
-  renderX,
-  y,
-  xStart,
-  xEnd,
-  xoStart,
-  xoEnd,
-  width,
-  yMargin,
-  titleColor,
-}) {
+export function drawVerticalTicks(
+  ctx: CanvasRenderingContext2D,
+  renderX: number,
+  y: number,
+  xStart: number,
+  xEnd: number,
+  xoStart: number,
+  xoEnd: number,
+  width: number,
+  yMargin: number,
+  titleColor: string,
+) {
   const lineThickness = 1;
   const lineWidth = 5;
   const regionSize = xEnd - xStart;
@@ -65,17 +65,17 @@ export function drawVerticalTicks({
 // Draws horizontal lines for selected values between
 // yStart and yEnd with step length.
 // The amplitude scales the values to drawing size
-export function drawGraphLines({
-  ctx,
-  x,
-  y,
-  yStart,
-  yEnd,
-  stepLength,
-  yMargin,
-  width,
-  height,
-}) {
+export function drawGraphLines(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  yStart: number,
+  yEnd: number,
+  stepLength: number,
+  yMargin: number,
+  width: number,
+  height: number,
+) {
   const ampl = (height - 2 * yMargin) / (yStart - yEnd); // Amplitude for scaling y-axis to fill whole height
   const lineThickness = 1;
 

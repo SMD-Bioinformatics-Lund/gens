@@ -3,10 +3,10 @@ import {
   getVisibleXCoordinates,
   getVisibleYCoordinates,
   isWithinElementBbox,
-} from "./utils.js";
+} from "./utils";
 
 // make virtual DOM element that represents a annotation element
-export function makeVirtualDOMElement({ x1, x2, y1, y2, canvas }) {
+export function makeVirtualDOMElement(x1: number, x2: number, y1: number, y2: number, canvas) {
   return {
     getBoundingClientRect: generateGetBoundingClientRect(
       x1,
@@ -19,7 +19,7 @@ export function makeVirtualDOMElement({ x1, x2, y1, y2, canvas }) {
 }
 
 // Make a virtual DOM element from a genetic element object
-export function generateGetBoundingClientRect(x1, x2, y1, y2, canvas) {
+export function generateGetBoundingClientRect(x1: number, x2: number, y1: number, y2: number, canvas) {
   const track = canvas;
   return () => ({
     width: Math.round(x2 - x1),
@@ -126,28 +126,28 @@ function tooltipHandler(event, track) {
     if (!element.tooltip) {
       continue;
     }
-    const isInElement = isWithinElementBbox({
-      element: {
+    const isInElement = isWithinElementBbox(
+      {
         x1: element.visibleX1,
         x2: element.visibleX2,
         y1: element.y1,
         y2: element.y2,
       },
       point,
-    });
+    );
     if (isInElement) {
       // check if pointer is in a feature of element
       let selectedFeature;
       for (const feature of element.features) {
-        const isInFeature = isWithinElementBbox({
-          element: {
+        const isInFeature = isWithinElementBbox(
+          {
             x1: feature.visibleX1,
             x2: feature.visibleX2,
             y1: feature.y1,
             y2: feature.y2,
           },
           point,
-        });
+        );
         if (isInFeature && !feature.isDisplayed) {
           // show feature
           selectedFeature = feature;

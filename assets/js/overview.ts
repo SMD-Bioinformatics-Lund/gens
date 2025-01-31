@@ -1,16 +1,16 @@
 // Overview canvas definition
 
-import { BaseScatterTrack, CHROMOSOMES } from "./track.js";
-import { create, get } from "./fetch.js";
+import { BaseScatterTrack, CHROMOSOMES } from "./track";
+import { create, get } from "./fetch";
 import {
   createGraph,
   drawPoints,
   drawGraphLines,
   drawText,
   drawRotatedText,
-} from "./draw.js";
+} from "./draw";
 
-import { drawTrack } from "./navigation.js";
+import { drawTrack } from "./navigation";
 
 export class OverviewCanvas extends BaseScatterTrack {
   constructor(

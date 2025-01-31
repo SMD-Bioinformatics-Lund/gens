@@ -1,7 +1,13 @@
 // draw basic objects and shapes
 
 //  Draw data points
-export function drawPoints({ ctx, data, color = "black" }) {
+export function drawPoints({
+  ctx,
+  data,
+}: {
+  ctx: CanvasRenderingContext2D;
+  data: number[];
+}) {
   ctx.fillStyle = "#000";
   for (let i = 0; i < data.length; i += 2) {
     if (data[i + 1] > 0) {
@@ -10,34 +16,56 @@ export function drawPoints({ ctx, data, color = "black" }) {
         data[i], // x
         data[i + 1], // y
         2, // width
-        2, // height
+        2 // height
       );
     }
   }
 }
 
 // Draw 90 degree rotated text
-export function drawRotatedText(
+export function drawRotatedText({
   ctx,
   text,
-  textSize = "",
   posx,
   posy,
-  rot,
+  rot_degrees,
+  textSize,
   color = "black",
-) {
+}: {
+  ctx: CanvasRenderingContext2D;
+  text: string;
+  posx: number;
+  posy: number;
+  rot_degrees: number;
+  textSize: number;
+  color: string;
+}) {
   ctx.save();
   ctx.fillStyle = color;
-  ctx.font = "".concat(textSize, "px Arial");
+  ctx.font = "".concat(textSize.toString(), "px Arial");
   ctx.translate(posx, posy); // Position for text
-  ctx.rotate(rot); // Rotate rot degrees
+  ctx.rotate(rot_degrees); // Rotate rot degrees
   ctx.textAlign = "center";
   ctx.fillText(text, 0, 9);
   ctx.restore();
 }
 
 // Draw aligned text at (x, y)
-export function drawText({ ctx, x, y, text, fontProp = "", align = "center" }) {
+export function drawText({
+  ctx,
+  x,
+  y,
+  text,
+  fontProp = "",
+  align = "center",
+}: {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  text: string;
+  fontProp: string;
+  align: CanvasTextAlign;
+}) {
   ctx.save();
   ctx.font = "".concat(fontProp, "px Arial");
   ctx.textAlign = align;
@@ -64,6 +92,14 @@ export function drawLine({
   y2,
   lineWidth = 1,
   color = "black",
+}: {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  x2: number;
+  y2: number;
+  lineWidth: number;
+  color: string;
 }) {
   // transpose coordinates .5 px to become sharper
   x = Math.floor(x) + 0.5;
@@ -92,6 +128,17 @@ export function drawRect({
   fillColor = null,
   open = false,
   debug = false,
+}: {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  lineWidth: number;
+  color: string | null;
+  fillColor: string | null;
+  open: boolean;
+  debug: boolean;
 }) {
   x = Math.floor(x) + 0.5;
   y = Math.floor(y) + 0.5;
@@ -133,6 +180,14 @@ export async function drawArrow({
   height,
   lineWidth = 2,
   color = "black",
+}: {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  dir: number;
+  height: number;
+  lineWidth: number;
+  color: string;
 }) {
   const width = dir * lineWidth;
   ctx.save();
@@ -159,6 +214,14 @@ export function drawWaveLine({
   height,
   color = "black",
   lineWidth = 2,
+}: {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  x2: number;
+  height: number;
+  color: string;
+  lineWidth: number;
 }) {
   ctx.save();
   ctx.strokeStyle = color;

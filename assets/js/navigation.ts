@@ -1,6 +1,6 @@
-import { get } from "./fetch.js";
-import { CHROMOSOMES } from "./track.js";
-import { chromSizes } from "./helper.js";
+import { get } from "./fetch";
+import { CHROMOSOMES } from "./track";
+import { chromSizes } from "./helper";
 
 function redrawEvent({ region, exclude = [], ...kwargs }) {
   return new CustomEvent("draw", {

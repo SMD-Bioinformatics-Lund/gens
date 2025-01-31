@@ -7,7 +7,7 @@ import {
   createGraph,
   drawVerticalTicks,
   drawGraphLines,
-} from "./draw.js";
+} from "./draw";
 import {
   drawTrack,
   zoomIn,
@@ -15,9 +15,9 @@ import {
   keyLogger,
   limitRegionToChromosome,
   readInputField,
-} from "./navigation.js";
-import { get } from "./fetch.js";
-import { BaseScatterTrack } from "./track.js";
+} from "./navigation";
+import { get } from "./fetch";
+import { BaseScatterTrack } from "./track";
 
 export class InteractiveCanvas extends BaseScatterTrack {
   constructor(

@@ -1,13 +1,13 @@
 // GENS module
 
-import { InteractiveCanvas } from "./interactive.js";
-import { OverviewCanvas } from "./overview.js";
+import { InteractiveCanvas } from "./interactive";
+import { OverviewCanvas } from "./overview";
 import {
   VariantTrack,
   AnnotationTrack,
   TranscriptTrack,
   CytogeneticIdeogram,
-} from "./track.js";
+} from "./track";
 export {
   setupDrawEventManager,
   drawTrack,
@@ -18,7 +18,7 @@ export {
   zoomOut,
   parseRegionDesignation,
   queryRegionOrGene,
-} from "./navigation.js";
+} from "./navigation";
 
 export function initCanvases({
   sampleName,
@@ -147,4 +147,4 @@ export function printPage() {
   print();
 }
 
-export { CHROMOSOMES, setupGenericEventManager } from "./track.js";
+export { CHROMOSOMES, setupGenericEventManager } from "./track";

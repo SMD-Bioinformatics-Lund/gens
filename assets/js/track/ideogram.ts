@@ -1,10 +1,10 @@
 // Cytogenetic ideogram
-import { get } from "../fetch.js";
-import { drawRect } from "../draw.js";
-import { lightenColor } from "./base.js";
+import { get } from "../fetch";
+import { drawRect } from "../draw";
+import { lightenColor } from "./base";
 import tippy, { followCursor } from "tippy.js";
 import "tippy.js/dist/tippy.css";
-import { isElementOverlapping } from "./utils.js";
+import { isElementOverlapping } from "./utils";
 
 export class CytogeneticIdeogram {
   constructor({ targetId, genomeBuild, x, y, width, height }) {
