@@ -2,7 +2,7 @@
 import { get } from "../fetch";
 import { drawRect } from "../draw";
 import { lightenColor } from "./base";
-import tippy, { followCursor } from "tippy";
+import tippy, { followCursor } from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import { isElementOverlapping } from "./utils";
 
