@@ -11,16 +11,21 @@ type ElementCoords = {
 };
 
 type DisplayElement = {
-  visibleX1: number;
-  visibleX2: number;
-  visibleY1: number;
-  visibleY2: number;
+  id: string;
+  name: string;
   x1: number;
   x2: number;
   y1: number;
   y2: number;
   start: number;
   end: number;
+  features: string[];
+  isDisplayed: boolean;
+  tooltip: any;
+  visibleX1?: number;
+  visibleX2?: number;
+  visibleY1?: number;
+  visibleY2?: number;
 };
 
 type ScreenPositions = {

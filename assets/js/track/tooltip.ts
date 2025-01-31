@@ -7,20 +7,38 @@ import {
 } from "./utils";
 
 // make virtual DOM element that represents a annotation element
-export function makeVirtualDOMElement(x1: number, x2: number, y1: number, y2: number, canvas) {
+export function makeVirtualDOMElement({
+  x1,
+  x2,
+  y1,
+  y2,
+  canvas,
+}: {
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+  canvas: any;
+}) {
   return {
     getBoundingClientRect: generateGetBoundingClientRect(
       x1,
       x2,
       y1,
       y2,
-      canvas,
+      canvas
     ),
   };
 }
 
 // Make a virtual DOM element from a genetic element object
-export function generateGetBoundingClientRect(x1: number, x2: number, y1: number, y2: number, canvas) {
+export function generateGetBoundingClientRect(
+  x1: number,
+  x2: number,
+  y1: number,
+  y2: number,
+  canvas
+) {
   const track = canvas;
   return () => ({
     width: Math.round(x2 - x1),
@@ -37,15 +55,11 @@ export function updateVisibleElementCoordinates({
   screenPosition,
   scale,
 }: {
-  element: DisplayElement,
-  screenPosition: ScreenPositions,
-  scale: number
+  element: DisplayElement;
+  screenPosition: ScreenPositions;
+  scale: number;
 }) {
-  const { x1, x2 } = getVisibleXCoordinates(
-    screenPosition,
-    element,
-    scale,
-  );
+  const { x1, x2 } = getVisibleXCoordinates(screenPosition, element, scale);
   const { y1, y2 } = getVisibleYCoordinates(element);
   // update coordinates
   element.visibleX1 = x1;
@@ -58,7 +72,7 @@ function showTooltip({ tooltip, feature }) {
   tooltip.tooltip.setAttribute("data-show", "");
   if (feature !== undefined) {
     const featureElement = tooltip.tooltip.querySelector(
-      `#feature-${feature.id}`,
+      `#feature-${feature.id}`
     );
     featureElement.setAttribute("data-show", "");
     feature.isDisplayed = true;
@@ -68,7 +82,7 @@ function showTooltip({ tooltip, feature }) {
 
 function hideFeatureInTooltip({ tooltip, feature }) {
   const selectedFeature = tooltip.tooltip.querySelector(
-    `#feature-${feature.id}`,
+    `#feature-${feature.id}`
   );
   selectedFeature.removeAttribute("data-show");
   feature.isDisplayed = false;
@@ -138,7 +152,7 @@ function tooltipHandler(event, track) {
         y1: element.y1,
         y2: element.y2,
       },
-      point,
+      point
     );
     if (isInElement) {
       // check if pointer is in a feature of element
@@ -151,7 +165,7 @@ function tooltipHandler(event, track) {
             y1: feature.y1,
             y2: feature.y2,
           },
-          point,
+          point
         );
         if (isInFeature && !feature.isDisplayed) {
           // show feature
