@@ -126,28 +126,28 @@ function tooltipHandler(event, track) {
     if (!element.tooltip) {
       continue;
     }
-    const isInElement = isWithinElementBbox({
-      element: {
+    const isInElement = isWithinElementBbox(
+      {
         x1: element.visibleX1,
         x2: element.visibleX2,
         y1: element.y1,
         y2: element.y2,
       },
       point,
-    });
+    );
     if (isInElement) {
       // check if pointer is in a feature of element
       let selectedFeature;
       for (const feature of element.features) {
-        const isInFeature = isWithinElementBbox({
-          element: {
+        const isInFeature = isWithinElementBbox(
+          {
             x1: feature.visibleX1,
             x2: feature.visibleX2,
             y1: feature.y1,
             y2: feature.y2,
           },
           point,
-        });
+        );
         if (isInFeature && !feature.isDisplayed) {
           // show feature
           selectedFeature = feature;
