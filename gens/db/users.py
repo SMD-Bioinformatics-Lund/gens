@@ -22,7 +22,7 @@ class LoginUser(UserMixin):
         return "admin" in self.roles
 
 
-def user(email: str) -> Optional[LoginUser]:
+def user(email: str) -> LoginUser|None:
     db = app.config["SCOUT_DB"]
 
     # LOG.info("Inside user")

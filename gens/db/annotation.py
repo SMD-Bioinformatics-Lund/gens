@@ -18,7 +18,7 @@ TRANSCRIPTS = "transcripts"
 UPDATES = "updates"
 
 
-def register_data_update(track_type: str, name: Optional[str]=None):
+def register_data_update(track_type: str, name: str|None=None):
     """Register that a track was updated."""
     db = app.config["GENS_DB"][UPDATES]
     LOG.debug(f"Creating timestamp for {track_type}")
@@ -105,7 +105,7 @@ def query_records_in_region(
     start_pos: int,
     end_pos: int,
     genome_build: int,
-    height_order:Optional[str]=None,
+    height_order:str|None=None,
     **kwargs,
 ) -> Any:
     """Query the gens database for transcript information."""

@@ -94,7 +94,7 @@ def store_sample(
             )
 
 
-def get_samples(db: MongoClient, start:int = 0, n_samples: Optional[int] = None) -> tuple[list[SampleObj], int]:
+def get_samples(db: MongoClient, start:int = 0, n_samples: int|None = None) -> tuple[list[SampleObj], int]:
     """
     Get samples stored in the databse.
 
@@ -118,7 +118,7 @@ def get_samples(db: MongoClient, start:int = 0, n_samples: Optional[int] = None)
     return results, db[COLLECTION].count_documents({})
 
 
-def query_sample(db: MongoClient, sample_id: str, case_id: Optional[str], _genome_build: int):
+def query_sample(db: MongoClient, sample_id: str, case_id: str|None, _genome_build: int):
     """Get a sample with id."""
     result = None
     if case_id is None:

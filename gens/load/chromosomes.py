@@ -94,7 +94,7 @@ def get_assembly_annotation(insdc_id: str, data_format:str="embl", timeout:int=2
 
 def parse_centromere_pos(embl_annot:str) -> tuple[int, ...]:
     """Query EBI for centeromere position from embl annotation."""
-    centeromere_pos: Optional[tuple[int, ...]] = None
+    centeromere_pos: tuple[int, ...]|None = None
     for line in embl_annot.splitlines():
         if not line.startswith("FT"):
             continue
