@@ -5,6 +5,29 @@ import {
   isWithinElementBbox,
 } from "./utils";
 
+type ElementCoords = {
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+};
+
+type DisplayElement = {
+  visibleX1: number;
+  visibleX2: number;
+  visibleY1: number;
+  visibleY2: number;
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+};
+
+type ScreenPositions = {
+  start: number,
+  end: number,
+}
+
 // make virtual DOM element that represents a annotation element
 export function makeVirtualDOMElement(x1: number, x2: number, y1: number, y2: number, canvas) {
   return {
@@ -35,13 +58,17 @@ export function updateVisibleElementCoordinates({
   element,
   screenPosition,
   scale,
+}: {
+  element: DisplayElement,
+  screenPosition: ScreenPositions,
+  scale: number
 }) {
-  const { x1, x2 } = getVisibleXCoordinates({
-    canvas: screenPosition,
-    feature: element,
-    scale: scale,
-  });
-  const { y1, y2 } = getVisibleYCoordinates({ element });
+  const { x1, x2 } = getVisibleXCoordinates(
+    screenPosition,
+    element,
+    scale,
+  );
+  const { y1, y2 } = getVisibleYCoordinates(element);
   // update coordinates
   element.visibleX1 = x1;
   element.visibleX2 = x2;
