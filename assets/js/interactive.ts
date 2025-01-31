@@ -42,6 +42,8 @@ export class InteractiveCanvas extends BaseScatterTrack {
 
   drawWidth: number
 
+  allowDraw: boolean;
+
   constructor(
     inputField,
     lineMargin,
