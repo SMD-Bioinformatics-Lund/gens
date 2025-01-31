@@ -1,5 +1,5 @@
 // Various helper functions
-import { get } from "./fetch.js";
+import { get } from "./fetch";
 
 function cacheChromSizes(genomeBuild = "38") {
   const cache = {};

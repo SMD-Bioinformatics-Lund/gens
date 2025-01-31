@@ -1,16 +1,16 @@
 // Annotation track definition
 
-import { BaseAnnotationTrack } from "./base.js";
-import { isElementOverlapping } from "./utils.js";
-import { get } from "../fetch.js";
-import { parseRegionDesignation } from "../navigation.js";
-import { drawRect, drawText } from "../draw.js";
+import { BaseAnnotationTrack } from "./base";
+import { isElementOverlapping } from "./utils";
+import { get } from "../fetch";
+import { parseRegionDesignation } from "../navigation";
+import { drawRect, drawText } from "../draw";
 import {
   initTrackTooltips,
   createTooltipElement,
   makeVirtualDOMElement,
   updateVisibleElementCoordinates,
-} from "./tooltip.js";
+} from "./tooltip";
 import { createPopper } from "@popperjs/core";
 
 // Convert to 32bit integer

@@ -3,7 +3,7 @@ import {
   getVisibleXCoordinates,
   getVisibleYCoordinates,
   isWithinElementBbox,
-} from "./utils.js";
+} from "./utils";
 
 // make virtual DOM element that represents a annotation element
 export function makeVirtualDOMElement(x1: number, x2: number, y1: number, y2: number, canvas) {

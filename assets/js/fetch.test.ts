@@ -1,4 +1,4 @@
-import { objectToQueryString } from "./fetch.js";
+import { objectToQueryString } from "./fetch";
 
 describe("Test objectToQueryString", () => {
   test("test objectToQueryString single args", () => {

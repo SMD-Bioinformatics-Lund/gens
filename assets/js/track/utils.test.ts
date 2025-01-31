@@ -3,7 +3,7 @@ import {
   isWithinElementBbox,
   getVisibleXCoordinates,
   getVisibleYCoordinates,
-} from "./utils.js";
+} from "./utils";
 
 // Test overlapping elements
 describe("Test isElementOverlapping", () => {

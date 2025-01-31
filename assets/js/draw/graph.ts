@@ -1,5 +1,5 @@
 // graph related objects
-import { drawRect, drawLine, drawRotatedText, drawText } from "./shapes.js";
+import { drawRect, drawLine, drawRotatedText, drawText } from "./shapes";
 
 // Draws vertical tick marks for selected values between
 // xStart and xEnd with step length.

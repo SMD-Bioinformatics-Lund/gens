@@ -1,16 +1,16 @@
 // Transcript definition
 
-import { BaseAnnotationTrack, lightenColor } from "./base.js";
+import { BaseAnnotationTrack, lightenColor } from "./base";
 import {
   initTrackTooltips,
   createTooltipElement,
   createHtmlList,
   makeVirtualDOMElement,
   updateVisibleElementCoordinates,
-} from "./tooltip.js";
+} from "./tooltip";
 import { createPopper } from "@popperjs/core";
-import { drawRect, drawLine, drawArrow, drawText } from "../draw.js";
-import { getVisibleXCoordinates, isElementOverlapping } from "./utils.js";
+import { drawRect, drawLine, drawArrow, drawText } from "../draw";
+import { getVisibleXCoordinates, isElementOverlapping } from "./utils";
 
 // add feature information to tooltipElement
 function addFeatures(elem, tooltipElement) {

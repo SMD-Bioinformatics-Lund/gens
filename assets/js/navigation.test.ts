@@ -2,8 +2,8 @@ import {
   parseRegionDesignation,
   limitRegionToChromosome,
   readInputField,
-} from "./navigation.js";
-import * as helper from "./helper.js";
+} from "./navigation";
+import * as helper from "./helper";
 
 // Test Track class
 describe("Test parseRegionDesignation", () => {
