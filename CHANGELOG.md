@@ -11,6 +11,9 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Updated python to version 3.12 and thawed some dependencies.
  - Switched from JS to TS and updated required parts of the build chain.
 
+### Fixed
+ - Initial type hints added to command and db modules
+
 ## 3.0.1
 
 ### Changed

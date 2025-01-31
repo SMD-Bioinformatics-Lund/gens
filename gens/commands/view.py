@@ -21,7 +21,7 @@ def view():
 @view.command()
 @click.option("-s", "--summary", is_flag=True, help="Summarize the number of samples")
 @with_appcontext
-def samples(summary):
+def samples(summary: bool):
     """View samples stored in the database"""
     db = app.config["GENS_DB"]
     # print samples to terminal
@@ -29,7 +29,7 @@ def samples(summary):
     if summary:  # count number of samples per genome build
         columns = ("Genome build", "N samples")
         sample_tbl = (
-            (gr, sum(1 for v in vals))
+            (gr, sum(1 for _v in vals))
             for gr, vals in groupby(samples, key=lambda x: x.genome_build)
         )
     else:  # show all samples

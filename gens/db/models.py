@@ -30,4 +30,4 @@ class SampleObj:
         converter=int,
     )
     created_at: datetime = attr.ib()
-    overview_file: Optional[str] = attr.ib(default=None)
+    overview_file: str|None = attr.ib(default=None)

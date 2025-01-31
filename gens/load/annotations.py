@@ -1,8 +1,11 @@
 """Annotations."""
 import csv
 import logging
+from pathlib import Path
 import re
+from typing import Iterator
 
+from pymongo import MongoClient
 from pymongo import ASCENDING
 
 from gens.constants import CHROMOSOMES
@@ -26,7 +29,7 @@ class ParserError(Exception):
     pass
 
 
-def parse_bed(file):
+def parse_bed(file: Path) -> Iterator[dict[str, str]]:
     """Parse bed file."""
     with open(file, encoding='utf-8') as bed:
         bed_reader = csv.DictReader(bed, fieldnames=['sequence', 'start', 'end', 'name', 'score', 'strand', 'thickStart', 'thickEnd', 'color', 'block_count', 'block_sizes', 'block_starts'], delimiter="\t")
@@ -39,15 +42,20 @@ def parse_bed(file):
             yield line
 
 
-def parse_aed(file):
+def parse_aed(file: Path) -> Iterator[dict[str, str]]:
     """Parse aed file."""
-    header = {}
+    header: dict[str, str] = {}
     with open(file) as aed:
         aed_reader = csv.reader(aed, delimiter="\t")
 
         # Parse the aed header and get the keys and data formats
         for head in next(aed_reader):
-            field, data_type = re.search(AED_ENTRY, head).groups()
+
+            matches = re.search(AED_ENTRY, head)
+            if matches is None:
+                raise ValueError(f"Expected to find {AED_ENTRY} in {head}, but did not succeed")
+
+            field, data_type = matches.groups()
             header[field] = data_type.lower()
 
         # iterate over file content
@@ -57,9 +65,9 @@ def parse_aed(file):
             yield dict(zip(header, line))
 
 
-def parse_annotation_entry(entry, genome_build, annotation_name):
+def parse_annotation_entry(entry: dict[str, str], genome_build: int, annotation_name: str) -> dict[str, str|int]:
     """Parse a bed or aed entry"""
-    annotation = {}
+    annotation: dict[str, str|int] = {}
     # parse entry and format the values
     for name, value in entry.items():
         name = name.strip("#")
@@ -89,7 +97,7 @@ def parse_annotation_entry(entry, genome_build, annotation_name):
     return annotation
 
 
-def format_data(name, value):
+def format_data(name: str, value: str) -> str|int:
     """Formats the data depending on title"""
     if name == "color":
         if not value:
@@ -113,7 +121,7 @@ def format_data(name, value):
     return fmt_val
 
 
-def set_missing_fields(annotation, name):
+def set_missing_fields(annotation: dict[str, str|int], name: str):
     """Sets default values to fields that are missing"""
     for field_name in CORE_FIELDS:
         if field_name in annotation:
@@ -130,7 +138,7 @@ def set_missing_fields(annotation, name):
             )
 
 
-def update_height_order(db, name):
+def update_height_order(db: MongoClient, name: str):
     """Updates height order for annotations.
 
     Height order is used for annotation placement
@@ -166,9 +174,11 @@ def update_height_order(db, name):
                     height_tracker += [-1] * 100
 
 
-def parse_annotation_file(file, file_format):
+def parse_annotation_file(file: Path, file_format: str) -> Iterator[dict[str, str]]:
     """Parse an annotation file in bed or aed format."""
     if file_format == "bed":
         return parse_bed(file)
     if file_format == "aed":
         return parse_aed(file)
+
+    raise ValueError(f"Unknown file format: {file_format}")

@@ -1,10 +1,10 @@
 import logging
 from pathlib import Path
+from typing import TextIO
 
 import click
 from flask import current_app as app
 from flask.cli import with_appcontext
-from pymongo import ASCENDING
 
 from gens.constants import GENOME_BUILDS
 from gens.db import (ANNOTATIONS_COLLECTION, CHROMSIZES_COLLECTION,
@@ -64,7 +64,7 @@ def load():
     help="Overwrite any existing sample with the same key.",
 )
 @with_appcontext
-def sample(sample_id, genome_build, baf, coverage, case_id, overview_json, force):
+def sample(sample_id: str, genome_build: int, baf: str, coverage: str, case_id: str, overview_json: str, force: bool):
     """Load a sample into Gens database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -100,7 +100,7 @@ def sample(sample_id, genome_build, baf, coverage, case_id, overview_json, force
     help="Genome build",
 )
 @with_appcontext
-def annotations(file, genome_build):
+def annotations(file: str, genome_build: int):
     """Load annotations from file into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -120,7 +120,7 @@ def annotations(file, genome_build):
         parser = parse_annotation_file(
             annot_file, file_format=annot_file.suffix[1:]
         )
-        annotation_obj = []
+        annotation_obj: list[dict[str, str|int]] = []
         for entry in parser:
             try:
                 entry_obj = parse_annotation_entry(
@@ -155,7 +155,7 @@ def annotations(file, genome_build):
     help="Genome build",
 )
 @with_appcontext
-def transcripts(file, mane, genome_build):
+def transcripts(file: TextIO, mane: TextIO, genome_build: int):
     """Load transcripts into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -173,6 +173,7 @@ def transcripts(file, mane, genome_build):
 
 
 @load.command()
+# FIXME: Remove? Does not seem to be used?
 @click.option(
     "-f",
     "--file",
@@ -194,7 +195,7 @@ def transcripts(file, mane, genome_build):
     help="Timeout for queries.",
 )
 @with_appcontext
-def chromosome_info(file, genome_build, timeout):
+def chromosome_info(_file: TextIO, genome_build: int, timeout: int):
     """Load chromosome size information into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index

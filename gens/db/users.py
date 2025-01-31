@@ -6,13 +6,14 @@ from flask import current_app as app
 from typing import Optional
 
 class LoginUser(UserMixin):
-    def __init__(self, user_data):
+    def __init__(self, user_data: dict[str, str]):
         """Create a new user object."""
         self.roles = []
         for key, value in user_data.items():
             setattr(self, key, value)
 
-    def get_id(self):
+    # FIXME: Type does not work correctly here. Solved by mongo data types?
+    def get_id(self) -> str:
         return self.email
 
     @property
@@ -21,7 +22,7 @@ class LoginUser(UserMixin):
         return "admin" in self.roles
 
 
-def user(email: str) -> Optional[LoginUser]:
+def user(email: str) -> LoginUser|None:
     db = app.config["SCOUT_DB"]
 
     # LOG.info("Inside user")
