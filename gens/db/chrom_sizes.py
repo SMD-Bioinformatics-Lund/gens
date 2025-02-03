@@ -23,7 +23,7 @@ class GenomeBuild(Enum):
     HG38 = 38
 
 
-class Chromosomes(Enum):
+class Chromosome(Enum):
     """Valid chromosome names."""
 
     CH1 = "1"
@@ -69,7 +69,7 @@ class ChromBand(RWModel):
 class ChromInfo(RWModel):
     """Information on a chromosome."""
 
-    chrom: Chromosomes
+    chrom: Chromosome
     genome_build: GenomeBuild
     size: int
     scale: float
