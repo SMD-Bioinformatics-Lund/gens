@@ -115,8 +115,12 @@ export class InteractiveCanvas extends BaseScatterTrack {
     this.drawCanvas.height = parseInt(this.canvasHeight.toString());
 
     // Setup visible canvases
-    this.contentCanvas = document.getElementById("interactive-content");
-    this.staticCanvas = document.getElementById("interactive-static");
+    this.contentCanvas = document.getElementById(
+      "interactive-content"
+    ) as HTMLCanvasElement;
+    this.staticCanvas = document.getElementById(
+      "interactive-static"
+    ) as HTMLCanvasElement;
     this.staticCanvas.width = this.contentCanvas.width =
       document.body.clientWidth;
     this.staticCanvas.height = this.contentCanvas.height = this.canvasHeight;
@@ -147,33 +151,42 @@ export class InteractiveCanvas extends BaseScatterTrack {
 
     // Setup listeners
     // update chromosome title event
-    this.contentCanvas.addEventListener("update-title", (event: Event) => {
-      console.log(`interactive got an ${event.type} event`);
-      const len = event.detail.bands.length;
-      if (len > 0) {
-        const bandIds =
-          len === 1
-            ? event.detail.bands[0].id
-            : `${event.detail.bands[0].id}-${event.detail.bands[len - 1].id}`;
-        this.drawCanvas
-          .getContext("2d")
-          .clearRect(
-            this.titleBbox.x,
-            this.titleBbox.y,
-            this.titleBbox.width,
-            this.titleBbox.height
+    this.contentCanvas.addEventListener(
+      "update-title",
+      (event: CustomEvent<CanvasDetail>) => {
+        console.log(`interactive got an ${event.type} event`);
+        const len = event.detail.bands.length;
+        if (len > 0) {
+          const bandIds =
+            len === 1
+              ? event.detail.bands[0].id
+              : `${event.detail.bands[0].id}-${event.detail.bands[len - 1].id}`;
+          this.drawCanvas
+            .getContext("2d")
+            .clearRect(
+              this.titleBbox.x,
+              this.titleBbox.y,
+              this.titleBbox.width,
+              this.titleBbox.height
+            );
+          this.titleBbox = this.drawTitle(
+            `Chromosome ${event.detail.chrom}; ${bandIds}`
           );
-        this.titleBbox = this.drawTitle(
-          `Chromosome ${event.detail.chrom}; ${bandIds}`
-        );
-        this.blitChromName({ textPosition: this.titleBbox });
+          this.blitChromName({ textPosition: this.titleBbox });
+        }
       }
-    });
+    );
     // redraw events
-    this.contentCanvas.parentElement.addEventListener("draw", (event) => {
-      console.log("interactive got draw event");
-      this.drawInteractiveContent({ ...event.detail.region, ...event.detail });
-    });
+    this.contentCanvas.parentElement.addEventListener(
+      "draw",
+      (event: CustomEvent<RegionDetail>) => {
+        console.log("interactive got draw event");
+        this.drawInteractiveContent({
+          ...event.detail.region,
+          ...event.detail,
+        });
+      }
+    );
     // navigation events
     this.contentCanvas.addEventListener("mousedown", (event) => {
       event.stopPropagation();
@@ -300,54 +313,54 @@ export class InteractiveCanvas extends BaseScatterTrack {
     );
 
     // Draw rotated y-axis legends
-    drawRotatedText(
-      staticContext,
-      "B Allele Freq",
-      18,
-      this.x - this.legendMargin,
-      this.y + this.plotHeight / 2,
-      -Math.PI / 2,
-      this.titleColor
-    );
-    drawRotatedText(
-      staticContext,
-      "Log2 Ratio",
-      18,
-      this.x - this.legendMargin,
-      this.y + 1.5 * this.plotHeight,
-      -Math.PI / 2,
-      this.titleColor
-    );
+    drawRotatedText({
+      ctx: staticContext,
+      text: "B Allele Freq",
+      textSize: 18,
+      posx: this.x - this.legendMargin,
+      posy: this.y + this.plotHeight / 2,
+      rotDegrees: -Math.PI / 2,
+      color: this.titleColor,
+    });
+    drawRotatedText({
+      ctx: staticContext,
+      text: "Log2 Ratio",
+      textSize: 18,
+      posx: this.x - this.legendMargin,
+      posy: this.y + 1.5 * this.plotHeight,
+      rotDegrees: -Math.PI / 2,
+      color: this.titleColor,
+    });
 
     // Draw BAF
-    createGraph(
-      staticContext,
-      this.x,
-      this.y,
-      this.plotWidth,
-      this.plotHeight,
-      this.topBottomPadding,
-      this.baf.yStart,
-      this.baf.yEnd,
-      this.baf.step,
-      true,
-      this.borderColor
-    );
+    createGraph({
+      ctx: staticContext,
+      x: this.x,
+      y: this.y,
+      width: this.plotWidth,
+      height: this.plotHeight,
+      yMargin: this.topBottomPadding,
+      yStart: this.baf.yStart,
+      yEnd: this.baf.yEnd,
+      step: this.baf.step,
+      addTicks: true,
+      color: this.borderColor,
+    });
 
     // Draw Log 2 ratio
-    createGraph(
-      staticContext,
-      this.x,
-      this.y + this.plotHeight,
-      this.plotWidth,
-      this.plotHeight,
-      this.topBottomPadding,
-      this.log2.yStart,
-      this.log2.yEnd,
-      this.log2.step,
-      true,
-      this.borderColor
-    );
+    createGraph({
+      ctx: staticContext,
+      x: this.x,
+      y: this.y + this.plotHeight,
+      width: this.plotWidth,
+      height: this.plotHeight,
+      yMargin: this.topBottomPadding,
+      yStart: this.log2.yStart,
+      yEnd: this.log2.yEnd,
+      step: this.log2.step,
+      addTicks: true,
+      color: this.borderColor,
+    });
 
     // Transfer image to visible canvas
     staticContext.drawImage(this.drawCanvas, 0, 0);
@@ -396,6 +409,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
         this.offscreenPosition = {
           start: parseInt(result.padded_start),
           end: parseInt(result.padded_end),
+          scale: 1
         };
         this.offscreenPosition.scale =
           this.drawWidth /

@@ -5,7 +5,18 @@ import { drawRect, drawLine, drawRotatedText, drawText } from "./shapes";
 // Draws vertical tick marks for selected values between
 // xStart and xEnd with step length.
 // The amplitude scales the values to drawing size
-export function drawVerticalTicks(
+export function drawVerticalTicks({
+  ctx,
+  renderX,
+  y,
+  xStart,
+  xEnd,
+  xoStart,
+  xoEnd,
+  width,
+  yMargin,
+  titleColor,
+}:{
   ctx: CanvasRenderingContext2D,
   renderX: number,
   y: number,
@@ -16,7 +27,7 @@ export function drawVerticalTicks(
   width: number,
   yMargin: number,
   titleColor: string,
-) {
+} ) {
   const lineThickness = 1;
   const lineWidth = 5;
   const regionSize = xEnd - xStart;
@@ -107,7 +118,7 @@ export function drawGraphLines(
 }
 
 // Creates a graph for one chromosome data type
-export function createGraph(
+export function createGraph({
   ctx,
   x,
   y,
@@ -119,8 +130,21 @@ export function createGraph(
   step,
   addTicks,
   color = "black",
-  open,
-) {
+  open = false,
+}: {
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  yMargin: number,
+  yStart: number,
+  yEnd: number,
+  step: number,
+  addTicks: boolean,
+  color?: string,
+  open?: boolean
+}) {
   // Draw tick marks
   if (addTicks) {
     drawTicks(

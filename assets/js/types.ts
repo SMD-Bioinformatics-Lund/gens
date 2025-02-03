@@ -1,3 +1,12 @@
+interface CanvasDetail {
+  bands: { id: string }[];
+  chrom: string;
+}
+
+interface RegionDetail {
+  region: string;
+}
+
 type Point = {
   x: number;
   y: number;

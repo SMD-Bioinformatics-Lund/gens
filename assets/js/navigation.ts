@@ -221,9 +221,21 @@ export function zoomOut() {
   });
 }
 
+type KeyEventData = {
+  key: string,
+  target: string,
+  time: number
+}
+
 // Dispatch dispatch an event to draw a given region
 // Redraw events can be limited to certain tracks or include all tracks
 class KeyLogger {
+
+  bufferSize: number;
+  lastKeyTime: number;
+  heldKeys: Record<string, boolean>;
+  keyBuffer: KeyEventData[];
+
   // Records keypress combinations
   constructor(bufferSize = 10) {
     // Setup variables
@@ -236,6 +248,8 @@ class KeyLogger {
       // store event
       const eventData = {
         key: event.key,
+        // FIXME: Use the (event) instead
+        // Test while changing
         target: window.event.target.nodeName,
         time: Date.now(),
       };
@@ -253,7 +267,7 @@ class KeyLogger {
     });
   }
 
-  recentKeys(timeWindow) {
+  recentKeys(timeWindow: number) {
     // get keys pressed within a window of time.
     const currentTime = Date.now();
     return this.keyBuffer.filter(
@@ -261,7 +275,8 @@ class KeyLogger {
     );
   }
 
-  lastKeypressTime() {
+  lastKeypressTime(): number {
+    // FIXME: Is this correct?
     return this.keyBuffer[this.keyBuffer.length - 1] - Date.now();
   }
 }
