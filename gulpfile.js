@@ -1,12 +1,12 @@
 // requirements
-import gulp from 'gulp'
-import gulpSass from 'gulp-sass'
-import rename from 'gulp-rename'
-import webpack from 'webpack'
-import sourcemaps from 'gulp-sourcemaps'
-import { resolve } from 'path'
-import webpackConfig from './webpack.config.cjs'
-import dartSass from 'sass'
+const gulp = require('gulp');
+const gulpSass = require('gulp-sass')
+const rename = require('gulp-rename')
+const webpack = require('webpack')
+const sourcemaps = require('gulp-sourcemaps')
+const resolve = require('path').resolve
+const webpackConfig = require('./webpack.config.cjs')
+const dartSass = require('sass')
 
 const sass = gulpSass(dartSass)
 
