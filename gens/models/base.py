@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+import datetime
+from gens.utils import get_timestamp
 
 class RWModel(BaseModel):  # pylint: disable=too-few-public-methods
     """Base model for read/ write operations"""
@@ -8,3 +10,9 @@ class RWModel(BaseModel):  # pylint: disable=too-few-public-methods
         populate_by_name=True,
         use_enum_values=True,
     )
+
+
+class CreatedAtModel(BaseModel):
+    """Has a timestamp that default to current time in UTC."""
+
+    created_at: datetime.datetime = Field(default_factory=get_timestamp)
