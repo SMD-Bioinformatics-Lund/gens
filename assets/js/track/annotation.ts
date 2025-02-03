@@ -26,7 +26,16 @@ function stringToHash(string) {
 }
 
 export class AnnotationTrack extends BaseAnnotationTrack {
-  constructor(x, width, near, far, genomeBuild, defaultAnnotation) {
+
+  readonly featureHeight: number = 18;
+  readonly arrowThickness: number = 2;
+  readonly apiEntrypoint: string = "get-annotation-data";
+
+  genomeBuild: number;
+  sourceList: HTMLElement;
+  additionalQueryParams: { source: }
+
+  constructor(x: number, width: number, near: number, far: number, genomeBuild, defaultAnnotation) {
     // Dimensions of track canvas
     const visibleHeight = 300; // Visible height for expanded canvas, overflows for scroll
     const minHeight = 35; // Minimized height
@@ -39,8 +48,6 @@ export class AnnotationTrack extends BaseAnnotationTrack {
     this.contentCanvas = document.getElementById("annotation-content");
     this.trackTitle = document.getElementById("annotation-titles");
     this.trackContainer = document.getElementById("annotation-track-container");
-    this.featureHeight = 18;
-    this.arrowThickness = 2;
 
     // Setup html objects now that we have gotten the canvas and div elements
     this.setupHTML(x + 1);
@@ -61,7 +68,6 @@ export class AnnotationTrack extends BaseAnnotationTrack {
     this.annotSourceList(defaultAnnotation);
 
     // GENS api parameters
-    this.apiEntrypoint = "get-annotation-data";
     this.additionalQueryParams = { source: defaultAnnotation };
 
     this.maxResolution = 6; // define other max resolution

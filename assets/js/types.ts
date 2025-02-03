@@ -28,6 +28,9 @@ type DisplayElement = {
   y2: number;
   start: number;
   end: number;
+  // FIXME: Something weird here
+  exon_number: number;
+  feature: string;
   features: string[];
   isDisplayed: boolean;
   tooltip: any;

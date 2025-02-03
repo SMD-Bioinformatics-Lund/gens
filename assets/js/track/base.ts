@@ -92,7 +92,7 @@ export class BaseAnnotationTrack {
   maxResolution: number;
   geneticElements: any[];
 
-  constructor(width: number, near, far, visibleHeight: number, minHeight: number, colorSchema) {
+  constructor(width: number, near, far, visibleHeight: number, minHeight: number, colorSchema: string = "") {
     // Track variables
     this.featureHeight = 20; // Max height for feature
     this.featureMargin = 14; // Margin for fitting gene name under track

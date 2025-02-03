@@ -31,6 +31,13 @@ function addFeatures(elem, tooltipElement) {
 }
 
 export class TranscriptTrack extends BaseAnnotationTrack {
+
+  readonly apiEntrypoint: string = "get-transcript-data";
+  readonly maxResolution: number = 4;
+  readonly geneLineWidth: number = 2;
+
+  genomeBuild: number;
+
   constructor(x, width, near, far, genomeBuild, colorSchema) {
     // Dimensions of track canvas
     const visibleHeight = 100; // Visible height for expanded canvas, overflows for scroll
@@ -47,18 +54,12 @@ export class TranscriptTrack extends BaseAnnotationTrack {
     // Setup html objects now that we have gotten the canvas and div elements
     this.setupHTML(x + 1);
 
-    // GENS api parameters
-    this.apiEntrypoint = "get-transcript-data";
-
     this.genomeBuild = genomeBuild;
-    this.maxResolution = 4;
-    // Define with of the elements
-    this.geneLineWidth = 2;
     initTrackTooltips(this);
   }
 
   // draw feature
-  _drawFeature(feature, heightOrder, canvasYPos, color, plotFormat) {
+  _drawFeature(feature: DisplayElement, heightOrder, canvasYPos: number, color: string, plotFormat) {
     // Go trough feature list and draw geometries
     const scale = this.offscreenPosition.scale;
     // store feature rendering information
@@ -69,11 +70,11 @@ export class TranscriptTrack extends BaseAnnotationTrack {
     // Draw the geometry that represents the feature
     if (feature.feature === "exon") {
       // generate feature object
-      const visibleCoords = getVisibleXCoordinates({
-        canvas: this.onscreenPosition,
-        feature: feature,
-        scale: scale,
-      });
+      const visibleCoords = getVisibleXCoordinates(
+        this.onscreenPosition,
+        feature,
+        scale,
+      );
       const featureObj = {
         id: feature.exon_number,
         start: feature.start,
