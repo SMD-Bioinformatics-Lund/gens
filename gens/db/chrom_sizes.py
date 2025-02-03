@@ -1,10 +1,10 @@
 """Read and write chrom sizes."""
 
-from typing import List
-from enum import Enum
+from typing import List, Dict, Any, TypedDict
 from pymongo import MongoClient
 
 from gens.models import RWModel
+from gens.models.base import DnaStrand, Chromosome, GenomeBuild
 
 
 CHROMSIZES = "chrom-sizes"
@@ -33,7 +33,18 @@ class ChromInfo(RWModel):
     bands: List[ChromBand] = []
 
 
-def get_chromosome_size(db: MongoClient, chrom: str, genome_build:int=38) -> ChromInfo:
+class ChromosomeInfo(TypedDict):
+    """Information on a chromosome."""
+
+    chrom: Chromosome
+    genome_build: GenomeBuild
+    size: int
+    scale: float
+    centromere: GenomePosition
+    bands: List[ChromBand]
+
+
+def get_chromosome_size(db: MongoClient[Dict[str, Any]], chrom: str, genome_build:int=38) -> ChromInfo:
     """
     Gets the size in base pairs of a chromosome
     """

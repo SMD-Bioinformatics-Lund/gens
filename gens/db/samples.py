@@ -3,13 +3,11 @@
 import datetime
 import itertools
 import logging
-from typing import Optional
+from gens.models.base import GenomeBuild, RWModel, CreatedAtModel
 
 from pymongo import MongoClient
 from pymongo import DESCENDING
 from pymongo.errors import DuplicateKeyError
-
-from .models import SampleObj
 
 LOG = logging.getLogger(__name__)
 
@@ -32,6 +30,17 @@ class NonUniqueIndexError(Exception):
         self.genome_build = genome_build
 
 
+class SampleInfo(RWModel, CreatedAtModel):
+    """Sample record stored in the database."""
+
+    sample_id: str
+    case_id: str
+    genome_build: GenomeBuild
+    baf_file: str
+    coverage_file: str
+    overview_file: str
+
+
 def store_sample(
     db: MongoClient,
     sample_id: str,
@@ -44,6 +53,10 @@ def store_sample(
 ):
     """Store a new sample in the database."""
     LOG.info(f'Store sample "{sample_id}" in database')
+    sample_obj = SampleInfo(
+        sample_id=sample_id, case_id=case_id, genome_build=GenomeBuild(int(genome_build)),
+        baf_file=baf, coverage_file=coverage, overview_file=overview
+    )
     if force:
         result = db[COLLECTION].update_one(
             {
@@ -52,15 +65,7 @@ def store_sample(
                 "genome_build": genome_build,
             },
             {
-                "$set": {
-                    "sample_id": sample_id,
-                    "case_id": case_id,
-                    "baf_file": baf,
-                    "coverage_file": coverage,
-                    "overview_file": overview,
-                    "genome_build": genome_build,
-                    "created_at": datetime.datetime.now(),
-                }
+                "$set": sample_obj.model_dump()
             },
             upsert=True,
         )
@@ -77,34 +82,24 @@ def store_sample(
             )
     else:
         try:
-            db[COLLECTION].insert_one(
-                {
-                    "sample_id": sample_id,
-                    "case_id": case_id,
-                    "baf_file": baf,
-                    "coverage_file": coverage,
-                    "overview_file": overview,
-                    "genome_build": genome_build,
-                    "created_at": datetime.datetime.now(),
-                }
-            )
+            db[COLLECTION].insert_one(sample_obj.model_dump())
         except DuplicateKeyError:
             LOG.error(
                 f'DuplicateKeyError while storing sample with sample_id="{sample_id}" and case_id="{case_id}" in database.'
             )
 
 
-def get_samples(db: MongoClient, start:int = 0, n_samples: int|None = None) -> tuple[list[SampleObj], int]:
+def get_samples(db: MongoClient, start:int = 0, n_samples: int|None = None) -> tuple[list[SampleInfo], int]:
     """
     Get samples stored in the databse.
 
     use n_samples to limit the results to x most recent samples
     """
     results = (
-        SampleObj(
+        SampleInfo(
             sample_id=r["sample_id"],
             case_id=r["case_id"],
-            genome_build=r["genome_build"],
+            genome_build=GenomeBuild(int(r["genome_build"])),
             baf_file=r["baf_file"],
             coverage_file=r["coverage_file"],
             overview_file=r["overview_file"],
@@ -118,7 +113,7 @@ def get_samples(db: MongoClient, start:int = 0, n_samples: int|None = None) -> t
     return results, db[COLLECTION].count_documents({})
 
 
-def query_sample(db: MongoClient, sample_id: str, case_id: str|None, _genome_build: int):
+def query_sample(db: MongoClient, sample_id: str, case_id: str|None, _genome_build: int) -> SampleInfo:
     """Get a sample with id."""
     result = None
     if case_id is None:
@@ -128,10 +123,10 @@ def query_sample(db: MongoClient, sample_id: str, case_id: str|None, _genome_bui
 
     if result is None:
         raise SampleNotFoundError(f'No sample with id: "{sample_id}" in database', sample_id)
-    return SampleObj(
+    return SampleInfo(
         sample_id=result["sample_id"],
         case_id=result["case_id"],
-        genome_build=result["genome_build"],
+        genome_build=GenomeBuild(int(result["genome_build"])),
         baf_file=result["baf_file"],
         coverage_file=result["coverage_file"],
         overview_file=result["overview_file"],

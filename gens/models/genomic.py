@@ -44,3 +44,11 @@ class Chromosome(Enum):
     CHX = "X"
     CHY = "Y"
     MT = "MT"
+
+
+class VariantCategory(Enum):
+    """Valid categories for variants."""
+
+    STRUCTURAL = "str"
+    SINGLE_VAR = "sv"
+    SINGLE_NT_VAR = "snv"

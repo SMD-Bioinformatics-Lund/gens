@@ -9,14 +9,15 @@ from typing import List
 import attr
 import cattr
 import connexion
-from flask import abort, current_app, jsonify, request
+from flask import current_app, jsonify, request
 
 from gens.db import (ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION,
-                     VariantCategory, get_chromosome_size,
+                     get_chromosome_size,
                      query_records_in_region, query_sample, query_variants)
 from gens.exceptions import RegionParserException
 from gens.graph import (REQUEST, get_cov, overview_chrom_dimensions,
                         parse_region_str)
+from gens.models.genomic import VariantCategory
 
 from .constants import CHROMOSOMES, GENOME_BUILDS
 from .io import get_tabix_files

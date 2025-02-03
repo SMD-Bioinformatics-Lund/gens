@@ -4,11 +4,11 @@ import datetime
 import logging
 from collections import defaultdict
 from itertools import groupby
-from typing import Any, Optional
+from typing import Any
 
 from flask import current_app as app
 
-from .models import VariantCategory
+from gens.models.genomic import VariantCategory
 
 LOG = logging.getLogger(__name__)
 
