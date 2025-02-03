@@ -4,7 +4,7 @@ from typing import List, Dict, Any, TypedDict
 from pymongo import MongoClient
 
 from gens.models import RWModel
-from gens.models.base import DnaStrand, Chromosome, GenomeBuild
+from gens.models.genomic import DnaStrand, Chromosome, GenomeBuild
 
 
 CHROMSIZES = "chrom-sizes"
@@ -44,13 +44,13 @@ class ChromosomeInfo(TypedDict):
     bands: List[ChromBand]
 
 
-def get_chromosome_size(db: MongoClient[Dict[str, Any]], chrom: str, genome_build:int=38) -> ChromInfo:
+def get_chromosome_size(db: MongoClient[Dict[str, Any]], chrom: Chromosome, genome_build:int=38) -> ChromInfo:
     """
     Gets the size in base pairs of a chromosome
     """
     chrom_data = db[CHROMSIZES].find_one(
         {
-            "chrom": str(chrom),
+            "chrom": chrom.value,
             "genome_build": int(genome_build),
         }
     )

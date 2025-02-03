@@ -17,9 +17,8 @@ from gens.db import (ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION,
 from gens.exceptions import RegionParserException
 from gens.graph import (REQUEST, get_cov, overview_chrom_dimensions,
                         parse_region_str)
-from gens.models.genomic import VariantCategory
+from gens.models.genomic import VariantCategory, Chromosome, GenomeBuild
 
-from .constants import CHROMOSOMES, GENOME_BUILDS
 from .io import get_tabix_files
 
 LOG = logging.getLogger(__name__)
@@ -44,7 +43,7 @@ class ChromosomePosition:
         end: [0-9]+|None
         """
         chrom, start, end = re.search(r"^(.+):(.+)-(.+)$", value).groups()
-        if chrom not in CHROMOSOMES:
+        if chrom not in Chromosome:
             raise ValueError(f"{chrom} is not a valid chromosome name")
         if 0 > float(start):
             raise ValueError(f"{start} is not a valid start position")
@@ -69,8 +68,8 @@ class ChromCoverageRequest:
 
     @genome_build.validator
     def valid_genome_build(self, attribute, value):
-        if not value in GENOME_BUILDS:
-            raise ValueError(f"{value} is not of valid hg types; {GENOME_BUILDS}")
+        if not value in GenomeBuild:
+            raise ValueError(f"{value} is not of valid hg types; {GenomeBuild}")
 
     @reduce_data.validator
     def valid_perc(self, attribute, value):
@@ -182,7 +181,7 @@ def search_annotation(query: str, genome_build, annotation_type):
     collection = current_app.config["GENS_DB"][annotation_type]
     db_query = {"gene_name": re.compile("^" + re.escape(query) + "$", re.IGNORECASE)}
 
-    if genome_build and int(genome_build) in GENOME_BUILDS:
+    if genome_build and int(genome_build) in GenomeBuild:
         db_query["genome_build"] = genome_build
 
     elements = list(collection.find(db_query, sort=[("start", 1), ("chrom", 1)]))

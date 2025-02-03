@@ -8,7 +8,8 @@ from typing import Iterator
 from pymongo import MongoClient
 from pymongo import ASCENDING
 
-from gens.constants import CHROMOSOMES
+from gens.models import RWModel
+from gens.models.genomic import Chromosome
 from gens.db import ANNOTATIONS_COLLECTION
 
 LOG = logging.getLogger(__name__)
@@ -143,10 +144,10 @@ def update_height_order(db: MongoClient, name: str):
 
     Height order is used for annotation placement
     """
-    for chrom in CHROMOSOMES:
+    for chrom in Chromosome:
         annotations = (
             db[ANNOTATIONS_COLLECTION]
-            .find({"chrom": chrom, "source": name})
+            .find({"chrom": chrom.value, "source": name})
             .sort([("start", ASCENDING)])
         )
 

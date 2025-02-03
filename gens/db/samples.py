@@ -3,7 +3,8 @@
 import datetime
 import itertools
 import logging
-from gens.models.base import GenomeBuild, RWModel, CreatedAtModel
+from gens.models.base import RWModel, CreatedAtModel
+from gens.models.genomic import GenomeBuild
 
 from pymongo import MongoClient
 from pymongo import DESCENDING

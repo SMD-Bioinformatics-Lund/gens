@@ -6,16 +6,16 @@ import click
 from flask import current_app as app
 from flask.cli import with_appcontext
 
-from gens.constants import GENOME_BUILDS
 from gens.db import (ANNOTATIONS_COLLECTION, CHROMSIZES_COLLECTION,
                      SAMPLES_COLLECTION, TRANSCRIPTS_COLLECTION, create_index,
                      get_indexes, register_data_update, store_sample)
+from gens.models.genomic import GenomeBuild
 from gens.load import (ParserError, build_chromosomes_obj, build_transcripts,
                        get_assembly_info, parse_annotation_entry,
                        parse_annotation_file, update_height_order)
 
 LOG = logging.getLogger(__name__)
-valid_genome_builds = [str(gb) for gb in GENOME_BUILDS]
+valid_genome_builds = [str(gb.value) for gb in GenomeBuild]
 
 
 @click.group()

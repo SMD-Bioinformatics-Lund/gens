@@ -8,10 +8,10 @@ from flask import current_app as app
 from flask import request
 
 from .cache import cache
-from .constants import CHROMOSOMES
 from .db import get_chromosome_size
-from .exceptions import NoRecordsException, RegionParserException
+from .exceptions import RegionParserException
 from .io import tabix_query
+from .models.genomic import Chromosome
 
 LOG = logging.getLogger(__name__)
 
@@ -86,14 +86,14 @@ def find_chrom_at_pos(chrom_dims, height, current_x, current_y, margin):
     """
     current_chrom = None
 
-    for chrom in CHROMOSOMES:
-        x_pos = chrom_dims[chrom]["x_pos"]
-        y_pos = chrom_dims[chrom]["y_pos"]
-        width = chrom_dims[chrom]["width"]
+    for chrom in Chromosome:
+        x_pos = chrom_dims[chrom.value]["x_pos"]
+        y_pos = chrom_dims[chrom.value]["y_pos"]
+        width = chrom_dims[chrom.value]["width"]
         if x_pos + margin <= current_x <= (
             x_pos + width
         ) and y_pos + margin <= current_y <= (y_pos + height):
-            current_chrom = chrom
+            current_chrom = chrom.value
             break
 
     return current_chrom
@@ -105,7 +105,7 @@ def overview_chrom_dimensions(x_pos, y_pos, plot_width, genome_build):
     """
     db = app.config["GENS_DB"]
     chrom_dims = {}
-    for chrom in CHROMOSOMES:
+    for chrom in Chromosome:
         chrom_data = get_chromosome_size(db, chrom, genome_build)
         chrom_width = plot_width * chrom_data.scale
         chrom_dims[chrom] = {
