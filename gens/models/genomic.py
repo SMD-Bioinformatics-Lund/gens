@@ -4,10 +4,15 @@ from enum import Enum
 
 
 class DnaStrand(Enum):  # TODO migrate to +/-
-    """Valid DNA strand names."""
+    """Valid DNA strand names.
 
-    FOR = 0
-    REV = 1
+    Names compliant with BED specification v1.0
+    ref: https://samtools.github.io/hts-specs/BEDv1.pdf
+    """
+
+    FOR = '+'
+    REV = '-'
+    UNKNOWN = '.'
 
 class GenomeBuild(Enum):
     """Valid genome builds."""

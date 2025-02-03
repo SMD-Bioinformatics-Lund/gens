@@ -4,12 +4,14 @@ import logging
 from pathlib import Path
 import re
 from typing import Iterator
+from pydantic_extra_types.color import Color
+from pydantic import field_serializer
 
 from pymongo import MongoClient
 from pymongo import ASCENDING
 
 from gens.models import RWModel
-from gens.models.genomic import Chromosome
+from gens.models.genomic import Chromosome, GenomeBuild, DnaStrand
 from gens.db import ANNOTATIONS_COLLECTION
 
 LOG = logging.getLogger(__name__)
@@ -28,6 +30,25 @@ DEFAULT_COLOR = "grey"
 
 class ParserError(Exception):
     pass
+
+
+class AnnotationRecord(RWModel):
+    """Annotation record."""
+
+    name: str
+    chrom: Chromosome
+    genome_build: GenomeBuild
+    score: int
+    source: str
+    start: int
+    end: int
+    strand: DnaStrand
+    color: Color
+
+    @field_serializer('color')
+    def serialize_color(self, color: Color, _info) -> tuple[int, int, int]:
+        """Serialize RGB as tuple"""
+        return color.as_rgb_tuple()
 
 
 def parse_bed(file: Path) -> Iterator[dict[str, str]]:
@@ -66,7 +87,7 @@ def parse_aed(file: Path) -> Iterator[dict[str, str]]:
             yield dict(zip(header, line))
 
 
-def parse_annotation_entry(entry: dict[str, str], genome_build: int, annotation_name: str) -> dict[str, str|int]:
+def parse_annotation_entry(entry: dict[str, str], genome_build: int, annotation_name: str) -> AnnotationRecord:
     """Parse a bed or aed entry"""
     annotation: dict[str, str|int] = {}
     # parse entry and format the values
@@ -90,12 +111,11 @@ def parse_annotation_entry(entry: dict[str, str], genome_build: int, annotation_
     # set missing fields to default values
     set_missing_fields(annotation, annotation_name)
     # set additional values
-    annotation = {
-        "source": annotation_name,
-        "genome_build": genome_build,
+    return AnnotationRecord(
+        source=annotation_name,
+        genome_build=GenomeBuild(int(genome_build)),
         **annotation,
-    }
-    return annotation
+    )
 
 
 def format_data(name: str, value: str) -> str|int:

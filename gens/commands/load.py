@@ -13,6 +13,7 @@ from gens.models.genomic import GenomeBuild
 from gens.load import (ParserError, build_chromosomes_obj, build_transcripts,
                        get_assembly_info, parse_annotation_entry,
                        parse_annotation_file, update_height_order)
+from gens.load.annotations import AnnotationRecord
 
 LOG = logging.getLogger(__name__)
 valid_genome_builds = [str(gb.value) for gb in GenomeBuild]
@@ -120,13 +121,13 @@ def annotations(file: str, genome_build: int):
         parser = parse_annotation_file(
             annot_file, file_format=annot_file.suffix[1:]
         )
-        annotation_obj: list[dict[str, str|int]] = []
+        annotations: list[AnnotationRecord] = []
         for entry in parser:
             try:
                 entry_obj = parse_annotation_entry(
                     entry, genome_build, annotation_name
                 )
-                annotation_obj.append(entry_obj)
+                annotations.append(entry_obj)
             except ParserError as err:
                 LOG.warning(str(err))
                 continue
@@ -136,7 +137,7 @@ def annotations(file: str, genome_build: int):
         db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
         # add the annotations
         LOG.info(f"Load annoatations in the database")
-        db[ANNOTATIONS_COLLECTION].insert_many(annotation_obj)
+        db[ANNOTATIONS_COLLECTION].insert_many([annot.model_dump() for annot in annotations])
         LOG.info("Update height order")
         # update the height order of annotations in the database
         update_height_order(db, annotation_name)
