@@ -4,11 +4,13 @@ import json
 import logging
 import os
 import re
-from typing import List
+from typing import List, Any
 
 import attr
 import cattr
 import connexion
+from fastapi.encoders import jsonable_encoder
+
 from flask import current_app, jsonify, request
 
 from gens.db import (ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION,
@@ -76,7 +78,7 @@ class ChromCoverageRequest:
         if not 0 <= value <= 1:
             raise ValueError(f"{value} is not within 0-1")
 
-def get_overview_chrom_dim(x_pos, y_pos, plot_width, genome_build):
+def get_overview_chrom_dim(x_pos, y_pos, plot_width, genome_build) -> dict[str, Any]:
     """
     Returns the dimensions of all chromosome graphs in screen coordinates
     for drawing the chromosomes correctly in the overview graph
@@ -84,11 +86,14 @@ def get_overview_chrom_dim(x_pos, y_pos, plot_width, genome_build):
     LOG.info(
         f"Get overview chromosome dim: ({x_pos}, {y_pos}), w={plot_width}, {genome_build}"
     )
-    chrom_dims = overview_chrom_dimensions(x_pos, y_pos, plot_width, genome_build)
-    return jsonify(status="ok", chrom_dims=chrom_dims)
+    query_result = {
+        "status": "ok", 
+        "chrom_dims": overview_chrom_dimensions(x_pos, y_pos, plot_width, genome_build)
+    }
+    return jsonable_encoder(query_result)
 
 
-def get_annotation_sources(genome_build):
+def get_annotation_sources(genome_build: int):
     """
     Returns available annotation source files
     """
@@ -127,15 +132,16 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
     # Calculate maximum height order
     max_height_order = max(annotations, key=lambda e: e.height_order) if annotations else 1
 
-    return jsonify(
-        status="ok",
-        chromosome=chrom.value,
-        start_pos=start_pos,
-        end_pos=end_pos,
-        annotations=[annot.model_dump() for annot in annotations],
-        max_height_order=max_height_order,
-        res=res.value,
-    )
+    query_result = {
+        "status": "ok",
+        "chromosome": chrom,
+        "start_pos": start_pos,
+        "end_pos": end_pos,
+        "annotations": annotations,
+        "max_height_order": max_height_order,
+        "res": res,
+    }
+    return jsonable_encoder(query_result)
 
 
 def get_transcript_data(region, genome_build, collapsed):
@@ -253,7 +259,7 @@ def get_variant_data(case_id, sample_id, variant_category, **optional_kwargs):
     )
 
 
-def get_multiple_coverages():
+def get_multiple_coverages() -> dict[str, Any]:
     """Read default Log2 ratio and BAF values for overview graph."""
     if connexion.request.is_json:
         data = cattr.structure(connexion.request.get_json(), ChromCoverageRequest)
@@ -318,10 +324,7 @@ def get_multiple_coverages():
             "start": reg.start_pos,
             "end": reg.end_pos,
         }
-    return jsonify(
-        results=results,
-        status="ok",
-    )
+    return jsonable_encoder({"results": results, "status": "ok"})
 
 
 def get_coverage(
