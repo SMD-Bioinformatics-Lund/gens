@@ -178,24 +178,24 @@ export class OverviewCanvas extends BaseScatterTrack {
 
     // Draw rotated y-axis legends
     if (chromCovData.x_pos < this.leftmostPoint) {
-      drawRotatedText(
-        ctx,
-        "B Allele Freq",
-        18,
-        chromCovData.x_pos - this.legendMargin,
-        chromCovData.y_pos + this.plotHeight / 2,
-        -Math.PI / 2,
-        this.titleColor,
-      );
-      drawRotatedText(
-        ctx,
-        "Log2 Ratio",
-        18,
-        chromCovData.x_pos - this.legendMargin,
-        chromCovData.y_pos + 1.5 * this.plotHeight,
-        -Math.PI / 2,
-        this.titleColor,
-      );
+      drawRotatedText({
+        ctx: ctx,
+        text: "B Allele Freq",
+        posx: chromCovData.x_pos - this.legendMargin,
+        posy: chromCovData.y_pos + this.plotHeight / 2,
+        rot_degrees: -Math.PI / 2,
+        textSize: 18,
+        color: this.titleColor,
+      });
+      drawRotatedText({
+        ctx: ctx,
+        text: "Log2 Ratio",
+        posx: chromCovData.x_pos - this.legendMargin,
+        posy: chromCovData.y_pos + 1.5 * this.plotHeight,
+        rot_degrees: -Math.PI / 2,
+        textSize: 18,
+        color: this.titleColor,
+      });
     }
     // Draw BAF
     createGraph(

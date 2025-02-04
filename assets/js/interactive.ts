@@ -265,24 +265,24 @@ export class InteractiveCanvas extends BaseScatterTrack {
     );
 
     // Draw rotated y-axis legends
-    drawRotatedText(
-      staticContext,
-      "B Allele Freq",
-      18,
-      this.x - this.legendMargin,
-      this.y + this.plotHeight / 2,
-      -Math.PI / 2,
-      this.titleColor,
-    );
-    drawRotatedText(
-      staticContext,
-      "Log2 Ratio",
-      18,
-      this.x - this.legendMargin,
-      this.y + 1.5 * this.plotHeight,
-      -Math.PI / 2,
-      this.titleColor,
-    );
+    drawRotatedText({
+      ctx: staticContext,
+      text: "B Allele Freq",
+      posx: this.x - this.legendMargin,
+      posy: this.y + this.plotHeight / 2,
+      rot_degrees: -Math.PI / 2,
+      textSize: 18,
+      color: this.titleColor,
+    });
+    drawRotatedText({
+      ctx: staticContext,
+      text: "Log2 Ratio",
+      posx: this.x - this.legendMargin,
+      posy: this.y + 1.5 * this.plotHeight,
+      rot_degrees: -Math.PI / 2,
+      textSize: 18,
+      color: this.titleColor,
+    });
 
     // Draw BAF
     createGraph(
