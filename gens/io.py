@@ -17,9 +17,9 @@ JSON_SUFFIX = ".overview.json.gz"
 LOG = logging.getLogger(__name__)
 
 
-def _get_filepath(*args, check=True):
+def _get_filepath(*args: list[str], check: bool = True) -> str:
     """Utility function to get file paths with logs."""
-    path = os.path.join(*args)
+    path: str = str(os.path.join(*args))
     if not os.path.isfile(path) and check:
         msg = f"File not found: {path}"
         LOG.error(msg)
@@ -27,7 +27,7 @@ def _get_filepath(*args, check=True):
     return path
 
 
-def get_tabix_files(coverage_file, baf_file):
+def get_tabix_files(coverage_file: str, baf_file: str) -> tuple[pysam.TabixFile, pysam.TabixFile]:
     """Get tabix files for sample."""
     _get_filepath(coverage_file + ".tbi") and _get_filepath(baf_file + ".tbi")
     cov_file = pysam.TabixFile(_get_filepath(coverage_file))

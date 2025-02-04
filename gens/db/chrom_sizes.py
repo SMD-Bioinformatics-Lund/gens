@@ -29,8 +29,8 @@ class ChromInfo(RWModel):
     genome_build: GenomeBuild
     size: int
     scale: float
-    centromere: GenomePosition
-    bands: List[ChromBand] = []
+    centromere: GenomePosition | None
+    bands: List[ChromBand] | None
 
 
 class ChromosomeInfo(TypedDict):
@@ -40,7 +40,7 @@ class ChromosomeInfo(TypedDict):
     genome_build: GenomeBuild
     size: int
     scale: float
-    centromere: GenomePosition
+    centromere: GenomePosition | None
     bands: List[ChromBand]
 
 

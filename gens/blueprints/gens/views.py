@@ -11,6 +11,7 @@ from gens.cache import cache
 from gens.db import query_sample
 from gens.graph import parse_region_str
 from gens.io import _get_filepath
+from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ def display_case(sample_name):
     case_id = request.args.get("case_id")
     if case_id is None:
         raise ValueError("You must provide a case id when opening a sample.")
-    individual_id = request.args.get("individual_id", sample_name)
+    individual_id: str = request.args.get("individual_id", sample_name)
     
     # get genome build and region
     region = request.args.get("region", None)
@@ -43,7 +44,7 @@ def display_case(sample_name):
 
     # Parse region, default to grch38
     with current_app.app_context():
-        genome_build = request.args.to_dict().get("genome_build", "38")
+        genome_build = GenomeBuild(int(request.args.get("genome_build", "38")))
 
     parsed_region = parse_region_str(region, genome_build)
     if not parsed_region:
@@ -76,13 +77,13 @@ def display_case(sample_name):
         "gens.html",
         ui_colors=UI_COLORS,
         scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
-        chrom=chrom,
+        chrom=chrom.value,
         start=start_pos,
         end=end_pos,
         sample_name=sample_name,
         individual_id=individual_id,
         case_id=case_id,
-        genome_build=genome_build,
+        genome_build=genome_build.value,
         print_page=print_page,
         annotation=annotation,
         selected_variant=selected_variant,

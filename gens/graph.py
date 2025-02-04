@@ -1,9 +1,9 @@
 """Functions for getting information from Gens views."""
-import itertools
 import logging
 import re
 from collections import namedtuple
 from enum import Enum
+from typing import Any
 
 from flask import current_app as app
 from flask import request
@@ -13,6 +13,7 @@ from .db import get_chromosome_size
 from .exceptions import RegionParserException
 from .io import tabix_query
 from .models.genomic import Chromosome, GenomeBuild
+from pysam import TabixFile
 
 LOG = logging.getLogger(__name__)
 
@@ -109,7 +110,9 @@ def find_chrom_at_pos(chrom_dims, height, current_x, current_y, margin):
     return current_chrom
 
 
-def overview_chrom_dimensions(x_pos, y_pos, plot_width, genome_build):
+ChromDims = dict[Chromosome, dict[str, float | int]]
+
+def overview_chrom_dimensions(x_pos: float, y_pos: float, plot_width: float, genome_build: GenomeBuild) -> ChromDims:
     """
     Calculates the position for all chromosome graphs in the overview canvas
     """
@@ -257,7 +260,7 @@ def set_region_values(parsed_region, x_ampl):
     )
 
 
-def get_cov(req, x_ampl, json_data=None, cov_fh=None, baf_fh=None):
+def get_cov(req, x_ampl: float, json_data: dict[str, Any] | None=None, cov_fh: TabixFile | None=None, baf_fh: TabixFile | None=None):
     """Get Log2 ratio and BAF values for chromosome with screen coordinates."""
     db = app.config["GENS_DB"]
     graph = set_graph_values(req)
@@ -277,8 +280,8 @@ def get_cov(req, x_ampl, json_data=None, cov_fh=None, baf_fh=None):
 
     if json_data:
         data_type = "json"
-        baf_list = json_data[region.chrom]["baf"]
-        log2_list = json_data[region.chrom]["cov"]
+        baf_list = json_data[region.chrom.value]["baf"]
+        log2_list = json_data[region.chrom.value]["cov"]
     else:
         data_type = "bed"
 
