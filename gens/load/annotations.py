@@ -4,14 +4,12 @@ import logging
 from pathlib import Path
 import re
 from typing import Iterator
-from pydantic_extra_types.color import Color
-from pydantic import field_serializer
 
 from pymongo import MongoClient
 from pymongo import ASCENDING
 
-from gens.models import RWModel
-from gens.models.genomic import Chromosome, GenomeBuild, DnaStrand
+from gens.models.genomic import Chromosome, GenomeBuild
+from gens.models.annotation import AnnotationRecord
 from gens.db import ANNOTATIONS_COLLECTION
 
 LOG = logging.getLogger(__name__)
@@ -30,25 +28,6 @@ DEFAULT_COLOR = "grey"
 
 class ParserError(Exception):
     pass
-
-
-class AnnotationRecord(RWModel):
-    """Annotation record."""
-
-    name: str
-    chrom: Chromosome
-    genome_build: GenomeBuild
-    score: int
-    source: str
-    start: int
-    end: int
-    strand: DnaStrand
-    color: Color
-
-    @field_serializer('color')
-    def serialize_color(self, color: Color, _info) -> tuple[int, int, int]:
-        """Serialize RGB as tuple"""
-        return color.as_rgb_tuple()
 
 
 def parse_bed(file: Path) -> Iterator[dict[str, str]]:

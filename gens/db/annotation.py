@@ -8,7 +8,8 @@ from typing import Any
 
 from flask import current_app as app
 
-from gens.models.genomic import VariantCategory
+from gens.models.genomic import VariantCategory, Chromosome, GenomeBuild
+from gens.models.annotation import TranscriptRecord, AnnotationRecord
 
 LOG = logging.getLogger(__name__)
 
@@ -101,18 +102,18 @@ def _make_query_region(start_pos: int, end_pos: int, motif_type: str="other") ->
 
 def query_records_in_region(
     record_type: str,
-    chrom: str,
+    chrom: Chromosome,
     start_pos: int,
     end_pos: int,
-    genome_build: int,
+    genome_build: GenomeBuild,
     height_order:str|None=None,
     **kwargs,
 ) -> Any:
     """Query the gens database for transcript information."""
     # build base query
     query = {
-        "chrom": chrom,
-        "genome_build": genome_build,
+        "chrom": chrom.value,
+        "genome_build": genome_build.value,
         **_make_query_region(start_pos, end_pos),
         **kwargs,  # add optional search params
     }
@@ -123,6 +124,13 @@ def query_records_in_region(
     else:
         query["height_order"] = height_order
     # query database
-    return app.config["GENS_DB"][record_type].find(
+    cursor = app.config["GENS_DB"][record_type].find(
         query, {"_id": False}, sort=sort_order
     )
+    if record_type == 'annotations':
+        result = [AnnotationRecord(**doc) for doc in cursor]
+    elif record_type == 'transcripts':
+        result = [TranscriptRecord(**doc) for doc in cursor]
+    else:
+        raise ValueError(f'unknown record type {record_type}')
+    return result

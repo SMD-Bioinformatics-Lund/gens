@@ -1,6 +1,6 @@
 """Models related to genomic data"""
 
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class DnaStrand(Enum):  # TODO migrate to +/-
@@ -14,7 +14,7 @@ class DnaStrand(Enum):  # TODO migrate to +/-
     REV = '-'
     UNKNOWN = '.'
 
-class GenomeBuild(Enum):
+class GenomeBuild(IntEnum):
     """Valid genome builds."""
 
     HG19 = 19

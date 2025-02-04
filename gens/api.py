@@ -98,7 +98,7 @@ def get_annotation_sources(genome_build):
     return jsonify(status="ok", sources=sources)
 
 
-def get_annotation_data(region, source, genome_build, collapsed):
+def get_annotation_data(region: str, source: str, genome_build: int, collapsed: bool):
     """
     Gets annotation data in requested region and converts the coordinates
     to screen coordinates
@@ -108,7 +108,7 @@ def get_annotation_data(region, source, genome_build, collapsed):
         LOG.error(msg)
         return (jsonify({"detail": msg}), 404)
 
-    genome_build = request.args.get("genome_build", "38")
+    genome_build = GenomeBuild(genome_build)
     res, chrom, start_pos, end_pos = parse_region_str(region, genome_build)
 
     # Get annotations within span [start_pos, end_pos] or annotations that
@@ -125,16 +125,16 @@ def get_annotation_data(region, source, genome_build, collapsed):
         )
     )
     # Calculate maximum height order
-    max_height_order = max(t["height_order"] for t in annotations) if annotations else 1
+    max_height_order = max(annotations, key=lambda e: e.height_order) if annotations else 1
 
     return jsonify(
         status="ok",
-        chromosome=chrom,
+        chromosome=chrom.value,
         start_pos=start_pos,
         end_pos=end_pos,
-        annotations=annotations,
+        annotations=[annot.model_dump() for annot in annotations],
         max_height_order=max_height_order,
-        res=res,
+        res=res.value,
     )
 
 

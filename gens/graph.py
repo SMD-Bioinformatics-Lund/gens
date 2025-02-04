@@ -3,6 +3,7 @@ import itertools
 import logging
 import re
 from collections import namedtuple
+from enum import Enum
 
 from flask import current_app as app
 from flask import request
@@ -11,7 +12,7 @@ from .cache import cache
 from .db import get_chromosome_size
 from .exceptions import RegionParserException
 from .io import tabix_query
-from .models.genomic import Chromosome
+from .models.genomic import Chromosome, GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
@@ -35,6 +36,15 @@ REQUEST = namedtuple(
         "reduce_data",
     ),
 )
+
+
+class ZoomLevel(Enum):
+    """Valid zoom or resolution levels."""
+
+    A = 'a'
+    B = 'b'
+    C = 'c'
+    D = 'd'
 
 
 @cache.memoize(0)
@@ -119,7 +129,7 @@ def overview_chrom_dimensions(x_pos, y_pos, plot_width, genome_build):
 
 
 @cache.memoize(50)
-def parse_region_str(region, genome_build):
+def parse_region_str(region: str, genome_build: GenomeBuild) -> tuple[ZoomLevel, Chromosome, int, int] | None:
     """
     Parses a region string
     """
@@ -130,7 +140,7 @@ def parse_region_str(region, genome_build):
             chrom, pos_range = region.split(":")
             start, end = pos_range.split("-")
             chrom.replace("chr", "")
-            chrom = chrom.upper()
+            chrom = Chromosome(chrom.upper())
         else:
             # Not in standard format, query in form of full chromsome
             # or gene
@@ -141,10 +151,10 @@ def parse_region_str(region, genome_build):
 
     if name_search is not None:
         # Query is for a full range chromosome
-        if name_search.upper() in CHROMOSOMES:
+        if name_search.upper() in [ch.value for ch in Chromosome]:
             start = 0
             end = "None"
-            chrom = name_search.upper()
+            chrom = Chromosome(name_search.upper())
         else:
             # Lookup queried gene
             collection = app.config["GENS_DB"]["transcripts" + genome_build]
@@ -165,7 +175,7 @@ def parse_region_str(region, genome_build):
                 sort=[("end", -1)],
             )
             if start is not None and end is not None:
-                chrom = start["chrom"]
+                chrom = Chromosome(start["chrom"])
                 start = start["start"]
                 end = end["end"]
             else:
@@ -191,13 +201,13 @@ def parse_region_str(region, genome_build):
         start = max(0, start - (end - chrom_data.size))
         end = chrom_data.size
 
-    resolution = "d"
+    resolution = ZoomLevel.D
     if size > 15000000:
-        resolution = "a"
+        resolution = ZoomLevel.A
     elif size > 1400000:
-        resolution = "b"
+        resolution = ZoomLevel.B
     elif size > 200000:
-        resolution = "c"
+        resolution = ZoomLevel.C
 
     return resolution, chrom, start, end
 
