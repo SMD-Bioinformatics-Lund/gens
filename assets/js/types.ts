@@ -13,6 +13,23 @@ interface DrawPaths {
   bands: BandPath[];
 }
 
+interface Transcript {
+  id: string;
+  name: string;
+  chrom: string;
+  start: number;
+  end: number;
+  mane: string;
+  scale: number;
+  color: string;
+  features: any[];
+
+  x1?: number;
+  x2?: number;
+  y1?: number;
+  y2?: number;
+}
+
 interface DrawChromosome {
   path: Path2D;
   chromInfo?: {
