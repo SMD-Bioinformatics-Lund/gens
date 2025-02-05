@@ -162,7 +162,7 @@ export function createGraph({
   }
 
   // Draw surrounding coordinate box
-  drawRect({ ctx, x, y, width, height, lineWidth: 1, color, open });
+  // drawRect({ ctx, x, y, width, height, lineWidth: 1, color, open });
 }
 
 // Draws tick marks for selected values between

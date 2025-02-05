@@ -146,30 +146,30 @@ export function drawRect({
   y = Math.floor(y) + 0.5;
   width = Math.floor(width);
 
-  if (color !== null) ctx.strokeStyle = color;
-  ctx.lineWidth = lineWidth;
+//   if (color !== null) ctx.strokeStyle = color;
+//   ctx.lineWidth = lineWidth;
 
-  // define path to draw
-  const path = new Path2D();
+//   // define path to draw
+//   const path = new Path2D();
 
-  // Draw box without left part, to allow stacking boxes
-  // horizontally without getting double lines between them.
-  if (open === true) {
-    path.moveTo(x, y);
-    path.lineTo(x + width, y);
-    path.lineTo(x + width, y + height);
-    path.lineTo(x, y + height);
-    // Draw normal 4-sided box
-  } else {
-    path.rect(x, y, width, height);
-  }
-  ctx.stroke(path);
-  if (fillColor !== null) {
-    ctx.fillStyle = fillColor;
-    ctx.fill(path);
-  }
-  return path;
-}
+//   // Draw box without left part, to allow stacking boxes
+//   // horizontally without getting double lines between them.
+//   if (open === true) {
+//     path.moveTo(x, y);
+//     path.lineTo(x + width, y);
+//     path.lineTo(x + width, y + height);
+//     path.lineTo(x, y + height);
+//     // Draw normal 4-sided box
+//   } else {
+//     path.rect(x, y, width, height);
+//   }
+//   ctx.stroke(path);
+//   if (fillColor !== null) {
+//     ctx.fillStyle = fillColor;
+//     ctx.fill(path);
+//   }
+//   return path;
+// }
 
 // Draw an arrow in desired direction
 // Forward arrow: direction = 1

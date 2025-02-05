@@ -101,6 +101,8 @@
     </div>
 </div>
 <script>
+    // https://stackoverflow.com/questions/43042889/typescript-referenceerror-exports-is-not-defined
+    var exports = {};
     $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
     const _apiHost = 'api/';
 

@@ -1,14 +1,16 @@
 const webpack = require('webpack');
 const resolve = require('path').resolve;
 const config = {
+  devtool: 'source-map',
   entry: __dirname + '/assets/js/gens',
   output:{
     path: resolve('./build/js'),
     filename: 'gens.min.js',
     library: 'gens',
+    libraryTarget: 'umd',
   },
   resolve: {
-    extensions: ['.js','.jsx', '.ts', '.tsx'],
+    extensions: ['.ts', '.tsx', '.js','.jsx'],
   },
   module: {
     rules: [
@@ -19,7 +21,10 @@ const config = {
       {
         loader: 'ts-loader',
         test: /\.(ts|tsx)$/,
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        options: {
+          transpileOnly: true
+        }
       }
     ],
   },
