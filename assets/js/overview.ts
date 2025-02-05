@@ -29,8 +29,10 @@ export class OverviewCanvas extends BaseScatterTrack {
   disabledChroms: string[];
   width: number;
   height: number;
-  staticCanvas: HTMLElement;
+  staticCanvas: HTMLCanvasElement;
   markerElem: HTMLElement;
+  dims: ChromosomeDims;
+  chromPos: ChromosomePos[];
 
   constructor(
     xPos,
@@ -127,19 +129,19 @@ export class OverviewCanvas extends BaseScatterTrack {
       });
       this.staticCanvas.parentElement.addEventListener(
         "mark-region",
-        (event) => {
+        (event: CustomEvent) => {
           this.markRegion({ ...event.detail.region });
         }
       );
     });
   }
 
-  pixelPosToGenomicLoc(pixelpos) {
-    const match = {};
-    for (const i of CHROMOSOMES) {
-      const chr = this.dims[i];
+  pixelPosToGenomicLoc(pixelpos: number) {
+    const match = {} as {chrom?: string, pos?: number};
+    for (const my_chr of CHROMOSOMES) {
+      const chr = this.dims[my_chr] as {x_pos: number, width: number, size: number};
       if (pixelpos > chr.x_pos && pixelpos < chr.x_pos + chr.width) {
-        match.chrom = i;
+        match.chrom = my_chr;
         match.pos = Math.floor((chr.size * (pixelpos - chr.x_pos)) / chr.width);
       }
     }
@@ -152,7 +154,7 @@ export class OverviewCanvas extends BaseScatterTrack {
       y_pos: this.y,
       plot_width: this.fullPlotWidth,
       genome_build: this.genomeBuild,
-    }).then((result) => {
+    }).then((result: {chrom_dims: ChromosomeDims}) => {
       this.dims = result.chrom_dims;
       this.chromPos = CHROMOSOMES.map((chrom) => {
         return {

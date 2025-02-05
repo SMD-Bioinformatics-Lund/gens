@@ -3,6 +3,24 @@ interface CanvasDetail {
   chrom: string;
 }
 
+interface ChromosomeDims {
+  [key: string]: ChromosomeDim;
+}
+
+interface ChromosomeDim {
+  x_pos: number;
+  y_pos: number;
+  width: number;
+  size: number;
+}
+
+interface ChromosomePos {
+  region: string;
+  x_pos: number;
+  y_pos: number;
+  x_ampl: number; // What is this?
+}
+
 interface ColorSchema {
   default: string;
   [key: string]: string;
