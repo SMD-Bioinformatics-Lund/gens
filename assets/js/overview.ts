@@ -35,15 +35,15 @@ export class OverviewCanvas extends BaseScatterTrack {
   chromPos: ChromosomePos[];
 
   constructor(
-    xPos,
-    fullPlotWidth,
-    lineMargin,
-    near,
-    far,
-    caseId,
-    sampleName,
-    genomeBuild,
-    hgFileDir
+    xPos: number,
+    fullPlotWidth: number,
+    lineMargin: number,
+    near: number,
+    far: number,
+    caseId: string,
+    sampleName: string,
+    genomeBuild: number,
+    hgFileDir: string
   ) {
     super({ caseId, sampleName, genomeBuild, hgFileDir });
 

@@ -1,5 +1,4 @@
 // functions for handling tooltips
-import { left } from "@popperjs/core";
 import { BaseAnnotationTrack } from "./base";
 import {
   getVisibleXCoordinates,

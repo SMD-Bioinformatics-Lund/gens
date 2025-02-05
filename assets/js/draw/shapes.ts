@@ -31,7 +31,7 @@ export function drawRotatedText({
   posx,
   posy,
   textSize,
-  rotDegrees: rot_degrees,
+  rotDegrees,
   color = "black",
 }: {
   ctx: CanvasRenderingContext2D;
@@ -46,7 +46,7 @@ export function drawRotatedText({
   ctx.fillStyle = color;
   ctx.font = "".concat(textSize.toString(), "px Arial");
   ctx.translate(posx, posy); // Position for text
-  ctx.rotate(rot_degrees); // Rotate rot degrees
+  ctx.rotate(rotDegrees); // Rotate rot degrees
   ctx.textAlign = "center";
   ctx.fillText(text, 0, 9);
   ctx.restore();

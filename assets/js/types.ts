@@ -1,5 +1,3 @@
-// import { Instance } from "@popperjs/core";
-
 interface UIColors {
   variants: Record<string, string>,
   transcripts: Record<string, string>
