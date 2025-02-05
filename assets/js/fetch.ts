@@ -20,7 +20,7 @@ async function request(url: string, params: string, method: RequestType = "GET")
     }
   }
   // fetch returns a promise
-  // @ts-ignore - FIXME: This should not be global
+  // @ts-expect-error - FIXME: This should not be global
   const response = await fetch(_apiHost + url, options);
 
   if (response.status !== 200) {
@@ -44,7 +44,7 @@ export function objectToQueryString(obj) {
 
 //  A generic error handler that just returns an object with status=error and message
 function generateErrorResponse(message: string): Error {
-  // @ts-ignore - FIXME: This should not take two arguments or?
+  // @ts-expect-error - FIXME: This should not take two arguments or?
   return new Error({
     status: "error",
     message,

@@ -48,7 +48,7 @@ describe("test limitRegionToChromosome ", () => {
   test("test position within chromosome", () => {
     const chromSizeMock = jest
       .spyOn(helper, "chromSizes")
-      // @ts-ignore FIXME: Look into this when working with this module next time
+      // @ts-expect-error FIXME: Look into this when working with this module next time
       .mockReturnValueOnce(mockRes)
       .mockName("chromSizes");
 
@@ -63,7 +63,7 @@ describe("test limitRegionToChromosome ", () => {
   test("test end pos outside chromosome", () => {
     const chromSizeMock = jest
       .spyOn(helper, "chromSizes")
-      // @ts-ignore
+      // @ts-expect-error
       .mockReturnValueOnce(mockRes)
       .mockName("chromSizes");
 
@@ -77,7 +77,7 @@ describe("test limitRegionToChromosome ", () => {
   test("test start pos outside chromosome", () => {
     const chromSizeMock = jest
       .spyOn(helper, "chromSizes")
-      // @ts-ignore
+      // @ts-expect-error
       .mockReturnValueOnce(mockRes)
       .mockName("chromSizes");
 
@@ -91,7 +91,7 @@ describe("test limitRegionToChromosome ", () => {
   test("test start pos is null", () => {
     const chromSizeMock = jest
       .spyOn(helper, "chromSizes")
-      // @ts-ignore
+      // @ts-expect-error
       .mockReturnValueOnce(mockRes)
       .mockName("chromSizes");
 
@@ -105,7 +105,7 @@ describe("test limitRegionToChromosome ", () => {
   test("test end pos is null", () => {
     const chromSizeMock = jest
       .spyOn(helper, "chromSizes")
-      // @ts-ignore
+      // @ts-expect-error
       .mockReturnValueOnce(mockRes)
       .mockName("chromSizes");
 
@@ -119,7 +119,7 @@ describe("test limitRegionToChromosome ", () => {
   test("test start and end pos is outsize chrom", () => {
     const chromSizeMock = jest
       .spyOn(helper, "chromSizes")
-      // @ts-ignore
+      // @ts-expect-error
       .mockReturnValueOnce(mockRes)
       .mockName("chromSizes");
 
@@ -133,7 +133,7 @@ describe("test limitRegionToChromosome ", () => {
   test("test if start and end are retained", () => {
     const chromSizeMock = jest
       .spyOn(helper, "chromSizes")
-      // @ts-ignore
+      // @ts-expect-error
       .mockReturnValueOnce(mockRes)
       .mockName("chromSizes");
 

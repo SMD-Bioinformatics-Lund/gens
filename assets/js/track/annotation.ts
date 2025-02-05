@@ -121,7 +121,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
   }
 
   // Draws annotations in given range
-  // @ts-ignore - FIXME, resolve the type errors here
+  // @ts-expect-error - FIXME, resolve the type errors here
   async drawOffScreenTrack({ startPos, endPos, maxHeightOrder, data }) {
     const textSize = 10;
 

@@ -107,7 +107,7 @@ export class VariantTrack extends BaseAnnotationTrack {
     });
   }
 
-  // @ts-ignore: FIXME
+  // @ts-expect-error: FIXME
   async drawOffScreenTrack({ startPos, endPos, maxHeightOrder, data }) {
     //  Draws variants in given range
     const textSize = 10;

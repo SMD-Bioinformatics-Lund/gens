@@ -276,7 +276,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
   }
 
   //  Draws transcripts in given range
-  // @ts-ignore FIXME: This should be fixed eventually
+  // @ts-expect-error FIXME: This should be fixed eventually
   async drawOffScreenTrack({
     startPos,
     endPos,

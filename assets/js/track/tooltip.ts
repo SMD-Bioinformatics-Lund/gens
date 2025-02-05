@@ -65,7 +65,7 @@ export function updateVisibleElementCoordinates({
   scale: number;
 }) {
   const { x1, x2 } = getVisibleXCoordinates(screenPosition, element, scale);
-  // @ts-ignore FIXME
+  // @ts-expect-error FIXME
   const { y1, y2 } = getVisibleYCoordinates(element);
   // update coordinates
   element.visibleX1 = x1;
