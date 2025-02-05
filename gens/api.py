@@ -4,15 +4,13 @@ import json
 import logging
 import os
 import re
-from typing import List, Any
+from typing import Any
 from pysam import TabixFile
 
-import attr
-import cattr
 import connexion
 from fastapi.encoders import jsonable_encoder
 
-from flask import current_app, jsonify, request
+from flask import current_app, jsonify
 
 from gens.db import (ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION,
                      get_chromosome_size,
@@ -20,62 +18,10 @@ from gens.db import (ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION,
 from gens.exceptions import RegionParserException
 from gens.graph import (REQUEST, get_cov, overview_chrom_dimensions,
                         parse_region_str)
-from gens.models.genomic import VariantCategory, Chromosome, GenomeBuild
+from gens.models.genomic import VariantCategory, Chromosome, GenomeBuild, QueryChromosomeCoverage
 
 LOG = logging.getLogger(__name__)
 
-
-@attr.s(auto_attribs=True, frozen=True)
-class ChromosomePosition:
-    """Data model for the chromosome position data"""
-
-    region: str = attr.ib()
-    x_pos: float
-    y_pos: float
-    x_ampl: float
-
-    @region.validator
-    def valid_region(self, attribute, value):
-        """Validate region string.
-
-        Expected format <chom>:<start>-<end>
-        chrom: in CHROMOSOMES
-        start: >= 0
-        end: [0-9]+|None
-        """
-        chrom, start, end = re.search(r"^(.+):(.+)-(.+)$", value).groups()
-        if chrom not in Chromosome:
-            raise ValueError(f"{chrom} is not a valid chromosome name")
-        if 0 > float(start):
-            raise ValueError(f"{start} is not a valid start position")
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class ChromCoverageRequest:
-    """Request for getting coverage from multiple chromosome and regions."""
-
-    sample_id: str
-    case_id: str
-    genome_build: int = attr.ib()
-    plot_height: float
-    top_bottom_padding: float
-    baf_y_start: float
-    baf_y_end: float
-    log2_y_start: float
-    log2_y_end: float
-    overview: bool
-    reduce_data: float = attr.ib()
-    chromosome_pos: List[ChromosomePosition]
-
-    @genome_build.validator
-    def valid_genome_build(self, attribute, value):
-        if not value in GenomeBuild:
-            raise ValueError(f"{value} is not of valid hg types; {GenomeBuild}")
-
-    @reduce_data.validator
-    def valid_perc(self, attribute, value):
-        if not 0 <= value <= 1:
-            raise ValueError(f"{value} is not within 0-1")
 
 def get_overview_chrom_dim(x_pos, y_pos, plot_width, genome_build) -> dict[str, Any]:
     """
@@ -240,7 +186,7 @@ def get_variant_data(case_id, sample_id, variant_category, **optional_kwargs):
             query_variants(
                 case_id,
                 sample_id,
-                cattr.structure(variant_category, VariantCategory),
+                VariantCategory(variant_category),
                 **region_params,
             )
         )
@@ -262,7 +208,7 @@ def get_variant_data(case_id, sample_id, variant_category, **optional_kwargs):
 def get_multiple_coverages() -> dict[str, Any]:
     """Read default Log2 ratio and BAF values for overview graph."""
     if connexion.request.is_json:
-        data = cattr.structure(connexion.request.get_json(), ChromCoverageRequest)
+        data = QueryChromosomeCoverage(**connexion.request.get_json())
     else:
         return data, 404
     LOG.info(f"Got request for all chromosome coverages: {data.sample_id}")
@@ -278,9 +224,8 @@ def get_multiple_coverages() -> dict[str, Any]:
             json_data = json.loads(json_gz.read().decode("utf-8"))
     else:
         # Fall back to BED files if json files does not exists
-        cov_file, baf_file = get_tabix_files(
-            sample_obj.coverage_file, sample_obj.baf_file
-        )
+        cov_file = TabixFile(str(sample_obj.coverage_file))
+        baf_file = TabixFile(str(sample_obj.baf_file))
 
     results = {}
     for chrom_info in data.chromosome_pos:

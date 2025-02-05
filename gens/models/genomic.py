@@ -1,9 +1,12 @@
 """Models related to genomic data"""
 
+import re
 from enum import Enum, IntEnum
-from pydantic.types import PositiveInt
+from pydantic import field_validator, computed_field
+from pydantic.types import PositiveInt, PositiveFloat
 from .base import RWModel
 
+REGION_PATTERN = re.compile(r"^(.+):(.+)-(.+)$")
 
 class DnaStrand(Enum):  # TODO migrate to +/-
     """Valid DNA strand names.
@@ -69,8 +72,8 @@ class GenomePosition(RWModel):
 class ChromBand(RWModel):
     id: str
     stain: str
-    start: int
-    end: int
+    start: PositiveInt
+    end: PositiveInt
     strand: DnaStrand
 
 
@@ -83,3 +86,97 @@ class ChromInfo(RWModel):
     scale: float
     centromere: GenomePosition | None
     bands: list[ChromBand] | None
+
+
+class GenomicRegion(RWModel):
+    """Representation of a region string format.
+    
+    i.e. chromosome:start-end
+    """
+
+    region: str
+
+    @field_validator('region')
+    @classmethod
+    def valid_region(cls, region: str):
+        """Validate region string.
+
+        Expected format <chom>:<start>-<end>
+        chrom: member of Enum Chromosome
+        start: >= 0
+        end: [0-9]+|None
+        """
+        match = re.match(REGION_PATTERN, region)
+        if not match:
+            raise ValueError(f"Invalid format of region string: {region}")
+        chrom, start, _ = match.groups()
+        if chrom not in [chr.value for chr in Chromosome]:
+            raise ValueError(f"{chrom} is not a valid chromosome name")
+        if 0 > float(start):
+            raise ValueError(f"{start} is not a valid start position")
+        return region
+
+    @computed_field()
+    @property
+    def chromosome(self) -> Chromosome:
+        """Get the chromosome name from region string."""
+
+        match = re.match(REGION_PATTERN, self.region)
+        if match is None:
+            raise ValueError('Invalid region designation.')
+        return Chromosome(match.group(1))
+
+    @computed_field()
+    @property
+    def start(self) -> int | None:
+        """Get start position from a region string."""
+
+        match = re.match(REGION_PATTERN, self.region)
+        return int(match.group(2)) if match else None
+
+    @computed_field()
+    @property
+    def end(self) -> int | None:
+        """Get end position from a region string."""
+
+        match = re.match(REGION_PATTERN, self.region)
+        if match is None:
+            return None
+
+        raw_num: str = match.group(3)
+        try:
+            num = int(raw_num)
+        except ValueError:
+            num = None
+        return num
+
+
+class QueryGenomicPosition(GenomicRegion):
+    """For querying a genomic position using a position string."""
+
+    x_pos: PositiveFloat
+    y_pos: PositiveFloat
+    x_ampl: PositiveFloat
+
+
+class QueryChromosomeCoverage(RWModel):
+    """Request for getting coverage from multiple chromosome and regions."""
+
+    sample_id: str
+    case_id: str
+    genome_build: GenomeBuild
+    plot_height: PositiveFloat
+    top_bottom_padding: PositiveFloat
+    baf_y_start: float
+    baf_y_end: float
+    log2_y_start: float
+    log2_y_end: float
+    overview: bool
+    reduce_data: PositiveFloat
+    chromosome_pos: list[QueryGenomicPosition]
+
+    @field_validator('reduce_data')
+    @classmethod
+    def validate_percentage(cls, value: float):
+        if not 0 <= value <= 1:
+            raise ValueError(f"{value} is not within 0-1")
