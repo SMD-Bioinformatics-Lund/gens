@@ -11,6 +11,7 @@
   "main": "gens.ts",
   "scripts": {
     "build": "gulp build",
+    "build_cpjs": "gulp build && cp build/js/gens.min.js gens/blueprints/gens/static/",
     "lint": "eslint assets",
     "lint:fix": "npm run lint -- --fix",
     "prettier": "npx prettier assets  --check",

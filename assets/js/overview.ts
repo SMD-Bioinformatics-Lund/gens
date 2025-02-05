@@ -22,7 +22,7 @@ export class OverviewCanvas extends BaseScatterTrack {
     caseId,
     sampleName,
     genomeBuild,
-    hgFileDir,
+    hgFileDir
   ) {
     super({ caseId, sampleName, genomeBuild, hgFileDir });
 
@@ -107,7 +107,7 @@ export class OverviewCanvas extends BaseScatterTrack {
         "mark-region",
         (event) => {
           this.markRegion({ ...event.detail.region });
-        },
+        }
       );
     });
   }
@@ -178,24 +178,24 @@ export class OverviewCanvas extends BaseScatterTrack {
 
     // Draw rotated y-axis legends
     if (chromCovData.x_pos < this.leftmostPoint) {
-      drawRotatedText(
+      drawRotatedText({
         ctx,
-        "B Allele Freq",
-        18,
-        chromCovData.x_pos - this.legendMargin,
-        chromCovData.y_pos + this.plotHeight / 2,
-        -Math.PI / 2,
-        this.titleColor,
-      );
-      drawRotatedText(
+        text: "B Allele Freq",
+        textSize: 18,
+        posx: chromCovData.x_pos - this.legendMargin,
+        posy: chromCovData.y_pos + this.plotHeight / 2,
+        rot_degrees: -Math.PI / 2,
+        color: this.titleColor,
+      });
+      drawRotatedText({
         ctx,
-        "Log2 Ratio",
-        18,
-        chromCovData.x_pos - this.legendMargin,
-        chromCovData.y_pos + 1.5 * this.plotHeight,
-        -Math.PI / 2,
-        this.titleColor,
-      );
+        text: "Log2 Ratio",
+        textSize: 18,
+        posx: chromCovData.x_pos - this.legendMargin,
+        posy: chromCovData.y_pos + 1.5 * this.plotHeight,
+        rot_degrees: -Math.PI / 2,
+        color: this.titleColor,
+      });
     }
     // Draw BAF
     createGraph(
@@ -210,7 +210,7 @@ export class OverviewCanvas extends BaseScatterTrack {
       this.baf.step,
       chromCovData.x_pos < this.leftmostPoint,
       this.borderColor,
-      chrom !== CHROMOSOMES[0],
+      chrom !== CHROMOSOMES[0]
     );
     drawGraphLines({
       ctx,
@@ -237,7 +237,7 @@ export class OverviewCanvas extends BaseScatterTrack {
       this.log2.step,
       chromCovData.x_pos < this.leftmostPoint,
       this.borderColor,
-      chrom !== CHROMOSOMES[0],
+      chrom !== CHROMOSOMES[0]
     );
     drawGraphLines({
       ctx,
@@ -269,7 +269,7 @@ export class OverviewCanvas extends BaseScatterTrack {
         chromCovData.x_pos,
         chromCovData.y_pos + 1,
         width - 2,
-        this.plotHeight * 2 - 2,
+        this.plotHeight * 2 - 2
       );
       this.disabledChroms.push(chrom);
     }

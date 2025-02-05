@@ -14,7 +14,7 @@ export function drawVerticalTicks(
   xoEnd: number,
   width: number,
   yMargin: number,
-  titleColor: string,
+  titleColor: string
 ) {
   const lineThickness = 1;
   const lineWidth = 5;
@@ -39,15 +39,15 @@ export function drawVerticalTicks(
     const value = numberWithCommas(step.toFixed(0));
 
     // Draw text and ticks only for the leftmost box
-    drawRotatedText(
+    drawRotatedText({
       ctx,
-      value,
-      10,
-      renderX + xStep + 8,
-      y - value.length - 3 * yMargin,
-      -Math.PI / 4,
-      titleColor,
-    );
+      text: value,
+      textSize: 10,
+      posx: renderX + xStep + 8,
+      posy: y - value.length - 3 * yMargin,
+      rot_degrees: -Math.PI / 4,
+      color: titleColor,
+    });
 
     // Draw tick line
     drawLine({
@@ -74,7 +74,7 @@ export function drawGraphLines(
   stepLength: number,
   yMargin: number,
   width: number,
-  height: number,
+  height: number
 ) {
   const ampl = (height - 2 * yMargin) / (yStart - yEnd); // Amplitude for scaling y-axis to fill whole height
   const lineThickness = 1;
@@ -106,7 +106,7 @@ export function createGraph(
   step,
   addTicks,
   color = "black",
-  open,
+  open
 ) {
   // Draw tick marks
   if (addTicks) {
@@ -120,7 +120,7 @@ export function createGraph(
       yMargin,
       width,
       height,
-      color,
+      color
     );
   }
 
@@ -141,7 +141,7 @@ function drawTicks(
   yMargin,
   width,
   height,
-  color = "black",
+  color = "black"
 ) {
   const ampl = (height - 2 * yMargin) / (yStart - yEnd); // Amplitude for scaling y-axis to fill whole height
   const lineThickness = 2;

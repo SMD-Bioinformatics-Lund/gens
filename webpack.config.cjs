@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const resolve = require('path').resolve;
 const config = {
   entry: __dirname + '/assets/js/gens',
+  devtool: 'inline-source-map', 
   output:{
     path: resolve('./build/js'),
     filename: 'gens.min.js',
@@ -19,7 +20,10 @@ const config = {
       {
         loader: 'ts-loader',
         test: /\.(ts|tsx)$/,
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        options: {
+          transpileOnly: true
+        }
       }
     ],
   },
@@ -28,6 +32,6 @@ const config = {
       process: 'process/browser'
     })
   ],
-  mode: 'production',
+  mode: 'development',
 };
 module.exports = config;
