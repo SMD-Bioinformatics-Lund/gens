@@ -169,7 +169,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
       y: canvasYPos,
       y2: canvasYPos,
       color: transcriptObj.color,
-      lineWith: this.geneLineWidth, // set width of the element
+      lineWidth: this.geneLineWidth, // set width of the element
     });
     // Draw gene name
     const textYPos = this.tracksYPos(element.height_order);
@@ -270,13 +270,24 @@ export class TranscriptTrack extends BaseAnnotationTrack {
         isDisplayed: false,
       };
     } else {
-      transcriptObj.tooltip = false;
+      transcriptObj.tooltip = null;
     }
     return transcriptObj;
   }
 
   //  Draws transcripts in given range
-  async drawOffScreenTrack({ startPos, endPos, maxHeightOrder, data }) {
+  // @ts-ignore FIXME: This should be fixed eventually
+  async drawOffScreenTrack({
+    startPos,
+    endPos,
+    maxHeightOrder,
+    data,
+  }: {
+    startPos: number;
+    endPos: number;
+    maxHeightOrder: any;
+    data: any;
+  }) {
     //    store positions used when rendering the canvas
     this.offscreenPosition = {
       start: startPos,

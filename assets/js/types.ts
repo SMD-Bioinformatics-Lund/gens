@@ -1,3 +1,5 @@
+// import { Instance } from "@popperjs/core";
+
 interface CanvasDetail {
   bands: { id: string }[];
   chrom: string;
@@ -28,6 +30,33 @@ interface Transcript {
   x2?: number;
   y1?: number;
   y2?: number;
+
+  visibleX1?: number;
+  visibleX2?: number;
+  visibleY1?: number;
+  visibleY2?: number;
+
+  isDisplayed?: boolean;
+  tooltip?: Tooltip;
+}
+
+interface Tooltip {
+  instance: any; // Popper.js instance
+  virtualElement: any;
+  tooltip: HTMLDivElement;
+  isDisplayed: boolean;
+}
+
+interface VirtualDOMElement {
+  x: number; // Placeholder for Popper.js
+  y: number; // Placeholder for Popper.js
+  toJSON: () => any; // Placeholder for Popper.js
+  width: number;
+  height: number;
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
 }
 
 interface DrawChromosome {
@@ -91,18 +120,18 @@ type ElementCoords = {
 type DisplayElement = {
   id: string;
   name: string;
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
+  x1?: number;
+  x2?: number;
+  y1?: number;
+  y2?: number;
   start: number;
   end: number;
   // FIXME: Something weird here
   exon_number?: number;
   feature?: string;
   features: string[];
-  isDisplayed: boolean;
-  tooltip: any;
+  isDisplayed?: boolean;
+  tooltip?: any;
   visibleX1?: number;
   visibleX2?: number;
   visibleY1?: number;

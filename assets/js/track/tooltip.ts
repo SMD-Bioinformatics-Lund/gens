@@ -1,4 +1,5 @@
 // functions for handling tooltips
+import { left } from "@popperjs/core";
 import { BaseAnnotationTrack } from "./base";
 import {
   getVisibleXCoordinates,
@@ -19,7 +20,7 @@ export function makeVirtualDOMElement({
   y1: number;
   y2: number;
   canvas: any;
-}) {
+}): { getBoundingClientRect: () => VirtualDOMElement } {
   return {
     getBoundingClientRect: generateGetBoundingClientRect(
       x1,
@@ -37,10 +38,15 @@ export function generateGetBoundingClientRect(
   x2: number,
   y1: number,
   y2: number,
-  canvas
-) {
+  canvas: HTMLCanvasElement
+): () => VirtualDOMElement {
   const track = canvas;
   return () => ({
+    // Placeholders to match the Popper.js later expected format
+    x: -1,
+    y: -1,
+    toJSON: () => {},
+    //
     width: Math.round(x2 - x1),
     height: Math.round(y2 - y1),
     top: y1 + Math.round(track.getBoundingClientRect().y),
