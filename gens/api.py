@@ -149,6 +149,7 @@ def get_transcript_data(region, genome_build, collapsed):
     Gets transcript data for requested region and converts the coordinates to
     screen coordinates
     """
+    genome_build = GenomeBuild(genome_build)
     res, chrom, start_pos, end_pos = parse_region_str(region, genome_build)
 
     if region == "":
@@ -168,17 +169,17 @@ def get_transcript_data(region, genome_build, collapsed):
         )
     )
     # Calculate maximum height order
-    max_height_order = max(t["height_order"] for t in transcripts) if transcripts else 1
+    max_height_order = max(t.height_order for t in transcripts) if transcripts else 1
 
-    return jsonify(
-        status="ok",
-        chromosome=chrom,
-        start_pos=start_pos,
-        end_pos=end_pos,
-        max_height_order=max_height_order,
-        res=res,
-        transcripts=list(transcripts),
-    )
+    return jsonable_encoder({
+        "status": "ok",
+        "chromosome": chrom,
+        "start_pos": start_pos,
+        "end_pos": end_pos,
+        "max_height_order": max_height_order,
+        "res": res,
+        "transcripts": list(transcripts),
+    })
 
 
 def search_annotation(query: str, genome_build, annotation_type):
@@ -248,10 +249,10 @@ def get_variant_data(case_id, sample_id, variant_category, **optional_kwargs):
         return (jsonify({"detail": str(err)}), 404)
     # return all detected variants
     return (
-        jsonify(
+        jsonable_encoder(
             {
                 **base_return,
-                "variants": list(variants),
+                "variants": variants,
                 "max_height_order": 1,
             }
         ),
@@ -269,7 +270,7 @@ def get_multiple_coverages() -> dict[str, Any]:
 
     # read sample information
     db = current_app.config["GENS_DB"]
-    sample_obj = query_sample(db, data.sample_id, data.case_id, data.genome_build)
+    sample_obj = query_sample(db, data.sample_id, data.case_id)
     # Try to find and load an overview json data file
     json_data, cov_file, baf_file = None, None, None
     if sample_obj.overview_file and os.path.isfile(sample_obj.overview_file):
@@ -368,7 +369,7 @@ def get_coverage(
         reduce_data,
     )
     db = current_app.config["GENS_DB"]
-    sample_obj = query_sample(db, sample_id, case_id, genome_build)
+    sample_obj = query_sample(db, sample_id, case_id)
     cov_file, baf_file = get_tabix_files(sample_obj.coverage_file, sample_obj.baf_file)
     # Parse region
     try:
@@ -378,27 +379,34 @@ def get_coverage(
             )
     except RegionParserException as err:
         LOG.error(f"{type(err).__name__} - {err}")
+        return (jsonify({"detail": str(err)}), 416)
     except Exception as err:
         LOG.error(f"{type(err).__name__} - {err}")
+        return (jsonify({"detail": str(err)}), 500)
 
-    return jsonify(
-        data=log2_rec,
-        baf=baf_rec,
-        chrom=reg.chrom,
-        x_pos=round(req.x_pos),
-        y_pos=round(req.y_pos),
-        query_start=reg.start_pos,
-        query_end=reg.end_pos,
-        padded_start=n_start,
-        padded_end=n_end,
-        status="ok",
-    )
+    query_result = {
+        "data": log2_rec,
+        "baf": baf_rec,
+        "chrom": reg.chrom,
+        "x_pos": round(req.x_pos),
+        "y_pos": round(req.y_pos),
+        "query_start": reg.start_pos,
+        "query_end": reg.end_pos,
+        "padded_start": n_start,
+        "padded_end": n_end,
+        "status": "ok",
+    }
+    return jsonable_encoder(query_result)
 
 
 def get_chromosome_info(chromosome, genome_build):
     """Query the database for information on a chromosome."""
     db = current_app.config["GENS_DB"]
 
-    chrom_info = get_chromosome_size(db, chromosome.upper(), genome_build)
-    del chrom_info["_id"]
-    return jsonify(chrom_info)
+    # validate input
+    genome_build = GenomeBuild(genome_build)
+    chromosome = Chromosome(chromosome)
+
+    # query for chromosome
+    chrom_info = get_chromosome_size(db, chromosome, genome_build)
+    return jsonable_encoder(chrom_info)

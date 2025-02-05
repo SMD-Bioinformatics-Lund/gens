@@ -33,13 +33,13 @@ class ExonFeature(RWModel):
     feature: Literal['exon']
     start: PositiveInt
     end: PositiveInt
-    expon_number: PositiveInt
+    exon_number: PositiveInt
 
 
 class UtrFeature(RWModel, ):
     """utr information"""
 
-    feature: Literal['fire_prime_utr', 'three_prime_utr']
+    feature: Literal['five_prime_utr', 'three_prime_utr']
     start: PositiveInt
     end: PositiveInt
 

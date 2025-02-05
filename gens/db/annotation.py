@@ -70,7 +70,7 @@ def query_variants(case_id: str, sample_name: str, variant_category: VariantCate
     }
     # add chromosome
     if "chromosome" in kwargs:
-        query["chromosome"] = kwargs["chromosome"]
+        query["chromosome"] = kwargs["chromosome"].value
     # add start, end position to query
     if all(param in kwargs for param in ["start_pos", "end_pos"]):
         query = {

@@ -114,7 +114,7 @@ def get_samples(db: MongoClient, start:int = 0, n_samples: int|None = None) -> t
     return results, db[COLLECTION].count_documents({})
 
 
-def query_sample(db: MongoClient, sample_id: str, case_id: str|None, _genome_build: int) -> SampleInfo:
+def query_sample(db: MongoClient, sample_id: str, case_id: str | None) -> SampleInfo:
     """Get a sample with id."""
     result = None
     if case_id is None:

@@ -52,7 +52,7 @@ def display_case(sample_name):
 
     # verify that sample has been loaded
     db = current_app.config["GENS_DB"]
-    sample = query_sample(db, individual_id, case_id, genome_build)
+    sample = query_sample(db, individual_id, case_id)
 
     # Check that BAF and Log2 file exists
     try:

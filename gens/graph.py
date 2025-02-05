@@ -287,7 +287,7 @@ def get_cov(req, x_ampl: float, json_data: dict[str, Any] | None=None, cov_fh: T
 
         # Bound start and end balues to 0-chrom_size
         end = min(
-            new_end_pos, get_chromosome_size(db, region.chrom, req.genome_build)["size"]
+            new_end_pos, get_chromosome_size(db, region.chrom, req.genome_build).size
         )
         start = max(new_start_pos, 0)
 
