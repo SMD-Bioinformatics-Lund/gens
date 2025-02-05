@@ -10,15 +10,6 @@ from gens.exceptions import ConfigurationException
 LOG = logging.getLogger(__name__)
 
 
-def _get_config_var(name: str, app: app) -> str:
-    """Get application configuration variable.
-
-    Variables set as environment overrides variables defined in the configfile."""
-    if not any([name in os.environ, name in app.config]):
-        raise ConfigurationException(f"{name} not defined")
-    return
-
-
 def init_database_connection() -> None:
     """Initialize database connection and store variables to the two databases."""
     # verify that database was properly configured

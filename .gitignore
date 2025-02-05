@@ -7,8 +7,6 @@ coverage
 dump/
 frontend/
 docker-compose.override.yml
-*.map
-asserts/**/*.js
 
 # python
 *.pyc
@@ -44,3 +42,4 @@ gens/static/css/*
 !gens/static/css/.gitkeep
 *.min.css
 *.min.js
+*.map

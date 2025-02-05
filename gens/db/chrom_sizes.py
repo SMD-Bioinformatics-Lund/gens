@@ -1,9 +1,12 @@
 """Read and write chrom sizes."""
 
+from pymongo import MongoClient
+
+
 CHROMSIZES = "chrom-sizes"
 
 
-def get_chromosome_size(db, chrom, genome_build=38):
+def get_chromosome_size(db: MongoClient, chrom: str, genome_build:int=38):
     """
     Gets the size in base pairs of a chromosome
     """

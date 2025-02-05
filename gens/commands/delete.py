@@ -1,10 +1,9 @@
 import logging
-from pathlib import Path
 
 import click
 from flask import current_app as app
 from flask.cli import with_appcontext
-from pymongo import ASCENDING
+from pymongo import MongoClient
 
 from gens.constants import GENOME_BUILDS
 from gens.db import (SAMPLES_COLLECTION, create_index,
@@ -35,9 +34,9 @@ def delete():
     help="Id of case",
 )
 @with_appcontext
-def sample(sample_id, genome_build, case_id):
+def sample(sample_id: str, genome_build: int, case_id: str):
     """Remove a sample from Gens database."""
-    db = app.config["GENS_DB"]
+    db: MongoClient = app.config["GENS_DB"]
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
