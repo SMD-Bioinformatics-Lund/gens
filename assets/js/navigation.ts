@@ -241,37 +241,37 @@ class KeyLogger {
   keyBuffer: KeyEventData[];
 
   // Records keypress combinations
-  constructor(bufferSize = 10) {
+  constructor(bufferSize: number = 10) {
     // Setup variables
     this.bufferSize = bufferSize;
     this.lastKeyTime = Date.now();
     this.heldKeys = {}; // store held keys
     this.keyBuffer = []; // store recent keys
     //  Setup event listending functions
-    document.addEventListener("keydown", (event) => {
+    document.addEventListener("keydown", (event: KeyboardEvent) => {
+      const targetElement = event.target as HTMLElement;
       // store event
       const eventData = {
         key: event.key,
-        // FIXME: Use the (event) instead
-        // Test while changing
-        target: window.event.target.nodeName,
+        // FIXME: Does this change work? Remove the comment below if confirmed
+        target: targetElement.nodeName,
+        // target: window.event.target.nodeName,
         time: Date.now(),
       };
-      const keyEvent = new CustomEvent("keyevent", { detail: eventData });
-      this.heldKeys[event.key] = true; // recored pressed keys
+      const keyEvent = new CustomEvent<KeyEventData>("keyevent", { detail: eventData });
+      this.heldKeys[event.key] = true;
       this.keyBuffer.push(eventData);
-      // empty buffer
       while (this.keyBuffer.length > this.bufferSize) {
         this.keyBuffer.shift();
       }
-      document.dispatchEvent(keyEvent); // event information
+      document.dispatchEvent(keyEvent);
     });
-    document.addEventListener("keyup", (event) => {
+    document.addEventListener("keyup", (event: KeyboardEvent) => {
       delete this.heldKeys[event.key];
     });
   }
 
-  recentKeys(timeWindow: number) {
+  recentKeys(timeWindow: number): KeyEventData[] {
     // get keys pressed within a window of time.
     const currentTime = Date.now();
     return this.keyBuffer.filter(
@@ -281,7 +281,8 @@ class KeyLogger {
 
   lastKeypressTime(): number {
     // FIXME: Is this correct?
-    return this.keyBuffer[this.keyBuffer.length - 1] - Date.now();
+    return Date.now() - this.keyBuffer[this.keyBuffer.length - 1].time;
+    // return this.keyBuffer[this.keyBuffer.length - 1] - Date.now();
   }
 }
 
@@ -302,16 +303,18 @@ document.addEventListener("keyevent", (event: CustomEvent<KeyEventData>) => {
       const lastKey = recentKeys[recentKeys.length - 1];
       const numKeys = parseInt(
         recentKeys
-          .slice(lastKey.length - 2)
+          .slice(Math.max(recentKeys.length - 2, 0))
           .filter((val) => parseInt(val.key))
           .map((val) => val.key)
           .join("")
       );
       // process keys
       if (lastKey.key === "x" || lastKey.key === "y") {
-        drawTrack({ region: lastKey.key });
-      } else if (numKeys && numKeys > 0 < 23) {
-        drawTrack({ region: numKeys });
+        console.error("FIXME: Should this be working?")
+        // drawTrack({ region: lastKey.key });
+      } else if (numKeys && numKeys > 0 && numKeys < 23) {
+        console.error("FIXME: Should this be working?")
+        // drawTrack({ region: numKeys });
       } else {
         return;
       }

@@ -1,5 +1,10 @@
 // import { Instance } from "@popperjs/core";
 
+interface UIColors {
+  variants: Record<string, string>,
+  transcripts: Record<string, string>
+}
+
 interface CanvasDetail {
   bands: { id: string }[];
   chrom: string;
@@ -101,7 +106,7 @@ interface ChromosomePos {
 }
 
 interface ColorSchema {
-  default: string;
+  default?: string;
   [key: string]: string;
 }
 

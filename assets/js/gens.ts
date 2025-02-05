@@ -34,7 +34,7 @@ export function initCanvases({
   caseId: string,
   genomeBuild: number,
   hgFileDir: string,
-  uiColors: string,
+  uiColors: UIColors,
   scoutBaseURL: string,
   selectedVariant: string,
   annotationFile: string

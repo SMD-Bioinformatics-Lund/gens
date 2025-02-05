@@ -1,6 +1,6 @@
 // Utility functions
 export function getVisibleYCoordinates(
-  element: DisplayElement,
+  element: {y1: number, y2: number},
   minHeight: number = 4
 ) {
   let y1 = Math.round(element.y1);
@@ -15,7 +15,7 @@ export function getVisibleYCoordinates(
 
 export function getVisibleXCoordinates(
   screenPositions: ScreenPositions,
-  feature: DisplayElement,
+  feature: {start: number, end: number},
   scale: number,
   minWidth: number = 4
 ) {

@@ -37,8 +37,8 @@ export class VariantTrack extends BaseAnnotationTrack {
     caseId: string,
     genomeBuild: number,
     colorSchema: ColorSchema,
-    scoutBaseURL,
-    highlightedVariantId
+    scoutBaseURL: string,
+    highlightedVariantId: string
   ) {
     // Dimensions of track canvas
     const visibleHeight = 100; // Visible height for expanded canvas, overflows for scroll
