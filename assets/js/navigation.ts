@@ -16,9 +16,6 @@ function drawEventManager({ target, throttleTime }) {
   let lastEventTime = 0;
   return (event) => {
     const now = Date.now();
-    console.log(
-      `Test event times ${lastEventTime} ? ${now}, diff: ${now - lastEventTime}`,
-    );
     if (throttleTime < Date.now() - lastEventTime || event.detail.force) {
       lastEventTime = Date.now();
       for (const track of tracks) {

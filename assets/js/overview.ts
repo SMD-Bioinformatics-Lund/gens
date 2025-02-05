@@ -14,7 +14,6 @@ import { drawTrack } from "./navigation";
 import { FONTSIZES } from "./constants";
 
 export class OverviewCanvas extends BaseScatterTrack {
-
   fullPlotWidth: number;
   plotHeight: number;
   titleMargin: number;
@@ -42,7 +41,7 @@ export class OverviewCanvas extends BaseScatterTrack {
     caseId,
     sampleName,
     genomeBuild,
-    hgFileDir,
+    hgFileDir
   ) {
     super({ caseId, sampleName, genomeBuild, hgFileDir });
 
@@ -96,7 +95,9 @@ export class OverviewCanvas extends BaseScatterTrack {
     this.height = this.y + 2 * this.plotHeight + 2 * this.topBottomPadding; // Canvas height
     this.drawCanvas.width = parseInt(this.width.toString());
     this.drawCanvas.height = parseInt(this.height.toString());
-    this.staticCanvas = document.getElementById("overview-static");
+    this.staticCanvas = document.getElementById(
+      "overview-static"
+    ) as HTMLCanvasElement;
 
     // Initialize marker div element
     this.markerElem = document.getElementById("overview-marker");
@@ -128,7 +129,7 @@ export class OverviewCanvas extends BaseScatterTrack {
         "mark-region",
         (event) => {
           this.markRegion({ ...event.detail.region });
-        },
+        }
       );
     });
   }
@@ -185,7 +186,17 @@ export class OverviewCanvas extends BaseScatterTrack {
     }
   }
 
-  async drawOverviewPlotSegment({ canvas, chrom, width, chromCovData }) {
+  async drawOverviewPlotSegment({
+    canvas,
+    chrom,
+    width,
+    chromCovData,
+  }: {
+    canvas: HTMLCanvasElement;
+    chrom: string;
+    width: number;
+    chromCovData: any;
+  }) {
     // Draw chromosome title
     const ctx = canvas.getContext("2d");
     drawText({
@@ -207,7 +218,7 @@ export class OverviewCanvas extends BaseScatterTrack {
         posy: chromCovData.y_pos + this.plotHeight / 2,
         rotDegrees: -Math.PI / 2,
         color: this.titleColor,
-    });
+      });
       drawRotatedText({
         ctx,
         text: "Log2 Ratio",
@@ -216,24 +227,23 @@ export class OverviewCanvas extends BaseScatterTrack {
         posy: chromCovData.y_pos + 1.5 * this.plotHeight,
         rotDegrees: -Math.PI / 2,
         color: this.titleColor,
-      }
-      );
+      });
     }
     // Draw BAF
-    createGraph(
+    createGraph({
       ctx,
-      chromCovData.x_pos - this.leftRightPadding,
-      chromCovData.y_pos,
+      x: chromCovData.x_pos - this.leftRightPadding,
+      y: chromCovData.y_pos,
       width,
-      this.plotHeight,
-      this.topBottomPadding,
-      this.baf.yStart,
-      this.baf.yEnd,
-      this.baf.step,
-      chromCovData.x_pos < this.leftmostPoint,
-      this.borderColor,
-      chrom !== CHROMOSOMES[0],
-    );
+      height: this.plotHeight,
+      yMargin: this.topBottomPadding,
+      yStart: this.baf.yStart,
+      yEnd: this.baf.yEnd,
+      step: this.baf.step,
+      addTicks: chromCovData.x_pos < this.leftmostPoint,
+      color: this.borderColor,
+      open: chrom !== CHROMOSOMES[0],
+    });
     drawGraphLines({
       ctx,
       x: chromCovData.x_pos,
@@ -247,20 +257,20 @@ export class OverviewCanvas extends BaseScatterTrack {
     });
 
     // Draw Log 2 ratio
-    createGraph(
+    createGraph({
       ctx,
-      chromCovData.x_pos - this.leftRightPadding,
-      chromCovData.y_pos + this.plotHeight,
+      x: chromCovData.x_pos - this.leftRightPadding,
+      y: chromCovData.y_pos + this.plotHeight,
       width,
-      this.plotHeight,
-      this.topBottomPadding,
-      this.log2.yStart,
-      this.log2.yEnd,
-      this.log2.step,
-      chromCovData.x_pos < this.leftmostPoint,
-      this.borderColor,
-      chrom !== CHROMOSOMES[0],
-    );
+      height: this.plotHeight,
+      yMargin: this.topBottomPadding,
+      yStart: this.log2.yStart,
+      yEnd: this.log2.yEnd,
+      step: this.log2.step,
+      addTicks: chromCovData.x_pos < this.leftmostPoint,
+      color: this.borderColor,
+      open: chrom !== CHROMOSOMES[0],
+    });
     drawGraphLines({
       ctx,
       x: chromCovData.x_pos,
@@ -291,7 +301,7 @@ export class OverviewCanvas extends BaseScatterTrack {
         chromCovData.x_pos,
         chromCovData.y_pos + 1,
         width - 2,
-        this.plotHeight * 2 - 2,
+        this.plotHeight * 2 - 2
       );
       this.disabledChroms.push(chrom);
     }

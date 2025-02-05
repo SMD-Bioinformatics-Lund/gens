@@ -154,7 +154,6 @@ export class InteractiveCanvas extends BaseScatterTrack {
     this.contentCanvas.addEventListener(
       "update-title",
       (event: CustomEvent<CanvasDetail>) => {
-        console.log(`interactive got an ${event.type} event`);
         const len = event.detail.bands.length;
         if (len > 0) {
           const bandIds =
@@ -180,7 +179,6 @@ export class InteractiveCanvas extends BaseScatterTrack {
     this.contentCanvas.parentElement.addEventListener(
       "draw",
       (event: CustomEvent<RegionDetail>) => {
-        console.log("interactive got draw event");
         this.drawInteractiveContent({
           ...event.detail.region,
           ...event.detail,
@@ -374,7 +372,6 @@ export class InteractiveCanvas extends BaseScatterTrack {
     displayLoading = true,
     drawTitle = true,
   }) {
-    console.log("drawing interactive canvas", chrom, start, end);
     if (displayLoading) {
       this.loadingDiv.style.display = "block";
     } else {

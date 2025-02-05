@@ -1,7 +1,7 @@
 const webpack = require('webpack');
 const resolve = require('path').resolve;
 const config = {
-  devtool: 'source-map',
+  devtool: 'inline-source-map',
   entry: __dirname + '/assets/js/gens',
   output:{
     path: resolve('./build/js'),
@@ -33,6 +33,6 @@ const config = {
       process: 'process/browser'
     })
   ],
-  mode: 'production',
+  mode: 'development',
 };
 module.exports = config;

@@ -6,11 +6,11 @@
   },
   "name": "gens",
   "version": "3.0.0",
-  "type": "module",
   "description": "Interactive tool to visualize genomic copy number profiles from WGS data",
   "main": "gens.ts",
   "scripts": {
     "build": "gulp build",
+    "buildcpjs": "gulp build && cp build/js/gens.min.js gens/blueprints/gens/static/",
     "lint": "eslint assets",
     "lint:fix": "npm run lint -- --fix",
     "prettier": "npx prettier assets  --check",
