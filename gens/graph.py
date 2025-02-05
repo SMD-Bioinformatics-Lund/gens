@@ -2,7 +2,6 @@
 import logging
 import re
 from collections import namedtuple
-from enum import Enum
 from typing import Any
 
 from flask import current_app as app
@@ -11,7 +10,7 @@ from flask import request
 from .cache import cache
 from .db import get_chromosome_size
 from .exceptions import RegionParserException
-from .io import tabix_query
+from .io import tabix_query, ZoomLevel
 from .models.genomic import Chromosome, GenomeBuild
 from pysam import TabixFile
 
@@ -37,15 +36,6 @@ REQUEST = namedtuple(
         "reduce_data",
     ),
 )
-
-
-class ZoomLevel(Enum):
-    """Valid zoom or resolution levels."""
-
-    A = 'a'
-    B = 'b'
-    C = 'c'
-    D = 'd'
 
 
 @cache.memoize(0)
