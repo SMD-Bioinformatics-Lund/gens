@@ -117,6 +117,15 @@ type ElementCoords = {
   y2: number;
 };
 
+interface VariantLabel {
+  start: number;
+  end: number;
+  text: string;
+  x: number;
+  y: number;
+  fontProp: string;
+}
+
 type DisplayElement = {
   id: string|number;
   name: string;

@@ -24,7 +24,7 @@ export class VariantTrack extends BaseAnnotationTrack {
   scoutBaseURL: string;
   genomeBuild: number;
   apiEntrypoint: string;
-  labelData: string[];
+  labelData: VariantLabel[];
   highlightedVariantId: string;
   heightOrderRecord: {latestHeight: number, latestNameEnd: number, latestTrackEnd: number}
   additionalQueryParams: { variant_category: string, case_id: string };
@@ -107,6 +107,7 @@ export class VariantTrack extends BaseAnnotationTrack {
     });
   }
 
+  // @ts-ignore: FIXME
   async drawOffScreenTrack({ startPos, endPos, maxHeightOrder, data }) {
     //  Draws variants in given range
     const textSize = 10;
