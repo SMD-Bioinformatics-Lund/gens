@@ -1,6 +1,6 @@
 // Utility functions
 export function getVisibleYCoordinates(
-  element: {y1: number, y2: number},
+  element: { y1: number; y2: number },
   minHeight: number = 4
 ) {
   let y1 = Math.round(element.y1);
@@ -15,12 +15,16 @@ export function getVisibleYCoordinates(
 
 export function getVisibleXCoordinates(
   screenPositions: ScreenPositions,
-  feature: {start: number, end: number},
+  feature: { start: number; end: number },
   scale: number,
   minWidth: number = 4
 ) {
-  let x1 = Math.round(Math.max(0, feature.start - screenPositions.start) * scale);
-  let x2 = Math.round(Math.min(screenPositions.end, feature.end - screenPositions.start) * scale);
+  let x1 = Math.round(
+    Math.max(0, feature.start - screenPositions.start) * scale
+  );
+  let x2 = Math.round(
+    Math.min(screenPositions.end, feature.end - screenPositions.start) * scale
+  );
   if (x2 - x1 < minWidth) {
     x1 = Math.round(x1 - (minWidth - (x2 - x1) / 2));
     x2 = Math.round(x2 + (minWidth - (x2 - x1) / 2));
@@ -54,7 +58,10 @@ export function isWithinElementBbox(element: ElementCoords, point: Point) {
   );
 }
 
-export function isWithinElementVisibleBbox(element: DisplayElement, point: Point) {
+export function isWithinElementVisibleBbox(
+  element: DisplayElement,
+  point: Point
+) {
   return (
     element.visibleX1 < point.x &&
     point.x < element.visibleX2 &&

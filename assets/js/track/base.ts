@@ -84,6 +84,11 @@ export class BaseAnnotationTrack {
   contentCanvas: any;
   trackTitle: any;
   trackData: any;
+
+  apiEntrypoint: string;
+  sampleName: string;
+  genomeBuild: number;
+  additionalQueryParams: Record<string, string>;
   
   drawCtx: any;
 
