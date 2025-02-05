@@ -10,7 +10,6 @@ from gens.config import settings, UI_COLORS
 from gens.cache import cache
 from gens.db import query_sample
 from gens.graph import parse_region_str
-from gens.io import _get_filepath
 from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
@@ -52,18 +51,11 @@ def display_case(sample_name):
 
     # verify that sample has been loaded
     db = current_app.config["GENS_DB"]
-    sample = query_sample(db, individual_id, case_id)
 
     # Check that BAF and Log2 file exists
-    try:
-        _get_filepath(sample.baf_file)
-        _get_filepath(sample.coverage_file)
-        if sample.overview_file:  # verify json if it exists
-            _get_filepath(sample.overview_file)
-    except FileNotFoundError as err:
-        raise err
-    else:
-        LOG.info(f"Found BAF and COV files for {sample_name}")
+    # TODO move checks to the API instead
+    _ = query_sample(db, individual_id, case_id)
+
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
 

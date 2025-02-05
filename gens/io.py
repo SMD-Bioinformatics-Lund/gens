@@ -5,6 +5,7 @@ import os
 from fractions import Fraction
 from enum import Enum
 from typing import Iterator
+from pathlib import Path
 
 from flask import Response, abort, request
 
@@ -28,24 +29,6 @@ class ZoomLevel(Enum):
     B = 'b'
     C = 'c'
     D = 'd'
-
-
-def _get_filepath(*args: list[str], check: bool = True) -> str:
-    """Utility function to get file paths with logs."""
-    path: str = str(os.path.join(*args))
-    if not os.path.isfile(path) and check:
-        msg = f"File not found: {path}"
-        LOG.error(msg)
-        raise FileNotFoundError(path)
-    return path
-
-
-def get_tabix_files(coverage_file: str, baf_file: str) -> tuple[TabixFile, TabixFile]:
-    """Get tabix files for sample."""
-    _get_filepath(coverage_file + ".tbi") and _get_filepath(baf_file + ".tbi")
-    cov_file = TabixFile(_get_filepath(coverage_file))
-    baf_file = TabixFile(_get_filepath(baf_file))
-    return cov_file, baf_file
 
 
 def tabix_query(tbix: TabixFile, zoom_level: ZoomLevel, chrom: Chromosome, start: int | None = None, end: int | None = None, reduce: float | None = None) -> list[list[str]]:

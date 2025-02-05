@@ -5,6 +5,7 @@ import logging
 import os
 import re
 from typing import List, Any
+from pysam import TabixFile
 
 import attr
 import cattr
@@ -20,8 +21,6 @@ from gens.exceptions import RegionParserException
 from gens.graph import (REQUEST, get_cov, overview_chrom_dimensions,
                         parse_region_str)
 from gens.models.genomic import VariantCategory, Chromosome, GenomeBuild
-
-from .io import get_tabix_files
 
 LOG = logging.getLogger(__name__)
 
@@ -369,8 +368,12 @@ def get_coverage(
         reduce_data,
     )
     db = current_app.config["GENS_DB"]
+
+    # TODO respond with 404 error if file is not found
     sample_obj = query_sample(db, sample_id, case_id)
-    cov_file, baf_file = get_tabix_files(sample_obj.coverage_file, sample_obj.baf_file)
+    cov_file = TabixFile(str(sample_obj.coverage_file))
+    baf_file = TabixFile(str(sample_obj.baf_file))
+
     # Parse region
     try:
         with current_app.app_context():
