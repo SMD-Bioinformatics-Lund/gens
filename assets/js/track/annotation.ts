@@ -45,8 +45,8 @@ export class AnnotationTrack extends BaseAnnotationTrack {
     width: number,
     near: number,
     far: number,
-    genomeBuild,
-    defaultAnnotation
+    genomeBuild: number,
+    defaultAnnotation: string
   ) {
     // Dimensions of track canvas
     const visibleHeight = 300; // Visible height for expanded canvas, overflows for scroll
@@ -97,6 +97,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
         if (result.sources.length > 0) {
           this.sourceList.style.visibility = "visible";
         }
+
         for (const fileName of result.sources) {
           // Add annotation file name to list
           const opt = document.createElement("option");
