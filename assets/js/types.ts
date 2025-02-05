@@ -3,6 +3,39 @@ interface CanvasDetail {
   chrom: string;
 }
 
+interface RegionDetail {
+  region: { chrom: string; start: number; end: number };
+  exclude?: string[];
+}
+
+interface DrawPaths {
+  chromosome: DrawChromosome;
+  bands: BandPath[];
+}
+
+interface DrawChromosome {
+  path: Path2D;
+  chromInfo?: {
+    chrom: string;
+    scale: number;
+    x: number;
+    width: number;
+    size: number;
+  };
+}
+
+interface BandPath {
+  id: string;
+  path: Path2D;
+  start: number;
+  end: number;
+  stain: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 interface ChromosomeDims {
   [key: string]: ChromosomeDim;
 }
@@ -24,10 +57,6 @@ interface ChromosomePos {
 interface ColorSchema {
   default: string;
   [key: string]: string;
-}
-
-interface RegionDetail {
-  region: string;
 }
 
 type Point = {
@@ -68,28 +97,28 @@ type ScreenPositions = {
   end: number;
 };
 
-type RequestType = "GET"|"POST"|"PUT"|"DELETE"
+type RequestType = "GET" | "POST" | "PUT" | "DELETE";
 
 type RequestOptions = {
-  method: RequestType,
-  headers: any,
-  body?: string
-}
+  method: RequestType;
+  headers: any;
+  body?: string;
+};
 
 type OffscreenPosition = {
-  start: number|null,
-  end: number|null,
-  scale: number|null,
-}
+  start: number | null;
+  end: number | null;
+  scale: number | null;
+};
 
 type OnscreenPosition = {
-  start: number|null,
-  end: number|null,
-}
+  start: number | null;
+  end: number | null;
+};
 
 type InteractiveFeature = {
-  yStart: number,
-  yEnd: number,
-  step: number,
-  color: string,
-}
+  yStart: number;
+  yEnd: number;
+  step: number;
+  color: string;
+};

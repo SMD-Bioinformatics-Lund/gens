@@ -15,6 +15,8 @@ export class CytogeneticIdeogram {
   targetElement: HTMLElement;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
+  classList: string[];
+  drawPaths?: DrawPaths;
 
   constructor({ targetId, genomeBuild, x, y, width, height }) {
     // define core varialbes
@@ -37,9 +39,9 @@ export class CytogeneticIdeogram {
     // create region marker
     const markerElement = document.createElement("div");
     markerElement.id = "ideogram-marker";
-    markerElement.classList = ["marker"];
+    markerElement.className = "marker";
     markerElement.style.height = `${height - 4}px`;
-    markerElement.style.width = 0;
+    markerElement.style.width = "0px";
     markerElement.style.top = `-${height - 4}px`;
     markerElement.style.marginLeft = `${x}px`;
     this.targetElement.appendChild(markerElement);
@@ -70,7 +72,7 @@ export class CytogeneticIdeogram {
     });
 
     // register event for moving and zooming region marker
-    this.targetElement.addEventListener("mark-region", (event) => {
+    this.targetElement.addEventListener("mark-region", (event: CustomEvent<RegionDetail>) => {
       // if marking a subset of chromosome
       const { chrom, start, end } = event.detail.region;
       // get marker element
@@ -101,13 +103,13 @@ export class CytogeneticIdeogram {
       }
     });
     // register event for moving and zooming region marker
-    this.targetElement.addEventListener("draw", (event) => {
+    this.targetElement.addEventListener("draw", (event: CustomEvent<RegionDetail>) => {
       // check if this is supposed to be excluded
       if (!event.detail.exclude.includes(this.targetElement.id)) {
         // remove old figures
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.save();
-        markerElement.style.width = 0;
+        markerElement.style.width = "0px";
         // draw new figure
         cytogeneticIdeogram({
           ctx: this.ctx,
@@ -139,15 +141,15 @@ export function setupGenericEventManager({
   });
 }
 
-function createChromosomeTooltip({ bandId }) {
+function createChromosomeTooltip({ bandId }: { bandId?: string }) {
   const element = document.createElement("div");
   element.id = "ideogram-tooltip";
   const name = document.createElement("span");
   name.innerHTML = "ID:";
-  name.classList = ["ideogram-tooltip-key"];
+  name.className = "ideogram-tooltip-key";
   element.appendChild(name);
   const value = document.createElement("span");
-  value.classList = ["ideogram-tooltip-value"];
+  value.className = "ideogram-tooltip-value";
   element.appendChild(value);
   return element;
 }
@@ -213,16 +215,16 @@ function drawChromosome({
   color,
   lineColor,
 }: {
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  centromere: any,
-  color: string,
-  bands: any,
-  lineColor?: string,
-}) {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  centromere: any;
+  color: string;
+  bands: BandPath[];
+  lineColor?: string;
+}): {chromosome: DrawChromosome, bands: BandPath[]} {
   const basePosColor = "#000"; // dark green
   const bandColors = {
     gneg: "#FFFAF0",
@@ -257,6 +259,7 @@ function drawChromosome({
         height: height + 5,
         color: bandColors[band.stain],
         fillColor: bandColors[band.stain],
+        lineWidth: 1,
       });
       band.x = x + band.start;
       band.y = y - 5;
@@ -280,7 +283,7 @@ function drawChromosomeShape({
   centromere,
   color,
   lineColor = "#000",
-}) {
+}): Path2D {
   // draw shape of chromosome
   // define proportions of shape
   const endBevelProportion = 0.05;
