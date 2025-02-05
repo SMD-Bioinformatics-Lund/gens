@@ -10,6 +10,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Migrated from setup.py to pyproject.toml using hatchling
  - Updated python to version 3.12 and thawed some dependencies.
  - Switched from JS to TS and updated required parts of the build chain.
+ - Setup source maps and development mode for TS
 
 ### Fixed
  - Initial type hints added to command and db modules
