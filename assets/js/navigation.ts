@@ -35,12 +35,20 @@ export function setupDrawEventManager({ target, throttleTime = 20 }) {
 }
 
 export function readInputField() {
-  const field = document.getElementById("region-field");
+  const field = document.getElementById("region-field") as HTMLInputElement;
   return parseRegionDesignation(field.value);
 }
 
-function updateInputField({ chrom, start, end }) {
-  const field = document.getElementById("region-field");
+function updateInputField({
+  chrom,
+  start,
+  end,
+}: {
+  chrom: string;
+  start: number;
+  end: number;
+}) {
+  const field = document.getElementById("region-field") as HTMLInputElement;
   field.value = `${chrom}:${start}-${end}`;
   field.placeholder = field.value;
   field.blur();
@@ -114,7 +122,7 @@ export async function drawTrack({
   updateInputField({ ...region });
   const trackContainer = document.getElementById("visualization-container");
   trackContainer.dispatchEvent(
-    redrawEvent({ region, exclude, force, ...kwargs }),
+    redrawEvent({ region, exclude, force, ...kwargs })
   );
   // make overview update its region marking
   const markRegionEvent = new CustomEvent("mark-region", {
@@ -144,7 +152,7 @@ export function queryRegionOrGene(query, genomeBuild = 38) {
             end: result.end_pos,
           });
         }
-      },
+      }
     );
   }
 }
@@ -219,15 +227,14 @@ export function zoomOut() {
 }
 
 type KeyEventData = {
-  key: string,
-  target: string,
-  time: number
-}
+  key: string;
+  target: string;
+  time: number;
+};
 
 // Dispatch dispatch an event to draw a given region
 // Redraw events can be limited to certain tracks or include all tracks
 class KeyLogger {
-
   bufferSize: number;
   lastKeyTime: number;
   heldKeys: Record<string, boolean>;
@@ -268,7 +275,7 @@ class KeyLogger {
     // get keys pressed within a window of time.
     const currentTime = Date.now();
     return this.keyBuffer.filter(
-      (keyEvent) => timeWindow > currentTime - keyEvent.time,
+      (keyEvent) => timeWindow > currentTime - keyEvent.time
     );
   }
 
@@ -282,7 +289,7 @@ export const keyLogger = new KeyLogger();
 
 // Setup handling of keydown events
 const keystrokeDelay = 2000;
-document.addEventListener("keyevent", (event) => {
+document.addEventListener("keyevent", (event: CustomEvent<KeyEventData>) => {
   const key = event.detail.key;
 
   // dont act on key presses in input fields
@@ -298,7 +305,7 @@ document.addEventListener("keyevent", (event) => {
           .slice(lastKey.length - 2)
           .filter((val) => parseInt(val.key))
           .map((val) => val.key)
-          .join(""),
+          .join("")
       );
       // process keys
       if (lastKey.key === "x" || lastKey.key === "y") {

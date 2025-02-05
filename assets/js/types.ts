@@ -3,6 +3,11 @@ interface CanvasDetail {
   chrom: string;
 }
 
+interface ColorSchema {
+  default: string;
+  [key: string]: string;
+}
+
 interface RegionDetail {
   region: string;
 }
@@ -29,8 +34,8 @@ type DisplayElement = {
   start: number;
   end: number;
   // FIXME: Something weird here
-  exon_number: number;
-  feature: string;
+  exon_number?: number;
+  feature?: string;
   features: string[];
   isDisplayed: boolean;
   tooltip: any;

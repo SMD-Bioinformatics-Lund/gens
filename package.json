@@ -18,7 +18,7 @@
     "format": "npm run prettier:fix && npm run lint:fix",
     "watch": "gulp watch",
     "test": "jest",
-    "tsc": "npx tsc"
+    "tsc": "npx tsc --noEmit"
   },
   "repository": {
     "type": "git",

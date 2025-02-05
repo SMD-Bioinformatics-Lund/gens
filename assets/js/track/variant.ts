@@ -27,15 +27,16 @@ export class VariantTrack extends BaseAnnotationTrack {
   labelData: string[];
   highlightedVariantId: string;
   heightOrderRecord: {latestHeight: number, latestNameEnd: number, latestTrackEnd: number}
+  additionalQueryParams: { variant_category: string, case_id: string };
 
   constructor(
-    x,
-    width,
-    near,
-    far,
-    caseId,
-    genomeBuild,
-    colorSchema,
+    x: number,
+    width: number,
+    near: number,
+    far: number,
+    caseId: string,
+    genomeBuild: number,
+    colorSchema: ColorSchema,
     scoutBaseURL,
     highlightedVariantId
   ) {

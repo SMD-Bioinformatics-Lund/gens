@@ -192,7 +192,6 @@ function updateTooltipPos(track) {
     // update coordinates for the main element
     updateVisibleElementCoordinates({
       element,
-      canvas: track.contentCanvas,
       screenPosition: track.onscreenPosition,
       scale: track.offscreenPosition.scale,
     });
@@ -200,7 +199,6 @@ function updateTooltipPos(track) {
     for (const feature of element.features) {
       updateVisibleElementCoordinates({
         element: feature,
-        canvas: track.contentCanvas,
         screenPosition: track.onscreenPosition,
         scale: track.offscreenPosition.scale,
       });
@@ -212,6 +210,7 @@ function updateTooltipPos(track) {
       x2: Math.round(element.visibleX2 + xPos),
       y1: element.visibleY1,
       y2: element.visibleY2,
+      canvas: track.contentCanvas,
     });
     // update tooltip instance
     element.tooltip.instance.update();
