@@ -118,7 +118,7 @@ type ElementCoords = {
 };
 
 type DisplayElement = {
-  id: string;
+  id: string|number;
   name: string;
   x1?: number;
   x2?: number;

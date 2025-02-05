@@ -26,16 +26,28 @@ function stringToHash(string) {
 }
 
 export class AnnotationTrack extends BaseAnnotationTrack {
-
   readonly featureHeight: number = 18;
   readonly arrowThickness: number = 2;
   readonly apiEntrypoint: string = "get-annotation-data";
 
   genomeBuild: number;
-  sourceList: HTMLElement;
-  // additionalQueryParams: { source: }
+  sourceList: HTMLSelectElement;
+  additionalQueryParams: { source: string };
+  numRenderedElements: number;
+  heightOrderRecord: {
+    latestHeight: number;
+    latestNameEnd: number;
+    latestTrackEnd: number;
+  };
 
-  constructor(x: number, width: number, near: number, far: number, genomeBuild, defaultAnnotation) {
+  constructor(
+    x: number,
+    width: number,
+    near: number,
+    far: number,
+    genomeBuild,
+    defaultAnnotation
+  ) {
     // Dimensions of track canvas
     const visibleHeight = 300; // Visible height for expanded canvas, overflows for scroll
     const minHeight = 35; // Minimized height
@@ -56,13 +68,16 @@ export class AnnotationTrack extends BaseAnnotationTrack {
     this.genomeBuild = genomeBuild;
 
     // Setup annotation list
-    this.sourceList = document.getElementById("source-list");
+    this.sourceList = document.getElementById(
+      "source-list"
+    ) as HTMLSelectElement;
     this.sourceList.addEventListener("change", () => {
       this.expanded = false;
       this.additionalQueryParams = { source: this.sourceList.value };
-      const region = parseRegionDesignation(
-        document.getElementById("region-field").value,
-      );
+      const regionField = document.getElementById(
+        "region-field"
+      ) as HTMLInputElement;
+      const region = parseRegionDesignation(regionField.value);
       this.drawTrack({ forceRedraw: true, ...region });
     });
     this.annotSourceList(defaultAnnotation);
@@ -76,7 +91,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
   }
 
   // Fills the list with source files
-  annotSourceList(defaultAnnotation) {
+  annotSourceList(defaultAnnotation: string) {
     get("get-annotation-sources", { genome_build: this.genomeBuild })
       .then((result) => {
         if (result.sources.length > 0) {
@@ -90,20 +105,22 @@ export class AnnotationTrack extends BaseAnnotationTrack {
 
           // Set mimisbrunnr as default file
           if (fileName.match(defaultAnnotation)) {
-            opt.setAttribute("selected", true);
+            opt.selected = true;
           }
           this.sourceList.appendChild(opt);
         }
       })
       .then(() => {
-        const region = parseRegionDesignation(
-          document.getElementById("region-field").value,
-        );
+        const regionField = document.getElementById(
+          "region-field"
+        ) as HTMLInputElement;
+        const region = parseRegionDesignation(regionField.value);
         this.drawTrack({ ...region });
       });
   }
 
   // Draws annotations in given range
+  // @ts-ignore - FIXME, resolve the type errors here
   async drawOffScreenTrack({ startPos, endPos, maxHeightOrder, data }) {
     const textSize = 10;
 
@@ -128,7 +145,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
         isElementOverlapping(annot, {
           start: startPos,
           end: endPos,
-        }),
+        })
       );
     }
     // dont show tracks with no data in them
@@ -176,7 +193,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
         y2: canvasYPos + this.featureHeight / 2,
         features: [],
         isDisplayed: false,
-      };
+      } as DisplayElement;
       // Draw box for annotation
       drawRect({
         ctx: this.drawCtx,
