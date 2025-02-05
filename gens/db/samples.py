@@ -1,9 +1,8 @@
 """Store and retrive samples from the database."""
 
-import datetime
 import itertools
 import logging
-from gens.models.base import RWModel, CreatedAtModel
+from gens.models.sample import SampleInfo
 from gens.models.genomic import GenomeBuild
 
 from pymongo import MongoClient
@@ -29,17 +28,6 @@ class NonUniqueIndexError(Exception):
         self.sample_id = sample_id
         self.case_id = case_id
         self.genome_build = genome_build
-
-
-class SampleInfo(RWModel, CreatedAtModel):
-    """Sample record stored in the database."""
-
-    sample_id: str
-    case_id: str
-    genome_build: GenomeBuild
-    baf_file: str
-    coverage_file: str
-    overview_file: str
 
 
 def store_sample(

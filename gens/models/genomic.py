@@ -1,6 +1,8 @@
 """Models related to genomic data"""
 
 from enum import Enum, IntEnum
+from pydantic.types import PositiveInt
+from .base import RWModel
 
 
 class DnaStrand(Enum):  # TODO migrate to +/-
@@ -57,3 +59,27 @@ class VariantCategory(Enum):
     STRUCTURAL = "str"
     SINGLE_VAR = "sv"
     SINGLE_NT_VAR = "snv"
+
+
+class GenomePosition(RWModel):
+    start: PositiveInt
+    end: PositiveInt
+
+
+class ChromBand(RWModel):
+    id: str
+    stain: str
+    start: int
+    end: int
+    strand: DnaStrand
+
+
+class ChromInfo(RWModel):
+    """Information on a chromosome."""
+
+    chrom: Chromosome
+    genome_build: GenomeBuild
+    size: PositiveInt
+    scale: float
+    centromere: GenomePosition | None
+    bands: list[ChromBand] | None

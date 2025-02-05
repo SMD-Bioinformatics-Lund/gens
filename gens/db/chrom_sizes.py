@@ -1,47 +1,11 @@
 """Read and write chrom sizes."""
 
-from typing import List, Dict, Any, TypedDict
+from typing import Dict, Any
 from pymongo import MongoClient
-
-from gens.models import RWModel
-from gens.models.genomic import DnaStrand, Chromosome, GenomeBuild
+from gens.models.genomic import ChromInfo, Chromosome
 
 
 CHROMSIZES = "chrom-sizes"
-
-class GenomePosition(RWModel):
-    start: int
-    end: int
-
-
-class ChromBand(RWModel):
-    id: str
-    stain: str
-    start: int
-    end: int
-    strand: DnaStrand
-
-
-class ChromInfo(RWModel):
-    """Information on a chromosome."""
-
-    chrom: Chromosome
-    genome_build: GenomeBuild
-    size: int
-    scale: float
-    centromere: GenomePosition | None
-    bands: List[ChromBand] | None
-
-
-class ChromosomeInfo(TypedDict):
-    """Information on a chromosome."""
-
-    chrom: Chromosome
-    genome_build: GenomeBuild
-    size: int
-    scale: float
-    centromere: GenomePosition | None
-    bands: List[ChromBand]
 
 
 def get_chromosome_size(db: MongoClient[Dict[str, Any]], chrom: Chromosome, genome_build:int=38) -> ChromInfo:
