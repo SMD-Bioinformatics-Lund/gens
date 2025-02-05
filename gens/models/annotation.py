@@ -36,7 +36,7 @@ class ExonFeature(RWModel):
     exon_number: PositiveInt
 
 
-class UtrFeature(RWModel, ):
+class UtrFeature(RWModel):
     """utr information"""
 
     feature: Literal['five_prime_utr', 'three_prime_utr']
