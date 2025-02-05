@@ -8,7 +8,7 @@ from typing import Any
 
 from flask import current_app as app
 
-from gens.models.genomic import VariantCategory, Chromosome, GenomeBuild
+from gens.models.genomic import VariantCategory, GenomicRegion, GenomeBuild
 from gens.models.annotation import TranscriptRecord, AnnotationRecord
 
 LOG = logging.getLogger(__name__)
@@ -102,19 +102,17 @@ def _make_query_region(start_pos: int, end_pos: int, motif_type: str="other") ->
 
 def query_records_in_region(
     record_type: str,
-    chrom: Chromosome,
-    start_pos: int,
-    end_pos: int,
+    region: GenomicRegion,
     genome_build: GenomeBuild,
-    height_order:str|None=None,
+    height_order: int | None = None,
     **kwargs,
 ) -> Any:
     """Query the gens database for transcript information."""
     # build base query
     query = {
-        "chrom": chrom.value,
+        "chrom": region.chromosome.value,
         "genome_build": genome_build.value,
-        **_make_query_region(start_pos, end_pos),
+        **_make_query_region(region.start, region.end),
         **kwargs,  # add optional search params
     }
     # build sort order

@@ -29,6 +29,7 @@ class ZoomLevel(Enum):
     B = 'b'
     C = 'c'
     D = 'd'
+    O = 'o'
 
 
 def tabix_query(tbix: TabixFile, zoom_level: ZoomLevel, chrom: Chromosome, start: int | None = None, end: int | None = None, reduce: float | None = None) -> list[list[str]]:

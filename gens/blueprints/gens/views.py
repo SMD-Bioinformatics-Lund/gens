@@ -64,14 +64,14 @@ def display_case(sample_name):
         "annotation", settings.default_annotation_track
     )
 
-    _, chrom, start_pos, end_pos = parsed_region
+    (_, region) = parsed_region
     return render_template(
         "gens.html",
         ui_colors=UI_COLORS,
         scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
-        chrom=chrom.value,
-        start=start_pos,
-        end=end_pos,
+        chrom=region.chromosome.value,
+        start=region.start,
+        end=region.end,
         sample_name=sample_name,
         individual_id=individual_id,
         case_id=case_id,

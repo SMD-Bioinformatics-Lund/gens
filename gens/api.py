@@ -2,7 +2,6 @@
 import gzip
 import json
 import logging
-import os
 import re
 from typing import Any
 from pysam import TabixFile
@@ -18,7 +17,7 @@ from gens.db import (ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION,
 from gens.exceptions import RegionParserException
 from gens.graph import (REQUEST, get_cov, overview_chrom_dimensions,
                         parse_region_str)
-from gens.models.genomic import VariantCategory, Chromosome, GenomeBuild, QueryChromosomeCoverage
+from gens.models.genomic import VariantCategory, Chromosome, GenomeBuild, QueryChromosomeCoverage, GenomicRegion
 
 LOG = logging.getLogger(__name__)
 
@@ -59,57 +58,57 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
         return (jsonify({"detail": msg}), 404)
 
     genome_build = GenomeBuild(genome_build)
-    res, chrom, start_pos, end_pos = parse_region_str(region, genome_build)
+    raw_region = parse_region_str(region, genome_build)
 
-    # Get annotations within span [start_pos, end_pos] or annotations that
-    # go over the span
-    annotations = list(
-        query_records_in_region(
-            record_type=ANNOTATIONS_COLLECTION,
-            chrom=chrom,
-            start_pos=start_pos,
-            end_pos=end_pos,
-            genome_build=genome_build,
-            source=source,
-            height_order=1 if collapsed else None,
+    annotations = []
+    if raw_region is not None:
+        # Get annotations within span [start_pos, end_pos] or annotations that
+        # go over the span
+        zoom_level, parsed_region = raw_region
+        annotations = list(
+            query_records_in_region(
+                record_type=ANNOTATIONS_COLLECTION,
+                region=parsed_region,
+                genome_build=genome_build,
+                source=source,
+                height_order=1 if collapsed else None,
+            )
         )
-    )
+
     # Calculate maximum height order
     max_height_order = max(annotations, key=lambda e: e.height_order) if annotations else 1
 
     query_result = {
         "status": "ok",
-        "chromosome": chrom,
-        "start_pos": start_pos,
-        "end_pos": end_pos,
+        "chromosome": parsed_region.chromosome,
+        "start_pos": parsed_region.start,
+        "end_pos": parsed_region.end,
         "annotations": annotations,
         "max_height_order": max_height_order,
-        "res": res,
+        "res": zoom_level,
     }
     return jsonable_encoder(query_result)
 
 
-def get_transcript_data(region, genome_build, collapsed):
+def get_transcript_data(region: str, genome_build: str, collapsed: bool):
     """
     Gets transcript data for requested region and converts the coordinates to
     screen coordinates
     """
-    genome_build = GenomeBuild(genome_build)
-    res, chrom, start_pos, end_pos = parse_region_str(region, genome_build)
-
-    if region == "":
+    genome_build_enum = GenomeBuild(genome_build)
+    raw_region = parse_region_str(region, genome_build_enum)
+    if raw_region is None:
         msg = "Could not find transcript in database"
         LOG.error(msg)
         return (jsonify({"detail": msg}), 404)
 
     # Get transcripts within span [start_pos, end_pos] or transcripts that go over the span
+    zoom_level, parsed_region = raw_region
     transcripts = list(
         query_records_in_region(
             record_type=TRANSCRIPTS_COLLECTION,
-            chrom=chrom,
-            start_pos=start_pos,
-            end_pos=end_pos,
-            genome_build=genome_build,
+            region=parsed_region,
+            genome_build=genome_build_enum,
             height_order=1 if collapsed else None,
         )
     )
@@ -118,16 +117,16 @@ def get_transcript_data(region, genome_build, collapsed):
 
     return jsonable_encoder({
         "status": "ok",
-        "chromosome": chrom,
-        "start_pos": start_pos,
-        "end_pos": end_pos,
+        "chromosome": parsed_region.chromosome,
+        "start_pos": parsed_region.start,
+        "end_pos": parsed_region.end,
         "max_height_order": max_height_order,
-        "res": res,
+        "res": zoom_level,
         "transcripts": list(transcripts),
     })
 
 
-def search_annotation(query: str, genome_build, annotation_type):
+def search_annotation(query: str, genome_build: str, annotation_type: str):
     """Search for anntations of genes and return their position."""
     # Lookup queried element
     collection = current_app.config["GENS_DB"][annotation_type]
@@ -167,16 +166,11 @@ def get_variant_data(case_id, sample_id, variant_category, **optional_kwargs):
     # if getting variants from specific regions
     region_params = {}
     if region is not None and genome_build is not None:
-        res, chromosome, start_pos, end_pos = parse_region_str(region, genome_build)
-        region_params = {
-            "chromosome": chromosome,
-            "start_pos": start_pos,
-            "end_pos": end_pos,
-        }
+        zoom_level, region = parse_region_str(region, genome_build)
         base_return = {
             **base_return,
-            **region_params,
-            "res": res,
+            **region.model_dump(),
+            "res": zoom_level.value,
             "max_height_order": default_height_order,
         }
         # limit renders to b or greater resolution
@@ -218,7 +212,7 @@ def get_multiple_coverages() -> dict[str, Any]:
     sample_obj = query_sample(db, data.sample_id, data.case_id)
     # Try to find and load an overview json data file
     json_data, cov_file, baf_file = None, None, None
-    if sample_obj.overview_file and os.path.isfile(sample_obj.overview_file):
+    if sample_obj.overview_file.is_file():
         LOG.info(f"Using json overview file: {sample_obj.overview_file}")
         with gzip.open(sample_obj.overview_file, "r") as json_gz:
             json_data = json.loads(json_gz.read().decode("utf-8"))
@@ -243,24 +237,23 @@ def get_multiple_coverages() -> dict[str, Any]:
             data.genome_build,
             data.reduce_data,
         )
-        chromosome = chrom_info.region.split(":")[0]
-        try:
-            with current_app.app_context():
-                reg, *_, log2_rec, baf_rec = get_cov(
-                    req,
-                    chrom_info.x_ampl,
-                    json_data=json_data,
-                    cov_fh=cov_file,
-                    baf_fh=baf_file,
-                )
-        except RegionParserException as err:
-            LOG.error(f"{type(err).__name__} - {err}")
-            return (jsonify({"detail": str(err)}), 416)
-        except Exception as err:
-            LOG.error(f"{type(err).__name__} - {err}")
-            return (jsonify({"detail": str(err)}), 500)
+        # try:
+        with current_app.app_context():
+            reg, *_, log2_rec, baf_rec = get_cov(
+                req,
+                chrom_info.x_ampl,
+                json_data=json_data,
+                cov_fh=cov_file,
+                baf_fh=baf_file,
+            )
+        # except RegionParserException as err:
+        #     LOG.error(f"{type(err).__name__} - {err}")
+        #     return (jsonify({"detail": str(err)}), 416)
+        # except Exception as err:
+        #     LOG.error(f"{type(err).__name__} - {err}")
+        #     return (jsonify({"detail": str(err)}), 500)
 
-        results[chromosome] = {
+        results[chrom_info.chromosome] = {
             "data": log2_rec,
             "baf": baf_rec,
             "chrom": reg.chrom,
