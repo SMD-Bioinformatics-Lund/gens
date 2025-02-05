@@ -33,7 +33,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
 
   genomeBuild: number;
   sourceList: HTMLElement;
-  additionalQueryParams: { source: }
+  // additionalQueryParams: { source: }
 
   constructor(x: number, width: number, near: number, far: number, genomeBuild, defaultAnnotation) {
     // Dimensions of track canvas
