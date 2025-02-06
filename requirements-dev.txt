@@ -6,5 +6,6 @@ pytest-mongodb
 coveralls
 
 # utils
+pylint
 black
 isort
