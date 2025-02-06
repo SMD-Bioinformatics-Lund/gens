@@ -8,6 +8,8 @@ from typing import Any, Iterable, TextIO
 
 import click
 
+from ..models.genomic import GenomeBuild
+
 LOG = logging.getLogger(__name__)
 
 
@@ -138,7 +140,7 @@ def _sort_transcript_features(transcripts: list[str]):
         tr["features"] = sorted(tr["features"], key=lambda x: x["start"])
 
 
-def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: int):
+def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild):
     """Build transcript object from transcript and mane file."""
     mane_transc = parse_mane_transc(mane_file)
     results: dict[str, list[str]] = defaultdict(list)
@@ -155,7 +157,7 @@ def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: int)
                 # FIXME: More typing work here when we have data types defined
                 res = {
                     "chrom": transc["seqname"],
-                    "genome_build": int(genome_build),
+                    "genome_build": genome_build.value,
                     "gene_name": attribs["gene_name"],
                     "start": int(transc["start"]),
                     "end": int(transc["end"]),

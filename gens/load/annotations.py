@@ -66,7 +66,7 @@ def parse_aed(file: Path) -> Iterator[dict[str, str]]:
             yield dict(zip(header, line))
 
 
-def parse_annotation_entry(entry: dict[str, str], genome_build: int, annotation_name: str) -> AnnotationRecord:
+def parse_annotation_entry(entry: dict[str, str], genome_build: GenomeBuild, annotation_name: str) -> AnnotationRecord:
     """Parse a bed or aed entry"""
     annotation: dict[str, str|int] = {}
     # parse entry and format the values
@@ -92,7 +92,7 @@ def parse_annotation_entry(entry: dict[str, str], genome_build: int, annotation_
     # set additional values
     return AnnotationRecord(
         source=annotation_name,
-        genome_build=GenomeBuild(int(genome_build)),
+        genome_build=genome_build,
         **annotation,
     )
 

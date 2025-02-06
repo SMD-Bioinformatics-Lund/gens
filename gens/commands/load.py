@@ -17,8 +17,6 @@ from gens.load import (ParserError, build_chromosomes_obj, build_transcripts,
 from gens.load.annotations import AnnotationRecord
 
 LOG = logging.getLogger(__name__)
-valid_genome_builds = [str(gb.value) for gb in GenomeBuild]
-
 
 class ChoiceType(click.Choice):
     """Custom input type for click that returns genome build enum."""
@@ -45,7 +43,7 @@ def load():
 @click.option(
     "-b",
     "--genome-build",
-    type=click.Choice(GenomeBuild),
+    type=ChoiceType(GenomeBuild),
     required=True,
     help="Genome build",
 )
@@ -81,7 +79,7 @@ def load():
     help="Overwrite any existing sample with the same key.",
 )
 @with_appcontext
-def sample(sample_id: str, genome_build: int, baf: str, coverage: str, case_id: str, overview_json: str, force: bool):
+def sample(sample_id: str, genome_build: GenomeBuild, baf: str, coverage: str, case_id: str, overview_json: str, force: bool):
     """Load a sample into Gens database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -112,12 +110,12 @@ def sample(sample_id: str, genome_build: int, baf: str, coverage: str, case_id: 
 @click.option(
     "-b",
     "--genome-build",
-    type=click.Choice(valid_genome_builds),
+    type=ChoiceType(GenomeBuild),
     required=True,
     help="Genome build",
 )
 @with_appcontext
-def annotations(file: str, genome_build: int):
+def annotations(file: str, genome_build: GenomeBuild):
     """Load annotations from file into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -167,12 +165,12 @@ def annotations(file: str, genome_build: int):
 @click.option(
     "-b",
     "--genome-build",
-    type=click.Choice(valid_genome_builds),
+    type=ChoiceType(GenomeBuild),
     required=True,
     help="Genome build",
 )
 @with_appcontext
-def transcripts(file: TextIO, mane: TextIO, genome_build: int):
+def transcripts(file: TextIO, mane: TextIO, genome_build: GenomeBuild):
     """Load transcripts into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index

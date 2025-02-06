@@ -34,7 +34,7 @@ def store_sample(
     db: MongoClient,
     sample_id: str,
     case_id: str,
-    genome_build: int,
+    genome_build: GenomeBuild,
     baf: str,
     coverage: str,
     overview: str,
@@ -43,7 +43,7 @@ def store_sample(
     """Store a new sample in the database."""
     LOG.info(f'Store sample "{sample_id}" in database')
     sample_obj = SampleInfo(
-        sample_id=sample_id, case_id=case_id, genome_build=GenomeBuild(int(genome_build)),
+        sample_id=sample_id, case_id=case_id, genome_build=genome_build,
         baf_file=baf, coverage_file=coverage, overview_file=overview
     )
     index_fields = ['baf_index', 'coverage_index']
