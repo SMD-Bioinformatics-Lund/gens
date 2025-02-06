@@ -195,7 +195,7 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: int):
     help="Timeout for queries.",
 )
 @with_appcontext
-def chromosome_info(_file: TextIO, genome_build: int, timeout: int):
+def chromosome_info(file: TextIO|None, genome_build: int, timeout: int):
     """Load chromosome size information into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -203,20 +203,30 @@ def chromosome_info(_file: TextIO, genome_build: int, timeout: int):
         create_index(db, CHROMSIZES_COLLECTION)
     # get chromosome info from ensemble
     # if file is given, use sizes from file else download chromsizes from ebi
-    LOG.info(f"Query ensembl for assembly info for {genome_build}")
-    assembly_info = get_assembly_info(genome_build, timeout=timeout)
-    # index chromosome on name
-    chrom_data = {
-        elem["name"]: elem
-        for elem in assembly_info["top_level_region"]
-        if elem.get("coord_system") == "chromosome"
-    }
-    chrom_data = {chrom: chrom_data[chrom] for chrom in assembly_info["karyotype"]}
-    try:
-        LOG.info("Build chromosome object")
-        chromosomes_data = build_chromosomes_obj(chrom_data, genome_build, timeout)
-    except Exception as err:
-        raise click.UsageError(str(err))
+    if file is None:
+        LOG.info(f"Query ensembl for assembly info for {genome_build}")
+        assembly_info = get_assembly_info(genome_build, timeout=timeout)
+        # index chromosome on name
+        chrom_data = {
+            elem["name"]: elem
+            for elem in assembly_info["top_level_region"]
+            if elem.get("coord_system") == "chromosome"
+        }
+        chrom_data = {chrom: chrom_data[chrom] for chrom in assembly_info["karyotype"]}
+        try:
+            LOG.info("Build chromosome object")
+            chromosomes_data = build_chromosomes_obj(chrom_data, genome_build, timeout)
+        except Exception as err:
+            raise click.UsageError(str(err))
+    else:
+        chromosomes_data = {}
+        for line in file:
+            line = line.rstrip()
+            fields = line.split("\t")
+            contig_name = fields[0]
+            contig_length = fields[1]
+            chromosomes_data[contig_name] = int(contig_length)
+
     # remove old entries
     res = db[CHROMSIZES_COLLECTION].delete_many({"genome_build": int(genome_build)})
     LOG.info(
