@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     oauth_discovery_url: HttpUrl | None = None
 
     @model_validator(mode='after')
-    def check_ouath_opts(self):
+    def check_oauth_opts(self):
         """Check that OAUTH options are set if authentication is oauth."""
         if self.authentication == AuthMethod.OAUTH:
             checks = [
