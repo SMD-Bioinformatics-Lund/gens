@@ -1,3 +1,17 @@
+import { get } from "../fetch";
+
+async function getAnnotationSources(): Promise<string[]> {
+
+    const results = await get("get-annotation-sources", {genome_build: 38});
+        // .getHeaderNames((result) => {
+        //     console.log(result);
+        // })
+
+    console.log(results.sources);
+
+    return [];
+}
+
 class HelloWorld extends HTMLElement {
 
     private _message: string = "Hello world!";
@@ -7,6 +21,8 @@ class HelloWorld extends HTMLElement {
     setMessage(message: string) {
         console.log("Assigning message", message);
         this._textElement.textContent = message;
+
+        getAnnotationSources();
     }
 
     constructor() {
