@@ -3,12 +3,17 @@ import { get } from "../fetch";
 async function getAnnotationSources(): Promise<string[]> {
 
     const results = await get("get-annotation-sources", {genome_build: 38});
-        // .getHeaderNames((result) => {
-        //     console.log(result);
-        // })
-
     return results.sources;
 }
+
+const template = document.createElement("template");
+template.innerHTML = `
+    <div>
+        <p id="message">Placeholder</p>
+        <canvas id="canvas" width="100" height="100"></canvas>
+        <div id="annotations"></div>
+    </div>
+`;
 
 class HelloWorld extends HTMLElement {
 
@@ -35,16 +40,15 @@ class HelloWorld extends HTMLElement {
         super();
 
         this._root = this.attachShadow({ mode: "open" });
+        this._root.appendChild(template.content.cloneNode(true));
 
-        const wrapper = document.createElement("p");
-        wrapper.textContent = "Hello World!";
+        const helloElement = this._root.getElementById("message");
+        helloElement.textContent = "Hello World!"
+        // const wrapper = document.createElement("p");
         // shadow.appendChild(wrapper);
         // this._textElement = wrapper;
 
-        const canvas = document.createElement("canvas");
-        canvas.width = 100;
-        canvas.height = 100;
-        this._root.appendChild(canvas);
+        const canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
 
         const ctx = canvas.getContext("2d");
         if (ctx) {
