@@ -6,13 +6,22 @@ template.innerHTML = `
     </div>
 `;
 
-class MultiAnnotsTrack extends HTMLElement {
+export class MultiAnnotsTrack extends HTMLElement {
     private _root: ShadowRoot;
+
+    public setTitle(title: string) {
+        const header = this._root.getElementById("header") as HTMLParagraphElement;
+        header.textContent = title;
+    }
 
     constructor() {
         super();
 
-        const canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
+        this._root = this.attachShadow({mode: "open"})
+        this._root.appendChild(template.content.cloneNode(true));
+
+        const canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
+        console.log("Canvas:", canvas);
 
         const ctx = canvas.getContext("2d");
         if (ctx) {
