@@ -15,6 +15,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Switched from JS to TS and updated required parts of the build chain.
 
 ### Fixed
+ - Resolved all type errors from tsc
  - Initial type hints added to command and db modules
 
 ## 3.0.1

@@ -29,6 +29,15 @@ export function initCanvases({
   scoutBaseURL,
   selectedVariant,
   annotationFile,
+}: {
+  sampleName: string,
+  caseId: string,
+  genomeBuild: number,
+  hgFileDir: string,
+  uiColors: UIColors,
+  scoutBaseURL: string,
+  selectedVariant: string,
+  annotationFile: string
 }) {
   // initialize and return the different canvases
   // WEBGL values

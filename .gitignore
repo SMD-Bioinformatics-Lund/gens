@@ -42,3 +42,4 @@ gens/static/css/*
 !gens/static/css/.gitkeep
 *.min.css
 *.min.js
+*.map

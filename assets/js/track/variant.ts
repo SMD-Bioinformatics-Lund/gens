@@ -21,16 +21,24 @@ const VARIANT_TR_TABLE = {
 };
 
 export class VariantTrack extends BaseAnnotationTrack {
+  scoutBaseURL: string;
+  genomeBuild: number;
+  apiEntrypoint: string;
+  labelData: VariantLabel[];
+  highlightedVariantId: string;
+  heightOrderRecord: {latestHeight: number, latestNameEnd: number, latestTrackEnd: number}
+  additionalQueryParams: { variant_category: string, case_id: string };
+
   constructor(
-    x,
-    width,
-    near,
-    far,
-    caseId,
-    genomeBuild,
-    colorSchema,
-    scoutBaseURL,
-    highlightedVariantId,
+    x: number,
+    width: number,
+    near: number,
+    far: number,
+    caseId: string,
+    genomeBuild: number,
+    colorSchema: ColorSchema,
+    scoutBaseURL: string,
+    highlightedVariantId: string
   ) {
     // Dimensions of track canvas
     const visibleHeight = 100; // Visible height for expanded canvas, overflows for scroll
@@ -54,7 +62,7 @@ export class VariantTrack extends BaseAnnotationTrack {
             x: event.clientX - rect.left,
             y: event.clientY - rect.top,
           };
-          if (isWithinElementVisibleBbox({ element, point })) {
+          if (isWithinElementVisibleBbox(element, point)) {
             const url = this.scoutBaseURL + "/document_id/" + element.id;
             console.log(`Visit ${url}: Scout variant`);
             const win = window.open(url, "_blank");
@@ -62,7 +70,7 @@ export class VariantTrack extends BaseAnnotationTrack {
           }
         }
       },
-      false,
+      false
     );
     this.featureHeight = 18;
     // Setup html objects now that we have gotten the canvas and div elements
@@ -99,6 +107,7 @@ export class VariantTrack extends BaseAnnotationTrack {
     });
   }
 
+  // @ts-expect-error: FIXME
   async drawOffScreenTrack({ startPos, endPos, maxHeightOrder, data }) {
     //  Draws variants in given range
     const textSize = 10;
@@ -126,8 +135,8 @@ export class VariantTrack extends BaseAnnotationTrack {
       filteredVariants = data.variants.filter((variant) =>
         isElementOverlapping(
           { start: variant.position, end: variant.end },
-          { start: startPos, end: endPos },
-        ),
+          { start: startPos, end: endPos }
+        )
       );
     }
     filteredVariants.sort((a, b) => a.position - b.position);
@@ -187,13 +196,14 @@ export class VariantTrack extends BaseAnnotationTrack {
 
       // create variant object
       const featureHeight = variantCategory === "del" ? 7 : 8;
-      const variantObj = {
+      // FIXME: This should really be a class
+      const variantObj: DisplayElement = {
         id: variant.document_id,
         name: variant.display_name,
         start: variant.position,
         end: variant.end,
         x1: Math.round(
-          scale * (variant.position - this.offscreenPosition.start),
+          scale * (variant.position - this.offscreenPosition.start)
         ),
         x2: Math.round(scale * (variant.end - this.offscreenPosition.start)),
         y1: canvasYPos,
@@ -310,7 +320,7 @@ export class VariantTrack extends BaseAnnotationTrack {
             color,
           });
           console.log(
-            `Unhandled variant type ${variantCategory}; drawing default shape`,
+            `Unhandled variant type ${variantCategory}; drawing default shape`
           );
       }
       // Move and display highlighted region
@@ -359,8 +369,8 @@ export class VariantTrack extends BaseAnnotationTrack {
             margin,
             Math.min(
               this.contentCanvas.width - margin,
-              scale * (label.x - this.onscreenPosition.start),
-            ),
+              scale * (label.x - this.onscreenPosition.start)
+            )
           ),
           y: label.y,
           fontProp: label.fontProp,

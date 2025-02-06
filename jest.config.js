@@ -1,5 +1,5 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} **/
-export default {
+module.exports = {
   testEnvironment: "jsdom",
   transform: {
     "^.+.tsx?$": ["ts-jest",{ diagnostics: false}],

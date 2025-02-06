@@ -20,6 +20,41 @@ import { get } from "./fetch";
 import { BaseScatterTrack } from "./track";
 
 export class InteractiveCanvas extends BaseScatterTrack {
+  x: number;
+  y: number;
+  plotWidth: number;
+  titleMargin: number;
+  legendMargin: number;
+  leftRightPadding: number;
+  topBottomPadding: number;
+  extraWidth: number;
+  plotHeight: number;
+  titleYPos: number | null;
+  titleBbox: { x: number; y: number; width: number; height: number } | null;
+  canvasHeight: number;
+  inputField: any;
+  offscreenPosition: OffscreenPosition;
+  onscreenPosition: OnscreenPosition;
+
+  baf: InteractiveFeature;
+  log2: InteractiveFeature;
+
+  drawWidth: number;
+
+  allowDraw: boolean;
+
+  contentCanvas: HTMLCanvasElement;
+  staticCanvas: HTMLCanvasElement;
+  loadingDiv: HTMLElement;
+  markerElem: HTMLElement;
+  markingRegion: boolean;
+  drag: boolean;
+  dragStart: any;
+  dragEnd: any;
+  scale: number;
+
+  chromosome: string;
+
   constructor(
     inputField,
     lineMargin,
@@ -28,7 +63,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
     caseId,
     sampleName,
     genomeBuild,
-    hgFileDir,
+    hgFileDir
   ) {
     super({ caseId, sampleName, genomeBuild, hgFileDir });
     // The canvas input field to display and fetch chromosome range from
@@ -40,7 +75,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
     this.topBottomPadding = 8; // margin for top and bottom in graph
     this.plotWidth = Math.min(
       1500,
-      0.9 * document.body.clientWidth - this.legendMargin,
+      0.9 * document.body.clientWidth - this.legendMargin
     ); // Width of one plot
     this.extraWidth = this.plotWidth / 1.5; // Width for loading in extra edge data
     this.plotHeight = 180; // Height of one plot
@@ -74,14 +109,18 @@ export class InteractiveCanvas extends BaseScatterTrack {
     // Setup draw canvas
     this.drawWidth = Math.max(
       this.plotWidth + 2 * this.extraWidth,
-      document.body.clientWidth,
+      document.body.clientWidth
     ); // Draw-canvas width
-    this.drawCanvas.width = parseInt(this.drawWidth);
-    this.drawCanvas.height = parseInt(this.canvasHeight);
+    this.drawCanvas.width = parseInt(this.drawWidth.toString());
+    this.drawCanvas.height = parseInt(this.canvasHeight.toString());
 
     // Setup visible canvases
-    this.contentCanvas = document.getElementById("interactive-content");
-    this.staticCanvas = document.getElementById("interactive-static");
+    this.contentCanvas = document.getElementById(
+      "interactive-content"
+    ) as HTMLCanvasElement;
+    this.staticCanvas = document.getElementById(
+      "interactive-static"
+    ) as HTMLCanvasElement;
     this.staticCanvas.width = this.contentCanvas.width =
       document.body.clientWidth;
     this.staticCanvas.height = this.contentCanvas.height = this.canvasHeight;
@@ -112,33 +151,40 @@ export class InteractiveCanvas extends BaseScatterTrack {
 
     // Setup listeners
     // update chromosome title event
-    this.contentCanvas.addEventListener("update-title", (event) => {
-      console.log(`interactive got an ${event.type} event`);
-      const len = event.detail.bands.length;
-      if (len > 0) {
-        const bandIds =
-          len === 1
-            ? event.detail.bands[0].id
-            : `${event.detail.bands[0].id}-${event.detail.bands[len - 1].id}`;
-        this.drawCanvas
-          .getContext("2d")
-          .clearRect(
-            this.titleBbox.x,
-            this.titleBbox.y,
-            this.titleBbox.width,
-            this.titleBbox.height,
+    this.contentCanvas.addEventListener(
+      "update-title",
+      (event: CustomEvent<CanvasDetail>) => {
+        const len = event.detail.bands.length;
+        if (len > 0) {
+          const bandIds =
+            len === 1
+              ? event.detail.bands[0].id
+              : `${event.detail.bands[0].id}-${event.detail.bands[len - 1].id}`;
+          this.drawCanvas
+            .getContext("2d")
+            .clearRect(
+              this.titleBbox.x,
+              this.titleBbox.y,
+              this.titleBbox.width,
+              this.titleBbox.height
+            );
+          this.titleBbox = this.drawTitle(
+            `Chromosome ${event.detail.chrom}; ${bandIds}`
           );
-        this.titleBbox = this.drawTitle(
-          `Chromosome ${event.detail.chrom}; ${bandIds}`,
-        );
-        this.blitChromName({ textPosition: this.titleBbox });
+          this.blitChromName({ textPosition: this.titleBbox });
+        }
       }
-    });
+    );
     // redraw events
-    this.contentCanvas.parentElement.addEventListener("draw", (event) => {
-      console.log("interactive got draw event");
-      this.drawInteractiveContent({ ...event.detail.region, ...event.detail });
-    });
+    this.contentCanvas.parentElement.addEventListener(
+      "draw",
+      (event: CustomEvent<RegionDetail>) => {
+        this.drawInteractiveContent({
+          ...event.detail.region,
+          ...event.detail,
+        });
+      }
+    );
     // navigation events
     this.contentCanvas.addEventListener("mousedown", (event) => {
       event.stopPropagation();
@@ -245,7 +291,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       0,
       0,
       this.staticCanvas.width,
-      this.staticCanvas.height,
+      this.staticCanvas.height
     );
 
     // Make content area visible
@@ -254,65 +300,65 @@ export class InteractiveCanvas extends BaseScatterTrack {
       this.x + linePadding,
       this.y + linePadding,
       this.plotWidth,
-      this.staticCanvas.height,
+      this.staticCanvas.height
     );
     // area for ticks above content area
     staticContext.clearRect(
       0,
       0,
       this.staticCanvas.width,
-      this.y + linePadding,
+      this.y + linePadding
     );
 
     // Draw rotated y-axis legends
-    drawRotatedText(
-      staticContext,
-      "B Allele Freq",
-      18,
-      this.x - this.legendMargin,
-      this.y + this.plotHeight / 2,
-      -Math.PI / 2,
-      this.titleColor,
-    );
-    drawRotatedText(
-      staticContext,
-      "Log2 Ratio",
-      18,
-      this.x - this.legendMargin,
-      this.y + 1.5 * this.plotHeight,
-      -Math.PI / 2,
-      this.titleColor,
-    );
+    drawRotatedText({
+      ctx: staticContext,
+      text: "B Allele Freq",
+      textSize: 18,
+      posx: this.x - this.legendMargin,
+      posy: this.y + this.plotHeight / 2,
+      rotDegrees: -Math.PI / 2,
+      color: this.titleColor,
+    });
+    drawRotatedText({
+      ctx: staticContext,
+      text: "Log2 Ratio",
+      textSize: 18,
+      posx: this.x - this.legendMargin,
+      posy: this.y + 1.5 * this.plotHeight,
+      rotDegrees: -Math.PI / 2,
+      color: this.titleColor,
+    });
 
     // Draw BAF
-    createGraph(
-      staticContext,
-      this.x,
-      this.y,
-      this.plotWidth,
-      this.plotHeight,
-      this.topBottomPadding,
-      this.baf.yStart,
-      this.baf.yEnd,
-      this.baf.step,
-      true,
-      this.borderColor,
-    );
+    createGraph({
+      ctx: staticContext,
+      x: this.x,
+      y: this.y,
+      width: this.plotWidth,
+      height: this.plotHeight,
+      yMargin: this.topBottomPadding,
+      yStart: this.baf.yStart,
+      yEnd: this.baf.yEnd,
+      step: this.baf.step,
+      addTicks: true,
+      color: this.borderColor,
+    });
 
     // Draw Log 2 ratio
-    createGraph(
-      staticContext,
-      this.x,
-      this.y + this.plotHeight,
-      this.plotWidth,
-      this.plotHeight,
-      this.topBottomPadding,
-      this.log2.yStart,
-      this.log2.yEnd,
-      this.log2.step,
-      true,
-      this.borderColor,
-    );
+    createGraph({
+      ctx: staticContext,
+      x: this.x,
+      y: this.y + this.plotHeight,
+      width: this.plotWidth,
+      height: this.plotHeight,
+      yMargin: this.topBottomPadding,
+      yStart: this.log2.yStart,
+      yEnd: this.log2.yEnd,
+      step: this.log2.step,
+      addTicks: true,
+      color: this.borderColor,
+    });
 
     // Transfer image to visible canvas
     staticContext.drawImage(this.drawCanvas, 0, 0);
@@ -326,7 +372,6 @@ export class InteractiveCanvas extends BaseScatterTrack {
     displayLoading = true,
     drawTitle = true,
   }) {
-    console.log("drawing interactive canvas", chrom, start, end);
     if (displayLoading) {
       this.loadingDiv.style.display = "block";
     } else {
@@ -361,6 +406,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
         this.offscreenPosition = {
           start: parseInt(result.padded_start),
           end: parseInt(result.padded_end),
+          scale: 1
         };
         this.offscreenPosition.scale =
           this.drawWidth /
@@ -448,12 +494,17 @@ export class InteractiveCanvas extends BaseScatterTrack {
         this.allowDraw = true;
 
         this.inputField.dispatchEvent(
-          new CustomEvent("error", { detail: { error: error } }),
+          new CustomEvent("error", { detail: { error: error } })
         );
       });
   }
 
-  drawTitle(title) {
+  drawTitle(title: string): {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } {
     const ctx = this.drawCanvas.getContext("2d");
     return drawText({
       ctx,
@@ -493,7 +544,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       textPosition.x - padding / 2,
       textPosition.y,
       textPosition.width + padding,
-      textPosition.height,
+      textPosition.height
     );
     // transfer from draw canvas
     !clearOnly &&
@@ -506,7 +557,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
         textPosition.x - padding / 2, // dX
         textPosition.y, // dY
         textPosition.width + padding, // dWidth
-        textPosition.height, // dHeight
+        textPosition.height // dHeight
       );
   }
 
@@ -518,7 +569,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
     if (updateCoord) this.onscreenPosition = { start: start, end: end };
 
     const offscreenOffset = Math.round(
-      (start - this.offscreenPosition.start) * this.offscreenPosition.scale,
+      (start - this.offscreenPosition.start) * this.offscreenPosition.scale
     );
     const offscSegmentWidth = Math.round(width * this.offscreenPosition.scale);
     const onscSegmentWidth = width * this.calcScale();
@@ -528,7 +579,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       0,
       this.titleMargin / 2 - 2,
       this.contentCanvas.width,
-      this.contentCanvas.height,
+      this.contentCanvas.height
     );
     // normalize the genomic coordinates to screen coordinates
     ctx.drawImage(
@@ -540,7 +591,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       this.x, // dX
       this.titleMargin / 2, // dY
       onscSegmentWidth, // dWidth
-      this.contentCanvas.height, // dHeight
+      this.contentCanvas.height // dHeight
     );
   }
 

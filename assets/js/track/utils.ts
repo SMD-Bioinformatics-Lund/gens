@@ -1,28 +1,4 @@
 // Utility functions
-
-type Point = {
-  x: number;
-  y: number;
-};
-
-type Element = {
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
-};
-
-type DisplayElement = {
-  visibleX1: number;
-  visibleX2: number;
-  visibleY1: number;
-  visibleY2: number;
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
-};
-
 export function getVisibleYCoordinates(
   element: { y1: number; y2: number },
   minHeight: number = 4
@@ -38,13 +14,17 @@ export function getVisibleYCoordinates(
 }
 
 export function getVisibleXCoordinates(
-  canvas: any,
+  screenPositions: ScreenPositions,
   feature: { start: number; end: number },
   scale: number,
   minWidth: number = 4
 ) {
-  let x1 = Math.round(Math.max(0, feature.start - canvas.start) * scale);
-  let x2 = Math.round(Math.min(canvas.end, feature.end - canvas.start) * scale);
+  let x1 = Math.round(
+    Math.max(0, feature.start - screenPositions.start) * scale
+  );
+  let x2 = Math.round(
+    Math.min(screenPositions.end, feature.end - screenPositions.start) * scale
+  );
   if (x2 - x1 < minWidth) {
     x1 = Math.round(x1 - (minWidth - (x2 - x1) / 2));
     x2 = Math.round(x2 + (minWidth - (x2 - x1) / 2));
@@ -69,7 +49,7 @@ export function isElementOverlapping(first: any, second: any) {
 }
 
 // check if point is within an element
-export function isWithinElementBbox(element: Element, point: Point) {
+export function isWithinElementBbox(element: ElementCoords, point: Point) {
   return (
     element.x1 < point.x &&
     point.x < element.x2 &&
@@ -78,7 +58,10 @@ export function isWithinElementBbox(element: Element, point: Point) {
   );
 }
 
-export function isWithinElementVisibleBbox(element: DisplayElement, point: Point) {
+export function isWithinElementVisibleBbox(
+  element: DisplayElement,
+  point: Point
+) {
   return (
     element.visibleX1 < point.x &&
     point.x < element.visibleX2 &&
