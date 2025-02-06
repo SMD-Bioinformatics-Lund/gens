@@ -1,5 +1,12 @@
 // GENS module
 
+console.log("Loading Gens module");
+
+// Web components
+import "./components/hello"
+import "./components/test"
+
+// Regular imports
 import { InteractiveCanvas } from "./interactive";
 import { OverviewCanvas } from "./overview";
 import {
