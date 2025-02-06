@@ -11,7 +11,7 @@ template.innerHTML = `
     <div>
         <p id="message">Placeholder</p>
         <canvas id="canvas" width="100" height="100"></canvas>
-        <div id="annotations"></div>
+        <select id="annotations" multiple></select>
     </div>
 `;
 
@@ -28,11 +28,20 @@ class HelloWorld extends HTMLElement {
         this._annotSources.map((source) => source.remove());
         // this._textElement.textContent = message;
 
+        const annotSelect = this._root.querySelector("#annotations") as HTMLSelectElement | null;
+        if (annotSelect) {
+            annotSelect.innerHTML = "";
+        }
         const annotSources = await getAnnotationSources();
-        annotSources.map((source) => {
-            const element = document.createElement("p");
-            element.textContent = source;
-            this._root.appendChild(element);
+        annotSources.forEach((source) => {
+            const option = document.createElement("option");
+            option.value = source;
+            option.textContent = source;
+            annotSelect?.appendChild(option);
+
+            // const element = document.createElement("p");
+            // element.textContent = source;
+            // this._root.appendChild(element);
         })
     }
 
