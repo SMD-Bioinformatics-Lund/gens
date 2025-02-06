@@ -10,12 +10,12 @@ const template = document.createElement("template");
 template.innerHTML = `
     <div>
         <p id="message">Placeholder</p>
-        <canvas id="canvas" width="100" height="100"></canvas>
+        <div id="annot-container"></div>
         <select id="annotations" multiple></select>
     </div>
 `;
 
-class HelloWorld extends HTMLElement {
+class MultiAnnots extends HTMLElement {
 
     private _root: ShadowRoot;
 
@@ -57,17 +57,8 @@ class HelloWorld extends HTMLElement {
         // shadow.appendChild(wrapper);
         // this._textElement = wrapper;
 
-        const canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
 
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-            ctx.beginPath();
-            ctx.arc(50, 50, 20, 0, 2 * Math.PI);
-            ctx.fillStyle = "blue";
-            ctx.fill();
-            ctx.closePath();
-        }
     }
 }
 
-customElements.define("hello-world", HelloWorld);
+customElements.define("multi-annots", MultiAnnots);

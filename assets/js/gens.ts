@@ -1,7 +1,8 @@
 // GENS module
 
 // Web components
-import "./components/hello"
+import "./components/multiannots"
+import "./components/multiannotstrack"
 import "./components/test"
 
 // Regular imports
@@ -45,7 +46,7 @@ export function initCanvases({
   annotationFile: string
 }) {
 
-  const myHello = document.getElementById("myHello") as HelloWorld;
+  const myHello = document.getElementById("myHello") as MultiAnnots;
   // console.log(myHello);
 
   myHello.setMessage("New message");
