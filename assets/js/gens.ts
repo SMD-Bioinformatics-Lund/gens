@@ -1,7 +1,5 @@
 // GENS module
 
-console.log("Loading Gens module");
-
 // Web components
 import "./components/hello"
 import "./components/test"
@@ -46,6 +44,13 @@ export function initCanvases({
   selectedVariant: string,
   annotationFile: string
 }) {
+
+  const myHello = document.getElementById("myHello") as HelloWorld;
+  // console.log(myHello);
+
+  myHello.setMessage("New message");
+  
+
   // initialize and return the different canvases
   // WEBGL values
   const near = 0.1;
