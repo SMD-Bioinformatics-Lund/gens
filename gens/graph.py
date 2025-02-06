@@ -49,34 +49,34 @@ def convert_data(
     """
 
     if data_type == "json":
-        CHRPOS_IDX, VALUE_IDX = 0, 1
+        chrom_pos_idx, value_idx = 0, 1
     elif data_type == "bed":
-        CHRPOS_IDX, VALUE_IDX = 1, 3
+        chrom_pos_idx, value_idx = 1, 3
     else:
-        raise ValueError(f"Data type {bed_type} not supported. Use bed or json!")
+        raise ValueError(f"Data type {data_type} not supported. Use bed or json!")
 
     #  Normalize and calculate the Lo2 ratio
     log2_records = []
     for record in log2_list:
         # Cap values to end points
-        ypos = float(record[VALUE_IDX])
+        ypos = float(record[value_idx])
         ypos = req.log2_y_start + 0.2 if ypos > req.log2_y_start else ypos
         ypos = req.log2_y_end - 0.2 if ypos < req.log2_y_end else ypos
 
         # Convert to screen coordinates
-        xpos = (int(x_pos + new_x_ampl * (float(record[CHRPOS_IDX]) - new_start_pos)),)
+        xpos = (int(x_pos + new_x_ampl * (float(record[chrom_pos_idx]) - new_start_pos)),)
         log2_records.extend([xpos, int(graph.log2_ypos - graph.log2_ampl * ypos)])
 
     # Gather the BAF records
     baf_records = []
     for record in baf_list:
         # Cap values to end points
-        ypos = float(record[VALUE_IDX])
+        ypos = float(record[value_idx])
         ypos = req.baf_y_start + 0.2 if ypos > req.baf_y_start else ypos
         ypos = req.baf_y_end - 0.2 if ypos < req.baf_y_end else ypos
 
         # Convert to screen coordinates
-        xpos = (int(x_pos + new_x_ampl * (float(record[CHRPOS_IDX]) - new_start_pos)),)
+        xpos = (int(x_pos + new_x_ampl * (float(record[chrom_pos_idx]) - new_start_pos)),)
         baf_records.extend([xpos, int(graph.baf_ypos - graph.baf_ampl * ypos)])
 
     return log2_records, baf_records
@@ -313,6 +313,17 @@ def get_cov(
         )
 
     # Convert the data to screen coordinates
+    foo = [
+        graph,
+        req,
+        log2_list,
+        baf_list,
+        req.x_pos - extra_plot_width,
+        new_start_pos,
+        new_x_ampl,
+        data_type,
+    ]
+    raise ValueError()
     log2_records, baf_records = convert_data(
         graph,
         req,
