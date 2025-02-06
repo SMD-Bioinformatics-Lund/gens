@@ -46,6 +46,7 @@ def store_sample(
         sample_id=sample_id, case_id=case_id, genome_build=GenomeBuild(int(genome_build)),
         baf_file=baf, coverage_file=coverage, overview_file=overview
     )
+    index_fields = ['baf_index', 'coverage_index']
     if force:
         result = db[COLLECTION].update_one(
             {
@@ -54,7 +55,8 @@ def store_sample(
                 "genome_build": genome_build,
             },
             {
-                "$set": sample_obj.model_dump()
+                "$set": sample_obj.model_dump(exclude=index_fields)
+
             },
             upsert=True,
         )
@@ -71,7 +73,9 @@ def store_sample(
             )
     else:
         try:
-            db[COLLECTION].insert_one(sample_obj.model_dump())
+            db[COLLECTION].insert_one(
+                sample_obj.model_dump(exclude=index_fields)
+            )
         except DuplicateKeyError:
             LOG.error(
                 f'DuplicateKeyError while storing sample with sample_id="{sample_id}" and case_id="{case_id}" in database.'
