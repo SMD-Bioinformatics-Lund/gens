@@ -31,6 +31,17 @@ function addFeatures(elem, tooltipElement) {
 }
 
 export class TranscriptTrack extends BaseAnnotationTrack {
+  readonly apiEntrypoint: string = "get-transcript-data";
+  readonly maxResolution: number = 4;
+  readonly geneLineWidth: number = 2;
+
+  genomeBuild: number;
+  heightOrderRecord: {
+    latestHeight: number;
+    latestNameEnd: number;
+    latestTrackEnd: number;
+  };
+
   constructor(x, width, near, far, genomeBuild, colorSchema) {
     // Dimensions of track canvas
     const visibleHeight = 100; // Visible height for expanded canvas, overflows for scroll
@@ -47,18 +58,18 @@ export class TranscriptTrack extends BaseAnnotationTrack {
     // Setup html objects now that we have gotten the canvas and div elements
     this.setupHTML(x + 1);
 
-    // GENS api parameters
-    this.apiEntrypoint = "get-transcript-data";
-
     this.genomeBuild = genomeBuild;
-    this.maxResolution = 4;
-    // Define with of the elements
-    this.geneLineWidth = 2;
     initTrackTooltips(this);
   }
 
   // draw feature
-  _drawFeature(feature, heightOrder, canvasYPos, color, plotFormat) {
+  _drawFeature(
+    feature: DisplayElement,
+    heightOrder,
+    canvasYPos: number,
+    color: string,
+    plotFormat
+  ) {
     // Go trough feature list and draw geometries
     const scale = this.offscreenPosition.scale;
     // store feature rendering information
@@ -69,11 +80,11 @@ export class TranscriptTrack extends BaseAnnotationTrack {
     // Draw the geometry that represents the feature
     if (feature.feature === "exon") {
       // generate feature object
-      const visibleCoords = getVisibleXCoordinates({
-        canvas: this.onscreenPosition,
-        feature: feature,
-        scale: scale,
-      });
+      const visibleCoords = getVisibleXCoordinates(
+        this.onscreenPosition,
+        feature,
+        scale
+      );
       const featureObj = {
         id: feature.exon_number,
         start: feature.start,
@@ -107,7 +118,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
     plotFormat,
     drawName = true,
     drawAsArrow = false,
-    addTooltip = true,
+    addTooltip = true
   ) {
     const canvasYPos = this.tracksYPos(element.height_order);
     const scale = this.offscreenPosition.scale;
@@ -124,7 +135,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
       scale: scale,
       color: element.mane ? lightenColor(color, 15) : color, // lighten colors for MANE transcripts
       features: [],
-    };
+    } as Transcript;
     // Keep track of latest track
     if (this.heightOrderRecord.latestHeight !== element.height_order) {
       this.heightOrderRecord = {
@@ -138,12 +149,12 @@ export class TranscriptTrack extends BaseAnnotationTrack {
     const displayedTrStart = Math.round(
       transcriptObj.start > this.offscreenPosition.start
         ? scale * (transcriptObj.start - this.offscreenPosition.start)
-        : 0,
+        : 0
     );
     const displayedTrEnd = Math.round(
       this.offscreenPosition.end > transcriptObj.end
         ? scale * (transcriptObj.end - this.offscreenPosition.start)
-        : this.offscreenPosition.end,
+        : this.offscreenPosition.end
     );
     // store start and end coordinates
     transcriptObj.x1 = displayedTrStart;
@@ -158,7 +169,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
       y: canvasYPos,
       y2: canvasYPos,
       color: transcriptObj.color,
-      lineWith: this.geneLineWidth, // set width of the element
+      lineWidth: this.geneLineWidth, // set width of the element
     });
     // Draw gene name
     const textYPos = this.tracksYPos(element.height_order);
@@ -168,7 +179,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
         ctx: this.drawCtx,
         text: `${transcriptObj.name}${mane}${element.strand === "+" ? "→" : "←"}`,
         x: Math.round(
-          (displayedTrEnd - displayedTrStart) / 2 + displayedTrStart,
+          (displayedTrEnd - displayedTrStart) / 2 + displayedTrStart
         ),
         y: textYPos + this.featureHeight,
         fontProp: textSize,
@@ -194,17 +205,17 @@ export class TranscriptTrack extends BaseAnnotationTrack {
           element.height_order,
           canvasYPos,
           transcriptObj.color,
-          plotFormat,
+          plotFormat
         );
         if (featureObj !== undefined) {
           transcriptObj.features.push(featureObj);
         }
       }
       transcriptObj.y1 = Math.min(
-        ...transcriptObj.features.map((feat) => feat.y1),
+        ...transcriptObj.features.map((feat) => feat.y1)
       );
       transcriptObj.y2 = Math.max(
-        ...transcriptObj.features.map((feat) => feat.y2),
+        ...transcriptObj.features.map((feat) => feat.y2)
       );
     }
 
@@ -259,13 +270,24 @@ export class TranscriptTrack extends BaseAnnotationTrack {
         isDisplayed: false,
       };
     } else {
-      transcriptObj.tooltip = false;
+      transcriptObj.tooltip = null;
     }
     return transcriptObj;
   }
 
   //  Draws transcripts in given range
-  async drawOffScreenTrack({ startPos, endPos, maxHeightOrder, data }) {
+  // @ts-expect-error FIXME: This should be fixed eventually
+  async drawOffScreenTrack({
+    startPos,
+    endPos,
+    maxHeightOrder,
+    data,
+  }: {
+    startPos: number;
+    endPos: number;
+    maxHeightOrder: any;
+    data: any;
+  }) {
     //    store positions used when rendering the canvas
     this.offscreenPosition = {
       start: startPos,
@@ -287,7 +309,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
     let filteredTranscripts = [];
     if (this.getResolution < this.maxResolution + 1) {
       filteredTranscripts = data.transcripts.filter((transc) =>
-        isElementOverlapping(transc, { start: startPos, end: endPos }),
+        isElementOverlapping(transc, { start: startPos, end: endPos })
       );
     }
     // dont show tracks with no data in them
@@ -324,7 +346,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
         plotFormat,
         drawGeneName, // if gene names should be drawn
         !drawExons, // if transcripts should be represented as arrows
-        drawTooltips, // if tooltips should be added
+        drawTooltips // if tooltips should be added
       );
       this.geneticElements.push(transcriptObj);
     }

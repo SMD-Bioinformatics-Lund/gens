@@ -7,7 +7,9 @@ test("Test copyPermalink", () => {
   delete window.location;
   const inputElem = document.createElement("input");
   document.createElement = jest.fn().mockReturnValueOnce(inputElem);
+  // @ts-expect-error FIXME: Unsure about these, look into at a later point
   delete window.createElement;
+  // @ts-expect-error
   window.location = new URL("https://www.example.com/sampleId?foo=bar&doo=moo");
   // run function
   copyPermalink("38", "1:10-100");

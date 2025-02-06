@@ -1,4 +1,5 @@
 // functions for handling tooltips
+import { BaseAnnotationTrack } from "./base";
 import {
   getVisibleXCoordinates,
   getVisibleYCoordinates,
@@ -6,22 +7,45 @@ import {
 } from "./utils";
 
 // make virtual DOM element that represents a annotation element
-export function makeVirtualDOMElement(x1: number, x2: number, y1: number, y2: number, canvas) {
+export function makeVirtualDOMElement({
+  x1,
+  x2,
+  y1,
+  y2,
+  canvas,
+}: {
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+  canvas: any;
+}): { getBoundingClientRect: () => VirtualDOMElement } {
   return {
     getBoundingClientRect: generateGetBoundingClientRect(
       x1,
       x2,
       y1,
       y2,
-      canvas,
+      canvas
     ),
   };
 }
 
 // Make a virtual DOM element from a genetic element object
-export function generateGetBoundingClientRect(x1: number, x2: number, y1: number, y2: number, canvas) {
+export function generateGetBoundingClientRect(
+  x1: number,
+  x2: number,
+  y1: number,
+  y2: number,
+  canvas: HTMLCanvasElement
+): () => VirtualDOMElement {
   const track = canvas;
   return () => ({
+    // Placeholders to match the Popper.js later expected format
+    x: -1,
+    y: -1,
+    toJSON: () => {},
+    //
     width: Math.round(x2 - x1),
     height: Math.round(y2 - y1),
     top: y1 + Math.round(track.getBoundingClientRect().y),
@@ -35,13 +59,14 @@ export function updateVisibleElementCoordinates({
   element,
   screenPosition,
   scale,
+}: {
+  element: DisplayElement;
+  screenPosition: ScreenPositions;
+  scale: number;
 }) {
-  const { x1, x2 } = getVisibleXCoordinates({
-    canvas: screenPosition,
-    feature: element,
-    scale: scale,
-  });
-  const { y1, y2 } = getVisibleYCoordinates({ element });
+  const { x1, x2 } = getVisibleXCoordinates(screenPosition, element, scale);
+  // @ts-expect-error FIXME
+  const { y1, y2 } = getVisibleYCoordinates(element);
   // update coordinates
   element.visibleX1 = x1;
   element.visibleX2 = x2;
@@ -53,7 +78,7 @@ function showTooltip({ tooltip, feature }) {
   tooltip.tooltip.setAttribute("data-show", "");
   if (feature !== undefined) {
     const featureElement = tooltip.tooltip.querySelector(
-      `#feature-${feature.id}`,
+      `#feature-${feature.id}`
     );
     featureElement.setAttribute("data-show", "");
     feature.isDisplayed = true;
@@ -63,7 +88,7 @@ function showTooltip({ tooltip, feature }) {
 
 function hideFeatureInTooltip({ tooltip, feature }) {
   const selectedFeature = tooltip.tooltip.querySelector(
-    `#feature-${feature.id}`,
+    `#feature-${feature.id}`
   );
   selectedFeature.removeAttribute("data-show");
   feature.isDisplayed = false;
@@ -133,7 +158,7 @@ function tooltipHandler(event, track) {
         y1: element.y1,
         y2: element.y2,
       },
-      point,
+      point
     );
     if (isInElement) {
       // check if pointer is in a feature of element
@@ -146,7 +171,7 @@ function tooltipHandler(event, track) {
             y1: feature.y1,
             y2: feature.y2,
           },
-          point,
+          point
         );
         if (isInFeature && !feature.isDisplayed) {
           // show feature
@@ -173,7 +198,6 @@ function updateTooltipPos(track) {
     // update coordinates for the main element
     updateVisibleElementCoordinates({
       element,
-      canvas: track.contentCanvas,
       screenPosition: track.onscreenPosition,
       scale: track.offscreenPosition.scale,
     });
@@ -181,7 +205,6 @@ function updateTooltipPos(track) {
     for (const feature of element.features) {
       updateVisibleElementCoordinates({
         element: feature,
-        canvas: track.contentCanvas,
         screenPosition: track.onscreenPosition,
         scale: track.offscreenPosition.scale,
       });
@@ -193,6 +216,7 @@ function updateTooltipPos(track) {
       x2: Math.round(element.visibleX2 + xPos),
       y1: element.visibleY1,
       y2: element.visibleY2,
+      canvas: track.contentCanvas,
     });
     // update tooltip instance
     element.tooltip.instance.update();
@@ -215,7 +239,7 @@ function teardownTooltips(track) {
 }
 
 // initialize event listeners for hover function
-export function initTrackTooltips(track) {
+export function initTrackTooltips(track: BaseAnnotationTrack) {
   // when mouse is leaving track
   track.trackContainer.addEventListener("mouseleave", () => {
     for (const element of track.geneticElements) {

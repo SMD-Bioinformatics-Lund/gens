@@ -11,18 +11,39 @@ import {
 } from "./draw";
 
 import { drawTrack } from "./navigation";
+import { FONTSIZES } from "./constants";
 
 export class OverviewCanvas extends BaseScatterTrack {
+  fullPlotWidth: number;
+  plotHeight: number;
+  titleMargin: number;
+  legendMargin: number;
+  x: number;
+  y: number;
+  leftRightPadding: number;
+  topBottomPadding: number;
+  leftmostPoint: number;
+  patternCanvas: HTMLCanvasElement;
+  baf: InteractiveFeature;
+  log2: InteractiveFeature;
+  disabledChroms: string[];
+  width: number;
+  height: number;
+  staticCanvas: HTMLCanvasElement;
+  markerElem: HTMLElement;
+  dims: ChromosomeDims;
+  chromPos: ChromosomePos[];
+
   constructor(
-    xPos,
-    fullPlotWidth,
-    lineMargin,
-    near,
-    far,
-    caseId,
-    sampleName,
-    genomeBuild,
-    hgFileDir,
+    xPos: number,
+    fullPlotWidth: number,
+    lineMargin: number,
+    near: number,
+    far: number,
+    caseId: string,
+    sampleName: string,
+    genomeBuild: number,
+    hgFileDir: string
   ) {
     super({ caseId, sampleName, genomeBuild, hgFileDir });
 
@@ -74,9 +95,11 @@ export class OverviewCanvas extends BaseScatterTrack {
     this.disabledChroms = [];
     this.width = document.body.clientWidth; // Canvas width
     this.height = this.y + 2 * this.plotHeight + 2 * this.topBottomPadding; // Canvas height
-    this.drawCanvas.width = parseInt(this.width);
-    this.drawCanvas.height = parseInt(this.height);
-    this.staticCanvas = document.getElementById("overview-static");
+    this.drawCanvas.width = parseInt(this.width.toString());
+    this.drawCanvas.height = parseInt(this.height.toString());
+    this.staticCanvas = document.getElementById(
+      "overview-static"
+    ) as HTMLCanvasElement;
 
     // Initialize marker div element
     this.markerElem = document.getElementById("overview-marker");
@@ -84,6 +107,7 @@ export class OverviewCanvas extends BaseScatterTrack {
     this.markerElem.style.marginTop =
       0 - (this.plotHeight + this.topBottomPadding) * 2 + "px";
 
+    // FIXME: What does this mean? What is the type? Something to ponder here
     // Set dimensions of overview canvases
     this.staticCanvas.width = this.width;
     this.staticCanvas.height = this.height;
@@ -105,19 +129,19 @@ export class OverviewCanvas extends BaseScatterTrack {
       });
       this.staticCanvas.parentElement.addEventListener(
         "mark-region",
-        (event) => {
+        (event: CustomEvent) => {
           this.markRegion({ ...event.detail.region });
-        },
+        }
       );
     });
   }
 
-  pixelPosToGenomicLoc(pixelpos) {
-    const match = {};
-    for (const i of CHROMOSOMES) {
-      const chr = this.dims[i];
+  pixelPosToGenomicLoc(pixelpos: number) {
+    const match = {} as {chrom?: string, pos?: number};
+    for (const my_chr of CHROMOSOMES) {
+      const chr = this.dims[my_chr] as {x_pos: number, width: number, size: number};
       if (pixelpos > chr.x_pos && pixelpos < chr.x_pos + chr.width) {
-        match.chrom = i;
+        match.chrom = my_chr;
         match.pos = Math.floor((chr.size * (pixelpos - chr.x_pos)) / chr.width);
       }
     }
@@ -130,7 +154,7 @@ export class OverviewCanvas extends BaseScatterTrack {
       y_pos: this.y,
       plot_width: this.fullPlotWidth,
       genome_build: this.genomeBuild,
-    }).then((result) => {
+    }).then((result: {chrom_dims: ChromosomeDims}) => {
       this.dims = result.chrom_dims;
       this.chromPos = CHROMOSOMES.map((chrom) => {
         return {
@@ -164,7 +188,17 @@ export class OverviewCanvas extends BaseScatterTrack {
     }
   }
 
-  async drawOverviewPlotSegment({ canvas, chrom, width, chromCovData }) {
+  async drawOverviewPlotSegment({
+    canvas,
+    chrom,
+    width,
+    chromCovData,
+  }: {
+    canvas: HTMLCanvasElement;
+    chrom: string;
+    width: number;
+    chromCovData: any;
+  }) {
     // Draw chromosome title
     const ctx = canvas.getContext("2d");
     drawText({
@@ -179,39 +213,39 @@ export class OverviewCanvas extends BaseScatterTrack {
     // Draw rotated y-axis legends
     if (chromCovData.x_pos < this.leftmostPoint) {
       drawRotatedText({
-        ctx: ctx,
+        ctx,
         text: "B Allele Freq",
+        textSize: FONTSIZES["medium"],
         posx: chromCovData.x_pos - this.legendMargin,
         posy: chromCovData.y_pos + this.plotHeight / 2,
-        rot_degrees: -Math.PI / 2,
-        textSize: 18,
+        rotDegrees: -Math.PI / 2,
         color: this.titleColor,
       });
       drawRotatedText({
-        ctx: ctx,
+        ctx,
         text: "Log2 Ratio",
+        textSize: FONTSIZES["medium"],
         posx: chromCovData.x_pos - this.legendMargin,
         posy: chromCovData.y_pos + 1.5 * this.plotHeight,
-        rot_degrees: -Math.PI / 2,
-        textSize: 18,
+        rotDegrees: -Math.PI / 2,
         color: this.titleColor,
       });
     }
     // Draw BAF
-    createGraph(
+    createGraph({
       ctx,
-      chromCovData.x_pos - this.leftRightPadding,
-      chromCovData.y_pos,
+      x: chromCovData.x_pos - this.leftRightPadding,
+      y: chromCovData.y_pos,
       width,
-      this.plotHeight,
-      this.topBottomPadding,
-      this.baf.yStart,
-      this.baf.yEnd,
-      this.baf.step,
-      chromCovData.x_pos < this.leftmostPoint,
-      this.borderColor,
-      chrom !== CHROMOSOMES[0],
-    );
+      height: this.plotHeight,
+      yMargin: this.topBottomPadding,
+      yStart: this.baf.yStart,
+      yEnd: this.baf.yEnd,
+      step: this.baf.step,
+      addTicks: chromCovData.x_pos < this.leftmostPoint,
+      color: this.borderColor,
+      open: chrom !== CHROMOSOMES[0],
+    });
     drawGraphLines({
       ctx,
       x: chromCovData.x_pos,
@@ -225,20 +259,20 @@ export class OverviewCanvas extends BaseScatterTrack {
     });
 
     // Draw Log 2 ratio
-    createGraph(
+    createGraph({
       ctx,
-      chromCovData.x_pos - this.leftRightPadding,
-      chromCovData.y_pos + this.plotHeight,
+      x: chromCovData.x_pos - this.leftRightPadding,
+      y: chromCovData.y_pos + this.plotHeight,
       width,
-      this.plotHeight,
-      this.topBottomPadding,
-      this.log2.yStart,
-      this.log2.yEnd,
-      this.log2.step,
-      chromCovData.x_pos < this.leftmostPoint,
-      this.borderColor,
-      chrom !== CHROMOSOMES[0],
-    );
+      height: this.plotHeight,
+      yMargin: this.topBottomPadding,
+      yStart: this.log2.yStart,
+      yEnd: this.log2.yEnd,
+      step: this.log2.step,
+      addTicks: chromCovData.x_pos < this.leftmostPoint,
+      color: this.borderColor,
+      open: chrom !== CHROMOSOMES[0],
+    });
     drawGraphLines({
       ctx,
       x: chromCovData.x_pos,
@@ -269,7 +303,7 @@ export class OverviewCanvas extends BaseScatterTrack {
         chromCovData.x_pos,
         chromCovData.y_pos + 1,
         width - 2,
-        this.plotHeight * 2 - 2,
+        this.plotHeight * 2 - 2
       );
       this.disabledChroms.push(chrom);
     }

@@ -1,10 +1,22 @@
 // graph related objects
+import { COLORS, FONTSIZES } from "../constants";
 import { drawRect, drawLine, drawRotatedText, drawText } from "./shapes";
 
 // Draws vertical tick marks for selected values between
 // xStart and xEnd with step length.
 // The amplitude scales the values to drawing size
-export function drawVerticalTicks(
+export function drawVerticalTicks({
+  ctx,
+  renderX,
+  y,
+  xStart,
+  xEnd,
+  xoStart,
+  xoEnd,
+  width,
+  yMargin,
+  titleColor,
+}:{
   ctx: CanvasRenderingContext2D,
   renderX: number,
   y: number,
@@ -15,7 +27,7 @@ export function drawVerticalTicks(
   width: number,
   yMargin: number,
   titleColor: string,
-) {
+} ) {
   const lineThickness = 1;
   const lineWidth = 5;
   const regionSize = xEnd - xStart;
@@ -39,15 +51,15 @@ export function drawVerticalTicks(
     const value = numberWithCommas(step.toFixed(0));
 
     // Draw text and ticks only for the leftmost box
-    drawRotatedText(
+    drawRotatedText({
       ctx,
-      value,
-      10,
-      renderX + xStep + 8,
-      y - value.length - 3 * yMargin,
-      -Math.PI / 4,
-      titleColor,
-    );
+      text: value,
+      textSize: FONTSIZES.small,
+      posx: renderX + xStep + 8,
+      posy: y - value.length - 3 * yMargin,
+      rotDegrees: -Math.PI / 4,
+      color: titleColor,
+    });
 
     // Draw tick line
     drawLine({
@@ -66,15 +78,27 @@ export function drawVerticalTicks(
 // yStart and yEnd with step length.
 // The amplitude scales the values to drawing size
 export function drawGraphLines(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  yStart: number,
-  yEnd: number,
-  stepLength: number,
-  yMargin: number,
-  width: number,
-  height: number,
+  {
+    ctx,
+    x,
+    y,
+    yStart,
+    yEnd,
+    stepLength,
+    yMargin,
+    width,
+    height,
+  }: {
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    yStart: number,
+    yEnd: number,
+    stepLength: number,
+    yMargin: number,
+    width: number,
+    height: number,
+  } 
 ) {
   const ampl = (height - 2 * yMargin) / (yStart - yEnd); // Amplitude for scaling y-axis to fill whole height
   const lineThickness = 1;
@@ -88,13 +112,13 @@ export function drawGraphLines(
       y: yPos,
       x2: x + width - 2 * lineThickness,
       y2: yPos,
-      color: "#e5e5e5",
+      color: COLORS.lightgray,
     });
   }
 }
 
 // Creates a graph for one chromosome data type
-export function createGraph(
+export function createGraph({
   ctx,
   x,
   y,
@@ -106,8 +130,21 @@ export function createGraph(
   step,
   addTicks,
   color = "black",
-  open,
-) {
+  open = false,
+}: {
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  yMargin: number,
+  yStart: number,
+  yEnd: number,
+  step: number,
+  addTicks: boolean,
+  color?: string,
+  open?: boolean
+}) {
   // Draw tick marks
   if (addTicks) {
     drawTicks(
@@ -153,7 +190,6 @@ function drawTicks(
       x: x - lineWidth,
       y: y + (yStart - step) * ampl + 2.2,
       text: step.toFixed(1),
-      textSize: 10,
       align: "right",
     });
 

@@ -16,9 +16,6 @@ function drawEventManager({ target, throttleTime }) {
   let lastEventTime = 0;
   return (event) => {
     const now = Date.now();
-    console.log(
-      `Test event times ${lastEventTime} ? ${now}, diff: ${now - lastEventTime}`,
-    );
     if (throttleTime < Date.now() - lastEventTime || event.detail.force) {
       lastEventTime = Date.now();
       for (const track of tracks) {
@@ -38,12 +35,20 @@ export function setupDrawEventManager({ target, throttleTime = 20 }) {
 }
 
 export function readInputField() {
-  const field = document.getElementById("region-field");
+  const field = document.getElementById("region-field") as HTMLInputElement;
   return parseRegionDesignation(field.value);
 }
 
-function updateInputField({ chrom, start, end }) {
-  const field = document.getElementById("region-field");
+function updateInputField({
+  chrom,
+  start,
+  end,
+}: {
+  chrom: string;
+  start: number;
+  end: number;
+}) {
+  const field = document.getElementById("region-field") as HTMLInputElement;
   field.value = `${chrom}:${start}-${end}`;
   field.placeholder = field.value;
   field.blur();
@@ -117,7 +122,7 @@ export async function drawTrack({
   updateInputField({ ...region });
   const trackContainer = document.getElementById("visualization-container");
   trackContainer.dispatchEvent(
-    redrawEvent({ region, exclude, force, ...kwargs }),
+    redrawEvent({ region, exclude, force, ...kwargs })
   );
   // make overview update its region marking
   const markRegionEvent = new CustomEvent("mark-region", {
@@ -147,7 +152,7 @@ export function queryRegionOrGene(query, genomeBuild = 38) {
             end: result.end_pos,
           });
         }
-      },
+      }
     );
   }
 }
@@ -221,48 +226,63 @@ export function zoomOut() {
   });
 }
 
+type KeyEventData = {
+  key: string;
+  target: string;
+  time: number;
+};
+
 // Dispatch dispatch an event to draw a given region
 // Redraw events can be limited to certain tracks or include all tracks
 class KeyLogger {
+  bufferSize: number;
+  lastKeyTime: number;
+  heldKeys: Record<string, boolean>;
+  keyBuffer: KeyEventData[];
+
   // Records keypress combinations
-  constructor(bufferSize = 10) {
+  constructor(bufferSize: number = 10) {
     // Setup variables
     this.bufferSize = bufferSize;
     this.lastKeyTime = Date.now();
     this.heldKeys = {}; // store held keys
     this.keyBuffer = []; // store recent keys
     //  Setup event listending functions
-    document.addEventListener("keydown", (event) => {
+    document.addEventListener("keydown", (event: KeyboardEvent) => {
+      const targetElement = event.target as HTMLElement;
       // store event
       const eventData = {
         key: event.key,
-        target: window.event.target.nodeName,
+        // FIXME: Does this change work? Remove the comment below if confirmed
+        target: targetElement.nodeName,
+        // target: window.event.target.nodeName,
         time: Date.now(),
       };
-      const keyEvent = new CustomEvent("keyevent", { detail: eventData });
-      this.heldKeys[event.key] = true; // recored pressed keys
+      const keyEvent = new CustomEvent<KeyEventData>("keyevent", { detail: eventData });
+      this.heldKeys[event.key] = true;
       this.keyBuffer.push(eventData);
-      // empty buffer
       while (this.keyBuffer.length > this.bufferSize) {
         this.keyBuffer.shift();
       }
-      document.dispatchEvent(keyEvent); // event information
+      document.dispatchEvent(keyEvent);
     });
-    document.addEventListener("keyup", (event) => {
+    document.addEventListener("keyup", (event: KeyboardEvent) => {
       delete this.heldKeys[event.key];
     });
   }
 
-  recentKeys(timeWindow) {
+  recentKeys(timeWindow: number): KeyEventData[] {
     // get keys pressed within a window of time.
     const currentTime = Date.now();
     return this.keyBuffer.filter(
-      (keyEvent) => timeWindow > currentTime - keyEvent.time,
+      (keyEvent) => timeWindow > currentTime - keyEvent.time
     );
   }
 
-  lastKeypressTime() {
-    return this.keyBuffer[this.keyBuffer.length - 1] - Date.now();
+  lastKeypressTime(): number {
+    // FIXME: Is this correct?
+    return Date.now() - this.keyBuffer[this.keyBuffer.length - 1].time;
+    // return this.keyBuffer[this.keyBuffer.length - 1] - Date.now();
   }
 }
 
@@ -270,7 +290,7 @@ export const keyLogger = new KeyLogger();
 
 // Setup handling of keydown events
 const keystrokeDelay = 2000;
-document.addEventListener("keyevent", (event) => {
+document.addEventListener("keyevent", (event: CustomEvent<KeyEventData>) => {
   const key = event.detail.key;
 
   // dont act on key presses in input fields
@@ -283,16 +303,18 @@ document.addEventListener("keyevent", (event) => {
       const lastKey = recentKeys[recentKeys.length - 1];
       const numKeys = parseInt(
         recentKeys
-          .slice(lastKey.length - 2)
+          .slice(Math.max(recentKeys.length - 2, 0))
           .filter((val) => parseInt(val.key))
           .map((val) => val.key)
-          .join(""),
+          .join("")
       );
       // process keys
       if (lastKey.key === "x" || lastKey.key === "y") {
-        drawTrack({ region: lastKey.key });
-      } else if (numKeys && numKeys > 0 < 23) {
-        drawTrack({ region: numKeys });
+        console.error("FIXME: Should this be working?")
+        // drawTrack({ region: lastKey.key });
+      } else if (numKeys && numKeys > 0 && numKeys < 23) {
+        console.error("FIXME: Should this be working?")
+        // drawTrack({ region: numKeys });
       } else {
         return;
       }
