@@ -7,38 +7,44 @@ async function getAnnotationSources(): Promise<string[]> {
         //     console.log(result);
         // })
 
-    console.log(results.sources);
-
-    return [];
+    return results.sources;
 }
 
 class HelloWorld extends HTMLElement {
 
+    private _root: ShadowRoot;
+
     private _message: string = "Hello world!";
     private _ballColor: string = "red";
-    private _textElement: HTMLElement = null;
+    private _annotSources: HTMLElement[] = [];
 
-    setMessage(message: string) {
+    async setMessage(message: string) {
         console.log("Assigning message", message);
-        this._textElement.textContent = message;
+        this._annotSources.map((source) => source.remove());
+        // this._textElement.textContent = message;
 
-        getAnnotationSources();
+        const annotSources = await getAnnotationSources();
+        annotSources.map((source) => {
+            const element = document.createElement("p");
+            element.textContent = source;
+            this._root.appendChild(element);
+        })
     }
 
     constructor() {
         super();
 
-        const shadow = this.attachShadow({ mode: "open" });
+        this._root = this.attachShadow({ mode: "open" });
 
         const wrapper = document.createElement("p");
         wrapper.textContent = "Hello World!";
-        shadow.appendChild(wrapper);
-        this._textElement = wrapper;
+        // shadow.appendChild(wrapper);
+        // this._textElement = wrapper;
 
         const canvas = document.createElement("canvas");
         canvas.width = 100;
         canvas.height = 100;
-        shadow.appendChild(canvas);
+        this._root.appendChild(canvas);
 
         const ctx = canvas.getContext("2d");
         if (ctx) {
