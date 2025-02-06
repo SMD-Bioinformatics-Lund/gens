@@ -196,7 +196,7 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: int):
     help="Timeout for queries.",
 )
 @with_appcontext
-def chromosome_info(_file: TextIO, genome_build: int, timeout: int):
+def chromosome_info(file: TextIO, genome_build: int, timeout: int):
     """Load chromosome size information into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
