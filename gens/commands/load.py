@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import TextIO
 
 import click
+from enum import Enum
 from flask import current_app as app
 from flask.cli import with_appcontext
 
@@ -19,6 +20,21 @@ LOG = logging.getLogger(__name__)
 valid_genome_builds = [str(gb.value) for gb in GenomeBuild]
 
 
+class ChoiceType(click.Choice):
+    """Custom input type for click that returns genome build enum."""
+    name = "genome build"
+
+    def __init__(self, enum):
+        super().__init__(map(str, enum))
+        self.enum = enum
+
+    def convert(self, value: str, param, ctx):
+        """Convert str to genome build"""
+
+        value = super().convert(value, param, ctx)
+        return next(v for v in self.enum if str(v) == value)
+
+
 @click.group()
 def load():
     """Load information into Gens database"""
@@ -29,7 +45,7 @@ def load():
 @click.option(
     "-b",
     "--genome-build",
-    type=click.Choice(valid_genome_builds),
+    type=click.Choice(GenomeBuild),
     required=True,
     help="Genome build",
 )
@@ -184,7 +200,7 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: int):
 @click.option(
     "-b",
     "--genome-build",
-    type=click.Choice(valid_genome_builds),
+    type=ChoiceType(GenomeBuild),
     required=True,
     help="Genome build",
 )
@@ -196,7 +212,7 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: int):
     help="Timeout for queries.",
 )
 @with_appcontext
-def chromosome_info(file: TextIO, genome_build: int, timeout: int):
+def chromosome_info(file: TextIO, genome_build: GenomeBuild, timeout: int):
     """Load chromosome size information into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -225,7 +241,7 @@ def chromosome_info(file: TextIO, genome_build: int, timeout: int):
     )
     # insert collection
     LOG.info("Add chromosome info to database")
-    db[CHROMSIZES_COLLECTION].insert_many(chromosomes_data)
+    db[CHROMSIZES_COLLECTION].insert_many([chr.model_dump() for chr in chromosomes_data])
     register_data_update(CHROMSIZES_COLLECTION)
     # build cytogenetic data
     click.secho("Finished updating chromosome sizes ✔", fg="green")

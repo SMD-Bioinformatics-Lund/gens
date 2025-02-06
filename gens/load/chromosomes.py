@@ -2,16 +2,30 @@
 
 import logging
 import re
-from typing import Any, Optional
+from typing import Any
 
 import requests
+
+from ..models.genomic import ChromInfo, ChromBand, GenomeBuild, DnaStrand
 
 LOG = logging.getLogger(__name__)
 
 
-def build_chromosomes_obj(chromosome_data: dict[str, Any], genome_build: int, timeout: int) -> list[dict[str, Any]]:
+def format_dna_strand(strand: int | None) -> DnaStrand:
+    """Convert DNA strand from 1/0 designation to BED spec."""
+
+    if strand == 1:
+        dna_strand = DnaStrand.FOR
+    elif strand == -1:
+        dna_strand = DnaStrand.REV
+    else:
+        dna_strand = DnaStrand.UNKNOWN
+    return dna_strand
+
+
+def build_chromosomes_obj(chromosome_data: dict[str, Any], genome_build: GenomeBuild, timeout: int) -> list[ChromInfo]:
     """Build chromosome object containing normalized size."""
-    chromosomes: list[dict[str, Any]] = []
+    chromosomes: list[ChromInfo] = []
 
     genome_size = sum(c["length"] for c in chromosome_data.values())
     for name, data in chromosome_data.items():
@@ -31,34 +45,33 @@ def build_chromosomes_obj(chromosome_data: dict[str, Any], genome_build: int, ti
             centro_pos = {"start": start, "end": end}
             # parse cytogenic bands
             cyto_bands = [
-                {
-                    "id": band["id"],
-                    "stain": band["stain"],
-                    "start": band["start"],
-                    "end": band["end"],
-                    "strand": band["strand"],
-                }
-                for band in data["bands"]
+                ChromBand(
+                    id=band["id"],
+                    stain=band["stain"],
+                    start=band["start"],
+                    end=band["end"],
+                    strand=format_dna_strand(band['strand']),
+                ) for band in data["bands"]
             ]
         else:
             centro_pos = None
             cyto_bands = None
 
         chromosomes.append(
-            {
-                "chrom": name,
-                "genome_build": int(genome_build),
-                "bands": cyto_bands,
-                "size": data["length"],
-                "scale": scale,
-                "centromere": centro_pos,
-            }
+            ChromInfo(
+                chrom=name,
+                genome_build=genome_build,
+                bands=cyto_bands,
+                size=data["length"],
+                scale=scale,
+                centromere=centro_pos,
+            )
         )
     return chromosomes
 
 
 def get_assembly_info(
-    genome_build: int,
+    genome_build: GenomeBuild,
     specie: str = "homo_sapiens",
     bands: bool = True,
     synonyms: bool = True,
