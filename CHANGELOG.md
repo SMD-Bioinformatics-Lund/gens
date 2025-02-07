@@ -8,6 +8,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
  - Use pydantic-settings for settings validation.
+ - Add linting to CI github workflow
  - Temporary HG002 quick-setup script in utils. Requires mongo-dumps currently not part of the Gens repo. Will be replaced by a general setup script ahead.
 
 ### Changed
@@ -19,6 +20,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
  - Resolved all type errors from tsc
  - Initial type hints added to command and db modules
+ - Fixed various issues raised by pylint
 
 ## 3.0.1
 
