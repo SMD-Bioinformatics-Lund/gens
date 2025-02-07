@@ -104,7 +104,9 @@ export class MultiAnnots extends HTMLElement {
     console.log("Attempting to run getAnnotationData for source", source);
     const annotations = await getAnnotationData(source)
 
-    const track = new MultiAnnotsTrack(0, 0, annotations);
+    const chr1Start = 0;
+    const chr1End = 180000000;
+    const track = new MultiAnnotsTrack(chr1Start, chr1End, annotations);
     track.setTitle(source);
     container.appendChild(track);
   }

@@ -17,6 +17,8 @@ export class MultiAnnotsTrack extends HTMLElement {
     constructor(viewStart: number, viewEnd: number, annotations: TestAnnot[]) {
         super();
 
+        console.log(`Next: Visualize annots in range ${viewStart}-${viewEnd} (nbr annots: ${annotations.length})`)
+
         this._root = this.attachShadow({mode: "open"})
         this._root.appendChild(template.content.cloneNode(true));
 
