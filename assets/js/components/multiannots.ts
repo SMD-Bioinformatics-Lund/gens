@@ -27,8 +27,8 @@ const template = document.createElement("template");
 template.innerHTML = `
     <div>
         <p id="message">Placeholder</p>
-        <div id="container"></div>
         <select id="annotations" multiple></select>
+        <div id="container"></div>
     </div>
 `;
 
