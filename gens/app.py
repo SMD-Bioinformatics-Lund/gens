@@ -1,6 +1,7 @@
 """
 Whole genome visualization of BAF and log2 ratio
 """
+
 import logging
 from logging.config import dictConfig
 
@@ -12,10 +13,10 @@ from flask_login import current_user
 from .__version__ import VERSION as version
 from .blueprints import gens_bp, home_bp, login_bp
 from .cache import cache
+from .config import AuthMethod, settings
 from .db import SampleNotFoundError, init_database
-from .errors import (generic_abort_error, generic_exception_error, sample_not_found)
+from .errors import generic_abort_error, generic_exception_error, sample_not_found
 from .extensions import login_manager, oauth_client
-from .config import settings, AuthMethod
 
 dictConfig(
     {
@@ -62,7 +63,7 @@ def create_app():
 
     # register bluprints and errors
     register_blueprints(app)
-    #register_errors(app)
+    # register_errors(app)
 
     @app.before_request
     def check_user():
@@ -71,7 +72,9 @@ def create_app():
 
         # check if the endpoint requires authentication
         static_endpoint = "static" in request.endpoint
-        public_endpoint = getattr(app.view_functions[request.endpoint], "is_public", False)
+        public_endpoint = getattr(
+            app.view_functions[request.endpoint], "is_public", False
+        )
         relevant_endpoint = not (static_endpoint or public_endpoint)
         # if endpoint requires auth, check if user is authenticated
         if relevant_endpoint and not current_user.is_authenticated:

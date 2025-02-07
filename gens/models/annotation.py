@@ -1,11 +1,12 @@
 """Models related to genome annotations."""
 
 from typing import Literal
+
 from pydantic import PositiveInt, field_serializer
 from pydantic_extra_types.color import Color
 
 from ..models import RWModel
-from ..models.genomic import GenomeBuild, Chromosome, DnaStrand
+from ..models.genomic import Chromosome, DnaStrand, GenomeBuild
 
 
 class AnnotationRecord(RWModel):
@@ -21,7 +22,7 @@ class AnnotationRecord(RWModel):
     strand: DnaStrand
     color: Color
 
-    @field_serializer('color')
+    @field_serializer("color")
     def serialize_color(self, color: Color, _) -> tuple[int, int, int]:
         """Serialize RGB as tuple"""
         return color.as_rgb_tuple()
@@ -30,7 +31,7 @@ class AnnotationRecord(RWModel):
 class ExonFeature(RWModel):
     """Exon information"""
 
-    feature: Literal['exon']
+    feature: Literal["exon"]
     start: PositiveInt
     end: PositiveInt
     exon_number: PositiveInt
@@ -39,7 +40,7 @@ class ExonFeature(RWModel):
 class UtrFeature(RWModel):
     """utr information"""
 
-    feature: Literal['five_prime_utr', 'three_prime_utr']
+    feature: Literal["five_prime_utr", "three_prime_utr"]
     start: PositiveInt
     end: PositiveInt
 

@@ -2,11 +2,14 @@
 
 import re
 from enum import Enum, IntEnum
-from pydantic import field_validator, computed_field
-from pydantic.types import PositiveInt, PositiveFloat
+
+from pydantic import computed_field, field_validator
+from pydantic.types import PositiveFloat, PositiveInt
+
 from .base import RWModel
 
 REGION_PATTERN = re.compile(r"^(.+):(.+)-(.+)$")
+
 
 class DnaStrand(Enum):  # TODO migrate to +/-
     """Valid DNA strand names.
@@ -15,9 +18,10 @@ class DnaStrand(Enum):  # TODO migrate to +/-
     ref: https://samtools.github.io/hts-specs/BEDv1.pdf
     """
 
-    FOR = '+'
-    REV = '-'
-    UNKNOWN = '.'
+    FOR = "+"
+    REV = "-"
+    UNKNOWN = "."
+
 
 class GenomeBuild(IntEnum):
     """Valid genome builds."""
@@ -90,13 +94,13 @@ class ChromInfo(RWModel):
 
 class GenomicRegion(RWModel):
     """Representation of a region string format.
-    
+
     i.e. chromosome:start-end
     """
 
     region: str
 
-    @field_validator('region')
+    @field_validator("region")
     @classmethod
     def valid_region(cls, region: str):
         """Validate region string.
@@ -123,7 +127,7 @@ class GenomicRegion(RWModel):
 
         match = re.match(REGION_PATTERN, self.region)
         if match is None:
-            raise ValueError('Invalid region designation.')
+            raise ValueError("Invalid region designation.")
         return Chromosome(match.group(1))
 
     @computed_field()
@@ -175,7 +179,7 @@ class QueryChromosomeCoverage(RWModel):
     reduce_data: PositiveFloat
     chromosome_pos: list[QueryGenomicPosition]
 
-    @field_validator('reduce_data')
+    @field_validator("reduce_data")
     @classmethod
     def validate_percentage(cls, value: float):
         if not 0 <= value <= 1:

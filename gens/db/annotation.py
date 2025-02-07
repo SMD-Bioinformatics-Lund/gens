@@ -8,8 +8,8 @@ from typing import Any
 
 from flask import current_app as app
 
-from gens.models.genomic import VariantCategory, GenomicRegion, GenomeBuild
-from gens.models.annotation import TranscriptRecord, AnnotationRecord
+from gens.models.annotation import AnnotationRecord, TranscriptRecord
+from gens.models.genomic import GenomeBuild, GenomicRegion, VariantCategory
 
 LOG = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ TRANSCRIPTS = "transcripts"
 UPDATES = "updates"
 
 
-def register_data_update(track_type: str, name: str|None=None):
+def register_data_update(track_type: str, name: str | None = None):
     """Register that a track was updated."""
     db = app.config["GENS_DB"][UPDATES]
     LOG.debug(f"Creating timestamp for {track_type}")
@@ -28,7 +28,7 @@ def register_data_update(track_type: str, name: str|None=None):
     db.insert_one({**track, "timestamp": datetime.datetime.now()})
 
 
-def get_timestamps(track_type:str="all"):
+def get_timestamps(track_type: str = "all"):
     """Get when a annotation track was last updated."""
     LOG.debug(f"Reading timestamp for {track_type}")
     db = app.config["GENS_DB"][UPDATES]
@@ -51,7 +51,9 @@ def get_timestamps(track_type:str="all"):
     return results
 
 
-def query_variants(case_id: str, sample_name: str, variant_category: VariantCategory, **kwargs) -> Any:
+def query_variants(
+    case_id: str, sample_name: str, variant_category: VariantCategory, **kwargs
+) -> Any:
     """Search the scout database for variants associated with a case.
 
     case_id :: id for a case
@@ -65,8 +67,10 @@ def query_variants(case_id: str, sample_name: str, variant_category: VariantCate
     query = {
         "case_id": case_id,
         "category": variant_category.value,
-        "$or": [{"samples.sample_id": sample_name},
-                {"samples.display_name": sample_name}]
+        "$or": [
+            {"samples.sample_id": sample_name},
+            {"samples.display_name": sample_name},
+        ],
     }
     # add chromosome
     if "chromosome" in kwargs:
@@ -84,7 +88,7 @@ def query_variants(case_id: str, sample_name: str, variant_category: VariantCate
     return db.variant.find(query)
 
 
-def _make_query_region(start_pos: int, end_pos: int, motif_type: str="other") -> Any:
+def _make_query_region(start_pos: int, end_pos: int, motif_type: str = "other") -> Any:
     """Make a query for a chromosomal region."""
     if motif_type == "sv":  # for sv are start called position
         start_name = "position"
@@ -125,10 +129,10 @@ def query_records_in_region(
     cursor = app.config["GENS_DB"][record_type].find(
         query, {"_id": False}, sort=sort_order
     )
-    if record_type == 'annotations':
+    if record_type == "annotations":
         result = [AnnotationRecord(**doc) for doc in cursor]
-    elif record_type == 'transcripts':
+    elif record_type == "transcripts":
         result = [TranscriptRecord(**doc) for doc in cursor]
     else:
-        raise ValueError(f'unknown record type {record_type}')
+        raise ValueError(f"unknown record type {record_type}")
     return result

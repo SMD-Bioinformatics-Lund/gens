@@ -1,6 +1,9 @@
-from pydantic import BaseModel, ConfigDict, Field
 import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from gens.utils import get_timestamp
+
 
 class RWModel(BaseModel):  # pylint: disable=too-few-public-methods
     """Base model for read/ write operations"""

@@ -6,7 +6,7 @@ from typing import Any
 
 import requests
 
-from ..models.genomic import ChromInfo, ChromBand, GenomeBuild, DnaStrand
+from ..models.genomic import ChromBand, ChromInfo, DnaStrand, GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
@@ -23,7 +23,9 @@ def format_dna_strand(strand: int | None) -> DnaStrand:
     return dna_strand
 
 
-def build_chromosomes_obj(chromosome_data: dict[str, Any], genome_build: GenomeBuild, timeout: int) -> list[ChromInfo]:
+def build_chromosomes_obj(
+    chromosome_data: dict[str, Any], genome_build: GenomeBuild, timeout: int
+) -> list[ChromInfo]:
     """Build chromosome object containing normalized size."""
     chromosomes: list[ChromInfo] = []
 
@@ -50,8 +52,9 @@ def build_chromosomes_obj(chromosome_data: dict[str, Any], genome_build: GenomeB
                     stain=band["stain"],
                     start=band["start"],
                     end=band["end"],
-                    strand=format_dna_strand(band['strand']),
-                ) for band in data["bands"]
+                    strand=format_dna_strand(band["strand"]),
+                )
+                for band in data["bands"]
             ]
         else:
             centro_pos = None
@@ -75,7 +78,7 @@ def get_assembly_info(
     specie: str = "homo_sapiens",
     bands: bool = True,
     synonyms: bool = True,
-    timeout:int=2,
+    timeout: int = 2,
 ):
     """Get assembly info from ensembl."""
     base_rest_url = {"37": "grch37.rest.ensembl.org", "38": "rest.ensembl.org"}
@@ -93,7 +96,7 @@ def get_assembly_info(
     return resp.json()
 
 
-def get_assembly_annotation(insdc_id: str, data_format:str="embl", timeout:int=2):
+def get_assembly_annotation(insdc_id: str, data_format: str = "embl", timeout: int = 2):
     """Get assembly for id from EBI using INSDC id."""
     LOG.debug(f"Get assembly annotation for {insdc_id}")
     resp = requests.get(
@@ -105,9 +108,9 @@ def get_assembly_annotation(insdc_id: str, data_format:str="embl", timeout:int=2
     return resp.text
 
 
-def parse_centromere_pos(embl_annot:str) -> tuple[int, ...]:
+def parse_centromere_pos(embl_annot: str) -> tuple[int, ...]:
     """Query EBI for centeromere position from embl annotation."""
-    centeromere_pos: tuple[int, ...]|None = None
+    centeromere_pos: tuple[int, ...] | None = None
     for line in embl_annot.splitlines():
         if not line.startswith("FT"):
             continue

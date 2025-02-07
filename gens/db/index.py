@@ -1,4 +1,5 @@
 """Create indexes in the database."""
+
 import logging
 from typing import Any
 
@@ -74,7 +75,11 @@ INDEXES = {
             background=True,
         ),
         IndexModel(
-            [("sample_id", ASCENDING), ("case_id", ASCENDING), ("genome_build", ASCENDING)],
+            [
+                ("sample_id", ASCENDING),
+                ("case_id", ASCENDING),
+                ("genome_build", ASCENDING),
+            ],
             name="sample__sample_id_case_id_genome_build",
             background=True,
             unique=True,

@@ -1,23 +1,33 @@
 """API entry point and helper functions."""
+
 import gzip
 import json
 import logging
 import re
 from typing import Any
-from pysam import TabixFile
 
 import connexion
 from fastapi.encoders import jsonable_encoder
-
 from flask import current_app, jsonify
+from pysam import TabixFile
 
-from gens.db import (ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION,
-                     get_chromosome_size,
-                     query_records_in_region, query_sample, query_variants)
+from gens.db import (
+    ANNOTATIONS_COLLECTION,
+    TRANSCRIPTS_COLLECTION,
+    get_chromosome_size,
+    query_records_in_region,
+    query_sample,
+    query_variants,
+)
 from gens.exceptions import RegionParserException
-from gens.graph import (REQUEST, get_cov, overview_chrom_dimensions,
-                        parse_region_str)
-from gens.models.genomic import VariantCategory, Chromosome, GenomeBuild, QueryChromosomeCoverage, GenomicRegion
+from gens.graph import REQUEST, get_cov, overview_chrom_dimensions, parse_region_str
+from gens.models.genomic import (
+    Chromosome,
+    GenomeBuild,
+    GenomicRegion,
+    QueryChromosomeCoverage,
+    VariantCategory,
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -31,8 +41,8 @@ def get_overview_chrom_dim(x_pos, y_pos, plot_width, genome_build) -> dict[str, 
         f"Get overview chromosome dim: ({x_pos}, {y_pos}), w={plot_width}, {genome_build}"
     )
     query_result = {
-        "status": "ok", 
-        "chrom_dims": overview_chrom_dimensions(x_pos, y_pos, plot_width, genome_build)
+        "status": "ok",
+        "chrom_dims": overview_chrom_dimensions(x_pos, y_pos, plot_width, genome_build),
     }
     return jsonable_encoder(query_result)
 
@@ -76,7 +86,9 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
         )
 
     # Calculate maximum height order
-    max_height_order = max(annotations, key=lambda e: e.height_order) if annotations else 1
+    max_height_order = (
+        max(annotations, key=lambda e: e.height_order) if annotations else 1
+    )
 
     query_result = {
         "status": "ok",
@@ -115,15 +127,17 @@ def get_transcript_data(region: str, genome_build: str, collapsed: bool):
     # Calculate maximum height order
     max_height_order = max(t.height_order for t in transcripts) if transcripts else 1
 
-    return jsonable_encoder({
-        "status": "ok",
-        "chromosome": parsed_region.chromosome,
-        "start_pos": parsed_region.start,
-        "end_pos": parsed_region.end,
-        "max_height_order": max_height_order,
-        "res": zoom_level,
-        "transcripts": list(transcripts),
-    })
+    return jsonable_encoder(
+        {
+            "status": "ok",
+            "chromosome": parsed_region.chromosome,
+            "start_pos": parsed_region.start,
+            "end_pos": parsed_region.end,
+            "max_height_order": max_height_order,
+            "res": zoom_level,
+            "transcripts": list(transcripts),
+        }
+    )
 
 
 def search_annotation(query: str, genome_build: str, annotation_type: str):

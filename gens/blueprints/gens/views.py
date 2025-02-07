@@ -6,8 +6,8 @@ from datetime import date
 from flask import Blueprint, abort, current_app, render_template, request
 
 from gens import version
-from gens.config import settings, UI_COLORS
 from gens.cache import cache
+from gens.config import UI_COLORS, settings
 from gens.db import query_sample
 from gens.graph import parse_region_str
 from gens.models.genomic import GenomeBuild
@@ -33,7 +33,7 @@ def display_case(sample_name):
     if case_id is None:
         raise ValueError("You must provide a case id when opening a sample.")
     individual_id: str = request.args.get("individual_id", sample_name)
-    
+
     # get genome build and region
     region = request.args.get("region", None)
     print_page = request.args.get("print_page", "false")
@@ -60,9 +60,7 @@ def display_case(sample_name):
     selected_variant = request.args.get("variant")
 
     # get annotation track
-    annotation = request.args.get(
-        "annotation", settings.default_annotation_track
-    )
+    annotation = request.args.get("annotation", settings.default_annotation_track)
 
     (_, region) = parsed_region
     return render_template(

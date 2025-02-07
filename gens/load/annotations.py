@@ -1,16 +1,16 @@
 """Annotations."""
+
 import csv
 import logging
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Iterator
 
-from pymongo import MongoClient
-from pymongo import ASCENDING
+from pymongo import ASCENDING, MongoClient
 
-from gens.models.genomic import Chromosome, GenomeBuild
-from gens.models.annotation import AnnotationRecord
 from gens.db import ANNOTATIONS_COLLECTION
+from gens.models.annotation import AnnotationRecord
+from gens.models.genomic import Chromosome, GenomeBuild
 
 LOG = logging.getLogger(__name__)
 FIELD_TRANSLATIONS = {
@@ -18,7 +18,7 @@ FIELD_TRANSLATIONS = {
     "position": "start",
     "stop": "end",
     "chromstart": "start",
-    "chromend": "end"
+    "chromend": "end",
 }
 CORE_FIELDS = ("sequence", "start", "end", "name", "strand", "color", "score")
 AED_ENTRY = re.compile(r"[.+:]?(\w+)\(\w+:(\w+)\)", re.I)
@@ -32,13 +32,30 @@ class ParserError(Exception):
 
 def parse_bed(file: Path) -> Iterator[dict[str, str]]:
     """Parse bed file."""
-    with open(file, encoding='utf-8') as bed:
-        bed_reader = csv.DictReader(bed, fieldnames=['sequence', 'start', 'end', 'name', 'score', 'strand', 'thickStart', 'thickEnd', 'color', 'block_count', 'block_sizes', 'block_starts'], delimiter="\t")
+    with open(file, encoding="utf-8") as bed:
+        bed_reader = csv.DictReader(
+            bed,
+            fieldnames=[
+                "sequence",
+                "start",
+                "end",
+                "name",
+                "score",
+                "strand",
+                "thickStart",
+                "thickEnd",
+                "color",
+                "block_count",
+                "block_sizes",
+                "block_starts",
+            ],
+            delimiter="\t",
+        )
 
         # Load in annotations
         for line in bed_reader:
             # skip comment lines
-            if line['sequence'].startswith('#'):
+            if line["sequence"].startswith("#"):
                 continue
             yield line
 
@@ -54,7 +71,9 @@ def parse_aed(file: Path) -> Iterator[dict[str, str]]:
 
             matches = re.search(AED_ENTRY, head)
             if matches is None:
-                raise ValueError(f"Expected to find {AED_ENTRY} in {head}, but did not succeed")
+                raise ValueError(
+                    f"Expected to find {AED_ENTRY} in {head}, but did not succeed"
+                )
 
             field, data_type = matches.groups()
             header[field] = data_type.lower()
@@ -66,9 +85,11 @@ def parse_aed(file: Path) -> Iterator[dict[str, str]]:
             yield dict(zip(header, line))
 
 
-def parse_annotation_entry(entry: dict[str, str], genome_build: GenomeBuild, annotation_name: str) -> AnnotationRecord:
+def parse_annotation_entry(
+    entry: dict[str, str], genome_build: GenomeBuild, annotation_name: str
+) -> AnnotationRecord:
     """Parse a bed or aed entry"""
-    annotation: dict[str, str|int] = {}
+    annotation: dict[str, str | int] = {}
     # parse entry and format the values
     for name, value in entry.items():
         name = name.strip("#")
@@ -97,7 +118,7 @@ def parse_annotation_entry(entry: dict[str, str], genome_build: GenomeBuild, ann
     )
 
 
-def format_data(name: str, value: str) -> str|int:
+def format_data(name: str, value: str) -> str | int:
     """Formats the data depending on title"""
     if name == "color":
         if not value:
@@ -121,7 +142,7 @@ def format_data(name: str, value: str) -> str|int:
     return fmt_val
 
 
-def set_missing_fields(annotation: dict[str, str|int], name: str):
+def set_missing_fields(annotation: dict[str, str | int], name: str):
     """Sets default values to fields that are missing"""
     for field_name in CORE_FIELDS:
         if field_name in annotation:

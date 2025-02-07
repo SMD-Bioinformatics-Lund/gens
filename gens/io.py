@@ -1,18 +1,19 @@
 """Functions for loading and converting data."""
+
 import itertools
 import logging
 import os
-from fractions import Fraction
 from enum import Enum
-from typing import Iterator
+from fractions import Fraction
 from pathlib import Path
+from typing import Iterator
 
 from flask import Response, abort, request
-
-from .cache import cache
+from pysam import TabixFile
 
 from gens.models.genomic import Chromosome
-from pysam import TabixFile
+
+from .cache import cache
 
 BAF_SUFFIX = ".baf.bed.gz"
 COV_SUFFIX = ".cov.bed.gz"
@@ -25,14 +26,21 @@ LOG = logging.getLogger(__name__)
 class ZoomLevel(Enum):
     """Valid zoom or resolution levels."""
 
-    A = 'a'
-    B = 'b'
-    C = 'c'
-    D = 'd'
-    O = 'o'
+    A = "a"
+    B = "b"
+    C = "c"
+    D = "d"
+    O = "o"
 
 
-def tabix_query(tbix: TabixFile, zoom_level: ZoomLevel, chrom: Chromosome, start: int | None = None, end: int | None = None, reduce: float | None = None) -> list[list[str]]:
+def tabix_query(
+    tbix: TabixFile,
+    zoom_level: ZoomLevel,
+    chrom: Chromosome,
+    start: int | None = None,
+    end: int | None = None,
+    reduce: float | None = None,
+) -> list[list[str]]:
     """
     Call tabix and generate an array of strings for each line it returns.
     """

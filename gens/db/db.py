@@ -1,4 +1,5 @@
 """Functions for handeling database connection."""
+
 import logging
 import os
 
@@ -6,6 +7,7 @@ from flask import current_app as app
 from pymongo import MongoClient
 
 from gens.exceptions import ConfigurationException
+
 from ..config import settings
 
 LOG = logging.getLogger(__name__)
@@ -17,5 +19,9 @@ def init_database_connection() -> None:
     LOG.info("Initialize db connection")
 
     # connect to database
-    app.config["SCOUT_DB"] = MongoClient(str(settings.scout_db)).get_database(name=settings.scout_dbname)
-    app.config["GENS_DB"] = MongoClient(str(settings.gens_db)).get_database(name=settings.gens_dbname)
+    app.config["SCOUT_DB"] = MongoClient(str(settings.scout_db)).get_database(
+        name=settings.scout_dbname
+    )
+    app.config["GENS_DB"] = MongoClient(str(settings.gens_db)).get_database(
+        name=settings.gens_dbname
+    )

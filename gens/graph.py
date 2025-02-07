@@ -1,4 +1,5 @@
 """Functions for getting information from Gens views."""
+
 import logging
 import re
 from collections import namedtuple
@@ -6,13 +7,13 @@ from typing import Any
 
 from flask import current_app as app
 from flask import request
+from pysam import TabixFile
 
 from .cache import cache
 from .db import get_chromosome_size
 from .exceptions import RegionParserException
-from .io import tabix_query, ZoomLevel
+from .io import ZoomLevel, tabix_query
 from .models.genomic import Chromosome, GenomeBuild, GenomicRegion
-from pysam import TabixFile
 
 LOG = logging.getLogger(__name__)
 
@@ -102,7 +103,10 @@ def find_chrom_at_pos(chrom_dims, height, current_x, current_y, margin):
 
 ChromDims = dict[Chromosome, dict[str, float | int]]
 
-def overview_chrom_dimensions(x_pos: float, y_pos: float, plot_width: float, genome_build: GenomeBuild) -> ChromDims:
+
+def overview_chrom_dimensions(
+    x_pos: float, y_pos: float, plot_width: float, genome_build: GenomeBuild
+) -> ChromDims:
     """
     Calculates the position for all chromosome graphs in the overview canvas
     """
@@ -122,7 +126,9 @@ def overview_chrom_dimensions(x_pos: float, y_pos: float, plot_width: float, gen
 
 
 @cache.memoize(50)
-def parse_region_str(region: str, genome_build: GenomeBuild) -> tuple[ZoomLevel, GenomicRegion] | None:
+def parse_region_str(
+    region: str, genome_build: GenomeBuild
+) -> tuple[ZoomLevel, GenomicRegion] | None:
     """
     Parses a region string
     """
@@ -251,7 +257,13 @@ def set_region_values(zoom_level: ZoomLevel, region: GenomicRegion, x_ampl):
     )
 
 
-def get_cov(req, x_ampl: float, json_data: dict[str, Any] | None=None, cov_fh: TabixFile | None=None, baf_fh: TabixFile | None=None):
+def get_cov(
+    req,
+    x_ampl: float,
+    json_data: dict[str, Any] | None = None,
+    cov_fh: TabixFile | None = None,
+    baf_fh: TabixFile | None = None,
+):
     """Get Log2 ratio and BAF values for chromosome with screen coordinates."""
     db = app.config["GENS_DB"]
     graph = set_graph_values(req)

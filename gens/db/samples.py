@@ -2,12 +2,12 @@
 
 import itertools
 import logging
-from gens.models.sample import SampleInfo
-from gens.models.genomic import GenomeBuild
 
-from pymongo import MongoClient
-from pymongo import DESCENDING
+from pymongo import DESCENDING, MongoClient
 from pymongo.errors import DuplicateKeyError
+
+from gens.models.genomic import GenomeBuild
+from gens.models.sample import SampleInfo
 
 LOG = logging.getLogger(__name__)
 
@@ -43,10 +43,14 @@ def store_sample(
     """Store a new sample in the database."""
     LOG.info(f'Store sample "{sample_id}" in database')
     sample_obj = SampleInfo(
-        sample_id=sample_id, case_id=case_id, genome_build=genome_build,
-        baf_file=baf, coverage_file=coverage, overview_file=overview
+        sample_id=sample_id,
+        case_id=case_id,
+        genome_build=genome_build,
+        baf_file=baf,
+        coverage_file=coverage,
+        overview_file=overview,
     )
-    index_fields = ['baf_index', 'coverage_index']
+    index_fields = ["baf_index", "coverage_index"]
     if force:
         result = db[COLLECTION].update_one(
             {
@@ -54,10 +58,7 @@ def store_sample(
                 "case_id": case_id,
                 "genome_build": genome_build,
             },
-            {
-                "$set": sample_obj.model_dump(exclude=index_fields)
-
-            },
+            {"$set": sample_obj.model_dump(exclude=index_fields)},
             upsert=True,
         )
         if result.modified_count == 1:
@@ -73,16 +74,16 @@ def store_sample(
             )
     else:
         try:
-            db[COLLECTION].insert_one(
-                sample_obj.model_dump(exclude=index_fields)
-            )
+            db[COLLECTION].insert_one(sample_obj.model_dump(exclude=index_fields))
         except DuplicateKeyError:
             LOG.error(
                 f'DuplicateKeyError while storing sample with sample_id="{sample_id}" and case_id="{case_id}" in database.'
             )
 
 
-def get_samples(db: MongoClient, start:int = 0, n_samples: int|None = None) -> tuple[list[SampleInfo], int]:
+def get_samples(
+    db: MongoClient, start: int = 0, n_samples: int | None = None
+) -> tuple[list[SampleInfo], int]:
     """
     Get samples stored in the databse.
 
@@ -115,7 +116,9 @@ def query_sample(db: MongoClient, sample_id: str, case_id: str | None) -> Sample
         result = db[COLLECTION].find_one({"sample_id": sample_id, "case_id": case_id})
 
     if result is None:
-        raise SampleNotFoundError(f'No sample with id: "{sample_id}" in database', sample_id)
+        raise SampleNotFoundError(
+            f'No sample with id: "{sample_id}" in database', sample_id
+        )
     return SampleInfo(
         sample_id=result["sample_id"],
         case_id=result["case_id"],

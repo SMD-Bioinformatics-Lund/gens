@@ -100,5 +100,7 @@ def public_endpoint(function):
 @public_endpoint
 def landing():
 
-    return render_template("landing.html",
-                           version=version,)
+    return render_template(
+        "landing.html",
+        version=version,
+    )
