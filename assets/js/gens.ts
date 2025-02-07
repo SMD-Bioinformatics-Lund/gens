@@ -45,13 +45,6 @@ export function initCanvases({
   selectedVariant: string,
   annotationFile: string
 }) {
-
-  const myHello = document.getElementById("myHello") as MultiAnnots;
-  // console.log(myHello);
-
-  myHello.setMessage("New message");
-  
-
   // initialize and return the different canvases
   // WEBGL values
   const near = 0.1;

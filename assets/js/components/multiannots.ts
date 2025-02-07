@@ -6,6 +6,24 @@ async function getAnnotationSources(): Promise<string[]> {
   return results.sources;
 }
 
+async function getAnnotationData(source: string): Promise<string[]> {
+  const payload = {
+    "sample_id": undefined,
+    "region": "1:1-None",
+    "genome_build": 38,
+    "collapsed": false,
+    source
+  }
+  const results = await get("get-annotation-data", payload);
+  console.log(results);
+  return [];
+}
+
+// "get-annotation-data"
+// http://localhost:5000/api/get-annotation-data?sample_id=undefined&region=1:1-None&genome_build=38&collapsed=false&source=Imprinted.genes.Lund-hg38
+
+
+
 const template = document.createElement("template");
 template.innerHTML = `
     <div>
@@ -74,9 +92,13 @@ export class MultiAnnots extends HTMLElement {
     selectedAnnotations.forEach((annot) => this._makeTrack(trackContainer, annot));
   }
 
-  private _makeTrack(container: HTMLElement, name: string) {
+  private _makeTrack(container: HTMLElement, source: string) {
+
+    console.log("Attempting to run getAnnotationData for source", source);
+    const annotData = getAnnotationData(source)
+
     const track = new MultiAnnotsTrack();
-    track.setTitle(name);
+    track.setTitle(source);
     container.appendChild(track);
   }
 }
