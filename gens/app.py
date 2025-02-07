@@ -10,13 +10,12 @@ from flask import redirect, request, url_for
 from flask_compress import Compress
 from flask_login import current_user
 
-from .__version__ import VERSION as version
 from .blueprints import gens_bp, home_bp, login_bp
 from .cache import cache
 from .config import AuthMethod, settings
 from .db import SampleNotFoundError, init_database
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
-from .extensions import login_manager, oauth_client
+from .auth import login_manager, oauth_client
 
 dictConfig(
     {

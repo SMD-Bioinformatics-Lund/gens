@@ -5,7 +5,8 @@ from flask_login import login_user, logout_user
 
 from gens.blueprints.home.views import public_endpoint
 from gens.db.users import user
-from gens.extensions import login_manager, oauth_client
+
+from ...auth import login_manager, oauth_client
 
 # from . import controllers
 
