@@ -15,6 +15,8 @@ COLLECTION = "samples"
 
 
 class SampleNotFoundError(Exception):
+    """The sample was not found in the database."""
+
     def __init__(self, message: str, sample_id: str):
         super().__init__(message)
 
@@ -22,6 +24,8 @@ class SampleNotFoundError(Exception):
 
 
 class NonUniqueIndexError(Exception):
+    """A similar index already exists in the database."""
+
     def __init__(self, message: str, sample_id: str, case_id: str, genome_build: str):
         super().__init__(message)
 
@@ -41,7 +45,7 @@ def store_sample(
     force: bool,
 ):
     """Store a new sample in the database."""
-    LOG.info(f'Store sample "{sample_id}" in database')
+    LOG.info('Store sample "%s" in database', sample_id)
     sample_obj = SampleInfo(
         sample_id=sample_id,
         case_id=case_id,
@@ -50,7 +54,7 @@ def store_sample(
         coverage_file=coverage,
         overview_file=overview,
     )
-    index_fields = ["baf_index", "coverage_index"]
+    index_fields: list[str] = ["baf_index", "coverage_index"]
     if force:
         result = db[COLLECTION].update_one(
             {
@@ -63,11 +67,16 @@ def store_sample(
         )
         if result.modified_count == 1:
             LOG.error(
-                f'Sample with sample_id="{sample_id}" and case_id="{case_id}" was overwritten.'
+                'Sample with sample_id="%s" and case_id="%s" was overwritten.',
+                sample_id, case_id
             )
         if result.modified_count > 1:
             raise NonUniqueIndexError(
-                f'More than one entry matched sample_id="{sample_id}", case_id="{case_id}", and genome_build="{genome_build}". This should never happen.',
+                (
+                    f'More than one entry matched sample_id="{sample_id}", '
+                    f'case_id="{case_id}", and genome_build="{genome_build}".'
+                    'This should never happen.'
+                ),
                 sample_id,
                 case_id,
                 genome_build,
@@ -77,7 +86,11 @@ def store_sample(
             db[COLLECTION].insert_one(sample_obj.model_dump(exclude=index_fields))
         except DuplicateKeyError:
             LOG.error(
-                f'DuplicateKeyError while storing sample with sample_id="{sample_id}" and case_id="{case_id}" in database.'
+                (
+                    'DuplicateKeyError while storing sample' 
+                    'with sample_id="%s" and case_id="%s" in database.'
+                ),
+                sample_id, case_id
             )
 
 

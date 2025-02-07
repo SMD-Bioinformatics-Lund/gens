@@ -1,3 +1,5 @@
+"""Handles CRUD operations for the Gens database."""
+
 from .annotation import ANNOTATIONS as ANNOTATIONS_COLLECTION
 from .annotation import TRANSCRIPTS as TRANSCRIPTS_COLLECTION
 from .annotation import (
