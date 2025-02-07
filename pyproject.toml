@@ -74,6 +74,9 @@ extra-dependencies = [
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/temporary tests}"
 
+[tool.mypy]
+ignore_missing_imports = true
+
 [tool.coverage.run]
 source_pkgs = ["gens", "tests"]
 branch = true
