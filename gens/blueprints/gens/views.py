@@ -66,7 +66,7 @@ def display_case(sample_name):
         "gens.html",
         ui_colors=UI_COLORS,
         scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
-        chrom=region.chromosome.value,
+        chrom=region.chromosome().value,
         start=region.start,
         end=region.end,
         sample_name=sample_name,

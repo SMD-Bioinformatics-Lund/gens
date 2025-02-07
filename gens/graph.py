@@ -18,6 +18,7 @@ from .models.genomic import Chromosome, GenomeBuild, GenomicRegion
 LOG = logging.getLogger(__name__)
 
 
+# FIXME: Replace these with Pydantic?
 GRAPH = namedtuple("GRAPH", ("baf_ampl", "log2_ampl", "baf_ypos", "log2_ypos"))
 REGION = namedtuple("REGION", ("res", "chrom", "start_pos", "end_pos"))
 
@@ -39,9 +40,10 @@ REQUEST = namedtuple(
 )
 
 
+# FIXME: Refactor me
 @cache.memoize(0)
 def convert_data(
-    graph, req, log2_list, baf_list, x_pos, new_start_pos, new_x_ampl, data_type="bed"
+    graph, req, log2_list, baf_list, x_pos: int, new_start_pos: int, new_x_ampl, data_type="bed"
 ):
     """
     Converts data for Log2 ratio and BAF to screen coordinates
@@ -55,7 +57,7 @@ def convert_data(
     else:
         raise ValueError(f"Data type {data_type} not supported. Use bed or json!")
 
-    #  Normalize and calculate the Lo2 ratio
+    #  Normalize and calculate the Log2 ratio
     log2_records = []
     for record in log2_list:
         # Cap values to end points
