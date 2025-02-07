@@ -15,7 +15,7 @@ def get_chromosome_size(
     """
     Gets the size in base pairs of a chromosome
     """
-    chrom_data = db[CHROMSIZES].find_one(
+    chrom_data: ChromInfo = db[CHROMSIZES].find_one(
         {
             "chrom": chrom.value,
             "genome_build": int(genome_build),

@@ -2,11 +2,14 @@
 
 import logging
 from pathlib import Path
-from typing import TextIO
+from typing import Any, TextIO
 
 import click
 from flask import current_app as app
 from flask.cli import with_appcontext
+from pymongo.database import Database
+
+from ..config import settings
 
 from gens.db import (
     ANNOTATIONS_COLLECTION,
@@ -18,6 +21,7 @@ from gens.db import (
     register_data_update,
     store_sample,
 )
+from gens.db.markus_db import GensDb
 from gens.load import (
     ParserError,
     build_chromosomes_obj,
@@ -105,7 +109,10 @@ def sample(
     force: bool,
 ):
     """Load a sample into Gens database."""
-    db = app.config["GENS_DB"]
+
+    # db = GensDb(connection=str(settings.gens_db), db_name=settings.gens_dbname)
+
+    db: Database[Any] = app.config["GENS_DB"]
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)

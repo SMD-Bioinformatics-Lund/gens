@@ -18,11 +18,11 @@ from .models.genomic import Chromosome, GenomeBuild, GenomicRegion
 LOG = logging.getLogger(__name__)
 
 
-GRAPH = namedtuple("graph", ("baf_ampl", "log2_ampl", "baf_ypos", "log2_ypos"))
-REGION = namedtuple("region", ("res", "chrom", "start_pos", "end_pos"))
+GRAPH = namedtuple("GRAPH", ("baf_ampl", "log2_ampl", "baf_ypos", "log2_ypos"))
+REGION = namedtuple("REGION", ("res", "chrom", "start_pos", "end_pos"))
 
 REQUEST = namedtuple(
-    "request",
+    "REQUEST",
     (
         "region",
         "x_pos",
@@ -139,7 +139,7 @@ def parse_region_str(
             chrom, pos_range = region.split(":")
             start, end = pos_range.split("-")
             chrom.replace("chr", "")
-            chrom = Chromosome(chrom.upper())
+            chrom = Chromosome(chrom.upper()).value
         else:
             # Not in standard format, query in form of full chromsome
             # or gene
@@ -153,10 +153,10 @@ def parse_region_str(
         if name_search.upper() in [ch.value for ch in Chromosome]:
             start = 0
             end = "None"
-            chrom = Chromosome(name_search.upper())
+            chrom = Chromosome(name_search.upper()).value
         else:
             # Lookup queried gene
-            collection = app.config["GENS_DB"]["transcripts" + genome_build]
+            collection = app.config["GENS_DB"]["transcripts" + str(genome_build)]
             start = collection.find_one(
                 {
                     "gene_name": re.compile(

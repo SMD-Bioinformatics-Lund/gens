@@ -10,3 +10,4 @@ pylint
 black
 isort
 mypy
+pydantic[mypy]

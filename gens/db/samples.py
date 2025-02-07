@@ -3,8 +3,10 @@
 import itertools
 import logging
 
+from pydantic import FilePath
 from pymongo import DESCENDING, MongoClient
 from pymongo.errors import DuplicateKeyError
+from pymongo.database import Database
 
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo
@@ -35,13 +37,13 @@ class NonUniqueIndexError(Exception):
 
 
 def store_sample(
-    db: MongoClient,
+    db: Database,
     sample_id: str,
     case_id: str,
     genome_build: GenomeBuild,
-    baf: str,
-    coverage: str,
-    overview: str,
+    baf: FilePath,
+    coverage: FilePath,
+    overview: FilePath,
     force: bool,
 ):
     """Store a new sample in the database."""
@@ -54,7 +56,7 @@ def store_sample(
         coverage_file=coverage,
         overview_file=overview,
     )
-    index_fields: list[str] = ["baf_index", "coverage_index"]
+    index_fields: set[str] = {"baf_index", "coverage_index"}
     if force:
         result = db[COLLECTION].update_one(
             {
@@ -79,7 +81,7 @@ def store_sample(
                 ),
                 sample_id,
                 case_id,
-                genome_build,
+                str(genome_build),
             )
     else:
         try:
@@ -95,7 +97,7 @@ def store_sample(
 
 
 def get_samples(
-    db: MongoClient, start: int = 0, n_samples: int | None = None
+    db: Database, start: int = 0, n_samples: int | None = None
 ) -> tuple[list[SampleInfo], int]:
     """
     Get samples stored in the databse.

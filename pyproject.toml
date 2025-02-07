@@ -75,6 +75,7 @@ extra-dependencies = [
 check = "mypy --install-types --non-interactive {args:src/temporary tests}"
 
 [tool.mypy]
+plugins = ['pydantic.mypy']
 ignore_missing_imports = true
 
 [tool.coverage.run]
