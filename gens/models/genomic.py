@@ -125,7 +125,6 @@ class GenomicRegion(RWModel):
         return region
 
     @computed_field()
-    @property
     def chromosome(self) -> Chromosome:
         """Get the chromosome name from region string."""
 
@@ -135,7 +134,6 @@ class GenomicRegion(RWModel):
         return Chromosome(match.group(1))
 
     @computed_field()
-    @property
     def start(self) -> int | None:
         """Get start position from a region string."""
 
@@ -143,7 +141,6 @@ class GenomicRegion(RWModel):
         return int(match.group(2)) if match else None
 
     @computed_field()
-    @property
     def end(self) -> int | None:
         """Get end position from a region string."""
 

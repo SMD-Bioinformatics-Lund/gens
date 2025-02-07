@@ -112,11 +112,18 @@ def query_records_in_region(
     **kwargs,
 ) -> Any:
     """Query the gens database for transcript information."""
+
+    region_start = region.start()
+    region_end = region.end()
+
+    if not region_start or not region_end:
+        raise ValueError(f"Expected region.start and region.end, found start: {region_start} end: {region_end}")
+
     # build base query
     query = {
-        "chrom": region.chromosome.value,
+        "chrom": region.chromosome,
         "genome_build": genome_build.value,
-        **_make_query_region(region.start, region.end),
+        **_make_query_region(region_start, region_end),
         **kwargs,  # add optional search params
     }
     # build sort order

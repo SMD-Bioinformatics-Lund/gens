@@ -30,14 +30,12 @@ class SampleInfo(RWModel, CreatedAtModel):
     overview_file: FilePath
 
     @computed_field()
-    @property
     def baf_index(self) -> FilePath:
         """Get path to a tabix index."""
 
         return _get_tabix_path(self.baf_file, check=True)
 
     @computed_field()
-    @property
     def coverage_index(self) -> FilePath:
         """Get path to a tabix index."""
 
