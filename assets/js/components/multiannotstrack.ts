@@ -14,7 +14,7 @@ export class MultiAnnotsTrack extends HTMLElement {
         header.textContent = title;
     }
 
-    constructor() {
+    constructor(viewStart: number, viewEnd: number, annotations: TestAnnot[]) {
         super();
 
         this._root = this.attachShadow({mode: "open"})

@@ -6,7 +6,7 @@ async function getAnnotationSources(): Promise<string[]> {
   return results.sources;
 }
 
-async function getAnnotationData(source: string): Promise<string[]> {
+async function getAnnotationData(source: string): Promise<TestAnnot[]> {
   const payload = {
     "sample_id": undefined,
     "region": "1:1-None",
@@ -15,8 +15,7 @@ async function getAnnotationData(source: string): Promise<string[]> {
     source
   }
   const results = await get("get-annotation-data", payload);
-  console.log(results);
-  return [];
+  return results.annotations;
 }
 
 // "get-annotation-data"
@@ -100,12 +99,12 @@ export class MultiAnnots extends HTMLElement {
     selectedAnnotations.forEach((annot) => this._makeTrack(trackContainer, annot));
   }
 
-  private _makeTrack(container: HTMLElement, source: string) {
+  private async _makeTrack(container: HTMLElement, source: string) {
 
     console.log("Attempting to run getAnnotationData for source", source);
-    // const annotData = getAnnotationData(source)
+    const annotations = await getAnnotationData(source)
 
-    const track = new MultiAnnotsTrack();
+    const track = new MultiAnnotsTrack(0, 0, annotations);
     track.setTitle(source);
     container.appendChild(track);
   }

@@ -1,3 +1,15 @@
+interface TestAnnot {
+  chrom: string,
+  color: string,
+  start: number,
+  end: number,
+  genome_build: string,
+  name: string,
+  source: string
+}
+
+
+
 interface UIColors {
   variants: Record<string, string>,
   transcripts: Record<string, string>
