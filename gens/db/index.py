@@ -129,7 +129,7 @@ def create_index(db: Database, collection_name: str):
     db[collection_name].create_indexes(indexes)
 
 
-def create_indexes(db: Database) -> None:
+def create_indexes(db: MongoClient) -> None:
     """Create indexes for Gens db."""
     LOG.info("Indexing the gens database.")
     for collection_name in INDEXES:

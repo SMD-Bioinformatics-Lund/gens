@@ -217,13 +217,6 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: GenomeBuild):
 
 
 @load.command()
-# FIXME: Remove? Does not seem to be used?
-@click.option(
-    "-f",
-    "--file",
-    type=click.File(),
-    help="Chromosome sizes in tsv format",
-)
 @click.option(
     "-b",
     "--genome-build",
@@ -239,7 +232,7 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: GenomeBuild):
     help="Timeout for queries.",
 )
 @with_appcontext
-def chromosome_info(file: TextIO, genome_build: GenomeBuild, timeout: int):
+def chromosome_info(genome_build: GenomeBuild, timeout: int):
     """Load chromosome size information into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -261,6 +254,7 @@ def chromosome_info(file: TextIO, genome_build: GenomeBuild, timeout: int):
         chromosomes_data = build_chromosomes_obj(chrom_data, genome_build, timeout)
     except Exception as err:
         raise click.UsageError(str(err))
+
     # remove old entries
     res = db[CHROMSIZES_COLLECTION].delete_many({"genome_build": int(genome_build)})
     LOG.info(

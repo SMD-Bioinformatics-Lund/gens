@@ -43,7 +43,6 @@ def tabix_query(
     # Get data from bed file
     record_name = f"{zoom_level.value}_{chrom.value}"
     LOG.info("Query %s; %s %d %d; reduce: %d", tbix.filename, record_name, start, end, reduce)
-    records: Iterator[str]
     try:
         records = tbix.fetch(record_name, start, end)
     except ValueError as err:

@@ -2,8 +2,7 @@
 import logging
 
 from flask import Blueprint, flash, redirect, request, session, url_for
-
-from flask_login import login_user, logout_user # type: ignore
+from flask_login import login_user, logout_user
 
 from gens.config import AuthMethod, settings
 from gens.db.users import user
