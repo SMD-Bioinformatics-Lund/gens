@@ -20,6 +20,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
  - Resolved all type errors from tsc
  - Initial type hints added to command and db modules
+ - Remove unused file argument for load chromomsome info CLI command
  - Fixed various issues raised by pylint
 
 ## 3.0.1
