@@ -145,7 +145,7 @@ def query_sample(db: MongoClient, sample_id: str, case_id: str | None) -> Sample
 
 def delete_sample(db: MongoClient, sample_id: str, case_id: str, genome_build: int):
     """Remove a sample from the database."""
-    LOG.info(f'Removing sample "{sample_id}" from database')
+    LOG.info('Removing sample "%s" from database', sample_id)
     db[COLLECTION].delete_one(
         {
             "sample_id": sample_id,

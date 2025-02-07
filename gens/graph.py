@@ -313,17 +313,6 @@ def get_cov(
         )
 
     # Convert the data to screen coordinates
-    foo = [
-        graph,
-        req,
-        log2_list,
-        baf_list,
-        req.x_pos - extra_plot_width,
-        new_start_pos,
-        new_x_ampl,
-        data_type,
-    ]
-    raise ValueError()
     log2_records, baf_records = convert_data(
         graph,
         req,

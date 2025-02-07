@@ -27,7 +27,7 @@ DEFAULT_COLOR = "grey"
 
 
 class ParserError(Exception):
-    pass
+    """Parser errors."""
 
 
 def parse_bed(file: Path) -> Iterator[dict[str, str]]:
@@ -63,7 +63,7 @@ def parse_bed(file: Path) -> Iterator[dict[str, str]]:
 def parse_aed(file: Path) -> Iterator[dict[str, str]]:
     """Parse aed file."""
     header: dict[str, str] = {}
-    with open(file) as aed:
+    with open(file, encoding='utf-8') as aed:
         aed_reader = csv.reader(aed, delimiter="\t")
 
         # Parse the aed header and get the keys and data formats
@@ -92,8 +92,7 @@ def parse_annotation_entry(
     annotation: dict[str, str | int] = {}
     # parse entry and format the values
     for name, value in entry.items():
-        name = name.strip("#")
-        name = name.lower()
+        name = name.strip("#").lower()
         if name in FIELD_TRANSLATIONS:
             name = FIELD_TRANSLATIONS[name]
         if name in CORE_FIELDS:
@@ -101,8 +100,8 @@ def parse_annotation_entry(
             try:
                 annotation[name] = format_data(name, value)
             except ValueError as err:
-                LOG.debug(f"Bad line: {entry}")
-                raise ParserError(str(err))
+                LOG.debug("Bad line: %s", entry)
+                raise ParserError(str(err)) from err
 
     # ensure that coordinates are in correct order
     annotation["start"], annotation["end"] = sorted(
@@ -147,15 +146,17 @@ def set_missing_fields(annotation: dict[str, str | int], name: str):
     for field_name in CORE_FIELDS:
         if field_name in annotation:
             continue
-        elif field_name == "color":
+
+        if field_name == "color":
             annotation[field_name] = DEFAULT_COLOR
         elif field_name == "score":
             annotation[field_name] = "None"
-        elif field_name == "sequence" or field_name == "strand":
+        elif field_name in ["sequence", "strand"]:
             pass
         else:
             LOG.warning(
-                f"field {field_name} is missing from annotation {annotation} in file {name}"
+                "field %s is missing from annotation %s in file %s",
+                field_name, annotation, name
             )
 
 

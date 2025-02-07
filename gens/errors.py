@@ -1,7 +1,6 @@
 """Defenition of custom error pages"""
 
 import logging
-import os
 
 from flask import render_template
 

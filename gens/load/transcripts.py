@@ -74,7 +74,7 @@ def _count_file_len(file: TextIO) -> int:
 def parse_transcript_gtf(transc_file: TextIO, delimiter: str = "\t"):
     """Parse transcripts."""
     # setup reader
-    COLNAMES = [
+    COL_NAMES = [
         "seqname",
         "source",
         "feature",
@@ -87,7 +87,7 @@ def parse_transcript_gtf(transc_file: TextIO, delimiter: str = "\t"):
     ]
     target_features = ("transcript", "exon", "three_prime_utr", "five_prime_utr")
     LOG.debug("parsing transcripts")
-    cfile = csv.DictReader(transc_file, COLNAMES, delimiter=delimiter)
+    cfile = csv.DictReader(transc_file, COL_NAMES, delimiter=delimiter)
     for row in cfile:
         if row["seqname"].startswith("#") or row["seqname"] is None:
             continue
@@ -150,8 +150,8 @@ def build_transcripts(
     n_lines = _count_file_len(transc_file)
     with click.progressbar(
         transc_file, length=n_lines, label="Processing transcripts"
-    ) as bar:
-        for transc, attribs in parse_transcript_gtf(bar):
+    ) as progressbar:
+        for transc, attribs in parse_transcript_gtf(progressbar):
             transcript_id = attribs.get("transcript_id")
             # store transcripts in index
             if transc["feature"] == "transcript":
