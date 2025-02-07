@@ -1,3 +1,4 @@
+"""CLI commands for removing entries from the database."""
 import logging
 
 import click

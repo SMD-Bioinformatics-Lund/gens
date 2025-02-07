@@ -22,7 +22,7 @@ UPDATES = "updates"
 def register_data_update(track_type: str, name: str | None = None):
     """Register that a track was updated."""
     db = app.config["GENS_DB"][UPDATES]
-    LOG.debug(f"Creating timestamp for {track_type}")
+    LOG.debug("Creating timestamp for %s", track_type)
     track = {"track": track_type, "name": name}
     db.delete_many(track)  # remove old track
     db.insert_one({**track, "timestamp": datetime.datetime.now()})
@@ -30,7 +30,7 @@ def register_data_update(track_type: str, name: str | None = None):
 
 def get_timestamps(track_type: str = "all"):
     """Get when a annotation track was last updated."""
-    LOG.debug(f"Reading timestamp for {track_type}")
+    LOG.debug("Reading timestamp for %s", track_type)
     db = app.config["GENS_DB"][UPDATES]
     if track_type == "all":
         query = db.find()
@@ -84,7 +84,7 @@ def query_variants(
             ),
         }
     # query database
-    LOG.info(f"Query variant database: {query}")
+    LOG.info("Query variant database: %s", query)
     return db.variant.find(query)
 
 

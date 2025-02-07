@@ -25,12 +25,12 @@ def samples(summary: bool):
     """View samples stored in the database"""
     db = app.config["GENS_DB"]
     # print samples to terminal
-    samples, _ = get_samples(db)
+    samples_in_db, _ = get_samples(db)
     if summary:  # count number of samples per genome build
         columns = ("Genome build", "N samples")
         sample_tbl = (
-            (gr, sum(1 for _v in vals))
-            for gr, vals in groupby(samples, key=lambda x: x.genome_build)
+            (gr, len(1 for _ in vals))
+            for gr, vals in groupby(samples_in_db, key=lambda x: x.genome_build)
         )
     else:  # show all samples
         columns = (
@@ -52,6 +52,6 @@ def samples(summary: bool):
                 s.coverage_file,
                 s.overview_file,
             )
-            for s in samples
+            for s in samples_in_db
         )
     print(tabulate(sample_tbl, headers=columns))

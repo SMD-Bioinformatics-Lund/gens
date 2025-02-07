@@ -45,4 +45,6 @@ class SampleInfo(RWModel, CreatedAtModel):
 
     @field_serializer("baf_file", "coverage_file", "overview_file")
     def serialize_path(self, path: Path) -> str:
+        """Serialize a Path object as string"""
+
         return str(path)

@@ -10,13 +10,12 @@ from flask import redirect, request, url_for
 from flask_compress import Compress
 from flask_login import current_user
 
-from .__version__ import VERSION as version
 from .blueprints import gens_bp, home_bp, login_bp
 from .cache import cache
 from .config import AuthMethod, settings
 from .db import SampleNotFoundError, init_database
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
-from .extensions import login_manager, oauth_client
+from .auth import login_manager, oauth_client
 
 dictConfig(
     {
@@ -67,8 +66,9 @@ def create_app():
 
     @app.before_request
     def check_user():
+        """Check permission if page requires authentication."""
         if settings.authentication == AuthMethod.DISABLED or not request.endpoint:
-            return
+            return None
 
         # check if the endpoint requires authentication
         static_endpoint = "static" in request.endpoint
@@ -79,10 +79,9 @@ def create_app():
         # if endpoint requires auth, check if user is authenticated
         if relevant_endpoint and not current_user.is_authenticated:
             # combine visited URL (convert byte string query string to unicode!)
-            next_url = "{}?{}".format(request.path, request.query_string.decode())
+            next_url = f"{request.path}?{request.query_string.decode()}"
             login_url = url_for("home.landing", next=next_url)
             return redirect(login_url)
-
     return app
 
 
@@ -94,7 +93,7 @@ def initialize_extensions(app):
 
 
 def configure_extensions(app):
-    # configure extensions
+    """configure app extensions."""
     if settings.authentication == AuthMethod.OAUTH:
         LOG.info("Google login enabled")
         # setup connection to google oauth2

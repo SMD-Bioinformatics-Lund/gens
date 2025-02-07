@@ -24,7 +24,6 @@ from gens.graph import REQUEST, get_cov, overview_chrom_dimensions, parse_region
 from gens.models.genomic import (
     Chromosome,
     GenomeBuild,
-    GenomicRegion,
     QueryChromosomeCoverage,
     VariantCategory,
 )
@@ -38,7 +37,8 @@ def get_overview_chrom_dim(x_pos, y_pos, plot_width, genome_build) -> dict[str, 
     for drawing the chromosomes correctly in the overview graph
     """
     LOG.info(
-        f"Get overview chromosome dim: ({x_pos}, {y_pos}), w={plot_width}, {genome_build}"
+        "Get overview chromosome dim: (%d, %d), w=%d, %s",
+        x_pos, y_pos, plot_width, genome_build
     )
     query_result = {
         "status": "ok",
@@ -219,7 +219,7 @@ def get_multiple_coverages() -> dict[str, Any]:
         data = QueryChromosomeCoverage(**connexion.request.get_json())
     else:
         return data, 404
-    LOG.info(f"Got request for all chromosome coverages: {data.sample_id}")
+    LOG.info("Got request for all chromosome coverages: %s", data.sample_id)
 
     # read sample information
     db = current_app.config["GENS_DB"]
@@ -227,7 +227,7 @@ def get_multiple_coverages() -> dict[str, Any]:
     # Try to find and load an overview json data file
     json_data, cov_file, baf_file = None, None, None
     if sample_obj.overview_file.is_file():
-        LOG.info(f"Using json overview file: {sample_obj.overview_file}")
+        LOG.info("Using json overview file: %s", sample_obj.overview_file)
         with gzip.open(sample_obj.overview_file, "r") as json_gz:
             json_data = json.loads(json_gz.read().decode("utf-8"))
     else:
@@ -333,10 +333,10 @@ def get_coverage(
                 req, x_ampl, cov_fh=cov_file, baf_fh=baf_file
             )
     except RegionParserException as err:
-        LOG.error(f"{type(err).__name__} - {err}")
+        LOG.error("%s - %s", type(err).__name__, err)
         return (jsonify({"detail": str(err)}), 416)
     except Exception as err:
-        LOG.error(f"{type(err).__name__} - {err}")
+        LOG.error("%s - %s", type(err).__name__, err)
         return (jsonify({"detail": str(err)}), 500)
 
     query_result = {

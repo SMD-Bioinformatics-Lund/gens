@@ -1,11 +1,14 @@
+"""Views for logging in and logging out users."""
 import logging
 
-from flask import Blueprint, current_app, flash, redirect, request, session, url_for
+from flask import Blueprint, flash, redirect, request, session, url_for
 from flask_login import login_user, logout_user
 
-from gens.blueprints.home.views import public_endpoint
+from gens.config import AuthMethod, settings
 from gens.db.users import user
-from gens.extensions import login_manager, oauth_client
+
+from ...auth import login_manager, oauth_client
+from ..home.views import public_endpoint
 
 # from . import controllers
 
@@ -36,10 +39,12 @@ login_manager.login_message_category = "info"
 @login_bp.route("/login", methods=["GET", "POST"])
 @public_endpoint
 def login():
+    """Login a user using the auth method specified in the configuration."""
+
     if "next" in request.args:
         session["next_url"] = request.args["next"]
 
-    if current_app.config.get("GOOGLE"):
+    if settings.authentication == AuthMethod.OAUTH:
         if session.get("email"):
             user_mail = session["email"]
             session.pop("email", None)
@@ -48,7 +53,8 @@ def login():
             redirect_uri = url_for(".authorized", _external=True)
             try:
                 return oauth_client.google.authorize_redirect(redirect_uri)
-            except Exception as ex:
+            except Exception as error:
+                LOG.error("An error occurred while trying use OAUTH - %s", error)
                 flash("An error has occurred while logging user in using Google OAuth")
 
     if request.form.get("email"):  # Log in against Scout database
@@ -78,6 +84,8 @@ def authorized():
 
 @login_bp.route("/logout")
 def logout():
+    """Logout user and clear user credentials from session."""
+
     logout_user()
     session.pop("email", None)
     session.pop("name", None)
@@ -87,8 +95,12 @@ def logout():
 
 
 def perform_login(user_dict):
+    """Conduct login.
+    
+    If successful redirect to next page otherwise redirect to the landing page.
+    """
     if login_user(user_dict, remember=True):
-        flash("You logged in as: {}".format(user_dict.name), "success")
+        flash(f"You logged in as: {user_dict.name}", "success")
         next_url = session.pop("next_url", None)
         return redirect(request.args.get("next") or next_url or url_for("home.home"))
     flash("Sorry, you were not logged in", "warning")

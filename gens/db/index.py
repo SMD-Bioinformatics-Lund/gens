@@ -113,22 +113,22 @@ def create_index(db: MongoClient, collection_name: str):
     for index in indexes:
         index_name = index.document.get("name")
         if index_name in existing_indexes:
-            LOG.info(f"Removing old index: {index_name}")
+            LOG.info("Removing old index: %s", index_name)
             db[collection_name].drop_index(index_name)
     # Create new indexes
-    names = ", ".join([i.document.get("name") for i in indexes])
-    LOG.info(f"Creating indexes {names} for collection: {collection_name}")
+    names = ", ".join([str(i.document.get("name")) for i in indexes])
+    LOG.info("Creating indexes %s for collection: %s", names, collection_name)
     db[collection_name].create_indexes(indexes)
 
 
-def create_indexes(db: MongoClient):
+def create_indexes(db: MongoClient) -> None:
     """Create indexes for Gens db."""
     LOG.info("Indexing the gens database.")
     for collection_name in INDEXES:
         create_index(db, collection_name)
 
 
-def update_indexes(db: MongoClient):
+def update_indexes(db: MongoClient) -> int:
     """Add missing indexes to the database."""
     LOG.info("Updating gens database indexes.")
     n_updated = 0
@@ -137,7 +137,7 @@ def update_indexes(db: MongoClient):
         for index in indexes:
             index_name = index.document.get("name")
             if index_name not in existing_indexes:
-                LOG.info(f"Creating index : {index_name}")
+                LOG.info("Creating index : %s", index_name)
                 db[collection_name].create_indexes([index])
                 n_updated += 1
     LOG.info("Updated %d indexes to the database", n_updated)
