@@ -1,3 +1,5 @@
+"""Functions for parsing files before writing to the database."""
+
 from .annotations import (
     ParserError,
     parse_annotation_entry,

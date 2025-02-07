@@ -1,12 +1,9 @@
 """Functions for handeling database connection."""
 
 import logging
-import os
 
 from flask import current_app as app
 from pymongo import MongoClient
-
-from gens.exceptions import ConfigurationException
 
 from ..config import settings
 

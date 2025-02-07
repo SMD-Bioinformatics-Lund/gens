@@ -2,18 +2,13 @@
 
 import itertools
 import logging
-import os
 from enum import Enum
 from fractions import Fraction
-from pathlib import Path
 from typing import Iterator
 
-from flask import Response, abort, request
 from pysam import TabixFile
 
 from gens.models.genomic import Chromosome
-
-from .cache import cache
 
 BAF_SUFFIX = ".baf.bed.gz"
 COV_SUFFIX = ".cov.bed.gz"
@@ -47,7 +42,7 @@ def tabix_query(
 
     # Get data from bed file
     record_name = f"{zoom_level.value}_{chrom.value}"
-    LOG.info(f"Query {tbix.filename}; {record_name} {start} {end}; reduce: {reduce}")
+    LOG.info("Query %s; %s %d %d; reduce: %d", tbix.filename, record_name, start, end, reduce)
     try:
         records: Iterator[str] = tbix.fetch(record_name, start, end)
     except ValueError as err:
