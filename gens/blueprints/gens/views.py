@@ -7,9 +7,10 @@ from flask import Blueprint, abort, current_app, render_template, request
 
 from gens import version
 from gens.cache import cache
+from gens.config import UI_COLORS, settings
 from gens.db import query_sample
 from gens.graph import parse_region_str
-from gens.io import _get_filepath
+from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
@@ -31,8 +32,8 @@ def display_case(sample_name):
     case_id = request.args.get("case_id")
     if case_id is None:
         raise ValueError("You must provide a case id when opening a sample.")
-    individual_id = request.args.get("individual_id", sample_name)
-    
+    individual_id: str = request.args.get("individual_id", sample_name)
+
     # get genome build and region
     region = request.args.get("region", None)
     print_page = request.args.get("print_page", "false")
@@ -42,7 +43,7 @@ def display_case(sample_name):
 
     # Parse region, default to grch38
     with current_app.app_context():
-        genome_build = request.args.to_dict().get("genome_build", "38")
+        genome_build = GenomeBuild(int(request.args.get("genome_build", "38")))
 
     parsed_region = parse_region_str(region, genome_build)
     if not parsed_region:
@@ -50,38 +51,29 @@ def display_case(sample_name):
 
     # verify that sample has been loaded
     db = current_app.config["GENS_DB"]
-    sample = query_sample(db, individual_id, case_id, genome_build)
 
     # Check that BAF and Log2 file exists
-    try:
-        _get_filepath(sample.baf_file)
-        _get_filepath(sample.coverage_file)
-        if sample.overview_file:  # verify json if it exists
-            _get_filepath(sample.overview_file)
-    except FileNotFoundError as err:
-        raise err
-    else:
-        LOG.info(f"Found BAF and COV files for {sample_name}")
+    # TODO move checks to the API instead
+    _ = query_sample(db, individual_id, case_id)
+
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
 
     # get annotation track
-    annotation = request.args.get(
-        "annotation", current_app.config["DEFAULT_ANNOTATION_TRACK"]
-    )
+    annotation = request.args.get("annotation", settings.default_annotation_track)
 
-    _, chrom, start_pos, end_pos = parsed_region
+    (_, region) = parsed_region
     return render_template(
         "gens.html",
-        ui_colors=current_app.config["UI_COLORS"],
+        ui_colors=UI_COLORS,
         scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
-        chrom=chrom,
-        start=start_pos,
-        end=end_pos,
+        chrom=region.chromosome.value,
+        start=region.start,
+        end=region.end,
         sample_name=sample_name,
         individual_id=individual_id,
         case_id=case_id,
-        genome_build=genome_build,
+        genome_build=genome_build.value,
         print_page=print_page,
         annotation=annotation,
         selected_variant=selected_variant,

@@ -1,11 +1,17 @@
 """Functions for loading and converting data."""
+
 import itertools
 import logging
 import os
+from enum import Enum
 from fractions import Fraction
+from pathlib import Path
+from typing import Iterator
 
-import pysam
 from flask import Response, abort, request
+from pysam import TabixFile
+
+from gens.models.genomic import Chromosome
 
 from .cache import cache
 
@@ -17,34 +23,33 @@ JSON_SUFFIX = ".overview.json.gz"
 LOG = logging.getLogger(__name__)
 
 
-def _get_filepath(*args, check=True):
-    """Utility function to get file paths with logs."""
-    path = os.path.join(*args)
-    if not os.path.isfile(path) and check:
-        msg = f"File not found: {path}"
-        LOG.error(msg)
-        raise FileNotFoundError(path)
-    return path
+class ZoomLevel(Enum):
+    """Valid zoom or resolution levels."""
+
+    A = "a"
+    B = "b"
+    C = "c"
+    D = "d"
+    O = "o"
 
 
-def get_tabix_files(coverage_file, baf_file):
-    """Get tabix files for sample."""
-    _get_filepath(coverage_file + ".tbi") and _get_filepath(baf_file + ".tbi")
-    cov_file = pysam.TabixFile(_get_filepath(coverage_file))
-    baf_file = pysam.TabixFile(_get_filepath(baf_file))
-    return cov_file, baf_file
-
-
-def tabix_query(tbix, res, chrom, start=None, end=None, reduce=None):
+def tabix_query(
+    tbix: TabixFile,
+    zoom_level: ZoomLevel,
+    chrom: Chromosome,
+    start: int | None = None,
+    end: int | None = None,
+    reduce: float | None = None,
+) -> list[list[str]]:
     """
     Call tabix and generate an array of strings for each line it returns.
     """
 
     # Get data from bed file
-    record_name = f"{res}_{chrom}"
+    record_name = f"{zoom_level.value}_{chrom.value}"
     LOG.info(f"Query {tbix.filename}; {record_name} {start} {end}; reduce: {reduce}")
     try:
-        records = tbix.fetch(record_name, start, end)
+        records: Iterator[str] = tbix.fetch(record_name, start, end)
     except ValueError as err:
         LOG.error(err)
         records = []
@@ -52,5 +57,6 @@ def tabix_query(tbix, res, chrom, start=None, end=None, reduce=None):
     if reduce is not None:
         n_true, tot = Fraction(reduce).limit_denominator(1000).as_integer_ratio()
         cmap = itertools.cycle([1] * n_true + [0] * (tot - n_true))
-        records = itertools.compress(records, cmap)
+        records: Iterator[str] = itertools.compress(records, cmap)
+
     return [r.split("\t") for r in records]

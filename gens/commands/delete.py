@@ -5,12 +5,11 @@ from flask import current_app as app
 from flask.cli import with_appcontext
 from pymongo import MongoClient
 
-from gens.constants import GENOME_BUILDS
-from gens.db import (SAMPLES_COLLECTION, create_index,
-                     get_indexes, delete_sample)
+from gens.db import SAMPLES_COLLECTION, create_index, delete_sample, get_indexes
+from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
-valid_genome_builds = [str(gb) for gb in GENOME_BUILDS]
+valid_genome_builds = [str(gb.value) for gb in GenomeBuild]
 
 
 @click.group()

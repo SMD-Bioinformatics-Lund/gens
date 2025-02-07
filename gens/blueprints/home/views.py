@@ -7,6 +7,7 @@ from flask import Blueprint, current_app, render_template, request
 from flask_login import current_user
 
 from gens import version
+from gens.config import settings
 from gens.db import get_samples, get_timestamps
 
 LOG = logging.getLogger(__name__)
@@ -69,7 +70,7 @@ def home():
         pagination=pagination_info,
         samples=samples,
         total_samples=total_samples,
-        scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
+        scout_base_url=str(settings.scout_url),
         version=version,
     )
 
@@ -99,5 +100,7 @@ def public_endpoint(function):
 @public_endpoint
 def landing():
 
-    return render_template("landing.html",
-                           version=version,)
+    return render_template(
+        "landing.html",
+        version=version,
+    )

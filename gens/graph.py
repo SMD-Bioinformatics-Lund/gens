@@ -1,17 +1,19 @@
 """Functions for getting information from Gens views."""
-import itertools
+
 import logging
 import re
 from collections import namedtuple
+from typing import Any
 
 from flask import current_app as app
 from flask import request
+from pysam import TabixFile
 
 from .cache import cache
-from .constants import CHROMOSOMES
 from .db import get_chromosome_size
-from .exceptions import NoRecordsException, RegionParserException
-from .io import tabix_query
+from .exceptions import RegionParserException
+from .io import ZoomLevel, tabix_query
+from .models.genomic import Chromosome, GenomeBuild, GenomicRegion
 
 LOG = logging.getLogger(__name__)
 
@@ -86,40 +88,47 @@ def find_chrom_at_pos(chrom_dims, height, current_x, current_y, margin):
     """
     current_chrom = None
 
-    for chrom in CHROMOSOMES:
-        x_pos = chrom_dims[chrom]["x_pos"]
-        y_pos = chrom_dims[chrom]["y_pos"]
-        width = chrom_dims[chrom]["width"]
+    for chrom in Chromosome:
+        x_pos = chrom_dims[chrom.value]["x_pos"]
+        y_pos = chrom_dims[chrom.value]["y_pos"]
+        width = chrom_dims[chrom.value]["width"]
         if x_pos + margin <= current_x <= (
             x_pos + width
         ) and y_pos + margin <= current_y <= (y_pos + height):
-            current_chrom = chrom
+            current_chrom = chrom.value
             break
 
     return current_chrom
 
 
-def overview_chrom_dimensions(x_pos, y_pos, plot_width, genome_build):
+ChromDims = dict[Chromosome, dict[str, float | int]]
+
+
+def overview_chrom_dimensions(
+    x_pos: float, y_pos: float, plot_width: float, genome_build: GenomeBuild
+) -> ChromDims:
     """
     Calculates the position for all chromosome graphs in the overview canvas
     """
     db = app.config["GENS_DB"]
     chrom_dims = {}
-    for chrom in CHROMOSOMES:
+    for chrom in Chromosome:
         chrom_data = get_chromosome_size(db, chrom, genome_build)
-        chrom_width = plot_width * float(chrom_data["scale"])
+        chrom_width = plot_width * chrom_data.scale
         chrom_dims[chrom] = {
             "x_pos": x_pos,
             "y_pos": y_pos,
             "width": chrom_width,
-            "size": chrom_data["size"],
+            "size": chrom_data.size,
         }
         x_pos += chrom_width
     return chrom_dims
 
 
 @cache.memoize(50)
-def parse_region_str(region, genome_build):
+def parse_region_str(
+    region: str, genome_build: GenomeBuild
+) -> tuple[ZoomLevel, GenomicRegion] | None:
     """
     Parses a region string
     """
@@ -130,7 +139,7 @@ def parse_region_str(region, genome_build):
             chrom, pos_range = region.split(":")
             start, end = pos_range.split("-")
             chrom.replace("chr", "")
-            chrom = chrom.upper()
+            chrom = Chromosome(chrom.upper())
         else:
             # Not in standard format, query in form of full chromsome
             # or gene
@@ -141,10 +150,10 @@ def parse_region_str(region, genome_build):
 
     if name_search is not None:
         # Query is for a full range chromosome
-        if name_search.upper() in CHROMOSOMES:
+        if name_search.upper() in [ch.value for ch in Chromosome]:
             start = 0
             end = "None"
-            chrom = name_search.upper()
+            chrom = Chromosome(name_search.upper())
         else:
             # Lookup queried gene
             collection = app.config["GENS_DB"]["transcripts" + genome_build]
@@ -165,7 +174,7 @@ def parse_region_str(region, genome_build):
                 sort=[("end", -1)],
             )
             if start is not None and end is not None:
-                chrom = start["chrom"]
+                chrom = Chromosome(start["chrom"])
                 start = start["start"]
                 end = end["end"]
             else:
@@ -176,7 +185,7 @@ def parse_region_str(region, genome_build):
     chrom_data = get_chromosome_size(db, chrom, genome_build)
     # Set end position if it is not set
     if end == "None":
-        end = chrom_data["size"]
+        end = chrom_data.size
 
     start = int(start)
     end = int(end)
@@ -187,19 +196,19 @@ def parse_region_str(region, genome_build):
         return None
 
     # Cap end to maximum range value for given chromosome
-    if end > chrom_data["size"]:
-        start = max(0, start - (end - chrom_data["size"]))
-        end = chrom_data["size"]
+    if end > chrom_data.size:
+        start = max(0, start - (end - chrom_data.size))
+        end = chrom_data.size
 
-    resolution = "d"
+    resolution = ZoomLevel.D
     if size > 15000000:
-        resolution = "a"
+        resolution = ZoomLevel.A
     elif size > 1400000:
-        resolution = "b"
+        resolution = ZoomLevel.B
     elif size > 200000:
-        resolution = "c"
+        resolution = ZoomLevel.C
 
-    return resolution, chrom, start, end
+    return resolution, GenomicRegion(region=f"{chrom.value}:{start}-{end}")
 
 
 def set_graph_values(req):
@@ -216,16 +225,17 @@ def set_graph_values(req):
     )
 
 
-def set_region_values(parsed_region, x_ampl):
+def set_region_values(zoom_level: ZoomLevel, region: GenomicRegion, x_ampl):
     """
     Sets region values
     """
     extra_plot_width = float(request.args.get("extra_plot_width", 0))
-    res, chrom, start_pos, end_pos = parsed_region
+    start_pos = region.start
+    end_pos = region.end
 
     # Set resolution for overview graph
     if request.args.get("overview", False):
-        res = "o"
+        zoom_level = ZoomLevel.O
 
     # Move negative start and end position to positive values
     if start_pos != "None" and int(start_pos) < 0:
@@ -239,7 +249,7 @@ def set_region_values(parsed_region, x_ampl):
     # X ampl contains the total width to plot x data on
     x_ampl = (x_ampl + 2 * extra_plot_width) / (new_end_pos - new_start_pos)
     return (
-        REGION(res, chrom, start_pos, end_pos),
+        REGION(zoom_level, region.chromosome, start_pos, end_pos),
         new_start_pos,
         new_end_pos,
         x_ampl,
@@ -247,13 +257,19 @@ def set_region_values(parsed_region, x_ampl):
     )
 
 
-def get_cov(req, x_ampl, json_data=None, cov_fh=None, baf_fh=None):
+def get_cov(
+    req,
+    x_ampl: float,
+    json_data: dict[str, Any] | None = None,
+    cov_fh: TabixFile | None = None,
+    baf_fh: TabixFile | None = None,
+):
     """Get Log2 ratio and BAF values for chromosome with screen coordinates."""
     db = app.config["GENS_DB"]
     graph = set_graph_values(req)
     # parse region
-    parsed_region = parse_region_str(req.region, req.genome_build)
-    if not parsed_region:
+    zoom_level, region = parse_region_str(req.region, req.genome_build)
+    if not region:
         raise RegionParserException("No parsed region")
 
     # Set values that are needed to convert coordinates to screen coordinates
@@ -263,18 +279,18 @@ def get_cov(req, x_ampl, json_data=None, cov_fh=None, baf_fh=None):
         new_end_pos,
         new_x_ampl,
         extra_plot_width,
-    ) = set_region_values(parsed_region, x_ampl)
+    ) = set_region_values(zoom_level, region, x_ampl)
 
     if json_data:
         data_type = "json"
-        baf_list = json_data[region.chrom]["baf"]
-        log2_list = json_data[region.chrom]["cov"]
+        baf_list = json_data[region.chrom.value]["baf"]
+        log2_list = json_data[region.chrom.value]["cov"]
     else:
         data_type = "bed"
 
         # Bound start and end balues to 0-chrom_size
         end = min(
-            new_end_pos, get_chromosome_size(db, region.chrom, req.genome_build)["size"]
+            new_end_pos, get_chromosome_size(db, region.chrom, req.genome_build).size
         )
         start = max(new_start_pos, 0)
 
