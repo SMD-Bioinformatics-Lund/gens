@@ -4,9 +4,10 @@ import csv
 import logging
 import re
 from pathlib import Path
-from typing import Iterator
+from typing import Any, Iterator
 
-from pymongo import ASCENDING, MongoClient
+from pymongo import ASCENDING
+from pymongo.database import Database
 
 from gens.db import ANNOTATIONS_COLLECTION
 from gens.models.annotation import AnnotationRecord
@@ -121,24 +122,23 @@ def format_data(name: str, value: str) -> str | int:
     """Formats the data depending on title"""
     if name == "color":
         if not value:
-            fmt_val = DEFAULT_COLOR
+            return DEFAULT_COLOR
         elif value.startswith("rgb("):
-            fmt_val = value
+            return value
         else:
-            fmt_val = f"rgb({value})"
+            return f"rgb({value})"
     elif name == "chrom":
         if not value:
             raise ValueError(f"field {name} must exist")
-        fmt_val = value.strip("chr")
+        return value.strip("chr")
     elif name == "start" or name == "end":
         if not value:
             raise ValueError(f"field {name} must exist")
-        fmt_val = int(value)
+        return int(value)
     elif name == "score":
-        fmt_val = int(value) if value else ""
+        return int(value) if value else ""
     else:
-        fmt_val = value
-    return fmt_val
+        return value
 
 
 def set_missing_fields(annotation: dict[str, str | int], name: str):
@@ -160,7 +160,7 @@ def set_missing_fields(annotation: dict[str, str | int], name: str):
             )
 
 
-def update_height_order(db: MongoClient, name: str):
+def update_height_order(db: Database[Any], name: str):
     """Updates height order for annotations.
 
     Height order is used for annotation placement

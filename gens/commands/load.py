@@ -33,6 +33,8 @@ from gens.load import (
 from gens.models.annotation import AnnotationRecord
 from gens.models.genomic import GenomeBuild
 
+from click import Choice
+
 LOG = logging.getLogger(__name__)
 
 
@@ -42,7 +44,7 @@ class ChoiceType(click.Choice):
     name = "genome build"
 
     def __init__(self, enum):
-        super().__init__(map(str, enum))
+        super().__init__(list(map(str, enum)))
         self.enum = enum
 
     def convert(self, value: str, param, ctx):
@@ -101,10 +103,10 @@ def load():
 def sample(
     sample_id: str,
     genome_build: GenomeBuild,
-    baf: str,
-    coverage: str,
+    baf: Path,
+    coverage: Path,
     case_id: str,
-    overview_json: str,
+    overview_json: Path,
     force: bool,
 ):
     """Load a sample into Gens database."""

@@ -1,8 +1,6 @@
 """Read and write chrom sizes."""
 
-from typing import Any, Dict
-
-from pymongo import MongoClient
+from pymongo.database import Database
 
 from gens.models.genomic import ChromInfo, Chromosome
 
@@ -10,7 +8,7 @@ CHROMSIZES = "chrom-sizes"
 
 
 def get_chromosome_size(
-    db: MongoClient[Dict[str, Any]], chrom: Chromosome, genome_build: int = 38
+    db: Database, chrom: Chromosome, genome_build: int = 38
 ) -> ChromInfo:
     """
     Gets the size in base pairs of a chromosome

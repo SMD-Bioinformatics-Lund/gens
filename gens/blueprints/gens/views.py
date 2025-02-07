@@ -31,7 +31,9 @@ def display_case(sample_name):
     case_id = request.args.get("case_id")
     if case_id is None:
         raise ValueError("You must provide a case id when opening a sample.")
-    individual_id: str = request.args.get("individual_id", sample_name)
+    individual_id = request.args.get("individual_id", sample_name)
+    if not individual_id:
+        raise ValueError(f"Expected individual_id, found: {individual_id}")
 
     # get genome build and region
     region = request.args.get("region", None)
@@ -66,7 +68,7 @@ def display_case(sample_name):
         "gens.html",
         ui_colors=UI_COLORS,
         scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
-        chrom=region.chromosome().value,
+        chrom=region.chromosome.value,
         start=region.start,
         end=region.end,
         sample_name=sample_name,
