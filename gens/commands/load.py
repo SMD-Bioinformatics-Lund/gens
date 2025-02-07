@@ -21,7 +21,6 @@ from gens.db import (
     register_data_update,
     store_sample,
 )
-from gens.db.markus_db import GensDb
 from gens.load import (
     ParserError,
     build_chromosomes_obj,
@@ -31,7 +30,7 @@ from gens.load import (
     parse_annotation_file,
     update_height_order,
 )
-from gens.load.annotations import AnnotationRecord
+from gens.models.annotation import AnnotationRecord
 from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
