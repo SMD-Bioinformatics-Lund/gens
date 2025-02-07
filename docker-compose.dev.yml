@@ -15,6 +15,7 @@ services:
       - mongodb
     environment:
       - FLASK_ENV=development
+      - AUTHENTICATION=disabled
     ports:
       - 8080:5000
     volumes:

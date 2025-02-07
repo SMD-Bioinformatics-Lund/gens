@@ -1,5 +1,10 @@
 // GENS module
 
+// Web components
+import "./components/multiannots"
+import { MultiAnnots } from "./components/multiannots"
+
+// Regular imports
 import { InteractiveCanvas } from "./interactive";
 import { OverviewCanvas } from "./overview";
 import {
@@ -39,6 +44,11 @@ export function initCanvases({
   selectedVariant: string,
   annotationFile: string
 }) {
+  const multiAnnotsTest = document.getElementById("multi-annots-test") as MultiAnnots;
+  console.log("Found: ", multiAnnotsTest);
+  multiAnnotsTest.initialize();
+  
+
   // initialize and return the different canvases
   // WEBGL values
   const near = 0.1;
