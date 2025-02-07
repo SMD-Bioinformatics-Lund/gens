@@ -1,6 +1,6 @@
 const template = document.createElement("template");
 template.innerHTML = `
-    <div>
+    <div style="display: flex; flex-direction: row; align-items: center; gap: 10px;">
         <p id="header">[Header]</p>
         <canvas id="canvas" width="100" height="10"></canvas>
     </div>

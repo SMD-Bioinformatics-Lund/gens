@@ -18,12 +18,9 @@ template.innerHTML = `
 export class MultiAnnots extends HTMLElement {
   private _root: ShadowRoot;
 
-  private _message: string = "Hello world!";
-  private _ballColor: string = "red";
   private _annotSources: HTMLElement[] = [];
 
-  async setMessage(message: string) {
-    console.log("Assigning message", message);
+  async setMessage(_message: string) {
     this._annotSources.map((source) => source.remove());
     // this._textElement.textContent = message;
 
@@ -70,14 +67,17 @@ export class MultiAnnots extends HTMLElement {
       (option) => option.value
     );
     // console.log("Selected annotations: ", selectedAnnotations);
-    selectedAnnotations.forEach((annot) => this._makeTrack(annot));
+    const trackContainer = this._root.getElementById("container") as HTMLElement;
+    while(trackContainer.firstChild) {
+      trackContainer.removeChild(trackContainer.firstChild);
+    }
+    selectedAnnotations.forEach((annot) => this._makeTrack(trackContainer, annot));
   }
 
-  private _makeTrack(name: string) {
+  private _makeTrack(container: HTMLElement, name: string) {
     const track = new MultiAnnotsTrack();
     track.setTitle(name);
-    const trackContainer = this._root.getElementById("container") as HTMLElement;
-    trackContainer.appendChild(track);
+    container.appendChild(track);
   }
 }
 
