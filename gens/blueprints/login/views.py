@@ -1,16 +1,16 @@
 import logging
 
 from flask import Blueprint, current_app, flash, redirect, request, session, url_for
-
 from flask_login import login_user, logout_user
 
+from gens.blueprints.home.views import public_endpoint
 from gens.db.users import user
 from gens.extensions import login_manager, oauth_client
-from gens.blueprints.home.views import public_endpoint
 
 # from . import controllers
 
 LOG = logging.getLogger(__name__)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -31,6 +31,7 @@ login_bp = Blueprint(
 login_manager.login_view = "login.login"
 login_manager.login_message = "Please log in to access this page."
 login_manager.login_message_category = "info"
+
 
 @login_bp.route("/login", methods=["GET", "POST"])
 @public_endpoint
@@ -74,6 +75,7 @@ def authorized():
 
     return redirect(url_for(".login"))
 
+
 @login_bp.route("/logout")
 def logout():
     logout_user()
@@ -91,5 +93,3 @@ def perform_login(user_dict):
         return redirect(request.args.get("next") or next_url or url_for("home.home"))
     flash("Sorry, you were not logged in", "warning")
     return redirect(url_for("home.landing"))
-
-

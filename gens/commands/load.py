@@ -1,4 +1,5 @@
 import logging
+from enum import Enum
 from pathlib import Path
 from typing import TextIO
 
@@ -6,16 +7,45 @@ import click
 from flask import current_app as app
 from flask.cli import with_appcontext
 
-from gens.constants import GENOME_BUILDS
-from gens.db import (ANNOTATIONS_COLLECTION, CHROMSIZES_COLLECTION,
-                     SAMPLES_COLLECTION, TRANSCRIPTS_COLLECTION, create_index,
-                     get_indexes, register_data_update, store_sample)
-from gens.load import (ParserError, build_chromosomes_obj, build_transcripts,
-                       get_assembly_info, parse_annotation_entry,
-                       parse_annotation_file, update_height_order)
+from gens.db import (
+    ANNOTATIONS_COLLECTION,
+    CHROMSIZES_COLLECTION,
+    SAMPLES_COLLECTION,
+    TRANSCRIPTS_COLLECTION,
+    create_index,
+    get_indexes,
+    register_data_update,
+    store_sample,
+)
+from gens.load import (
+    ParserError,
+    build_chromosomes_obj,
+    build_transcripts,
+    get_assembly_info,
+    parse_annotation_entry,
+    parse_annotation_file,
+    update_height_order,
+)
+from gens.load.annotations import AnnotationRecord
+from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
-valid_genome_builds = [str(gb) for gb in GENOME_BUILDS]
+
+
+class ChoiceType(click.Choice):
+    """Custom input type for click that returns genome build enum."""
+
+    name = "genome build"
+
+    def __init__(self, enum):
+        super().__init__(map(str, enum))
+        self.enum = enum
+
+    def convert(self, value: str, param, ctx):
+        """Convert str to genome build"""
+
+        value = super().convert(value, param, ctx)
+        return next(v for v in self.enum if str(v) == value)
 
 
 @click.group()
@@ -28,7 +58,7 @@ def load():
 @click.option(
     "-b",
     "--genome-build",
-    type=click.Choice(valid_genome_builds),
+    type=ChoiceType(GenomeBuild),
     required=True,
     help="Genome build",
 )
@@ -64,7 +94,15 @@ def load():
     help="Overwrite any existing sample with the same key.",
 )
 @with_appcontext
-def sample(sample_id: str, genome_build: int, baf: str, coverage: str, case_id: str, overview_json: str, force: bool):
+def sample(
+    sample_id: str,
+    genome_build: GenomeBuild,
+    baf: str,
+    coverage: str,
+    case_id: str,
+    overview_json: str,
+    force: bool,
+):
     """Load a sample into Gens database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -95,12 +133,12 @@ def sample(sample_id: str, genome_build: int, baf: str, coverage: str, case_id: 
 @click.option(
     "-b",
     "--genome-build",
-    type=click.Choice(valid_genome_builds),
+    type=ChoiceType(GenomeBuild),
     required=True,
     help="Genome build",
 )
 @with_appcontext
-def annotations(file: str, genome_build: int):
+def annotations(file: str, genome_build: GenomeBuild):
     """Load annotations from file into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -117,16 +155,12 @@ def annotations(file: str, genome_build: int):
         LOG.info(f"Processing {annot_file}")
         # base the annotation name on the filename
         annotation_name = annot_file.name[: -len(annot_file.suffix)]
-        parser = parse_annotation_file(
-            annot_file, file_format=annot_file.suffix[1:]
-        )
-        annotation_obj: list[dict[str, str|int]] = []
+        parser = parse_annotation_file(annot_file, file_format=annot_file.suffix[1:])
+        annotations: list[AnnotationRecord] = []
         for entry in parser:
             try:
-                entry_obj = parse_annotation_entry(
-                    entry, genome_build, annotation_name
-                )
-                annotation_obj.append(entry_obj)
+                entry_obj = parse_annotation_entry(entry, genome_build, annotation_name)
+                annotations.append(entry_obj)
             except ParserError as err:
                 LOG.warning(str(err))
                 continue
@@ -136,7 +170,9 @@ def annotations(file: str, genome_build: int):
         db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
         # add the annotations
         LOG.info(f"Load annoatations in the database")
-        db[ANNOTATIONS_COLLECTION].insert_many(annotation_obj)
+        db[ANNOTATIONS_COLLECTION].insert_many(
+            [annot.model_dump() for annot in annotations]
+        )
         LOG.info("Update height order")
         # update the height order of annotations in the database
         update_height_order(db, annotation_name)
@@ -150,12 +186,12 @@ def annotations(file: str, genome_build: int):
 @click.option(
     "-b",
     "--genome-build",
-    type=click.Choice(valid_genome_builds),
+    type=ChoiceType(GenomeBuild),
     required=True,
     help="Genome build",
 )
 @with_appcontext
-def transcripts(file: TextIO, mane: TextIO, genome_build: int):
+def transcripts(file: TextIO, mane: TextIO, genome_build: GenomeBuild):
     """Load transcripts into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -183,7 +219,7 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: int):
 @click.option(
     "-b",
     "--genome-build",
-    type=click.Choice(valid_genome_builds),
+    type=ChoiceType(GenomeBuild),
     required=True,
     help="Genome build",
 )
@@ -195,7 +231,7 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: int):
     help="Timeout for queries.",
 )
 @with_appcontext
-def chromosome_info(_file: TextIO, genome_build: int, timeout: int):
+def chromosome_info(file: TextIO, genome_build: GenomeBuild, timeout: int):
     """Load chromosome size information into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -224,7 +260,9 @@ def chromosome_info(_file: TextIO, genome_build: int, timeout: int):
     )
     # insert collection
     LOG.info("Add chromosome info to database")
-    db[CHROMSIZES_COLLECTION].insert_many(chromosomes_data)
+    db[CHROMSIZES_COLLECTION].insert_many(
+        [chr.model_dump() for chr in chromosomes_data]
+    )
     register_data_update(CHROMSIZES_COLLECTION)
     # build cytogenetic data
     click.secho("Finished updating chromosome sizes ✔", fg="green")

@@ -34,7 +34,9 @@ def index(build: bool, update: bool):
     # ask for confirmation to index if --yes is not set
     shall_index = False
     if not build:
-        shall_index = click.confirm("This will delete and rebuild all indexes(if not --update). Are you sure?")
+        shall_index = click.confirm(
+            "This will delete and rebuild all indexes(if not --update). Are you sure?"
+        )
 
     if shall_index or build:
         create_indexes(db)

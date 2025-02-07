@@ -35,11 +35,13 @@ dependencies = [
   "gtfparse",
   "pysam",
   "pyyaml",
-  "attrs",
-  "cattrs",
   "connexion==2.14.2",
+  "fastapi",
   "flask-compress",
   "tabulate",
+  "pydantic",
+  "pydantic-settings",
+  "pydantic-extra-types",
 ]
 
 [project.urls]

@@ -1,9 +1,10 @@
 """Retrieve users from scout db"""
-from flask_login import UserMixin
-
-from flask import current_app as app
 
 from typing import Optional
+
+from flask import current_app as app
+from flask_login import UserMixin
+
 
 class LoginUser(UserMixin):
     def __init__(self, user_data: dict[str, str]):
@@ -22,7 +23,7 @@ class LoginUser(UserMixin):
         return "admin" in self.roles
 
 
-def user(email: str) -> LoginUser|None:
+def user(email: str) -> LoginUser | None:
     db = app.config["SCOUT_DB"]
 
     # LOG.info("Inside user")

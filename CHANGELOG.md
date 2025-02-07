@@ -7,9 +7,11 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ## Unreleased
 
 ### Added
+ - Use pydantic-settings for settings validation.
  - Temporary HG002 quick-setup script in utils. Requires mongo-dumps currently not part of the Gens repo. Will be replaced by a general setup script ahead.
 
 ### Changed
+ - Changed some settings names
  - Migrated from setup.py to pyproject.toml using hatchling
  - Updated python to version 3.12 and thawed some dependencies.
  - Switched from JS to TS and updated required parts of the build chain.

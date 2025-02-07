@@ -8,6 +8,8 @@ from typing import Any, Iterable, TextIO
 
 import click
 
+from ..models.genomic import GenomeBuild
+
 LOG = logging.getLogger(__name__)
 
 
@@ -29,7 +31,7 @@ def parse_mane_transc(mane_file: Iterable[str]) -> dict[str, dict[str, str]]:
 def _parse_attribs(attributes_str: str) -> dict[str, str]:
     """
     Parse attribute strings.
-    
+
     Example:
         Input: 'key1 "value1"; key2 "value2"'
         Output: {'key1': 'value1', 'key2': 'value2'}
@@ -47,7 +49,7 @@ def _parse_attribs(attributes_str: str) -> dict[str, str]:
             raise ValueError(f"Invalid attribute format: {attrib}")
 
         key, value = key_value
-        clean_value = value.replace('"', '').strip()
+        clean_value = value.replace('"', "").strip()
         attributes_dict[key] = clean_value
 
     return attributes_dict
@@ -69,7 +71,7 @@ def _count_file_len(file: TextIO) -> int:
     return n_lines
 
 
-def parse_transcript_gtf(transc_file: TextIO, delimiter:str="\t"):
+def parse_transcript_gtf(transc_file: TextIO, delimiter: str = "\t"):
     """Parse transcripts."""
     # setup reader
     COLNAMES = [
@@ -138,7 +140,9 @@ def _sort_transcript_features(transcripts: list[str]):
         tr["features"] = sorted(tr["features"], key=lambda x: x["start"])
 
 
-def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: int):
+def build_transcripts(
+    transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild
+):
     """Build transcript object from transcript and mane file."""
     mane_transc = parse_mane_transc(mane_file)
     results: dict[str, list[str]] = defaultdict(list)
@@ -155,7 +159,7 @@ def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: int)
                 # FIXME: More typing work here when we have data types defined
                 res = {
                     "chrom": transc["seqname"],
-                    "genome_build": int(genome_build),
+                    "genome_build": genome_build.value,
                     "gene_name": attribs["gene_name"],
                     "start": int(transc["start"]),
                     "end": int(transc["end"]),
