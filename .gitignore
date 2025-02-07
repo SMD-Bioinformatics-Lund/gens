@@ -20,6 +20,7 @@ venv/
 *.egg-info
 .eggs
 .idea
+__pycache__
 
 # node
 node_modules
