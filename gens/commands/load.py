@@ -1,5 +1,6 @@
+"""Commands for loading annotations, transcripts and samples to the database."""
+
 import logging
-from enum import Enum
 from pathlib import Path
 from typing import TextIO
 
@@ -152,26 +153,26 @@ def annotations(file: str, genome_build: GenomeBuild):
         # verify file format
         if annot_file.suffix not in [".bed", ".aed"]:
             continue
-        LOG.info(f"Processing {annot_file}")
+        LOG.info("Processing %s", annot_file)
         # base the annotation name on the filename
         annotation_name = annot_file.name[: -len(annot_file.suffix)]
         parser = parse_annotation_file(annot_file, file_format=annot_file.suffix[1:])
-        annotations: list[AnnotationRecord] = []
+        parsed_annotations: list[AnnotationRecord] = []
         for entry in parser:
             try:
                 entry_obj = parse_annotation_entry(entry, genome_build, annotation_name)
-                annotations.append(entry_obj)
+                parsed_annotations.append(entry_obj)
             except ParserError as err:
                 LOG.warning(str(err))
                 continue
 
         # Remove existing annotations in database
-        LOG.info(f"Remove old entry in the database")
+        LOG.info("Remove old entry in the database")
         db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
         # add the annotations
-        LOG.info(f"Load annoatations in the database")
+        LOG.info("Load annoatations in the database")
         db[ANNOTATIONS_COLLECTION].insert_many(
-            [annot.model_dump() for annot in annotations]
+            [annot.model_dump() for annot in parsed_annotations]
         )
         LOG.info("Update height order")
         # update the height order of annotations in the database
@@ -199,11 +200,11 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: GenomeBuild):
         create_index(db, TRANSCRIPTS_COLLECTION)
     LOG.info("Building transcript object")
     try:
-        transcripts = build_transcripts(file, mane, genome_build)
+        transcript_obj = build_transcripts(file, mane, genome_build)
     except Exception as err:
         raise click.UsageError(str(err))
     LOG.info("Add transcripts to database")
-    db[TRANSCRIPTS_COLLECTION].insert_many(transcripts)
+    db[TRANSCRIPTS_COLLECTION].insert_many(transcript_obj)
     register_data_update(TRANSCRIPTS_COLLECTION)
     click.secho("Finished loading transcripts ✔", fg="green")
 
@@ -232,7 +233,7 @@ def chromosome_info(genome_build: GenomeBuild, timeout: int):
         create_index(db, CHROMSIZES_COLLECTION)
     # get chromosome info from ensemble
     # if file is given, use sizes from file else download chromsizes from ebi
-    LOG.info(f"Query ensembl for assembly info for {genome_build}")
+    LOG.info("Query ensembl for assembly info for %s", genome_build)
     assembly_info = get_assembly_info(genome_build, timeout=timeout)
     # index chromosome on name
     chrom_data = {
@@ -250,7 +251,8 @@ def chromosome_info(genome_build: GenomeBuild, timeout: int):
     # remove old entries
     res = db[CHROMSIZES_COLLECTION].delete_many({"genome_build": int(genome_build)})
     LOG.info(
-        f"Removed {res.deleted_count} old entries with genome build: {genome_build}"
+        "Removed %d old entries with genome build: %s", 
+        res.deleted_count, genome_build
     )
     # insert collection
     LOG.info("Add chromosome info to database")

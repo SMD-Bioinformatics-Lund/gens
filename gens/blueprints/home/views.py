@@ -4,7 +4,6 @@ import logging
 import os
 
 from flask import Blueprint, current_app, render_template, request
-from flask_login import current_user
 
 from gens import version
 from gens.config import settings
@@ -36,6 +35,8 @@ home_bp = Blueprint(
 @home_bp.route("/", methods=["GET", "POST"])
 @home_bp.route("/home", methods=["GET", "POST"])
 def home():
+    """Gens home page with list of all samples."""
+
     db = current_app.config["GENS_DB"]
     # set pagination
     page = request.args.get("page", 1, type=int)
@@ -77,6 +78,7 @@ def home():
 
 @home_bp.route("/about")
 def about():
+    """Gens about page with rudimentary statistics."""
     with current_app.app_context():
         timestamps = get_timestamps()
         config = {cnf: current_app.config.get(cnf) for cnf in IN_CONFIG}
@@ -99,6 +101,7 @@ def public_endpoint(function):
 @home_bp.route("/landing")
 @public_endpoint
 def landing():
+    """Gens landing page."""
 
     return render_template(
         "landing.html",

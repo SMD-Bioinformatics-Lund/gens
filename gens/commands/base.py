@@ -19,9 +19,8 @@ from .view import view as view_command
     add_version_option=False,
 )
 @click.version_option(version)
-def cli(*args, **kwargs):
+def cli():
     """Management of Gens application"""
-    pass
 
 
 cli.add_command(index_command)

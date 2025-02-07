@@ -69,11 +69,15 @@ class VariantCategory(Enum):
 
 
 class GenomePosition(RWModel):
+    """Basic genome positioning info."""
+
     start: PositiveInt
     end: PositiveInt
 
 
 class ChromBand(RWModel):
+    """Store positional information of chromosome bands."""
+
     id: str
     stain: str
     start: PositiveInt
@@ -182,5 +186,7 @@ class QueryChromosomeCoverage(RWModel):
     @field_validator("reduce_data")
     @classmethod
     def validate_percentage(cls, value: float):
+        """Validate that a number falls between 0-1."""
+
         if not 0 <= value <= 1:
             raise ValueError(f"{value} is not within 0-1")

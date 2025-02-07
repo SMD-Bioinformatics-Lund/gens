@@ -31,7 +31,7 @@ def build_chromosomes_obj(
 
     genome_size = sum(c["length"] for c in chromosome_data.values())
     for name, data in chromosome_data.items():
-        LOG.info(f"Processing chromosome {name}")
+        LOG.info("Processing chromosome %s", name)
         # calculate genome scale
         scale = round(data["length"] / genome_size, 2)
         # skip for mitochondria
@@ -98,7 +98,7 @@ def get_assembly_info(
 
 def get_assembly_annotation(insdc_id: str, data_format: str = "embl", timeout: int = 2):
     """Get assembly for id from EBI using INSDC id."""
-    LOG.debug(f"Get assembly annotation for {insdc_id}")
+    LOG.debug("Get assembly annotation for %s", insdc_id)
     resp = requests.get(
         f"https://www.ebi.ac.uk/ena/browser/api/{data_format}/{insdc_id}",
         timeout=timeout,

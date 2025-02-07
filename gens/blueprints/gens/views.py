@@ -6,7 +6,6 @@ from datetime import date
 from flask import Blueprint, abort, current_app, render_template, request
 
 from gens import version
-from gens.cache import cache
 from gens.config import UI_COLORS, settings
 from gens.db import query_sample
 from gens.graph import parse_region_str
