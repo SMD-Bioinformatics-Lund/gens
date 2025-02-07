@@ -2,8 +2,7 @@
 
 // Web components
 import "./components/multiannots"
-import "./components/multiannotstrack"
-import "./components/test"
+import { MultiAnnots } from "./components/multiannots"
 
 // Regular imports
 import { InteractiveCanvas } from "./interactive";
@@ -45,6 +44,11 @@ export function initCanvases({
   selectedVariant: string,
   annotationFile: string
 }) {
+  const multiAnnotsTest = document.getElementById("multi-annots-test") as MultiAnnots;
+  console.log("Found: ", multiAnnotsTest);
+  multiAnnotsTest.initialize();
+  
+
   // initialize and return the different canvases
   // WEBGL values
   const near = 0.1;

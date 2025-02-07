@@ -38,7 +38,7 @@ export class MultiAnnots extends HTMLElement {
 
   private _annotSources: HTMLElement[] = [];
 
-  async setMessage(_message: string) {
+  private async _updateAnnotationSources() {
     this._annotSources.map((source) => source.remove());
     // this._textElement.textContent = message;
 
@@ -61,8 +61,12 @@ export class MultiAnnots extends HTMLElement {
     });
   }
 
-  constructor() {
-    super();
+  public initialize() {
+    this._updateAnnotationSources();
+  }
+
+  connectedCallback() {
+    console.log("Is connected");
 
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
@@ -77,6 +81,10 @@ export class MultiAnnots extends HTMLElement {
       "annotations"
     ) as HTMLSelectElement;
     annotSelect.addEventListener("change", this._onAnnotationChange.bind(this));
+  }
+
+  constructor() {
+    super();
   }
 
   private _onAnnotationChange(event: Event) {
@@ -95,7 +103,7 @@ export class MultiAnnots extends HTMLElement {
   private _makeTrack(container: HTMLElement, source: string) {
 
     console.log("Attempting to run getAnnotationData for source", source);
-    const annotData = getAnnotationData(source)
+    // const annotData = getAnnotationData(source)
 
     const track = new MultiAnnotsTrack();
     track.setTitle(source);
