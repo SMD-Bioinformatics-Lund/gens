@@ -160,14 +160,6 @@ export class VariantTrack extends BaseAnnotationTrack {
     heightTracker = Array(200);
 
     const labelData = [];
-<<<<<<< HEAD
-
-    const heightTracker = Array(200)
-    let actualMaxHeightOrder = 1
-
-    this.labelData = []
-=======
->>>>>>> eb4cd95 (Prettier and eslint formatting)
 
     // Draw track
     const drawTooltips = this.getResolution < 4;
@@ -347,7 +339,6 @@ export class VariantTrack extends BaseAnnotationTrack {
       }
     }
     this.labelData = labelData;
-<<<<<<< HEAD
   }
 
   drawDynamicOverlay() {
@@ -376,48 +367,5 @@ export class VariantTrack extends BaseAnnotationTrack {
         });
       }
     });
-  }
-
-  drawDynamicOverlay () {
-    const ctx = this.contentCanvas.getContext('2d')
-    this.labelData.forEach((label) => {
-      drawText({
-        ctx: ctx,
-        text: label.text,
-        x: Math.max(0, label.x - this.onscreenPosition.start),
-        y: label.y,
-        fontProp: label.fontProp
-      })
-    })
-=======
-  }
-
-  drawDynamicOverlay() {
-    const ctx = this.contentCanvas.getContext("2d");
-    const scale =
-      this.contentCanvas.width /
-      (this.onscreenPosition.end - this.onscreenPosition.start);
-    const margin = 100;
-    this.labelData.forEach((label) => {
-      if (
-        label.start < this.onscreenPosition.end &&
-        label.end > this.onscreenPosition.start
-      ) {
-        drawText({
-          ctx: ctx,
-          text: label.text,
-          x: Math.max(
-            margin,
-            Math.min(
-              this.contentCanvas.width - margin,
-              scale * (label.x - this.onscreenPosition.start),
-            ),
-          ),
-          y: label.y,
-          fontProp: label.fontProp,
-        });
-      }
-    });
->>>>>>> eb4cd95 (Prettier and eslint formatting)
   }
 }

@@ -60,12 +60,3 @@ export function isWithinElementVisibleBbox({ element, point }) {
     point.y < element.visibleY2
   );
 }
-
-export function isWithinElementVisibleBbox({ element, point }) {
-  return (
-    element.visibleX1 < point.x &&
-    point.x < element.visibleX2 &&
-    element.visibleY1 < point.y &&
-    point.y < element.visibleY2
-  );
-}
