@@ -3,10 +3,8 @@
 import logging
 from typing import Any
 
-from pymongo import ASCENDING, IndexModel, MongoClient
+from pymongo import ASCENDING, IndexModel
 from pymongo.database import Database
-
-from gens.db.markus_db import GensDb
 
 from .annotation import ANNOTATIONS, TRANSCRIPTS
 from .chrom_sizes import CHROMSIZES
@@ -96,10 +94,7 @@ INDEXES = {
 }
 
 
-from pymongo.database import Database
-
-
-def get_indexes(db: Database[Any], target_collection_name: str) -> list[str]:
+def get_indexes(db: Database, target_collection_name: str) -> list[str]:
     """Get current indexes for a collection."""
     indexes: list[str] = []
     for collection_name in db.list_collection_names():
@@ -109,8 +104,6 @@ def get_indexes(db: Database[Any], target_collection_name: str) -> list[str]:
             if index_name != "_id_":
                 indexes.append(index_name)
     return indexes
-
-
 
 
 def create_index(db: Database, collection_name: str):

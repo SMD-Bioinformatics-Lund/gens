@@ -71,7 +71,7 @@ def _count_file_len(file: TextIO) -> int:
     return n_lines
 
 
-def parse_transcript_gtf(transc_file: Iterable, delimiter: str = "\t"):
+def parse_transcript_gtf(transc_file: Iterable[str], delimiter: str = "\t"):
     """Parse transcripts."""
     # setup reader
     COL_NAMES = [

@@ -116,6 +116,7 @@ def query_records_in_region(
     region_start = region.start
     region_end = region.end
 
+    # FIXME: Not necessary after adding a region type known to have start and end
     if not region_start or not region_end:
         raise ValueError(f"Expected region.start and region.end, found start: {region_start} end: {region_end}")
 

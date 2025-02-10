@@ -9,8 +9,6 @@ from flask import current_app as app
 from flask.cli import with_appcontext
 from pymongo.database import Database
 
-from ..config import settings
-
 from gens.db import (
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
@@ -32,8 +30,6 @@ from gens.load import (
 )
 from gens.models.annotation import AnnotationRecord
 from gens.models.genomic import GenomeBuild
-
-from click import Choice
 
 LOG = logging.getLogger(__name__)
 
@@ -110,9 +106,6 @@ def sample(
     force: bool,
 ):
     """Load a sample into Gens database."""
-
-    # db = GensDb(connection=str(settings.gens_db), db_name=settings.gens_dbname)
-
     db: Database[Any] = app.config["GENS_DB"]
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:

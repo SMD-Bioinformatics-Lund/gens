@@ -41,7 +41,6 @@ def home():
     # set pagination
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * SAMPLES_PER_PAGE
-
     samples, total_samples = get_samples(db, start=start, n_samples=SAMPLES_PER_PAGE)
     # calculate pagination
     pagination_info = {

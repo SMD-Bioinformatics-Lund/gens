@@ -160,7 +160,7 @@ def set_missing_fields(annotation: dict[str, str | int], name: str):
             )
 
 
-def update_height_order(db: Database[Any], name: str):
+def update_height_order(db: Database, name: str):
     """Updates height order for annotations.
 
     Height order is used for annotation placement

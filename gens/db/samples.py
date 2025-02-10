@@ -3,7 +3,6 @@
 import itertools
 import logging
 from typing import Iterator
-
 from pydantic import FilePath
 from pymongo import DESCENDING, MongoClient
 from pymongo.errors import DuplicateKeyError
