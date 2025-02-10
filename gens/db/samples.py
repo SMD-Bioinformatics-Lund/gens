@@ -2,6 +2,7 @@
 
 import itertools
 import logging
+from typing import Iterator
 
 from pydantic import FilePath
 from pymongo import DESCENDING, MongoClient
@@ -104,7 +105,7 @@ def get_samples(
 
     use n_samples to limit the results to x most recent samples
     """
-    results = (
+    results: Iterator[SampleInfo] = (
         SampleInfo(
             sample_id=r["sample_id"],
             case_id=r["case_id"],
@@ -119,10 +120,11 @@ def get_samples(
     # limit results to n results
     if isinstance(n_samples, (int)) and 0 < n_samples:
         results = itertools.islice(results, start, start + n_samples)
-    return results, db[COLLECTION].count_documents({})
+
+    return list(results), db[COLLECTION].count_documents({})
 
 
-def query_sample(db: MongoClient, sample_id: str, case_id: str | None) -> SampleInfo:
+def query_sample(db: Database, sample_id: str, case_id: str | None) -> SampleInfo:
     """Get a sample with id."""
     result = None
     if case_id is None:

@@ -71,7 +71,7 @@ def _count_file_len(file: TextIO) -> int:
     return n_lines
 
 
-def parse_transcript_gtf(transc_file: TextIO, delimiter: str = "\t"):
+def parse_transcript_gtf(transc_file: Iterable, delimiter: str = "\t"):
     """Parse transcripts."""
     # setup reader
     COL_NAMES = [
@@ -134,7 +134,7 @@ def _assign_height_order(transcripts: list[dict[str, Any]]):
         tr["height_order"] = order
 
 
-def _sort_transcript_features(transcripts: list[str]):
+def _sort_transcript_features(transcripts: list[dict[str, Any]]):
     """Sort transcript features on start coordinate."""
     for tr in transcripts:
         tr["features"] = sorted(tr["features"], key=lambda x: x["start"])
@@ -145,7 +145,7 @@ def build_transcripts(
 ):
     """Build transcript object from transcript and mane file."""
     mane_transc = parse_mane_transc(mane_file)
-    results: dict[str, list[str]] = defaultdict(list)
+    results: dict[str, list[Any]] = defaultdict(list)
     transc_index = {}
     n_lines = _count_file_len(transc_file)
     with click.progressbar(
@@ -153,9 +153,11 @@ def build_transcripts(
     ) as progressbar:
         for transc, attribs in parse_transcript_gtf(progressbar):
             transcript_id = attribs.get("transcript_id")
+            if not transcript_id:
+                raise ValueError(f"Expected an ID, found: {transcript_id}")
             # store transcripts in index
             if transc["feature"] == "transcript":
-                selected_name = mane_transc.get(transcript_id, {})
+                selected_name: dict[str, str] = mane_transc.get(transcript_id, {})
                 # FIXME: More typing work here when we have data types defined
                 res = {
                     "chrom": transc["seqname"],
