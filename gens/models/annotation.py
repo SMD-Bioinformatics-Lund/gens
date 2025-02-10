@@ -23,7 +23,7 @@ class AnnotationRecord(RWModel):
     color: Color
 
     @field_serializer("color")
-    def serialize_color(self, color: Color, _) -> tuple[int, int, int]:
+    def serialize_color(self, color: Color, _) -> tuple[int, int, int] | tuple[int, int, int, float]:
         """Serialize RGB as tuple"""
         return color.as_rgb_tuple()
 

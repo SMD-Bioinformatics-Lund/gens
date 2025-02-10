@@ -2,11 +2,12 @@
 
 import logging
 from pathlib import Path
-from typing import TextIO
+from typing import Any, TextIO
 
 import click
 from flask import current_app as app
 from flask.cli import with_appcontext
+from pymongo.database import Database
 
 from gens.db import (
     ANNOTATIONS_COLLECTION,
@@ -27,7 +28,7 @@ from gens.load import (
     parse_annotation_file,
     update_height_order,
 )
-from gens.load.annotations import AnnotationRecord
+from gens.models.annotation import AnnotationRecord
 from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
@@ -39,7 +40,7 @@ class ChoiceType(click.Choice):
     name = "genome build"
 
     def __init__(self, enum):
-        super().__init__(map(str, enum))
+        super().__init__(list(map(str, enum)))
         self.enum = enum
 
     def convert(self, value: str, param, ctx):
@@ -98,14 +99,14 @@ def load():
 def sample(
     sample_id: str,
     genome_build: GenomeBuild,
-    baf: str,
-    coverage: str,
+    baf: Path,
+    coverage: Path,
     case_id: str,
-    overview_json: str,
+    overview_json: Path,
     force: bool,
 ):
     """Load a sample into Gens database."""
-    db = app.config["GENS_DB"]
+    db: Database[Any] = app.config["GENS_DB"]
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)

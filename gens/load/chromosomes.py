@@ -82,13 +82,14 @@ def get_assembly_info(
 ):
     """Get assembly info from ensembl."""
     base_rest_url = {"37": "grch37.rest.ensembl.org", "38": "rest.ensembl.org"}
+    params: dict[str, str] = {
+            "content-type": "application/json",
+            "bands": str(bands),
+            "synonyms": str(synonyms),
+        }
     resp = requests.get(
         f"https://{base_rest_url[str(genome_build)]}/info/assembly/{specie}",
-        params={
-            "content-type": "application/json",
-            "bands": int(bands),
-            "synonyms": int(synonyms),
-        },
+        params=params,
         timeout=timeout,
     )
     # crash if not successful

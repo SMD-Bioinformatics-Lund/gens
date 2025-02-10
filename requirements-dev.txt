@@ -9,3 +9,4 @@ coveralls
 pylint
 black
 isort
+mypy

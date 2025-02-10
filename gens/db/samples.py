@@ -2,9 +2,11 @@
 
 import itertools
 import logging
-
+from typing import Iterator
+from pydantic import FilePath
 from pymongo import DESCENDING, MongoClient
 from pymongo.errors import DuplicateKeyError
+from pymongo.database import Database
 
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo
@@ -35,13 +37,13 @@ class NonUniqueIndexError(Exception):
 
 
 def store_sample(
-    db: MongoClient,
+    db: Database,
     sample_id: str,
     case_id: str,
     genome_build: GenomeBuild,
-    baf: str,
-    coverage: str,
-    overview: str,
+    baf: FilePath,
+    coverage: FilePath,
+    overview: FilePath,
     force: bool,
 ):
     """Store a new sample in the database."""
@@ -54,7 +56,7 @@ def store_sample(
         coverage_file=coverage,
         overview_file=overview,
     )
-    index_fields: list[str] = ["baf_index", "coverage_index"]
+    index_fields: set[str] = {"baf_index", "coverage_index"}
     if force:
         result = db[COLLECTION].update_one(
             {
@@ -79,7 +81,7 @@ def store_sample(
                 ),
                 sample_id,
                 case_id,
-                genome_build,
+                str(genome_build),
             )
     else:
         try:
@@ -95,14 +97,14 @@ def store_sample(
 
 
 def get_samples(
-    db: MongoClient, start: int = 0, n_samples: int | None = None
+    db: Database, start: int = 0, n_samples: int | None = None
 ) -> tuple[list[SampleInfo], int]:
     """
     Get samples stored in the databse.
 
     use n_samples to limit the results to x most recent samples
     """
-    results = (
+    results: Iterator[SampleInfo] = (
         SampleInfo(
             sample_id=r["sample_id"],
             case_id=r["case_id"],
@@ -117,10 +119,11 @@ def get_samples(
     # limit results to n results
     if isinstance(n_samples, (int)) and 0 < n_samples:
         results = itertools.islice(results, start, start + n_samples)
-    return results, db[COLLECTION].count_documents({})
+
+    return list(results), db[COLLECTION].count_documents({})
 
 
-def query_sample(db: MongoClient, sample_id: str, case_id: str | None) -> SampleInfo:
+def query_sample(db: Database, sample_id: str, case_id: str | None) -> SampleInfo:
     """Get a sample with id."""
     result = None
     if case_id is None:

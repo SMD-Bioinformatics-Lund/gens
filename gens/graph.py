@@ -18,11 +18,12 @@ from .models.genomic import Chromosome, GenomeBuild, GenomicRegion
 LOG = logging.getLogger(__name__)
 
 
-GRAPH = namedtuple("graph", ("baf_ampl", "log2_ampl", "baf_ypos", "log2_ypos"))
-REGION = namedtuple("region", ("res", "chrom", "start_pos", "end_pos"))
+# FIXME: Replace these with Pydantic classes?
+GRAPH = namedtuple("GRAPH", ("baf_ampl", "log2_ampl", "baf_ypos", "log2_ypos"))
+REGION = namedtuple("REGION", ("res", "chrom", "start_pos", "end_pos"))
 
 REQUEST = namedtuple(
-    "request",
+    "REQUEST",
     (
         "region",
         "x_pos",
@@ -39,6 +40,7 @@ REQUEST = namedtuple(
 )
 
 
+# FIXME: Refactor me
 @cache.memoize(0)
 def convert_data(
     graph, req, log2_list, baf_list, x_pos, new_start_pos, new_x_ampl, data_type="bed"
@@ -55,7 +57,7 @@ def convert_data(
     else:
         raise ValueError(f"Data type {data_type} not supported. Use bed or json!")
 
-    #  Normalize and calculate the Lo2 ratio
+    #  Normalize and calculate the Log2 ratio
     log2_records = []
     for record in log2_list:
         # Cap values to end points
@@ -133,13 +135,16 @@ def parse_region_str(
     Parses a region string
     """
     name_search = None
+    start: int|None = None
+    end: int|None = None
+    chrom: Chromosome|None = None
     try:
         # Split region in standard format chrom:start-stop
         if ":" in region:
-            chrom, pos_range = region.split(":")
-            start, end = pos_range.split("-")
-            chrom.replace("chr", "")
-            chrom = Chromosome(chrom.upper())
+            chrom_str, pos_range = region.split(":")
+            start, end = [int(pos) for pos in pos_range.split("-")]
+            chrom_str = chrom_str.replace("chr", "")
+            chrom = Chromosome(chrom_str.upper())
         else:
             # Not in standard format, query in form of full chromsome
             # or gene
@@ -152,12 +157,12 @@ def parse_region_str(
         # Query is for a full range chromosome
         if name_search.upper() in [ch.value for ch in Chromosome]:
             start = 0
-            end = "None"
+            end = None
             chrom = Chromosome(name_search.upper())
         else:
             # Lookup queried gene
-            collection = app.config["GENS_DB"]["transcripts" + genome_build]
-            start = collection.find_one(
+            collection = app.config["GENS_DB"]["transcripts" + str(genome_build)]
+            start_query = collection.find_one(
                 {
                     "gene_name": re.compile(
                         "^" + re.escape(name_search) + "$", re.IGNORECASE
@@ -165,7 +170,7 @@ def parse_region_str(
                 },
                 sort=[("start", 1)],
             )
-            end = collection.find_one(
+            end_query = collection.find_one(
                 {
                     "gene_name": re.compile(
                         "^" + re.escape(name_search) + "$", re.IGNORECASE
@@ -173,13 +178,21 @@ def parse_region_str(
                 },
                 sort=[("end", -1)],
             )
-            if start is not None and end is not None:
-                chrom = Chromosome(start["chrom"])
-                start = start["start"]
-                end = end["end"]
+            if start_query is not None and end_query is not None:
+                chrom = Chromosome(start_query["chrom"])
+                start = start_query["start"]
+                end = end_query["end"]
             else:
                 LOG.warning("Did not find range for gene name")
                 return None
+
+    if not chrom:
+        raise ValueError(f"Expected variable chrom, found: {chrom}")
+    if not start:
+        raise ValueError(f"Expected variable start, found: {start}")
+    if not end:
+        raise ValueError(f"Expected variable end, found: {end}")
+
 
     db = app.config["GENS_DB"]
     chrom_data = get_chromosome_size(db, chrom, genome_build)
@@ -233,6 +246,9 @@ def set_region_values(zoom_level: ZoomLevel, region: GenomicRegion, x_ampl):
     start_pos = region.start
     end_pos = region.end
 
+    if not start_pos or not end_pos:
+        raise ValueError(f"Expected start_pos and end_pos, found: {start_pos} {end_pos}")
+
     # Set resolution for overview graph
     if request.args.get("overview", False):
         zoom_level = ZoomLevel.O
@@ -258,7 +274,7 @@ def set_region_values(zoom_level: ZoomLevel, region: GenomicRegion, x_ampl):
 
 
 def get_cov(
-    req,
+    req: REQUEST,
     x_ampl: float,
     json_data: dict[str, Any] | None = None,
     cov_fh: TabixFile | None = None,
@@ -268,7 +284,11 @@ def get_cov(
     db = app.config["GENS_DB"]
     graph = set_graph_values(req)
     # parse region
-    zoom_level, region = parse_region_str(req.region, req.genome_build)
+    parse_results = parse_region_str(req.region, req.genome_build)
+    if not parse_results:
+        raise ValueError("Parsing in parse_region_str failed")
+
+    zoom_level, region = parse_results
     if not region:
         raise RegionParserException("No parsed region")
 
@@ -293,6 +313,12 @@ def get_cov(
             new_end_pos, get_chromosome_size(db, region.chrom, req.genome_build).size
         )
         start = max(new_start_pos, 0)
+
+        if not cov_fh:
+            raise ValueError(f"Expected coverage file cov_fh, but found: {cov_fh}")
+
+        if not baf_fh:
+            raise ValueError(f"Expected BAF file baf_fh, but found: {baf_fh}")
 
         # Load BAF and Log2 data from tabix files
         log2_list = tabix_query(

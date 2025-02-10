@@ -31,7 +31,7 @@ from gens.models.genomic import (
 LOG = logging.getLogger(__name__)
 
 
-def get_overview_chrom_dim(x_pos, y_pos, plot_width, genome_build) -> dict[str, Any]:
+def get_overview_chrom_dim(x_pos: int, y_pos: int, plot_width: int, genome_build: GenomeBuild) -> dict[str, Any]:
     """
     Returns the dimensions of all chromosome graphs in screen coordinates
     for drawing the chromosomes correctly in the overview graph

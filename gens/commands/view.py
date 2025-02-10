@@ -2,6 +2,7 @@
 
 import logging
 from itertools import groupby
+from typing import Any, Iterable
 
 import click
 from flask import current_app as app
@@ -26,10 +27,12 @@ def samples(summary: bool):
     db = app.config["GENS_DB"]
     # print samples to terminal
     samples_in_db, _ = get_samples(db)
+    sample_tbl: Iterable[Any]
+    columns: Iterable[Any]
     if summary:  # count number of samples per genome build
         columns = ("Genome build", "N samples")
         sample_tbl = (
-            (gr, len(1 for _ in vals))
+            (gr, len(list(1 for _ in vals)))
             for gr, vals in groupby(samples_in_db, key=lambda x: x.genome_build)
         )
     else:  # show all samples

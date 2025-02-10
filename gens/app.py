@@ -7,8 +7,8 @@ from logging.config import dictConfig
 
 import connexion
 from flask import redirect, request, url_for
-from flask_compress import Compress
-from flask_login import current_user
+from flask_compress import Compress # type: ignore
+from flask_login import current_user # type: ignore
 
 from .blueprints import gens_bp, home_bp, login_bp
 from .cache import cache

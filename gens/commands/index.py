@@ -5,7 +5,6 @@ import logging
 import click
 from flask import current_app
 from flask.cli import with_appcontext
-from pymongo import MongoClient
 
 from gens.db import create_indexes, update_indexes
 
@@ -23,7 +22,7 @@ LOG = logging.getLogger(__name__)
 @with_appcontext
 def index(build: bool, update: bool):
     """Create indexes for the database."""
-    db: MongoClient = current_app.config["GENS_DB"]
+    db = current_app.config["GENS_DB"]
 
     if update:
         n_updated = update_indexes(db)

@@ -19,16 +19,16 @@ class Settings(BaseSettings):
     """Gens settings."""
 
     gens_db: MongoDsn = Field(
-        "mongodb://mongodb:27017/gens", description="Connection to Gens mongo database."
+        MongoDsn("mongodb://mongodb:27017/gens"), description="Connection to Gens mongo database."
     )
 
     # For scout integration
     scout_db: MongoDsn = Field(
-        "mongodb://mongodb:27017/scout",
+        MongoDsn("mongodb://mongodb:27017/scout"),
         description="Connection to Gens mongo database.",
     )
     scout_url: HttpUrl = Field(
-        "http://localhost:8000", description="Base URL to Scout."
+        HttpUrl("http://localhost:8000"), description="Base URL to Scout."
     )
     gens_dbname: str = "gens"
     scout_dbname: str = "scout"
