@@ -46,7 +46,7 @@ class ParserError(Exception):
 def parse_bed(file):
     """Parse bed file."""
     with open(file, encoding='utf-8') as bed:
-        bed_reader = csv.DictReader(bed, delimiter="\t") if file.peek(1)[:1] == "#" else csv.DictReader(bed, STANDARD_BED_COLUMNS, delimiter="\t")
+        bed_reader = csv.DictReader(bed, delimiter="\t") if csv.Sniffer().has_header(bed) else csv.DictReader(bed, STANDARD_BED_COLUMNS, delimiter="\t")
 
         # Load in annotations
         for line in bed_reader:
