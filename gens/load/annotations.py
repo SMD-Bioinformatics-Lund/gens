@@ -10,14 +10,15 @@ from gens.db import ANNOTATIONS_COLLECTION
 
 LOG = logging.getLogger(__name__)
 FIELD_TRANSLATIONS = {
-    "chromosome": "sequence",
+    "sequence": "chrom",
+    "chromosome": "chrom",
     "position": "start",
     "stop": "end",
     "chromstart": "start",
     "chromend": "end",
     "itemrgb": "color",
 }
-CORE_FIELDS = ("sequence", "start", "end", "name", "strand", "color", "score")
+CORE_FIELDS = ("chrom", "start", "end", "name", "strand", "color", "score")
 AED_ENTRY = re.compile(r"[.+:]?(\w+)\(\w+:(\w+)\)", re.I)
 
 DEFAULT_COLOR = "grey"
@@ -35,7 +36,7 @@ def parse_bed(file):
         # Load in annotations
         for line in bed_reader:
             # skip comment lines
-            if line['sequence'].startswith('#'):
+            if next(iter(line.values())).startswith('#'):
                 continue
             yield line
 
