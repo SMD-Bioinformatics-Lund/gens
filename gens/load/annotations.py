@@ -47,7 +47,7 @@ def parse_bed(file):
     """Parse bed file."""
     with open(file, encoding='utf-8') as bed:
         header_detected = csv.Sniffer().has_header(bed.read(1024))
-        file.seek(0)
+        bed.seek(0)
         bed_reader = csv.DictReader(bed, delimiter="\t") if header_detected else csv.DictReader(bed, STANDARD_BED_COLUMNS, delimiter="\t")
 
         # Load in annotations
