@@ -69,7 +69,6 @@ def parse_annotation_entry(entry, genome_build, annotation_name):
         if name in FIELD_TRANSLATIONS:
             name = FIELD_TRANSLATIONS[name]
         if name in CORE_FIELDS:
-            name = "chrom" if name == "sequence" else name  # for compatibility
             try:
                 annotation[name] = format_data(name, value)
             except ValueError as err:
@@ -124,7 +123,7 @@ def set_missing_fields(annotation, name):
             annotation[field_name] = DEFAULT_COLOR
         elif field_name == "score":
             annotation[field_name] = "None"
-        elif field_name == "sequence" or field_name == "strand":
+        elif field_name == "chrom" or field_name == "strand":
             pass
         else:
             LOG.warning(
