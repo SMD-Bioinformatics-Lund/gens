@@ -132,12 +132,12 @@ def annotations(file, genome_build):
                 continue
 
         # Remove existing annotations in database
-        LOG.info(f"Remove old entry in the database")
+        LOG.info("Removing old entry from the database")
         db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
         # add the annotations
-        LOG.info(f"Load annoatations in the database")
+        LOG.info("Loading annotations into the database")
         db[ANNOTATIONS_COLLECTION].insert_many(annotation_obj)
-        LOG.info("Update height order")
+        LOG.info("Updating height order")
         # update the height order of annotations in the database
         update_height_order(db, annotation_name)
         register_data_update(ANNOTATIONS_COLLECTION, name=annotation_name)
