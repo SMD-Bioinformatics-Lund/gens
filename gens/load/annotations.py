@@ -14,7 +14,8 @@ FIELD_TRANSLATIONS = {
     "position": "start",
     "stop": "end",
     "chromstart": "start",
-    "chromend": "end"
+    "chromend": "end",
+    "itemrgb": "color",
 }
 CORE_FIELDS = ("sequence", "start", "end", "name", "strand", "color", "score")
 AED_ENTRY = re.compile(r"[.+:]?(\w+)\(\w+:(\w+)\)", re.I)
@@ -29,7 +30,7 @@ class ParserError(Exception):
 def parse_bed(file):
     """Parse bed file."""
     with open(file, encoding='utf-8') as bed:
-        bed_reader = csv.DictReader(bed, fieldnames=['sequence', 'start', 'end', 'name', 'score', 'strand', 'thickStart', 'thickEnd', 'color', 'block_count', 'block_sizes', 'block_starts'], delimiter="\t")
+        bed_reader = csv.DictReader(bed, delimiter="\t")
 
         # Load in annotations
         for line in bed_reader:
