@@ -21,6 +21,21 @@ FIELD_TRANSLATIONS = {
 CORE_FIELDS = ("chrom", "start", "end", "name", "strand", "color", "score")
 AED_ENTRY = re.compile(r"[.+:]?(\w+)\(\w+:(\w+)\)", re.I)
 
+STANDARD_BED_COLUMNS = (
+    "chrom",
+    "chromStart",
+    "chromEnd",
+    "name",
+    "score",
+    "strand",
+    "thickStart",
+    "thickEnd",
+    "itemRgb",
+    "blockCount",
+    "blockSizes",
+    "blockStarts",
+)
+
 DEFAULT_COLOR = "grey"
 
 
@@ -31,7 +46,7 @@ class ParserError(Exception):
 def parse_bed(file):
     """Parse bed file."""
     with open(file, encoding='utf-8') as bed:
-        bed_reader = csv.DictReader(bed, delimiter="\t")
+        bed_reader = csv.DictReader(bed, delimiter="\t") if file.peek(1)[:1] == "#" else csv.DictReader(bed, STANDARD_BED_COLUMNS, delimiter="\t")
 
         # Load in annotations
         for line in bed_reader:
