@@ -1,0 +1,23 @@
+# run dev instance
+# $ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+services:
+  mongodb:
+    volumes:
+      - ./volumes/mongodb/data:/data/db
+  gens:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      network: host
+    networks:
+      - gens-net
+    depends_on:
+      - mongodb
+    environment:
+      - FLASK_ENV=development
+    ports:
+      - 8080:5000
+    volumes:
+      - ./dump:/home/worker/dump
+      - ./gens:/home/worker/gens
+      - ./utils:/home/worker/utils

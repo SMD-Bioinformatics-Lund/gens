@@ -66,7 +66,11 @@ INDEXES = {
             [("sample_id", ASCENDING), ("genome_build", ASCENDING)],
             name="sample__sample_id_genome_build",
             background=True,
-            unique=True,
+        ),
+        IndexModel(
+            [("case_id", ASCENDING), ("genome_build", ASCENDING)],
+            name="case__case_id_genome_build",
+            background=True,
         ),
         IndexModel(
             [("sample_id", ASCENDING), ("case_id", ASCENDING), ("genome_build", ASCENDING)],
@@ -113,13 +117,14 @@ def create_index(db, collection_name):
 
 def create_indexes(db):
     """Create indexes for Gens db."""
+    LOG.info("Indexing the gens database.")
     for collection_name in INDEXES:
         create_index(db, collection_name)
 
 
 def update_indexes(db):
     """Add missing indexes to the database."""
-    LOG.info("Updating indexes.")
+    LOG.info("Updating gens database indexes.")
     n_updated = 0
     for collection_name, indexes in INDEXES.items():
         existing_indexes = get_indexes(db, collection_name)
@@ -129,5 +134,5 @@ def update_indexes(db):
                 LOG.info(f"Creating index : {index_name}")
                 db[collection_name].create_indexes([index])
                 n_updated += 1
-    LOG.info(f"Updated {n_updated} indexes to the database")
+    LOG.info("Updated %d indexes to the database", n_updated)
     return n_updated

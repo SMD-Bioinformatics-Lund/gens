@@ -4,7 +4,17 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
-## [Unreleased]
+## 3.0.1
+### Changed
+ - Added files for setting up development and deployment-like instances.
+ - Throw an error when trying to open a sample without providing a case id.
+### Fixed
+ - Fixed issue that prevented parsing of bed files.
+ - `gens index` command now respects the answer of the confirmation prompt.
+ - Fixed logo path in the navbar
+ - Index for case_id and no longer unique requirement for sample_id in index
+
+## 3.0.0 - Merging Solnas and Lunds changes
 ### Added
  - `--force` flag to `gens loads sample` for overwriting any existing sample in case of key conflict.
  - `--force` flag prints a warning to stderr when overwriting an existing sample.
@@ -16,6 +26,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Incorrect total sample count on home page.
  - Some typos and documentation.
  - Labels often not being visible on larger variants.
+
 ### Merged for Solna from Lund 2.1.2
 #### Changed
  - Changed cached method from simple to file system as it would be thread safe
@@ -24,7 +35,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Fixed max arg error when searching for some genes
  - Fixed bug that prevented updating annotation tracks
 
-## [2.3]
+## [2.3 (Solna)]
 ### Added
  - Link out to Scout: introduce config variable for base URL
  - Link out to Scout: case links on home sample list
@@ -35,7 +46,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Error image background static path
  - GitHub action DockerHub push on release
 
-## [2.2]
+## [2.2 (Solna)]
 ### Added
  - Document track processing and loading
  - OAuth authentication
@@ -43,9 +54,9 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Use sample id instead of display name for variant retrieval
  - Hide balanced variants
  - Keyboard pan speed increased
- - Don't shrink pan window when attemting to pan over start
+ - Don't shrink pan window when attempting to pan over start
 
-## [2.1.1b]
+## [2.1.1b (Solna)]
 ### Added
 ### Changed
  - Changes the main view's page title to be `sample_name` and adds `sample_name` and `case_id` to the header title
@@ -61,7 +72,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Fixed max arg error when searching for some genes 
  - Fixed bug that prevented updating annotation tracks
 
-## [2.1.1]
+## [2.1.1 (Solna)]
 ### Added
 ### Changed
  - Updated flask and pinned connexion to v2
@@ -71,6 +82,25 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Use sample id as individual id to link out from Gens home sample list
  - Some fixes from MHKC CG-Lund, e.g. status codes and a JSON error
  - Removes some leading `/` that were breaking links
+ - Increased contrast of region selector
+ - Chromosome bands are displayed properly
+
+## [2.1.2 (Lund)]
+### Added
+### Changed
+ - Changed cached method from simple to file system as it would be thread safe
+
+### Fixed
+ - Fixed cache issue that could result in chromosome information not being updated
+ - Fixed max arg error when searching for some genes
+
+## [2.1.1 (Lund)]
+### Added
+### Changed
+ - Updated flask and pinned connexion to v2
+ - Updated node version of github action to 17.x
+### Fixed
+ - Fixed annotation tracks being hidden behind other elements
  - Increased contrast of region selector
  - Chromosome bands are displayed properly
 

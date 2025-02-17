@@ -117,32 +117,27 @@ def annotations(file, genome_build):
         LOG.info(f"Processing {annot_file}")
         # base the annotation name on the filename
         annotation_name = annot_file.name[: -len(annot_file.suffix)]
-        try:
-            parser = parse_annotation_file(
-                annot_file, genome_build, file_format=annot_file.suffix[1:]
-            )
-            annotation_obj = []
-            for entry in parser:
-                try:
-                    entry_obj = parse_annotation_entry(
-                        entry, genome_build, annotation_name
-                    )
-                    annotation_obj.append(entry_obj)
-                except ParserError as err:
-                    LOG.warning(str(err))
-                    continue
-
-        except Exception as err:
-            LOG.error(f"{str(err)}")
-            raise click.UsageError(str(err))
+        parser = parse_annotation_file(
+            annot_file, file_format=annot_file.suffix[1:]
+        )
+        annotation_obj = []
+        for entry in parser:
+            try:
+                entry_obj = parse_annotation_entry(
+                    entry, genome_build, annotation_name
+                )
+                annotation_obj.append(entry_obj)
+            except ParserError as err:
+                LOG.warning(str(err))
+                continue
 
         # Remove existing annotations in database
-        LOG.info(f"Remove old entry in the database")
+        LOG.info("Removing old entry from the database")
         db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
         # add the annotations
-        LOG.info(f"Load annoatations in the database")
+        LOG.info("Loading annotations into the database")
         db[ANNOTATIONS_COLLECTION].insert_many(annotation_obj)
-        LOG.info("Update height order")
+        LOG.info("Updating height order")
         # update the height order of annotations in the database
         update_height_order(db, annotation_name)
         register_data_update(ANNOTATIONS_COLLECTION, name=annotation_name)

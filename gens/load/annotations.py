@@ -10,14 +10,31 @@ from gens.db import ANNOTATIONS_COLLECTION
 
 LOG = logging.getLogger(__name__)
 FIELD_TRANSLATIONS = {
-    "chromosome": "sequence",
+    "sequence": "chrom",
+    "chromosome": "chrom",
     "position": "start",
     "stop": "end",
     "chromstart": "start",
-    "chromend": "end"
+    "chromend": "end",
+    "itemrgb": "color",
 }
-CORE_FIELDS = ("sequence", "start", "end", "name", "strand", "color", "score")
+CORE_FIELDS = ("chrom", "start", "end", "name", "strand", "color", "score")
 AED_ENTRY = re.compile(r"[.+:]?(\w+)\(\w+:(\w+)\)", re.I)
+
+STANDARD_BED_COLUMNS = (
+    "chrom",
+    "chromStart",
+    "chromEnd",
+    "name",
+    "score",
+    "strand",
+    "thickStart",
+    "thickEnd",
+    "itemRgb",
+    "blockCount",
+    "blockSizes",
+    "blockStarts",
+)
 
 DEFAULT_COLOR = "grey"
 
@@ -26,13 +43,18 @@ class ParserError(Exception):
     pass
 
 
-def parse_bed(file, genome_build):
+def parse_bed(file):
     """Parse bed file."""
-    with open(file) as bed:
-        bed_reader = csv.DictReader(bed, delimiter="\t")
+    with open(file, encoding='utf-8') as bed:
+        header_detected = csv.Sniffer().has_header(bed.read(1024))
+        bed.seek(0)
+        bed_reader = csv.DictReader(bed, delimiter="\t") if header_detected else csv.DictReader(bed, STANDARD_BED_COLUMNS, delimiter="\t")
 
         # Load in annotations
         for line in bed_reader:
+            # skip comment lines
+            if next(iter(line.values())).startswith('#'):
+                continue
             yield line
 
 
@@ -64,7 +86,6 @@ def parse_annotation_entry(entry, genome_build, annotation_name):
         if name in FIELD_TRANSLATIONS:
             name = FIELD_TRANSLATIONS[name]
         if name in CORE_FIELDS:
-            name = "chrom" if name == "sequence" else name  # for compatibility
             try:
                 annotation[name] = format_data(name, value)
             except ValueError as err:
@@ -119,7 +140,7 @@ def set_missing_fields(annotation, name):
             annotation[field_name] = DEFAULT_COLOR
         elif field_name == "score":
             annotation[field_name] = "None"
-        elif field_name == "sequence" or field_name == "strand":
+        elif field_name == "chrom" or field_name == "strand":
             pass
         else:
             LOG.warning(
@@ -163,9 +184,9 @@ def update_height_order(db, name):
                     height_tracker += [-1] * 100
 
 
-def parse_annotation_file(file, genome_build, file_format):
+def parse_annotation_file(file, file_format):
     """Parse an annotation file in bed or aed format."""
     if file_format == "bed":
-        return parse_bed(file, genome_build)
+        return parse_bed(file)
     if file_format == "aed":
         return parse_aed(file)

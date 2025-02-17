@@ -227,7 +227,7 @@ export class BaseAnnotationTrack {
             sample_id: this.sampleName,
             region: `${chrom}:1-None`,
             genome_build: this.genomeBuild,
-            collapsed: false, // allways get all height orders
+            collapsed: false, // always get all height orders
           },
           this.additionalQueryParams,
         ), // parameters specific to track type
