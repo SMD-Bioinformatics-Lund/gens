@@ -213,12 +213,9 @@ def get_variant_data(case_id, sample_id, variant_category, **optional_kwargs):
     )
 
 
-def get_multiple_coverages() -> dict[str, Any]:
+def get_multiple_coverages() -> dict[str, Any] | tuple[Any, int]:
     """Read default Log2 ratio and BAF values for overview graph."""
-    if connexion.request.is_json:
-        data = QueryChromosomeCoverage(**connexion.request.get_json())
-    else:
-        return data, 404
+    data = QueryChromosomeCoverage(**connexion.request.get_json())
     LOG.info("Got request for all chromosome coverages: %s", data.sample_id)
 
     # read sample information
