@@ -10,3 +10,5 @@ pylint
 black
 isort
 mypy
+types-requests
+types-tabulate
