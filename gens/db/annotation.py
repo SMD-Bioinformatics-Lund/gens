@@ -110,13 +110,21 @@ def query_records_in_region(
     genome_build: GenomeBuild,
     height_order: int | None = None,
     **kwargs,
-) -> Any:
+) -> list[AnnotationRecord] | list[TranscriptRecord]:
     """Query the gens database for transcript information."""
+
+    region_start = region.start
+    region_end = region.end
+
+    # FIXME: Not necessary after adding a region type known to have start and end
+    if not region_start or not region_end:
+        raise ValueError(f"Expected region.start and region.end, found start: {region_start} end: {region_end}")
+
     # build base query
     query = {
-        "chrom": region.chromosome.value,
+        "chrom": region.chromosome,
         "genome_build": genome_build.value,
-        **_make_query_region(region.start, region.end),
+        **_make_query_region(region_start, region_end),
         **kwargs,  # add optional search params
     }
     # build sort order
@@ -130,9 +138,8 @@ def query_records_in_region(
         query, {"_id": False}, sort=sort_order
     )
     if record_type == "annotations":
-        result = [AnnotationRecord(**doc) for doc in cursor]
+        return [AnnotationRecord(**doc) for doc in cursor]
     elif record_type == "transcripts":
-        result = [TranscriptRecord(**doc) for doc in cursor]
+        return [TranscriptRecord(**doc) for doc in cursor]
     else:
         raise ValueError(f"unknown record type {record_type}")
-    return result

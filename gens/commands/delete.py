@@ -4,7 +4,6 @@ import logging
 import click
 from flask import current_app as app
 from flask.cli import with_appcontext
-from pymongo import MongoClient
 
 from gens.db import SAMPLES_COLLECTION, create_index, delete_sample, get_indexes
 from gens.models.genomic import GenomeBuild
@@ -36,7 +35,7 @@ def delete():
 @with_appcontext
 def sample(sample_id: str, genome_build: int, case_id: str):
     """Remove a sample from Gens database."""
-    db: MongoClient = app.config["GENS_DB"]
+    db = app.config["GENS_DB"]
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
