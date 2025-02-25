@@ -75,12 +75,10 @@ To display transcripts these need to be loaded into the database.
 
 ``` bash
 # download reference files
-curl --silent --output ./Homo_sapiens.GRCh38.101.gtf.gz ftp://ftp.ensembl.org/pub/release-101/gtf/homo_sapiens/Homo_sapiens.GRCh38.101.gtf.gz
-gzip -df Homo_sapiens.GRCh38.101.gtf.gz
-curl --silent --output ./MANE.GRCh38.v0.92.summary.txt.gz ftp://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_0.92/MANE.GRCh38.v0.92.summary.txt.gz
-gzip -df MANE.GRCh38.v0.92.summary.txt.gz
+curl --silent --output ./Homo_sapiens.GRCh38.113.gtf.gz https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.113.gtf.gz
+curl --silent --output ./MANE.GRCh38.v1.4.summary.txt.gz https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
 # load files into database
-gens load transcripts --file Homo_sapiens.GRCh38.101.gtf --mane MANE.GRCh38.v0.92.summary.txt -b 38
+gens load transcripts --file Homo_sapiens.GRCh38.113.gtf.gz --mane MANE.GRCh38.v1.4.summary.txt.gz -b 38
 ```
 
 Annotated regions can be loaded into the database in either `bed` or `aed` format.

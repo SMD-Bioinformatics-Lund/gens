@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, TextIO
 
 import click
-import io
 import gzip
 from flask import current_app as app
 from flask.cli import with_appcontext
