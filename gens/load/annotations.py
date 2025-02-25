@@ -14,12 +14,15 @@ from gens.models.annotation import AnnotationRecord
 from gens.models.genomic import Chromosome, GenomeBuild
 
 LOG = logging.getLogger(__name__)
-FIELD_TRANSLATIONS = {
-    "chromosome": "sequence",
+FIELD_TRANSLATIONS: dict[str, str] = {
+    "chromosome": "chrom",
+    "sequence": "chrom",
     "position": "start",
     "stop": "end",
     "chromstart": "start",
+    "chrom_start": "start",
     "chromend": "end",
+    "chrom_end": "end",
 }
 CORE_FIELDS = ("sequence", "start", "end", "name", "strand", "color", "score")
 AED_ENTRY = re.compile(r"[.+:]?(\w+)\(\w+:(\w+)\)", re.I)
@@ -31,38 +34,50 @@ class ParserError(Exception):
     """Parser errors."""
 
 
-def parse_bed(file: Path) -> Iterator[dict[str, str]]:
-    """Parse bed file."""
+def	read_bed(file: Path, header: bool = False) -> Iterator[dict[str, str]]:
+    """
+    Read bed file. If header == True is the first data row used as header instead.
+    """
     with open(file, encoding="utf-8") as bed:
-        bed_reader = csv.DictReader(
-            bed,
-            fieldnames=[
-                "sequence",
-                "start",
-                "end",
-                "name",
-                "score",
-                "strand",
-                "thickStart",
-                "thickEnd",
-                "color",
-                "block_count",
-                "block_sizes",
-                "block_starts",
-            ],
-            delimiter="\t",
-        )
-
+        field_names = [
+            "chrom",
+            "chrom_start",
+            "chrom_end",
+            "name",
+            "score",
+            "strand",
+            "thick_start",
+            "thick_end",
+            "item_rgb",
+            "block_count",
+            "block_sizes",
+            "block_starts",
+        ]
+        bed_reader = csv.reader(bed, delimiter="\t")
+        colnames: list[str] | None = None
         # Load in annotations
         for line in bed_reader:
-            # skip comment lines
-            if line["sequence"].startswith("#"):
+            # skip comments, lines starting with # sign
+            if line[0].startswith("#"):
                 continue
-            yield line
+            # define the header
+            if colnames is None:
+                colnames = (
+                    [col.lower() for col in line] if header 
+                    else field_names[:len(line)]
+                )
+                continue
+
+            if len(line) != len(colnames):
+                raise ValueError((
+                    f"Too few columns. Expected {len(colnames)}, "
+                    f"got {len(line)}; line: {line}"
+                ))
+            yield dict(zip(colnames, line))
 
 
-def parse_aed(file: Path) -> Iterator[dict[str, str]]:
-    """Parse aed file."""
+def read_aed(file: Path) -> Iterator[dict[str, str]]:
+    """Read aed file."""
     header: dict[str, str] = {}
     with open(file, encoding='utf-8') as aed:
         aed_reader = csv.reader(aed, delimiter="\t")
@@ -86,59 +101,73 @@ def parse_aed(file: Path) -> Iterator[dict[str, str]]:
             yield dict(zip(header, line))
 
 
-def parse_annotation_entry(
+def	parse_annotation_entry(
     entry: dict[str, str], genome_build: GenomeBuild, annotation_name: str
 ) -> AnnotationRecord:
     """Parse a bed or aed entry"""
-    annotation: dict[str, str | int] = {}
+    annotation: dict[str, str | int | None] = {}
     # parse entry and format the values
-    for name, value in entry.items():
-        name = name.strip("#").lower()
-        if name in FIELD_TRANSLATIONS:
-            name = FIELD_TRANSLATIONS[name]
-        if name in CORE_FIELDS:
-            name = "chrom" if name == "sequence" else name  # for compatibility
-            try:
-                annotation[name] = format_data(name, value)
-            except ValueError as err:
-                LOG.debug("Bad line: %s", entry)
-                raise ParserError(str(err)) from err
+    for colname, value in entry.items():
+        # translate name, default to existing name if not in tr table
+        new_colname = FIELD_TRANSLATIONS.get(colname, colname)
+
+        # cast values into expected type
+        try:
+            annotation[new_colname] = format_data(new_colname, value)
+        except ValueError as err:
+            LOG.debug("Bad line: %s", entry)
+            raise ParserError(str(err)) from err
 
     # ensure that coordinates are in correct order
     annotation["start"], annotation["end"] = sorted(
         [annotation["end"], annotation["start"]]
     )
-    # set missing fields to default values
-    set_missing_fields(annotation, annotation_name)
-    # set additional values
-    return AnnotationRecord(
-        source=annotation_name,
-        genome_build=genome_build,
-        **annotation,
-    )
+    try:
+        return AnnotationRecord(
+            source=annotation_name,
+            genome_build=genome_build,
+            **annotation,
+        )
+    except Exception as err:
+        print(err)
+        print(annotation)
 
 
 def format_data(name: str, value: str) -> str | int | None:
     """Formats the data depending on title"""
+    new_value = None if value == '.' else value
     if name == "color":
-        if not value:
+        rgba_match = re.match(r"(\d+) (\d+) (\d+) / (\d+)%", new_value)
+        rgb_match = re.match(r"(\d+) (\d+) (\d+)", new_value)
+        if not new_value:
             return DEFAULT_COLOR
-        elif value.startswith("rgb("):
-            return value
+        elif new_value.startswith("rgb("):
+            return new_value
+        elif rgba_match:
+            return tuple([
+                int(rgba_match.group(1)),
+                int(rgba_match.group(2)),
+                int(rgba_match.group(3)),
+                int(rgba_match.group(4)) / 100,
+            ])
+        elif rgb_match:
+            return tuple([int(gr) for gr in rgb_match.groups()])
         else:
-            return f"rgb({value})"
+            return f"rgb({new_value})"
     elif name == "chrom":
-        if not value:
+        if not new_value:
             raise ValueError(f"field {name} must exist")
-        return value.strip("chr")
+        return new_value.strip("chr")
     elif name == "start" or name == "end":
-        if not value:
+        if not new_value:
             raise ValueError(f"field {name} must exist")
-        return int(value)
+        return int(new_value)
     elif name == "score":
-        return int(value) if value else None
+        return int(new_value) if new_value else None
+    elif name == 'strand':
+        return '.' if new_value is None else new_value
     else:
-        return value
+        return new_value
 
 
 def set_missing_fields(annotation: dict[str, str | int | None], name: str):
@@ -198,11 +227,11 @@ def update_height_order(db: Database, name: str):
                     height_tracker += [-1] * 100
 
 
-def parse_annotation_file(file: Path, file_format: str) -> Iterator[dict[str, str]]:
+def read_annotation_file(file: Path, file_format: str, has_header: bool = False) -> Iterator[dict[str, str]]:
     """Parse an annotation file in bed or aed format."""
     if file_format == "bed":
-        return parse_bed(file)
+        return read_bed(file, has_header)
     if file_format == "aed":
-        return parse_aed(file)
+        return read_aed(file)
 
     raise ValueError(f"Unknown file format: {file_format}")

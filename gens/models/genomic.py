@@ -11,7 +11,7 @@ from .base import RWModel
 REGION_PATTERN = re.compile(r"^(.+):(.+)-(.+)$")
 
 
-class DnaStrand(Enum):  # TODO migrate to +/-
+class DnaStrand(str, Enum):  # TODO migrate to +/-
     """Valid DNA strand names.
 
     Names compliant with BED specification v1.0

@@ -18,18 +18,19 @@ from gens.db import (
     get_indexes,
     register_data_update,
     store_sample,
+    get_db_connection
 )
 from gens.load import (
-    ParserError,
     build_chromosomes_obj,
     build_transcripts,
     get_assembly_info,
     parse_annotation_entry,
-    parse_annotation_file,
+    read_annotation_file,
     update_height_order,
 )
 from gens.models.annotation import AnnotationRecord
 from gens.models.genomic import GenomeBuild
+from gens.config import settings
 
 LOG = logging.getLogger(__name__)
 
@@ -139,10 +140,16 @@ def sample(
     required=True,
     help="Genome build",
 )
-@with_appcontext
-def annotations(file: str, genome_build: GenomeBuild):
+@click.option(
+    "-h",
+    "--header",
+    "has_header",
+    is_flag=True,
+    help="If bed file contains a header",
+)
+def annotations(file: str, genome_build: GenomeBuild, has_header: bool):
     """Load annotations from file into the database."""
-    db = app.config["GENS_DB"]
+    db = get_db_connection(settings.gens_db, db_name=settings.gens_dbname)
     # if collection is not indexed, create index
     if len(get_indexes(db, ANNOTATIONS_COLLECTION)) == 0:
         create_index(db, ANNOTATIONS_COLLECTION)
@@ -157,16 +164,13 @@ def annotations(file: str, genome_build: GenomeBuild):
         LOG.info("Processing %s", annot_file)
         # base the annotation name on the filename
         annotation_name = annot_file.name[: -len(annot_file.suffix)]
-        parser = parse_annotation_file(annot_file, file_format=annot_file.suffix[1:])
         parsed_annotations: list[AnnotationRecord] = []
-        for entry in parser:
-            try:
-                entry_obj = parse_annotation_entry(entry, genome_build, annotation_name)
-                parsed_annotations.append(entry_obj)
-            except ParserError as err:
-                LOG.warning(str(err))
-                continue
+        for entry in read_annotation_file(annot_file, annot_file.suffix[1:], has_header):
+            entry_obj = parse_annotation_entry(entry, genome_build, annotation_name)
+            parsed_annotations.append(entry_obj)
 
+        if len(parsed_annotations) == 0:
+            raise ValueError("Something went wrong parsing the annotaions file.")
         # Remove existing annotations in database
         LOG.info("Remove old entry in the database")
         db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
@@ -178,7 +182,7 @@ def annotations(file: str, genome_build: GenomeBuild):
         LOG.info("Update height order")
         # update the height order of annotations in the database
         update_height_order(db, annotation_name)
-        register_data_update(ANNOTATIONS_COLLECTION, name=annotation_name)
+        register_data_update(db=db, track_type=ANNOTATIONS_COLLECTION, name=annotation_name)
     click.secho("Finished loading annotations ✔", fg="green")
 
 
