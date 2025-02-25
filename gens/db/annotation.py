@@ -10,6 +10,7 @@ from flask import current_app as app
 
 from gens.models.annotation import AnnotationRecord, TranscriptRecord
 from gens.models.genomic import GenomeBuild, GenomicRegion, VariantCategory
+from gens.utils import get_timestamp
 
 LOG = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ def register_data_update(track_type: str, name: str | None = None):
     LOG.debug("Creating timestamp for %s", track_type)
     track = {"track": track_type, "name": name}
     db.delete_many(track)  # remove old track
-    db.insert_one({**track, "timestamp": datetime.datetime.now()})
+    db.insert_one({**track, "timestamp": get_timestamp()})
 
 
 def get_timestamps(track_type: str = "all"):
