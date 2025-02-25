@@ -12,6 +12,7 @@ from ..models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
+
 class TranscriptEntry(TypedDict):
     chrom: str
     genome_build: int
@@ -40,7 +41,7 @@ def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: Geno
     with click.progressbar(
         transc_file, length=n_lines, label="Processing transcripts"
     ) as progressbar:
-        
+
         skipped_no_gene_name = 0
 
         for transc, attribs in _parse_transcript_gtf(progressbar):
@@ -76,8 +77,10 @@ def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: Geno
                             **specific_params,
                         }
                     )
-    
-    LOG.info(f"{skipped_no_gene_name} transcripts skipped due to missing gene symbol ('gene_name' in the loaded GTF)")
+
+    LOG.info(
+        f"{skipped_no_gene_name} transcripts skipped due to missing gene symbol ('gene_name' in the loaded GTF)"
+    )
 
     LOG.info("Assign height order values and sort features")
     for transcripts in annotated_mane_transc.values():
@@ -97,7 +100,7 @@ def _make_transcript_entry(
     attribs: dict[str, str],
     genome_build: GenomeBuild,
 ) -> TranscriptEntry:
-    
+
     return {
         "chrom": transc["seqname"],
         "genome_build": genome_build.value,

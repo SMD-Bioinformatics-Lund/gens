@@ -25,6 +25,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Remove unused file argument for load chromomsome info CLI command
  - Fixed various issues raised by pylint
  - mypy type fixing for `mypy gens/commands/load.py`
+ - Refactor load transcripts
 
 ## 3.0.1
 
