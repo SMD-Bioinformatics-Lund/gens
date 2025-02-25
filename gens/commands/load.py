@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any, TextIO
 
 import click
+import io
+import gzip
 from flask import current_app as app
 from flask.cli import with_appcontext
 from pymongo.database import Database
@@ -48,6 +50,16 @@ class ChoiceType(click.Choice):
 
         value = super().convert(value, param, ctx)
         return next(v for v in self.enum if str(v) == value)
+
+
+def open_text_or_gzip(ctx: click.Context, param: click.Parameter, value: str) -> TextIO:
+    """Click callback to allow reading both text and gzipped files"""
+    if not value:
+        raise click.BadParameter("File path is required")
+    if value.endswith(".gz"):
+        return gzip.open(value, "rt", encoding="utf-8")
+    else:
+        return open(value, "r", encoding="utf-8")
 
 
 @click.group()
@@ -172,9 +184,7 @@ def annotations(file: str, genome_build: GenomeBuild):
         db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
         # add the annotations
         LOG.info("Load annoatations in the database")
-        db[ANNOTATIONS_COLLECTION].insert_many(
-            [annot.model_dump() for annot in parsed_annotations]
-        )
+        db[ANNOTATIONS_COLLECTION].insert_many([annot.model_dump() for annot in parsed_annotations])
         LOG.info("Update height order")
         # update the height order of annotations in the database
         update_height_order(db, annotation_name)
@@ -183,8 +193,20 @@ def annotations(file: str, genome_build: GenomeBuild):
 
 
 @load.command()
-@click.option("-f", "--file", type=click.File(), required=True, help="GTF transcript file")
-@click.option("-m", "--mane", type=click.File(), required=True, help="Mane summary file (.txt.gz-format, )")
+@click.option(
+    "-f",
+    "--file",
+    required=True,
+    help="GTF transcript file (.gtf or .gtf.gz)",
+    callback=open_text_or_gzip,
+)
+@click.option(
+    "-m",
+    "--mane",
+    required=True,
+    help="Mane summary file (.txt or .txt.gz)",
+    callback=open_text_or_gzip,
+)
 @click.option(
     "-b",
     "--genome-build",
@@ -195,6 +217,7 @@ def annotations(file: str, genome_build: GenomeBuild):
 @with_appcontext
 def transcripts(file: TextIO, mane: TextIO, genome_build: GenomeBuild):
     """Load transcripts into the database."""
+
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
     if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) == 0:
@@ -251,15 +274,10 @@ def chromosome_info(genome_build: GenomeBuild, timeout: int):
 
     # remove old entries
     res = db[CHROMSIZES_COLLECTION].delete_many({"genome_build": int(genome_build)})
-    LOG.info(
-        "Removed %d old entries with genome build: %s", 
-        res.deleted_count, genome_build
-    )
+    LOG.info("Removed %d old entries with genome build: %s", res.deleted_count, genome_build)
     # insert collection
     LOG.info("Add chromosome info to database")
-    db[CHROMSIZES_COLLECTION].insert_many(
-        [chr.model_dump() for chr in chromosomes_data]
-    )
+    db[CHROMSIZES_COLLECTION].insert_many([chr.model_dump() for chr in chromosomes_data])
     register_data_update(CHROMSIZES_COLLECTION)
     # build cytogenetic data
     click.secho("Finished updating chromosome sizes ✔", fg="green")

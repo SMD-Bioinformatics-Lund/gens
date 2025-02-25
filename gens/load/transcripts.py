@@ -12,9 +12,6 @@ from ..models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
-import pdb
-
-
 class TranscriptEntry(TypedDict):
     chrom: str
     genome_build: int
@@ -33,11 +30,9 @@ class TranscriptEntry(TypedDict):
 
 def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild):
     """Build transcript object from transcript and mane file."""
-    mane_transc = _parse_mane_transc(mane_file)
-    import sys
-    import pdb
+    mane_info = _parse_mane_transc(mane_file)
 
-    LOG.info(f"{len(mane_transc)} MANE transcripts loaded")
+    LOG.info(f"{len(mane_info)} MANE entries loaded")
 
     annotated_mane_transc: dict[str, list[Any]] = defaultdict(list)
     transc_index = {}
@@ -54,7 +49,7 @@ def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: Geno
                 raise ValueError(f"Expected an ID, found: {transcript_id}")
 
             if transc["feature"] == "transcript":
-                selected_mane: dict[str, str] = mane_transc.get(transcript_id, {})
+                selected_mane: dict[str, str] = mane_info.get(transcript_id, {})
 
                 if attribs.get("gene_name") is None:
                     skipped_no_gene_name += 1
@@ -64,8 +59,6 @@ def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: Geno
                     transcript_id, selected_mane, transc, attribs, genome_build
                 )
                 transc_index[transcript_id] = transcript_entry
-                if attribs.get("gene_name") is None:
-                    pdb.set_trace()
                 annotated_mane_transc[attribs["gene_name"]].append(transcript_entry)
             elif transc["feature"] in ["exon", "three_prime_utr", "five_prime_utr"]:
                 # add features to existing transcript
@@ -84,14 +77,12 @@ def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: Geno
                         }
                     )
     
-    LOG.info(f"{skipped_no_gene_name} transcripts skipped due to missing gene name")
+    LOG.info(f"{skipped_no_gene_name} transcripts skipped due to missing gene symbol ('gene_name' in the loaded GTF)")
 
     LOG.info("Assign height order values and sort features")
     for transcripts in annotated_mane_transc.values():
         _assign_height_order(transcripts)
         _sort_transcript_features(transcripts)
-
-    pdb.set_trace()
 
     return chain(*annotated_mane_transc.values())
 
@@ -107,7 +98,6 @@ def _make_transcript_entry(
     genome_build: GenomeBuild,
 ) -> TranscriptEntry:
     
-
     return {
         "chrom": transc["seqname"],
         "genome_build": genome_build.value,
@@ -127,17 +117,17 @@ def _make_transcript_entry(
 
 def _parse_mane_transc(mane_file: Iterable[str]) -> dict[str, dict[str, str]]:
     """Parse mane tranascript file and index on ensemble id."""
-    mane: dict[str, dict[str, str]] = {}
+    mane_info: dict[str, dict[str, str]] = {}
     LOG.info("parsing mane transcripts")
     creader = csv.DictReader(mane_file, delimiter="\t")
     for row in creader:
         ensemble_nuc = row["Ensembl_nuc"].split(".")[0]
-        mane[ensemble_nuc] = {
+        mane_info[ensemble_nuc] = {
             "hgnc_id": row["HGNC_ID"].replace("HGNC:", ""),
             "refseq_id": row["RefSeq_nuc"],
             "mane_status": row["MANE_status"],
         }
-    return mane
+    return mane_info
 
 
 def _parse_attribs(attributes_str: str) -> dict[str, str]:
@@ -166,19 +156,10 @@ def _parse_attribs(attributes_str: str) -> dict[str, str]:
 
     return attributes_dict
 
-    # FIXME: Old code - remove when above code is confirmed to be correct
-    # return dict(
-    #     [
-    #         map(lambda x: x.replace('"', ""), a.strip().split(" ", 1))
-    #         for a in attribs.split(";")
-    #         if a
-    #     ]
-    # )
-
 
 def _count_file_len(file: TextIO) -> int:
     """Count number of lines in file."""
-    n_lines = sum(1 for _line in file)
+    n_lines = sum(1 for _ in file)
     file.seek(0)  # reset file to begining
     return n_lines
 
@@ -200,9 +181,6 @@ def _parse_transcript_gtf(
         "attribute",
     ]
 
-    import pdb
-    # pdb.set_trace()
-
     target_features = ("transcript", "exon", "three_prime_utr", "five_prime_utr")
     LOG.debug("parsing transcripts")
     cfile = csv.DictReader(transc_file, COL_NAMES, delimiter=delimiter)
@@ -219,7 +197,6 @@ def _parse_transcript_gtf(
             yield row, attribs
 
 
-# FIXME: What does the height order mean?
 def _assign_height_order(transcripts: list[dict[str, Any]]):
     """Assign height order for an list or transcripts.
 
