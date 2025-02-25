@@ -118,7 +118,7 @@ def parse_annotation_entry(
     )
 
 
-def format_data(name: str, value: str) -> str | int:
+def format_data(name: str, value: str) -> str | int | None:
     """Formats the data depending on title"""
     if name == "color":
         if not value:
@@ -136,12 +136,12 @@ def format_data(name: str, value: str) -> str | int:
             raise ValueError(f"field {name} must exist")
         return int(value)
     elif name == "score":
-        return int(value) if value else ""
+        return int(value) if value else None
     else:
         return value
 
 
-def set_missing_fields(annotation: dict[str, str | int], name: str):
+def set_missing_fields(annotation: dict[str, str | int | None], name: str):
     """Sets default values to fields that are missing"""
     for field_name in CORE_FIELDS:
         if field_name in annotation:
@@ -149,10 +149,12 @@ def set_missing_fields(annotation: dict[str, str | int], name: str):
 
         if field_name == "color":
             annotation[field_name] = DEFAULT_COLOR
-        elif field_name == "score":
-            annotation[field_name] = "None"
-        elif field_name in ["sequence", "strand"]:
-            pass
+        elif field_name in "score":
+            annotation[field_name] = None
+        elif field_name in "strand":
+            annotation[field_name] = "."  # default to bed null value
+        elif field_name == "sequence":
+            continue
         else:
             LOG.warning(
                 "field %s is missing from annotation %s in file %s",

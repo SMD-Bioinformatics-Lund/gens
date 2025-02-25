@@ -15,12 +15,12 @@ class AnnotationRecord(RWModel):
     name: str
     chrom: Chromosome
     genome_build: GenomeBuild
-    score: int
     source: str
     start: PositiveInt
     end: PositiveInt
     strand: DnaStrand
     color: Color
+    score: int | None = None
 
     @field_serializer("color")
     def serialize_color(self, color: Color, _) -> tuple[int, int, int] | tuple[int, int, int, float]:
