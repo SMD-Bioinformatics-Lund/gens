@@ -1,10 +1,12 @@
 """Test cli commands."""
 
 import pytest
+import mongomock
 from pathlib import Path
 from click.testing import CliRunner
 from gens.commands.load import annotations
 
+@mongomock.patch(servers=(('mongodb', 27017),))
 @pytest.mark.parametrize('fixture_name,n_annotations,genome_build', [
     ('aed_file_path', 2, 38), 
 ])
@@ -20,5 +22,3 @@ def test_load_annotation(fixture_name: str, n_annotations: int, genome_build: in
 
     # Test that the command finished sucessfully
     assert result.exit_code == 0
-
-    # Test that the correct number of records were added to the db
