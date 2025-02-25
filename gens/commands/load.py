@@ -197,15 +197,15 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: GenomeBuild):
     """Load transcripts into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index
-    if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) > 0:
+    if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) == 0:
         create_index(db, TRANSCRIPTS_COLLECTION)
     LOG.info("Building transcript object")
     try:
-        transcript_obj = build_transcripts(file, mane, genome_build)
+        transcripts_obj = build_transcripts(file, mane, genome_build)
     except Exception as err:
         raise click.UsageError(str(err))
     LOG.info("Add transcripts to database")
-    db[TRANSCRIPTS_COLLECTION].insert_many(transcript_obj)
+    db[TRANSCRIPTS_COLLECTION].insert_many(transcripts_obj)
     register_data_update(TRANSCRIPTS_COLLECTION)
     click.secho("Finished loading transcripts ✔", fg="green")
 
