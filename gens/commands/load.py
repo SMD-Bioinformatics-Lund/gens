@@ -183,8 +183,8 @@ def annotations(file: str, genome_build: GenomeBuild):
 
 
 @load.command()
-@click.option("-f", "--file", type=click.File(), help="Transcript file")
-@click.option("-m", "--mane", type=click.File(), required=True, help="Mane file")
+@click.option("-f", "--file", type=click.File(), required=True, help="GTF transcript file")
+@click.option("-m", "--mane", type=click.File(), required=True, help="Mane summary file (.txt.gz-format, )")
 @click.option(
     "-b",
     "--genome-build",
