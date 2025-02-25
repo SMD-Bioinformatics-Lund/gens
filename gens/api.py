@@ -144,7 +144,7 @@ def search_annotation(query: str, genome_build: str, annotation_type: str):
     """Search for anntations of genes and return their position."""
     # Lookup queried element
     collection = current_app.config["GENS_DB"][annotation_type]
-    db_query = {"gene_name": re.compile("^" + re.escape(query) + "$", re.IGNORECASE)}
+    db_query: dict[str, str|re.Pattern[str]] = {"gene_name": re.compile("^" + re.escape(query) + "$", re.IGNORECASE)}
 
     if genome_build and int(genome_build) in GenomeBuild:
         db_query["genome_build"] = genome_build

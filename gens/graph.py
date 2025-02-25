@@ -201,7 +201,8 @@ def parse_region_str(
         end = chrom_data.size
 
     start = int(start)
-    end = int(end)
+    # FIXME: Resolve type issue
+    end = int(end) # type: ignore
     size = end - start
 
     if size <= 0:
