@@ -1,4 +1,4 @@
 # A bed 9 file following the BED v1 spec, https://samtools.github.io/hts-specs/BEDv1.pdf
 # chrom	start	end	name	score	strand	thickStart	thickEnd	itemRgb
-1	809860	1565798	.	.	.	.	.	0 0 255 / 90%
-1	852889	1616947	.	.	.	.	.	0 0 255 / 90%
+1	809860	1565798	.	.	.	.	.	0,0,255
+1	852889	1616947	.	.	.	.	.	0,0,255
