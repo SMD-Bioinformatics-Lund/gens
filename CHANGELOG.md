@@ -7,6 +7,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ## Unreleased
 
 ### Added
+ - Added test for the cli command `gens load annotations`.
  - Use pydantic-settings for settings validation.
  - Add linting to CI github workflow
  - Temporary HG002 quick-setup script in utils. Requires mongo-dumps currently not part of the Gens repo. Will be replaced by a general setup script ahead.
@@ -18,6 +19,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Switched from JS to TS and updated required parts of the build chain.
 
 ### Fixed
+ - Fixed parsing of AED and BED files.
  - Minor cleanup of `get-multiple-coverages` function.
  - Resolved all type errors from tsc
  - Initial type hints added to command and db modules
