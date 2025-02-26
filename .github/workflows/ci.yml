@@ -28,8 +28,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install -r requirements-dev.txt
-    - name: Run unit-tests and coveralls
-      # TODO reenable pytest tests when there are some
+    - name: Run pytest
+      run: |
+        pytest tests
+    - name: Coveralls
       run: |
         coveralls
       env: 

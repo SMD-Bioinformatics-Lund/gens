@@ -14,7 +14,7 @@ MONGO_PORT = 27017
 
 @mongomock.patch(servers=((MONGO_HOST, MONGO_PORT),))
 @pytest.mark.parametrize(
-    "fixture_name,n_annotations,genome_build",
+    "fixture_name,genome_build",
     [
         ("aed_file_path", 19),
         ("aed_file_path", 38),
