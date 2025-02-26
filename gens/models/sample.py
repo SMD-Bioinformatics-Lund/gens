@@ -29,14 +29,14 @@ class SampleInfo(RWModel, CreatedAtModel):
     coverage_file: FilePath
     overview_file: FilePath
 
-    @computed_field() # type: ignore
+    @computed_field()  # type: ignore
     @property
     def baf_index(self) -> FilePath:
         """Get path to a tabix index."""
 
         return _get_tabix_path(self.baf_file, check=True)
 
-    @computed_field() # type: ignore
+    @computed_field()  # type: ignore
     @property
     def coverage_index(self) -> FilePath:
         """Get path to a tabix index."""

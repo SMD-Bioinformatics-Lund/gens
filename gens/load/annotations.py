@@ -34,7 +34,7 @@ class ParserError(Exception):
     """Parser errors."""
 
 
-def	read_bed(file: Path, header: bool = False) -> Iterator[dict[str, str]]:
+def read_bed(file: Path, header: bool = False) -> Iterator[dict[str, str]]:
     """
     Read bed file. If header == True is the first data row used as header instead.
     """
@@ -63,23 +63,26 @@ def	read_bed(file: Path, header: bool = False) -> Iterator[dict[str, str]]:
             # define the header
             if colnames is None:
                 colnames = (
-                    [col.lower() for col in line] if header 
-                    else field_names[:len(line)]
+                    [col.lower() for col in line]
+                    if header
+                    else field_names[: len(line)]
                 )
                 continue
 
             if len(line) != len(colnames):
-                raise ValueError((
-                    f"Too few columns. Expected {len(colnames)}, "
-                    f"got {len(line)}; line: {line}"
-                ))
+                raise ValueError(
+                    (
+                        f"Too few columns. Expected {len(colnames)}, "
+                        f"got {len(line)}; line: {line}"
+                    )
+                )
             yield dict(zip(colnames, line))
 
 
 def read_aed(file: Path) -> Iterator[dict[str, str]]:
     """Read aed file."""
     header: dict[str, str] = {}
-    with open(file, encoding='utf-8') as aed:
+    with open(file, encoding="utf-8") as aed:
         aed_reader = csv.reader(aed, delimiter="\t")
 
         # Parse the aed header and get the keys and data formats
@@ -101,7 +104,7 @@ def read_aed(file: Path) -> Iterator[dict[str, str]]:
             yield dict(zip(header, line))
 
 
-def	parse_annotation_entry(
+def parse_annotation_entry(
     entry: dict[str, str], genome_build: GenomeBuild, annotation_name: str
 ) -> AnnotationRecord:
     """Parse a bed or aed entry"""
@@ -135,7 +138,7 @@ def	parse_annotation_entry(
 
 def format_data(name: str, value: str) -> str | int | None:
     """Formats the data depending on title"""
-    new_value = None if value == '.' else value
+    new_value = None if value == "." else value
     if name == "color":
         rgba_match = re.match(r"(\d+) (\d+) (\d+) / (\d+)%", new_value)
         rgb_match = re.match(r"(\d+) (\d+) (\d+)", new_value)
@@ -144,12 +147,14 @@ def format_data(name: str, value: str) -> str | int | None:
         elif new_value.startswith("rgb("):
             return new_value
         elif rgba_match:
-            return tuple([
-                int(rgba_match.group(1)),
-                int(rgba_match.group(2)),
-                int(rgba_match.group(3)),
-                int(rgba_match.group(4)) / 100,
-            ])
+            return tuple(
+                [
+                    int(rgba_match.group(1)),
+                    int(rgba_match.group(2)),
+                    int(rgba_match.group(3)),
+                    int(rgba_match.group(4)) / 100,
+                ]
+            )
         elif rgb_match:
             return tuple([int(gr) for gr in rgb_match.groups()])
         else:
@@ -164,8 +169,8 @@ def format_data(name: str, value: str) -> str | int | None:
         return int(new_value)
     elif name == "score":
         return int(new_value) if new_value else None
-    elif name == 'strand':
-        return '.' if new_value is None else new_value
+    elif name == "strand":
+        return "." if new_value is None else new_value
     else:
         return new_value
 
@@ -187,7 +192,9 @@ def set_missing_fields(annotation: dict[str, str | int | None], name: str):
         else:
             LOG.warning(
                 "field %s is missing from annotation %s in file %s",
-                field_name, annotation, name
+                field_name,
+                annotation,
+                name,
             )
 
 
@@ -227,7 +234,9 @@ def update_height_order(db: Database, name: str):
                     height_tracker += [-1] * 100
 
 
-def read_annotation_file(file: Path, file_format: str, has_header: bool = False) -> Iterator[dict[str, str]]:
+def read_annotation_file(
+    file: Path, file_format: str, has_header: bool = False
+) -> Iterator[dict[str, str]]:
     """Parse an annotation file in bed or aed format."""
     if file_format == "bed":
         return read_bed(file, has_header)

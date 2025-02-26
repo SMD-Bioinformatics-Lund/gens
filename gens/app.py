@@ -7,15 +7,15 @@ from logging.config import dictConfig
 
 import connexion
 from flask import redirect, request, url_for
-from flask_compress import Compress # type: ignore
-from flask_login import current_user # type: ignore
+from flask_compress import Compress  # type: ignore
+from flask_login import current_user  # type: ignore
 
+from .auth import login_manager, oauth_client
 from .blueprints import gens_bp, home_bp, login_bp
 from .cache import cache
 from .config import AuthMethod, settings
 from .db import SampleNotFoundError, init_database
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
-from .auth import login_manager, oauth_client
 
 dictConfig(
     {
@@ -82,6 +82,7 @@ def create_app():
             next_url = f"{request.path}?{request.query_string.decode()}"
             login_url = url_for("home.landing", next=next_url)
             return redirect(login_url)
+
     return app
 
 

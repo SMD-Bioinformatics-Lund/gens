@@ -5,9 +5,9 @@ import logging
 from collections import defaultdict
 from itertools import groupby
 from typing import Any
-from pymongo.database import Database
 
 from flask import current_app as app
+from pymongo.database import Database
 
 from gens.models.annotation import AnnotationRecord, TranscriptRecord
 from gens.models.genomic import GenomeBuild, GenomicRegion, VariantCategory
@@ -119,7 +119,9 @@ def query_records_in_region(
 
     # FIXME: Not necessary after adding a region type known to have start and end
     if not region_start or not region_end:
-        raise ValueError(f"Expected region.start and region.end, found start: {region_start} end: {region_end}")
+        raise ValueError(
+            f"Expected region.start and region.end, found start: {region_start} end: {region_end}"
+        )
 
     # build base query
     query = {

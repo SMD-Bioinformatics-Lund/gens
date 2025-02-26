@@ -9,16 +9,17 @@ from flask import current_app as app
 from flask.cli import with_appcontext
 from pymongo.database import Database
 
+from gens.config import settings
 from gens.db import (
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
     SAMPLES_COLLECTION,
     TRANSCRIPTS_COLLECTION,
     create_index,
+    get_db_connection,
     get_indexes,
     register_data_update,
     store_sample,
-    get_db_connection
 )
 from gens.load import (
     build_chromosomes_obj,
@@ -30,7 +31,6 @@ from gens.load import (
 )
 from gens.models.annotation import AnnotationRecord
 from gens.models.genomic import GenomeBuild
-from gens.config import settings
 
 LOG = logging.getLogger(__name__)
 
@@ -165,7 +165,9 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool):
         # base the annotation name on the filename
         annotation_name = annot_file.name[: -len(annot_file.suffix)]
         parsed_annotations: list[AnnotationRecord] = []
-        for entry in read_annotation_file(annot_file, annot_file.suffix[1:], has_header):
+        for entry in read_annotation_file(
+            annot_file, annot_file.suffix[1:], has_header
+        ):
             entry_obj = parse_annotation_entry(entry, genome_build, annotation_name)
             parsed_annotations.append(entry_obj)
 
@@ -182,7 +184,9 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool):
         LOG.info("Update height order")
         # update the height order of annotations in the database
         update_height_order(db, annotation_name)
-        register_data_update(db=db, track_type=ANNOTATIONS_COLLECTION, name=annotation_name)
+        register_data_update(
+            db=db, track_type=ANNOTATIONS_COLLECTION, name=annotation_name
+        )
     click.secho("Finished loading annotations ✔", fg="green")
 
 
@@ -256,8 +260,7 @@ def chromosome_info(genome_build: GenomeBuild, timeout: int):
     # remove old entries
     res = db[CHROMSIZES_COLLECTION].delete_many({"genome_build": int(genome_build)})
     LOG.info(
-        "Removed %d old entries with genome build: %s", 
-        res.deleted_count, genome_build
+        "Removed %d old entries with genome build: %s", res.deleted_count, genome_build
     )
     # insert collection
     LOG.info("Add chromosome info to database")

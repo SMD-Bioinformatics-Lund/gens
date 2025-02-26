@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import PositiveInt, field_serializer, Field
+from pydantic import Field, PositiveInt, field_serializer
 from pydantic_extra_types.color import Color
 
 from ..models import RWModel
@@ -19,11 +19,13 @@ class AnnotationRecord(RWModel):
     start: PositiveInt
     end: PositiveInt
     strand: DnaStrand = DnaStrand.UNKNOWN
-    color: Color = Color('#808080')  # defaults to grey
+    color: Color = Color("#808080")  # defaults to grey
     score: int | None = None
 
     @field_serializer("color")
-    def serialize_color(self, color: Color, _) -> tuple[int, int, int] | tuple[int, int, int, float]:
+    def serialize_color(
+        self, color: Color, _
+    ) -> tuple[int, int, int] | tuple[int, int, int, float]:
         """Serialize RGB as tuple"""
         return color.as_rgb_tuple()
 
