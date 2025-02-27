@@ -91,23 +91,25 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
         )
 
     # Calculate maximum height order
+    # FIXME: This code will be rewritten when moving position calculations to frontend code,
+    # so ignoring type issues rather than resolving them
     max_height_order = (
-        max(annotations, key=lambda e: e.height_order) if annotations else 1
+        max(annotations, key=lambda e: e.height_order) if annotations else 1 # type: ignore
     )
 
     query_result = {
         "status": "ok",
-        "chromosome": parsed_region.chromosome,
-        "start_pos": parsed_region.start,
-        "end_pos": parsed_region.end,
+        "chromosome": parsed_region.chromosome, # type: ignore
+        "start_pos": parsed_region.start, # type: ignore
+        "end_pos": parsed_region.end, # type: ignore
         "annotations": annotations,
         "max_height_order": max_height_order,
-        "res": zoom_level,
+        "res": zoom_level, # type: ignore
     }
     return jsonable_encoder(query_result)
 
 
-def get_transcript_data(region: str, genome_build: str, collapsed: bool):
+def get_transcript_data(region: str, genome_build: int, collapsed: bool):
     """
     Gets transcript data for requested region and converts the coordinates to
     screen coordinates
@@ -130,7 +132,8 @@ def get_transcript_data(region: str, genome_build: str, collapsed: bool):
         )
     )
     # Calculate maximum height order
-    max_height_order = max(t.height_order for t in transcripts) if transcripts else 1
+    # FIXME: Resolve type error
+    max_height_order = max(t.height_order for t in transcripts) if transcripts else 1 # type: ignore
 
     return jsonable_encoder(
         {
