@@ -1,12 +1,10 @@
 # example of how to run deployment version of Gens
 services:
   mongodb:
-    container_name: mongodb
     image: mongo:4.4.9
     networks:
       - gens-net
   gens:
-    container_name: gens
     build: .
     volumes:
       - ./volumes/gens/data:/home/app/data

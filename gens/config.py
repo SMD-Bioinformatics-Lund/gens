@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     default_annotation_track: str | None = None
 
     # Authentication options
-    authentication: AuthMethod = AuthMethod.SIMPLE
+    authentication: AuthMethod = AuthMethod.DISABLED
 
     # Oauth options
     oauth_client_id: str | None = None
