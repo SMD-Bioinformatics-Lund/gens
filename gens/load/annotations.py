@@ -153,14 +153,18 @@ def format_colour(colour_value: str | None) -> RGB_COLOR | RGBA_COLOR | str:
     rgba_match = re.match(r"(\d+) (\d+) (\d+) / (\d+)%", colour_value)
     rgb_match = re.match(r"(\d+) (\d+) (\d+)", colour_value)
     if rgba_match:
-        return tuple([
+        return (
             int(rgba_match.group(1)),
             int(rgba_match.group(2)),
             int(rgba_match.group(3)),
             float(int(rgba_match.group(4)) / 100),
-        ])
+        )
     elif rgb_match:
-        return tuple([int(gr) for gr in rgb_match.groups()])
+        return (
+            int(rgb_match.group(1)),
+            int(rgb_match.group(2)),
+            int(rgb_match.group(3)),
+        )
 
     return DEFAULT_COLOUR
 
