@@ -8,7 +8,7 @@ from typing import Any, cast
 
 import connexion
 from fastapi.encoders import jsonable_encoder
-from flask import current_app, jsonify, typing
+from flask import current_app, jsonify
 from pysam import TabixFile
 
 from gens.db import (
@@ -180,15 +180,15 @@ def search_annotation(query: str, genome_build: str, annotation_type: str):
     return jsonify({**data, "status": response_code})
 
 
-def get_variant_data(case_id, sample_id, variant_category, **optional_kwargs):
+def get_variant_data(case_id: str, sample_id: str, variant_category: str, **optional_kwargs):
     """Search Scout database for variants associated with a case and return info in JSON format."""
     default_height_order = 0
-    base_return = {"status": "ok"}
+    base_return: dict[str, Any] = {"status": "ok"}
     # get optional variables
     genome_build = optional_kwargs.get("genome_build")
     region = optional_kwargs.get("region")
     # if getting variants from specific regions
-    region_params = {}
+    region_params: dict[str, str] = {}
     if region is not None and genome_build is not None:
         zoom_level, region = parse_region_str(region, genome_build)
         base_return = {
