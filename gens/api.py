@@ -4,7 +4,7 @@ import gzip
 import json
 import logging
 import re
-from typing import Any
+from typing import Any, cast
 
 import connexion
 from fastapi.encoders import jsonable_encoder
@@ -21,6 +21,7 @@ from gens.db import (
 )
 from gens.exceptions import RegionParserException
 from gens.graph import REQUEST, get_cov, overview_chrom_dimensions, parse_region_str
+from gens.models.annotation import TranscriptRecord
 from gens.models.genomic import (
     Chromosome,
     GenomeBuild,
@@ -91,23 +92,25 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
         )
 
     # Calculate maximum height order
+    # FIXME: This code will be rewritten when moving position calculations to frontend code,
+    # so ignoring type issues rather than resolving them
     max_height_order = (
-        max(annotations, key=lambda e: e.height_order) if annotations else 1
+        max(annotations, key=lambda e: e.height_order) if annotations else 1 # type: ignore
     )
 
     query_result = {
         "status": "ok",
-        "chromosome": parsed_region.chromosome,
-        "start_pos": parsed_region.start,
-        "end_pos": parsed_region.end,
+        "chromosome": parsed_region.chromosome, # type: ignore
+        "start_pos": parsed_region.start, # type: ignore
+        "end_pos": parsed_region.end, # type: ignore
         "annotations": annotations,
         "max_height_order": max_height_order,
-        "res": zoom_level,
+        "res": zoom_level, # type: ignore
     }
     return jsonable_encoder(query_result)
 
 
-def get_transcript_data(region: str, genome_build: str, collapsed: bool):
+def get_transcript_data(region: str, genome_build: int, collapsed: bool):
     """
     Gets transcript data for requested region and converts the coordinates to
     screen coordinates
@@ -121,14 +124,14 @@ def get_transcript_data(region: str, genome_build: str, collapsed: bool):
 
     # Get transcripts within span [start_pos, end_pos] or transcripts that go over the span
     zoom_level, parsed_region = raw_region
-    transcripts = list(
-        query_records_in_region(
+    transcripts = query_records_in_region(
             record_type=TRANSCRIPTS_COLLECTION,
             region=parsed_region,
             genome_build=genome_build_enum,
             height_order=1 if collapsed else None,
         )
-    )
+    # To tell which of the alternative types to use
+    transcripts = cast(list[TranscriptRecord], transcripts)
     # Calculate maximum height order
     max_height_order = max(t.height_order for t in transcripts) if transcripts else 1
 
@@ -177,15 +180,15 @@ def search_annotation(query: str, genome_build: str, annotation_type: str):
     return jsonify({**data, "status": response_code})
 
 
-def get_variant_data(case_id, sample_id, variant_category, **optional_kwargs):
+def get_variant_data(case_id: str, sample_id: str, variant_category: str, **optional_kwargs):
     """Search Scout database for variants associated with a case and return info in JSON format."""
     default_height_order = 0
-    base_return = {"status": "ok"}
+    base_return: dict[str, Any] = {"status": "ok"}
     # get optional variables
     genome_build = optional_kwargs.get("genome_build")
     region = optional_kwargs.get("region")
     # if getting variants from specific regions
-    region_params = {}
+    region_params: dict[str, str] = {}
     if region is not None and genome_build is not None:
         zoom_level, region = parse_region_str(region, genome_build)
         base_return = {

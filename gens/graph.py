@@ -146,7 +146,7 @@ def parse_region_str(
         # Split region in standard format chrom:start-stop
         if ":" in region:
             chrom_str, pos_range = region.split(":")
-            start, end = [int(pos) for pos in pos_range.split("-")]
+            start, end = [int(pos) if pos != "None" else None for pos in pos_range.split("-")]
             chrom_str = chrom_str.replace("chr", "")
             chrom = Chromosome(chrom_str.upper())
         else:
@@ -154,7 +154,7 @@ def parse_region_str(
             # or gene
             name_search = region
     except ValueError:
-        LOG.error("Wrong region formatting")
+        LOG.exception("Wrong region formatting for region: %s", region)
         return None
 
     if name_search is not None:
@@ -190,22 +190,18 @@ def parse_region_str(
                 LOG.warning("Did not find range for gene name")
                 return None
 
-    if not chrom:
+    if chrom is None:
         raise ValueError(f"Expected variable chrom, found: {chrom}")
-    if not start:
+    if start is None:
         raise ValueError(f"Expected variable start, found: {start}")
-    if not end:
-        raise ValueError(f"Expected variable end, found: {end}")
 
     db = app.config["GENS_DB"]
     chrom_data = get_chromosome_size(db, chrom, genome_build)
     # Set end position if it is not set
-    if end == "None":
+    if end == "None" or end is None:
         end = chrom_data.size
 
     start = int(start)
-    # FIXME: Resolve type issue
-    end = int(end)  # type: ignore
     size = end - start
 
     if size <= 0:
@@ -250,7 +246,7 @@ def set_region_values(zoom_level: ZoomLevel, region: GenomicRegion, x_ampl):
     start_pos = region.start
     end_pos = region.end
 
-    if not start_pos or not end_pos:
+    if start_pos is None or end_pos is None:
         raise ValueError(
             f"Expected start_pos and end_pos, found: {start_pos} {end_pos}"
         )
