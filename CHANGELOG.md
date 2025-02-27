@@ -11,6 +11,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Use pydantic-settings for settings validation.
  - Add linting to CI github workflow
  - Temporary HG002 quick-setup script in utils. Requires mongo-dumps currently not part of the Gens repo. Will be replaced by a general setup script ahead.
+ - load transcripts can also read gzipped files
 
 ### Changed
  - Changed some settings names
@@ -26,6 +27,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Remove unused file argument for load chromomsome info CLI command
  - Fixed various issues raised by pylint
  - mypy type fixing for `mypy gens/commands/load.py`
+ - Refactor load transcripts
 
 ## 3.0.1
 
