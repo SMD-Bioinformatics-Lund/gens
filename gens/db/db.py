@@ -19,11 +19,11 @@ def init_database_connection() -> None:
     LOG.info("Initialize db connection")
 
     # connect to database
-    app.config["SCOUT_DB"] = pymongo.MongoClient(str(settings.scout_db)).get_database(
-        name=settings.scout_dbname
+    app.config["SCOUT_DB"] = MongoClient(str(settings.scout_db)).get_database(
+        name=settings.scout_db.database
     )
-    app.config["GENS_DB"] = pymongo.MongoClient(str(settings.gens_db)).get_database(
-        name=settings.gens_dbname
+    app.config["GENS_DB"] = MongoClient(str(settings.gens_db)).get_database(
+        name=settings.gens_db.database
     )
 
 
