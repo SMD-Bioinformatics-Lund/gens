@@ -19,7 +19,8 @@ class Settings(BaseSettings):
     """Gens settings."""
 
     gens_db: MongoDsn = Field(
-        MongoDsn("mongodb://mongodb:27017/gens"), description="Connection to Gens mongo database."
+        MongoDsn("mongodb://mongodb:27017/gens"),
+        description="Connection to Gens mongo database.",
     )
 
     # For scout integration

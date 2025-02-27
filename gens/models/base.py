@@ -1,4 +1,5 @@
 """Base datamodels that other inherits from."""
+
 import datetime
 
 from pydantic import BaseModel, ConfigDict, Field

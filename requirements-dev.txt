@@ -4,6 +4,7 @@ pytest-cov
 pytest-flask
 pytest-mongodb
 coveralls
+mongomock
 
 # utils
 pylint

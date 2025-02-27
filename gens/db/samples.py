@@ -3,10 +3,11 @@
 import itertools
 import logging
 from typing import Iterator
+
 from pydantic import FilePath
 from pymongo import DESCENDING, MongoClient
-from pymongo.errors import DuplicateKeyError
 from pymongo.database import Database
+from pymongo.errors import DuplicateKeyError
 
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo
@@ -70,14 +71,15 @@ def store_sample(
         if result.modified_count == 1:
             LOG.error(
                 'Sample with sample_id="%s" and case_id="%s" was overwritten.',
-                sample_id, case_id
+                sample_id,
+                case_id,
             )
         if result.modified_count > 1:
             raise NonUniqueIndexError(
                 (
                     f'More than one entry matched sample_id="{sample_id}", '
                     f'case_id="{case_id}", and genome_build="{genome_build}".'
-                    'This should never happen.'
+                    "This should never happen."
                 ),
                 sample_id,
                 case_id,
@@ -89,10 +91,11 @@ def store_sample(
         except DuplicateKeyError:
             LOG.error(
                 (
-                    'DuplicateKeyError while storing sample' 
+                    "DuplicateKeyError while storing sample"
                     'with sample_id="%s" and case_id="%s" in database.'
                 ),
-                sample_id, case_id
+                sample_id,
+                case_id,
             )
 
 

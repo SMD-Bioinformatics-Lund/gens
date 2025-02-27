@@ -66,7 +66,9 @@ def convert_data(
         ypos = req.log2_y_end - 0.2 if ypos < req.log2_y_end else ypos
 
         # Convert to screen coordinates
-        xpos = (int(x_pos + new_x_ampl * (float(record[chrom_pos_idx]) - new_start_pos)),)
+        xpos = (
+            int(x_pos + new_x_ampl * (float(record[chrom_pos_idx]) - new_start_pos)),
+        )
         log2_records.extend([xpos, int(graph.log2_ypos - graph.log2_ampl * ypos)])
 
     # Gather the BAF records
@@ -78,7 +80,9 @@ def convert_data(
         ypos = req.baf_y_end - 0.2 if ypos < req.baf_y_end else ypos
 
         # Convert to screen coordinates
-        xpos = (int(x_pos + new_x_ampl * (float(record[chrom_pos_idx]) - new_start_pos)),)
+        xpos = (
+            int(x_pos + new_x_ampl * (float(record[chrom_pos_idx]) - new_start_pos)),
+        )
         baf_records.extend([xpos, int(graph.baf_ypos - graph.baf_ampl * ypos)])
 
     return log2_records, baf_records
@@ -135,9 +139,9 @@ def parse_region_str(
     Parses a region string
     """
     name_search = None
-    start: int|None = None
-    end: int|None = None
-    chrom: Chromosome|None = None
+    start: int | None = None
+    end: int | None = None
+    chrom: Chromosome | None = None
     try:
         # Split region in standard format chrom:start-stop
         if ":" in region:
@@ -193,7 +197,6 @@ def parse_region_str(
     if not end:
         raise ValueError(f"Expected variable end, found: {end}")
 
-
     db = app.config["GENS_DB"]
     chrom_data = get_chromosome_size(db, chrom, genome_build)
     # Set end position if it is not set
@@ -202,7 +205,7 @@ def parse_region_str(
 
     start = int(start)
     # FIXME: Resolve type issue
-    end = int(end) # type: ignore
+    end = int(end)  # type: ignore
     size = end - start
 
     if size <= 0:
@@ -248,7 +251,9 @@ def set_region_values(zoom_level: ZoomLevel, region: GenomicRegion, x_ampl):
     end_pos = region.end
 
     if not start_pos or not end_pos:
-        raise ValueError(f"Expected start_pos and end_pos, found: {start_pos} {end_pos}")
+        raise ValueError(
+            f"Expected start_pos and end_pos, found: {start_pos} {end_pos}"
+        )
 
     # Set resolution for overview graph
     if request.args.get("overview", False):
