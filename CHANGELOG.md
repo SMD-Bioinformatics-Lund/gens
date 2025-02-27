@@ -7,6 +7,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ## Unreleased
 
 ### Added
+ - User can specify path to a custom config file with the env `CONFIG_FILE`.
  - Added test for the cli command `gens load annotations`.
  - Use pydantic-settings for settings validation.
  - Add linting to CI github workflow
@@ -14,7 +15,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - load transcripts can also read gzipped files
 
 ### Changed
- - Changed some settings names
+ - Settings now uses submodels for oauth and database connections
  - Migrated from setup.py to pyproject.toml using hatchling
  - Updated python to version 3.12 and thawed some dependencies.
  - Switched from JS to TS and updated required parts of the build chain.
