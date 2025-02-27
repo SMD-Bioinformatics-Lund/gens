@@ -27,7 +27,10 @@ FIELD_TRANSLATIONS: dict[str, str] = {
 CORE_FIELDS = ("sequence", "start", "end", "name", "strand", "color", "score")
 AED_ENTRY = re.compile(r"[.+:]?(\w+)\(\w+:(\w+)\)", re.I)
 
-DEFAULT_COLOR = "grey"
+DEFAULT_COLOUR = "grey"
+
+RGB_COLOR = tuple[int, int, int]
+RGBA_COLOR = tuple[int, int, int, float]
 
 
 class ParserError(Exception):
@@ -106,9 +109,9 @@ def read_aed(file: Path) -> Iterator[dict[str, str]]:
 
 def parse_annotation_entry(
     entry: dict[str, str], genome_build: GenomeBuild, annotation_name: str
-) -> AnnotationRecord:
+) -> AnnotationRecord | None:
     """Parse a bed or aed entry"""
-    annotation: dict[str, str | int | None] = {}
+    annotation: dict[str, Any] = {}
     # parse entry and format the values
     for colname, value in entry.items():
         # translate name, default to existing name if not in tr table
@@ -135,41 +138,49 @@ def parse_annotation_entry(
         print(err)
         print(annotation)
 
+    return None
 
-def format_data(name: str, value: str) -> str | int | None:
-    """Formats the data depending on title"""
+
+def format_colour(colour_value: str | None) -> RGB_COLOR | RGBA_COLOR | str:
+    """Format colour to rgb."""
+
+    if colour_value is None:
+        return DEFAULT_COLOUR
+    elif colour_value.startswith("rgb("):
+        return colour_value
+
+    # parse rgb tuples
+    rgba_match = re.match(r"(\d+) (\d+) (\d+) / (\d+)%", colour_value)
+    rgb_match = re.match(r"(\d+) (\d+) (\d+)", colour_value)
+    if rgba_match:
+        return tuple([
+            int(rgba_match.group(1)),
+            int(rgba_match.group(2)),
+            int(rgba_match.group(3)),
+            float(int(rgba_match.group(4)) / 100),
+        ])
+    elif rgb_match:
+        return tuple([int(gr) for gr in rgb_match.groups()])
+
+    return DEFAULT_COLOUR
+
+
+def format_data(data_type: str, value: str) -> str | int | RGBA_COLOR | RGB_COLOR | None:
+    """Parse the data based on its type."""
     new_value = None if value == "." else value
-    if name == "color":
-        rgba_match = re.match(r"(\d+) (\d+) (\d+) / (\d+)%", new_value)
-        rgb_match = re.match(r"(\d+) (\d+) (\d+)", new_value)
+    if data_type == "color":
+        return format_colour(new_value)
+    elif data_type == "chrom":
         if not new_value:
-            return DEFAULT_COLOR
-        elif new_value.startswith("rgb("):
-            return new_value
-        elif rgba_match:
-            return tuple(
-                [
-                    int(rgba_match.group(1)),
-                    int(rgba_match.group(2)),
-                    int(rgba_match.group(3)),
-                    int(rgba_match.group(4)) / 100,
-                ]
-            )
-        elif rgb_match:
-            return tuple([int(gr) for gr in rgb_match.groups()])
-        else:
-            return f"rgb({new_value})"
-    elif name == "chrom":
-        if not new_value:
-            raise ValueError(f"field {name} must exist")
+            raise ValueError(f"field {data_type} must exist")
         return new_value.strip("chr")
-    elif name == "start" or name == "end":
+    elif data_type == "start" or data_type == "end":
         if not new_value:
-            raise ValueError(f"field {name} must exist")
+            raise ValueError(f"field {data_type} must exist")
         return int(new_value)
-    elif name == "score":
+    elif data_type == "score":
         return int(new_value) if new_value else None
-    elif name == "strand":
+    elif data_type == "strand":
         return "." if new_value is None else new_value
     else:
         return new_value
@@ -182,7 +193,7 @@ def set_missing_fields(annotation: dict[str, str | int | None], name: str):
             continue
 
         if field_name == "color":
-            annotation[field_name] = DEFAULT_COLOR
+            annotation[field_name] = DEFAULT_COLOUR
         elif field_name in "score":
             annotation[field_name] = None
         elif field_name in "strand":
