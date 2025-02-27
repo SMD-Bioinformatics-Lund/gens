@@ -4,11 +4,11 @@ import gzip
 import json
 import logging
 import re
-from typing import Any
+from typing import Any, cast
 
 import connexion
 from fastapi.encoders import jsonable_encoder
-from flask import current_app, jsonify
+from flask import current_app, jsonify, typing
 from pysam import TabixFile
 
 from gens.db import (
@@ -21,6 +21,7 @@ from gens.db import (
 )
 from gens.exceptions import RegionParserException
 from gens.graph import REQUEST, get_cov, overview_chrom_dimensions, parse_region_str
+from gens.models.annotation import TranscriptRecord
 from gens.models.genomic import (
     Chromosome,
     GenomeBuild,
@@ -123,17 +124,16 @@ def get_transcript_data(region: str, genome_build: int, collapsed: bool):
 
     # Get transcripts within span [start_pos, end_pos] or transcripts that go over the span
     zoom_level, parsed_region = raw_region
-    transcripts = list(
-        query_records_in_region(
+    transcripts = query_records_in_region(
             record_type=TRANSCRIPTS_COLLECTION,
             region=parsed_region,
             genome_build=genome_build_enum,
             height_order=1 if collapsed else None,
         )
-    )
+    # To tell which of the alternative types to use
+    transcripts = cast(list[TranscriptRecord], transcripts)
     # Calculate maximum height order
-    # FIXME: Resolve type error
-    max_height_order = max(t.height_order for t in transcripts) if transcripts else 1 # type: ignore
+    max_height_order = max(t.height_order for t in transcripts) if transcripts else 1
 
     return jsonable_encoder(
         {
