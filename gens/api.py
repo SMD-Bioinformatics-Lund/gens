@@ -31,14 +31,19 @@ from gens.models.genomic import (
 LOG = logging.getLogger(__name__)
 
 
-def get_overview_chrom_dim(x_pos: int, y_pos: int, plot_width: int, genome_build: GenomeBuild) -> dict[str, Any]:
+def get_overview_chrom_dim(
+    x_pos: int, y_pos: int, plot_width: int, genome_build: GenomeBuild
+) -> dict[str, Any]:
     """
     Returns the dimensions of all chromosome graphs in screen coordinates
     for drawing the chromosomes correctly in the overview graph
     """
     LOG.info(
         "Get overview chromosome dim: (%d, %d), w=%d, %s",
-        x_pos, y_pos, plot_width, genome_build
+        x_pos,
+        y_pos,
+        plot_width,
+        genome_build,
     )
     query_result = {
         "status": "ok",
@@ -144,7 +149,9 @@ def search_annotation(query: str, genome_build: str, annotation_type: str):
     """Search for anntations of genes and return their position."""
     # Lookup queried element
     collection = current_app.config["GENS_DB"][annotation_type]
-    db_query: dict[str, str|re.Pattern[str]] = {"gene_name": re.compile("^" + re.escape(query) + "$", re.IGNORECASE)}
+    db_query: dict[str, str | re.Pattern[str]] = {
+        "gene_name": re.compile("^" + re.escape(query) + "$", re.IGNORECASE)
+    }
 
     if genome_build and int(genome_build) in GenomeBuild:
         db_query["genome_build"] = genome_build

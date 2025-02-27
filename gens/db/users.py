@@ -10,7 +10,7 @@ class LoginUser(UserMixin):
     def __init__(self, user_data: dict[str, str]):
         """Create a new user object."""
 
-        self.email = user_data['email']
+        self.email = user_data["email"]
         self.roles: list[str] = []
 
         # set the attributes in the user_data as class attributes
@@ -30,7 +30,7 @@ class LoginUser(UserMixin):
 
 def user(email: str) -> LoginUser | None:
     """Query the daatabase for a user.
-    
+
     If user exist return a flask login user object otherwise return null.
     """
     db = app.config["SCOUT_DB"]

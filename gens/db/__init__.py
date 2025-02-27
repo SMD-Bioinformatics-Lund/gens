@@ -11,6 +11,7 @@ from .annotation import (
 )
 from .chrom_sizes import CHROMSIZES as CHROMSIZES_COLLECTION
 from .chrom_sizes import get_chromosome_size
+from .db import get_db_connection
 from .db import init_database_connection as init_database
 from .index import create_index, create_indexes, get_indexes, update_indexes
 from .samples import COLLECTION as SAMPLES_COLLECTION

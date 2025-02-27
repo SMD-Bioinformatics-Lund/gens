@@ -1,4 +1,5 @@
 """Views for logging in and logging out users."""
+
 import logging
 
 from flask import Blueprint, flash, redirect, request, session, url_for
@@ -96,7 +97,7 @@ def logout():
 
 def perform_login(user_dict):
     """Conduct login.
-    
+
     If successful redirect to next page otherwise redirect to the landing page.
     """
     if login_user(user_dict, remember=True):

@@ -7,9 +7,11 @@ from itertools import groupby
 from typing import Any
 
 from flask import current_app as app
+from pymongo.database import Database
 
 from gens.models.annotation import AnnotationRecord, TranscriptRecord
 from gens.models.genomic import GenomeBuild, GenomicRegion, VariantCategory
+from gens.utils import get_timestamp
 
 LOG = logging.getLogger(__name__)
 
@@ -19,13 +21,12 @@ TRANSCRIPTS = "transcripts"
 UPDATES = "updates"
 
 
-def register_data_update(track_type: str, name: str | None = None):
+def register_data_update(db: Database, track_type: str, name: str | None = None):
     """Register that a track was updated."""
-    db = app.config["GENS_DB"][UPDATES]
     LOG.debug("Creating timestamp for %s", track_type)
-    track = {"track": track_type, "name": name}
-    db.delete_many(track)  # remove old track
-    db.insert_one({**track, "timestamp": datetime.datetime.now()})
+    track: dict[str, str | None] = {"track": track_type, "name": name}
+    db[UPDATES].delete_many(track)  # remove old track
+    db[UPDATES].insert_one({**track, "timestamp": get_timestamp()})
 
 
 def get_timestamps(track_type: str = "all"):
@@ -118,7 +119,9 @@ def query_records_in_region(
 
     # FIXME: Not necessary after adding a region type known to have start and end
     if not region_start or not region_end:
-        raise ValueError(f"Expected region.start and region.end, found start: {region_start} end: {region_end}")
+        raise ValueError(
+            f"Expected region.start and region.end, found start: {region_start} end: {region_end}"
+        )
 
     # build base query
     query = {

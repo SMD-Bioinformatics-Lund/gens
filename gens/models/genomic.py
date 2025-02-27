@@ -11,7 +11,7 @@ from .base import RWModel
 REGION_PATTERN = re.compile(r"^(.+):(.+)-(.+)$")
 
 
-class DnaStrand(Enum):  # TODO migrate to +/-
+class DnaStrand(str, Enum):  # TODO migrate to +/-
     """Valid DNA strand names.
 
     Names compliant with BED specification v1.0
@@ -124,7 +124,7 @@ class GenomicRegion(RWModel):
             raise ValueError(f"{start} is not a valid start position")
         return region
 
-    @computed_field() # type: ignore
+    @computed_field()  # type: ignore
     @property
     def chromosome(self) -> Chromosome:
         """Get the chromosome name from region string."""
@@ -134,7 +134,7 @@ class GenomicRegion(RWModel):
             raise ValueError("Invalid region designation.")
         return Chromosome(match.group(1))
 
-    @computed_field() # type: ignore
+    @computed_field()  # type: ignore
     @property
     def start(self) -> int | None:
         """Get start position from a region string."""
@@ -142,7 +142,7 @@ class GenomicRegion(RWModel):
         match = re.match(REGION_PATTERN, self.region)
         return int(match.group(2)) if match else None
 
-    @computed_field() # type: ignore
+    @computed_field()  # type: ignore
     @property
     def end(self) -> int | None:
         """Get end position from a region string."""
