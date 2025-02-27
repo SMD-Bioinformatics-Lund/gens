@@ -51,14 +51,12 @@ class ChoiceType(click.Choice):
         return next(v for v in self.enum if str(v) == value)
 
 
-def open_text_or_gzip(ctx: click.Context, param: click.Parameter, value: str) -> TextIO:
+def open_text_or_gzip(file_path: str) -> TextIO:
     """Click callback to allow reading both text and gzipped files"""
-    if not value:
-        raise click.BadParameter("File path is required")
-    if value.endswith(".gz"):
-        return gzip.open(value, "rt", encoding="utf-8")
+    if file_path.endswith(".gz"):
+        return gzip.open(file_path, "rt", encoding="utf-8")
     else:
-        return open(value, "r", encoding="utf-8")
+        return open(file_path, "r", encoding="utf-8")
 
 
 @click.group()
@@ -197,14 +195,12 @@ def annotations(file: str, genome_build: GenomeBuild):
     "--file",
     required=True,
     help="GTF transcript file (.gtf or .gtf.gz)",
-    callback=open_text_or_gzip,
 )
 @click.option(
     "-m",
     "--mane",
     required=True,
     help="Mane summary file (.txt or .txt.gz)",
-    callback=open_text_or_gzip,
 )
 @click.option(
     "-b",
@@ -214,7 +210,7 @@ def annotations(file: str, genome_build: GenomeBuild):
     help="Genome build",
 )
 @with_appcontext
-def transcripts(file: TextIO, mane: TextIO, genome_build: GenomeBuild):
+def transcripts(file: str, mane: str, genome_build: GenomeBuild):
     """Load transcripts into the database."""
 
     db = app.config["GENS_DB"]
@@ -223,9 +219,11 @@ def transcripts(file: TextIO, mane: TextIO, genome_build: GenomeBuild):
         create_index(db, TRANSCRIPTS_COLLECTION)
     LOG.info("Building transcript object")
     try:
-        transcripts_obj = build_transcripts(file, mane, genome_build)
+        with open_text_or_gzip(file) as file_fh, open_text_or_gzip(mane) as mane_fh:
+            transcripts_obj = build_transcripts(file_fh, mane_fh, genome_build)
     except Exception as err:
         raise click.UsageError(str(err))
+
     LOG.info("Add transcripts to database")
     db[TRANSCRIPTS_COLLECTION].insert_many(transcripts_obj)
     register_data_update(TRANSCRIPTS_COLLECTION)
