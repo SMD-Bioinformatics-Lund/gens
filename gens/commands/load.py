@@ -178,7 +178,8 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool):
             annot_file, annot_file.suffix[1:], has_header
         ):
             entry_obj = parse_annotation_entry(entry, genome_build, annotation_name)
-            parsed_annotations.append(entry_obj)
+            if entry_obj is not None:
+                parsed_annotations.append(entry_obj)
 
         if len(parsed_annotations) == 0:
             raise ValueError("Something went wrong parsing the annotaions file.")
@@ -234,7 +235,7 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild):
 
     LOG.info("Add transcripts to database")
     db[TRANSCRIPTS_COLLECTION].insert_many(transcripts_obj)
-    register_data_update(TRANSCRIPTS_COLLECTION)
+    register_data_update(db, TRANSCRIPTS_COLLECTION)
     click.secho("Finished loading transcripts ✔", fg="green")
 
 
@@ -285,6 +286,6 @@ def chromosome_info(genome_build: GenomeBuild, timeout: int):
     # insert collection
     LOG.info("Add chromosome info to database")
     db[CHROMSIZES_COLLECTION].insert_many([chr.model_dump() for chr in chromosomes_data])
-    register_data_update(CHROMSIZES_COLLECTION)
+    register_data_update(db, CHROMSIZES_COLLECTION)
     # build cytogenetic data
     click.secho("Finished updating chromosome sizes ✔", fg="green")
