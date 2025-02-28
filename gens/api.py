@@ -79,29 +79,25 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
     genome_build = GenomeBuild(genome_build)
     raw_region = parse_region_str(region, genome_build)
 
-    annotations = []
-    if raw_region is not None:
-        # Get annotations within span [start_pos, end_pos] or annotations that
-        # go over the span
-        zoom_level, parsed_region = raw_region
-        annotations = list(
-            query_records_in_region(
-                current_app.config["GENS_DB"],
-                record_type=ANNOTATIONS_COLLECTION,
-                region=parsed_region,
-                genome_build=genome_build,
-                source=source,
-                height_order=1 if collapsed else None,
-            )
-        )
-        # LOG.error(f"Found {len(annotations)} records")
+    if raw_region is None:
+        raise ValueError(f"Unsuccessful parsing of region: {region}")
 
-    # Calculate maximum height order
-    # FIXME: This code will be rewritten when moving position calculations to frontend code,
-    # so ignoring type issues rather than resolving them
-    # max_height_order = (
-    #     max(annotations, key=lambda e: e.height_order) if annotations else 1 # type: ignore
-    # )
+    annotations = []
+    # Get annotations within span [start_pos, end_pos] or annotations that
+    # go over the span
+    zoom_level, parsed_region = raw_region
+    annotations = list(
+        query_records_in_region(
+            current_app.config["GENS_DB"],
+            record_type=ANNOTATIONS_COLLECTION,
+            region=parsed_region,
+            genome_build=genome_build,
+            source=source,
+            height_order=1 if collapsed else None,
+        )
+    )
+
+    # FIXME: Remove when rendering is handled in frontend
     max_height_order = 1
 
     query_result = {
@@ -209,7 +205,7 @@ def get_variant_data(case_id: str, sample_id: str, variant_category: str, **opti
     # if getting variants from specific regions
     region_params: dict[str, str] = {}
     if region is not None and genome_build is not None:
-        zoom_level, region = parse_region_str(region, genome_build)
+        zoom_level, region = parse_region_str(region, genome_build)  # type: ignore
         base_return = {
             **base_return,
             **region.model_dump(),
