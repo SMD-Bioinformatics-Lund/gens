@@ -30,7 +30,7 @@ class GenomeBuild(IntEnum):
     HG38 = 38
 
 
-class Chromosome(Enum):
+class Chromosome(str, Enum):
     """Valid chromosome names."""
 
     CH1 = "1"
