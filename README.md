@@ -14,7 +14,7 @@ This screenshot shows an 8 Kbp deletion (known polymorphism). Sorry about the bo
 
 ## Installation
 
-Gens requires python 3.5 or later and mongodb. For testing/development purposes the easiest way to install it is to create a virtual environment:
+Gens requires python 3.11 or later and mongodb. For testing/development purposes the easiest way to install it is to create a virtual environment:
 
 ``` bash
 git clone https://github.com/Clinical-Genomics-Lund/Gens.git
