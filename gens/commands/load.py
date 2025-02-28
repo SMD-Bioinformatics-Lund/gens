@@ -158,7 +158,7 @@ def sample(
 )
 def annotations(file: str, genome_build: GenomeBuild, has_header: bool):
     """Load annotations from file into the database."""
-    db = get_db_connection(settings.gens_db, db_name=settings.gens_dbname)
+    db = get_db_connection(settings.gens_db.connection, db_name=settings.gens_db.database)
     # if collection is not indexed, create index
     if len(get_indexes(db, ANNOTATIONS_COLLECTION)) == 0:
         create_index(db, ANNOTATIONS_COLLECTION)
