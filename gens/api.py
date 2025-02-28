@@ -106,15 +106,25 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
 
     query_result = {
         "status": "ok",
-        "chromosome": parsed_region.chromosome, # type: ignore
-        "start_pos": parsed_region.start, # type: ignore
-        "end_pos": parsed_region.end, # type: ignore
+        "chromosome": parsed_region.chromosome.value,
+        "start_pos": parsed_region.start,
+        "end_pos": parsed_region.end,
         "annotations": annotations,
         "max_height_order": max_height_order,
-        "res": zoom_level, # type: ignore
+        "res": zoom_level.value,
     }
-    # LOG.error(f"Result: {query_result['annotations'][0]}")
+    if len(query_result['annotations']) > 0:
+        LOG.error(f"Result: {query_result['annotations'][0]}")
+        LOG.error(f"Result: {query_result['chromosome']}")
+        LOG.error(f"Result: {query_result['start_pos']}")
+        LOG.error(f"Result: {query_result['end_pos']}")
+        LOG.error(f"Result: {query_result['max_height_order']}")
+        LOG.error(f"Result: {query_result['res']}")
+    else:
+        LOG.error(f"No annotations found: {query_result}")
 
+    # FIXME: What is returned here in 3.0.1?
+    # Has the frontend changed since?
     return jsonable_encoder(query_result)
 
 
