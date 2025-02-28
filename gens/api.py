@@ -8,7 +8,7 @@ from typing import Any, cast
 
 import connexion
 from fastapi.encoders import jsonable_encoder
-from flask import app, current_app, jsonify
+from flask import current_app, jsonify
 from pysam import TabixFile
 
 from gens.db import (
@@ -68,9 +68,6 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
     Gets annotation data in requested region and converts the coordinates
     to screen coordinates
     """
-
-    LOG.error("-------------------------------------------")
-
     if region == "" or source == "":
         msg = "Could not find annotation data in DB"
         LOG.error(msg)
@@ -109,18 +106,7 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
         "max_height_order": max_height_order,
         "res": zoom_level.value,
     }
-    if len(query_result['annotations']) > 0:
-        LOG.error(f"Result: {query_result['annotations'][0]}")
-        LOG.error(f"Result: {query_result['chromosome']}")
-        LOG.error(f"Result: {query_result['start_pos']}")
-        LOG.error(f"Result: {query_result['end_pos']}")
-        LOG.error(f"Result: {query_result['max_height_order']}")
-        LOG.error(f"Result: {query_result['res']}")
-    else:
-        LOG.error(f"No annotations found: {query_result}")
 
-    # FIXME: What is returned here in 3.0.1?
-    # Has the frontend changed since?
     return jsonable_encoder(query_result)
 
 

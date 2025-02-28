@@ -27,10 +27,10 @@ def register_data_update(db: Database, track_type: str, name: str | None = None)
     db[UPDATES].insert_one({**track, "timestamp": get_timestamp()})
 
 
-def get_timestamps(db: Database, track_type: str = "all"):
+def get_timestamps(gens_db: Database, track_type: str = "all"):
     """Get when a annotation track was last updated."""
     LOG.debug("Reading timestamp for %s", track_type)
-    updates_coll = db[UPDATES]
+    updates_coll = gens_db[UPDATES]
     if track_type == "all":
         query = updates_coll.find()
     else:
@@ -62,7 +62,6 @@ def query_variants(
 
     Kwargs are optional search parameters that are passed to db.find().
     """
-    # db = app.config["SCOUT_DB"]
     # build query
     query = {
         "case_id": case_id,
@@ -136,9 +135,6 @@ def query_records_in_region(
         sort_order.append(("height_order", 1))
     else:
         query["height_order"] = height_order
-
-    if record_type == "annotations":
-        LOG.error(f"query: {query} for record_type {record_type}")
 
     # query database
     cursor = gens_db[record_type].find(
