@@ -65,11 +65,7 @@ def read_bed(file: Path, header: bool = False) -> Iterator[dict[str, str]]:
                 continue
             # define the header
             if colnames is None:
-                colnames = (
-                    [col.lower() for col in line]
-                    if header
-                    else field_names[: len(line)]
-                )
+                colnames = [col.lower() for col in line] if header else field_names[: len(line)]
                 continue
 
             if len(line) != len(colnames):
@@ -93,9 +89,7 @@ def read_aed(file: Path) -> Iterator[dict[str, str]]:
 
             matches = re.search(AED_ENTRY, head)
             if matches is None:
-                raise ValueError(
-                    f"Expected to find {AED_ENTRY} in {head}, but did not succeed"
-                )
+                raise ValueError(f"Expected to find {AED_ENTRY} in {head}, but did not succeed")
 
             field, data_type = matches.groups()
             header[field] = data_type.lower()
@@ -125,9 +119,7 @@ def parse_annotation_entry(
             raise ParserError(str(err)) from err
 
     # ensure that coordinates are in correct order
-    annotation["start"], annotation["end"] = sorted(
-        [annotation["end"], annotation["start"]]
-    )
+    annotation["start"], annotation["end"] = sorted([annotation["end"], annotation["start"]])
     try:
         return AnnotationRecord(
             source=annotation_name,
@@ -185,7 +177,7 @@ def format_data(data_type: str, value: str) -> str | int | RGBA_COLOR | RGB_COLO
     elif data_type == "score":
         return int(new_value) if new_value else None
     elif data_type == "strand":
-        return "." if new_value is None else new_value
+        return "." if new_value in {"", None} else new_value
     else:
         return new_value
 

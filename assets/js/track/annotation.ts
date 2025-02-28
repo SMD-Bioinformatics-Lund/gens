@@ -162,7 +162,8 @@ export class AnnotationTrack extends BaseAnnotationTrack {
     // Go through results and draw appropriate symbols
     for (const track of filteredAnnotations) {
       const annotationName = track.name;
-      const heightOrder = track.height_order;
+      // FIXME: This will not be needed when calculations are performed on the front-end side
+      const heightOrder = track.height_order || 1;
       const start = track.start;
       const end = track.end;
       const color = track.color;

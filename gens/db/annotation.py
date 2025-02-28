@@ -1,12 +1,10 @@
 """Function for reading information from the database."""
 
-import datetime
 import logging
 from collections import defaultdict
 from itertools import groupby
 from typing import Any
 
-from flask import current_app as app
 from pymongo.database import Database
 
 from gens.models.annotation import AnnotationRecord, TranscriptRecord
@@ -29,14 +27,14 @@ def register_data_update(db: Database, track_type: str, name: str | None = None)
     db[UPDATES].insert_one({**track, "timestamp": get_timestamp()})
 
 
-def get_timestamps(track_type: str = "all"):
+def get_timestamps(gens_db: Database, track_type: str = "all"):
     """Get when a annotation track was last updated."""
     LOG.debug("Reading timestamp for %s", track_type)
-    db = app.config["GENS_DB"][UPDATES]
+    updates_coll = gens_db[UPDATES]
     if track_type == "all":
-        query = db.find()
+        query = updates_coll.find()
     else:
-        query = db.find({"track": track_type})
+        query = updates_coll.find({"track": track_type})
 
     # build results from query
     results: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -53,6 +51,7 @@ def get_timestamps(track_type: str = "all"):
 
 
 def query_variants(
+        scout_db: Database,
     case_id: str, sample_name: str, variant_category: VariantCategory, **kwargs
 ) -> Any:
     """Search the scout database for variants associated with a case.
@@ -63,7 +62,6 @@ def query_variants(
 
     Kwargs are optional search parameters that are passed to db.find().
     """
-    db = app.config["SCOUT_DB"]
     # build query
     query = {
         "case_id": case_id,
@@ -86,7 +84,7 @@ def query_variants(
         }
     # query database
     LOG.info("Query variant database: %s", query)
-    return db.variant.find(query)
+    return scout_db.variant.find(query)
 
 
 def _make_query_region(start_pos: int, end_pos: int, motif_type: str = "other") -> Any:
@@ -106,6 +104,7 @@ def _make_query_region(start_pos: int, end_pos: int, motif_type: str = "other") 
 
 
 def query_records_in_region(
+    gens_db: Database,
     record_type: str,
     region: GenomicRegion,
     genome_build: GenomeBuild,
@@ -125,7 +124,7 @@ def query_records_in_region(
 
     # build base query
     query = {
-        "chrom": region.chromosome,
+        "chrom": region.chromosome.value,
         "genome_build": genome_build.value,
         **_make_query_region(region_start, region_end),
         **kwargs,  # add optional search params
@@ -136,10 +135,12 @@ def query_records_in_region(
         sort_order.append(("height_order", 1))
     else:
         query["height_order"] = height_order
+
     # query database
-    cursor = app.config["GENS_DB"][record_type].find(
+    cursor = gens_db[record_type].find(
         query, {"_id": False}, sort=sort_order
     )
+
     if record_type == "annotations":
         return [AnnotationRecord(**doc) for doc in cursor]
     elif record_type == "transcripts":

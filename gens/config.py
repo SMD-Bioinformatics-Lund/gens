@@ -19,8 +19,9 @@ config_file = [
     Path(__file__).parent.joinpath('config.toml')  # built in config file
 ]
 CUSTOM_CONFIG_ENV_NAME = 'CONFIG_FILE'
-if os.getenv(CUSTOM_CONFIG_ENV_NAME) is not None:
-    user_cnf = Path(os.getenv(CUSTOM_CONFIG_ENV_NAME))
+custom_config = os.getenv(CUSTOM_CONFIG_ENV_NAME)
+if custom_config is not None:
+    user_cnf = Path(custom_config)
     if user_cnf.exists():
         config_file.append(user_cnf)
 
