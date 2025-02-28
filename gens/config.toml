@@ -1,0 +1,8 @@
+scout_url = "http://localhost:8000"
+authentication = "simple"
+
+[gens_db]
+connection = "mongodb://mongodb:27017/gens"
+
+[scout_db]
+connection = "mongodb://mongodb:27017/scout"
