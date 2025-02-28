@@ -8,7 +8,7 @@ from typing import Any, cast
 
 import connexion
 from fastapi.encoders import jsonable_encoder
-from flask import current_app, jsonify
+from flask import app, current_app, jsonify
 from pysam import TabixFile
 
 from gens.db import (
@@ -59,7 +59,7 @@ def get_annotation_sources(genome_build: int):
     """
     with current_app.app_context():
         collection = current_app.config["GENS_DB"][ANNOTATIONS_COLLECTION]
-        sources = collection.distinct("source", {"genome_build": str(genome_build)})
+        sources = collection.distinct("source", {"genome_build": genome_build})
     return jsonify(status="ok", sources=sources)
 
 
@@ -68,6 +68,9 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
     Gets annotation data in requested region and converts the coordinates
     to screen coordinates
     """
+
+    LOG.error("-------------------------------------------")
+
     if region == "" or source == "":
         msg = "Could not find annotation data in DB"
         LOG.error(msg)
@@ -83,6 +86,7 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
         zoom_level, parsed_region = raw_region
         annotations = list(
             query_records_in_region(
+                current_app.config["GENS_DB"],
                 record_type=ANNOTATIONS_COLLECTION,
                 region=parsed_region,
                 genome_build=genome_build,
@@ -90,13 +94,15 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
                 height_order=1 if collapsed else None,
             )
         )
+        # LOG.error(f"Found {len(annotations)} records")
 
     # Calculate maximum height order
     # FIXME: This code will be rewritten when moving position calculations to frontend code,
     # so ignoring type issues rather than resolving them
-    max_height_order = (
-        max(annotations, key=lambda e: e.height_order) if annotations else 1 # type: ignore
-    )
+    # max_height_order = (
+    #     max(annotations, key=lambda e: e.height_order) if annotations else 1 # type: ignore
+    # )
+    max_height_order = 1
 
     query_result = {
         "status": "ok",
@@ -107,6 +113,8 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
         "max_height_order": max_height_order,
         "res": zoom_level, # type: ignore
     }
+    # LOG.error(f"Result: {query_result['annotations'][0]}")
+
     return jsonable_encoder(query_result)
 
 
@@ -125,6 +133,7 @@ def get_transcript_data(region: str, genome_build: int, collapsed: bool):
     # Get transcripts within span [start_pos, end_pos] or transcripts that go over the span
     zoom_level, parsed_region = raw_region
     transcripts = query_records_in_region(
+            current_app.config["GENS_DB"],
             record_type=TRANSCRIPTS_COLLECTION,
             region=parsed_region,
             genome_build=genome_build_enum,
@@ -202,6 +211,7 @@ def get_variant_data(case_id: str, sample_id: str, variant_category: str, **opti
     try:
         variants = list(
             query_variants(
+                current_app.config["SCOUT_DB"],
                 case_id,
                 sample_id,
                 VariantCategory(variant_category),
