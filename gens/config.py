@@ -5,7 +5,6 @@ from typing import Tuple, Type
 from enum import Enum
 from pathlib import Path
 
-from pydantic import BaseModel
 from pydantic import Field, HttpUrl, MongoDsn, model_validator
 from pydantic_settings import (
     BaseSettings, 
@@ -44,7 +43,7 @@ class OauthConfig(BaseSettings):
 
 class MongoDbConfig(BaseSettings):
     connection: MongoDsn = Field(..., description="Database connection string.")
-    dbname: str
+    database: str | None = None
 
 
 class Settings(BaseSettings):
@@ -74,12 +73,7 @@ class Settings(BaseSettings):
     def check_oauth_opts(self):
         """Check that OAUTH options are set if authentication is oauth."""
         if self.authentication == AuthMethod.OAUTH:
-            checks = [
-                self.oauth_client_id is not None,
-                self.oauth_secret is not None,
-                self.oauth_discovery_url is not None,
-            ]
-            if not all(checks):
+            if not self.oauth is None:
                 raise ValueError(
                     "OAUTH require you to configure client_id, secret and discovery_url"
                 )
@@ -93,15 +87,15 @@ class Settings(BaseSettings):
         DB name in connection string takes presidence over the variable <sw>_dbname.
         """
         # gens
-        conn_info = parse_uri(str(self.gens_db))
-        self.gens_dbname = (
-            self.gens_dbname if conn_info["database"] is None else conn_info["database"]
+        conn_info = parse_uri(str(self.gens_db.connection))
+        self.gens_db.database = (
+            self.gens_db.database if conn_info["database"] is None else conn_info["database"]
         )
 
         # scout
-        conn_info = parse_uri(str(self.scout_db))
-        self.scout_dbname = (
-            self.scout_dbname
+        conn_info = parse_uri(str(self.scout_db.connection))
+        self.scout_db.database = (
+            self.scout_db.database
             if conn_info["database"] is None
             else conn_info["database"]
         )
@@ -127,4 +121,3 @@ UI_COLORS = {
 }
 
 settings = Settings()
-raise ValueError(settings)
