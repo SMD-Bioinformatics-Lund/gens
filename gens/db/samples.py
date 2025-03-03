@@ -46,7 +46,7 @@ def store_sample(
     coverage: FilePath,
     overview: FilePath,
     force: bool,
-):
+) -> None:
     """Store a new sample in the database."""
     LOG.info('Store sample "%s" in database', sample_id)
     sample_obj = SampleInfo(
@@ -147,7 +147,7 @@ def query_sample(samples_c: Collection[dict], sample_id: str, case_id: str | Non
     )
 
 
-def delete_sample(samples_c: Collection[dict], sample_id: str, case_id: str, genome_build: int):
+def delete_sample(samples_c: Collection[dict], sample_id: str, case_id: str, genome_build: int) -> None:
     """Remove a sample from the database."""
 
     LOG.info('Removing sample "%s" from database', sample_id)

@@ -11,6 +11,7 @@ from fastapi.encoders import jsonable_encoder
 from flask import current_app, jsonify
 from pysam import TabixFile
 from pymongo.database import Database
+from werkzeug.wrappers.response import Response
 
 from gens.db import (
     ANNOTATIONS_COLLECTION,
@@ -55,7 +56,7 @@ def get_overview_chrom_dim(
     return jsonable_encoder(query_result)
 
 
-def get_annotation_sources(genome_build: int):
+def get_annotation_sources(genome_build: int) -> Response:
     """
     Returns available annotation source files
     """
@@ -66,7 +67,7 @@ def get_annotation_sources(genome_build: int):
     return jsonify(status="ok", sources=sources)
 
 
-def get_annotation_data(region: str, source: str, genome_build: int, collapsed: bool):
+def get_annotation_data(region: str, source: str, genome_build: int, collapsed: bool) -> Any:
     """
     Gets annotation data in requested region and converts the coordinates
     to screen coordinates
@@ -114,7 +115,7 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
     return jsonable_encoder(query_result)
 
 
-def get_transcript_data(region: str, genome_build: int, collapsed: bool):
+def get_transcript_data(region: str, genome_build: int, collapsed: bool) -> Any:
     """
     Gets transcript data for requested region and converts the coordinates to
     screen coordinates
@@ -154,7 +155,7 @@ def get_transcript_data(region: str, genome_build: int, collapsed: bool):
     )
 
 
-def search_annotation(query: str, genome_build: str, annotation_type: str):
+def search_annotation(query: str, genome_build: str, annotation_type: str) -> Any:
     """Search for anntations of genes and return their position."""
     # Lookup queried element
     db: Database = current_app.config["GENS_DB"]
@@ -187,7 +188,7 @@ def search_annotation(query: str, genome_build: str, annotation_type: str):
     return jsonify({**data, "status": response_code})
 
 
-def get_variant_data(case_id: str, sample_id: str, variant_category: str, **optional_kwargs):
+def get_variant_data(case_id: str, sample_id: str, variant_category: str, **optional_kwargs: dict) -> Any:
     """Search Scout database for variants associated with a case and return info in JSON format."""
     default_height_order = 0
     base_return: dict[str, Any] = {"status": "ok"}
@@ -200,16 +201,17 @@ def get_variant_data(case_id: str, sample_id: str, variant_category: str, **opti
         zoom_level, region = parse_region_str(region, genome_build)  # type: ignore
         base_return = {
             **base_return,
-            **region.model_dump(),
+            **region.model_dump(), # type: ignore
             "res": zoom_level.value,
             "max_height_order": default_height_order,
         }
         # limit renders to b or greater resolution
     # query variants
     try:
+        db: Database = current_app.config["SCOUT_DB"]
         variants = list(
             query_variants(
-                current_app.config["SCOUT_DB"],
+                db,
                 case_id,
                 sample_id,
                 VariantCategory(variant_category),
@@ -297,19 +299,19 @@ def get_multiple_coverages() -> dict[str, Any] | tuple[Any, int]:
 def get_coverage(
     sample_id: str,
     case_id: str,
-    region,
-    x_pos,
-    y_pos,
-    plot_height,
-    top_bottom_padding,
-    baf_y_start,
-    baf_y_end,
-    log2_y_start,
-    log2_y_end,
-    genome_build,
-    reduce_data,
-    x_ampl,
-):
+    region: str,
+    x_pos: int,
+    y_pos: int,
+    plot_height: int,
+    top_bottom_padding: int,
+    baf_y_start: int,
+    baf_y_end: int,
+    log2_y_start: int,
+    log2_y_end: int,
+    genome_build: GenomeBuild,
+    reduce_data: Any,
+    x_ampl: Any,
+) -> Any:
     """
     Reads and formats Log2 ratio and BAF values for overview graph
     Returns the coverage in screen coordinates for frontend rendering
@@ -369,7 +371,7 @@ def get_coverage(
     return jsonable_encoder(query_result)
 
 
-def get_chromosome_info(chromosome: str, genome_build: int):
+def get_chromosome_info(chromosome: str, genome_build: int) -> Any:
     """Query the database for information on a chromosome."""
     db: Database = current_app.config["GENS_DB"]
 

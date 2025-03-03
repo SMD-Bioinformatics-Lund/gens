@@ -1,8 +1,9 @@
 """Commands for loading annotations, transcripts and samples to the database."""
 
+from enum import Enum
 import logging
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any, Iterable, TextIO, TypeVar
 
 import click
 import gzip
@@ -41,11 +42,11 @@ class ChoiceType(click.Choice):
 
     name = "genome build"
 
-    def __init__(self, enum):
+    def __init__(self, enum: Iterable[Enum]) -> None:
         super().__init__(list(map(str, enum)))
         self.enum = enum
 
-    def convert(self, value: str, param, ctx):
+    def convert(self, value: str, param: click.Parameter | None, ctx: click.Context | None) -> Enum:
         """Convert str to genome build"""
 
         value = super().convert(value, param, ctx)
@@ -61,7 +62,7 @@ def open_text_or_gzip(file_path: str) -> TextIO:
 
 
 @click.group()
-def load():
+def load() -> None:
     """Load information into Gens database"""
 
 
@@ -114,7 +115,7 @@ def sample(
     case_id: str,
     overview_json: Path,
     force: bool,
-):
+) -> None:
     """Load a sample into Gens database."""
     db: Database[Any] = app.config["GENS_DB"]
     # if collection is not indexed, create index
@@ -156,7 +157,7 @@ def sample(
     is_flag=True,
     help="If bed file contains a header",
 )
-def annotations(file: str, genome_build: GenomeBuild, has_header: bool):
+def annotations(file: str, genome_build: GenomeBuild, has_header: bool) -> None:
     """Load annotations from file into the database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
@@ -222,7 +223,7 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool):
     help="Genome build",
 )
 @with_appcontext
-def transcripts(file: str, mane: str, genome_build: GenomeBuild):
+def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     """Load transcripts into the database."""
 
     db = app.config["GENS_DB"]
@@ -258,7 +259,7 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild):
     help="Timeout for queries.",
 )
 @with_appcontext
-def chromosome_info(genome_build: GenomeBuild, timeout: int):
+def chromosome_info(genome_build: GenomeBuild, timeout: int) -> None:
     """Load chromosome size information into the database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index

@@ -14,7 +14,7 @@ valid_genome_builds = [str(gb.value) for gb in GenomeBuild]
 
 
 @click.group()
-def delete():
+def delete() -> None:
     """Delete information from Gens database"""
 
 
@@ -34,7 +34,7 @@ def delete():
     help="Id of case",
 )
 @with_appcontext
-def sample(sample_id: str, genome_build: int, case_id: str):
+def sample(sample_id: str, genome_build: int, case_id: str) -> None:
     """Remove a sample from Gens database."""
     db = app.config["GENS_DB"]
     # if collection is not indexed, create index

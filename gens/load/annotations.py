@@ -182,7 +182,7 @@ def format_data(data_type: str, value: str) -> str | int | RGBA_COLOR | RGB_COLO
         return new_value
 
 
-def set_missing_fields(annotation: dict[str, str | int | None], name: str):
+def set_missing_fields(annotation: dict[str, str | int | None], name: str) -> None:
     """Sets default values to fields that are missing"""
     for field_name in CORE_FIELDS:
         if field_name in annotation:
@@ -205,7 +205,7 @@ def set_missing_fields(annotation: dict[str, str | int | None], name: str):
             )
 
 
-def update_height_order(db: Database, name: str):
+def update_height_order(db: Database, name: str) -> None:
     """Updates height order for annotations.
 
     Height order is used for annotation placement
