@@ -6,6 +6,7 @@ import click
 from flask import current_app as app
 from flask.cli import with_appcontext
 
+from gens.commands.util import ChoiceType
 from gens.db import SAMPLES_COLLECTION, create_index, delete_sample, get_indexes
 from gens.models.genomic import GenomeBuild
 
@@ -23,7 +24,7 @@ def delete():
 @click.option(
     "-b",
     "--genome-build",
-    type=int,
+    type=ChoiceType(GenomeBuild),
     required=True,
     help="Genome build",
 )
