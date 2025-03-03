@@ -29,7 +29,9 @@ class TranscriptEntry(TypedDict):
     features: list
 
 
-def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild) -> Iterable[Any]:
+def build_transcripts(
+    transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild
+) -> Iterable[Any]:
     """Build transcript object from transcript and mane file."""
     mane_info = _parse_mane_transc(mane_file)
 

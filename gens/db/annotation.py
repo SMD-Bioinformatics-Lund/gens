@@ -51,7 +51,11 @@ def get_timestamps(gens_db: Database, track_type: str = "all") -> dict[str, list
 
 
 def query_variants(
-    scout_db: Database, case_id: str, sample_name: str, variant_category: VariantCategory, **kwargs: str
+    scout_db: Database,
+    case_id: str,
+    sample_name: str,
+    variant_category: VariantCategory,
+    **kwargs: str,
 ) -> Any:
     """Search the scout database for variants associated with a case.
 
@@ -72,12 +76,12 @@ def query_variants(
     }
     # add chromosome
     if "chromosome" in kwargs:
-        query["chromosome"] = kwargs["chromosome"].value # type: ignore
+        query["chromosome"] = kwargs["chromosome"].value  # type: ignore
     # add start, end position to query
     if all(param in kwargs for param in ["start_pos", "end_pos"]):
         query = {
             **query,
-            **_make_query_region(kwargs["start_pos"], kwargs["end_pos"], variant_category.value), # type: ignore
+            **_make_query_region(kwargs["start_pos"], kwargs["end_pos"], variant_category.value),  # type: ignore
         }
     # query database
     LOG.info("Query variant database: %s", query)
