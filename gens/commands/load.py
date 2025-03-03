@@ -3,7 +3,7 @@
 from enum import Enum
 import logging
 from pathlib import Path
-from typing import Any, Iterable, TextIO, TypeVar
+from typing import Any, Iterable, TextIO
 
 import click
 import gzip
