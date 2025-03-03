@@ -1,5 +1,7 @@
 """Handles CRUD operations for the Gens database."""
 
+# FIXME: Clean up this module. Is it needed at all? Most are unused, and
+# would be better to import directly from the target modules
 from .annotation import (
     VariantCategory,
     get_timestamps,
