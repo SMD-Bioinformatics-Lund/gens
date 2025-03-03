@@ -2,7 +2,7 @@
 
 import itertools
 import logging
-from typing import Any, Iterator
+from typing import Iterator
 
 from pydantic import FilePath
 from pymongo import DESCENDING
@@ -145,8 +145,6 @@ def query_sample(samples_c: Collection[dict], sample_id: str, case_id: str | Non
         overview_file=result["overview_file"],
         created_at=result["created_at"],
     )
-
-
 
 
 def delete_sample(samples_c: Collection[dict], sample_id: str, case_id: str, genome_build: int):
