@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     )
 
     @model_validator(mode="after")
-    def check_oauth_opts(self):
+    def check_oauth_opts(self) -> 'Settings':
         """Check that OAUTH options are set if authentication is oauth."""
         if self.authentication == AuthMethod.OAUTH:
             if not self.oauth is None:
@@ -80,7 +80,7 @@ class Settings(BaseSettings):
         return self
 
     @model_validator(mode="after")
-    def check_mongodb_connections(self):
+    def check_mongodb_connections(self) -> 'Settings':
         """
         Check if dbname is given in connection string and reassign if needed.
 

@@ -106,7 +106,7 @@ def get_indexes(db: Database, target_collection_name: str) -> list[str]:
     return indexes
 
 
-def create_index(db: Database, collection_name: str):
+def create_index(db: Database, collection_name: str) -> None:
     """Create indexes for collection in Gens db."""
     indexes = INDEXES[collection_name]
     existing_indexes = get_indexes(db, collection_name)

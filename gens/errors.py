@@ -1,13 +1,14 @@
 """Defenition of custom error pages"""
 
 import logging
+from typing import Any
 
 from flask import render_template
 
 LOG = logging.getLogger(__name__)
 
 
-def sample_not_found(error):
+def sample_not_found(error: Any) -> tuple[str, int]:
     """Resource not found."""
     sample_id = error.sample_id
 
@@ -20,7 +21,7 @@ def sample_not_found(error):
     )
 
 
-def generic_exception_error(error):
+def generic_exception_error(error: Any) -> tuple[str, int]:
     """Resource not found."""
     return (
         render_template(
@@ -32,7 +33,7 @@ def generic_exception_error(error):
     )
 
 
-def generic_abort_error(error):
+def generic_abort_error(error: Any) -> tuple[str, int]:
     """Internal server error page."""
     return (
         render_template(

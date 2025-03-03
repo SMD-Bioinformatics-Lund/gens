@@ -1,6 +1,6 @@
 """Models related to genome annotations."""
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import PositiveInt, field_serializer
 from pydantic_extra_types.color import Color
@@ -24,7 +24,7 @@ class AnnotationRecord(RWModel):
 
     @field_serializer("color")
     def serialize_color(
-        self, color: Color, _
+        self, color: Color, _: Any
     ) -> tuple[int, int, int] | tuple[int, int, int, float]:
         """Serialize RGB as tuple"""
         return color.as_rgb_tuple()

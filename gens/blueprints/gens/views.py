@@ -25,7 +25,7 @@ gens_bp = Blueprint(
 
 
 @gens_bp.route("/<path:sample_name>", methods=["GET"])
-def display_case(sample_name) -> str:
+def display_case(sample_name: str) -> str:
     """
     Renders the Gens template
     Expects sample_id as input to be able to load the sample data

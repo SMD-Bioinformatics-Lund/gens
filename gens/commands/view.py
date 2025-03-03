@@ -17,14 +17,14 @@ LOG = logging.getLogger(__name__)
 
 
 @click.group()
-def view():
+def view() -> None:
     """View information loaded into Gens database"""
 
 
 @view.command()
 @click.option("-s", "--summary", is_flag=True, help="Summarize the number of samples")
 @with_appcontext
-def samples(summary: bool):
+def samples(summary: bool) -> None:
     """View samples stored in the database"""
     db: Database = app.config["GENS_DB"]
     # print samples to terminal

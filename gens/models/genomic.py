@@ -106,7 +106,7 @@ class GenomicRegion(RWModel):
 
     @field_validator("region")
     @classmethod
-    def valid_region(cls, region: str):
+    def valid_region(cls, region: str) -> str:
         """Validate region string.
 
         Expected format <chom>:<start>-<end>
@@ -185,7 +185,7 @@ class QueryChromosomeCoverage(RWModel):
 
     @field_validator("reduce_data")
     @classmethod
-    def validate_percentage(cls, value: float):
+    def validate_percentage(cls, value: float) -> None:
         """Validate that a number falls between 0-1."""
 
         if not 0 <= value <= 1:

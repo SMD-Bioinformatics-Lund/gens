@@ -204,7 +204,7 @@ def _parse_transcript_gtf(
             yield row, attribs
 
 
-def _assign_height_order(transcripts: list[dict[str, Any]]):
+def _assign_height_order(transcripts: list[dict[str, Any]]) -> None:
     """Assign height order for an list or transcripts.
 
     MANE transcript always have height order == 1
@@ -237,7 +237,7 @@ def _assign_height_order(transcripts: list[dict[str, Any]]):
         tr["height_order"] = order
 
 
-def _sort_transcript_features(transcripts: list[dict[str, Any]]):
+def _sort_transcript_features(transcripts: list[dict[str, Any]]) -> None:
     """Sort transcript features on start coordinate."""
     for tr in transcripts:
         tr["features"] = sorted(tr["features"], key=lambda x: x["start"])
