@@ -5,8 +5,8 @@ import logging
 from typing import Iterator
 
 from pydantic import FilePath
-from pymongo import DESCENDING, MongoClient
-from pymongo.database import Database
+from pymongo import DESCENDING
+from pymongo.collection import Collection
 from pymongo.errors import DuplicateKeyError
 
 from gens.models.genomic import GenomeBuild
@@ -38,7 +38,7 @@ class NonUniqueIndexError(Exception):
 
 
 def store_sample(
-    db: Database,
+    samples_c: Collection[dict],
     sample_id: str,
     case_id: str,
     genome_build: GenomeBuild,
@@ -59,7 +59,7 @@ def store_sample(
     )
     index_fields: set[str] = {"baf_index", "coverage_index"}
     if force:
-        result = db[COLLECTION].update_one(
+        result = samples_c.update_one(
             {
                 "sample_id": sample_id,
                 "case_id": case_id,
@@ -87,11 +87,11 @@ def store_sample(
             )
     else:
         try:
-            db[COLLECTION].insert_one(sample_obj.model_dump(exclude=index_fields))
+            samples_c.insert_one(sample_obj.model_dump(exclude=index_fields))
         except DuplicateKeyError:
             LOG.error(
                 (
-                    "DuplicateKeyError while storing sample"
+                    "DuplicateKeyError while storing sample "
                     'with sample_id="%s" and case_id="%s" in database.'
                 ),
                 sample_id,
@@ -100,7 +100,7 @@ def store_sample(
 
 
 def get_samples(
-    db: Database, start: int = 0, n_samples: int | None = None
+    samples_c: Collection[dict], start: int = 0, n_samples: int | None = None
 ) -> tuple[list[SampleInfo], int]:
     """
     Get samples stored in the databse.
@@ -117,27 +117,25 @@ def get_samples(
             overview_file=r["overview_file"],
             created_at=r["created_at"],
         )
-        for r in db[COLLECTION].find().sort("created_at", DESCENDING)
+        for r in samples_c.find().sort("created_at", DESCENDING)
     )
     # limit results to n results
     if isinstance(n_samples, (int)) and 0 < n_samples:
         results = itertools.islice(results, start, start + n_samples)
 
-    return list(results), db[COLLECTION].count_documents({})
+    return list(results), samples_c.count_documents({})
 
 
-def query_sample(db: Database, sample_id: str, case_id: str | None) -> SampleInfo:
+def query_sample(samples_c: Collection[dict], sample_id: str, case_id: str | None) -> SampleInfo:
     """Get a sample with id."""
     result = None
     if case_id is None:
-        result = db[COLLECTION].find_one({"sample_id": sample_id})
+        result = samples_c.find_one({"sample_id": sample_id})
     else:
-        result = db[COLLECTION].find_one({"sample_id": sample_id, "case_id": case_id})
+        result = samples_c.find_one({"sample_id": sample_id, "case_id": case_id})
 
     if result is None:
-        raise SampleNotFoundError(
-            f'No sample with id: "{sample_id}" in database', sample_id
-        )
+        raise SampleNotFoundError(f'No sample with id: "{sample_id}" in database', sample_id)
     return SampleInfo(
         sample_id=result["sample_id"],
         case_id=result["case_id"],
@@ -149,10 +147,23 @@ def query_sample(db: Database, sample_id: str, case_id: str | None) -> SampleInf
     )
 
 
-def delete_sample(db: MongoClient, sample_id: str, case_id: str, genome_build: int):
+def delete_sample(samples_c: Collection[dict], sample_id: str, case_id: str, genome_build: int):
     """Remove a sample from the database."""
+
     LOG.info('Removing sample "%s" from database', sample_id)
-    db[COLLECTION].delete_one(
+
+    sample_filter = {
+        "sample_id": sample_id,
+        "case_id": case_id,
+        "genome_build": genome_build,
+    }
+
+    result = samples_c.find_one(sample_filter)
+
+    if result is None:
+        raise SampleNotFoundError(f'No sample with case_id: "{case_id}", sample_id: "{sample_id}", genome_build: "{genome_build}" in database', sample_id)
+
+    samples_c.delete_one(
         {
             "sample_id": sample_id,
             "case_id": case_id,

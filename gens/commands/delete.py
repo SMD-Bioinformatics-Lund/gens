@@ -23,7 +23,7 @@ def delete():
 @click.option(
     "-b",
     "--genome-build",
-    type=click.Choice(valid_genome_builds),
+    type=int,
     required=True,
     help="Genome build",
 )
@@ -41,7 +41,7 @@ def sample(sample_id: str, genome_build: int, case_id: str):
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
     delete_sample(
-        db,
+        db[SAMPLES_COLLECTION],
         sample_id=sample_id,
         case_id=case_id,
         genome_build=genome_build,

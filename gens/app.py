@@ -106,11 +106,15 @@ def configure_oauth_login(app):
 
     oauth_client.init_app(app)
 
+    oauth_settings = settings.oauth
+    if oauth_settings is None:
+        raise ValueError("OAuth settings must be present for Oauth login to work")
+
     oauth_client.register(
         name="google",
-        server_metadata_url=str(settings.oauth_discovery_url),
-        client_id=settings.oauth_client_id,
-        client_secret=settings.oauth_secret,
+        server_metadata_url=str(oauth_settings.discovery_url),
+        client_id=oauth_settings.client_id,
+        client_secret=oauth_settings.secret,
         client_kwargs={"scope": "openid email profile"},
     )
 

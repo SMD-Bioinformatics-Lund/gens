@@ -122,7 +122,7 @@ def sample(
         create_index(db, SAMPLES_COLLECTION)
     # load samples
     store_sample(
-        db,
+        db[SAMPLES_COLLECTION],
         sample_id=sample_id,
         case_id=case_id,
         genome_build=genome_build,
