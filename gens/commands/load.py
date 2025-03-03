@@ -14,7 +14,7 @@ from gens.config import settings
 from gens.db import (
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
-    SAMPLES_COLLECTION,
+    COLLECTION,
     TRANSCRIPTS_COLLECTION,
     create_index,
     get_db_connection,
@@ -118,11 +118,11 @@ def sample(
     """Load a sample into Gens database."""
     db: Database[Any] = app.config["GENS_DB"]
     # if collection is not indexed, create index
-    if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
-        create_index(db, SAMPLES_COLLECTION)
+    if len(get_indexes(db, COLLECTION)) == 0:
+        create_index(db, COLLECTION)
     # load samples
     store_sample(
-        db,
+        db[COLLECTION],
         sample_id=sample_id,
         case_id=case_id,
         genome_build=genome_build,

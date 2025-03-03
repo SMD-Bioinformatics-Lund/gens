@@ -18,11 +18,14 @@ def init_database_connection() -> None:
     # verify that database was properly configured
     LOG.info("Initialize db connection")
 
+    LOG.error(f"Database name: {settings.scout_db.database}")
+    LOG.error(f"Database name: {settings.gens_db.database}")
+
     # connect to database
-    app.config["SCOUT_DB"] = pymongo.MongoClient(str(settings.scout_db)).get_database(
+    app.config["SCOUT_DB"] = pymongo.MongoClient(str(settings.scout_db.connection)).get_database(
         name=settings.scout_db.database
     )
-    app.config["GENS_DB"] = pymongo.MongoClient(str(settings.gens_db)).get_database(
+    app.config["GENS_DB"] = pymongo.MongoClient(str(settings.gens_db.connection)).get_database(
         name=settings.gens_db.database
     )
 

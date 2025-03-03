@@ -48,3 +48,13 @@ class SampleInfo(RWModel, CreatedAtModel):
         """Serialize a Path object as string"""
 
         return str(path)
+
+    # @staticmethod
+    # def parse(mongo_dict: dict) -> 'SampleInfo':
+    #     sample_id = mongo_dict['sample_id']
+    #     case_id = mongo_dict['case_id']
+    #     genome_build = mongo_dict['genome_build']
+    #     baf_file = mongo_dict['baf_file']
+    #     coverage_file = mongo_dict['coverage_dict']
+    #     overview_file = mongo_dict['overview_file']
+    #     return SampleInfo(sample_id, case_id, genome_build, baf_file, coerage_file, overview_file)
