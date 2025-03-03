@@ -6,9 +6,10 @@ import logging
 from logging.config import dictConfig
 
 import connexion
-from flask import redirect, request, url_for
+from flask import Flask, redirect, request, url_for
 from flask_compress import Compress  # type: ignore
 from flask_login import current_user  # type: ignore
+from werkzeug.wrappers.response import Response
 
 from .auth import login_manager, oauth_client
 from .blueprints import gens_bp, home_bp, login_bp
@@ -40,11 +41,11 @@ LOG = logging.getLogger(__name__)
 compress = Compress()
 
 
-def create_app():
+def create_app() -> Flask:
     """Create and setup Gens application."""
     application = connexion.FlaskApp(__name__, specification_dir="openapi/")
     application.add_api("openapi.yaml")
-    app = application.app
+    app: Flask = application.app  # type: ignore
     # configure app
     app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 
@@ -65,7 +66,7 @@ def create_app():
     # register_errors(app)
 
     @app.before_request
-    def check_user():
+    def check_user() -> Flask|None|Response: # type: ignore
         """Check permission if page requires authentication."""
         if settings.authentication == AuthMethod.DISABLED or not request.endpoint:
             return None
@@ -86,14 +87,14 @@ def create_app():
     return app
 
 
-def initialize_extensions(app):
+def initialize_extensions(app: Flask) -> None:
     """Initialize flask extensions."""
     cache.init_app(app)
     compress.init_app(app)
     login_manager.init_app(app)
 
 
-def configure_extensions(app):
+def configure_extensions(app: Flask) -> None:
     """configure app extensions."""
     if settings.authentication == AuthMethod.OAUTH:
         LOG.info("Google login enabled")
@@ -101,21 +102,25 @@ def configure_extensions(app):
         configure_oauth_login(app)
 
 
-def configure_oauth_login(app):
+def configure_oauth_login(app: Flask) -> None:
     """Register the Google Oauth2 login client using config settings"""
 
     oauth_client.init_app(app)
 
+    oauth_settings = settings.oauth
+    if oauth_settings is None:
+        raise ValueError("OAuth settings must be present for Oauth login to work")
+
     oauth_client.register(
         name="google",
-        server_metadata_url=str(settings.oauth_discovery_url),
-        client_id=settings.oauth_client_id,
-        client_secret=settings.oauth_secret,
+        server_metadata_url=str(oauth_settings.discovery_url),
+        client_id=oauth_settings.client_id,
+        client_secret=oauth_settings.secret,
         client_kwargs={"scope": "openid email profile"},
     )
 
 
-def register_errors(app):
+def register_errors(app: Flask) -> None:
     """Register error pages for gens app."""
     app.register_error_handler(SampleNotFoundError, sample_not_found)
     app.register_error_handler(404, generic_abort_error)
@@ -124,7 +129,7 @@ def register_errors(app):
     app.register_error_handler(Exception, generic_exception_error)
 
 
-def register_blueprints(app):
+def register_blueprints(app: Flask) -> None:
     """Register blueprints."""
     app.register_blueprint(gens_bp)
     app.register_blueprint(home_bp)

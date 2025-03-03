@@ -29,7 +29,9 @@ class TranscriptEntry(TypedDict):
     features: list
 
 
-def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild):
+def build_transcripts(
+    transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild
+) -> Iterable[Any]:
     """Build transcript object from transcript and mane file."""
     mane_info = _parse_mane_transc(mane_file)
 
@@ -200,7 +202,7 @@ def _parse_transcript_gtf(
             yield row, attribs
 
 
-def _assign_height_order(transcripts: list[dict[str, Any]]):
+def _assign_height_order(transcripts: list[dict[str, Any]]) -> None:
     """Assign height order for an list or transcripts.
 
     MANE transcript always have height order == 1
@@ -231,7 +233,7 @@ def _assign_height_order(transcripts: list[dict[str, Any]]):
         tr["height_order"] = order
 
 
-def _sort_transcript_features(transcripts: list[dict[str, Any]]):
+def _sort_transcript_features(transcripts: list[dict[str, Any]]) -> None:
     """Sort transcript features on start coordinate."""
     for tr in transcripts:
         tr["features"] = sorted(tr["features"], key=lambda x: x["start"])
