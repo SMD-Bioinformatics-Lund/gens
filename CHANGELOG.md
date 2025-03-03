@@ -31,6 +31,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Fixed various issues raised by pylint
  - mypy type fixing for `mypy gens/commands/load.py`
  - Refactor load transcripts
+ - Fix `gens delete sample` command by making it take the correct int formatted genome build number
+ - Refactor CLI sample functions to work with a Gens collection rather than accessing the db globally
 
 ## 3.0.1
 
