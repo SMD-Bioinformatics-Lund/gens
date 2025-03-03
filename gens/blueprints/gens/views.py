@@ -4,13 +4,13 @@ import logging
 from datetime import date
 
 from flask import Blueprint, abort, current_app, render_template, request
+from pymongo.database import Database
 
 from gens import version
 from gens.config import UI_COLORS, settings
-from gens.db import query_sample, SAMPLES_COLLECTION
+from gens.db import SAMPLES_COLLECTION, query_sample
 from gens.graph import parse_region_str
 from gens.models.genomic import GenomeBuild
-from pymongo.database import Database
 
 LOG = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ def display_case(sample_name) -> str:
     db: Database = current_app.config["GENS_DB"]
 
     # Check that BAF and Log2 file exists
-    # TODO move checks to the API instead
+    # FIXME move checks to the API instead
     _ = query_sample(db[SAMPLES_COLLECTION], individual_id, case_id)
 
     # which variant to highlight as focused

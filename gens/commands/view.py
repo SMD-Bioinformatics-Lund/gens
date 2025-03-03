@@ -7,10 +7,10 @@ from typing import Any, Iterable
 import click
 from flask import current_app as app
 from flask.cli import with_appcontext
+from pymongo.database import Database
 from tabulate import tabulate
 
-from gens.db import get_samples, SAMPLES_COLLECTION
-from pymongo.database import Database
+from gens.db import SAMPLES_COLLECTION, get_samples
 
 LOG = logging.getLogger(__name__)
 
