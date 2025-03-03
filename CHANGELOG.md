@@ -19,6 +19,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Migrated from setup.py to pyproject.toml using hatchling
  - Updated python to version 3.12 and thawed some dependencies.
  - Switched from JS to TS and updated required parts of the build chain.
+ - For strand information, "" is interpreted as unknown and assigned "."
+ - Genome builds are dealt with as integers also for annotation tracks (previously these had been encoded as strings)
 
 ### Fixed
  - Fixed parsing of AED and BED files.
