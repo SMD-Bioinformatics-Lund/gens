@@ -91,7 +91,7 @@ def store_sample(
         except DuplicateKeyError:
             LOG.error(
                 (
-                    "DuplicateKeyError while storing sample"
+                    "DuplicateKeyError while storing sample "
                     'with sample_id="%s" and case_id="%s" in database.'
                 ),
                 sample_id,
