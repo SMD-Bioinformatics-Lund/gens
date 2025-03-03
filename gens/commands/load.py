@@ -1,10 +1,9 @@
 """Commands for loading annotations, transcripts and samples to the database."""
 
-from enum import Enum
 import gzip
 import logging
 from pathlib import Path
-from typing import Any, Iterable, TextIO
+from typing import Any, TextIO
 
 import click
 from flask import current_app as app
@@ -38,22 +37,6 @@ from gens.models.annotation import AnnotationRecord
 from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
-
-
-class ChoiceType(click.Choice):
-    """Custom input type for click that returns genome build enum."""
-
-    name = "genome build"
-
-    def __init__(self, enum: Iterable[Enum]) -> None:
-        super().__init__(list(map(str, enum)))
-        self.enum = enum
-
-    def convert(self, value: str, param: click.Parameter | None, ctx: click.Context | None) -> Enum:
-        """Convert str to genome build"""
-
-        value = super().convert(value, param, ctx)
-        return next(v for v in self.enum if str(v) == value)
 
 
 def open_text_or_gzip(file_path: str) -> TextIO:
