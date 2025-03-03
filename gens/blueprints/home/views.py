@@ -2,6 +2,7 @@
 
 import logging
 import os
+from typing import Any
 
 from flask import Blueprint, current_app, render_template, request
 
@@ -96,10 +97,10 @@ def about() -> str:
     )
 
 
-def public_endpoint(function):
+def public_endpoint(fn: Any) -> Any:
     """Set an endpoint as public"""
-    function.is_public = True
-    return function
+    fn.is_public = True
+    return fn
 
 
 @home_bp.route("/landing")

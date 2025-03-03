@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 )
 @click.option("-u", "--update", help="Update the indexes", is_flag=True)
 @with_appcontext
-def index(build: bool, update: bool):
+def index(build: bool, update: bool) -> None:
     """Create indexes for the database."""
     db: Database = current_app.config["GENS_DB"]
 

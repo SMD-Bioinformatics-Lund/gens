@@ -2,6 +2,7 @@
 
 from flask import current_app as app
 from flask_login import UserMixin
+from pymongo.database import Database
 
 
 class LoginUser(UserMixin):
@@ -12,6 +13,7 @@ class LoginUser(UserMixin):
 
         self.email = user_data["email"]
         self.roles: list[str] = []
+        self.name = None
 
         # set the attributes in the user_data as class attributes
         for key, value in user_data.items():
@@ -33,7 +35,7 @@ def user(email: str) -> LoginUser | None:
 
     If user exist return a flask login user object otherwise return null.
     """
-    db = app.config["SCOUT_DB"]
+    db: Database = app.config["SCOUT_DB"]
 
     query = {"email": email}
 

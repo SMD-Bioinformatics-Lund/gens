@@ -19,7 +19,7 @@ TRANSCRIPTS = "transcripts"
 UPDATES = "updates"
 
 
-def register_data_update(db: Database, track_type: str, name: str | None = None):
+def register_data_update(db: Database, track_type: str, name: str | None = None) -> None:
     """Register that a track was updated."""
     LOG.debug("Creating timestamp for %s", track_type)
     track: dict[str, str | None] = {"track": track_type, "name": name}
@@ -27,7 +27,7 @@ def register_data_update(db: Database, track_type: str, name: str | None = None)
     db[UPDATES].insert_one({**track, "timestamp": get_timestamp()})
 
 
-def get_timestamps(gens_db: Database, track_type: str = "all"):
+def get_timestamps(gens_db: Database, track_type: str = "all") -> dict[str, list[dict[str, Any]]]:
     """Get when a annotation track was last updated."""
     LOG.debug("Reading timestamp for %s", track_type)
     updates_coll = gens_db[UPDATES]
@@ -51,8 +51,11 @@ def get_timestamps(gens_db: Database, track_type: str = "all"):
 
 
 def query_variants(
-        scout_db: Database,
-    case_id: str, sample_name: str, variant_category: VariantCategory, **kwargs
+    scout_db: Database,
+    case_id: str,
+    sample_name: str,
+    variant_category: VariantCategory,
+    **kwargs: str,
 ) -> Any:
     """Search the scout database for variants associated with a case.
 
@@ -73,14 +76,12 @@ def query_variants(
     }
     # add chromosome
     if "chromosome" in kwargs:
-        query["chromosome"] = kwargs["chromosome"].value
+        query["chromosome"] = kwargs["chromosome"].value  # type: ignore
     # add start, end position to query
     if all(param in kwargs for param in ["start_pos", "end_pos"]):
         query = {
             **query,
-            **_make_query_region(
-                kwargs["start_pos"], kwargs["end_pos"], variant_category.value
-            ),
+            **_make_query_region(kwargs["start_pos"], kwargs["end_pos"], variant_category.value),  # type: ignore
         }
     # query database
     LOG.info("Query variant database: %s", query)
@@ -109,7 +110,7 @@ def query_records_in_region(
     region: GenomicRegion,
     genome_build: GenomeBuild,
     height_order: int | None = None,
-    **kwargs,
+    **kwargs: str,
 ) -> list[AnnotationRecord] | list[TranscriptRecord]:
     """Query the gens database for transcript information."""
 
@@ -137,9 +138,7 @@ def query_records_in_region(
         query["height_order"] = height_order
 
     # query database
-    cursor = gens_db[record_type].find(
-        query, {"_id": False}, sort=sort_order
-    )
+    cursor = gens_db[record_type].find(query, {"_id": False}, sort=sort_order)
 
     if record_type == "annotations":
         return [AnnotationRecord(**doc) for doc in cursor]

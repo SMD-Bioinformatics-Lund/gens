@@ -46,7 +46,7 @@ def store_sample(
     coverage: FilePath,
     overview: FilePath,
     force: bool,
-):
+) -> None:
     """Store a new sample in the database."""
     LOG.info('Store sample "%s" in database', sample_id)
     sample_obj = SampleInfo(
@@ -147,7 +147,9 @@ def query_sample(samples_c: Collection[dict], sample_id: str, case_id: str | Non
     )
 
 
-def delete_sample(samples_c: Collection[dict], sample_id: str, case_id: str, genome_build: int):
+def delete_sample(
+    samples_c: Collection[dict], sample_id: str, case_id: str, genome_build: int
+) -> None:
     """Remove a sample from the database."""
 
     LOG.info('Removing sample "%s" from database', sample_id)
@@ -161,7 +163,10 @@ def delete_sample(samples_c: Collection[dict], sample_id: str, case_id: str, gen
     result = samples_c.find_one(sample_filter)
 
     if result is None:
-        raise SampleNotFoundError(f'No sample with case_id: "{case_id}", sample_id: "{sample_id}", genome_build: "{genome_build}" in database', sample_id)
+        raise SampleNotFoundError(
+            f'No sample with case_id: "{case_id}", sample_id: "{sample_id}", genome_build: "{genome_build}" in database',
+            sample_id,
+        )
 
     samples_c.delete_one(
         {
