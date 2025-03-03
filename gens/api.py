@@ -10,10 +10,12 @@ import connexion
 from fastapi.encoders import jsonable_encoder
 from flask import current_app, jsonify
 from pysam import TabixFile
+from pymongo.database import Database
 
 from gens.db import (
     ANNOTATIONS_COLLECTION,
     TRANSCRIPTS_COLLECTION,
+    SAMPLES_COLLECTION,
     get_chromosome_size,
     query_records_in_region,
     query_sample,
@@ -58,7 +60,8 @@ def get_annotation_sources(genome_build: int):
     Returns available annotation source files
     """
     with current_app.app_context():
-        collection = current_app.config["GENS_DB"][ANNOTATIONS_COLLECTION]
+        db: Database = current_app.config["GENS_DB"]
+        collection = db[ANNOTATIONS_COLLECTION]
         sources = collection.distinct("source", {"genome_build": genome_build})
     return jsonify(status="ok", sources=sources)
 
@@ -83,9 +86,10 @@ def get_annotation_data(region: str, source: str, genome_build: int, collapsed: 
     # Get annotations within span [start_pos, end_pos] or annotations that
     # go over the span
     zoom_level, parsed_region = raw_region
+    db: Database = current_app.config["GENS_DB"]
     annotations = list(
         query_records_in_region(
-            current_app.config["GENS_DB"],
+            db,
             record_type=ANNOTATIONS_COLLECTION,
             region=parsed_region,
             genome_build=genome_build,
@@ -124,8 +128,9 @@ def get_transcript_data(region: str, genome_build: int, collapsed: bool):
 
     # Get transcripts within span [start_pos, end_pos] or transcripts that go over the span
     zoom_level, parsed_region = raw_region
+    db: Database = current_app.config["GENS_DB"]
     transcripts = query_records_in_region(
-            current_app.config["GENS_DB"],
+            db,
             record_type=TRANSCRIPTS_COLLECTION,
             region=parsed_region,
             genome_build=genome_build_enum,
@@ -152,7 +157,8 @@ def get_transcript_data(region: str, genome_build: int, collapsed: bool):
 def search_annotation(query: str, genome_build: str, annotation_type: str):
     """Search for anntations of genes and return their position."""
     # Lookup queried element
-    collection = current_app.config["GENS_DB"][annotation_type]
+    db: Database = current_app.config["GENS_DB"]
+    collection = db[annotation_type]
     db_query: dict[str, str | re.Pattern[str]] = {
         "gene_name": re.compile("^" + re.escape(query) + "$", re.IGNORECASE)
     }
@@ -231,8 +237,8 @@ def get_multiple_coverages() -> dict[str, Any] | tuple[Any, int]:
     LOG.info("Got request for all chromosome coverages: %s", data.sample_id)
 
     # read sample information
-    db = current_app.config["GENS_DB"]
-    sample_obj = query_sample(db, data.sample_id, data.case_id)
+    db: Database = current_app.config["GENS_DB"]
+    sample_obj = query_sample(db[SAMPLES_COLLECTION], data.sample_id, data.case_id)
     # Try to find and load an overview json data file
     json_data, cov_file, baf_file = None, None, None
     if sample_obj.overview_file.is_file():
@@ -328,10 +334,10 @@ def get_coverage(
         genome_build,
         reduce_data,
     )
-    db = current_app.config["GENS_DB"]
+    db: Database = current_app.config["GENS_DB"]
 
     # TODO respond with 404 error if file is not found
-    sample_obj = query_sample(db, sample_id, case_id)
+    sample_obj = query_sample(db[SAMPLES_COLLECTION], sample_id, case_id)
     cov_file = TabixFile(str(sample_obj.coverage_file))
     baf_file = TabixFile(str(sample_obj.baf_file))
 
@@ -363,9 +369,9 @@ def get_coverage(
     return jsonable_encoder(query_result)
 
 
-def get_chromosome_info(chromosome, genome_build):
+def get_chromosome_info(chromosome: str, genome_build: int):
     """Query the database for information on a chromosome."""
-    db = current_app.config["GENS_DB"]
+    db: Database = current_app.config["GENS_DB"]
 
     # validate input
     genome_build = GenomeBuild(genome_build)
