@@ -82,6 +82,7 @@ def create_app():
             next_url = f"{request.path}?{request.query_string.decode()}"
             login_url = url_for("home.landing", next=next_url)
             return redirect(login_url)
+        return None
 
     return app
 

@@ -8,12 +8,13 @@ from typing import Any, Generator, Iterable, Optional, TextIO, TypedDict
 
 import click
 
-from ..models.genomic import GenomeBuild
+from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
 
 class TranscriptEntry(TypedDict):
+    """Represents a single transcript entry in an GTF file"""
     chrom: str
     genome_build: int
     gene_name: str
