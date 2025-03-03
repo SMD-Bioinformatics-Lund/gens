@@ -226,7 +226,7 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool) -> None:
 def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     """Load transcripts into the database."""
 
-    db = app.config["GENS_DB"]
+    db: Database = app.config["GENS_DB"]
     # if collection is not indexed, create index
     if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) == 0:
         create_index(db, TRANSCRIPTS_COLLECTION)
@@ -261,7 +261,7 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
 @with_appcontext
 def chromosome_info(genome_build: GenomeBuild, timeout: int) -> None:
     """Load chromosome size information into the database."""
-    db = app.config["GENS_DB"]
+    db: Database = app.config["GENS_DB"]
     # if collection is not indexed, create index
     if len(get_indexes(db, CHROMSIZES_COLLECTION)) == 0:
         create_index(db, CHROMSIZES_COLLECTION)

@@ -8,6 +8,7 @@ from typing import Any
 from flask import current_app as app
 from flask import request
 from pysam import TabixFile
+from pymongo.database import Database
 
 from .cache import cache
 from .db import get_chromosome_size
@@ -122,7 +123,7 @@ def overview_chrom_dimensions(
     """
     Calculates the position for all chromosome graphs in the overview canvas
     """
-    db = app.config["GENS_DB"]
+    db: Database = app.config["GENS_DB"]
     chrom_dims = {}
     for chrom in Chromosome:
         chrom_data = get_chromosome_size(db, chrom, genome_build)
@@ -171,7 +172,8 @@ def parse_region_str(
             chrom = Chromosome(name_search.upper())
         else:
             # Lookup queried gene
-            collection = app.config["GENS_DB"]["transcripts" + str(genome_build)]
+            db: Database = app.config["GENS_DB"]
+            collection = db["transcripts" + str(genome_build)]
             start_query = collection.find_one(
                 {"gene_name": re.compile("^" + re.escape(name_search) + "$", re.IGNORECASE)},
                 sort=[("start", 1)],
@@ -193,7 +195,7 @@ def parse_region_str(
     if start is None:
         raise ValueError(f"Expected variable start, found: {start}")
 
-    db = app.config["GENS_DB"]
+    db: Database = app.config["GENS_DB"]
     chrom_data = get_chromosome_size(db, chrom, genome_build)
     # Set end position if it is not set
     if end == "None" or end is None:
@@ -281,7 +283,7 @@ def get_cov(
     baf_fh: TabixFile | None = None,
 ) -> tuple[REGION, int, int, list[Any], list[Any]]:
     """Get Log2 ratio and BAF values for chromosome with screen coordinates."""
-    db = app.config["GENS_DB"]
+    db: Database = app.config["GENS_DB"]
     graph = set_graph_values(req)
     # parse region
     parse_results = parse_region_str(req.region, req.genome_build)
