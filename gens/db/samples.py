@@ -14,8 +14,6 @@ from gens.models.sample import SampleInfo
 
 LOG = logging.getLogger(__name__)
 
-COLLECTION = "samples"
-
 
 class SampleNotFoundError(Exception):
     """The sample was not found in the database."""
@@ -161,7 +159,8 @@ def delete_sample(samples_c: Collection[dict], sample_id: str, case_id: str, gen
     result = samples_c.find_one(sample_filter)
 
     if result is None:
-        raise SampleNotFoundError(f'No sample with case_id: "{case_id}", sample_id: "{sample_id}", genome_build: "{genome_build}" in database', sample_id)
+        msg = f'No sample found with case_id: "{case_id}", sample_id: "{sample_id}", genome_build: "{genome_build}"'
+        raise SampleNotFoundError(msg, sample_id)
 
     samples_c.delete_one(
         {

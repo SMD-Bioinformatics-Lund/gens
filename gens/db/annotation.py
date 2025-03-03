@@ -51,8 +51,11 @@ def get_timestamps(gens_db: Database, track_type: str = "all"):
 
 
 def query_variants(
-        scout_db: Database,
-    case_id: str, sample_name: str, variant_category: VariantCategory, **kwargs
+    scout_db: Database,
+    case_id: str,
+    sample_name: str,
+    variant_category: VariantCategory,
+    **kwargs,
 ) -> Any:
     """Search the scout database for variants associated with a case.
 
@@ -137,13 +140,10 @@ def query_records_in_region(
         query["height_order"] = height_order
 
     # query database
-    cursor = gens_db[record_type].find(
-        query, {"_id": False}, sort=sort_order
-    )
+    cursor = gens_db[record_type].find(query, {"_id": False}, sort=sort_order)
 
     if record_type == "annotations":
         return [AnnotationRecord(**doc) for doc in cursor]
-    elif record_type == "transcripts":
+    if record_type == "transcripts":
         return [TranscriptRecord(**doc) for doc in cursor]
-    else:
-        raise ValueError(f"unknown record type {record_type}")
+    raise ValueError(f"unknown record type {record_type}")

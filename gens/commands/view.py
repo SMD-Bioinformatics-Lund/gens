@@ -10,7 +10,8 @@ from flask.cli import with_appcontext
 from pymongo.database import Database
 from tabulate import tabulate
 
-from gens.db import SAMPLES_COLLECTION, get_samples
+from gens.db import get_samples
+from gens.db.collections import SAMPLES_COLLECTION
 
 LOG = logging.getLogger(__name__)
 

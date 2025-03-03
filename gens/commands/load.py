@@ -12,15 +12,17 @@ from pymongo.database import Database
 
 from gens.config import settings
 from gens.db import (
-    ANNOTATIONS_COLLECTION,
-    CHROMSIZES_COLLECTION,
-    SAMPLES_COLLECTION,
-    TRANSCRIPTS_COLLECTION,
     create_index,
     get_db_connection,
     get_indexes,
     register_data_update,
     store_sample,
+)
+from gens.db.collections import (
+    ANNOTATIONS_COLLECTION,
+    CHROMSIZES_COLLECTION,
+    SAMPLES_COLLECTION,
+    TRANSCRIPTS_COLLECTION,
 )
 from gens.load import (
     build_chromosomes_obj,

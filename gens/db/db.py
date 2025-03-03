@@ -8,7 +8,7 @@ from flask import current_app as app
 from pydantic import MongoDsn
 from pymongo.database import Database
 
-from ..config import Settings, settings
+from ..config import settings
 
 LOG = logging.getLogger(__name__)
 
@@ -19,12 +19,12 @@ def init_database_connection() -> None:
     LOG.info("Initialize db connection")
 
     # connect to database
-    app.config["SCOUT_DB"] = pymongo.MongoClient(str(settings.scout_db.connection)).get_database(
-        name=settings.scout_db.database
-    )
-    app.config["GENS_DB"] = pymongo.MongoClient(str(settings.gens_db.connection)).get_database(
-        name=settings.gens_db.database
-    )
+    app.config["SCOUT_DB"] = pymongo.MongoClient(
+        str(settings.scout_db.connection)
+    ).get_database(name=settings.scout_db.database)
+    app.config["GENS_DB"] = pymongo.MongoClient(
+        str(settings.gens_db.connection)
+    ).get_database(name=settings.gens_db.database)
 
 
 def get_db_connection(mongo_uri: MongoDsn, db_name: str) -> Database[Any]:

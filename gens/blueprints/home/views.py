@@ -8,7 +8,8 @@ from pymongo.database import Database
 
 from gens import version
 from gens.config import settings
-from gens.db import SAMPLES_COLLECTION, get_samples, get_timestamps
+from gens.db import get_samples, get_timestamps
+from gens.db.collections import SAMPLES_COLLECTION
 from gens.models.sample import SampleInfo
 
 LOG = logging.getLogger(__name__)

@@ -1,14 +1,14 @@
 """Create indexes in the database."""
 
 import logging
-from typing import Any
 
 from pymongo import ASCENDING, IndexModel
 from pymongo.database import Database
 
+from gens.db.collections import SAMPLES_COLLECTION
+
 from .annotation import ANNOTATIONS, TRANSCRIPTS
 from .chrom_sizes import CHROMSIZES
-from .samples import COLLECTION as SAMPLES
 
 LOG = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ INDEXES = {
             background=True,
         ),
     ],
-    SAMPLES: [
+    SAMPLES_COLLECTION: [
         IndexModel(
             [("sample_id", ASCENDING), ("genome_build", ASCENDING)],
             name="sample__sample_id_genome_build",

@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import Field, PositiveInt, field_serializer
+from pydantic import PositiveInt, field_serializer
 from pydantic_extra_types.color import Color
 
 from ..models import RWModel

@@ -8,7 +8,8 @@ from pymongo.database import Database
 
 from gens import version
 from gens.config import UI_COLORS, settings
-from gens.db import SAMPLES_COLLECTION, query_sample
+from gens.db import query_sample
+from gens.db.collections import SAMPLES_COLLECTION
 from gens.graph import parse_region_str
 from gens.models.genomic import GenomeBuild
 
