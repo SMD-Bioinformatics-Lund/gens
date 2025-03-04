@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 import argparse
 from dataclasses import dataclass
 import logging
@@ -8,13 +9,18 @@ import re
 import subprocess
 import requests
 
+DESCRIPTION = """
+Quickly setup the database
+
+1. Load chromosomes (requires internet connection)
+2. Load transcripts (downloads MANE summary and transcripts GTF if not present in the annotations folder)
+3. Load annotations (*.bed and *.aed files in the annotations folder)
+4. Load samples     (matched on pattern *.cov.bed.gz and *.baf.bed.gz in the samples folder)
+"""
+
 
 LOG = logging.getLogger("quick_setup")
 logging.basicConfig(level=logging.INFO)
-
-
-"""Quickly setup the database"""
-
 
 def main(
     samples_dir: Path,
@@ -205,7 +211,7 @@ def find_samples(
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Load data into MongoDB from dump folder.")
+    parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument(
         "--samples_dir", type=str, help="The folder containing the dump files.", required=True
     )
