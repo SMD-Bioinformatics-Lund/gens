@@ -21,6 +21,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Switched from JS to TS and updated required parts of the build chain.
  - For strand information, "" is interpreted as unknown and assigned "."
  - Genome builds are dealt with as integers also for annotation tracks (previously these had been encoded as strings)
+ - Replaced the temporary hard-coded to HG002 setup script with the more flexible "utils/quick_setup.py", able to take many samples and annotations
 
 ### Fixed
  - Fixed parsing of AED and BED files.
