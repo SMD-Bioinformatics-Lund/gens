@@ -1,3 +1,5 @@
+"""Utility functions and classes for click commands."""
+
 import click
 
 
@@ -15,5 +17,3 @@ class ChoiceType(click.Choice):
 
         value = super().convert(value, param, ctx)
         return next(v for v in self.enum if str(v) == value)
-
-

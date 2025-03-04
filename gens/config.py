@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pydantic import Field, HttpUrl, MongoDsn, model_validator
 from pydantic_settings import (
-    BaseSettings, 
+    BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
     TomlConfigSettingsSource,
@@ -15,10 +15,8 @@ from pydantic_settings import (
 from pymongo.uri_parser import parse_uri
 
 # read default config and user defined config
-config_file = [
-    Path(__file__).parent.joinpath('config.toml')  # built in config file
-]
-CUSTOM_CONFIG_ENV_NAME = 'CONFIG_FILE'
+config_file = [Path(__file__).parent.joinpath("config.toml")]  # built in config file
+CUSTOM_CONFIG_ENV_NAME = "CONFIG_FILE"
 custom_config = os.getenv(CUSTOM_CONFIG_ENV_NAME)
 if custom_config is not None:
     user_cnf = Path(custom_config)
@@ -43,6 +41,7 @@ class OauthConfig(BaseSettings):
 
 
 class MongoDbConfig(BaseSettings):
+    """Configuration for MongoDB connection."""
     connection: MongoDsn = Field(..., description="Database connection string.")
     database: str | None = None
 
@@ -65,7 +64,7 @@ class Settings(BaseSettings):
     oauth: OauthConfig | None = None
 
     model_config = SettingsConfigDict(
-        env_file_encoding='utf-8', 
+        env_file_encoding="utf-8",
         toml_file=config_file,
         env_nested_delimiter="__",
     )
@@ -90,7 +89,9 @@ class Settings(BaseSettings):
         # gens
         conn_info = parse_uri(str(self.gens_db.connection))
         self.gens_db.database = (
-            self.gens_db.database if conn_info["database"] is None else conn_info["database"]
+            self.gens_db.database
+            if conn_info["database"] is None
+            else conn_info["database"]
         )
 
         # scout
@@ -102,7 +103,7 @@ class Settings(BaseSettings):
         )
 
         return self
-    
+
     @classmethod
     def settings_customise_sources(
         cls,
@@ -113,7 +114,13 @@ class Settings(BaseSettings):
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
         toml_settings = TomlConfigSettingsSource(settings_cls)
-        return init_settings, env_settings, dotenv_settings, file_secret_settings, toml_settings
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            file_secret_settings,
+            toml_settings,
+        )
 
 
 UI_COLORS = {

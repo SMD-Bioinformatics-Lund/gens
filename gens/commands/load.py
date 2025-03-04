@@ -1,12 +1,11 @@
 """Commands for loading annotations, transcripts and samples to the database."""
 
-from enum import Enum
+import gzip
 import logging
 from pathlib import Path
-from typing import Any, Iterable, TextIO
+from typing import Any, TextIO
 
 import click
-import gzip
 from flask import current_app as app
 from flask.cli import with_appcontext
 from pymongo.database import Database
@@ -14,15 +13,17 @@ from pymongo.database import Database
 from gens.commands.util import ChoiceType
 from gens.config import settings
 from gens.db import (
-    ANNOTATIONS_COLLECTION,
-    CHROMSIZES_COLLECTION,
-    SAMPLES_COLLECTION,
-    TRANSCRIPTS_COLLECTION,
     create_index,
     get_db_connection,
     get_indexes,
     register_data_update,
     store_sample,
+)
+from gens.db.collections import (
+    ANNOTATIONS_COLLECTION,
+    CHROMSIZES_COLLECTION,
+    SAMPLES_COLLECTION,
+    TRANSCRIPTS_COLLECTION,
 )
 from gens.load import (
     build_chromosomes_obj,
@@ -38,28 +39,12 @@ from gens.models.genomic import GenomeBuild
 LOG = logging.getLogger(__name__)
 
 
-class ChoiceType(click.Choice):
-    """Custom input type for click that returns genome build enum."""
-
-    name = "genome build"
-
-    def __init__(self, enum: Iterable[Enum]) -> None:
-        super().__init__(list(map(str, enum)))
-        self.enum = enum
-
-    def convert(self, value: str, param: click.Parameter | None, ctx: click.Context | None) -> Enum:
-        """Convert str to genome build"""
-
-        value = super().convert(value, param, ctx)
-        return next(v for v in self.enum if str(v) == value)
-
-
 def open_text_or_gzip(file_path: str) -> TextIO:
     """Click callback to allow reading both text and gzipped files"""
     if file_path.endswith(".gz"):
         return gzip.open(file_path, "rt", encoding="utf-8")
-    else:
-        return open(file_path, "r", encoding="utf-8")
+
+    return open(file_path, "r", encoding="utf-8")
 
 
 @click.group()
@@ -162,7 +147,9 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool) -> None:
     """Load annotations from file into the database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
-        raise ValueError(f"No Gens database name provided in settings (settings.gens_db.database)")
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, ANNOTATIONS_COLLECTION)) == 0:
@@ -193,7 +180,9 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool) -> None:
         db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
         # add the annotations
         LOG.info("Load annoatations in the database")
-        db[ANNOTATIONS_COLLECTION].insert_many([annot.model_dump() for annot in parsed_annotations])
+        db[ANNOTATIONS_COLLECTION].insert_many(
+            [annot.model_dump() for annot in parsed_annotations]
+        )
         LOG.info("Update height order")
         # update the height order of annotations in the database
         update_height_order(db, annotation_name)
@@ -290,7 +279,9 @@ def chromosome_info(genome_build: GenomeBuild, timeout: int) -> None:
     )
     # insert collection
     LOG.info("Add chromosome info to database")
-    db[CHROMSIZES_COLLECTION].insert_many([chr.model_dump() for chr in chromosomes_data])
+    db[CHROMSIZES_COLLECTION].insert_many(
+        [chr.model_dump() for chr in chromosomes_data]
+    )
     register_data_update(db, CHROMSIZES_COLLECTION)
     # build cytogenetic data
     click.secho("Finished updating chromosome sizes ✔", fg="green")

@@ -55,7 +55,7 @@ def login() -> Response:
             LOG.info("Google Login!")
             redirect_uri = url_for(".authorized", _external=True)
             try:
-                return oauth_google.authorize_redirect(redirect_uri)  # type: ignore
+                return oauth_client.google.authorize_redirect(redirect_uri)  # type: ignore
             except Exception as error:
                 LOG.error("An error occurred while trying use OAUTH - %s", error)
                 flash("An error has occurred while logging user in using Google OAuth")

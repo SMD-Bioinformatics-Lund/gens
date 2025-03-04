@@ -74,7 +74,9 @@ def convert_data(
         ypos = req.log2_y_end - 0.2 if ypos < req.log2_y_end else ypos
 
         # Convert to screen coordinates
-        xpos = (int(x_pos + new_x_ampl * (float(record[chrom_pos_idx]) - new_start_pos)),)
+        xpos = (
+            int(x_pos + new_x_ampl * (float(record[chrom_pos_idx]) - new_start_pos)),
+        )
         log2_records.extend([xpos, int(graph.log2_ypos - graph.log2_ampl * ypos)])
 
     # Gather the BAF records
@@ -86,7 +88,9 @@ def convert_data(
         ypos = req.baf_y_end - 0.2 if ypos < req.baf_y_end else ypos
 
         # Convert to screen coordinates
-        xpos = (int(x_pos + new_x_ampl * (float(record[chrom_pos_idx]) - new_start_pos)),)
+        xpos = (
+            int(x_pos + new_x_ampl * (float(record[chrom_pos_idx]) - new_start_pos)),
+        )
         baf_records.extend([xpos, int(graph.baf_ypos - graph.baf_ampl * ypos)])
 
     return log2_records, baf_records
@@ -94,7 +98,11 @@ def convert_data(
 
 # FIXME: This one does not seem to be used at all?
 def find_chrom_at_pos(
-    chrom_dims: dict[str, dict[str, int]], height: int, current_x: int, current_y: int, margin: int
+    chrom_dims: dict[str, dict[str, int]],
+    height: int,
+    current_x: int,
+    current_y: int,
+    margin: int,
 ) -> str | None:
     """
     Returns which chromosome the current position belongs to in the overview graph
@@ -105,9 +113,9 @@ def find_chrom_at_pos(
         x_pos = chrom_dims[chrom.value]["x_pos"]
         y_pos = chrom_dims[chrom.value]["y_pos"]
         width = chrom_dims[chrom.value]["width"]
-        if x_pos + margin <= current_x <= (x_pos + width) and y_pos + margin <= current_y <= (
-            y_pos + height
-        ):
+        if x_pos + margin <= current_x <= (
+            x_pos + width
+        ) and y_pos + margin <= current_y <= (y_pos + height):
             current_chrom = chrom.value
             break
 
@@ -153,7 +161,9 @@ def parse_region_str(
         # Split region in standard format chrom:start-stop
         if ":" in region:
             chrom_str, pos_range = region.split(":")
-            start, end = [int(pos) if pos != "None" else None for pos in pos_range.split("-")]
+            start, end = [
+                int(pos) if pos != "None" else None for pos in pos_range.split("-")
+            ]
             chrom_str = chrom_str.replace("chr", "")
             chrom = Chromosome(chrom_str.upper())
         else:
@@ -164,6 +174,8 @@ def parse_region_str(
         LOG.exception("Wrong region formatting for region: %s", region)
         return None
 
+    db: Database = app.config["GENS_DB"]
+
     if name_search is not None:
         # Query is for a full range chromosome
         if name_search.upper() in [ch.value for ch in Chromosome]:
@@ -172,14 +184,21 @@ def parse_region_str(
             chrom = Chromosome(name_search.upper())
         else:
             # Lookup queried gene
-            db: Database = app.config["GENS_DB"]
             collection = db["transcripts" + str(genome_build)]
             start_query = collection.find_one(
-                {"gene_name": re.compile("^" + re.escape(name_search) + "$", re.IGNORECASE)},
+                {
+                    "gene_name": re.compile(
+                        "^" + re.escape(name_search) + "$", re.IGNORECASE
+                    )
+                },
                 sort=[("start", 1)],
             )
             end_query = collection.find_one(
-                {"gene_name": re.compile("^" + re.escape(name_search) + "$", re.IGNORECASE)},
+                {
+                    "gene_name": re.compile(
+                        "^" + re.escape(name_search) + "$", re.IGNORECASE
+                    )
+                },
                 sort=[("end", -1)],
             )
             if start_query is not None and end_query is not None:
@@ -195,7 +214,6 @@ def parse_region_str(
     if start is None:
         raise ValueError(f"Expected variable start, found: {start}")
 
-    db: Database = app.config["GENS_DB"]
     chrom_data = get_chromosome_size(db, chrom, genome_build)
     # Set end position if it is not set
     if end == "None" or end is None:
@@ -249,7 +267,9 @@ def set_region_values(
     end_pos = region.end
 
     if start_pos is None or end_pos is None:
-        raise ValueError(f"Expected start_pos and end_pos, found: {start_pos} {end_pos}")
+        raise ValueError(
+            f"Expected start_pos and end_pos, found: {start_pos} {end_pos}"
+        )
 
     # Set resolution for overview graph
     if request.args.get("overview", False):
@@ -311,7 +331,9 @@ def get_cov(
         data_type = "bed"
 
         # Bound start and end balues to 0-chrom_size
-        end = min(new_end_pos, get_chromosome_size(db, region.chrom, req.genome_build).size)
+        end = min(
+            new_end_pos, get_chromosome_size(db, region.chrom, req.genome_build).size
+        )
         start = max(new_start_pos, 0)
 
         if not cov_fh:

@@ -14,13 +14,15 @@ from pymongo.database import Database
 from werkzeug.wrappers.response import Response
 
 from gens.db import (
-    ANNOTATIONS_COLLECTION,
-    TRANSCRIPTS_COLLECTION,
-    SAMPLES_COLLECTION,
     get_chromosome_size,
     query_records_in_region,
     query_sample,
     query_variants,
+)
+from gens.db.collections import (
+    ANNOTATIONS_COLLECTION,
+    SAMPLES_COLLECTION,
+    TRANSCRIPTS_COLLECTION,
 )
 from gens.exceptions import RegionParserException
 from gens.graph import REQUEST, get_cov, overview_chrom_dimensions, parse_region_str
@@ -131,12 +133,12 @@ def get_transcript_data(region: str, genome_build: int, collapsed: bool) -> Any:
     zoom_level, parsed_region = raw_region
     db: Database = current_app.config["GENS_DB"]
     transcripts = query_records_in_region(
-            db,
-            record_type=TRANSCRIPTS_COLLECTION,
-            region=parsed_region,
-            genome_build=genome_build_enum,
-            height_order=1 if collapsed else None,
-        )
+        db,
+        record_type=TRANSCRIPTS_COLLECTION,
+        region=parsed_region,
+        genome_build=genome_build_enum,
+        height_order=1 if collapsed else None,
+    )
     # To tell which of the alternative types to use
     transcripts = cast(list[TranscriptRecord], transcripts)
     # Calculate maximum height order

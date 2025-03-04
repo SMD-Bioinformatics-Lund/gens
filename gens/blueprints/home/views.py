@@ -5,12 +5,12 @@ import os
 from typing import Any
 
 from flask import Blueprint, current_app, render_template, request
+from pymongo.database import Database
 
 from gens import version
 from gens.config import settings
-from gens.db import get_samples, get_timestamps, SAMPLES_COLLECTION
-from pymongo.database import Database
-
+from gens.db import get_samples, get_timestamps
+from gens.db.collections import SAMPLES_COLLECTION
 from gens.models.sample import SampleInfo
 
 LOG = logging.getLogger(__name__)

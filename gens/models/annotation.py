@@ -2,11 +2,11 @@
 
 from typing import Any, Literal
 
-from pydantic import Field, PositiveInt, field_serializer
+from pydantic import PositiveInt, field_serializer
 from pydantic_extra_types.color import Color
 
-from ..models import RWModel
-from ..models.genomic import Chromosome, DnaStrand, GenomeBuild
+from gens.models.base import RWModel
+from gens.models.genomic import Chromosome, DnaStrand, GenomeBuild
 
 
 class AnnotationRecord(RWModel):

@@ -1,7 +1,7 @@
 """Handles CRUD operations for the Gens database."""
 
-from .annotation import ANNOTATIONS as ANNOTATIONS_COLLECTION
-from .annotation import TRANSCRIPTS as TRANSCRIPTS_COLLECTION
+# FIXME: Clean up this module. Is it needed at all? Most are unused, and
+# would be better to import directly from the target modules
 from .annotation import (
     VariantCategory,
     get_timestamps,
@@ -9,12 +9,10 @@ from .annotation import (
     query_variants,
     register_data_update,
 )
-from .chrom_sizes import CHROMSIZES as CHROMSIZES_COLLECTION
 from .chrom_sizes import get_chromosome_size
 from .db import get_db_connection
 from .db import init_database_connection as init_database
 from .index import create_index, create_indexes, get_indexes, update_indexes
-from .samples import COLLECTION as SAMPLES_COLLECTION
 from .samples import (
     SampleNotFoundError,
     delete_sample,

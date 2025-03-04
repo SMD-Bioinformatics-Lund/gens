@@ -8,12 +8,14 @@ from typing import Any, Generator, Iterable, Optional, TextIO, TypedDict
 
 import click
 
-from ..models.genomic import GenomeBuild
+from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
 
 class TranscriptEntry(TypedDict):
+    """Represents a single transcript entry in an GTF file"""
+
     chrom: str
     genome_build: int
     gene_name: str
@@ -31,11 +33,11 @@ class TranscriptEntry(TypedDict):
 
 def build_transcripts(
     transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild
-) -> Iterable[Any]:
+):
     """Build transcript object from transcript and mane file."""
     mane_info = _parse_mane_transc(mane_file)
 
-    LOG.info(f"{len(mane_info)} MANE entries loaded")
+    LOG.info("%s MANE entries loaded", len(mane_info))
 
     annotated_mane_transc: dict[str, list[Any]] = defaultdict(list)
     transc_index = {}
@@ -81,7 +83,8 @@ def build_transcripts(
                     )
 
     LOG.info(
-        f"{skipped_no_gene_name} transcripts skipped due to missing gene symbol ('gene_name' in the loaded GTF)"
+        "%s transcripts skipped due to missing gene symbol ('gene_name' in the loaded GTF)",
+        skipped_no_gene_name,
     )
 
     LOG.info("Assign height order values and sort features")
@@ -173,8 +176,7 @@ def _parse_transcript_gtf(
     transc_file: Iterable[str], delimiter: str = "\t"
 ) -> Generator[tuple[dict[str, str], dict[str, str]], None, None]:
     """Parse transcripts."""
-    # setup reader
-    COL_NAMES = [
+    col_names = [
         "seqname",
         "source",
         "feature",
@@ -188,7 +190,7 @@ def _parse_transcript_gtf(
 
     target_features = ("transcript", "exon", "three_prime_utr", "five_prime_utr")
     LOG.debug("parsing transcripts")
-    cfile = csv.DictReader(transc_file, COL_NAMES, delimiter=delimiter)
+    cfile = csv.DictReader(transc_file, col_names, delimiter=delimiter)
     for row in cfile:
         if row["seqname"].startswith("#") or row["seqname"] is None:
             continue
@@ -219,7 +221,9 @@ def _assign_height_order(transcripts: list[dict[str, Any]]) -> None:
             *[
                 tr
                 for tr in mane_transcript
-                if not any([tr["mane"] == "MANE Plus Clinical", tr["mane"] == "MANE Select"])
+                if not any(
+                    [tr["mane"] == "MANE Plus Clinical", tr["mane"] == "MANE Select"]
+                )
             ],
         ]
         for order, tr in enumerate(sorted_mane, 1):

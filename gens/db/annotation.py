@@ -142,7 +142,6 @@ def query_records_in_region(
 
     if record_type == "annotations":
         return [AnnotationRecord(**doc) for doc in cursor]
-    elif record_type == "transcripts":
+    if record_type == "transcripts":
         return [TranscriptRecord(**doc) for doc in cursor]
-    else:
-        raise ValueError(f"unknown record type {record_type}")
+    raise ValueError(f"unknown record type {record_type}")
