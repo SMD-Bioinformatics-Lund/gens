@@ -57,9 +57,8 @@ def home() -> str:
             else (total_samples // SAMPLES_PER_PAGE) + 1
         ),
     }
-    # parse samples
     samples = [
-        SampleInfo.model_validate({
+        {
             "sample_id": smp.sample_id,
             "case_id": smp.case_id,
             "genome_build": smp.genome_build,
@@ -67,7 +66,7 @@ def home() -> str:
             "files_present": os.path.isfile(smp.baf_file)
             and os.path.isfile(smp.coverage_file),
             "created_at": smp.created_at.strftime("%Y-%m-%d"),
-        })
+        }
         for smp in samples
     ]
     return render_template(
