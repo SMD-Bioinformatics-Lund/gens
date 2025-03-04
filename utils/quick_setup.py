@@ -51,7 +51,6 @@ def main(
         ]
         run_command(load_transcripts_cmd)
 
-
     samples = find_samples(samples_dir)
     LOG.info("Found %s samples", len(samples))
     for sample in samples:
@@ -60,11 +59,16 @@ def main(
             "gens",
             "load",
             "sample",
-            "--sample-id", sample.sample_id,
-            "--case-id", sample.case_id,
-            "--genome-build", genome_build,
-            "--baf", sample.baf,
-            "--coverage", sample.cov,
+            "--sample-id",
+            sample.sample_id,
+            "--case-id",
+            sample.case_id,
+            "--genome-build",
+            genome_build,
+            "--baf",
+            sample.baf,
+            "--coverage",
+            sample.cov,
         ]
         if sample.overview:
             load_sample_cmd += ["--overview-json", sample.overview]
@@ -87,8 +91,9 @@ def main(
 
 
 def run_command(cmd: list[str]):
-    LOG.info("Executing command: %s", " ".join(cmd))
-    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    cmd_str = [str(c) for c in cmd]
+    LOG.info("Executing command: %s", " ".join(cmd_str))
+    result = subprocess.run(cmd_str, check=True, capture_output=True, text=True)
     LOG.info(result.stdout)
     LOG.error(result.stderr)
 
@@ -202,10 +207,10 @@ def find_samples(
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Load data into MongoDB from dump folder.")
     parser.add_argument(
-        "--samples", type=str, help="The folder containing the dump files.", required=True
+        "--samples_dir", type=str, help="The folder containing the dump files.", required=True
     )
     parser.add_argument(
-        "--annotations", type=str, help="The folder containing the annotations.", required=True
+        "--annotations_dir", type=str, help="The folder containing the annotations.", required=True
     )
     parser.add_argument("--build", type=int, help="Genome build.", default=38)
     parser.add_argument(
@@ -228,8 +233,8 @@ def parse_arguments():
 if __name__ == "__main__":
     args = parse_arguments()
     main(
-        Path(args.samples),
-        Path(args.annotations),
+        Path(args.samples_dir),
+        Path(args.annotations_dir),
         args.mane_version,
         args.transcripts_version,
         args.load_chromosomes,
