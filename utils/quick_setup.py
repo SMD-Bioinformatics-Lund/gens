@@ -19,54 +19,82 @@ logging.basicConfig(level=logging.INFO)
 def main(
     samples_dir: Path,
     annot_dir: Path,
-    mane_version: float,
-    transcripts_version: int,
-    genome_build: str = "38",
+    mane_version: float | None,
+    transcripts_version: int | None,
+    load_chromosomes: bool,
+    genome_build: int = 38,
 ):
+    if load_chromosomes:
+        load_chr_cmd = [
+            "gens",
+            "load",
+            "chromosome-info",
+            "--genome-build",
+            genome_build,
+        ]
+        run_command(load_chr_cmd)
 
-    print("test")
+    if mane_version and transcripts_version:
+        mane_path, transcripts_path = get_transcript_paths(
+            annot_dir, mane_version, transcripts_version, genome_build
+        )
+        load_transcripts_cmd = [
+            "gens",
+            "load",
+            "transcripts",
+            "--file",
+            str(transcripts_path),
+            "--mane",
+            str(mane_path),
+            "-b",
+            genome_build,
+        ]
+        run_command(load_transcripts_cmd)
+
 
     samples = find_samples(samples_dir)
     LOG.info("Found %s samples", len(samples))
     for sample in samples:
         LOG.info(f"  {sample}")
+        load_sample_cmd = [
+            "gens",
+            "load",
+            "sample",
+            "--sample-id", sample.sample_id,
+            "--case-id", sample.case_id,
+            "--genome-build", genome_build,
+            "--baf", sample.baf,
+            "--coverage", sample.cov,
+        ]
+        if sample.overview:
+            load_sample_cmd += ["--overview-json", sample.overview]
+        run_command(load_sample_cmd)
 
     annotation_files = find_annotations(annot_dir)
     LOG.info("Found %s annotation files", len(annotation_files))
-    for annot in annotation_files:
-        LOG.info(f"  {annot}")
+    for annot_file in annotation_files:
+        LOG.info(f"  {annot_file}")
+        load_annot_cmd = [
+            "gens",
+            "load",
+            "annotations",
+            "--file",
+            annot_file,
+            "--genome-build",
+            genome_build,
+        ]
+        run_command(load_annot_cmd)
 
-    mane_path, transcripts_path = get_transcript_paths(
-        annot_dir, mane_version, transcripts_version, genome_build
-    )
 
-    # coverage = "/tmp/hg002/hg002.cov.bed.gz"
-    # baf = "/tmp/hg002/hg002.baf.bed.gz"
-    # overview = "/tmp/hg002/hg002.overview.json.gz"
-    # subprocess.run(
-    #     [
-    #         "gens",
-    #         "load",
-    #         "sample",
-    #         "--sample-id",
-    #         "hg002",
-    #         "--case-id",
-    #         "hg002-case",
-    #         "--coverage",
-    #         coverage,
-    #         "--baf",
-    #         baf,
-    #         "--overview-json",
-    #         overview,
-    #         "--genome-build",
-    #         "38",
-    #     ],
-    #     check=True,
-    # )
+def run_command(cmd: list[str]):
+    LOG.info("Executing command: %s", " ".join(cmd))
+    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    LOG.info(result.stdout)
+    LOG.error(result.stderr)
 
 
 def get_transcript_paths(
-    annot_dir: Path, mane_version: float, transcripts_version: int, genome_build: str
+    annot_dir: Path, mane_version: float, transcripts_version: int, genome_build: int
 ) -> tuple[Path, Path]:
     mane_file = f"MANE.GRCh{genome_build}.v{mane_version}.summary.txt.gz"
     transcripts_file = f"Homo_sapiens.GRCh{genome_build}.{transcripts_version}.gtf.gz"
@@ -77,7 +105,10 @@ def get_transcript_paths(
     mane_path = annot_dir / mane_file
     if not mane_path.exists():
         LOG.info("%s not found, downloading ...", mane_path)
-        url = f"https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_{mane_version}/" + mane_file
+        url = (
+            f"https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_{mane_version}/"
+            + mane_file
+        )
         LOG.info("Attempting to GET URL: %s", url)
         response = requests.get(url)
         LOG.info("GET status: %s", response.status_code)
@@ -97,8 +128,7 @@ def get_transcript_paths(
             tr_fh.write(response.content)
     else:
         LOG.info("%s exists, not downloading", transcripts_path)
-        
-    
+
     return (mane_path, transcripts_path)
 
 
@@ -177,7 +207,7 @@ def parse_arguments():
     parser.add_argument(
         "--annotations", type=str, help="The folder containing the annotations.", required=True
     )
-    parser.add_argument("--build", type=str, help="Genome build.", default="38")
+    parser.add_argument("--build", type=int, help="Genome build.", default=38)
     parser.add_argument(
         "--mane_version",
         type=float,
@@ -190,6 +220,7 @@ def parse_arguments():
         default=113,
         help="Attempts download if not present in --annots folder",
     )
+    parser.add_argument("--load_chromosomes", action="store_true")
     args = parser.parse_args()
     return args
 
@@ -201,5 +232,6 @@ if __name__ == "__main__":
         Path(args.annotations),
         args.mane_version,
         args.transcripts_version,
+        args.load_chromosomes,
         args.build,
     )
