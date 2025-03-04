@@ -34,7 +34,7 @@ def main(
         load_chr_cmd = [
             "gens",
             "load",
-            "chromosome-info",
+            "chromosomes",
             "--genome-build",
             genome_build,
         ]
