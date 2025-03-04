@@ -131,7 +131,7 @@ def get_transcript_paths(
     transcripts_path = annot_dir / transcripts_file
     if not transcripts_path.exists():
         LOG.info("%s not found, downloading ...", transcripts_path)
-        url = f"https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/" + transcripts_file
+        url = f"https://ftp.ensembl.org/pub/release-{transcripts_version}/gtf/homo_sapiens/" + transcripts_file
         LOG.info("Attempting to GET URL: %s", url)
         response = requests.get(url)
         response.raise_for_status()
