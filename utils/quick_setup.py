@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 import re
 import subprocess
+import requests
 
 
 LOG = logging.getLogger("quick_setup")
@@ -15,13 +16,29 @@ logging.basicConfig(level=logging.INFO)
 """Quickly setup the database"""
 
 
-def main(samples_dir: Path, annotations: Path):
+def main(
+    samples_dir: Path,
+    annot_dir: Path,
+    mane_version: float,
+    transcripts_version: int,
+    genome_build: str = "38",
+):
 
     print("test")
 
-    LOG.info("Samples dir: %s", samples_dir)
     samples = find_samples(samples_dir)
     LOG.info("Found %s samples", len(samples))
+    for sample in samples:
+        LOG.info(f"  {sample}")
+
+    annotation_files = find_annotations(annot_dir)
+    LOG.info("Found %s annotation files", len(annotation_files))
+    for annot in annotation_files:
+        LOG.info(f"  {annot}")
+
+    mane_path, transcripts_path = get_transcript_paths(
+        annot_dir, mane_version, transcripts_version, genome_build
+    )
 
     # coverage = "/tmp/hg002/hg002.cov.bed.gz"
     # baf = "/tmp/hg002/hg002.baf.bed.gz"
@@ -48,6 +65,43 @@ def main(samples_dir: Path, annotations: Path):
     # )
 
 
+def get_transcript_paths(
+    annot_dir: Path, mane_version: float, transcripts_version: int, genome_build: str
+) -> tuple[Path, Path]:
+    mane_file = f"MANE.GRCh{genome_build}.v{mane_version}.summary.txt.gz"
+    transcripts_file = f"Homo_sapiens.GRCh{genome_build}.{transcripts_version}.gtf.gz"
+
+    if not annot_dir.exists():
+        annot_dir.mkdir(parents=True)
+
+    mane_path = annot_dir / mane_file
+    if not mane_path.exists():
+        LOG.info("%s not found, downloading ...", mane_path)
+        url = f"https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_{mane_version}/" + mane_file
+        LOG.info("Attempting to GET URL: %s", url)
+        response = requests.get(url)
+        LOG.info("GET status: %s", response.status_code)
+        with mane_path.open("wb") as mane_fh:
+            mane_fh.write(response.content)
+    else:
+        LOG.info("%s exists, not downloading", mane_path)
+
+    transcripts_path = annot_dir / transcripts_file
+    if not transcripts_path.exists():
+        LOG.info("%s not found, downloading ...", transcripts_path)
+        url = f"https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/" + transcripts_file
+        LOG.info("Attempting to GET URL: %s", url)
+        response = requests.get(url)
+        LOG.info("GET status %s", response.status_code)
+        with transcripts_path.open("wb") as tr_fh:
+            tr_fh.write(response.content)
+    else:
+        LOG.info("%s exists, not downloading", transcripts_path)
+        
+    
+    return (mane_path, transcripts_path)
+
+
 @dataclass
 class SampleSet:
     """Store set of files related to a sample"""
@@ -59,6 +113,16 @@ class SampleSet:
     baf: Path
     baf_tbi: Path
     overview: Path | None
+
+    def __str__(self):
+        rows = [
+            f"case_id: {self.case_id}",
+            f"sample_id: {self.sample_id}",
+            f"cov: {self.cov}",
+            f"baf: {self.baf}",
+            f"overview: {self.overview}",
+        ]
+        return ", ".join(rows)
 
 
 def find_annotations(annotations_dir: Path) -> list[Path]:
@@ -113,10 +177,29 @@ def parse_arguments():
     parser.add_argument(
         "--annotations", type=str, help="The folder containing the annotations.", required=True
     )
+    parser.add_argument("--build", type=str, help="Genome build.", default="38")
+    parser.add_argument(
+        "--mane_version",
+        type=float,
+        default=1.4,
+        help="Attempts download if not present in --annots folder",
+    )
+    parser.add_argument(
+        "--transcripts_version",
+        type=int,
+        default=113,
+        help="Attempts download if not present in --annots folder",
+    )
     args = parser.parse_args()
     return args
 
 
 if __name__ == "__main__":
     args = parse_arguments()
-    main(Path(args.samples), Path(args.annotations))
+    main(
+        Path(args.samples),
+        Path(args.annotations),
+        args.mane_version,
+        args.transcripts_version,
+        args.build,
+    )
