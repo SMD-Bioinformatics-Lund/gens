@@ -122,7 +122,7 @@ def get_transcript_paths(
         )
         LOG.info("Attempting to GET URL: %s", url)
         response = requests.get(url)
-        LOG.info("GET status: %s", response.status_code)
+        response.raise_for_status()
         with mane_path.open("wb") as mane_fh:
             mane_fh.write(response.content)
     else:
@@ -134,7 +134,7 @@ def get_transcript_paths(
         url = f"https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/" + transcripts_file
         LOG.info("Attempting to GET URL: %s", url)
         response = requests.get(url)
-        LOG.info("GET status %s", response.status_code)
+        response.raise_for_status()
         with transcripts_path.open("wb") as tr_fh:
             tr_fh.write(response.content)
     else:
