@@ -4,7 +4,7 @@ from pymongo.database import Database
 
 from gens.models.genomic import ChromInfo, Chromosome
 
-CHROMSIZES = "chrom-sizes"
+CHROMSIZES = "chromsizes"
 
 
 def get_chromosome_size(
