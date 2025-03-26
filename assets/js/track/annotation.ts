@@ -14,11 +14,11 @@ import {
 import { createPopper } from "@popperjs/core";
 
 // Convert to 32bit integer
-function stringToHash(string) {
+function stringToHash(in_str: string) {
   let hash = 0;
-  if (string.length === 0) return hash;
-  for (let i = 0; i < string.length; i++) {
-    const char = string.charCodeAt(i);
+  if (in_str.length === 0) return hash;
+  for (let i = 0; i < in_str.length; i++) {
+    const char = in_str.charCodeAt(i);
     hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
@@ -185,7 +185,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
       const x1 = scale * (start - this.offscreenPosition.start);
       const canvasYPos = this.tracksYPos(heightOrder);
       const annotationObj = {
-        id: stringToHash(track.name),
+        id: stringToHash(`${track.name}-${track.start}-${track.end}-${track.color}`),
         name: track.name,
         start: track.start,
         end: track.end,
