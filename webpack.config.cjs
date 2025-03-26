@@ -33,6 +33,7 @@ const config = {
       process: 'process/browser'
     })
   ],
+  // mode: 'production',
   mode: 'development',
 };
 module.exports = config;

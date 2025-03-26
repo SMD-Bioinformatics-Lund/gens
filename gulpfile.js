@@ -24,10 +24,9 @@ function runWebpack(config) {
         console.log(err);
         return reject(err);
       }
-      // FIXME: Restore when typescript compilation errors are resolved
-      // if (stats.hasErrors()) {
-      //   return reject(new Error(stats.compilation.errors.join('\n')))
-      // }
+      if (stats.hasErrors()) {
+        return reject(new Error(stats.compilation.errors.join('\n')))
+      }
       resolve();
     });
   });
