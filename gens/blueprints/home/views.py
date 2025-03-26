@@ -57,7 +57,7 @@ def home() -> str:
             else (total_samples // SAMPLES_PER_PAGE) + 1
         ),
     }
-    samples = [
+    parsed_samples = [
         {
             "sample_id": smp.sample_id,
             "case_id": smp.case_id,
@@ -72,7 +72,7 @@ def home() -> str:
     return render_template(
         "home.html",
         pagination=pagination_info,
-        samples=samples,
+        samples=parsed_samples,
         total_samples=total_samples,
         scout_base_url=str(settings.scout_url),
         version=version,
