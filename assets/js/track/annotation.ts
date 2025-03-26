@@ -166,14 +166,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
       const heightOrder = track.height_order || 1;
       const start = track.start;
       const end = track.end;
-      // FIXME: Temporary fix to deal with both "rgb(0,0,0)" and [0, 0, 0] format
-      // Remove when decided on when and how to migrate to [0, 0, 0] format
-      let color;
-      if (typeof(track.color) == "string") {
-        color = track.color;
-      } else {
-        color = `rgb(${track.color[0]},${track.color[1]},${track.color[2]})`
-      }
+      const color = `rgb(${track.color[0]},${track.color[1]},${track.color[2]})`
 
       // Only draw visible tracks
       if (!this.expanded && heightOrder !== 1) {
