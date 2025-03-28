@@ -159,6 +159,7 @@
     const {ic, oc, ac, tc, vc} = gens.initCanvases({
         sampleName: '{{ individual_id }}',
         caseId: '{{ case_id }}',
+        sampleId: '{{ individual_id }}',
         genomeBuild: {{ genome_build }},
         uiColors: {{ ui_colors | tojson | safe }},
         scoutBaseURL: '{{ scout_base_url | safe }}',

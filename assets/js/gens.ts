@@ -22,6 +22,7 @@ export {
 
 export function initCanvases({
   sampleName,
+  sampleId,
   caseId,
   genomeBuild,
   hgFileDir,
@@ -31,6 +32,7 @@ export function initCanvases({
   annotationFile,
 }: {
   sampleName: string,
+  sampleId: string,
   caseId: string,
   genomeBuild: number,
   hgFileDir: string,
@@ -63,6 +65,7 @@ export function initCanvases({
     ic.plotWidth,
     near,
     far,
+    sampleId,
     caseId,
     genomeBuild,
     uiColors.variants,

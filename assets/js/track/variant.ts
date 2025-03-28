@@ -27,13 +27,14 @@ export class VariantTrack extends BaseAnnotationTrack {
   labelData: VariantLabel[];
   highlightedVariantId: string;
   heightOrderRecord: {latestHeight: number, latestNameEnd: number, latestTrackEnd: number}
-  additionalQueryParams: { variant_category: string, case_id: string };
+  additionalQueryParams: { variant_category: string, case_id: string, sample_id: string };
 
   constructor(
     x: number,
     width: number,
     near: number,
     far: number,
+    sampleId: string,
     caseId: string,
     genomeBuild: number,
     colorSchema: ColorSchema,
@@ -83,6 +84,7 @@ export class VariantTrack extends BaseAnnotationTrack {
     this.apiEntrypoint = "get-variant-data";
     this.additionalQueryParams = {
       variant_category: "sv",
+      sample_id: sampleId,
       case_id: caseId,
     };
     // Initialize highlighted variant
