@@ -1,5 +1,6 @@
 // Generic functions related to drawing annotation tracks
 
+import internal from "stream";
 import { get } from "../fetch";
 import { hideTooltip } from "./tooltip";
 
@@ -35,7 +36,6 @@ export function lightenColor(color, percent) {
 }
 
 export class BaseScatterTrack {
-
   caseId: string;
   sampleName: string;
   genomeBuild: number;
@@ -61,7 +61,6 @@ export class BaseScatterTrack {
 }
 
 export class BaseAnnotationTrack {
-
   featureHeight: number;
   featureMargin: number;
   yPos: number;
@@ -70,6 +69,8 @@ export class BaseAnnotationTrack {
   arrowDistance: number;
   arrowThickness: number;
   expanded: boolean;
+  // collapsed: boolean;
+
   width: number;
   drawCanvasMultiplier: number;
   maxHeight: number;
@@ -79,39 +80,51 @@ export class BaseAnnotationTrack {
   colorSchema: ColorSchema;
   drawOffScreenTrack: any;
 
-  trackContainer: any;
-  drawCanvas: any;
-  contentCanvas: any;
-  trackTitle: any;
+  trackContainer: HTMLDivElement | null;
+  drawCanvas: HTMLCanvasElement | null;
+  // Canvases for static content
+  contentCanvas: HTMLCanvasElement | null;
+  trackTitle: HTMLDivElement | null;
   trackData: any;
 
   apiEntrypoint: string;
   sampleName: string;
   genomeBuild: number;
   additionalQueryParams: Record<string, string>;
-  
-  drawCtx: any;
 
-  offscreenPosition: {start: number|null, end: number|null, scale: number|null}
-  onscreenPosition: { start: number|null, end: number|null };
+  drawCtx: CanvasRenderingContext2D;
+
+  offscreenPosition: {
+    start: number | null;
+    end: number | null;
+    scale: number | null;
+  };
+  onscreenPosition: { start: number | null; end: number | null };
 
   maxResolution: number;
   geneticElements: any[];
 
-  constructor(width: number, near: number, far: number, visibleHeight: number, minHeight: number, colorSchema: ColorSchema = null) {
+  constructor(
+    width: number,
+    near: number,
+    far: number,
+    visibleHeight: number,
+    minHeight: number,
+    colorSchema: ColorSchema = null
+  ) {
     // Track variables
-    this.featureHeight = 20; // Max height for feature
+    this.featureHeight = 20;
     this.featureMargin = 14; // Margin for fitting gene name under track
     this.yPos = this.featureHeight / 2; // First y-position
     this.arrowColor = "white";
     this.arrowWidth = 4;
     this.arrowDistance = 200;
     this.arrowThickness = 1;
-    this.expanded = false;
+    this.expanded = false; // Whether tracks are collapsed
     this.colorSchema = colorSchema;
     // errors preventing fetching of data
     this.preventDrawingTrack = false;
-    // Dimensions of track canvas
+    // Dimensions of track canvasF
     this.width = Math.round(width); // Width of displayed canvas
     this.drawCanvasMultiplier = 4;
     this.maxHeight = 16000; // Max height of canvas
@@ -150,9 +163,10 @@ export class BaseAnnotationTrack {
     this.trackContainer.style.marginLeft = xPos + "px";
     this.trackContainer.style.width = this.width + "px";
     // set xlabel
-    this.trackContainer.parentElement.querySelector(
-      ".track-xlabel",
-    ).style.left = `${xPos - 60}px`;
+    const x_label = this.trackContainer.parentElement.querySelector(
+      ".track-xlabel"
+    ) as HTMLElement;
+    x_label.style.left = `${xPos - 60}px`;
 
     // Setup initial track Canvas
     this.drawCtx = this.drawCanvas.getContext("2d");
@@ -165,8 +179,8 @@ export class BaseAnnotationTrack {
     this.trackTitle.style.width = this.width + "px";
     this.trackTitle.style.height = this.minHeight + "px";
 
-    this.trackContainer.parentElement.addEventListener("draw", (event) => {
-      this.drawTrack({ ...event.detail.region });
+    this.trackContainer.parentElement.addEventListener("draw", (event: any) => {
+      this.drawTrack({...event.detail.region}, this.expanded);
     });
     // Setup context menu
     this.trackContainer.addEventListener(
@@ -194,7 +208,7 @@ export class BaseAnnotationTrack {
         this.blitCanvas(this.onscreenPosition.start, this.onscreenPosition.end);
         this.drawDynamicOverlay();
       },
-      false,
+      false
     );
   }
 
@@ -250,7 +264,13 @@ export class BaseAnnotationTrack {
     end,
     forceRedraw = false,
     hideWhileLoading = false,
-  }) {
+  }: {
+    chrom: string;
+    start: number;
+    end: number;
+    forceRedraw: boolean;
+    hideWhileLoading: boolean;
+  }, expanded: boolean) {
     if (this.preventDrawingTrack) return; // disable drawing track
     // store genomic position of the region to draw
     this.onscreenPosition.start = start;
@@ -274,11 +294,10 @@ export class BaseAnnotationTrack {
             sample_id: this.sampleName,
             region: `${chrom}:1-None`,
             genome_build: this.genomeBuild,
-            // FIXME: Look into this one. Having previously been set to "false" meant much more data transferred and slower loading times
-            collapsed: true,
+            collapsed: !expanded,
           },
-          this.additionalQueryParams,
-        ), // parameters specific to track type
+          this.additionalQueryParams
+        ) // parameters specific to track type
       );
       // disable track if data loading encountered an error
       if (this.trackData.status === "error") {
@@ -332,8 +351,7 @@ export class BaseAnnotationTrack {
 
     // Debugging
     const offscreenOffset = Math.round(
-      (chromStart - this.offscreenPosition.start) *
-        this.offscreenPosition.scale,
+      (chromStart - this.offscreenPosition.start) * this.offscreenPosition.scale
     );
     const elementWidth = Math.round(width * this.offscreenPosition.scale);
 
@@ -347,7 +365,7 @@ export class BaseAnnotationTrack {
       0, // dX
       0, // dY
       this.contentCanvas.width, // dWidth
-      this.drawCanvas.height, // dHeight
+      this.drawCanvas.height // dHeight
     );
   }
 
