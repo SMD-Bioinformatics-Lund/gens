@@ -124,7 +124,7 @@ export class BaseAnnotationTrack {
     this.colorSchema = colorSchema;
     // errors preventing fetching of data
     this.preventDrawingTrack = false;
-    // Dimensions of track canvasF
+    // Dimensions of track canvas
     this.width = Math.round(width); // Width of displayed canvas
     this.drawCanvasMultiplier = 4;
     this.maxHeight = 16000; // Max height of canvas
@@ -182,15 +182,20 @@ export class BaseAnnotationTrack {
     this.trackContainer.parentElement.addEventListener("draw", (event: any) => {
       this.drawTrack({...event.detail.region}, this.expanded);
     });
+
+
     // Setup context menu
     this.trackContainer.addEventListener(
-      "contextmenu",
+      "contextmenu", 
       async (event) => {
         event.preventDefault();
         // hide all tooltips
         for (const element of this.geneticElements) {
           if (element.tooltip) hideTooltip(element.tooltip);
         }
+
+        console.log("When are these events triggered?");
+
         // Toggle between expanded/collapsed view
         this.expanded = !this.expanded;
         // set datastate for css
