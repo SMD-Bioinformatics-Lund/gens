@@ -1,7 +1,7 @@
 <!-- GENS overview template -->
 {% import 'info.html' as info %}
 
-{% macro annotation_track(track_name) %}
+<!-- {% macro annotation_track(track_name) %}
     <div id="{{ track_name }}-container" class="track-container" data-state="nodata">
         <p class='track-xlabel'>{{ track_name | capitalize }}</p>
         <div id='{{ track_name }}-track-container' class='info-container' title='{{ track_name }}'>
@@ -10,14 +10,14 @@
             <div id='{{ track_name }}-titles' class='info-titles'></div>
         </div>
     </div>
-{% endmacro %}
+{% endmacro %} -->
 
 {% extends "layout.html" %}
 {% block title %}{{ sample_name }}{% endblock title %}
-{% block css_style %}
+<!-- {% block css_style %}
     {{ super() }}
     <link rel='stylesheet' href='{{ url_for('gens.static', filename='gens.min.css') }}' type='text/css'>
-{% endblock css_style %}
+{% endblock css_style %} -->
 {% block scripts %}
     <script src='{{ url_for('gens.static', filename='gens.min.js') }}'></script>
 {% endblock scripts %}
@@ -63,7 +63,6 @@
 
     <p>Start with putting the mimirsbrunnr track here</p>
 
-    <simple-track></simple-track>
     <canvas-track id="canvas-track"></canvas-track>
 
     <!-- <div id='visualization-container'>
@@ -114,7 +113,7 @@
     if ('{{print_page}}' == 'true') {
         printing = true;
         let mainContainer = document.querySelector('#main-container');
-        mainContainer.style.width = '1122px';
+        // mainContainer.style.width = '1122px';
         mainContainer.style.overflowY = 'hidden';
         let loading = document.querySelector('.loading-container');
         loading.querySelector("#loading").toggleAttribute("hidden")

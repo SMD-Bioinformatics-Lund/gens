@@ -1,13 +1,14 @@
 const template = document.createElement("template");
 
 template.innerHTML = String.raw`
-    <p>Here is a canvas</p>
-    <div id="container" class="track-container" data-state="nodata">
+    <div>Here is a canvas</div>
+    <div id="container" data-state="nodata">
         <p class='track-xlabel'></p>
-        <div id='track-container' class='info-container' title='{{ track_name }}'>
-            <canvas id='canvas' class='info-canvas'></canvas>
-            <canvas id='canvas-offscreen' class='info-canvas offscreen'></canvas>
-            <div id='titles' class='info-titles'></div>
+        <div id='track-container'>
+            <div>Content</div>
+            <canvas id='canvas'></canvas>
+            <!-- <canvas id='canvas-offscreen'></canvas> -->
+            <!-- <div id='titles'></div> -->
         </div>
     </div>
 `;
