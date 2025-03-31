@@ -1,7 +1,7 @@
 // Annotation track definition
 
 import { BaseAnnotationTrack } from "./base";
-import { isElementOverlapping } from "./utils";
+import { isElementOverlapping, stringToHash } from "./utils";
 import { get } from "../fetch";
 import { parseRegionDesignation } from "../navigation";
 import { drawRect, drawText } from "../draw";
@@ -13,17 +13,6 @@ import {
 } from "./tooltip";
 import { createPopper } from "@popperjs/core";
 
-// Convert to 32bit integer
-function stringToHash(in_str: string) {
-  let hash = 0;
-  if (in_str.length === 0) return hash;
-  for (let i = 0; i < in_str.length; i++) {
-    const char = in_str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return hash;
-}
 
 export class AnnotationTrack extends BaseAnnotationTrack {
   readonly featureHeight: number = 18;

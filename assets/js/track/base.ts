@@ -131,11 +131,11 @@ export class BaseAnnotationTrack {
     // Canvases
     // the drawCanvas is used to draw objects offscreen
     // the region to be displayed is blitted to the onscreen contentCanvas
-    this.trackContainer = null; // Set in parent class
-    this.drawCanvas = null; // Set in parent class
+    this.trackContainer = null; // Set in child class
+    this.drawCanvas = null; // Set in child class
     // Canvases for static content
     this.contentCanvas = null;
-    this.trackTitle = null; // Set in parent class
+    this.trackTitle = null; // Set in child class
     // data cache
     this.trackData = null;
 
