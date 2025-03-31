@@ -49,19 +49,33 @@ export function initCanvases({
   // Listener values
   const inputField = document.getElementById("region-field");
 
-  return {};
+  const ic = new InteractiveCanvas(
+    inputField,
+    lineMargin,
+    near,
+    far,
+    caseId,
+    sampleName,
+    genomeBuild,
+    hgFileDir,
+  );
+  // Initiate and draw overview canvas
+  const oc = new OverviewCanvas(
+    ic.x,
+    ic.plotWidth,
+    lineMargin,
+    near,
+    far,
+    caseId,
+    sampleName,
+    genomeBuild,
+    hgFileDir,
+  );
+
+
+  return {ic, oc};
 
   // Initiate interactive canvas
-  // const ic = new InteractiveCanvas(
-  //   inputField,
-  //   lineMargin,
-  //   near,
-  //   far,
-  //   caseId,
-  //   sampleName,
-  //   genomeBuild,
-  //   hgFileDir,
-  // );
   // // Initiate variant, annotation and transcript canvases
   // const vc = new VariantTrack(
   //   ic.x,
@@ -90,18 +104,6 @@ export function initCanvases({
   //   far,
   //   genomeBuild,
   //   annotationFile,
-  // );
-  // // Initiate and draw overview canvas
-  // const oc = new OverviewCanvas(
-  //   ic.x,
-  //   ic.plotWidth,
-  //   lineMargin,
-  //   near,
-  //   far,
-  //   caseId,
-  //   sampleName,
-  //   genomeBuild,
-  //   hgFileDir,
   // );
   // // Draw cytogenetic ideogram figure
   // const cg = new CytogeneticIdeogram({
