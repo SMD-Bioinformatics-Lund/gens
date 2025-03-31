@@ -44,15 +44,15 @@ export class VariantTrack extends BaseAnnotationTrack {
     // Dimensions of track canvas
     const visibleHeight = 100; // Visible height for expanded canvas, overflows for scroll
     const minHeight = 35; // Minimized height
-
+    
     super(width, near, far, visibleHeight, minHeight, colorSchema);
 
     // Set inherited variables
-    this.drawCanvas = document.getElementById("variant-draw");
-    this.contentCanvas = document.getElementById("variant-content");
-    this.trackTitle = document.getElementById("variant-titles");
-    this.trackContainer = document.getElementById("variant-track-container");
-    this.scoutBaseURL = scoutBaseURL;
+    this.drawCanvas = document.getElementById("variant-draw") as HTMLCanvasElement;
+    this.contentCanvas = document.getElementById("variant-content") as HTMLCanvasElement;
+    this.trackTitle = document.getElementById("variant-titles") as HTMLDivElement;
+    this.trackContainer = document.getElementById("variant-track-container") as HTMLDivElement;
+
     // Add click menu event listener linking out to the Scout variant
     this.trackContainer.addEventListener(
       "click",
@@ -64,7 +64,7 @@ export class VariantTrack extends BaseAnnotationTrack {
             y: event.clientY - rect.top,
           };
           if (isWithinElementVisibleBbox(element, point)) {
-            const url = this.scoutBaseURL + "/document_id/" + element.id;
+            const url = scoutBaseURL + "/document_id/" + element.id;
             console.log(`Visit ${url}: Scout variant`);
             const win = window.open(url, "_blank");
             win.focus();

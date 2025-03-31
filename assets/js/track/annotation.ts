@@ -56,10 +56,18 @@ export class AnnotationTrack extends BaseAnnotationTrack {
 
     // Set inherited variables
     // TODO use the names contentCanvas and drawCanvas
-    this.drawCanvas = document.getElementById("annotation-draw");
-    this.contentCanvas = document.getElementById("annotation-content");
-    this.trackTitle = document.getElementById("annotation-titles");
-    this.trackContainer = document.getElementById("annotation-track-container");
+    this.drawCanvas = document.getElementById(
+      "annotation-draw"
+    ) as HTMLCanvasElement;
+    this.contentCanvas = document.getElementById(
+      "annotation-content"
+    ) as HTMLCanvasElement;
+    this.trackTitle = document.getElementById(
+      "annotation-titles"
+    ) as HTMLDivElement;
+    this.trackContainer = document.getElementById(
+      "annotation-track-container"
+    ) as HTMLDivElement;
 
     // Setup html objects now that we have gotten the canvas and div elements
     this.setupHTML(x + 1);
@@ -78,7 +86,10 @@ export class AnnotationTrack extends BaseAnnotationTrack {
         "region-field"
       ) as HTMLInputElement;
       const region = parseRegionDesignation(regionField.value);
-      this.drawTrack({ forceRedraw: true, ...region });
+      this.drawTrack(
+        { forceRedraw: true, hideWhileLoading: true, ...region },
+        this.expanded
+      );
     });
     this.annotSourceList(defaultAnnotation);
 
@@ -116,7 +127,10 @@ export class AnnotationTrack extends BaseAnnotationTrack {
           "region-field"
         ) as HTMLInputElement;
         const region = parseRegionDesignation(regionField.value);
-        this.drawTrack({ ...region });
+        this.drawTrack(
+          { ...region, forceRedraw: true, hideWhileLoading: true },
+          this.expanded
+        );
       });
   }
 
@@ -166,7 +180,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
       const heightOrder = track.height_order || 1;
       const start = track.start;
       const end = track.end;
-      const color = `rgb(${track.color[0]},${track.color[1]},${track.color[2]})`
+      const color = `rgb(${track.color[0]},${track.color[1]},${track.color[2]})`;
 
       // Only draw visible tracks
       if (!this.expanded && heightOrder !== 1) {
@@ -185,7 +199,9 @@ export class AnnotationTrack extends BaseAnnotationTrack {
       const x1 = scale * (start - this.offscreenPosition.start);
       const canvasYPos = this.tracksYPos(heightOrder);
       const annotationObj = {
-        id: stringToHash(`${track.name}-${track.start}-${track.end}-${track.color}`),
+        id: stringToHash(
+          `${track.name}-${track.start}-${track.end}-${track.color}`
+        ),
         name: track.name,
         start: track.start,
         end: track.end,

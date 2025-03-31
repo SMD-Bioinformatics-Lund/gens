@@ -50,10 +50,10 @@ export class TranscriptTrack extends BaseAnnotationTrack {
     super(width, near, far, visibleHeight, minHeight, colorSchema);
 
     // Set inherited variables
-    this.drawCanvas = document.getElementById("transcript-draw");
-    this.contentCanvas = document.getElementById("transcript-content");
-    this.trackTitle = document.getElementById("transcript-titles");
-    this.trackContainer = document.getElementById("transcript-track-container");
+    this.drawCanvas = document.getElementById("transcript-draw") as HTMLCanvasElement;
+    this.contentCanvas = document.getElementById("transcript-content") as HTMLCanvasElement;
+    this.trackTitle = document.getElementById("transcript-titles") as HTMLDivElement;
+    this.trackContainer = document.getElementById("transcript-track-container") as HTMLDivElement;
 
     // Setup html objects now that we have gotten the canvas and div elements
     this.setupHTML(x + 1);

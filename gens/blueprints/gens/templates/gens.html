@@ -2,7 +2,7 @@
 {% import 'info.html' as info %}
 
 {% macro annotation_track(track_name) %}
-    <div id="{{ track_name }}-container" class="track-container">
+    <div id="{{ track_name }}-container" class="track-container" data-state="nodata">
         <p class='track-xlabel'>{{ track_name | capitalize }}</p>
         <div id='{{ track_name }}-track-container' class='info-container' title='{{ track_name }}'>
             <canvas id='{{ track_name }}-content' class='info-canvas'></canvas>

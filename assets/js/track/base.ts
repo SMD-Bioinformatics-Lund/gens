@@ -60,20 +60,20 @@ export class BaseScatterTrack {
   }
 }
 
+const MAX_HEIGHT = 16000; // Max height of canvas
+const DRAW_CANVAS_MULTIPLIER = 4;
+
 export class BaseAnnotationTrack {
   featureHeight: number;
   featureMargin: number;
   yPos: number;
   arrowColor: string;
   arrowWidth: number;
-  arrowDistance: number;
   arrowThickness: number;
   expanded: boolean;
   // collapsed: boolean;
 
   width: number;
-  drawCanvasMultiplier: number;
-  maxHeight: number;
   visibleHeight: number;
   minHeight: number;
   preventDrawingTrack: boolean;
@@ -118,7 +118,6 @@ export class BaseAnnotationTrack {
     this.yPos = this.featureHeight / 2; // First y-position
     this.arrowColor = "white";
     this.arrowWidth = 4;
-    this.arrowDistance = 200;
     this.arrowThickness = 1;
     this.expanded = false; // Whether tracks are collapsed
     this.colorSchema = colorSchema;
@@ -126,8 +125,6 @@ export class BaseAnnotationTrack {
     this.preventDrawingTrack = false;
     // Dimensions of track canvas
     this.width = Math.round(width); // Width of displayed canvas
-    this.drawCanvasMultiplier = 4;
-    this.maxHeight = 16000; // Max height of canvas
     this.visibleHeight = visibleHeight; // Visible height for expanded canvas, overflows for scroll
     this.minHeight = minHeight; // Minimized height
 
@@ -170,8 +167,8 @@ export class BaseAnnotationTrack {
 
     // Setup initial track Canvas
     this.drawCtx = this.drawCanvas.getContext("2d");
-    this.drawCanvas.width = this.width * this.drawCanvasMultiplier;
-    this.drawCanvas.height = this.maxHeight;
+    this.drawCanvas.width = this.width * DRAW_CANVAS_MULTIPLIER;
+    this.drawCanvas.height = MAX_HEIGHT;
     this.contentCanvas.width = this.width;
     this.contentCanvas.height = this.minHeight;
 
@@ -193,8 +190,6 @@ export class BaseAnnotationTrack {
         for (const element of this.geneticElements) {
           if (element.tooltip) hideTooltip(element.tooltip);
         }
-
-        console.log("When are these events triggered?");
 
         // Toggle between expanded/collapsed view
         this.expanded = !this.expanded;
@@ -227,7 +222,7 @@ export class BaseAnnotationTrack {
   }
 
   // Sets the container height depending on maximum height of tracks
-  setContainerHeight(maxHeightOrder) {
+  setContainerHeight(maxHeightOrder: number) {
     if (maxHeightOrder === 0) {
       // No results, do not show tracks
       this.contentCanvas.height = 0;
@@ -330,7 +325,7 @@ export class BaseAnnotationTrack {
       const offscreenPos = calculateOffscreenWindowPos({
         start: start,
         end: end,
-        multiplier: this.drawCanvasMultiplier,
+        multiplier: DRAW_CANVAS_MULTIPLIER,
       });
       // draw offscreen position for the first time
       await this.drawOffScreenTrack({
