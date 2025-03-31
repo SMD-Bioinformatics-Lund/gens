@@ -62,10 +62,6 @@ RUN apt-get update &&                              \
     rm -rf /var/lib/apt/lists/* &&                 \
     rm -rf /wheels
 
-# Chown all the files to the app user
-COPY --chown=worker:worker gens ./gens
-COPY --chown=worker:worker utils ./utils
-
 # copy compiled web assetes
 COPY --from=node-builder /usr/src/app/build/css/error.min.css gens/static/css/
 COPY --from=node-builder /usr/src/app/build/css/home.min.css /usr/src/app/build/css/landing.min.css /usr/src/app/build/css/about.min.css gens/blueprints/home/static/
