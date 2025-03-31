@@ -45,8 +45,19 @@ export function initCanvases({
     selectedVariant: string;
     annotationFile: string;
 }) {
-    const canvasTrack = document.getElementById("canvas-track") as CanvasTrack;
-    console.log(canvasTrack);
+    const coverageTrack = document.getElementById("coverage-track") as CanvasTrack;
+    const bafTrack = document.getElementById("baf-track") as CanvasTrack;
+    const annotationTrack = document.getElementById("annotation-track") as CanvasTrack;
+    const transcriptTrack = document.getElementById("transcript-track") as CanvasTrack;
+    const variantTrack = document.getElementById("variant-track") as CanvasTrack;
+
+    // <canvas-track id="coverage-track"></canvas-track>
+    // <canvas-track id="baf-track"></canvas-track>
+    // <canvas-track id="annotation-track"></canvas-track>
+    // <canvas-track id="transcript-track"></canvas-track>
+    // <canvas-track id="variant-track"></canvas-track>
+
+    console.log(coverageTrack);
     const annots = [
         {
             chrom: "1",
@@ -77,7 +88,11 @@ export function initCanvases({
         },
     ];
     console.log("Before")
-    canvasTrack.initialize(1, 10, annots);
+    coverageTrack.initialize(1, 10, annots);
+    bafTrack.initialize(1, 10, []);
+    variantTrack.initialize(1, 10, []);
+    transcriptTrack.initialize(1, 10, []);
+    annotationTrack.initialize(1, 10, []);
 
     // initialize and return the different canvases
     // WEBGL values

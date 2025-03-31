@@ -1,8 +1,12 @@
 const template = document.createElement("template");
 
+const TRACK_HEIGHT = 20;
+const PADDING = 5;
+
+
 template.innerHTML = String.raw`
     <div>Here is a canvas</div>
-    <div id="container" data-state="nodata">
+    <div id="container" data-state="nodata" style="padding-left: ${PADDING}px">
         <p class='track-xlabel'></p>
         <div id='track-container'>
             <div>Content</div>
@@ -29,8 +33,11 @@ export class CanvasTrack extends HTMLElement {
     initialize(chrStart: number, chrEnd: number, annotations: TestAnnot[]) {
         console.log("Start");
         const canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
-        canvas.width = 500;
-        canvas.height = 20;
+        // canvas.width = 500;
+        canvas.height = TRACK_HEIGHT;
+
+        // FIXME: Make this responsive
+        canvas.width = window.innerWidth - PADDING;
 
         const viewNts = chrEnd - chrStart;
         const scaleFactor = canvas.width / viewNts;
