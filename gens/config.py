@@ -1,7 +1,7 @@
 """Gens default configuration."""
 
 import os
-from typing import Tuple, Type
+from typing import Any, Tuple, Type
 from enum import Enum
 from pathlib import Path
 
@@ -68,6 +68,16 @@ class Settings(BaseSettings):
         toml_file=config_file,
         env_nested_delimiter="__",
     )
+
+    def get_dict(self) -> dict[str, Any]:
+        return {
+            "gens_db": self.gens_db.database,
+            "scout_db": self.scout_db.database,
+            "scout_url": self.scout_url,
+            "default_annotation_track": self.default_annotation_track,
+            "authentication": self.authentication.value,
+            "oauth": self.oauth
+        }
 
     @model_validator(mode="after")
     def check_oauth_opts(self) -> 'Settings':
