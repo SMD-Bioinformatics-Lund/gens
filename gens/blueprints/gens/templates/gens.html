@@ -33,7 +33,7 @@
 {% endmacro %}
 
 {% block body %}
-{{ loading() }}
+<!-- {{ loading() }} -->
 <div id='main-container'>
     <div class="header">
         <div id='left-group'>
@@ -61,6 +61,8 @@
         </div>
     </div>
 
+    <p>Hello</p>
+
     <div id='visualization-container'>
         <div id="cytogenetic-ideogram"></div>
         <div id='interactive-container' class='track-container'>
@@ -70,9 +72,9 @@
             <div id='loading-div'>LOADING...</div>
         </div>
 
-        {{ annotation_track("variant") }}
+        <!-- {{ annotation_track("variant") }}
         {{ annotation_track("transcript") }}
-        {{ annotation_track("annotation") }}
+        {{ annotation_track("annotation") }} -->
 
         <div id='button-container'>
             <select id='source-list'></select>
@@ -156,7 +158,8 @@
 
     // Initiate variant, annotation and transcript canvases
     // and pass flask values to tracks
-    const {ic, oc, ac, tc, vc} = gens.initCanvases({
+    // const {ic, oc, ac, tc, vc} = gens.initCanvases({
+    gens.initCanvases({
         sampleName: '{{ individual_id }}',
         caseId: '{{ case_id }}',
         sampleId: '{{ individual_id }}',
@@ -171,17 +174,17 @@
     gens.setupDrawEventManager({
      target: visualizationContainer 
     })
-    gens.setupGenericEventManager({
-      eventName: 'update-title',
-      ownerElement: visualizationContainer,
-      targetElementIds: ['interactive-content'],
-    })
+    // gens.setupGenericEventManager({
+    //   eventName: 'update-title',
+    //   ownerElement: visualizationContainer,
+    //   targetElementIds: ['interactive-content'],
+    // })
 
-    Promise.all([ic.drawStaticContent(), oc.drawOverviewContent()]).then( () => {
-        // setup event managers and draw the tracks
-        gens.drawTrack({chrom: '{{ chrom }}', start: start, end: {{ end }} })
-        document.dispatchEvent(new CustomEvent('data-loaded'))
-    })
+    // Promise.all([ic.drawStaticContent(), oc.drawOverviewContent()]).then( () => {
+    //     // setup event managers and draw the tracks
+    //     gens.drawTrack({chrom: '{{ chrom }}', start: start, end: {{ end }} })
+    //     document.dispatchEvent(new CustomEvent('data-loaded'))
+    // })
 
 
 </script>

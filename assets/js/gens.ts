@@ -48,75 +48,78 @@ export function initCanvases({
   const lineMargin = 2; // Margin for line thickness
   // Listener values
   const inputField = document.getElementById("region-field");
+
+  return {};
+
   // Initiate interactive canvas
-  const ic = new InteractiveCanvas(
-    inputField,
-    lineMargin,
-    near,
-    far,
-    caseId,
-    sampleName,
-    genomeBuild,
-    hgFileDir,
-  );
-  // Initiate variant, annotation and transcript canvases
-  const vc = new VariantTrack(
-    ic.x,
-    ic.plotWidth,
-    near,
-    far,
-    sampleId,
-    caseId,
-    genomeBuild,
-    uiColors.variants,
-    scoutBaseURL,
-    selectedVariant,
-  );
-  const tc = new TranscriptTrack(
-    ic.x,
-    ic.plotWidth,
-    near,
-    far,
-    genomeBuild,
-    uiColors.transcripts,
-  );
-  const ac = new AnnotationTrack(
-    ic.x,
-    ic.plotWidth,
-    near,
-    far,
-    genomeBuild,
-    annotationFile,
-  );
-  // Initiate and draw overview canvas
-  const oc = new OverviewCanvas(
-    ic.x,
-    ic.plotWidth,
-    lineMargin,
-    near,
-    far,
-    caseId,
-    sampleName,
-    genomeBuild,
-    hgFileDir,
-  );
-  // Draw cytogenetic ideogram figure
-  const cg = new CytogeneticIdeogram({
-    targetId: "cytogenetic-ideogram",
-    genomeBuild,
-    x: ic.x,
-    y: ic.y,
-    width: ic.plotWidth,
-    height: 40,
-  });
-  return {
-    ic: ic,
-    vc: vc,
-    tc: tc,
-    ac: ac,
-    oc: oc,
-    cg: cg,
-  };
+  // const ic = new InteractiveCanvas(
+  //   inputField,
+  //   lineMargin,
+  //   near,
+  //   far,
+  //   caseId,
+  //   sampleName,
+  //   genomeBuild,
+  //   hgFileDir,
+  // );
+  // // Initiate variant, annotation and transcript canvases
+  // const vc = new VariantTrack(
+  //   ic.x,
+  //   ic.plotWidth,
+  //   near,
+  //   far,
+  //   sampleId,
+  //   caseId,
+  //   genomeBuild,
+  //   uiColors.variants,
+  //   scoutBaseURL,
+  //   selectedVariant,
+  // );
+  // const tc = new TranscriptTrack(
+  //   ic.x,
+  //   ic.plotWidth,
+  //   near,
+  //   far,
+  //   genomeBuild,
+  //   uiColors.transcripts,
+  // );
+  // const ac = new AnnotationTrack(
+  //   ic.x,
+  //   ic.plotWidth,
+  //   near,
+  //   far,
+  //   genomeBuild,
+  //   annotationFile,
+  // );
+  // // Initiate and draw overview canvas
+  // const oc = new OverviewCanvas(
+  //   ic.x,
+  //   ic.plotWidth,
+  //   lineMargin,
+  //   near,
+  //   far,
+  //   caseId,
+  //   sampleName,
+  //   genomeBuild,
+  //   hgFileDir,
+  // );
+  // // Draw cytogenetic ideogram figure
+  // const cg = new CytogeneticIdeogram({
+  //   targetId: "cytogenetic-ideogram",
+  //   genomeBuild,
+  //   x: ic.x,
+  //   y: ic.y,
+  //   width: ic.plotWidth,
+  //   height: 40,
+  // });
+  // return {
+  //   ic: ic,
+  //   vc: vc,
+  //   tc: tc,
+  //   ac: ac,
+  //   oc: oc,
+  //   cg: cg,
+  // };
 }
 
 // Make hard link and copy link to clipboard
