@@ -179,7 +179,7 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool) -> None:
         LOG.info("Remove old entry in the database")
         db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
         # add the annotations
-        LOG.info("Load annoatations in the database")
+        LOG.info("Load annotations in the database")
         db[ANNOTATIONS_COLLECTION].insert_many(
             [annot.model_dump() for annot in parsed_annotations]
         )
