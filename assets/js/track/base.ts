@@ -274,7 +274,8 @@ export class BaseAnnotationTrack {
             sample_id: this.sampleName,
             region: `${chrom}:1-None`,
             genome_build: this.genomeBuild,
-            collapsed: false, // always get all height orders
+            // FIXME: Look into this one. Having previously been set to "false" meant much more data transferred and slower loading times
+            collapsed: true,
           },
           this.additionalQueryParams,
         ), // parameters specific to track type
