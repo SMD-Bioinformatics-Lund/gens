@@ -86,7 +86,7 @@ def display_case(sample_name: str) -> str:
     return render_template(
         "gens.html",
         ui_colors=UI_COLORS,
-        scout_base_url=current_app.config.get("SCOUT_BASE_URL"),
+        scout_base_url=settings.scout_url,
         chrom=chromosome,
         start=start_pos,
         end=end_pos,
