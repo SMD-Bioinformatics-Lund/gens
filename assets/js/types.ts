@@ -3,7 +3,7 @@ interface TestAnnot {
   color: string,
   start: number,
   end: number,
-  genome_build: string,
+  genome_build: number,
   name: string,
   source: string
 }

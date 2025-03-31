@@ -61,7 +61,10 @@
         </div>
     </div>
 
-    <p>Hello</p>
+    <p>Start with putting the mimirsbrunnr track here</p>
+
+    <simple-track></simple-track>
+    <canvas-track id="canvas-track"></canvas-track>
 
     <!-- <div id='visualization-container'>
         <div id="cytogenetic-ideogram"></div>
@@ -158,16 +161,16 @@
 
     // Initiate variant, annotation and transcript canvases
     // and pass flask values to tracks
-    // const {ic, oc} = gens.initCanvases({
-    //     sampleName: '{{ individual_id }}',
-    //     caseId: '{{ case_id }}',
-    //     sampleId: '{{ individual_id }}',
-    //     genomeBuild: {{ genome_build }},
-    //     uiColors: {{ ui_colors | tojson | safe }},
-    //     scoutBaseURL: '{{ scout_base_url | safe }}',
-    //     selectedVariant: '{{ selected_variant }}',
-    //     annotationFile: '{{ annotation }}',
-    // })
+    gens.initCanvases({
+        sampleName: '{{ individual_id }}',
+        caseId: '{{ case_id }}',
+        sampleId: '{{ individual_id }}',
+        genomeBuild: {{ genome_build }},
+        uiColors: {{ ui_colors | tojson | safe }},
+        scoutBaseURL: '{{ scout_base_url | safe }}',
+        selectedVariant: '{{ selected_variant }}',
+        annotationFile: '{{ annotation }}',
+    })
     // draw statis content
     const visualizationContainer = document.getElementById('visualization-container')
     // gens.setupDrawEventManager({

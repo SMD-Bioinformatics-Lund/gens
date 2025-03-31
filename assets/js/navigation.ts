@@ -120,18 +120,18 @@ export async function drawTrack({
     genomeBuild,
   });
   updateInputField({ ...region });
-  const trackContainer = document.getElementById("visualization-container");
-  trackContainer.dispatchEvent(
-    redrawEvent({ region, exclude, force, ...kwargs })
-  );
+  // const trackContainer = document.getElementById("visualization-container");
+  // trackContainer.dispatchEvent(
+  //   redrawEvent({ region, exclude, force, ...kwargs })
+  // );
   // make overview update its region marking
   const markRegionEvent = new CustomEvent("mark-region", {
     detail: { region: region },
   });
   document.getElementById("overview-container").dispatchEvent(markRegionEvent);
-  document
-    .getElementById("cytogenetic-ideogram")
-    .dispatchEvent(markRegionEvent);
+  // document
+  //   .getElementById("cytogenetic-ideogram")
+  //   .dispatchEvent(markRegionEvent);
 }
 
 // If query is a regionString draw the relevant region
