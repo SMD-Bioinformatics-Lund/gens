@@ -1,9 +1,7 @@
-const template = document.createElement("template");
-
 const TRACK_HEIGHT = 20;
 const PADDING = 5;
 
-
+const template = document.createElement("template");
 template.innerHTML = String.raw`
     <div id="container" data-state="nodata" style="padding-left: ${PADDING}px">
         <p class='track-xlabel'></p>
@@ -23,10 +21,6 @@ export class CanvasTrack extends HTMLElement {
         this._root = this.attachShadow({ mode: "open" });
         this._root.appendChild(template.content.cloneNode(true));
 
-    }
-
-    constructor() {
-        super();
     }
 
     initialize(label: string) {

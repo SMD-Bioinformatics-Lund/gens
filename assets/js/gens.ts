@@ -22,6 +22,7 @@ export {
 
 import "./components/simple_track";
 import "./components/canvas_track";
+import "./components/input_controls";
 import { CanvasTrack } from "./components/canvas_track";
 import { get } from "./fetch";
 import { parseRegionDesignation } from "./navigation";
@@ -62,10 +63,10 @@ export function initCanvases({
         "variant-track",
     ) as CanvasTrack;
 
-    const sourceList = document.getElementById(
+    const sourcesList = document.getElementById(
         "source-list",
     ) as HTMLSelectElement;
-    sourceList.style.visibility = "visible";
+    sourcesList.style.visibility = "visible";
 
     get("get-annotation-sources", { genome_build: 38 }).then((result) => {
         const filenames = result.sources;
@@ -74,7 +75,7 @@ export function initCanvases({
             opt.value = filename;
             opt.innerHTML = filename;
 
-            sourceList.appendChild(opt);
+            sourcesList.appendChild(opt);
         }
     });
 
@@ -85,11 +86,9 @@ export function initCanvases({
     annotationTrack.render(1, 10, []);
 
     let annotationData = [];
-    sourceList.addEventListener("change", async () => {
-        const source = sourceList.value;
-
+    sourcesList.addEventListener("change", async () => {
+        const source = sourcesList.value;
         const region = parseRegionDesignation(regionField.value);
-
         const payload = {
             sample_id: undefined,
             region: `${region.chrom}:${region.start}-${region.end}`,
@@ -97,20 +96,18 @@ export function initCanvases({
             collapsed: true,
             source: source,
         };
-
-        // Current positions?
         const annotsResult = await get("get-annotation-data", payload);
-        console.log(annotsResult);
-
         annotationTrack.render(
             region.start,
             region.end,
             annotsResult.annotations,
         );
-
-        // Force redraw here
-        // console.log(`Redrawing source: ${source}`);
     });
+
+    regionField.addEventListener("change", () => {
+        const region = parseRegionDesignation(regionField.value);
+        console.log(region);
+    })
 
     // <canvas-track id="coverage-track"></canvas-track>
     // <canvas-track id="baf-track"></canvas-track>
