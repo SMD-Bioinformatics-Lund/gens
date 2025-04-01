@@ -138,28 +138,22 @@
       }, 1500)
     })
 
+    console.log({{chrom}})
 
     // Set first input field value for ic
-    let start = {{ start }} === 0 ? 1 : {{ start }};
-    const end = {{ end }}
-    const genomeBuild = {{ genome_build }}
-    inputField.value = '{{chrom}}' + ':' + start + '-' + {{end}};
+    let startJs = {{ start }} === 0 ? 1 : {{ start }};
+    const endJs = {{ end }}
+    const chromJs = {{ chrom }} !== undefined ? {{ chrom }} : "1";
+    const genomeBuildJs = {{ genome_build }}
+    inputField.value = chromJs + ':' + startJs + '-' + endJs
     inputField.placeholder = inputField.value;
 
-    // window.regionConfig = {{ {
-    //     start: start,
-    //     end: end:
-    //     genomeBuild: genome_build,
-    //     chrom: chrom
-    // } | tojson }};
-
-    // console.log(regionConfig);
-
-    // window.startRegion = {
-    //     chr: "1",
-    //     start,
-    //     end
-    // }
+    window.regionConfig = {
+        chr: chromJs,
+        start: startJs,
+        end: endJs,
+        genome_build: genomeBuildJs
+    }
 
 
     // Redraw when new region is requested

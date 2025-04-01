@@ -23,7 +23,7 @@ export {
 import "./components/simple_track";
 import "./components/canvas_track";
 import "./components/input_controls";
-// import { InputControls } from "./components/input_controls";
+import { InputControls } from "./components/input_controls";
 import { CanvasTrack } from "./components/canvas_track";
 import { get } from "./fetch";
 import { parseRegionDesignation } from "./navigation";
@@ -70,13 +70,13 @@ export function initCanvases({
     sourcesList.style.visibility = "visible";
 
     // @ts-ignore
-    // const { start, end, chrom } = window.regionConfig; 
+    const { start, end, chr } = window.regionConfig; 
 
-    // const inputControls = document.getElementById("input-controls") as InputControls;
-    // // FIXME: Look into how to parse this for predefined start URLs
-    // inputControls.initialize({chr: chrom, start: start, end: end}, (region, annotSource) => {
-    //     console.log(`Rendering: ${region} ${annotSource}`);
-    // })
+    const inputControls = document.getElementById("input-controls") as InputControls;
+    // FIXME: Look into how to parse this for predefined start URLs
+    inputControls.initialize({chr, start, end}, (region, annotSource) => {
+        console.log(`Rendering: ${region} ${annotSource}`);
+    })
 
     annotationTrack.render(1, 10, []);
 

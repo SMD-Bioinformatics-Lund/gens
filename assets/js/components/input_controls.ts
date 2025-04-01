@@ -1,5 +1,9 @@
+import { get } from "../fetch";
+import { parseRegionDesignation } from "../navigation";
+
 const BUTTON_ZOOM_COLOR = "#8fbcbb";
-const BUTTON_NAVIGATE_COLOR = "#6db2c5;"
+const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
+const BUTTON_SUBMIT_COLOR = "#6db2c5;";
 
 const SVG_BASE = "/gens/static/svg";
 
@@ -17,6 +21,9 @@ template.innerHTML = String.raw`
     }
     .pan {
         background: ${BUTTON_NAVIGATE_COLOR}
+    }
+    #submit {
+        background: ${BUTTON_SUBMIT_COLOR}
     }
     .icon {
         background-size: contain;
@@ -53,7 +60,7 @@ template.innerHTML = String.raw`
         </button>
         <form id='region-form'>
             <input onFocus='this.select();' id='region-field' type='text' size=20>
-            <input type='submit' class='button button--submit no-print' title='Submit range'>
+            <input id="submit" type='submit' class='button' title='Submit range'>
         </form>
     </div>
 `;
@@ -61,13 +68,79 @@ template.innerHTML = String.raw`
 export class InputControls extends HTMLElement {
     private _root: ShadowRoot;
 
+    private annotationSourceList: HTMLSelectElement;
+    private panLeft: HTMLButtonElement;
+    private panRight: HTMLButtonElement;
+    private zoomIn: HTMLButtonElement;
+    private zoomOut: HTMLButtonElement;
+    private regionField: HTMLInputElement;
+
     connectedCallback() {
         this._root = this.attachShadow({ mode: "open" });
         this._root.appendChild(template.content.cloneNode(true));
+
+        this.annotationSourceList = this._root.getElementById(
+            "source-list",
+        ) as HTMLSelectElement;
+        this.panLeft = this._root.getElementById(
+            "pan-left",
+        ) as HTMLButtonElement;
+        this.panRight = this._root.getElementById(
+            "pan-right",
+        ) as HTMLButtonElement;
+        this.zoomIn = this._root.getElementById("zoom-in") as HTMLButtonElement;
+        this.zoomOut = this._root.getElementById(
+            "zoom-out",
+        ) as HTMLButtonElement;
+        this.regionField = this._root.getElementById(
+            "region-field",
+        ) as HTMLInputElement;
     }
 
-    initialize() {
+    initialize(
+        startRegion: { chr: string; start: number; end: number },
+        render: (region: Region, annotation: string) => void,
+    ) {
 
+        this.regionField.value = `${startRegion.chr}:${startRegion.start}-${startRegion.end}`;
+
+        get("get-annotation-sources", { genome_build: 38 }).then((result) => {
+            const filenames = result.sources;
+            for (const filename of filenames) {
+                const opt = document.createElement("option");
+                opt.value = filename;
+                opt.innerHTML = filename;
+                this.annotationSourceList.appendChild(opt);
+            }
+        });
+
+        let annotationData = [];
+        this.annotationSourceList.addEventListener("change", async () => {
+            const annotationSource = this.annotationSourceList.value;
+            const region = parseRegionDesignation(this.regionField.value);
+            const payload = {
+                sample_id: undefined,
+                region: `${region.chrom}:${region.start}-${region.end}`,
+                genome_build: 38,
+                collapsed: true,
+                source: annotationSource,
+            };
+
+            render(region, annotationSource);
+            // const annotsResult = await get("get-annotation-data", payload);
+            // annotationTrack.render(
+            //     region.start,
+            //     region.end,
+            //     annotsResult.annotations,
+            // );
+        });
+
+        this.regionField.addEventListener("change", () => {
+            const region = parseRegionDesignation(this.regionField.value);
+            console.log(region);
+            const annotationSource = this.annotationSourceList.value;
+            render(region, annotationSource);
+        });
     }
 }
 
