@@ -147,6 +147,10 @@ export function initCanvases({
             };
             const annotsResult = await get("get-annotation-data", annotPayload);
             annotationTrack.render(region, annotsResult.annotations);
+        },
+        (_newXRange) => {
+            console.log("Zoom logic coming here");
+            // annotationTrack.render(region, annotsResult.annotations);
         }
     );
 

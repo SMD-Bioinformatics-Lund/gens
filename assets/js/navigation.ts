@@ -224,20 +224,20 @@ export function zoomOutNew(
     // pos.end += factor;
 }
 
-// // Handle zoom in button click
-// export function zoomIn() {
-//     const pos = readInputField();
-//     const factor = Math.floor((pos.end - pos.start) * 0.2);
-//     pos.start += factor;
-//     pos.end -= factor;
-//     drawTrack({
-//         chrom: pos.chrom,
-//         start: pos.start,
-//         end: pos.end,
-//         exclude: ["cytogenetic-ideogram"],
-//         drawTitle: false,
-//     });
-// }
+// Handle zoom in button click
+export function zoomIn() {
+    const pos = readInputField();
+    const factor = Math.floor((pos.end - pos.start) * 0.2);
+    pos.start += factor;
+    pos.end -= factor;
+    drawTrack({
+        chrom: pos.chrom,
+        start: pos.start,
+        end: pos.end,
+        exclude: ["cytogenetic-ideogram"],
+        drawTitle: false,
+    });
+}
 
 // Handle zoom out button click
 export function zoomOut() {

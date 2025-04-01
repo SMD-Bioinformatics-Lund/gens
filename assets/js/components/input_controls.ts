@@ -137,6 +137,7 @@ export class InputControls extends HTMLElement {
             console.log("Zooming in");
             const currXRange = this.getRange();
             const newXRange = zoomInNew(currXRange)
+            this.regionField.value = `${startRegion.chr}:${newXRange[0]}-${newXRange[1]}`;
             onZoomChange(newXRange)
         }
 
@@ -144,6 +145,7 @@ export class InputControls extends HTMLElement {
             console.log("Zooming out");
             const currXRange = this.getRange();
             const newXRange = zoomOutNew(currXRange)
+            this.regionField.value = `${startRegion.chr}:${newXRange[0]}-${newXRange[1]}`;
             onZoomChange(newXRange)
         }
 
