@@ -178,6 +178,29 @@ export function previousChromosome() {
     drawTrack({ chrom: chrom, start: 1, end: null });
 }
 
+export function getPan(
+    viewRange: [number, number],
+    direction = "left",
+    speed = 0.1,
+): [number, number] {
+    const distance = Math.abs(Math.floor(speed * (viewRange[1] - viewRange[0])));
+    let newStartX;
+    let newEndX;
+    if (direction === "left") {
+        newStartX = viewRange[0] - distance;
+        newEndX = viewRange[1] - distance;
+    } else {
+        newStartX = viewRange[0] + distance;
+        newEndX = viewRange[1] + distance;
+    }
+    // drawTrack will correct the window eventually, but let us not go negative at least
+    if (newStartX < 1) {
+        newStartX = newEndX - newStartX;
+        newStartX = 1;
+    }
+    return [newStartX, newEndX];
+}
+
 // Pan whole canvas and tracks to the left
 export function panTracks(direction = "left", speed = 0.1) {
     const pos = readInputField();

@@ -13,7 +13,7 @@ export function renderBands(
     ctx: CanvasRenderingContext2D,
     canvasDim: { height: number; width: number },
     annots: { start: number; end: number; color: number[] }[],
-    scaleFactor: number,
+    xRange: [number, number],
 ) {
     console.log(annots);
     annots.forEach((annot) => {
@@ -21,13 +21,20 @@ export function renderBands(
         const rgbs = annot.color;
         const color = `rgb(${rgbs[0]},${rgbs[1]},${rgbs[2]})`;
         ctx.fillStyle = color;
-        const width = scaleFactor * (annot.end - annot.start);
-        ctx.fillRect(annot.start * scaleFactor, 0, width, canvasDim.height);
+
+        const xPxStart = getPixelPosition(annot.start, xRange, canvasDim.width);
+        const xPxEnd = getPixelPosition(annot.end, xRange, canvasDim.width);
+        ctx.fillRect(xPxStart, 0, xPxEnd - xPxStart, canvasDim.height);
     });
 }
 
-// What is the responsibility here?
-// Given data and viewport, render
+function getPixelPosition(pos: number, range: [number, number], viewSize: number): number {
+    const viewPos = pos - range[0];
+    const scaleFactor = (viewSize) / (range[1] - range[0]);
+    const pixelPos = viewPos * scaleFactor;
+    return pixelPos;
+}
+
 export function renderDots(
     ctx: CanvasRenderingContext2D,
     dots: RenderDot[],
@@ -42,21 +49,20 @@ export function renderDots(
 
     dots.forEach((dot) => {
         ctx.fillStyle = dot.color;
-        const dataWidth = xRange[1] - xRange[0];
-        const dataHeight = yRange[1] - yRange[0];
 
-        const xPos = dot.pos;
-        const xViewPos = xPos - xRange[0];
-        const xScaleFactor = canvasDim.width / dataWidth;
-        const xPixel = xViewPos * xScaleFactor;
+        const xPixel = getPixelPosition(dot.pos, xRange, canvasDim.width)
+        const yPixel = getPixelPosition(dot.value, yRange, canvasDim.height)
 
-        const yPos = dot.value;
-        // Canvas drawing scale is inverted
-        const yViewPos = dataHeight - (yPos - yRange[0]);
-        const yScaleFactor = canvasDim.height / dataHeight;
-        const yPixel = yViewPos * yScaleFactor;
+        // const xPos = dot.pos;
+        // const xViewPos = xPos - xRange[0];
+        // const xScaleFactor = canvasDim.width / dataWidth;
+        // const xPixel = xViewPos * xScaleFactor;
 
-        console.log(`${yPos} ${yViewPos} ${yScaleFactor} ${yPixel}`);
+        // const yPos = dot.value;
+        // // Canvas drawing scale is inverted
+        // const yViewPos = dataHeight - (yPos - yRange[0]);
+        // const yScaleFactor = canvasDim.height / dataHeight;
+        // const yPixel = yViewPos * yScaleFactor;
 
         // const scaledNt = origX * scaleFactor;
         // const scaledNt = scaledNt(origNt, ntRange)

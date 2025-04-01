@@ -6,16 +6,16 @@ export class AnnotationTrack extends CanvasTrack {
         super.initialize(label, trackHeight);
     }
 
-    render(range: {start: number, end: number}, annotations: AnnotationEntries[]) {
+    render(xRange: {start: number, end: number}, annotations: AnnotationEntries[]) {
         super.syncDimensions();
 
-        const viewNts = range.end - range.start;
-        const scaleFactor = this._canvas.width / viewNts
+        // const viewNts = xRange.end - xRange.start;
+        // const scaleFactor = this._canvas.width / viewNts
 
         // FIXME: Scaling should be performed before
         // FIXME: Rendering area inside border?
         renderBorder(this.ctx, this.dimensions);
-        renderBands(this.ctx, this.dimensions, annotations, scaleFactor);
+        renderBands(this.ctx, this.dimensions, annotations, [xRange.start, xRange.end]);
     }
 }
 

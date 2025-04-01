@@ -1,5 +1,5 @@
 import { get } from "../fetch";
-import { parseRegionDesignation, zoomInNew, zoomOutNew } from "../navigation";
+import { getPan, parseRegionDesignation, zoomInNew, zoomOutNew } from "../navigation";
 
 const BUTTON_ZOOM_COLOR = "#8fbcbb";
 const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
@@ -75,6 +75,8 @@ export class InputControls extends HTMLElement {
     private zoomOut: HTMLButtonElement;
     private regionField: HTMLInputElement;
 
+    private fullRegion: Region;
+
     connectedCallback() {
         this._root = this.attachShadow({ mode: "open" });
         this._root.appendChild(template.content.cloneNode(true));
@@ -102,19 +104,28 @@ export class InputControls extends HTMLElement {
         return parseRegionDesignation(this.regionField.value);
     }
 
+    getSource(): string {
+        return this.annotationSourceList.value;
+    }
+
     getRange(): [number, number] {
         const region = parseRegionDesignation(this.regionField.value);
         return [region.start, region.end];
     }
 
+    updatePosition(range: [number, number]) {
+        this.regionField.value = `${this.fullRegion.chrom}:${range[0]}-${range[1]}`;
+    }
+
     initialize(
-        startRegion: Region,
+        fullRegion: Region,
         onRegionChanged: (region: Region) => void,
         onAnnotationChanged: (region: Region, source: string) => void,
-        onZoomChange: (newXRange: [number, number]) => void
+        onPositionChange: (newXRange: [number, number]) => void
     ) {
-
-        this.regionField.value = `${startRegion.chrom}:${startRegion.start}-${startRegion.end}`;
+        this.fullRegion = fullRegion;
+        this.updatePosition([fullRegion.start, fullRegion.end]);
+        // this.regionField.value = `${fullRegion.chrom}:${fullRegion.start}-${fullRegion.end}`;
 
         get("get-annotation-sources", { genome_build: 38 }).then((result) => {
             const filenames = result.sources;
@@ -133,20 +144,34 @@ export class InputControls extends HTMLElement {
             onAnnotationChanged(region, annotationSource);
         });
 
+        this.panLeft.onclick = () => {
+            const newXRange = getPan(this.getRange(), "left");
+            this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
+            onPositionChange(newXRange);
+        }
+
+        this.panRight.onclick = () => {
+            const newXRange = getPan(this.getRange(), "right");
+            this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
+            onPositionChange(newXRange);
+        }
+
         this.zoomIn.onclick = () => {
             console.log("Zooming in");
             const currXRange = this.getRange();
             const newXRange = zoomInNew(currXRange)
-            this.regionField.value = `${startRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
-            onZoomChange(newXRange)
+            this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
+            onPositionChange(newXRange)
         }
 
         this.zoomOut.onclick = () => {
             console.log("Zooming out");
             const currXRange = this.getRange();
             const newXRange = zoomOutNew(currXRange)
-            this.regionField.value = `${startRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
-            onZoomChange(newXRange)
+            // const newMin = newXRange[0];
+            const newMax = Math.min(newXRange[1], fullRegion.end);
+            this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newMax}`;
+            onPositionChange(newXRange)
         }
 
 

@@ -143,8 +143,12 @@ export async function initCanvases({
             // coverageTrack.render(xRange, yRange, dots);        
 
         },
-        (_newXRange) => {
-            console.log("Zoom logic coming here");
+        async (_newXRange) => {
+            const region = inputControls.getRegion();
+            console.log("New region: ", region);
+            const source = inputControls.getSource();
+            const annotations = await getAnnotationData(region, source);
+            annotationTrack.render(region, annotations);
             // annotationTrack.render(region, annotsResult.annotations);
         }
     );
