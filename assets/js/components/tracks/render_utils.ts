@@ -26,6 +26,8 @@ export function renderBands(
     });
 }
 
+// What is the responsibility here?
+// Given data and viewport, render
 export function renderDots(ctx: CanvasRenderingContext2D, dots: RenderDot[]) {
     dots.forEach((dot) => {
         ctx.fillStyle = dot.color;
