@@ -29,9 +29,12 @@ export class CanvasTrack extends HTMLElement {
         super();
     }
 
-    initialize(label: string, chrStart: number, chrEnd: number, annotations: TestAnnot[]) {
+    initialize(label: string) {
         const header = this._root.getElementById("header")
         header.innerHTML = label;
+    }
+
+    render(chrStart: number, chrEnd: number, annotations: TestAnnot[]) {
         const canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
         // canvas.width = 500;
         canvas.height = TRACK_HEIGHT;
@@ -65,11 +68,15 @@ export class CanvasTrack extends HTMLElement {
     private _renderAnnotations(
         ctx: CanvasRenderingContext2D,
         canvasDim: { height: number; width: number },
-        annots: { start: number; end: number; color: string }[],
+        annots: { start: number; end: number; color: number[] }[],
         scaleFactor: number
     ) {
+        console.log(annots);
         annots.forEach((annot) => {
-            ctx.fillStyle = annot.color;
+            // console.log(annot);
+            const rgbs = annot.color;
+            const color = `rgb(${rgbs[0]},${rgbs[1]},${rgbs[2]})`
+            ctx.fillStyle = color;
             const width = scaleFactor * (annot.end - annot.start);
             ctx.fillRect(annot.start * scaleFactor, 0, width, canvasDim.height);
         });

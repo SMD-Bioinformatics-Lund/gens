@@ -24,6 +24,7 @@ import "./components/simple_track";
 import "./components/canvas_track";
 import { CanvasTrack } from "./components/canvas_track";
 import { get } from "./fetch";
+import { parseRegionDesignation } from "./navigation";
 // import { get } from "http";
 
 export function initCanvases({
@@ -47,31 +48,69 @@ export function initCanvases({
     selectedVariant: string;
     annotationFile: string;
 }) {
-    const coverageTrack = document.getElementById("coverage-track") as CanvasTrack;
+    const coverageTrack = document.getElementById(
+        "coverage-track",
+    ) as CanvasTrack;
     const bafTrack = document.getElementById("baf-track") as CanvasTrack;
-    const annotationTrack = document.getElementById("annotation-track") as CanvasTrack;
-    const transcriptTrack = document.getElementById("transcript-track") as CanvasTrack;
-    const variantTrack = document.getElementById("variant-track") as CanvasTrack;
+    const annotationTrack = document.getElementById(
+        "annotation-track",
+    ) as CanvasTrack;
+    const transcriptTrack = document.getElementById(
+        "transcript-track",
+    ) as CanvasTrack;
+    const variantTrack = document.getElementById(
+        "variant-track",
+    ) as CanvasTrack;
 
-    const sourceList = document.getElementById("source-list") as HTMLSelectElement;
+    const sourceList = document.getElementById(
+        "source-list",
+    ) as HTMLSelectElement;
     sourceList.style.visibility = "visible";
 
-    const results = get("get-annotation-sources", {genome_build: 38})
-        .then((result) => {
-            const filenames = result.sources;
-            for (const filename of filenames) {
-                console.log(filename);
-                const opt = document.createElement("option");
-                opt.value = filename;
-                opt.innerHTML = filename;
-        
-                console.log(opt);
-        
-                sourceList.appendChild(opt);
-            }
-        })
+    get("get-annotation-sources", { genome_build: 38 }).then((result) => {
+        const filenames = result.sources;
+        for (const filename of filenames) {
+            const opt = document.createElement("option");
+            opt.value = filename;
+            opt.innerHTML = filename;
 
+            sourceList.appendChild(opt);
+        }
+    });
 
+    const regionField = document.getElementById(
+        "region-field",
+    ) as HTMLInputElement;
+
+    annotationTrack.render(1, 10, []);
+
+    let annotationData = [];
+    sourceList.addEventListener("change", async () => {
+        const source = sourceList.value;
+
+        const region = parseRegionDesignation(regionField.value);
+
+        const payload = {
+            sample_id: undefined,
+            region: `${region.chrom}:${region.start}-${region.end}`,
+            genome_build: 38,
+            collapsed: true,
+            source: source,
+        };
+
+        // Current positions?
+        const annotsResult = await get("get-annotation-data", payload);
+        console.log(annotsResult);
+
+        annotationTrack.render(
+            region.start,
+            region.end,
+            annotsResult.annotations,
+        );
+
+        // Force redraw here
+        // console.log(`Redrawing source: ${source}`);
+    });
 
     // <canvas-track id="coverage-track"></canvas-track>
     // <canvas-track id="baf-track"></canvas-track>
@@ -79,11 +118,10 @@ export function initCanvases({
     // <canvas-track id="transcript-track"></canvas-track>
     // <canvas-track id="variant-track"></canvas-track>
 
-    console.log(coverageTrack);
     const annots = [
         {
             chrom: "1",
-            color: "blue",
+            color: [0,0,255],
             start: 2,
             end: 4,
             genome_build: 38,
@@ -92,7 +130,7 @@ export function initCanvases({
         },
         {
             chrom: "1",
-            color: "red",
+            color: [255, 0, 0],
             start: 5,
             end: 7,
             genome_build: 38,
@@ -101,7 +139,7 @@ export function initCanvases({
         },
         {
             chrom: "1",
-            color: "green",
+            color: [0, 255, 0],
             start: 9,
             end: 10,
             genome_build: 38,
@@ -109,12 +147,14 @@ export function initCanvases({
             source: "test",
         },
     ];
-    console.log("Before")
-    coverageTrack.initialize("Coverage", 1, 10, annots);
-    bafTrack.initialize("BAF", 1, 10, []);
-    variantTrack.initialize("Variant", 1, 10, []);
-    transcriptTrack.initialize("Transcript", 1, 10, []);
-    annotationTrack.initialize("Annotation", 1, 10, []);
+    coverageTrack.initialize("Coverage")
+    coverageTrack.render(1, 10, annots);
+    bafTrack.initialize("BAF");
+    bafTrack.render(1, 10, []);
+    variantTrack.initialize("Variant");
+    variantTrack.render(1, 10, []);
+    transcriptTrack.initialize("Transcript");
+    transcriptTrack.render(1, 10, []);
 
     // initialize and return the different canvases
     // WEBGL values

@@ -1,6 +1,6 @@
 interface TestAnnot {
   chrom: string,
-  color: string,
+  color: number[],
   start: number,
   end: number,
   genome_build: number,
