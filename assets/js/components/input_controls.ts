@@ -1,5 +1,5 @@
 import { get } from "../fetch";
-import { parseRegionDesignation } from "../navigation";
+import { parseRegionDesignation, zoomInNew, zoomOutNew } from "../navigation";
 
 const BUTTON_ZOOM_COLOR = "#8fbcbb";
 const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
@@ -95,16 +95,23 @@ export class InputControls extends HTMLElement {
         this.regionField = this._root.getElementById(
             "region-field",
         ) as HTMLInputElement;
+
     }
 
     getRegion(): Region {
         return parseRegionDesignation(this.regionField.value);
     }
 
+    getRange(): [number, number] {
+        const region = parseRegionDesignation(this.regionField.value);
+        return [region.start, region.end];
+    }
+
     initialize(
         startRegion: { chr: string; start: number; end: number },
         onRegionChanged: (region: Region) => void,
         onAnnotationChanged: (region: Region, source: string) => void,
+        onZoomChange: (newXRange: [number, number]) => void
     ) {
 
         this.regionField.value = `${startRegion.chr}:${startRegion.start}-${startRegion.end}`;
@@ -126,10 +133,25 @@ export class InputControls extends HTMLElement {
             onAnnotationChanged(region, annotationSource);
         });
 
-        this.regionField.addEventListener("change", () => {
-            const region = parseRegionDesignation(this.regionField.value);
-            onRegionChanged(region);
-        });
+        this.zoomIn.onclick = () => {
+            console.log("Zooming in");
+            const currXRange = this.getRange();
+            const newXRange = zoomInNew(currXRange)
+            onZoomChange(newXRange)
+        }
+
+        this.zoomOut.onclick = () => {
+            console.log("Zooming out");
+            const currXRange = this.getRange();
+            const newXRange = zoomOutNew(currXRange)
+            onZoomChange(newXRange)
+        }
+
+
+        // this.regionField.addEventListener("change", () => {
+        //     const region = parseRegionDesignation(this.regionField.value);
+        //     onRegionChanged(region);
+        // });
     }
 }
 
