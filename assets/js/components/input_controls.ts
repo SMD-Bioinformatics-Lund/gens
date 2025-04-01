@@ -58,10 +58,10 @@ template.innerHTML = String.raw`
         <button id="pan-right" class='button pan'>
             <span id="arrow-right" class='icon' title='Right'></span>
         </button>
-        <form id='region-form'>
+        <div id='region-form'>
             <input onFocus='this.select();' id='region-field' type='text' size=20>
             <input id="submit" type='submit' class='button' title='Submit range'>
-        </form>
+        </div>
     </div>
 `;
 
@@ -74,6 +74,7 @@ export class InputControls extends HTMLElement {
     private zoomIn: HTMLButtonElement;
     private zoomOut: HTMLButtonElement;
     private regionField: HTMLInputElement;
+    private submit: HTMLButtonElement;
 
     private fullRegion: Region;
 
@@ -97,6 +98,7 @@ export class InputControls extends HTMLElement {
         this.regionField = this._root.getElementById(
             "region-field",
         ) as HTMLInputElement;
+        this.submit = this._root.getElementById("submit") as HTMLButtonElement;
 
     }
 
@@ -157,7 +159,6 @@ export class InputControls extends HTMLElement {
         }
 
         this.zoomIn.onclick = () => {
-            console.log("Zooming in");
             const currXRange = this.getRange();
             const newXRange = zoomInNew(currXRange)
             this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
@@ -165,7 +166,6 @@ export class InputControls extends HTMLElement {
         }
 
         this.zoomOut.onclick = () => {
-            console.log("Zooming out");
             const currXRange = this.getRange();
             const newXRange = zoomOutNew(currXRange)
             // const newMin = newXRange[0];
@@ -174,11 +174,10 @@ export class InputControls extends HTMLElement {
             onPositionChange(newXRange)
         }
 
-
-        // this.regionField.addEventListener("change", () => {
-        //     const region = parseRegionDesignation(this.regionField.value);
-        //     onRegionChanged(region);
-        // });
+        this.submit.onclick = () => {
+            const range = this.getRange();
+            onPositionChange(range);
+        }
     }
 }
 
