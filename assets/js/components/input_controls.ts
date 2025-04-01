@@ -108,13 +108,13 @@ export class InputControls extends HTMLElement {
     }
 
     initialize(
-        startRegion: { chr: string; start: number; end: number },
+        startRegion: Region,
         onRegionChanged: (region: Region) => void,
         onAnnotationChanged: (region: Region, source: string) => void,
         onZoomChange: (newXRange: [number, number]) => void
     ) {
 
-        this.regionField.value = `${startRegion.chr}:${startRegion.start}-${startRegion.end}`;
+        this.regionField.value = `${startRegion.chrom}:${startRegion.start}-${startRegion.end}`;
 
         get("get-annotation-sources", { genome_build: 38 }).then((result) => {
             const filenames = result.sources;
@@ -137,7 +137,7 @@ export class InputControls extends HTMLElement {
             console.log("Zooming in");
             const currXRange = this.getRange();
             const newXRange = zoomInNew(currXRange)
-            this.regionField.value = `${startRegion.chr}:${newXRange[0]}-${newXRange[1]}`;
+            this.regionField.value = `${startRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
             onZoomChange(newXRange)
         }
 
@@ -145,7 +145,7 @@ export class InputControls extends HTMLElement {
             console.log("Zooming out");
             const currXRange = this.getRange();
             const newXRange = zoomOutNew(currXRange)
-            this.regionField.value = `${startRegion.chr}:${newXRange[0]}-${newXRange[1]}`;
+            this.regionField.value = `${startRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
             onZoomChange(newXRange)
         }
 

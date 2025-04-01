@@ -113,10 +113,11 @@ export async function initCanvases({
         },
     ];
 
+    const COV_Y_RANGE: [number, number] = [-4, 4];
+    const BAF_Y_RANGE: [number, number] = [0, 1];
+
+
     coverageTrack.initialize("Coverage", trackHeight);
-    const xRange: [number, number] = [startRegion.start, startRegion.end];
-    const yRange: [number, number] = [-4, 4];
-    coverageTrack.render(xRange, yRange, dots);
     bafTrack.initialize("BAF", trackHeight);
     // bafTrack.render(1, 10, []);
     variantTrack.initialize("Variant", trackHeight);
@@ -128,17 +129,19 @@ export async function initCanvases({
     inputControls.initialize(
         startRegion,
         async (region) => {
-
-            const regionString = `${region.chrom}:${region.start}-${region.end}`;
-            const {cov, baf} = await getCovAndBafFromOldAPI(regionString);
-
-            console.log(cov);
-            console.log(baf);
+            const {cov, baf} = await getCovAndBafFromOldAPI(region);
+            coverageTrack.render(xRange, COV_Y_RANGE, cov);
+            bafTrack.render(xRange, BAF_Y_RANGE, baf);        
         },
         async (region, source) => {
 
             const annotations = await getAnnotationData(region, source);
             annotationTrack.render(region, annotations);
+
+            // const xRange: [number, number] = [startRegion.start, startRegion.end];
+            // const yRange: [number, number] = [-4, 4];
+            // coverageTrack.render(xRange, yRange, dots);        
+
         },
         (_newXRange) => {
             console.log("Zoom logic coming here");
@@ -149,6 +152,11 @@ export async function initCanvases({
     const annotations = await getAnnotationData(startRegion, "mimisbrunnr");
     console.log(annotations);
     annotationTrack.render(startRegion, annotations);
+
+    const {cov, baf} = await getCovAndBafFromOldAPI(startRegion);
+    const xRange: [number, number] = [startRegion.start, startRegion.end];
+    coverageTrack.render(xRange, COV_Y_RANGE, cov);
+    bafTrack.render(xRange, BAF_Y_RANGE, baf);
 
     // initialize and return the different canvases
     // WEBGL values

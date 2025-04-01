@@ -13,6 +13,8 @@ export class DotTrack extends CanvasTrack {
     ) {
         super.syncDimensions();
 
+        console.log("Rendering");
+
         // const viewNts = endNt - startNt;
         // const scaleFactor = this._canvas.width / viewNts
 

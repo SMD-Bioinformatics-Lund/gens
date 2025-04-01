@@ -26,7 +26,8 @@ export async function getAnnotationData(region: Region, source: string): Promise
     return annotsResult.annotations;
 }
 
-export async function getCovAndBafFromOldAPI(regionString: string): Promise<{cov: any, baf: any}> {
+export async function getCovAndBafFromOldAPI(region: Region): Promise<{cov: any, baf: any}> {
+    const regionString = `${region.chrom}:${region.start}-${region.end}`;
     const covPayload = {
         region: regionString,
         case_id: 'hg002-2',
