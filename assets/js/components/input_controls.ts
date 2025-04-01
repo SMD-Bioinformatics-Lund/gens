@@ -97,9 +97,14 @@ export class InputControls extends HTMLElement {
         ) as HTMLInputElement;
     }
 
+    getRegion(): Region {
+        return parseRegionDesignation(this.regionField.value);
+    }
+
     initialize(
         startRegion: { chr: string; start: number; end: number },
-        render: (region: Region, annotation: string) => void,
+        onRegionChanged: (region: Region) => void,
+        onAnnotationChanged: (region: Region, source: string) => void,
     ) {
 
         this.regionField.value = `${startRegion.chr}:${startRegion.start}-${startRegion.end}`;
@@ -114,32 +119,16 @@ export class InputControls extends HTMLElement {
             }
         });
 
-        let annotationData = [];
         this.annotationSourceList.addEventListener("change", async () => {
             const annotationSource = this.annotationSourceList.value;
             const region = parseRegionDesignation(this.regionField.value);
-            const payload = {
-                sample_id: undefined,
-                region: `${region.chrom}:${region.start}-${region.end}`,
-                genome_build: 38,
-                collapsed: true,
-                source: annotationSource,
-            };
 
-            render(region, annotationSource);
-            // const annotsResult = await get("get-annotation-data", payload);
-            // annotationTrack.render(
-            //     region.start,
-            //     region.end,
-            //     annotsResult.annotations,
-            // );
+            onAnnotationChanged(region, annotationSource);
         });
 
         this.regionField.addEventListener("change", () => {
             const region = parseRegionDesignation(this.regionField.value);
-            console.log(region);
-            const annotationSource = this.annotationSourceList.value;
-            render(region, annotationSource);
+            onRegionChanged(region);
         });
     }
 }

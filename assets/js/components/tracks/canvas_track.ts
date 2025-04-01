@@ -19,8 +19,8 @@ template.innerHTML = String.raw`
 export class CanvasTrack extends HTMLElement {
     protected _root: ShadowRoot;
     protected _canvas: HTMLCanvasElement;
-    protected _ctx: CanvasRenderingContext2D;
-    protected _dim: {width: number, height: number};
+    protected ctx: CanvasRenderingContext2D;
+    protected dimensions: {width: number, height: number};
     protected _scaleFactor: number;
 
     connectedCallback() {
@@ -33,11 +33,11 @@ export class CanvasTrack extends HTMLElement {
         header.innerHTML = label;
         this._canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
         this._canvas.height = trackHeight;
-        this._ctx = this._canvas.getContext("2d") as CanvasRenderingContext2D;
+        this.ctx = this._canvas.getContext("2d") as CanvasRenderingContext2D;
 
         this.syncDimensions();
 
-        renderBorder(this._ctx, this._dim);
+        renderBorder(this.ctx, this.dimensions);
     }
 
     syncDimensions() {
@@ -45,7 +45,7 @@ export class CanvasTrack extends HTMLElement {
 
         // FIXME: Not the responsibility of this component
         this._canvas.width = window.innerWidth - PADDING;
-        this._dim = {
+        this.dimensions = {
             width: this._canvas.width,
             height: this._canvas.height,
         };

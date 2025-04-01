@@ -8,15 +8,16 @@ interface TestAnnot {
   source: string
 }
 
-interface CoverageDot {
-  ntPos: number
+interface RenderDot {
+    pos: number,
+    value: number,
+    color: string,
 }
 
-interface RenderDot {
-    x: number,
-    y: number,
-    color: string,
-    size: number,
+interface ColorPoint {
+  x: number,
+  y: number,
+  color: string,
 }
 
 interface UIColors {
