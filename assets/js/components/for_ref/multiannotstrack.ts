@@ -70,10 +70,11 @@ export class MultiAnnotsTrack extends HTMLElement {
   private _renderAnnotations(
     ctx: CanvasRenderingContext2D,
     canvasDim: { height: number; width: number },
-    annots: { start: number; end: number, color: string }[]
+    annots: { start: number; end: number, color: number[] }[]
   ) {
     annots.forEach((annot) => {
-        ctx.fillStyle = annot.color;
+        const c = annot.color;
+        ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
         const width = annot.end - annot.start;
       ctx.fillRect(annot.start, 0, width, canvasDim.height);
     });
