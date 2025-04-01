@@ -18,8 +18,14 @@ interface CanvasDetail {
   chrom: string;
 }
 
+interface Region {
+  chrom: string,
+  start: number,
+  end: number,
+}
+
 interface RegionDetail {
-  region: { chrom: string; start: number; end: number };
+  region: Region;
   exclude?: string[];
 }
 
