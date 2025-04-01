@@ -49,16 +49,6 @@
             <span class='bold' title='Sample ID'>{{sample_name}} | {{case_id}} | {{individual_id}}</span>
             <span class='version'>(Genome build: {{genome_build}})</span>
         </div>
-        <div id='right-group'>
-            <span class='header-icon print no-print'
-                onclick='gens.loadPrintPage(inputField.value);' title='Print'>
-            </span>
-            <span class='header-icon permalink no-print'
-                onclick='gens.copyPermalink("{{genome_build}}", inputField.value);' title='Copy permalink'>
-            </span>
-            <span class='header-icon no-print info'></span>
-            {{ info.help_popup() }}
-        </div>
     </div>
 
     <dot-track id="coverage-track"></dot-track>
@@ -82,7 +72,7 @@
         {{ annotation_track("transcript") }}
         {{ annotation_track("annotation") }} -->
 
-        <div id='button-container'>
+        <!-- <div id='button-container'>
             <select id='source-list'></select>
             <button onclick='gens.panTracks("left", 0.2);' class='button--pan no-print'>
                 <span class='icon arrow-left' title='Left'></span>
@@ -100,7 +90,7 @@
                 <input onFocus='this.select();' id='region-field' type='text' size=20>
                 <input type='submit' class='button button--submit no-print' title='Submit range'>
             </form>
-        </div>
+        </div> -->
 
         <div id='overview-container'>
             <canvas id='overview-static'></canvas>
@@ -124,17 +114,17 @@
         loading.querySelector("#printing").toggleAttribute("hidden")
     }
 
-    // Listener values
-    const inputField = document.getElementById('region-field');
-    inputField.addEventListener('error', event => {
-      inputField.classList.add('error')
-      inputField.disabled = true
-      setTimeout(() => {
-        inputField.classList.remove('error')
-        inputField.value = inputField.placeholder
-        inputField.disabled = false
-      }, 1500)
-    })
+    // // Listener values
+    // const inputField = document.getElementById('region-field');
+    // inputField.addEventListener('error', event => {
+    //   inputField.classList.add('error')
+    //   inputField.disabled = true
+    //   setTimeout(() => {
+    //     inputField.classList.remove('error')
+    //     inputField.value = inputField.placeholder
+    //     inputField.disabled = false
+    //   }, 1500)
+    // })
 
     console.log({{chrom}})
 
@@ -143,8 +133,8 @@
     const endJs = {{ end }}
     const chromJs = {{ chrom }} !== undefined ? {{ chrom }} : "1";
     const genomeBuildJs = {{ genome_build }}
-    inputField.value = chromJs + ':' + startJs + '-' + endJs
-    inputField.placeholder = inputField.value;
+    // inputField.value = chromJs + ':' + startJs + '-' + endJs
+    // inputField.placeholder = inputField.value;
 
     window.regionConfig = {
         chrom: chromJs,
@@ -155,10 +145,10 @@
 
 
     // Redraw when new region is requested
-    document.getElementById('region-form').onsubmit = (e) => {
-        e.preventDefault()
-        gens.queryRegionOrGene(inputField.value, genomeBuild)
-    }
+    // document.getElementById('region-form').onsubmit = (e) => {
+    //     e.preventDefault()
+    //     gens.queryRegionOrGene(inputField.value, genomeBuild)
+    // }
     // Setup functions to run when the data has finished loading
     document.addEventListener('data-loaded', () => {
         // hide loading
@@ -167,10 +157,6 @@
         // display grid containers
         document.querySelector('#visualization-container')
                 .style.display = 'grid';
-        // display printing
-        if (printing == true) {
-          gens.printPage();
-        }
     });
 
     // Initiate variant, annotation and transcript canvases

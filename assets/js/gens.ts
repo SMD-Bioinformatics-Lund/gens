@@ -69,11 +69,6 @@ export async function initCanvases({
         "variant-track",
     ) as CanvasTrack;
 
-    const sourcesList = document.getElementById(
-        "source-list",
-    ) as HTMLSelectElement;
-    sourcesList.style.visibility = "visible";
-
     const inputControls = document.getElementById(
         "input-controls",
     ) as InputControls;
@@ -83,10 +78,6 @@ export async function initCanvases({
     const startRegion: Region = window.regionConfig;
     const startRange: [number, number] = [startRegion.start, startRegion.end];
     const trackHeight = 50;
-
-    // const region = inputControls.getRegion()
-
-    // console.log("Parsed region", region);
 
     annotationTrack.initialize("Annotation", trackHeight);
     annotationTrack.render(startRange, []);
@@ -164,7 +155,7 @@ export async function initCanvases({
     const far = 100;
     const lineMargin = 2; // Margin for line thickness
     // // Listener values
-    const inputField = document.getElementById("region-field");
+    // const inputField = document.getElementById("region-field");
 
     // const ic = new InteractiveCanvas(
     //   inputField,
@@ -251,33 +242,6 @@ export function copyPermalink(genomeBuild, region) {
     tempElement.select();
     document.execCommand("copy");
     tempElement.remove(); // remove temp node
-}
-
-// Reloads page to printable size
-export function loadPrintPage(region) {
-    let location = window.location.href.replace(
-        /region=.*&/,
-        `region=${region}&`,
-    );
-    location = location.includes("?")
-        ? `${location}&print_page=true`
-        : `${location}?print_page=true`;
-    window.location.replace(location);
-}
-
-// Show print prompt and reloads page after print
-export function printPage() {
-    document.querySelector(".no-print").toggleAttribute("hidden");
-    window.addEventListener(
-        "afterprint",
-        () => {
-            window.location.replace(
-                window.location.href.replace("&print_page=true", ""),
-            );
-        },
-        { once: true },
-    );
-    print();
 }
 
 export { CHROMOSOMES, setupGenericEventManager } from "./track";
