@@ -23,6 +23,7 @@ export {
 import "./components/simple_track";
 import "./components/canvas_track";
 import "./components/input_controls";
+// import { InputControls } from "./components/input_controls";
 import { CanvasTrack } from "./components/canvas_track";
 import { get } from "./fetch";
 import { parseRegionDesignation } from "./navigation";
@@ -68,46 +69,40 @@ export function initCanvases({
     ) as HTMLSelectElement;
     sourcesList.style.visibility = "visible";
 
-    get("get-annotation-sources", { genome_build: 38 }).then((result) => {
-        const filenames = result.sources;
-        for (const filename of filenames) {
-            const opt = document.createElement("option");
-            opt.value = filename;
-            opt.innerHTML = filename;
+    // @ts-ignore
+    // const { start, end, chrom } = window.regionConfig; 
 
-            sourcesList.appendChild(opt);
-        }
-    });
-
-    const regionField = document.getElementById(
-        "region-field",
-    ) as HTMLInputElement;
+    // const inputControls = document.getElementById("input-controls") as InputControls;
+    // // FIXME: Look into how to parse this for predefined start URLs
+    // inputControls.initialize({chr: chrom, start: start, end: end}, (region, annotSource) => {
+    //     console.log(`Rendering: ${region} ${annotSource}`);
+    // })
 
     annotationTrack.render(1, 10, []);
 
-    let annotationData = [];
-    sourcesList.addEventListener("change", async () => {
-        const source = sourcesList.value;
-        const region = parseRegionDesignation(regionField.value);
-        const payload = {
-            sample_id: undefined,
-            region: `${region.chrom}:${region.start}-${region.end}`,
-            genome_build: 38,
-            collapsed: true,
-            source: source,
-        };
-        const annotsResult = await get("get-annotation-data", payload);
-        annotationTrack.render(
-            region.start,
-            region.end,
-            annotsResult.annotations,
-        );
-    });
+    // let annotationData = [];
+    // sourcesList.addEventListener("change", async () => {
+    //     const source = sourcesList.value;
+    //     const region = parseRegionDesignation(regionField.value);
+    //     const payload = {
+    //         sample_id: undefined,
+    //         region: `${region.chrom}:${region.start}-${region.end}`,
+    //         genome_build: 38,
+    //         collapsed: true,
+    //         source: source,
+    //     };
+    //     const annotsResult = await get("get-annotation-data", payload);
+    //     annotationTrack.render(
+    //         region.start,
+    //         region.end,
+    //         annotsResult.annotations,
+    //     );
+    // });
 
-    regionField.addEventListener("change", () => {
-        const region = parseRegionDesignation(regionField.value);
-        console.log(region);
-    })
+    // regionField.addEventListener("change", () => {
+    //     const region = parseRegionDesignation(regionField.value);
+    //     console.log(region);
+    // })
 
     // <canvas-track id="coverage-track"></canvas-track>
     // <canvas-track id="baf-track"></canvas-track>
