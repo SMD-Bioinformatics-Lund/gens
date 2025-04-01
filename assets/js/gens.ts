@@ -23,6 +23,8 @@ export {
 import "./components/simple_track";
 import "./components/canvas_track";
 import { CanvasTrack } from "./components/canvas_track";
+import { get } from "./fetch";
+// import { get } from "http";
 
 export function initCanvases({
     sampleName,
@@ -50,6 +52,26 @@ export function initCanvases({
     const annotationTrack = document.getElementById("annotation-track") as CanvasTrack;
     const transcriptTrack = document.getElementById("transcript-track") as CanvasTrack;
     const variantTrack = document.getElementById("variant-track") as CanvasTrack;
+
+    const sourceList = document.getElementById("source-list") as HTMLSelectElement;
+    sourceList.style.visibility = "visible";
+
+    const results = get("get-annotation-sources", {genome_build: 38})
+        .then((result) => {
+            const filenames = result.sources;
+            for (const filename of filenames) {
+                console.log(filename);
+                const opt = document.createElement("option");
+                opt.value = filename;
+                opt.innerHTML = filename;
+        
+                console.log(opt);
+        
+                sourceList.appendChild(opt);
+            }
+        })
+
+
 
     // <canvas-track id="coverage-track"></canvas-track>
     // <canvas-track id="baf-track"></canvas-track>
@@ -88,19 +110,19 @@ export function initCanvases({
         },
     ];
     console.log("Before")
-    coverageTrack.initialize(1, 10, annots);
-    bafTrack.initialize(1, 10, []);
-    variantTrack.initialize(1, 10, []);
-    transcriptTrack.initialize(1, 10, []);
-    annotationTrack.initialize(1, 10, []);
+    coverageTrack.initialize("Coverage", 1, 10, annots);
+    bafTrack.initialize("BAF", 1, 10, []);
+    variantTrack.initialize("Variant", 1, 10, []);
+    transcriptTrack.initialize("Transcript", 1, 10, []);
+    annotationTrack.initialize("Annotation", 1, 10, []);
 
     // initialize and return the different canvases
     // WEBGL values
-    // const near = 0.1;
-    // const far = 100;
-    // const lineMargin = 2; // Margin for line thickness
+    const near = 0.1;
+    const far = 100;
+    const lineMargin = 2; // Margin for line thickness
     // // Listener values
-    // const inputField = document.getElementById("region-field");
+    const inputField = document.getElementById("region-field");
 
     // const ic = new InteractiveCanvas(
     //   inputField,

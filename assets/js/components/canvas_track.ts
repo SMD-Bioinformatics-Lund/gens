@@ -5,11 +5,10 @@ const PADDING = 5;
 
 
 template.innerHTML = String.raw`
-    <div>Here is a canvas</div>
     <div id="container" data-state="nodata" style="padding-left: ${PADDING}px">
         <p class='track-xlabel'></p>
         <div id='track-container'>
-            <div>Content</div>
+            <div id="header"></div>
             <canvas id='canvas'></canvas>
             <!-- <canvas id='canvas-offscreen'></canvas> -->
             <!-- <div id='titles'></div> -->
@@ -30,8 +29,9 @@ export class CanvasTrack extends HTMLElement {
         super();
     }
 
-    initialize(chrStart: number, chrEnd: number, annotations: TestAnnot[]) {
-        console.log("Start");
+    initialize(label: string, chrStart: number, chrEnd: number, annotations: TestAnnot[]) {
+        const header = this._root.getElementById("header")
+        header.innerHTML = label;
         const canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
         // canvas.width = 500;
         canvas.height = TRACK_HEIGHT;
@@ -49,7 +49,6 @@ export class CanvasTrack extends HTMLElement {
         };
         this._renderBorder(ctx, dim);
         this._renderAnnotations(ctx, dim, annotations, scaleFactor);
-        console.log("Init");   
     }
 
     private _renderBorder(
