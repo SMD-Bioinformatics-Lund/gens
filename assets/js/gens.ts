@@ -2,12 +2,12 @@
 
 import { InteractiveCanvas } from "./interactive";
 import { OverviewCanvas } from "./overview";
-import {
-    VariantTrack,
-    AnnotationTrack,
-    TranscriptTrack,
-    CytogeneticIdeogram,
-} from "./track";
+// import {
+//     VariantTrack,
+//     AnnotationTrack,
+//     TranscriptTrack,
+//     CytogeneticIdeogram,
+// } from "./track";
 export {
     setupDrawEventManager,
     drawTrack,
@@ -21,12 +21,16 @@ export {
 } from "./navigation";
 
 import "./components/simple_track";
-import "./components/canvas_track";
+import "./components/tracks/canvas_track";
+import "./components/tracks/annotation_track";
+// import "./components/tracks/coverage_track";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
-import { CanvasTrack } from "./components/canvas_track";
+import { AnnotationTrack } from "./components/tracks/annotation_track";
+import { CanvasTrack } from "./components/tracks/canvas_track";
+// import { AnnotationTrack } from "./components/tracks/annotation_track";
+// import { CoverageTrack } from "./components/tracks/coverage_track";
 import { get } from "./fetch";
-import { parseRegionDesignation } from "./navigation";
 // import { get } from "http";
 
 export function initCanvases({
@@ -56,7 +60,7 @@ export function initCanvases({
     const bafTrack = document.getElementById("baf-track") as CanvasTrack;
     const annotationTrack = document.getElementById(
         "annotation-track",
-    ) as CanvasTrack;
+    ) as AnnotationTrack;
     const transcriptTrack = document.getElementById(
         "transcript-track",
     ) as CanvasTrack;
@@ -71,26 +75,9 @@ export function initCanvases({
 
     // @ts-ignore
     const { start, end, chr } = window.regionConfig; 
+    const trackHeight = 50;
 
-    const inputControls = document.getElementById("input-controls") as InputControls;
-    // FIXME: Look into how to parse this for predefined start URLs
-    inputControls.initialize({chr, start, end}, async (region, annotSource) => {
-        console.log(`Rendering: ${region} ${annotSource}`);
-
-        const payload = {
-            sample_id: undefined,
-            region: `${region.chrom}:${region.start}-${region.end}`,
-            genome_build: 38,
-            collapsed: true,
-            source: annotSource,
-        };
-        const annotsResult = await get("get-annotation-data", payload);
-        annotationTrack.render(
-            region.start,
-            region.end,
-            annotsResult.annotations,
-        );
-    })
+    annotationTrack.initialize("Annotation", 100);
 
     annotationTrack.render(1, 10, []);
 
@@ -125,14 +112,37 @@ export function initCanvases({
             source: "test",
         },
     ];
-    coverageTrack.initialize("Coverage")
-    coverageTrack.render(1, 10, annots);
-    bafTrack.initialize("BAF");
-    bafTrack.render(1, 10, []);
-    variantTrack.initialize("Variant");
-    variantTrack.render(1, 10, []);
-    transcriptTrack.initialize("Transcript");
-    transcriptTrack.render(1, 10, []);
+
+    coverageTrack.initialize("Coverage", trackHeight)
+    // coverageTrack.render(1, 10, annots);
+    bafTrack.initialize("BAF", trackHeight);
+    // bafTrack.render(1, 10, []);
+    variantTrack.initialize("Variant", trackHeight);
+    // variantTrack.render(1, 10, []);
+    transcriptTrack.initialize("Transcript", trackHeight);
+    // transcriptTrack.render(1, 10, []);
+
+    const inputControls = document.getElementById("input-controls") as InputControls;
+    // FIXME: Look into how to parse this for predefined start URLs
+    inputControls.initialize({chr, start, end}, async (region, annotSource) => {
+        console.log(`Rendering: ${region} ${annotSource}`);
+
+        const payload = {
+            sample_id: undefined,
+            region: `${region.chrom}:${region.start}-${region.end}`,
+            genome_build: 38,
+            collapsed: true,
+            source: annotSource,
+        };
+        const annotsResult = await get("get-annotation-data", payload);
+        annotationTrack.render(
+            region.start,
+            region.end,
+            annotsResult.annotations,
+        );
+
+        
+    })
 
     // initialize and return the different canvases
     // WEBGL values

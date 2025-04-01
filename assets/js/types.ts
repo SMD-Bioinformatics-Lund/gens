@@ -8,6 +8,17 @@ interface TestAnnot {
   source: string
 }
 
+interface CoverageDot {
+  ntPos: number
+}
+
+interface RenderDot {
+    x: number,
+    y: number,
+    color: string,
+    size: number,
+}
+
 interface UIColors {
   variants: Record<string, string>,
   transcripts: Record<string, string>
