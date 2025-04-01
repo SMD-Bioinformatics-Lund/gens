@@ -13,6 +13,19 @@ function parseResponseToPoints(bafRaw: any): ColorPoint[] {
     return points;
 }
 
+export async function getAnnotationData(region: Region, source: string): Promise<AnnotationEntries[]> {
+    const regionString = `${region.chrom}:${region.start}-${region.end}`;
+    const annotPayload = {
+        sample_id: undefined,
+        region: regionString,
+        genome_build: 38,
+        collapsed: true,
+        source: source,
+    };
+    const annotsResult = await get("get-annotation-data", annotPayload); 
+    return annotsResult.annotations;
+}
+
 export async function getCovAndBafFromOldAPI(regionString: string): Promise<{cov: any, baf: any}> {
     const covPayload = {
         region: regionString,

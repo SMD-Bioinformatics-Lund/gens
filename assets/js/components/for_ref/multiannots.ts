@@ -6,7 +6,7 @@ async function getAnnotationSources(): Promise<string[]> {
   return results.sources;
 }
 
-async function getAnnotationData(source: string): Promise<TestAnnot[]> {
+async function getAnnotationData(source: string): Promise<AnnotationEntries[]> {
   const payload = {
     "sample_id": undefined,
     "region": "1:1-None",

@@ -33,10 +33,10 @@ import { DotTrack } from "./components/tracks/dot_track";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
 import { get } from "./fetch";
-import { getCovAndBafFromOldAPI } from "./tmp";
+import { getAnnotationData, getCovAndBafFromOldAPI } from "./tmp";
 // import { get } from "http";
 
-export function initCanvases({
+export async function initCanvases({
     sampleName,
     sampleId,
     caseId,
@@ -80,7 +80,7 @@ export function initCanvases({
 
 
     // @ts-ignore
-    const startRegion = window.regionConfig;
+    const startRegion: Region = window.regionConfig;
     const trackHeight = 50;
 
     // const region = inputControls.getRegion()
@@ -136,23 +136,19 @@ export function initCanvases({
             console.log(baf);
         },
         async (region, source) => {
-            const regionString = `${region.chrom}:${region.start}-${region.end}`;
 
-            const annotPayload = {
-                sample_id: undefined,
-                region: regionString,
-                genome_build: 38,
-                collapsed: true,
-                source: source,
-            };
-            const annotsResult = await get("get-annotation-data", annotPayload);
-            annotationTrack.render(region, annotsResult.annotations);
+            const annotations = await getAnnotationData(region, source);
+            annotationTrack.render(region, annotations);
         },
         (_newXRange) => {
             console.log("Zoom logic coming here");
             // annotationTrack.render(region, annotsResult.annotations);
         }
     );
+
+    const annotations = await getAnnotationData(startRegion, "mimisbrunnr");
+    console.log(annotations);
+    annotationTrack.render(startRegion, annotations);
 
     // initialize and return the different canvases
     // WEBGL values

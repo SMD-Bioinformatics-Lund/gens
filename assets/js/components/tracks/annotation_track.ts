@@ -6,7 +6,7 @@ export class AnnotationTrack extends CanvasTrack {
         super.initialize(label, trackHeight);
     }
 
-    render(range: {start: number, end: number}, annotations: TestAnnot[]) {
+    render(range: {start: number, end: number}, annotations: AnnotationEntries[]) {
         super.syncDimensions();
 
         const viewNts = range.end - range.start;

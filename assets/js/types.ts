@@ -1,4 +1,4 @@
-interface TestAnnot {
+interface AnnotationEntries {
   chrom: string,
   color: number[],
   start: number,
