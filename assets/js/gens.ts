@@ -74,41 +74,27 @@ export function initCanvases({
 
     const inputControls = document.getElementById("input-controls") as InputControls;
     // FIXME: Look into how to parse this for predefined start URLs
-    inputControls.initialize({chr, start, end}, (region, annotSource) => {
+    inputControls.initialize({chr, start, end}, async (region, annotSource) => {
         console.log(`Rendering: ${region} ${annotSource}`);
+
+        const payload = {
+            sample_id: undefined,
+            region: `${region.chrom}:${region.start}-${region.end}`,
+            genome_build: 38,
+            collapsed: true,
+            source: annotSource,
+        };
+        const annotsResult = await get("get-annotation-data", payload);
+        annotationTrack.render(
+            region.start,
+            region.end,
+            annotsResult.annotations,
+        );
     })
 
     annotationTrack.render(1, 10, []);
 
-    // let annotationData = [];
-    // sourcesList.addEventListener("change", async () => {
-    //     const source = sourcesList.value;
-    //     const region = parseRegionDesignation(regionField.value);
-    //     const payload = {
-    //         sample_id: undefined,
-    //         region: `${region.chrom}:${region.start}-${region.end}`,
-    //         genome_build: 38,
-    //         collapsed: true,
-    //         source: source,
-    //     };
-    //     const annotsResult = await get("get-annotation-data", payload);
-    //     annotationTrack.render(
-    //         region.start,
-    //         region.end,
-    //         annotsResult.annotations,
-    //     );
-    // });
 
-    // regionField.addEventListener("change", () => {
-    //     const region = parseRegionDesignation(regionField.value);
-    //     console.log(region);
-    // })
-
-    // <canvas-track id="coverage-track"></canvas-track>
-    // <canvas-track id="baf-track"></canvas-track>
-    // <canvas-track id="annotation-track"></canvas-track>
-    // <canvas-track id="transcript-track"></canvas-track>
-    // <canvas-track id="variant-track"></canvas-track>
 
     const annots = [
         {
