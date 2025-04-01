@@ -138,12 +138,29 @@
       }, 1500)
     })
 
+
     // Set first input field value for ic
     let start = {{ start }} === 0 ? 1 : {{ start }};
     const end = {{ end }}
     const genomeBuild = {{ genome_build }}
     inputField.value = '{{chrom}}' + ':' + start + '-' + {{end}};
     inputField.placeholder = inputField.value;
+
+    // window.regionConfig = {{ {
+    //     start: start,
+    //     end: end:
+    //     genomeBuild: genome_build,
+    //     chrom: chrom
+    // } | tojson }};
+
+    // console.log(regionConfig);
+
+    // window.startRegion = {
+    //     chr: "1",
+    //     start,
+    //     end
+    // }
+
 
     // Redraw when new region is requested
     document.getElementById('region-form').onsubmit = (e) => {
