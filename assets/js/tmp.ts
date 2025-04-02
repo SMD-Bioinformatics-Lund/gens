@@ -50,7 +50,7 @@ export async function getTranscriptData(chrom: string): Promise<RenderBand> {
         collapsed: true,
     };
     const results = await get("get-transcript-data", query);
-    const transcripts = results.transcript;
+    const transcripts = results.transcripts;
 
     const transcriptsToRender = transcripts.map((transcript) => {
         return {
@@ -79,6 +79,16 @@ export async function getSVVariantData(
         collapsed: true,
         variant_category: "sv",
     };
+    const results = await get("get-variant-data", query);
+    const variants = results.variants;
+    const toRender = variants.map((variant) => {
+        return {
+            start: variant.start,
+            end: variant.end,
+            color: "red",
+        }
+    })
+    return toRender;
 }
 
 async function getDotData(
@@ -126,37 +136,37 @@ export async function getBafData(
     return getDotData(sampleId, caseId, region, "baf");
 }
 
-export async function getCovAndBafFromOldAPI(
-    region: Region,
-): Promise<{ cov: any; baf: any }> {
-    const regionString = `${region.chrom}:${region.start}-${region.end}`;
-    const query = {
-        region: regionString,
-        case_id: "hg002-2",
-        sample_id: "hg002-2",
-        genome_build: 38,
-        hg_filedir: undefined,
-        x_pos: 930,
-        y_pos: 94,
-        plot_height: 180,
-        extra_plot_width: 930,
-        top_bottom_padding: 8,
-        x_ampl: 1395,
-        baf_y_start: 1,
-        baf_y_end: 0,
-        log2_y_start: 4,
-        log2_y_end: -4,
-        reduce_data: 1,
-    };
+// export async function getCovAndBafFromOldAPI(
+//     region: Region,
+// ): Promise<{ cov: any; baf: any }> {
+//     const regionString = `${region.chrom}:${region.start}-${region.end}`;
+//     const query = {
+//         region: regionString,
+//         case_id: "hg002-2",
+//         sample_id: "hg002-2",
+//         genome_build: 38,
+//         hg_filedir: undefined,
+//         x_pos: 930,
+//         y_pos: 94,
+//         plot_height: 180,
+//         extra_plot_width: 930,
+//         top_bottom_padding: 8,
+//         x_ampl: 1395,
+//         baf_y_start: 1,
+//         baf_y_end: 0,
+//         log2_y_start: 4,
+//         log2_y_end: -4,
+//         reduce_data: 1,
+//     };
 
-    const covResults = await get("get-coverage", query);
-    const bafRaw = covResults.baf;
-    const bafPoints = parseResponseToPoints(bafRaw);
-    const covRaw = covResults.data;
-    const covPoints = parseResponseToPoints(covRaw);
+//     const covResults = await get("get-coverage", query);
+//     const bafRaw = covResults.baf;
+//     const bafPoints = parseResponseToPoints(bafRaw);
+//     const covRaw = covResults.data;
+//     const covPoints = parseResponseToPoints(covRaw);
 
-    return {
-        cov: covPoints,
-        baf: bafPoints,
-    };
-}
+//     return {
+//         cov: covPoints,
+//         baf: bafPoints,
+//     };
+// }

@@ -18,9 +18,9 @@ export function renderBands(
     console.log(annots);
     annots.forEach((annot) => {
         // console.log(annot);
-        const rgbs = annot.color;
-        const color = `rgb(${rgbs[0]},${rgbs[1]},${rgbs[2]})`;
-        ctx.fillStyle = color;
+        // const rgbs = annot.color;
+        // const color = `rgb(${rgbs[0]},${rgbs[1]},${rgbs[2]})`;
+        ctx.fillStyle = annot.color;
 
         const xPxStart = getPixelPosition(annot.start, xRange, canvasDim.width);
         const xPxEnd = getPixelPosition(annot.end, xRange, canvasDim.width);
