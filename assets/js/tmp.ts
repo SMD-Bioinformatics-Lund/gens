@@ -1,4 +1,3 @@
-import { GensDataStore } from "./gens_db";
 import { get } from "./fetch";
 
 function parseResponseToPoints(bafRaw: any): ColorPoint[] {

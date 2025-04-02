@@ -320,7 +320,10 @@ def dev_get_data(sample_id: str, case_id: str, region_str: str, cov_or_baf: str)
         tabix_file = TabixFile(str(sample_obj.baf_file))
 
     chrom, range = region_str.split(":")
-    start, end = [int(pos) for pos in range.split("-")]
+    # start, end = [int(pos) for pos in range.split("-")]
+    # FIXME: Grabbing the full chromosome during testing
+    start = None
+    end = None
 
     # Tabix
     record_name = f"a_{chrom}"

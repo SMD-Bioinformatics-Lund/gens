@@ -1,5 +1,10 @@
 import { get } from "../fetch";
-import { getPan, parseRegionDesignation, zoomInNew, zoomOutNew } from "../navigation";
+import {
+    getPan,
+    parseRegionDesignation,
+    zoomInNew,
+    zoomOutNew,
+} from "../navigation";
 
 const BUTTON_ZOOM_COLOR = "#8fbcbb";
 const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
@@ -45,7 +50,7 @@ template.innerHTML = String.raw`
     }
     </style>
     <div style="display: flex; align-items: center; gap: 8px;">
-        <select id="source-list"></select>
+        <select id="source-list" multiple></select>
         <button id="pan-left" class='button pan'>
             <span id="arrow-left" class='icon' title='Left'></span>
         </button>
@@ -99,15 +104,17 @@ export class InputControls extends HTMLElement {
             "region-field",
         ) as HTMLInputElement;
         this.submit = this._root.getElementById("submit") as HTMLButtonElement;
-
     }
 
     getRegion(): Region {
         return parseRegionDesignation(this.regionField.value);
     }
 
-    getSource(): string {
-        return this.annotationSourceList.value;
+    getSources(): string[] {
+        const selected = Array.from(this.annotationSourceList.selectedOptions).map(
+            (option) => option.value,
+        );
+        return selected;
     }
 
     getRange(): [number, number] {
@@ -121,10 +128,10 @@ export class InputControls extends HTMLElement {
 
     initialize(
         fullRegion: Region,
-        defaultAnnot: string,
+        defaultAnnots: string[],
         onRegionChanged: (region: Region) => void,
         onAnnotationChanged: (region: Region, source: string) => void,
-        onPositionChange: (newXRange: [number, number]) => void
+        onPositionChange: (newXRange: [number, number]) => void,
     ) {
         this.fullRegion = fullRegion;
         this.updatePosition([fullRegion.start, fullRegion.end]);
@@ -136,10 +143,13 @@ export class InputControls extends HTMLElement {
                 const opt = document.createElement("option");
                 opt.value = filename;
                 opt.innerHTML = filename;
+                if (defaultAnnots.includes(filename)) {
+                    opt.selected = true;
+                }
                 this.annotationSourceList.appendChild(opt);
             }
         });
-        this.annotationSourceList.value = defaultAnnot;
+        // this.annotationSourceList.value = defaultAnnot;
 
         this.annotationSourceList.addEventListener("change", async () => {
             const annotationSource = this.annotationSourceList.value;
@@ -152,34 +162,34 @@ export class InputControls extends HTMLElement {
             const newXRange = getPan(this.getRange(), "left");
             this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
             onPositionChange(newXRange);
-        }
+        };
 
         this.panRight.onclick = () => {
             const newXRange = getPan(this.getRange(), "right");
             this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
             onPositionChange(newXRange);
-        }
+        };
 
         this.zoomIn.onclick = () => {
             const currXRange = this.getRange();
-            const newXRange = zoomInNew(currXRange)
+            const newXRange = zoomInNew(currXRange);
             this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
-            onPositionChange(newXRange)
-        }
+            onPositionChange(newXRange);
+        };
 
         this.zoomOut.onclick = () => {
             const currXRange = this.getRange();
-            const newXRange = zoomOutNew(currXRange)
+            const newXRange = zoomOutNew(currXRange);
             // const newMin = newXRange[0];
             const newMax = Math.min(newXRange[1], fullRegion.end);
             this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newMax}`;
-            onPositionChange(newXRange)
-        }
+            onPositionChange(newXRange);
+        };
 
         this.submit.onclick = () => {
             const range = this.getRange();
             onPositionChange(range);
-        }
+        };
     }
 }
 

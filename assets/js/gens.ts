@@ -45,6 +45,8 @@ import { GensDb } from "./gens_db";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
+const THICK_TRACK_HEIGHT = 80;
+const THIN_TRACK_HEIGHT = 20;
 
 export async function initCanvases({
     sampleName,
@@ -69,15 +71,19 @@ export async function initCanvases({
 }) {
     const coverageTrack = document.getElementById("coverage-track") as DotTrack;
     const bafTrack = document.getElementById("baf-track") as DotTrack;
-    const annotationTrack = document.getElementById(
-        "annotation-track",
-    ) as AnnotationTrack;
+    // const annotationTrack = document.getElementById(
+    //     "annotation-track",
+    // ) as AnnotationTrack;
     const transcriptTrack = document.getElementById(
         "transcript-track",
     ) as AnnotationTrack;
     const variantTrack = document.getElementById(
         "variant-track",
     ) as AnnotationTrack;
+
+    const annotationsContainer = document.getElementById(
+        "annotations-container",
+    ) as HTMLDivElement;
 
     const inputControls = document.getElementById(
         "input-controls",
@@ -94,64 +100,73 @@ export async function initCanvases({
     // @ts-ignore
     const startRegion: Region = window.regionConfig;
     const startRange: [number, number] = [startRegion.start, startRegion.end];
-    const tallTrackHeight = 80;
-    const thinTrackHeight = 20;
 
     const gensDb = new GensDb(sampleId, caseId, genomeBuild);
 
+    coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
+    bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
+    variantTrack.initialize("Variant", THIN_TRACK_HEIGHT);
+    transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
+    // annotationTrack.initialize("Annotation", thinTrackHeight);
 
-    coverageTrack.initialize("Coverage", tallTrackHeight);
-    bafTrack.initialize("BAF", tallTrackHeight);
-    variantTrack.initialize("Variant", thinTrackHeight);
-    transcriptTrack.initialize("Transcript", thinTrackHeight);
-    annotationTrack.initialize("Annotation", thinTrackHeight);
-
-    const defaultAnnot = "mimisbrunnr";
+    const defaultAnnots = ["mimisbrunnr"];
 
     renderTracks(
         gensDb,
         startRegion,
-        defaultAnnot,
-        annotationTrack,
+        defaultAnnots,
+        annotationsContainer,
         coverageTrack,
         bafTrack,
         transcriptTrack,
-        variantTrack
+        variantTrack,
     );
 
     // FIXME: Look into how to parse this for predefined start URLs
     inputControls.initialize(
         startRegion,
-        defaultAnnot,
+        defaultAnnots,
         async (region) => {
             // const {cov, baf} = await getCovAndBafFromOldAPI(region);
             // coverageTrack.render(xRange, COV_Y_RANGE, cov);
             // bafTrack.render(xRange, BAF_Y_RANGE, baf);
         },
         async (region, source) => {
-            const annotations = await getAnnotationDataForChrom(
-                region.chrom,
-                source,
-            );
-            annotationTrack.render([region.start, region.end], annotations);
+            // const annotations = await getAnnotationDataForChrom(
+            //     region.chrom,
+            //     source,
+            // );
+            // annotationTrack.render([region.start, region.end], annotations);
+            const annotSources = inputControls.getSources();
 
+            renderTracks(
+                gensDb,
+                region,
+                annotSources,
+                annotationsContainer,
+                coverageTrack,
+                bafTrack,
+                transcriptTrack,
+                variantTrack,
+            );
+            
             // const xRange: [number, number] = [startRegion.start, startRegion.end];
             // const yRange: [number, number] = [-4, 4];
             // coverageTrack.render(xRange, yRange, dots);
         },
         async (_newXRange) => {
             const region = inputControls.getRegion();
-            const annotSource = inputControls.getSource();
+            const annotSources = inputControls.getSources();
 
             renderTracks(
                 gensDb,
                 region,
-                annotSource,
-                annotationTrack,
+                annotSources,
+                annotationsContainer,
                 coverageTrack,
                 bafTrack,
                 transcriptTrack,
-                variantTrack
+                variantTrack,
             );
         },
     );
@@ -241,8 +256,8 @@ export async function initCanvases({
 async function renderTracks(
     gensDb: GensDb,
     region: Region,
-    annotationSource: string,
-    annotationTrack: AnnotationTrack,
+    annotationSources: string[],
+    annotationsContainer: HTMLDivElement,
     coverageTrack: DotTrack,
     bafTrack: DotTrack,
     transcriptsTrack: AnnotationTrack,
@@ -250,10 +265,26 @@ async function renderTracks(
 ) {
     const range: [number, number] = [region.start, region.end];
 
-    console.log(`Rendering. Chrom: ${region.chrom} Range: ${range} Annot: ${annotationSource}`);
+    console.log(
+        `Rendering. Chrom: ${region.chrom} Range: ${range} Annot: ${annotationSources}`,
+    );
 
-    const annotations = await gensDb.getAnnotations(region.chrom, annotationSource);
-    annotationTrack.render(range, annotations);
+    while (annotationsContainer.firstChild) {
+        annotationsContainer.removeChild(annotationsContainer.firstChild)
+    }
+    for (const source of annotationSources) {
+        console.log("Looping out a new track", source);
+        const annotTrack = new AnnotationTrack();
+        annotationsContainer.appendChild(annotTrack);
+        annotTrack.initialize(source, THIN_TRACK_HEIGHT);
+        const annotations = await gensDb.getAnnotations(
+            region.chrom,
+            source,
+        );            
+        annotTrack.render(range, annotations);
+    }
+
+    // annotationTrack.render(range, annotations);
 
     const covData = await gensDb.getCov(region.chrom);
     coverageTrack.render(range, COV_Y_RANGE, covData);
