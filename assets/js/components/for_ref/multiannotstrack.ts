@@ -14,7 +14,7 @@ export class MultiAnnotsTrack extends HTMLElement {
     header.textContent = title;
   }
 
-  constructor(chrStart: number, chrEnd: number, annotations: AnnotationEntries[]) {
+  constructor(chrStart: number, chrEnd: number, annotations: AnnotationEntry[]) {
     super();
 
     console.log(

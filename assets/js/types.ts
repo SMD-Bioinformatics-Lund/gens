@@ -1,4 +1,4 @@
-interface AnnotationEntries {
+interface AnnotationEntry {
   chrom: string,
   color: number[],
   start: number,

@@ -121,6 +121,7 @@ export class InputControls extends HTMLElement {
 
     initialize(
         fullRegion: Region,
+        defaultAnnot: string,
         onRegionChanged: (region: Region) => void,
         onAnnotationChanged: (region: Region, source: string) => void,
         onPositionChange: (newXRange: [number, number]) => void
@@ -138,6 +139,7 @@ export class InputControls extends HTMLElement {
                 this.annotationSourceList.appendChild(opt);
             }
         });
+        this.annotationSourceList.value = defaultAnnot;
 
         this.annotationSourceList.addEventListener("change", async () => {
             const annotationSource = this.annotationSourceList.value;

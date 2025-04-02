@@ -6,15 +6,18 @@ export class AnnotationTrack extends CanvasTrack {
         super.initialize(label, trackHeight);
     }
 
-    render(xRange: [number, number], annotations: AnnotationEntries[]) {
+    render(xRange: [number, number], annotations: AnnotationEntry[]) {
         super.syncDimensions();
 
+        const annotWithinRange = annotations.filter(
+            (annot) => annot.start >= xRange[0] && annot.end <= xRange[1],
+        );
+
         renderBorder(this.ctx, this.dimensions);
-        renderBands(this.ctx, this.dimensions, annotations, xRange);
+        renderBands(this.ctx, this.dimensions, annotWithinRange, xRange);
     }
 }
 
 export function test() {}
-
 
 customElements.define("annotation-track", AnnotationTrack);

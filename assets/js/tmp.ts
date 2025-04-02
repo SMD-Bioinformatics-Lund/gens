@@ -19,13 +19,13 @@ function makeRegionString(region: Region): string {
     return `${region.chrom}:${region.start}-${region.end}`;
 }
 
-export async function getAnnotationData(
-    region: Region,
+export async function getAnnotationDataForChrom(
+    chrom: string,
     source: string,
-): Promise<AnnotationEntries[]> {
+): Promise<AnnotationEntry[]> {
     const annotPayload = {
         sample_id: undefined,
-        region: makeRegionString(region),
+        region: `${chrom}:1-None`,
         genome_build: 38,
         collapsed: true,
         source: source,

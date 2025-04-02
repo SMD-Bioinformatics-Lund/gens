@@ -33,7 +33,13 @@ import { DotTrack } from "./components/tracks/dot_track";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
 import { get } from "./fetch";
-import { getAnnotationData, getBafData, getCovAndBafFromOldAPI, getCovData } from "./tmp";
+import {
+    getAnnotationDataForChrom,
+    getBafData,
+    getCovAndBafFromOldAPI,
+    getCovData,
+} from "./tmp";
+import { GensCache } from "./cache";
 // import { get } from "http";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
@@ -79,32 +85,46 @@ export async function initCanvases({
     // @ts-ignore
     const startRegion: Region = window.regionConfig;
     const startRange: [number, number] = [startRegion.start, startRegion.end];
-    const trackHeight = 50;
+    const tallTrackHeight = 80;
+    const thinTrackHeight = 20;
 
+    const gensCache = new GensCache();
 
-
-    coverageTrack.initialize("Coverage", trackHeight);
+    coverageTrack.initialize("Coverage", tallTrackHeight);
     // coverageTrack.render(startRange, COV_Y_RANGE, covDots);
-    bafTrack.initialize("BAF", trackHeight);
+    bafTrack.initialize("BAF", tallTrackHeight);
     // bafTrack.render(startRange, BAF_Y_RANGE, bafDots);
-    variantTrack.initialize("Variant", trackHeight);
+    variantTrack.initialize("Variant", thinTrackHeight);
     // variantTrack.render(1, 10, dots);
-    transcriptTrack.initialize("Transcript", trackHeight);
+    transcriptTrack.initialize("Transcript", thinTrackHeight);
     // transcriptTrack.render(1, 10, []);
-    annotationTrack.initialize("Annotation", trackHeight);
+    annotationTrack.initialize("Annotation", thinTrackHeight);
 
-    firstRenderTracks(startRegion, annotationTrack, coverageTrack, bafTrack);
+    const defaultAnnot = "mimisbrunnr";
+
+    renderTracks(
+        gensCache,
+        startRegion,
+        defaultAnnot,
+        annotationTrack,
+        coverageTrack,
+        bafTrack,
+    );
 
     // FIXME: Look into how to parse this for predefined start URLs
     inputControls.initialize(
         startRegion,
+        defaultAnnot,
         async (region) => {
             // const {cov, baf} = await getCovAndBafFromOldAPI(region);
             // coverageTrack.render(xRange, COV_Y_RANGE, cov);
             // bafTrack.render(xRange, BAF_Y_RANGE, baf);
         },
         async (region, source) => {
-            const annotations = await getAnnotationData(region, source);
+            const annotations = await getAnnotationDataForChrom(
+                region.chrom,
+                source,
+            );
             annotationTrack.render([region.start, region.end], annotations);
 
             // const xRange: [number, number] = [startRegion.start, startRegion.end];
@@ -113,19 +133,16 @@ export async function initCanvases({
         },
         async (_newXRange) => {
             const region = inputControls.getRegion();
-            console.log("New region: ", region);
-            const source = inputControls.getSource();
-            const annotations = await getAnnotationData(region, source);
+            const annotSource = inputControls.getSource();
 
-            const range = inputControls.getRange();
-
-            // coverageTrack.render(startRange, COV_Y_RANGE, covDots);
-            // bafTrack.render(startRange, BAF_Y_RANGE, bafDots);
-
-            annotationTrack.render(range, annotations);
-            // coverageTrack.render(range, COV_Y_RANGE, covDots);
-            // bafTrack.render(range, BAF_Y_RANGE, bafDots);
-            // annotationTrack.render(region, annotsResult.annotations);
+            renderTracks(
+                gensCache,
+                region,
+                annotSource,
+                annotationTrack,
+                coverageTrack,
+                bafTrack,
+            );
         },
     );
 
@@ -211,21 +228,46 @@ export async function initCanvases({
     // };
 }
 
-async function firstRenderTracks(
-    startRegion: Region,
+async function renderTracks(
+    gensCache: GensCache,
+    region: Region,
+    annotationSource: string,
     annotationTrack: AnnotationTrack,
     coverageTrack: DotTrack,
     bafTrack: DotTrack,
 ) {
-    const range: [number, number] = [startRegion.start, startRegion.end];
+    const range: [number, number] = [region.start, region.end];
 
-    const annotations = await getAnnotationData(startRegion, "mimisbrunnr");
+    console.log(`Rendering. Chrom: ${region.chrom} Range: ${range} Annot: ${annotationSource}`);
+
+    let annotations;
+    if (gensCache.isAnnotCached(region.chrom, annotationSource)) {
+        annotations = gensCache.getAnnotations(region.chrom, annotationSource);
+    } else {
+        annotations = await getAnnotationDataForChrom(
+            region.chrom,
+            annotationSource,
+        );
+        gensCache.setAnnotations(region.chrom, annotationSource, annotations);
+    }
     annotationTrack.render(range, annotations);
 
-    const covData = await getCovData(startRegion);
+    let covData;
+    if (gensCache.isCovCached(region.chrom)) {
+        covData = gensCache.getCov(region.chrom);
+    } else {
+        covData = await getCovData(region);
+        gensCache.setCov(region.chrom, covData);
+    }
     coverageTrack.render(range, COV_Y_RANGE, covData);
 
-    const bafData = await getBafData(startRegion);
+    let bafData;
+    if (gensCache.isBafCached(region.chrom)) {
+        bafData = gensCache.getBaf(region.chrom);
+    } else {
+        bafData = await getBafData(region);
+        gensCache.setBaf(region.chrom, bafData);
+    }
     bafTrack.render(range, BAF_Y_RANGE, bafData);
 }
 

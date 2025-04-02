@@ -1,14 +1,12 @@
 import { renderBorder } from "./render_utils";
 
-const TRACK_HEIGHT = 20;
-const PADDING = 5;
+// FIXME: Move somewhere
+const PADDING_LEFT = 5;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-    <div id="container" data-state="nodata" style="padding-left: ${PADDING}px">
-        <p class='track-xlabel'></p>
+    <div id="container" data-state="nodata" style="padding-left: ${PADDING_LEFT}px; padding-right: ${PADDING_LEFT}">
         <div id='track-container'>
-            <div id="header"></div>
             <canvas id='canvas'></canvas>
             <!-- <canvas id='canvas-offscreen'></canvas> -->
             <!-- <div id='titles'></div> -->
@@ -29,8 +27,8 @@ export class CanvasTrack extends HTMLElement {
     }
 
     initialize(label: string, trackHeight: number) {
-        const header = this._root.getElementById("header")
-        header.innerHTML = label;
+        // const header = this._root.getElementById("header")
+        // header.innerHTML = label;
         this._canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
         this._canvas.height = trackHeight;
         this.ctx = this._canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -49,7 +47,7 @@ export class CanvasTrack extends HTMLElement {
         // const viewNts = end - start;
 
         // FIXME: Not the responsibility of this component
-        this._canvas.width = window.innerWidth - PADDING;
+        this._canvas.width = window.innerWidth - PADDING_LEFT;
         this.dimensions = {
             width: this._canvas.width,
             height: this._canvas.height,
