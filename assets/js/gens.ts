@@ -81,6 +81,9 @@ export async function initCanvases({
         "variant-track",
     ) as AnnotationTrack;
 
+    const ideogramTrack = document.getElementById("ideogram-track") as AnnotationTrack;
+    const overviewTrack = document.getElementById("overview-track") as CanvasTrack;
+
     const annotationsContainer = document.getElementById(
         "annotations-container",
     ) as HTMLDivElement;
@@ -103,10 +106,18 @@ export async function initCanvases({
 
     const gensDb = new GensDb(sampleId, caseId, genomeBuild);
 
+
+
     coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
     bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
     variantTrack.initialize("Variant", THIN_TRACK_HEIGHT);
     transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
+
+    overviewTrack.initialize("Overview", THIN_TRACK_HEIGHT);
+    ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
+
+
+
     // annotationTrack.initialize("Annotation", thinTrackHeight);
 
     const defaultAnnots = ["mimisbrunnr"];
@@ -120,6 +131,7 @@ export async function initCanvases({
         bafTrack,
         transcriptTrack,
         variantTrack,
+        ideogramTrack,
     );
 
     // FIXME: Look into how to parse this for predefined start URLs
@@ -148,6 +160,7 @@ export async function initCanvases({
                 bafTrack,
                 transcriptTrack,
                 variantTrack,
+                ideogramTrack,
             );
             
             // const xRange: [number, number] = [startRegion.start, startRegion.end];
@@ -167,6 +180,7 @@ export async function initCanvases({
                 bafTrack,
                 transcriptTrack,
                 variantTrack,
+                ideogramTrack,
             );
         },
     );
@@ -262,6 +276,7 @@ async function renderTracks(
     bafTrack: DotTrack,
     transcriptsTrack: AnnotationTrack,
     variantsTrack: AnnotationTrack,
+    ideogramTrack: AnnotationTrack,
 ) {
     const range: [number, number] = [region.start, region.end];
 
@@ -297,6 +312,9 @@ async function renderTracks(
 
     const variantsData = await gensDb.getVariants(region.chrom);
     variantsTrack.render(range, variantsData);
+
+    const ideogramData = await gensDb.getIdeogramData(region.chrom);
+    ideogramTrack.render(range, ideogramData);
 }
 
 // Make hard link and copy link to clipboard

@@ -19,7 +19,8 @@
     "format": "npm run prettier:fix && npm run lint:fix",
     "watch": "gulp watch",
     "test": "jest",
-    "typecheck": "npx tsc --noEmit"
+    "typecheck": "npx tsc --noEmit",
+    "sync": "npm run typecheck && npm run buildcp"
   },
   "repository": {
     "type": "git",

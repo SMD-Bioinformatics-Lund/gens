@@ -99,7 +99,6 @@ async function getDotData(
 ): Promise<RenderDot[]> {
     // const regionString = `${region.chrom}:${region.start}-${region.end}`;
 
-    // FIXME (obviously)
     const query = {
         sample_id: sampleId,
         case_id: caseId,
@@ -134,6 +133,42 @@ export async function getBafData(
     chrom: string,
 ): Promise<RenderDot[]> {
     return getDotData(sampleId, caseId, chrom, "baf");
+}
+
+export async function getIdeogramData(chrom: string, genomeBuild: number): Promise<RenderBand[]> {
+    const result = await get("get-chromosome-info", {
+        chromosome: chrom,
+        genome_build: genomeBuild,
+    });
+
+    const bands = result.bands;
+
+    const stainToColor = {
+        "acen": "green",
+        "gneg": "yellow",
+        "gpos100": "red",
+        "gpos50": "gray",
+        "gpos25": "purple"
+    }
+
+    // FIXME: Think, how do we want to deal with colors in the end?
+    const renderBands = bands.map((band) => {
+        let color = "black";
+        if (stainToColor[band.stain] !== undefined) {
+            color = stainToColor[band.stain];
+        } else {
+            console.error("Unhandled stain: ", band.stain);
+        }
+
+        return {
+            start: band.start,
+            end: band.end,
+            color,
+            label: band.id
+        }
+    })
+
+    return renderBands;
 }
 
 // export async function getCovAndBafFromOldAPI(

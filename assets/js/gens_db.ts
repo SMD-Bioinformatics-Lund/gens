@@ -4,6 +4,7 @@ import {
     getCovData,
     getSVVariantData,
     getTranscriptData,
+    getIdeogramData,
 } from "./tmp";
 
 export class GensDb {
@@ -81,5 +82,14 @@ export class GensDb {
             );
         }
         return this.variantsCache[chrom];
+    }
+
+    private ideogramCache: Record<string, RenderBand[]> = {};
+    async getIdeogramData(chrom: string): Promise<RenderBand[]> {
+        const isCached = this.ideogramCache[chrom] !== undefined;
+        if (!isCached) {
+            this.ideogramCache[chrom] = await getIdeogramData(chrom, this.genomeBuild);
+        }
+        return this.ideogramCache[chrom];
     }
 }
