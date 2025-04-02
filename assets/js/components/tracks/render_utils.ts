@@ -41,36 +41,12 @@ export function renderDots(
     xRange: [number, number],
     yRange: [number, number],
     canvasDim: { width: number; height: number },
+    dotSize: number = 4
 ) {
-    // console.log("Render dots");
-
-    // const viewNts = xRange[1] - xRange[0]
-    // const scaleFactor = pxWidth / viewNts
-
     dots.forEach((dot) => {
         ctx.fillStyle = dot.color;
-
-        const xPixel = getPixelPosition(dot.pos, xRange, canvasDim.width)
-        const yPixel = getPixelPosition(dot.value, yRange, canvasDim.height)
-
-        // const xPos = dot.pos;
-        // const xViewPos = xPos - xRange[0];
-        // const xScaleFactor = canvasDim.width / dataWidth;
-        // const xPixel = xViewPos * xScaleFactor;
-
-        // const yPos = dot.value;
-        // // Canvas drawing scale is inverted
-        // const yViewPos = dataHeight - (yPos - yRange[0]);
-        // const yScaleFactor = canvasDim.height / dataHeight;
-        // const yPixel = yViewPos * yScaleFactor;
-
-        // const scaledNt = origX * scaleFactor;
-        // const scaledNt = scaledNt(origNt, ntRange)
-
-        const x = 0;
-        const y = 0;
-
-        const dotSize = 10;
+        const xPixel = getPixelPosition(dot.x, xRange, canvasDim.width)
+        const yPixel = getPixelPosition(dot.y, yRange, canvasDim.height)
         ctx.fillRect(
             xPixel - dotSize / 2,
             yPixel - dotSize / 2,

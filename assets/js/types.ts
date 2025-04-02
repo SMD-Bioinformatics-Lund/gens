@@ -9,8 +9,8 @@ interface AnnotationEntries {
 }
 
 interface RenderDot {
-    pos: number,
-    value: number,
+    x: number,
+    y: number,
     color: string,
 }
 

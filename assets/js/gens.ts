@@ -33,8 +33,11 @@ import { DotTrack } from "./components/tracks/dot_track";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
 import { get } from "./fetch";
-import { getAnnotationData, getCovAndBafFromOldAPI } from "./tmp";
+import { getAnnotationData, getBafData, getCovAndBafFromOldAPI, getCovData } from "./tmp";
 // import { get } from "http";
+
+const COV_Y_RANGE: [number, number] = [-4, 4];
+const BAF_Y_RANGE: [number, number] = [0, 1];
 
 export async function initCanvases({
     sampleName,
@@ -73,35 +76,24 @@ export async function initCanvases({
         "input-controls",
     ) as InputControls;
 
-
     // @ts-ignore
     const startRegion: Region = window.regionConfig;
     const startRange: [number, number] = [startRegion.start, startRegion.end];
     const trackHeight = 50;
 
-    annotationTrack.initialize("Annotation", trackHeight);
-    annotationTrack.render(startRange, []);
 
-    const COV_Y_RANGE: [number, number] = [-4, 4];
-    const BAF_Y_RANGE: [number, number] = [0, 1];
-
-    const covDots = [];
-    const bafDots = [];
-    for (let pos = 0; pos < startRegion.end; pos += 1000000) {
-        const covDot = {pos, value: Math.random() * 8 - 4, color: "orange"};
-        covDots.push(covDot);
-        const bafDot = {pos, value: Math.random(), color: "blue"};
-        bafDots.push(bafDot);
-    }
 
     coverageTrack.initialize("Coverage", trackHeight);
-    coverageTrack.render(startRange, COV_Y_RANGE, covDots);
+    // coverageTrack.render(startRange, COV_Y_RANGE, covDots);
     bafTrack.initialize("BAF", trackHeight);
-    bafTrack.render(startRange, BAF_Y_RANGE, bafDots);
+    // bafTrack.render(startRange, BAF_Y_RANGE, bafDots);
     variantTrack.initialize("Variant", trackHeight);
     // variantTrack.render(1, 10, dots);
     transcriptTrack.initialize("Transcript", trackHeight);
     // transcriptTrack.render(1, 10, []);
+    annotationTrack.initialize("Annotation", trackHeight);
+
+    firstRenderTracks(startRegion, annotationTrack, coverageTrack, bafTrack);
 
     // FIXME: Look into how to parse this for predefined start URLs
     inputControls.initialize(
@@ -109,17 +101,15 @@ export async function initCanvases({
         async (region) => {
             // const {cov, baf} = await getCovAndBafFromOldAPI(region);
             // coverageTrack.render(xRange, COV_Y_RANGE, cov);
-            // bafTrack.render(xRange, BAF_Y_RANGE, baf);        
+            // bafTrack.render(xRange, BAF_Y_RANGE, baf);
         },
         async (region, source) => {
-
             const annotations = await getAnnotationData(region, source);
             annotationTrack.render([region.start, region.end], annotations);
 
             // const xRange: [number, number] = [startRegion.start, startRegion.end];
             // const yRange: [number, number] = [-4, 4];
-            // coverageTrack.render(xRange, yRange, dots);        
-
+            // coverageTrack.render(xRange, yRange, dots);
         },
         async (_newXRange) => {
             const region = inputControls.getRegion();
@@ -129,25 +119,15 @@ export async function initCanvases({
 
             const range = inputControls.getRange();
 
-            coverageTrack.render(startRange, COV_Y_RANGE, covDots);
-            bafTrack.render(startRange, BAF_Y_RANGE, bafDots);
-        
+            // coverageTrack.render(startRange, COV_Y_RANGE, covDots);
+            // bafTrack.render(startRange, BAF_Y_RANGE, bafDots);
 
             annotationTrack.render(range, annotations);
-            coverageTrack.render(range, COV_Y_RANGE, covDots);
-            bafTrack.render(range, BAF_Y_RANGE, bafDots);
+            // coverageTrack.render(range, COV_Y_RANGE, covDots);
+            // bafTrack.render(range, BAF_Y_RANGE, bafDots);
             // annotationTrack.render(region, annotsResult.annotations);
-        }
+        },
     );
-
-    const annotations = await getAnnotationData(startRegion, "mimisbrunnr");
-    console.log(annotations);
-    annotationTrack.render(startRange, annotations);
-
-    // const {cov, baf} = await getCovAndBafFromOldAPI(startRegion);
-    // const xRange: [number, number] = [startRegion.start, startRegion.end];
-    // coverageTrack.render(xRange, COV_Y_RANGE, cov);
-    // bafTrack.render(xRange, BAF_Y_RANGE, baf);
 
     // initialize and return the different canvases
     // WEBGL values
@@ -229,6 +209,24 @@ export async function initCanvases({
     //   oc: oc,
     //   cg: cg,
     // };
+}
+
+async function firstRenderTracks(
+    startRegion: Region,
+    annotationTrack: AnnotationTrack,
+    coverageTrack: DotTrack,
+    bafTrack: DotTrack,
+) {
+    const range: [number, number] = [startRegion.start, startRegion.end];
+
+    const annotations = await getAnnotationData(startRegion, "mimisbrunnr");
+    annotationTrack.render(range, annotations);
+
+    const covData = await getCovData(startRegion);
+    coverageTrack.render(range, COV_Y_RANGE, covData);
+
+    const bafData = await getBafData(startRegion);
+    bafTrack.render(range, BAF_Y_RANGE, bafData);
 }
 
 // Make hard link and copy link to clipboard

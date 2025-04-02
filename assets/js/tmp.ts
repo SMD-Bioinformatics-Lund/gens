@@ -6,32 +6,74 @@ function parseResponseToPoints(bafRaw: any): ColorPoint[] {
         const x = bafRaw[i][0];
         const y = bafRaw[i + 1];
         const point = {
-            x, y, color: "blue"
-        }
+            x,
+            y,
+            color: "blue",
+        };
         points.push(point);
     }
     return points;
 }
 
-export async function getAnnotationData(region: Region, source: string): Promise<AnnotationEntries[]> {
-    const regionString = `${region.chrom}:${region.start}-${region.end}`;
+function makeRegionString(region: Region): string {
+    return `${region.chrom}:${region.start}-${region.end}`;
+}
+
+export async function getAnnotationData(
+    region: Region,
+    source: string,
+): Promise<AnnotationEntries[]> {
     const annotPayload = {
         sample_id: undefined,
-        region: regionString,
+        region: makeRegionString(region),
         genome_build: 38,
         collapsed: true,
         source: source,
     };
-    const annotsResult = await get("get-annotation-data", annotPayload); 
+    const annotsResult = await get("get-annotation-data", annotPayload);
     return annotsResult.annotations;
 }
 
-export async function getCovAndBafFromOldAPI(region: Region): Promise<{cov: any, baf: any}> {
+async function getDotData(region: Region, cov_or_baf: string): Promise<RenderDot[]> {
+    const regionString = `${region.chrom}:${region.start}-${region.end}`;
+
+    // FIXME (obviously)
+    const payload = {
+        sample_id: "hg002",
+        case_id: "hg002",
+        region_str: regionString,
+        cov_or_baf,
+    };
+
+    const results = await get("dev-get-data", payload);
+    
+    const renderData = results.data.map((d) => {
+        return {
+            x: (d.start + d.end) / 2,
+            y: d.value,
+            color: "blue" // Should this be assigned later actually?
+        }
+    })
+
+    return renderData;
+}
+
+export async function getCovData(region: Region): Promise<RenderDot[]> {
+    return getDotData(region, "cov");
+}
+
+export async function getBafData(region: Region): Promise<RenderDot[]> {
+    return getDotData(region, "baf");
+}
+
+export async function getCovAndBafFromOldAPI(
+    region: Region,
+): Promise<{ cov: any; baf: any }> {
     const regionString = `${region.chrom}:${region.start}-${region.end}`;
     const covPayload = {
         region: regionString,
-        case_id: 'hg002-2',
-        sample_id: 'hg002-2',
+        case_id: "hg002-2",
+        sample_id: "hg002-2",
         genome_build: 38,
         hg_filedir: undefined,
         x_pos: 930,
@@ -44,7 +86,8 @@ export async function getCovAndBafFromOldAPI(region: Region): Promise<{cov: any,
         baf_y_end: 0,
         log2_y_start: 4,
         log2_y_end: -4,
-        reduce_data: 1};
+        reduce_data: 1,
+    };
 
     const covResults = await get("get-coverage", covPayload);
     const bafRaw = covResults.baf;
@@ -54,6 +97,6 @@ export async function getCovAndBafFromOldAPI(region: Region): Promise<{cov: any,
 
     return {
         cov: covPoints,
-        baf: bafPoints
-    }
+        baf: bafPoints,
+    };
 }
