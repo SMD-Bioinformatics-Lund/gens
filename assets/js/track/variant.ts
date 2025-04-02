@@ -27,13 +27,14 @@ export class VariantTrack extends BaseAnnotationTrack {
   labelData: VariantLabel[];
   highlightedVariantId: string;
   heightOrderRecord: {latestHeight: number, latestNameEnd: number, latestTrackEnd: number}
-  additionalQueryParams: { variant_category: string, case_id: string };
+  additionalQueryParams: { variant_category: string, case_id: string, sample_id: string };
 
   constructor(
     x: number,
     width: number,
     near: number,
     far: number,
+    sampleId: string,
     caseId: string,
     genomeBuild: number,
     colorSchema: ColorSchema,
@@ -43,15 +44,15 @@ export class VariantTrack extends BaseAnnotationTrack {
     // Dimensions of track canvas
     const visibleHeight = 100; // Visible height for expanded canvas, overflows for scroll
     const minHeight = 35; // Minimized height
-
+    
     super(width, near, far, visibleHeight, minHeight, colorSchema);
 
     // Set inherited variables
-    this.drawCanvas = document.getElementById("variant-draw");
-    this.contentCanvas = document.getElementById("variant-content");
-    this.trackTitle = document.getElementById("variant-titles");
-    this.trackContainer = document.getElementById("variant-track-container");
-    this.scoutBaseURL = scoutBaseURL;
+    this.drawCanvas = document.getElementById("variant-draw") as HTMLCanvasElement;
+    this.contentCanvas = document.getElementById("variant-content") as HTMLCanvasElement;
+    this.trackTitle = document.getElementById("variant-titles") as HTMLDivElement;
+    this.trackContainer = document.getElementById("variant-track-container") as HTMLDivElement;
+
     // Add click menu event listener linking out to the Scout variant
     this.trackContainer.addEventListener(
       "click",
@@ -63,7 +64,7 @@ export class VariantTrack extends BaseAnnotationTrack {
             y: event.clientY - rect.top,
           };
           if (isWithinElementVisibleBbox(element, point)) {
-            const url = this.scoutBaseURL + "/document_id/" + element.id;
+            const url = scoutBaseURL + "/document_id/" + element.id;
             console.log(`Visit ${url}: Scout variant`);
             const win = window.open(url, "_blank");
             win.focus();
@@ -83,6 +84,7 @@ export class VariantTrack extends BaseAnnotationTrack {
     this.apiEntrypoint = "get-variant-data";
     this.additionalQueryParams = {
       variant_category: "sv",
+      sample_id: sampleId,
       case_id: caseId,
     };
     // Initialize highlighted variant

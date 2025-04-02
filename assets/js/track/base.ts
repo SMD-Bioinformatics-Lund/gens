@@ -1,5 +1,6 @@
 // Generic functions related to drawing annotation tracks
 
+import internal from "stream";
 import { get } from "../fetch";
 import { hideTooltip } from "./tooltip";
 
@@ -35,7 +36,6 @@ export function lightenColor(color, percent) {
 }
 
 export class BaseScatterTrack {
-
   caseId: string;
   sampleName: string;
   genomeBuild: number;
@@ -60,72 +60,82 @@ export class BaseScatterTrack {
   }
 }
 
-export class BaseAnnotationTrack {
+const MAX_HEIGHT = 16000; // Max height of canvas
+const DRAW_CANVAS_MULTIPLIER = 4;
 
+export class BaseAnnotationTrack {
   featureHeight: number;
   featureMargin: number;
   yPos: number;
   arrowColor: string;
   arrowWidth: number;
-  arrowDistance: number;
   arrowThickness: number;
   expanded: boolean;
+  // collapsed: boolean;
+
   width: number;
-  drawCanvasMultiplier: number;
-  maxHeight: number;
   visibleHeight: number;
   minHeight: number;
   preventDrawingTrack: boolean;
   colorSchema: ColorSchema;
   drawOffScreenTrack: any;
 
-  trackContainer: any;
-  drawCanvas: any;
-  contentCanvas: any;
-  trackTitle: any;
+  trackContainer: HTMLDivElement | null;
+  drawCanvas: HTMLCanvasElement | null;
+  // Canvases for static content
+  contentCanvas: HTMLCanvasElement | null;
+  trackTitle: HTMLDivElement | null;
   trackData: any;
 
   apiEntrypoint: string;
   sampleName: string;
   genomeBuild: number;
   additionalQueryParams: Record<string, string>;
-  
-  drawCtx: any;
 
-  offscreenPosition: {start: number|null, end: number|null, scale: number|null}
-  onscreenPosition: { start: number|null, end: number|null };
+  drawCtx: CanvasRenderingContext2D;
+
+  offscreenPosition: {
+    start: number | null;
+    end: number | null;
+    scale: number | null;
+  };
+  onscreenPosition: { start: number | null; end: number | null };
 
   maxResolution: number;
   geneticElements: any[];
 
-  constructor(width: number, near: number, far: number, visibleHeight: number, minHeight: number, colorSchema: ColorSchema = null) {
+  constructor(
+    width: number,
+    near: number,
+    far: number,
+    visibleHeight: number,
+    minHeight: number,
+    colorSchema: ColorSchema = null
+  ) {
     // Track variables
-    this.featureHeight = 20; // Max height for feature
+    this.featureHeight = 20;
     this.featureMargin = 14; // Margin for fitting gene name under track
     this.yPos = this.featureHeight / 2; // First y-position
     this.arrowColor = "white";
     this.arrowWidth = 4;
-    this.arrowDistance = 200;
     this.arrowThickness = 1;
-    this.expanded = false;
+    this.expanded = false; // Whether tracks are collapsed
     this.colorSchema = colorSchema;
     // errors preventing fetching of data
     this.preventDrawingTrack = false;
     // Dimensions of track canvas
     this.width = Math.round(width); // Width of displayed canvas
-    this.drawCanvasMultiplier = 4;
-    this.maxHeight = 16000; // Max height of canvas
     this.visibleHeight = visibleHeight; // Visible height for expanded canvas, overflows for scroll
     this.minHeight = minHeight; // Minimized height
 
     // Canvases
     // the drawCanvas is used to draw objects offscreen
     // the region to be displayed is blitted to the onscreen contentCanvas
-    this.trackContainer = null; // Set in parent class
-    this.drawCanvas = null; // Set in parent class
+    this.trackContainer = null; // Set in child class
+    this.drawCanvas = null; // Set in child class
     // Canvases for static content
     this.contentCanvas = null;
-    this.trackTitle = null; // Set in parent class
+    this.trackTitle = null; // Set in child class
     // data cache
     this.trackData = null;
 
@@ -150,14 +160,15 @@ export class BaseAnnotationTrack {
     this.trackContainer.style.marginLeft = xPos + "px";
     this.trackContainer.style.width = this.width + "px";
     // set xlabel
-    this.trackContainer.parentElement.querySelector(
-      ".track-xlabel",
-    ).style.left = `${xPos - 60}px`;
+    const x_label = this.trackContainer.parentElement.querySelector(
+      ".track-xlabel"
+    ) as HTMLElement;
+    x_label.style.left = `${xPos - 60}px`;
 
     // Setup initial track Canvas
     this.drawCtx = this.drawCanvas.getContext("2d");
-    this.drawCanvas.width = this.width * this.drawCanvasMultiplier;
-    this.drawCanvas.height = this.maxHeight;
+    this.drawCanvas.width = this.width * DRAW_CANVAS_MULTIPLIER;
+    this.drawCanvas.height = MAX_HEIGHT;
     this.contentCanvas.width = this.width;
     this.contentCanvas.height = this.minHeight;
 
@@ -165,18 +176,21 @@ export class BaseAnnotationTrack {
     this.trackTitle.style.width = this.width + "px";
     this.trackTitle.style.height = this.minHeight + "px";
 
-    this.trackContainer.parentElement.addEventListener("draw", (event) => {
-      this.drawTrack({ ...event.detail.region });
+    this.trackContainer.parentElement.addEventListener("draw", (event: any) => {
+      this.drawTrack({...event.detail.region}, this.expanded);
     });
+
+
     // Setup context menu
     this.trackContainer.addEventListener(
-      "contextmenu",
+      "contextmenu", 
       async (event) => {
         event.preventDefault();
         // hide all tooltips
         for (const element of this.geneticElements) {
           if (element.tooltip) hideTooltip(element.tooltip);
         }
+
         // Toggle between expanded/collapsed view
         this.expanded = !this.expanded;
         // set datastate for css
@@ -194,7 +208,7 @@ export class BaseAnnotationTrack {
         this.blitCanvas(this.onscreenPosition.start, this.onscreenPosition.end);
         this.drawDynamicOverlay();
       },
-      false,
+      false
     );
   }
 
@@ -208,7 +222,7 @@ export class BaseAnnotationTrack {
   }
 
   // Sets the container height depending on maximum height of tracks
-  setContainerHeight(maxHeightOrder) {
+  setContainerHeight(maxHeightOrder: number) {
     if (maxHeightOrder === 0) {
       // No results, do not show tracks
       this.contentCanvas.height = 0;
@@ -250,7 +264,13 @@ export class BaseAnnotationTrack {
     end,
     forceRedraw = false,
     hideWhileLoading = false,
-  }) {
+  }: {
+    chrom: string;
+    start: number;
+    end: number;
+    forceRedraw: boolean;
+    hideWhileLoading: boolean;
+  }, expanded: boolean) {
     if (this.preventDrawingTrack) return; // disable drawing track
     // store genomic position of the region to draw
     this.onscreenPosition.start = start;
@@ -274,10 +294,10 @@ export class BaseAnnotationTrack {
             sample_id: this.sampleName,
             region: `${chrom}:1-None`,
             genome_build: this.genomeBuild,
-            collapsed: false, // always get all height orders
+            collapsed: !expanded,
           },
-          this.additionalQueryParams,
-        ), // parameters specific to track type
+          this.additionalQueryParams
+        ) // parameters specific to track type
       );
       // disable track if data loading encountered an error
       if (this.trackData.status === "error") {
@@ -305,7 +325,7 @@ export class BaseAnnotationTrack {
       const offscreenPos = calculateOffscreenWindowPos({
         start: start,
         end: end,
-        multiplier: this.drawCanvasMultiplier,
+        multiplier: DRAW_CANVAS_MULTIPLIER,
       });
       // draw offscreen position for the first time
       await this.drawOffScreenTrack({
@@ -331,8 +351,7 @@ export class BaseAnnotationTrack {
 
     // Debugging
     const offscreenOffset = Math.round(
-      (chromStart - this.offscreenPosition.start) *
-        this.offscreenPosition.scale,
+      (chromStart - this.offscreenPosition.start) * this.offscreenPosition.scale
     );
     const elementWidth = Math.round(width * this.offscreenPosition.scale);
 
@@ -346,7 +365,7 @@ export class BaseAnnotationTrack {
       0, // dX
       0, // dY
       this.contentCanvas.width, // dWidth
-      this.drawCanvas.height, // dHeight
+      this.drawCanvas.height // dHeight
     );
   }
 

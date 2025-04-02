@@ -75,7 +75,7 @@ def read_bed(file: Path, header: bool = False) -> Iterator[dict[str, str]]:
             if len(line) != len(colnames):
                 raise ValueError(
                     (
-                        f"Too few columns. Expected {len(colnames)}, "
+                        f"Incorrect number of columns. Expected {len(colnames)}, "
                         f"got {len(line)}; line: {line}"
                     )
                 )
@@ -183,7 +183,11 @@ def format_data(
     if data_type in {"start", "end"}:
         if not new_value:
             raise ValueError(f"field {data_type} must exist")
-        return int(new_value)
+        # Bed files are zero-indexed
+        if data_type == "start":
+            return int(new_value) + 1
+        else:
+            return int(new_value)
     if data_type == "score":
         return int(new_value) if new_value else None
     if data_type == "strand":

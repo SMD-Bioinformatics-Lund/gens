@@ -278,11 +278,11 @@ This should result in something like:
 [2023-12-15 14:45:07,111] INFO in load: Processing files
 [2023-12-15 14:45:07,112] INFO in load: Processing /home/proj/stage/rare-disease/gens-tracks/Final_common_CNV_clusters_0.bed
 [2023-12-15 14:45:07,144] INFO in load: Remove old entry in the database
-[2023-12-15 14:45:07,230] INFO in load: Load annoatations in the database
+[2023-12-15 14:45:07,230] INFO in load: Load annotations in the database
 [2023-12-15 14:45:07,309] INFO in load: Update height order
 [2023-12-15 14:45:10,792] INFO in load: Processing /home/proj/stage/rare-disease/gens-tracks/DGV_UCSC_2023-03-09.bed
 [2023-12-15 14:45:16,170] INFO in load: Remove old entry in the database
-[2023-12-15 14:45:16,173] INFO in load: Load annoatations in the database
+[2023-12-15 14:45:16,173] INFO in load: Load annotations in the database
 [2023-12-15 14:45:41,873] INFO in load: Update height order
 Finished loading annotations ✔
 ```

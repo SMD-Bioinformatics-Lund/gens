@@ -1,5 +1,5 @@
 scout_url = "http://localhost:8000"
-authentication = "simple"
+authentication = "disabled"
 
 [gens_db]
 connection = "mongodb://mongodb:27017/gens"

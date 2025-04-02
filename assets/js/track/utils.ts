@@ -69,3 +69,16 @@ export function isWithinElementVisibleBbox(
     point.y < element.visibleY2
   );
 }
+
+// Convert to 32bit integer
+export function stringToHash(in_str: string) {
+  let hash = 0;
+  if (in_str.length === 0) return hash;
+  for (let i = 0; i < in_str.length; i++) {
+    const char = in_str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return hash;
+}
+

@@ -5,12 +5,13 @@
     "tippy.js": "^6.3.2"
   },
   "name": "gens",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Interactive tool to visualize genomic copy number profiles from WGS data",
   "main": "gens.ts",
   "scripts": {
     "build": "gulp build",
-    "buildcpjs": "gulp build && cp build/js/gens.min.js gens/blueprints/gens/static/",
+    "buildcp": "gulp build && cp --verbose build/js/gens.min.js gens/blueprints/gens/static/ && cp --verbose build/css/*.css gens/blueprints/home/static/ && cp --verbose build/css/*.css gens/blueprints/gens/static/",
+    "buildcpjs": "gulp build && cp --verbose build/js/gens.min.js gens/blueprints/gens/static/",
     "lint": "eslint assets",
     "lint:fix": "npm run lint -- --fix",
     "prettier": "npx prettier assets  --check",

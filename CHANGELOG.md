@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
-## Unreleased
+## 3.1.0
 
 ### Added
  - User can specify path to a custom config file with the env `CONFIG_FILE`.
@@ -22,6 +22,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - For strand information, "" is interpreted as unknown and assigned "."
  - Genome builds are dealt with as integers also for annotation tracks (previously these had been encoded as strings)
  - Replaced the temporary hard-coded to HG002 setup script with the more flexible "utils/quick_setup.py", able to take many samples and annotations
+ - Rename `gens load chromosome-info` command to `gens load chromosomes` (#265)
+ - Disable multitrack loads as loading all transcripts data resulted in large network traffic and waiting times (#265)
 
 ### Fixed
  - Fixed parsing of AED and BED files.
@@ -35,6 +37,12 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Fix `gens delete sample` command by making it take the correct int formatted genome build number
  - Refactor CLI sample functions to work with a Gens collection rather than accessing the db globally
  - Resolve OAuth issue
+ - tsconfig.json copied into Dockerfile (#265)
+ - Smaller size for the Gens logo - as it did not fit within screen on smaller laptop screens (#265)
+ - Color in front-end formatter to deal with the new [0, 0, 0] format (compared to the previous "rgb(0,0,0)" format) (#265)
+ - Shift start position +1 in bed and aed files to make the annotations align with the 1-indexed format used elsewhere in Gens (#265)
+
+
 
 ## 3.0.1
 

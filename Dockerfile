@@ -29,7 +29,7 @@ RUN apt-get update &&                                                     \
 
 FROM node:20.8.1-alpine AS node-builder
 WORKDIR /usr/src/app
-COPY package.json package-lock.json webpack.config.cjs gulpfile.js ./
+COPY package.json package-lock.json webpack.config.cjs gulpfile.js tsconfig.json ./
 COPY assets assets
 RUN npm install && npm run build
 
@@ -61,10 +61,6 @@ RUN apt-get update &&                              \
     pip install --no-cache-dir gunicorn &&         \
     rm -rf /var/lib/apt/lists/* &&                 \
     rm -rf /wheels
-
-# Chown all the files to the app user
-COPY --chown=worker:worker gens ./gens
-COPY --chown=worker:worker utils ./utils
 
 # copy compiled web assetes
 COPY --from=node-builder /usr/src/app/build/css/error.min.css gens/static/css/

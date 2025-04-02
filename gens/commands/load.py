@@ -174,12 +174,12 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool) -> None:
                 parsed_annotations.append(entry_obj)
 
         if len(parsed_annotations) == 0:
-            raise ValueError("Something went wrong parsing the annotaions file.")
+            raise ValueError("Something went wrong parsing the annotaions file, no valid annotations found.")
         # Remove existing annotations in database
         LOG.info("Remove old entry in the database")
         db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
         # add the annotations
-        LOG.info("Load annoatations in the database")
+        LOG.info("Load annotations in the database")
         db[ANNOTATIONS_COLLECTION].insert_many(
             [annot.model_dump() for annot in parsed_annotations]
         )
@@ -249,7 +249,7 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     help="Timeout for queries.",
 )
 @with_appcontext
-def chromosome_info(genome_build: GenomeBuild, timeout: int) -> None:
+def chromosomes(genome_build: GenomeBuild, timeout: int) -> None:
     """Load chromosome size information into the database."""
     db: Database = app.config["GENS_DB"]
     # if collection is not indexed, create index

@@ -17,15 +17,6 @@ LOG = logging.getLogger(__name__)
 
 SAMPLES_PER_PAGE = 20
 
-IN_CONFIG = (
-    "ENV",
-    "DEFAULT_ANNOTATION_TRACK",
-    "GENS_DBNAME",
-    "SCOUT_DBNAME",
-    "MONGODB_HOST",
-    "MONGODB_PORT",
-)
-
 home_bp = Blueprint(
     "home",
     __name__,
@@ -57,7 +48,7 @@ def home() -> str:
             else (total_samples // SAMPLES_PER_PAGE) + 1
         ),
     }
-    samples = [
+    parsed_samples = [
         {
             "sample_id": smp.sample_id,
             "case_id": smp.case_id,
@@ -72,7 +63,7 @@ def home() -> str:
     return render_template(
         "home.html",
         pagination=pagination_info,
-        samples=samples,
+        samples=parsed_samples,
         total_samples=total_samples,
         scout_base_url=str(settings.scout_url),
         version=version,
@@ -85,7 +76,10 @@ def about() -> str:
     with current_app.app_context():
         db: Database = current_app.config["GENS_DB"]
         timestamps = get_timestamps(db)
-        config = {cnf: current_app.config.get(cnf) for cnf in IN_CONFIG}
+        print("Printing config")
+        print(current_app.config)
+        config = settings.get_dict()
+        config["ENV"] = current_app.config.get("ENV")
         ui_colors = current_app.config.get("UI_COLORS")
     return render_template(
         "about.html",
