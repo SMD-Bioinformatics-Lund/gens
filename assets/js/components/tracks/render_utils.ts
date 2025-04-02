@@ -79,8 +79,6 @@ export function newDrawRect(
     // define path to draw
     const path = new Path2D();
 
-    console.log("Rendering rect at:", x, y, width, height);
-
     // Draw box without left part, to allow stacking boxes
     // horizontally without getting double lines between them.
     if (open === true) {

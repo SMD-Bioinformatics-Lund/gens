@@ -6,7 +6,7 @@ const PADDING_LEFT = 5;
 const template = document.createElement("template");
 template.innerHTML = String.raw`
     <div id="container" data-state="nodata" style="padding-left: ${PADDING_LEFT}px; padding-right: ${PADDING_LEFT}">
-        <div id='track-container'>
+        <div id='track-container' style="position: relative;">
             <canvas id='canvas'></canvas>
             <!-- <canvas id='canvas-offscreen'></canvas> -->
             <!-- <div id='titles'></div> -->
@@ -20,6 +20,7 @@ export class CanvasTrack extends HTMLElement {
     protected ctx: CanvasRenderingContext2D;
     protected dimensions: {width: number, height: number};
     protected _scaleFactor: number;
+    protected trackContainer: HTMLDivElement;
 
     connectedCallback() {
         this._root = this.attachShadow({ mode: "open" });
@@ -29,9 +30,12 @@ export class CanvasTrack extends HTMLElement {
     initialize(label: string, trackHeight: number) {
         // const header = this._root.getElementById("header")
         // header.innerHTML = label;
-        this.canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
+        this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
+        // this.canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
         this.canvas.height = trackHeight;
         this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+
+        this.trackContainer = this._root.getElementById("track-container") as HTMLDivElement;
 
         this.syncDimensions();
 
