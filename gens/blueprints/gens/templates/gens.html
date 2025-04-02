@@ -54,6 +54,7 @@
     <br> 
     <dot-track id="coverage-track"></dot-track>
     <dot-track id="baf-track"></dot-track>
+    <!-- <div id=""ann></div> -->
     <annotation-track id="annotation-track"></annotation-track>
     <annotation-track id="transcript-track"></annotation-track>
     <annotation-track id="variant-track"></annotation-track>
@@ -91,27 +92,11 @@
         loading.querySelector("#printing").toggleAttribute("hidden")
     }
 
-    // // Listener values
-    // const inputField = document.getElementById('region-field');
-    // inputField.addEventListener('error', event => {
-    //   inputField.classList.add('error')
-    //   inputField.disabled = true
-    //   setTimeout(() => {
-    //     inputField.classList.remove('error')
-    //     inputField.value = inputField.placeholder
-    //     inputField.disabled = false
-    //   }, 1500)
-    // })
-
-    console.log({{chrom}})
-
     // Set first input field value for ic
     let startJs = {{ start }} === 0 ? 1 : {{ start }};
     const endJs = {{ end }}
     const chromJs = {{ chrom }} !== undefined ? {{ chrom }} : "1";
     const genomeBuildJs = {{ genome_build }}
-    // inputField.value = chromJs + ':' + startJs + '-' + endJs
-    // inputField.placeholder = inputField.value;
 
     window.regionConfig = {
         chrom: chromJs,
@@ -121,20 +106,15 @@
     }
 
 
-    // Redraw when new region is requested
-    // document.getElementById('region-form').onsubmit = (e) => {
-    //     e.preventDefault()
-    //     gens.queryRegionOrGene(inputField.value, genomeBuild)
-    // }
-    // Setup functions to run when the data has finished loading
-    document.addEventListener('data-loaded', () => {
-        // hide loading
-        document.querySelector('.loading-view')
-                .toggleAttribute('hidden');
-        // display grid containers
-        document.querySelector('#visualization-container')
-                .style.display = 'grid';
-    });
+    // // Redraw when new region is requested
+    // document.addEventListener('data-loaded', () => {
+    //     // hide loading
+    //     document.querySelector('.loading-view')
+    //             .toggleAttribute('hidden');
+    //     // display grid containers
+    //     document.querySelector('#visualization-container')
+    //             .style.display = 'grid';
+    // });
 
     // Initiate variant, annotation and transcript canvases
     // and pass flask values to tracks

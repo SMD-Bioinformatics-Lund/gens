@@ -1,3 +1,4 @@
+import { GensDataStore } from "./gens_db";
 import { get } from "./fetch";
 
 function parseResponseToPoints(bafRaw: any): ColorPoint[] {
@@ -42,7 +43,7 @@ export async function getAnnotationDataForChrom(
     });
 }
 
-export async function getTranscriptData(chrom: string): Promise<RenderBand> {
+export async function getTranscriptData(chrom: string): Promise<RenderBand[]> {
     const query = {
         sample_id: undefined,
         region: `${chrom}:1-None`,
@@ -86,24 +87,24 @@ export async function getSVVariantData(
             start: variant.start,
             end: variant.end,
             color: "red",
-        }
-    })
+        };
+    });
     return toRender;
 }
 
 async function getDotData(
     sampleId: string,
     caseId: string,
-    region: Region,
+    chrom: string,
     covOrBaf: string,
 ): Promise<RenderDot[]> {
-    const regionString = `${region.chrom}:${region.start}-${region.end}`;
+    // const regionString = `${region.chrom}:${region.start}-${region.end}`;
 
     // FIXME (obviously)
     const query = {
         sample_id: sampleId,
         case_id: caseId,
-        region_str: regionString,
+        region_str: `${chrom}:1-None`,
         cov_or_baf: covOrBaf,
     };
 
@@ -123,17 +124,17 @@ async function getDotData(
 export async function getCovData(
     sampleId: string,
     caseId: string,
-    region: Region,
+    chrom: string,
 ): Promise<RenderDot[]> {
-    return getDotData(sampleId, caseId, region, "cov");
+    return getDotData(sampleId, caseId, chrom, "cov");
 }
 
 export async function getBafData(
     sampleId: string,
     caseId: string,
-    region: Region,
+    chrom: string,
 ): Promise<RenderDot[]> {
-    return getDotData(sampleId, caseId, region, "baf");
+    return getDotData(sampleId, caseId, chrom, "baf");
 }
 
 // export async function getCovAndBafFromOldAPI(

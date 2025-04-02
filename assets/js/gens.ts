@@ -36,12 +36,11 @@ import { get } from "./fetch";
 import {
     getAnnotationDataForChrom,
     getBafData,
-    getCovAndBafFromOldAPI,
     getCovData,
     getSVVariantData,
     getTranscriptData,
 } from "./tmp";
-import { GensCache } from "./cache";
+import { GensDb } from "./gens_db";
 // import { get } from "http";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
@@ -98,7 +97,7 @@ export async function initCanvases({
     const tallTrackHeight = 80;
     const thinTrackHeight = 20;
 
-    const gensCache = new GensCache();
+    const gensDb = new GensDb(sampleId, caseId, genomeBuild);
 
 
     coverageTrack.initialize("Coverage", tallTrackHeight);
@@ -110,10 +109,7 @@ export async function initCanvases({
     const defaultAnnot = "mimisbrunnr";
 
     renderTracks(
-        sampleId,
-        caseId,
-        genomeBuild,
-        gensCache,
+        gensDb,
         startRegion,
         defaultAnnot,
         annotationTrack,
@@ -148,10 +144,7 @@ export async function initCanvases({
             const annotSource = inputControls.getSource();
 
             renderTracks(
-                sampleId,
-                caseId,
-                genomeBuild,
-                gensCache,
+                gensDb,
                 region,
                 annotSource,
                 annotationTrack,
@@ -246,10 +239,7 @@ export async function initCanvases({
 }
 
 async function renderTracks(
-    sampleId: string,
-    caseId: string,
-    genome_build: number,
-    gensCache: GensCache,
+    gensDb: GensDb,
     region: Region,
     annotationSource: string,
     annotationTrack: AnnotationTrack,
@@ -262,53 +252,19 @@ async function renderTracks(
 
     console.log(`Rendering. Chrom: ${region.chrom} Range: ${range} Annot: ${annotationSource}`);
 
-    // FIXME: Abstract away this behind the get function
-    let annotations;
-    if (gensCache.isAnnotCached(region.chrom, annotationSource)) {
-        annotations = gensCache.getAnnotations(region.chrom, annotationSource);
-    } else {
-        annotations = await getAnnotationDataForChrom(
-            region.chrom,
-            annotationSource,
-        );
-        gensCache.setAnnotations(region.chrom, annotationSource, annotations);
-    }
+    const annotations = await gensDb.getAnnotations(region.chrom, annotationSource);
     annotationTrack.render(range, annotations);
 
-    let covData;
-    if (gensCache.isCovCached(region.chrom)) {
-        covData = gensCache.getCov(region.chrom);
-    } else {
-        covData = await getCovData(sampleId, caseId, region);
-        gensCache.setCov(region.chrom, covData);
-    }
+    const covData = await gensDb.getCov(region.chrom);
     coverageTrack.render(range, COV_Y_RANGE, covData);
 
-    let bafData;
-    if (gensCache.isBafCached(region.chrom)) {
-        bafData = gensCache.getBaf(region.chrom);
-    } else {
-        bafData = await getBafData(sampleId, caseId, region);
-        gensCache.setBaf(region.chrom, bafData);
-    }
+    const bafData = await gensDb.getBaf(region.chrom);
     bafTrack.render(range, BAF_Y_RANGE, bafData);
 
-    let transcriptData;
-    if (gensCache.isTranscriptsCached(region.chrom)) {
-        transcriptData = gensCache.getTranscripts(region.chrom);
-    } else {
-        transcriptData = await getTranscriptData(region.chrom);
-        gensCache.setTranscripts(region.chrom, transcriptData);
-    }
+    const transcriptData = await gensDb.getTranscripts(region.chrom);
     transcriptsTrack.render(range, transcriptData);
 
-    let variantsData;
-    if (gensCache.isVariantsCached(region.chrom)) {
-        variantsData = gensCache.getVariants(region.chrom);
-    } else {
-        variantsData = await getSVVariantData(sampleId, caseId, genome_build, region.chrom);
-        gensCache.setVariants(region.chrom, variantsData);
-    }
+    const variantsData = await gensDb.getVariants(region.chrom);
     variantsTrack.render(range, variantsData);
 }
 
