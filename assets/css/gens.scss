@@ -215,9 +215,9 @@ body {
 
 #visualization-container {
   height: min-content;
-  display: none;
-  grid-row: 1;
-  grid-column: 1;
+  // display: none;
+  // grid-row: 1;
+  // grid-column: 1;
 }
 
 #button-container {
@@ -299,29 +299,29 @@ body {
   }
 }
 
-#interactive-container {
-  display: grid;
-  grid-row: 3;
-  grid-column: 1;
+// #interactive-container {
+//   display: grid;
+//   grid-row: 3;
+//   grid-column: 1;
 
-  #interactive-static {
-    z-index: 1;
-    pointer-events: none;
-    grid-row: 4;
-    grid-column: 1;
-  }
+//   #interactive-static {
+//     z-index: 1;
+//     pointer-events: none;
+//     grid-row: 4;
+//     grid-column: 1;
+//   }
 
-  #interactive-content {
-    z-index: 1;
-    grid-row: 4;
-    grid-column: 1;
-  }
+//   #interactive-content {
+//     z-index: 1;
+//     grid-row: 4;
+//     grid-column: 1;
+//   }
 
-  #interactive-marker {
-    position: absolute;
-    z-index: 1;
-  }
-}
+//   #interactive-marker {
+//     position: absolute;
+//     z-index: 1;
+//   }
+// }
 
 #interactive-options {
   text-align: center;

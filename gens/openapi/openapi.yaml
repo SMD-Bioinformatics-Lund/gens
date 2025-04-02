@@ -9,6 +9,58 @@ info:
 servers:
   - url: /api
 paths:
+  /dev-get-data:
+    get:
+      summary: Get raw cov or baf (dev)
+      operationId: gens.api.dev_get_data
+      parameters:
+        - name: sample_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: case_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: region_str
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: cov_or_baf
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved cov data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        chrom:
+                          type: string
+                        start:
+                          type: number
+                        end:
+                          type: number
+                        value:
+                          type: number
+                        zoom:
+                          type: string
+
+
   /get-multiple-coverages:
     post:
       summary: Get BAF and LOG2 coverage information

@@ -11,7 +11,7 @@ import {
 } from "./draw";
 
 import { drawTrack } from "./navigation";
-import { FONTSIZES } from "./constants";
+import { FONTSIZES } from "./util/constants";
 
 export class OverviewCanvas extends BaseScatterTrack {
   fullPlotWidth: number;

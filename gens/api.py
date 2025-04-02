@@ -26,6 +26,7 @@ from gens.db.collections import (
 )
 from gens.exceptions import RegionParserException
 from gens.graph import REQUEST, get_cov, overview_chrom_dimensions, parse_region_str
+from gens.io import tabix_query
 from gens.models.annotation import TranscriptRecord
 from gens.models.genomic import (
     Chromosome,
@@ -296,6 +297,65 @@ def get_multiple_coverages() -> dict[str, Any] | tuple[Any, int]:
             "end": reg.end_pos,
         }
     return jsonable_encoder({"results": results, "status": "ok"})
+
+# FIXME: This is not ready for production
+def dev_get_data(sample_id: str, case_id: str, region_str: str, cov_or_baf: str):
+
+    if cov_or_baf not in {"cov", "baf"}:
+        raise ValueError(f"cov_or_baf should be cov or baf, found: {cov_or_baf}")
+
+    # Validate input
+    if sample_id == "":
+        msg = f"Invalid case_id: {sample_id}"
+        LOG.error(msg)
+        return (jsonify({"detail": msg}), 416)
+    db: Database = current_app.config["GENS_DB"]
+
+    # TODO respond with 404 error if file is not found
+    sample_obj = query_sample(db[SAMPLES_COLLECTION], sample_id, case_id)
+
+    if cov_or_baf == "cov":
+        tabix_file = TabixFile(str(sample_obj.coverage_file))
+    else:
+        tabix_file = TabixFile(str(sample_obj.baf_file))
+
+    chrom, range = region_str.split(":")
+    # start, end = [int(pos) for pos in range.split("-")]
+    # FIXME: Grabbing the full chromosome during testing
+    start = None
+    end = None
+
+    # Tabix
+    record_name = f"a_{chrom}"
+
+    try:
+        records = tabix_file.fetch(record_name, start, end)
+        
+    except ValueError as err:
+        LOG.error(err)
+        records = iter([])
+    raw_tabix_results = [r.split("\t") for r in records]
+
+    def parse_raw_tabix(tabix_entries: list[str]) -> dict[str, Any]:
+        zoom, chrom = tabix_entries[0].split("_")
+        start = int(tabix_entries[1])
+        end = int(tabix_entries[2])
+        value = float(tabix_entries[3])
+        return {
+            "chrom": chrom,
+            "start": start,
+            "end": end,
+            "value": value,
+            "zoom": zoom
+        }
+
+    parsed_tabix_results = [parse_raw_tabix(res) for res in raw_tabix_results]
+
+    query_result = {
+        "data": parsed_tabix_results,
+        "status": "ok",
+    }
+    return jsonable_encoder(query_result)
 
 
 def get_coverage(

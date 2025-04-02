@@ -1,3 +1,34 @@
+interface AnnotationEntry {
+  chrom: string,
+  color: number[],
+  start: number,
+  end: number,
+  genome_build: number,
+  name: string,
+  source: string
+}
+
+
+
+interface RenderBand {
+  start: number,
+  end: number,
+  color: string,
+  label?: string,
+}
+
+interface RenderDot {
+    x: number,
+    y: number,
+    color: string,
+}
+
+interface ColorPoint {
+  x: number,
+  y: number,
+  color: string,
+}
+
 interface UIColors {
   variants: Record<string, string>,
   transcripts: Record<string, string>
@@ -8,8 +39,14 @@ interface CanvasDetail {
   chrom: string;
 }
 
+interface Region {
+  chrom: string,
+  start: number,
+  end: number,
+}
+
 interface RegionDetail {
-  region: { chrom: string; start: number; end: number };
+  region: Region;
   exclude?: string[];
 }
 
@@ -62,6 +99,20 @@ interface VirtualDOMElement {
   bottom: number;
 }
 
+interface ChromosomeBand {
+  start: number,
+  end: number,
+  stain: string,
+  id: string,
+  strand: string
+}
+
+interface ChromosomeInfo {
+  centromere: {start: number, end: number},
+  size: number,
+  bands: ChromosomeBand[]
+}
+
 interface DrawChromosome {
   path: Path2D;
   chromInfo?: {
@@ -71,6 +122,11 @@ interface DrawChromosome {
     width: number;
     size: number;
   };
+}
+
+interface Dimensions {
+  width: number,
+  height: number
 }
 
 interface BandPath {
