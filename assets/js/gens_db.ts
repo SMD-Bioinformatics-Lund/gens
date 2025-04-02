@@ -84,8 +84,8 @@ export class GensDb {
         return this.variantsCache[chrom];
     }
 
-    private ideogramCache: Record<string, RenderBand[]> = {};
-    async getIdeogramData(chrom: string): Promise<RenderBand[]> {
+    private ideogramCache: Record<string, ChromosomeInfo> = {};
+    async getIdeogramData(chrom: string): Promise<ChromosomeInfo> {
         const isCached = this.ideogramCache[chrom] !== undefined;
         if (!isCached) {
             this.ideogramCache[chrom] = await getIdeogramData(chrom, this.genomeBuild);

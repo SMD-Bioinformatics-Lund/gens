@@ -8,6 +8,8 @@ interface AnnotationEntry {
   source: string
 }
 
+
+
 interface RenderBand {
   start: number,
   end: number,
@@ -97,6 +99,20 @@ interface VirtualDOMElement {
   bottom: number;
 }
 
+interface ChromosomeBand {
+  start: number,
+  end: number,
+  stain: string,
+  id: string,
+  strand: string
+}
+
+interface ChromosomeInfo {
+  centromere: {start: number, end: number},
+  size: number,
+  bands: ChromosomeBand[]
+}
+
 interface DrawChromosome {
   path: Path2D;
   chromInfo?: {
@@ -106,6 +122,11 @@ interface DrawChromosome {
     width: number;
     size: number;
   };
+}
+
+interface Dimensions {
+  width: number,
+  height: number
 }
 
 interface BandPath {

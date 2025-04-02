@@ -1,4 +1,6 @@
 import { get } from "./fetch";
+import { lightenColor } from "./track/base";
+import { STYLE } from "./util/constants";
 
 function parseResponseToPoints(bafRaw: any): ColorPoint[] {
     const points = [];
@@ -135,40 +137,36 @@ export async function getBafData(
     return getDotData(sampleId, caseId, chrom, "baf");
 }
 
-export async function getIdeogramData(chrom: string, genomeBuild: number): Promise<RenderBand[]> {
-    const result = await get("get-chromosome-info", {
+export async function getIdeogramData(chrom: string, genomeBuild: number): Promise<ChromosomeInfo> {
+    const chromosomeInfo = await get("get-chromosome-info", {
         chromosome: chrom,
         genome_build: genomeBuild,
-    });
+    }) as ChromosomeInfo;
 
-    const bands = result.bands;
+    return chromosomeInfo;
 
-    const stainToColor = {
-        "acen": "green",
-        "gneg": "yellow",
-        "gpos100": "red",
-        "gpos50": "gray",
-        "gpos25": "purple"
-    }
+    // const bands = result.bands;
 
-    // FIXME: Think, how do we want to deal with colors in the end?
-    const renderBands = bands.map((band) => {
-        let color = "black";
-        if (stainToColor[band.stain] !== undefined) {
-            color = stainToColor[band.stain];
-        } else {
-            console.error("Unhandled stain: ", band.stain);
-        }
+    // const stainToColor = STYLE.colors.stainToColor;
 
-        return {
-            start: band.start,
-            end: band.end,
-            color,
-            label: band.id
-        }
-    })
+    // // FIXME: Think, how do we want to deal with colors in the end?
+    // const renderBands = bands.map((band) => {
+    //     let color = "black";
+    //     if (stainToColor[band.stain] !== undefined) {
+    //         color = stainToColor[band.stain];
+    //     } else {
+    //         console.error("Unhandled stain: ", band.stain);
+    //     }
 
-    return renderBands;
+    //     return {
+    //         start: band.start,
+    //         end: band.end,
+    //         color,
+    //         label: band.id
+    //     }
+    // })
+
+    // return renderBands;
 }
 
 // export async function getCovAndBafFromOldAPI(

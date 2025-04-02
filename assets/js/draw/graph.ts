@@ -1,5 +1,5 @@
 // graph related objects
-import { COLORS, FONTSIZES } from "../constants";
+import { COLORS, FONTSIZES } from "../util/constants";
 import { drawRect, drawLine, drawRotatedText, drawText } from "./shapes";
 
 // Draws vertical tick marks for selected values between

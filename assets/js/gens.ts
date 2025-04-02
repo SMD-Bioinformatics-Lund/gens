@@ -24,12 +24,14 @@ import "./components/simple_track";
 import "./components/tracks/canvas_track";
 import "./components/tracks/annotation_track";
 import "./components/tracks/dot_track";
+import "./components/tracks/ideogram_track";
 // import "./components/tracks/coverage_track";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 import { AnnotationTrack } from "./components/tracks/annotation_track";
 import { CanvasTrack } from "./components/tracks/canvas_track";
 import { DotTrack } from "./components/tracks/dot_track";
+import { IdeogramTrack } from "./components/tracks/ideogram_track";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
 import { get } from "./fetch";
@@ -69,6 +71,9 @@ export async function initCanvases({
     selectedVariant: string;
     annotationFile: string;
 }) {
+    const ideogramTrack = document.getElementById("ideogram-track") as IdeogramTrack;
+    const overviewTrack = document.getElementById("overview-track") as CanvasTrack;
+
     const coverageTrack = document.getElementById("coverage-track") as DotTrack;
     const bafTrack = document.getElementById("baf-track") as DotTrack;
     // const annotationTrack = document.getElementById(
@@ -80,9 +85,6 @@ export async function initCanvases({
     const variantTrack = document.getElementById(
         "variant-track",
     ) as AnnotationTrack;
-
-    const ideogramTrack = document.getElementById("ideogram-track") as AnnotationTrack;
-    const overviewTrack = document.getElementById("overview-track") as CanvasTrack;
 
     const annotationsContainer = document.getElementById(
         "annotations-container",
@@ -126,12 +128,12 @@ export async function initCanvases({
         gensDb,
         startRegion,
         defaultAnnots,
+        ideogramTrack,
         annotationsContainer,
         coverageTrack,
         bafTrack,
         transcriptTrack,
         variantTrack,
-        ideogramTrack,
     );
 
     // FIXME: Look into how to parse this for predefined start URLs
@@ -155,12 +157,12 @@ export async function initCanvases({
                 gensDb,
                 region,
                 annotSources,
+                ideogramTrack,
                 annotationsContainer,
                 coverageTrack,
                 bafTrack,
                 transcriptTrack,
                 variantTrack,
-                ideogramTrack,
             );
             
             // const xRange: [number, number] = [startRegion.start, startRegion.end];
@@ -175,12 +177,12 @@ export async function initCanvases({
                 gensDb,
                 region,
                 annotSources,
+                ideogramTrack,
                 annotationsContainer,
                 coverageTrack,
                 bafTrack,
                 transcriptTrack,
                 variantTrack,
-                ideogramTrack,
             );
         },
     );
@@ -271,12 +273,12 @@ async function renderTracks(
     gensDb: GensDb,
     region: Region,
     annotationSources: string[],
+    ideogramTrack: IdeogramTrack,
     annotationsContainer: HTMLDivElement,
     coverageTrack: DotTrack,
     bafTrack: DotTrack,
     transcriptsTrack: AnnotationTrack,
     variantsTrack: AnnotationTrack,
-    ideogramTrack: AnnotationTrack,
 ) {
     const range: [number, number] = [region.start, region.end];
 
@@ -301,6 +303,9 @@ async function renderTracks(
 
     // annotationTrack.render(range, annotations);
 
+    const chromInfo = await gensDb.getIdeogramData(region.chrom);
+    ideogramTrack.render(region.chrom, chromInfo, range);
+
     const covData = await gensDb.getCov(region.chrom);
     coverageTrack.render(range, COV_Y_RANGE, covData);
 
@@ -310,11 +315,9 @@ async function renderTracks(
     const transcriptData = await gensDb.getTranscripts(region.chrom);
     transcriptsTrack.render(range, transcriptData);
 
-    const variantsData = await gensDb.getVariants(region.chrom);
-    variantsTrack.render(range, variantsData);
+    // const variantsData = await gensDb.getVariants(region.chrom);
+    // variantsTrack.render(range, variantsData);
 
-    const ideogramData = await gensDb.getIdeogramData(region.chrom);
-    ideogramTrack.render(range, ideogramData);
 }
 
 // Make hard link and copy link to clipboard
