@@ -35,27 +35,22 @@ export class IdeogramTrack extends CanvasTrack {
             xRange,
         );
 
+        this.renderMarker(xRange, chromInfo.size);
+    }
+
+    renderMarker(xRange: [number, number], chromSize: number) {
         // if segment of chromosome is drawn
         const markerElement = this.markerElement;
 
-        console.log(xRange);
-        console.log(chromInfo.size);
-
-        const hideMarker = xRange[0] == 1 && xRange[1] == chromInfo.size
-
+        const hideMarker = xRange[0] == 1 && xRange[1] == chromSize
         markerElement.hidden = hideMarker;
-
         if (!hideMarker) {
-            const scale = chromInfo.size / this.dimensions.width;
-    
+            const scale = chromSize / this.dimensions.width;    
             const pxStart = xRange[0] / scale
             const pxWidth = (xRange[1] - xRange[0]) / scale;
-    
-            // markerElement.style.marginTop = `100px`;
             markerElement.style.width = `${pxWidth}px`;
             markerElement.style.marginLeft = `${pxStart}px`;
         }
-    
     }
 }
 
@@ -63,7 +58,9 @@ function setupMarkerElement(trackHeight: number): HTMLDivElement {
     const markerElement = document.createElement("div");
     markerElement.id = "ideogram-marker";
     markerElement.className = "marker";
-    const x = 5;
+
+    // FIXME: Move to style constants
+    const leftMargin = 5;
 
     markerElement.style.position = "absolute";
     markerElement.style.backgroundColor = STYLE.colors.transparentYellow;
@@ -74,7 +71,7 @@ function setupMarkerElement(trackHeight: number): HTMLDivElement {
     markerElement.style.height = `${trackHeight - 2}px`;
     markerElement.style.width = "0px";
     markerElement.style.top = `0px`;
-    markerElement.style.marginLeft = `${x}px`;
+    markerElement.style.marginLeft = `${leftMargin}px`;
 
     return markerElement
 }
