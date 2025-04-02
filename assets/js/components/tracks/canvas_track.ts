@@ -16,7 +16,7 @@ template.innerHTML = String.raw`
 
 export class CanvasTrack extends HTMLElement {
     protected _root: ShadowRoot;
-    protected _canvas: HTMLCanvasElement;
+    protected canvas: HTMLCanvasElement;
     protected ctx: CanvasRenderingContext2D;
     protected dimensions: {width: number, height: number};
     protected _scaleFactor: number;
@@ -29,9 +29,9 @@ export class CanvasTrack extends HTMLElement {
     initialize(label: string, trackHeight: number) {
         // const header = this._root.getElementById("header")
         // header.innerHTML = label;
-        this._canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
-        this._canvas.height = trackHeight;
-        this.ctx = this._canvas.getContext("2d") as CanvasRenderingContext2D;
+        this.canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
+        this.canvas.height = trackHeight;
+        this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
         this.syncDimensions();
 
@@ -40,17 +40,17 @@ export class CanvasTrack extends HTMLElement {
 
     syncDimensions() {
 
-        if (this._canvas == undefined) {
+        if (this.canvas == undefined) {
             console.error("Cannot run syncDimensions before initialize");
         }
 
         // const viewNts = end - start;
 
         // FIXME: Not the responsibility of this component
-        this._canvas.width = window.innerWidth - PADDING_LEFT;
+        this.canvas.width = window.innerWidth - PADDING_LEFT;
         this.dimensions = {
-            width: this._canvas.width,
-            height: this._canvas.height,
+            width: this.canvas.width,
+            height: this.canvas.height,
         };
     }
 }

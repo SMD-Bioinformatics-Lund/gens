@@ -141,7 +141,7 @@ export function setupGenericEventManager({
   });
 }
 
-function createChromosomeTooltip({ bandId }: { bandId?: string }) {
+export function createChromosomeTooltip({ bandId }: { bandId?: string }) {
   const element = document.createElement("div");
   element.id = "ideogram-tooltip";
   const name = document.createElement("span");
