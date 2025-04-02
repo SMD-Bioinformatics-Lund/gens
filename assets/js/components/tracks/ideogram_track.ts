@@ -6,48 +6,32 @@ import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 import { newDrawRect, renderBands } from "./render_utils";
 
+interface DrawPaths {
+    chromosome: { path: Path2D };
+    bands: { id: string; path: Path2D }[];
+}
+
 export class IdeogramTrack extends CanvasTrack {
-    private drawPaths: {
-        chromosome: { path: Path2D };
-        bands: { id: string; path: Path2D }[];
-    };
+    private drawPaths: DrawPaths;
+
+    private markerElement: HTMLDivElement;
 
     initialize(label: string, trackHeight: number) {
         super.initialize(label, trackHeight);
+        setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
 
-        const tooltip = createChromosomeTooltip({});
-        tippy(this.canvas, {
-            arrow: true,
-            followCursor: "horizontal",
-            content: tooltip,
-            plugins: [followCursor],
-        });
+        const markerElement = setupMarkerElement(trackHeight);
+        this._root.appendChild(markerElement);
+        this.markerElement = markerElement;
 
-        this.canvas.addEventListener("mousemove", (event) => {
-            if (this.drawPaths === null) {
-                return;
-            }
-
-            this.drawPaths.bands.forEach((bandPath) => {
-                if (
-                    this.ctx.isPointInPath(
-                        bandPath.path,
-                        event.offsetX,
-                        event.offsetY,
-                    )
-                ) {
-                    console.log("Inside path");
-                    tooltip.querySelector(".ideogram-tooltip-value").innerHTML =
-                        bandPath.id;
-                }
-                // tooltip.querySelector(".ideogram-tooltip-value").innerHTML =
-                //   bandPath.id;
-            });
-        });
     }
 
     render(chrom: string, chromInfo: ChromosomeInfo, xRange: [number, number]) {
         super.syncDimensions();
+
+
+        
+
         this.drawPaths = cytogeneticIdeogram(
             this.ctx,
             chromInfo,
@@ -55,6 +39,50 @@ export class IdeogramTrack extends CanvasTrack {
             xRange,
         );
     }
+}
+
+function setupMarkerElement(trackHeight: number): HTMLDivElement {
+    const markerElement = document.createElement("div");
+    markerElement.id = "ideogram-marker";
+    markerElement.className = "marker";
+    const x = 5;
+    markerElement.style.height = `${trackHeight - 4}px`;
+    markerElement.style.width = "0px";
+    markerElement.style.top = `-${trackHeight - 4}px`;
+    markerElement.style.marginLeft = `${x}px`;
+    return markerElement
+}
+
+function setupTooltip(
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
+    getDrawPaths: () => DrawPaths,
+) {
+    const tooltip = createChromosomeTooltip({});
+    tippy(canvas, {
+        arrow: true,
+        followCursor: "horizontal",
+        content: tooltip,
+        plugins: [followCursor],
+    });
+
+    canvas.addEventListener("mousemove", (event) => {
+        const drawPaths = getDrawPaths();
+        if (drawPaths === null) {
+            return;
+        }
+        drawPaths.bands.forEach((bandPath) => {
+            const pointInPath = ctx.isPointInPath(
+                bandPath.path,
+                event.offsetX,
+                event.offsetY,
+            );
+            if (pointInPath) {
+                const ideogramClass = ".ideogram-tooltip-value";
+                tooltip.querySelector(ideogramClass).innerHTML = bandPath.id;
+            }
+        });
+    });
 }
 
 /**
@@ -65,7 +93,7 @@ function cytogeneticIdeogram(
     chromInfo: ChromosomeInfo,
     dim: Dimensions,
     xRange: [number, number],
-): { chromosome: { path: Path2D }; bands: { id: string, path: Path2D }[] } {
+): { chromosome: { path: Path2D }; bands: { id: string; path: Path2D }[] } {
     // recalculate genomic coordinates to screen coordinates
     const scale = dim.width / chromInfo.size;
     const centromere =
