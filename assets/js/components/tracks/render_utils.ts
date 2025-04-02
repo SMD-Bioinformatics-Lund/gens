@@ -12,7 +12,7 @@ export function renderBorder(
 export function renderBands(
     ctx: CanvasRenderingContext2D,
     canvasDim: { height: number; width: number },
-    annots: { start: number; end: number; color: number[] }[],
+    annots: RenderBand[],
     xRange: [number, number],
 ) {
     console.log(annots);

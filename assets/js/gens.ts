@@ -38,6 +38,8 @@ import {
     getBafData,
     getCovAndBafFromOldAPI,
     getCovData,
+    getSVVariantData,
+    getTranscriptData,
 } from "./tmp";
 import { GensCache } from "./cache";
 // import { get } from "http";
@@ -73,14 +75,22 @@ export async function initCanvases({
     ) as AnnotationTrack;
     const transcriptTrack = document.getElementById(
         "transcript-track",
-    ) as CanvasTrack;
+    ) as AnnotationTrack;
     const variantTrack = document.getElementById(
         "variant-track",
-    ) as CanvasTrack;
+    ) as AnnotationTrack;
 
     const inputControls = document.getElementById(
         "input-controls",
     ) as InputControls;
+
+    // const tracks = {
+    //     annotation: AnnotationTrack,
+    //     coverage: coverageTrack,
+    //     baf: bafTrack,
+    //     transcripts: transcriptTrack,
+    //     variants: variantTrack
+    // }
 
     // @ts-ignore
     const startRegion: Region = window.regionConfig;
@@ -90,25 +100,27 @@ export async function initCanvases({
 
     const gensCache = new GensCache();
 
+
     coverageTrack.initialize("Coverage", tallTrackHeight);
-    // coverageTrack.render(startRange, COV_Y_RANGE, covDots);
     bafTrack.initialize("BAF", tallTrackHeight);
-    // bafTrack.render(startRange, BAF_Y_RANGE, bafDots);
     variantTrack.initialize("Variant", thinTrackHeight);
-    // variantTrack.render(1, 10, dots);
     transcriptTrack.initialize("Transcript", thinTrackHeight);
-    // transcriptTrack.render(1, 10, []);
     annotationTrack.initialize("Annotation", thinTrackHeight);
 
     const defaultAnnot = "mimisbrunnr";
 
     renderTracks(
+        sampleId,
+        caseId,
+        genomeBuild,
         gensCache,
         startRegion,
         defaultAnnot,
         annotationTrack,
         coverageTrack,
         bafTrack,
+        transcriptTrack,
+        variantTrack
     );
 
     // FIXME: Look into how to parse this for predefined start URLs
@@ -136,12 +148,17 @@ export async function initCanvases({
             const annotSource = inputControls.getSource();
 
             renderTracks(
+                sampleId,
+                caseId,
+                genomeBuild,
                 gensCache,
                 region,
                 annotSource,
                 annotationTrack,
                 coverageTrack,
                 bafTrack,
+                transcriptTrack,
+                variantTrack
             );
         },
     );
@@ -229,17 +246,23 @@ export async function initCanvases({
 }
 
 async function renderTracks(
+    sampleId: string,
+    caseId: string,
+    genome_build: number,
     gensCache: GensCache,
     region: Region,
     annotationSource: string,
     annotationTrack: AnnotationTrack,
     coverageTrack: DotTrack,
     bafTrack: DotTrack,
+    transcriptsTrack: AnnotationTrack,
+    variantsTrack: AnnotationTrack,
 ) {
     const range: [number, number] = [region.start, region.end];
 
     console.log(`Rendering. Chrom: ${region.chrom} Range: ${range} Annot: ${annotationSource}`);
 
+    // FIXME: Abstract away this behind the get function
     let annotations;
     if (gensCache.isAnnotCached(region.chrom, annotationSource)) {
         annotations = gensCache.getAnnotations(region.chrom, annotationSource);
@@ -256,7 +279,7 @@ async function renderTracks(
     if (gensCache.isCovCached(region.chrom)) {
         covData = gensCache.getCov(region.chrom);
     } else {
-        covData = await getCovData(region);
+        covData = await getCovData(sampleId, caseId, region);
         gensCache.setCov(region.chrom, covData);
     }
     coverageTrack.render(range, COV_Y_RANGE, covData);
@@ -265,10 +288,28 @@ async function renderTracks(
     if (gensCache.isBafCached(region.chrom)) {
         bafData = gensCache.getBaf(region.chrom);
     } else {
-        bafData = await getBafData(region);
+        bafData = await getBafData(sampleId, caseId, region);
         gensCache.setBaf(region.chrom, bafData);
     }
     bafTrack.render(range, BAF_Y_RANGE, bafData);
+
+    let transcriptData;
+    if (gensCache.isTranscriptsCached(region.chrom)) {
+        transcriptData = gensCache.getTranscripts(region.chrom);
+    } else {
+        transcriptData = await getTranscriptData(region.chrom);
+        gensCache.setTranscripts(region.chrom, transcriptData);
+    }
+    transcriptsTrack.render(range, transcriptData);
+
+    let variantsData;
+    if (gensCache.isVariantsCached(region.chrom)) {
+        variantsData = gensCache.getVariants(region.chrom);
+    } else {
+        variantsData = await getSVVariantData(sampleId, caseId, genome_build, region.chrom);
+        gensCache.setVariants(region.chrom, variantsData);
+    }
+    variantsTrack.render(range, variantsData);
 }
 
 // Make hard link and copy link to clipboard

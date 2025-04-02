@@ -8,6 +8,13 @@ interface AnnotationEntry {
   source: string
 }
 
+interface RenderBand {
+  start: number,
+  end: number,
+  color: string,
+  label?: string,
+}
+
 interface RenderDot {
     x: number,
     y: number,

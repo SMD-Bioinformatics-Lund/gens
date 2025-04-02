@@ -6,7 +6,7 @@ export class AnnotationTrack extends CanvasTrack {
         super.initialize(label, trackHeight);
     }
 
-    render(xRange: [number, number], annotations: AnnotationEntry[]) {
+    render(xRange: [number, number], annotations: RenderBand[]) {
         super.syncDimensions();
 
         const annotWithinRange = annotations.filter(
