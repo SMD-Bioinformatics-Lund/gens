@@ -30,7 +30,9 @@ interface RenderData {
   annotations: Record<string, RenderBand[]>,
   covData: RenderDot[],
   bafData: RenderDot[],
-  transcriptData: RenderBand[]
+  transcriptData: RenderBand[],
+  overviewCovData: Record<string, RenderDot[]>,
+  overviewBafData: Record<string, RenderDot[]>,
 }
 
 type Rng = [number, number];

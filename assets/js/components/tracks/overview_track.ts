@@ -1,5 +1,6 @@
 import { drawVerticalLine } from "../../draw/shapes";
 import { transformMap, padRange, rangeSize } from "../../track/utils";
+import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 import { drawDotsScaled, linearScale, renderBorder } from "./render_utils";
 
@@ -9,31 +10,45 @@ const DOT_SIZE = 2;
 export class OverviewTrack extends CanvasTrack {
   totalChromSize: number;
   chromSizes: Record<string, number>;
+  marker: HTMLDivElement;
+  onChromosomeClick: (chrom: string) => void;
+
+  renderData: Record<string, RenderDot[]> | null = null;
 
   initialize(
     label: string,
     trackHeight: number,
     chromSizes: Record<string, number>,
+    onChromosomeClick: (chrom: string) => void,
   ) {
     super.initializeCanvas(label, trackHeight);
     this.chromSizes = chromSizes;
+
+    const marker = document.createElement("div") as HTMLDivElement;
+    marker.style.height = `${this.dimensions.height}px`;
+    marker.style.width = "0px";
+    marker.style.backgroundColor = STYLE.colors.transparentYellow;
+    marker.style.position = "absolute";
+    marker.style.top = "0px";
+    this.trackContainer.appendChild(marker);
+    this.marker = marker;
+
+    this.onChromosomeClick = onChromosomeClick;
   }
 
-  // What are the inputs?
   render(
     selectedChrom: string | null,
     dotsPerChrom: Record<string, RenderDot[]>,
     yRange: [number, number],
-    onChromosomeClick: (chrom: string) => void,
   ) {
     super.syncDimensions();
+
+    renderBorder(this.ctx, this.dimensions);
 
     const totalChromSize = Object.values(this.chromSizes).reduce(
       (tot, size) => tot + size,
       0,
     );
-
-    renderBorder(this.ctx, this.dimensions);
 
     const xScale = (pos: number) => {
       return linearScale(pos, [0, totalChromSize], [0, this.dimensions.width]);
@@ -44,33 +59,66 @@ export class OverviewTrack extends CanvasTrack {
     };
 
     const chromRanges = getChromRanges(this.chromSizes);
-    // Draw the initial lines
-    Object.values(chromRanges).forEach(([_chromStart, chromEnd]) =>
-      drawVerticalLine(this.ctx, chromEnd, xScale),
-    );
-
     const pxRanges: Record<string, Rng> = transformMap(
       chromRanges,
       ([start, end]) => [xScale(start), xScale(end)],
     );
 
-    Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
-      const pad = X_PAD;
-      const pxRange = padRange(pxRanges[chrom], pad);
-
-      const chromXScale = (pos: number) => {
-        return linearScale(pos, [0, this.chromSizes[chrom]], pxRange);
-      };
-
-      drawDotsScaled(this.ctx, dotData, chromXScale, yScale, DOT_SIZE);
-    });
-
     this.canvas.addEventListener("mousedown", (event) => {
       event.stopPropagation();
       const chrom = pixelToChrom(event.offsetX, pxRanges);
-      onChromosomeClick(chrom);
+      this.onChromosomeClick(chrom);
     });
+
+    renderOverviewPlot(
+      this.ctx,
+      totalChromSize,
+      this.dimensions,
+      yRange,
+      chromRanges,
+      pxRanges,
+      xScale,
+      yScale,
+      dotsPerChrom
+    );
+
+    if (selectedChrom !== null) {
+      const chromPxRange = pxRanges[selectedChrom];
+      const chromWith = rangeSize(chromPxRange);
+
+      this.marker.style.height = `${this.dimensions.height}px`;
+      this.marker.style.width = `${chromWith}px`;
+      this.marker.style.left = `${chromPxRange[0]}px`;
+    }
   }
+}
+
+function renderOverviewPlot(
+  ctx: CanvasRenderingContext2D,
+  totalChromSize: number,
+  dimensions: Dimensions,
+  yRange: Rng,
+  chromRanges: Record<string, Rng>,
+  pxRanges: Record<string, Rng>,
+  xScale: Scale,
+  yScale: Scale,
+  dotsPerChrom: Record<string, RenderDot[]>
+) {
+  // Draw the initial lines
+  Object.values(chromRanges).forEach(([_chromStart, chromEnd]) =>
+    drawVerticalLine(this.ctx, chromEnd, xScale),
+  );
+
+  Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
+    const pad = X_PAD;
+    const pxRange = padRange(pxRanges[chrom], pad);
+
+    const chromXScale = (pos: number) => {
+      return linearScale(pos, [0, this.chromSizes[chrom]], pxRange);
+    };
+
+    drawDotsScaled(this.ctx, dotData, chromXScale, yScale, DOT_SIZE);
+  });
 }
 
 function pixelToChrom(xPixel: number, pxRanges: Record<string, Rng>): string {

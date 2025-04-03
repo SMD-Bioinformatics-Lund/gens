@@ -68,7 +68,7 @@ function setupMarkerElement(trackHeight: number): HTMLDivElement {
 
     markerElement.style.height = `${trackHeight - 2}px`;
     markerElement.style.width = "0px";
-    markerElement.style.top = `0px`;
+    markerElement.style.top = "0px";
     markerElement.style.marginLeft = `${leftMargin}px`;
 
     return markerElement
