@@ -2,7 +2,7 @@ import { drawVerticalLine } from "../../draw/shapes";
 import { transformMap, padRange, rangeSize } from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { drawDotsScaled, linearScale, renderBorder } from "./render_utils";
+import { drawDotsScaled, linearScale, renderBorder, scaleToPixels } from "./render_utils";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;
@@ -44,7 +44,7 @@ export class OverviewTrack extends CanvasTrack {
   }
 
   render(
-    selectedChrom: string | null,
+    viewRegion: Region | null,
     dotsPerChrom: Record<string, RenderDot[]>,
     yRange: [number, number],
   ) {
@@ -81,13 +81,18 @@ export class OverviewTrack extends CanvasTrack {
       this.chromSizes
     );
 
-    if (selectedChrom !== null) {
-      const chromPxRange = this.pxRanges[selectedChrom];
-      const chromWith = rangeSize(chromPxRange);
+    if (viewRegion !== null) {
+      // const chromPxRange = this.pxRanges[viewRegion.chrom];
+      const chromStartPos = chromRanges[viewRegion.chrom][0];
+      const viewPxRange: Rng = [
+        xScale(viewRegion.start + chromStartPos),
+        xScale(viewRegion.end + chromStartPos)
+      ];
+      const markerWidth = rangeSize(viewPxRange);
 
       this.marker.style.height = `${this.dimensions.height}px`;
-      this.marker.style.width = `${chromWith}px`;
-      this.marker.style.left = `${chromPxRange[0]}px`;
+      this.marker.style.width = `${markerWidth}px`;
+      this.marker.style.left = `${viewPxRange[0]}px`;
     }
   }
 }

@@ -106,12 +106,12 @@ export class GensTracks extends HTMLElement {
     const range: [number, number] = [region.start, region.end];
 
     this.overviewTrackCov.render(
-      region.chrom,
+      region,
       data.overviewCovData,
       COV_Y_RANGE,
     );
     this.overviewTrackBaf.render(
-      region.chrom,
+      region,
       data.overviewBafData,
       BAF_Y_RANGE,
     );
