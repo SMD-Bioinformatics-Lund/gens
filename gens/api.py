@@ -236,6 +236,36 @@ def get_variant_data(case_id: str, sample_id: str, variant_category: str, **opti
     )
 
 
+def dev_get_multiple_coverages(sample_id: str, case_id: str, cov_or_baf: str) -> list[dict[str, Any]]:
+    db: Database = current_app.config["GENS_DB"]
+    sample_obj = query_sample(db[SAMPLES_COLLECTION], sample_id, case_id)
+
+    overview_file = sample_obj.overview_file
+
+    if not overview_file.is_file():
+        raise ValueError("For dev purposes, the overview_file is expected to be present")
+
+    with gzip.open(sample_obj.overview_file, "r") as json_gz:
+        json_data = json.loads(json_gz.read().decode("utf-8"))
+
+    if cov_or_baf not in {"cov", "baf"}:
+        raise ValueError(f"Expected cov_or_baf to be 'cov' or 'baf'")
+
+    results = []
+    for chrom in json_data.keys():
+        chrom_data = json_data[chrom][cov_or_baf]
+
+        for (pos, value) in chrom_data:
+            datapoint = {
+                "chrom": chrom,
+                "pos": pos,
+                "value": value
+            }
+            results.append(datapoint)
+
+    return results
+
+
 def get_multiple_coverages() -> dict[str, Any] | tuple[Any, int]:
     """Read default Log2 ratio and BAF values for overview graph."""
     data = QueryChromosomeCoverage(**connexion.request.get_json())
