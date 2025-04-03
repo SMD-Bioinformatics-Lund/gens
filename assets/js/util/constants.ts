@@ -12,6 +12,9 @@ export const STYLE = {
     colors: {
         white: "#FFF",
         black: "#000",
+        yellow: "#dcd16f",
+        red: "#f00",
+        transparentYellow: "#dcd16f44",
         stainToColor: {
             acen: "#673888",
             gneg: "#FFFAF0",

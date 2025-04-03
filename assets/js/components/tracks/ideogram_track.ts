@@ -12,7 +12,7 @@ interface DrawPaths {
 }
 
 export class IdeogramTrack extends CanvasTrack {
-    private drawPaths: DrawPaths;
+    private drawPaths: DrawPaths = undefined;
 
     private markerElement: HTMLDivElement;
 
@@ -21,23 +21,36 @@ export class IdeogramTrack extends CanvasTrack {
         setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
 
         const markerElement = setupMarkerElement(trackHeight);
-        this._root.appendChild(markerElement);
+        this.trackContainer.appendChild(markerElement);
         this.markerElement = markerElement;
 
     }
 
     render(chrom: string, chromInfo: ChromosomeInfo, xRange: [number, number]) {
         super.syncDimensions();
-
-
-        
-
         this.drawPaths = cytogeneticIdeogram(
             this.ctx,
             chromInfo,
             this.dimensions,
             xRange,
         );
+
+        this.renderMarker(xRange, chromInfo.size);
+    }
+
+    renderMarker(xRange: [number, number], chromSize: number) {
+        // if segment of chromosome is drawn
+        const markerElement = this.markerElement;
+
+        const hideMarker = xRange[0] == 1 && xRange[1] == chromSize
+        markerElement.hidden = hideMarker;
+        if (!hideMarker) {
+            const scale = chromSize / this.dimensions.width;    
+            const pxStart = xRange[0] / scale
+            const pxWidth = (xRange[1] - xRange[0]) / scale;
+            markerElement.style.width = `${pxWidth}px`;
+            markerElement.style.marginLeft = `${pxStart}px`;
+        }
     }
 }
 
@@ -45,11 +58,21 @@ function setupMarkerElement(trackHeight: number): HTMLDivElement {
     const markerElement = document.createElement("div");
     markerElement.id = "ideogram-marker";
     markerElement.className = "marker";
-    const x = 5;
-    markerElement.style.height = `${trackHeight - 4}px`;
+
+    // FIXME: Move to style constants
+    const leftMargin = 5;
+
+    markerElement.style.position = "absolute";
+    markerElement.style.backgroundColor = STYLE.colors.transparentYellow;
+
+    markerElement.style.borderLeft = `2px solid ${STYLE.colors.red}`;
+    markerElement.style.borderRight = `2px solid ${STYLE.colors.red}`;
+
+    markerElement.style.height = `${trackHeight - 2}px`;
     markerElement.style.width = "0px";
-    markerElement.style.top = `-${trackHeight - 4}px`;
-    markerElement.style.marginLeft = `${x}px`;
+    markerElement.style.top = `0px`;
+    markerElement.style.marginLeft = `${leftMargin}px`;
+
     return markerElement
 }
 
