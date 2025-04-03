@@ -23,6 +23,8 @@ interface RenderDot {
     color: string,
 }
 
+type Scale = (value: number) => number
+
 interface RenderData {
   chromInfo: ChromosomeInfo,
   annotations: Record<string, RenderBand[]>,

@@ -113,7 +113,6 @@ export class GensTracks extends HTMLElement {
             const annotTrack = new BandTrack();
             this.annotationsContainer.appendChild(annotTrack);
             annotTrack.initialize(source, THIN_TRACK_HEIGHT);
-            console.log(annotData);
             annotTrack.render(range, annotData);
         })
 

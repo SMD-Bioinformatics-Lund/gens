@@ -1,5 +1,5 @@
 import { drawLine } from "../../draw";
-import { drawVerticalLine } from "../../draw/shapes";
+import { drawHorizontalLine, drawVerticalLine } from "../../draw/shapes";
 import { padRange, rangeSize } from "../../track/utils";
 import { CanvasTrack } from "./canvas_track";
 import {
@@ -8,6 +8,12 @@ import {
     renderDots,
     scaleToPixels,
 } from "./render_utils";
+
+function linearScale(pos: number, dataRange: Rng, pxRange: Rng): number {
+    const scaleFactor = rangeSize(pxRange) / rangeSize(dataRange)
+    const pxPos = pos * scaleFactor + pxRange[0];
+    return pxPos;
+}
 
 export class OverviewTrack extends CanvasTrack {
     totalChromSize: number;
@@ -30,25 +36,45 @@ export class OverviewTrack extends CanvasTrack {
     ) {
         super.syncDimensions();
 
+        // const xScale = (pos: number) => {
+        //     const xPixel = getPixelPosInRange(dot.x, xRange, pxWidth) + paddedPxXRange[0];
+
+        // }
+
+        const totalChromSize = Object.values(this.chromSizes).reduce(
+            (tot, size) => tot + size,
+            0,
+        );
+    
+
         renderBorder(this.ctx, this.dimensions);
 
-        const pxRanges = getPxRanges(this.chromSizes, this.dimensions.width);
+        const xScale = (pos: number) => {
+            return linearScale(pos, [0, totalChromSize], [0, this.dimensions.width])
+        }
+
+        const chromRanges = getChromRanges(this.chromSizes);
         // Draw the initial lines
-        Object.values(pxRanges).forEach(([_pxStart, pxEnd]) =>
-            drawVerticalLine(this.ctx, pxEnd),
+        Object.values(chromRanges).forEach(([_chromStart, chromEnd]) =>
+            drawVerticalLine(this.ctx, chromEnd, xScale),
         );
 
-        Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
-            const pxXRange = pxRanges[chrom];
-            // const pxYRange: [number, number] = [0, this.dimensions.height];
+        // drawHorizontalLine(this.ctx, -1);
+        // drawHorizontalLine(this.ctx, 0);
+        // drawHorizontalLine(this.ctx, 1);
+        // drawHorizontalLine(this.ctx, 0.5);
 
-            const xRange: Rng = [0, this.chromSizes[chrom]];
+        // Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
+        //     const pxXRange = pxRanges[chrom];
+        //     // const pxYRange: [number, number] = [0, this.dimensions.height];
 
-            // FIXME: We should have the data X and Y ranges here
-            // Also, we need a render dots where we can select where to render
-            // renderDots(this.ctx, dotData, pxXRange, pxYRange, this.dimensions);
-            renderDotsCustom(this.ctx, dotData, pxXRange, xRange, yRange, this.dimensions)
-        });
+        //     const xRange: Rng = [0, this.chromSizes[chrom]];
+
+        //     // FIXME: We should have the data X and Y ranges here
+        //     // Also, we need a render dots where we can select where to render
+        //     // renderDots(this.ctx, dotData, pxXRange, pxYRange, this.dimensions);
+        //     // renderDotsCustom(this.ctx, dotData, pxXRange, xRange, yRange, this.dimensions)
+        // });
     }
 }
 
@@ -75,29 +101,24 @@ function renderDotsCustom(
     })
 }
 
-function getPxRanges(
+function getChromRanges(
     chromSizes: Record<string, number>,
-    screenWidth: number,
 ): Record<string, [number, number]> {
-    const totalChromSize = Object.values(chromSizes).reduce(
-        (tot, size) => tot + size,
-        0,
-    );
 
-    const pxStartPositions: Record<string, [number, number]> = {};
+    const chromRanges: Record<string, [number, number]> = {};
     let sumPos = 0;
     Object.entries(chromSizes).forEach(([chrom, chromLength]) => {
         const startPos = sumPos;
         sumPos += chromLength;
 
-        const posRange = [startPos, sumPos];
-        const pxRange = posRange.map((pos) =>
-            scaleToPixels(pos, totalChromSize, screenWidth),
-        ) as [number, number];
+        const posRange: Rng = [startPos, sumPos];
+        // const pxRange = posRange.map((pos) =>
+        //     scaleToPixels(pos, totalChromSize, screenWidth),
+        // ) as [number, number];
 
-        pxStartPositions[chrom] = pxRange;
+        chromRanges[chrom] = posRange;
     });
-    return pxStartPositions;
+    return chromRanges;
 }
 
 function markRegions(

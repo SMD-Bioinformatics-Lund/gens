@@ -86,13 +86,56 @@ export function drawText({
     };
 }
 
-export function drawVerticalLine(ctx: CanvasRenderingContext2D, x: number) {
-    const x1 = x;
-    const x2 = x;
-    const y1 = 0;
-    const y2 = ctx.canvas.height;
+export function drawHorizontalLine(
+    ctx: CanvasRenderingContext2D,
+    y: number,
+    yScale: Scale,
+) {
+    const start = { x: 0, y };
+    const end = { x: ctx.canvas.height, y };
+    drawLineScaled(ctx, start, end, null, yScale);
+}
 
-    drawLine({ ctx, x: x1, y: y1, x2, y2 });
+export function drawVerticalLine(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    xScale: Scale,
+) {
+    const start = { x, y: 0 };
+    const end = { x, y: ctx.canvas.height };
+    drawLineScaled(ctx, start, end, xScale, null);
+}
+
+export function drawLineScaled(
+    ctx: CanvasRenderingContext2D,
+    start: Point,
+    end: Point,
+    xScale: Scale,
+    yScale: Scale
+) {
+    const scaledStart = {
+        x: xScale ? xScale(start.x) : start.x,
+        y: yScale ? yScale(start.y) : start.y
+    }
+
+    const scaledEnd = {
+        x: xScale ? xScale(end.x) : end.x,
+        y: yScale ? yScale(end.y) : end.y
+    }
+
+    // transpose coordinates .5 px to become sharper
+    const x1 = Math.floor(scaledStart.x) + 0.5;
+    const x2 = Math.floor(scaledEnd.x) + 0.5;
+    const y1 = Math.floor(scaledStart.y) + 0.5;
+    const y2 = Math.floor(scaledEnd.y) + 0.5;
+
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.restore();
 }
 
 // Draws a line between point (x, y) and (x2, y2)
