@@ -95,3 +95,11 @@ export function extractFromMap<T>(
     const extracted: [string, T][] = entries.map(([key, data]) => [key, extract(data)]);
     return Object.fromEntries(extracted);
 }
+
+export function rangeSize(range: [number, number]): number {
+    return range[1] - range[0];
+}
+
+export function padRange(range: Rng, pad: number): Rng {
+    return [range[0] + pad, range[1] - pad];
+}

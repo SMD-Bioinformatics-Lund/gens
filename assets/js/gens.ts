@@ -120,20 +120,20 @@ export async function initCanvases({
 
     overviewTrackCov.initialize(
         "Overview (cov)",
-        THIN_TRACK_HEIGHT,
+        THICK_TRACK_HEIGHT,
         chromSizes,
     );
     overviewTrackBaf.initialize(
         "Overview (baf)",
-        THIN_TRACK_HEIGHT,
+        THICK_TRACK_HEIGHT,
         chromSizes,
     );
 
     const covData = await getOverviewData(sampleId, caseId, "cov");
-    overviewTrackCov.render(null, covData);
+    overviewTrackCov.render(null, covData, COV_Y_RANGE);
 
     const bafData = await getOverviewData(sampleId, caseId, "baf");
-    overviewTrackBaf.render(null, bafData);
+    overviewTrackBaf.render(null, bafData, BAF_Y_RANGE);
 
     // const tracks = {
     //     annotation: AnnotationTrack,

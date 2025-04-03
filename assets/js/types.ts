@@ -23,6 +23,8 @@ interface RenderDot {
     color: string,
 }
 
+type Rng = [number, number];
+
 interface ColorPoint {
   x: number,
   y: number,

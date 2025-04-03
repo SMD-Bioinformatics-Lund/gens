@@ -20,13 +20,21 @@ export function renderBands(
         // const color = `rgb(${rgbs[0]},${rgbs[1]},${rgbs[2]})`;
         ctx.fillStyle = annot.color;
 
-        const xPxStart = getPixelPosInRange(annot.start, xRange, canvasDim.width);
+        const xPxStart = getPixelPosInRange(
+            annot.start,
+            xRange,
+            canvasDim.width,
+        );
         const xPxEnd = getPixelPosInRange(annot.end, xRange, canvasDim.width);
         ctx.fillRect(xPxStart, 0, xPxEnd - xPxStart, canvasDim.height);
     });
 }
 
-export function scaleToPixels(dataPos: number, dataSize: number, viewSize: number) {
+export function scaleToPixels(
+    dataPos: number,
+    dataSize: number,
+    viewSize: number,
+) {
     const scaleFactor = viewSize / dataSize;
     const pixelPos = dataPos * scaleFactor;
     return pixelPos;
@@ -43,6 +51,9 @@ export function getPixelPosInRange(
     return pixelPos;
 }
 
+// FIXME: Think through this
+// In particular the getPixelPosInRange
+// Does it make sense?
 export function renderDots(
     ctx: CanvasRenderingContext2D,
     dots: RenderDot[],

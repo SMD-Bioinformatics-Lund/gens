@@ -1,5 +1,6 @@
 import { drawLine } from "../../draw";
 import { drawVerticalLine } from "../../draw/shapes";
+import { padRange, rangeSize } from "../../track/utils";
 import { CanvasTrack } from "./canvas_track";
 import {
     getPixelPosInRange,
@@ -25,6 +26,7 @@ export class OverviewTrack extends CanvasTrack {
     render(
         selectedChrom: string | null,
         dotsPerChrom: Record<string, RenderDot[]>,
+        yRange: [number, number],
     ) {
         super.syncDimensions();
 
@@ -38,14 +40,40 @@ export class OverviewTrack extends CanvasTrack {
 
         Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
             const pxXRange = pxRanges[chrom];
-            const pxYRange: [number, number] = [0, this.dimensions.height];
+            // const pxYRange: [number, number] = [0, this.dimensions.height];
             console.log("Rendering dots");
+
+            const xRange: Rng = [0, this.chromSizes[chrom]];
 
             // FIXME: We should have the data X and Y ranges here
             // Also, we need a render dots where we can select where to render
-            renderDots(this.ctx, dotData, pxXRange, pxYRange, this.dimensions)
+            // renderDots(this.ctx, dotData, pxXRange, pxYRange, this.dimensions);
+            renderDotsCustom(this.ctx, dotData, pxXRange, xRange, yRange, this.dimensions)
         });
     }
+}
+
+function renderDotsCustom(
+    ctx: CanvasRenderingContext2D,
+    dots: RenderDot[],
+    pxXRange: Rng,
+    xRange: Rng,
+    yRange: Rng,
+    dim: Dimensions
+) {
+    const pad = 2;
+    const paddedXRange = padRange(xRange, pad);
+
+    const pxWidth = rangeSize(paddedXRange);
+
+    const dotSize = 2;
+    dots.forEach((dot) => {
+        ctx.fillStyle = dot.color;
+        // Scale and shift to the correct window
+        const xPixel = getPixelPosInRange(dot.x, xRange, pxWidth) + paddedXRange[0];
+        const yPixel = getPixelPosInRange(dot.y, yRange, dim.height)
+        ctx.fillRect(xPixel - dotSize / 2, yPixel - dotSize / 2, dotSize, dotSize)
+    })
 }
 
 function getPxRanges(
