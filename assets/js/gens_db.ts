@@ -116,6 +116,6 @@ export class GensDb {
     }
 
     async getOverviewBafData(): Promise<Record<string, RenderDot[]>> {
-        return getOverviewData(this.sampleId, this.caseId, "cov")
+        return getOverviewData(this.sampleId, this.caseId, "baf")
     }
 }

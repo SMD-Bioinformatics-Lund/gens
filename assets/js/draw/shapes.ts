@@ -90,10 +90,11 @@ export function drawHorizontalLine(
     ctx: CanvasRenderingContext2D,
     y: number,
     yScale: Scale,
+    color: string = "black"
 ) {
     const start = { x: 0, y };
-    const end = { x: ctx.canvas.height, y };
-    drawLineScaled(ctx, start, end, null, yScale);
+    const end = { x: ctx.canvas.width, y };
+    drawLineScaled(ctx, start, end, null, yScale, color);
 }
 
 export function drawVerticalLine(
@@ -111,7 +112,9 @@ export function drawLineScaled(
     start: Point,
     end: Point,
     xScale: Scale,
-    yScale: Scale
+    yScale: Scale,
+    color: string = "black",
+    lineWidth: number = 1,
 ) {
     const scaledStart = {
         x: xScale ? xScale(start.x) : start.x,
@@ -129,8 +132,8 @@ export function drawLineScaled(
     const y1 = Math.floor(scaledStart.y) + 0.5;
     const y2 = Math.floor(scaledEnd.y) + 0.5;
 
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);

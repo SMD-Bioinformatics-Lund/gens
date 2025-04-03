@@ -1,6 +1,7 @@
+import { start } from "repl";
 import { drawLine } from "../../draw";
 import { drawHorizontalLine, drawVerticalLine } from "../../draw/shapes";
-import { padRange, rangeSize } from "../../track/utils";
+import { transformMap, padRange, rangeSize } from "../../track/utils";
 import { CanvasTrack } from "./canvas_track";
 import {
     getPixelPosInRange,
@@ -10,8 +11,10 @@ import {
 } from "./render_utils";
 
 function linearScale(pos: number, dataRange: Rng, pxRange: Rng): number {
-    const scaleFactor = rangeSize(pxRange) / rangeSize(dataRange)
-    const pxPos = pos * scaleFactor + pxRange[0];
+    const scaleFactor = rangeSize(pxRange) / rangeSize(dataRange);
+    // We want non-zero data (-4, +3) to start from zero-coordinate
+    const zeroBasedPos = pos - dataRange[0]
+    const pxPos = zeroBasedPos * scaleFactor + pxRange[0];
     return pxPos;
 }
 
@@ -45,13 +48,20 @@ export class OverviewTrack extends CanvasTrack {
             (tot, size) => tot + size,
             0,
         );
-    
 
         renderBorder(this.ctx, this.dimensions);
 
         const xScale = (pos: number) => {
-            return linearScale(pos, [0, totalChromSize], [0, this.dimensions.width])
-        }
+            return linearScale(
+                pos,
+                [0, totalChromSize],
+                [0, this.dimensions.width],
+            );
+        };
+
+        const yScale = (pos: number) => {
+            return linearScale(pos, yRange, [0, this.dimensions.height]);
+        };
 
         const chromRanges = getChromRanges(this.chromSizes);
         // Draw the initial lines
@@ -59,52 +69,68 @@ export class OverviewTrack extends CanvasTrack {
             drawVerticalLine(this.ctx, chromEnd, xScale),
         );
 
-        // drawHorizontalLine(this.ctx, -1);
-        // drawHorizontalLine(this.ctx, 0);
-        // drawHorizontalLine(this.ctx, 1);
-        // drawHorizontalLine(this.ctx, 0.5);
+        for (let y = -1; y < 1; y += 0.2) {
+            drawHorizontalLine(this.ctx, y, yScale, "blue");
+        }
 
-        // Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
-        //     const pxXRange = pxRanges[chrom];
-        //     // const pxYRange: [number, number] = [0, this.dimensions.height];
+        for (let y = -4; y < 4; y += 1) {
+            drawHorizontalLine(this.ctx, y, yScale, "red");
+        }
 
-        //     const xRange: Rng = [0, this.chromSizes[chrom]];
+        const pxRanges: Record<string, Rng> = transformMap(
+            chromRanges,
+            ([start, end]) => [xScale(start), xScale(end)],
+        );
 
-        //     // FIXME: We should have the data X and Y ranges here
-        //     // Also, we need a render dots where we can select where to render
-        //     // renderDots(this.ctx, dotData, pxXRange, pxYRange, this.dimensions);
-        //     // renderDotsCustom(this.ctx, dotData, pxXRange, xRange, yRange, this.dimensions)
-        // });
+        // const pxRanges = chromRanges.map(([start, end]) => [xScale(start), xScale(end)]);
+
+        Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
+            // const totalNtRange =
+            // const pxXRange = pxRanges[chrom];
+            // const pxYRange: [number, number] = [0, this.dimensions.height];
+
+            const pad = 4;
+            const pxRange = padRange(pxRanges[chrom], pad);
+
+            const chromXScale = (pos: number) => {
+                return linearScale(pos, [0, this.chromSizes[chrom]], pxRange);
+            };
+
+            drawDotsScaled(this.ctx, dotData, chromXScale, yScale);
+
+            // FIXME: We should have the data X and Y ranges here
+            // Also, we need a render dots where we can select where to render
+            // renderDots(this.ctx, dotData, pxXRange, pxYRange, this.dimensions);
+            // renderDotsCustom(this.ctx, dotData, pxXRange, xRange, yRange, this.dimensions)
+        });
     }
 }
 
-function renderDotsCustom(
+function drawDotsScaled(
     ctx: CanvasRenderingContext2D,
     dots: RenderDot[],
-    pxXRange: Rng,
-    xRange: Rng,
-    yRange: Rng,
-    dim: Dimensions
+    xScale: Scale,
+    yScale: Scale,
 ) {
-    const pad = 2;
-    const paddedPxXRange = padRange(pxXRange, pad);
-
-    const pxWidth = rangeSize(paddedPxXRange);
 
     const dotSize = 2;
     dots.forEach((dot) => {
         ctx.fillStyle = dot.color;
-        // Scale and shift to the correct window
-        const xPixel = getPixelPosInRange(dot.x, xRange, pxWidth) + paddedPxXRange[0];
-        const yPixel = getPixelPosInRange(dot.y, yRange, dim.height)
-        ctx.fillRect(xPixel - dotSize / 2, yPixel - dotSize / 2, dotSize, dotSize)
-    })
+        const xPixel = xScale(dot.x);
+        const yPixel = yScale(dot.y);
+
+        ctx.fillRect(
+            xPixel - dotSize / 2,
+            yPixel - dotSize / 2,
+            dotSize,
+            dotSize,
+        );
+    });
 }
 
 function getChromRanges(
     chromSizes: Record<string, number>,
 ): Record<string, [number, number]> {
-
     const chromRanges: Record<string, [number, number]> = {};
     let sumPos = 0;
     Object.entries(chromSizes).forEach(([chrom, chromLength]) => {
@@ -119,20 +145,6 @@ function getChromRanges(
         chromRanges[chrom] = posRange;
     });
     return chromRanges;
-}
-
-function markRegions(
-    ctx: CanvasRenderingContext2D,
-    pxStartPositions: number[],
-) {
-    // let sumPos = 0;
-    // Object.entries(chromLengths).forEach(([chrom, chromLength]) => {
-    //     sumPos += chromLength;
-    //     const pxPos = scaleToPixels(sumPos, totalChromSize, screenWidth);
-    //     console.log("Rendering at", pxPos);
-    //     drawVerticalLine(ctx, pxPos);
-    // });
-    // Render vertical lines for each chromosome
 }
 
 function drawSegmentDots(dots: RenderDot[], pxRange: [number, number]) {}

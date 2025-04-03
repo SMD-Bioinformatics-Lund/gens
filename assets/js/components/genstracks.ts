@@ -7,7 +7,7 @@ import { IdeogramTrack } from "./tracks/ideogram_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
-import { extractFromMap, removeChildren } from "../track/utils";
+import { transformMap, removeChildren } from "../track/utils";
 
 const THICK_TRACK_HEIGHT = 80;
 const THIN_TRACK_HEIGHT = 20;
@@ -84,7 +84,7 @@ export class GensTracks extends HTMLElement {
         this.transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
         this.ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
 
-        const chromSizes = extractFromMap(allChromData, (data) => data.size);
+        const chromSizes = transformMap(allChromData, (data) => data.size);
 
         this.overviewTrackCov.initialize(
             "Overview (cov)",
