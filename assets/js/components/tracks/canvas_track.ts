@@ -21,6 +21,7 @@ export class CanvasTrack extends HTMLElement {
     protected dimensions: { width: number; height: number };
     protected _scaleFactor: number;
     protected trackContainer: HTMLDivElement;
+    protected label: string;
 
     connectedCallback() {
         this._root = this.attachShadow({ mode: "open" });
@@ -30,6 +31,7 @@ export class CanvasTrack extends HTMLElement {
     initializeCanvas(label: string, trackHeight: number) {
         // const header = this._root.getElementById("header")
         // header.innerHTML = label;
+        this.label = label;
         this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
         // this.canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
         this.canvas.height = trackHeight;
@@ -60,6 +62,7 @@ export class CanvasTrack extends HTMLElement {
             width: this.canvas.width,
             height: this.canvas.height,
         };
+        return this.dimensions;
     }
 
     getScale(range: Rng, type = "string"): Scale {

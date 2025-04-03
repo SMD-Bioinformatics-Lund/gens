@@ -73,8 +73,6 @@ export class GensTracks extends HTMLElement {
 
   initialize(
     allChromData: Record<string, ChromosomeInfo>,
-    overviewCovData: OverviewData,
-    overviewBafData: OverviewData,
     chromClick: (string) => void,
   ) {
     this.coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
@@ -97,31 +95,20 @@ export class GensTracks extends HTMLElement {
       chromSizes,
       chromClick,
     );
-
-    // this.overviewTrackCov.render(null, overviewCovData, COV_Y_RANGE);
-    // this.overviewTrackBaf.render(null, overviewBafData, BAF_Y_RANGE);
   }
 
   render(data: RenderData, region: Region) {
     const range: [number, number] = [region.start, region.end];
 
-    this.overviewTrackCov.render(
-      region,
-      data.overviewCovData,
-      COV_Y_RANGE,
-    );
-    this.overviewTrackBaf.render(
-      region,
-      data.overviewBafData,
-      BAF_Y_RANGE,
-    );
+    this.overviewTrackCov.render(region, data.overviewCovData, COV_Y_RANGE);
+    this.overviewTrackBaf.render(region, data.overviewBafData, BAF_Y_RANGE);
 
     // const chromInfo = await gensDb.getChromData(region.chrom);
     this.ideogramTrack.render(region.chrom, data.chromInfo, range);
 
-    // FIXME: Move this somewhere?
     removeChildren(this.annotationsContainer);
     Object.entries(data.annotations).forEach(([source, annotData]) => {
+      console.log("Rendering annotation", source);
       const annotTrack = new BandTrack();
       this.annotationsContainer.appendChild(annotTrack);
       annotTrack.initialize(source, THIN_TRACK_HEIGHT);
@@ -129,10 +116,7 @@ export class GensTracks extends HTMLElement {
     });
 
     this.coverageTrack.render(range, COV_Y_RANGE, data.covData);
-
-    // const bafData = await gensDb.getBaf(region.chrom);
     this.bafTrack.render(range, BAF_Y_RANGE, data.bafData);
-
     this.transcriptTrack.render(range, data.transcriptData);
   }
 }
