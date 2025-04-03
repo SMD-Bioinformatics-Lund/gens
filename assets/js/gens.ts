@@ -65,6 +65,7 @@ export async function initCanvases({
     const overviewBafData = await gensDb.getOverviewBafData();
 
     const onChromClick = async (chrom) => {
+        console.log("onChromClick triggered for chrom", chrom);
         const chromData = await gensDb.getChromData(chrom);
         inputControls.updateChromosome(chrom, chromData.size);
         const selectedAnnots = inputControls.getAnnotations();
@@ -124,6 +125,9 @@ async function fetchRenderData(
     chrom: string,
     annotSources: string[],
 ): Promise<RenderData> {
+
+    console.log("Getting data to render for chrom", chrom);
+
     const annotationData = {};
     for (const source of annotSources) {
         const annotData = await gensDb.getAnnotations(chrom, source);

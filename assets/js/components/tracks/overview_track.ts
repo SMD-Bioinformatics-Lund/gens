@@ -14,6 +14,7 @@ export class OverviewTrack extends CanvasTrack {
   onChromosomeClick: (chrom: string) => void;
 
   renderData: Record<string, RenderDot[]> | null = null;
+  pxRanges: Record<string, Rng> = {};
 
   initialize(
     label: string,
@@ -34,6 +35,12 @@ export class OverviewTrack extends CanvasTrack {
     this.marker = marker;
 
     this.onChromosomeClick = onChromosomeClick;
+
+    this.canvas.addEventListener("mousedown", (event) => {
+      event.stopPropagation();
+      const chrom = pixelToChrom(event.offsetX, this.pxRanges);
+      this.onChromosomeClick(chrom);
+    });
   }
 
   render(
@@ -59,31 +66,23 @@ export class OverviewTrack extends CanvasTrack {
     };
 
     const chromRanges = getChromRanges(this.chromSizes);
-    const pxRanges: Record<string, Rng> = transformMap(
+    this.pxRanges = transformMap(
       chromRanges,
       ([start, end]) => [xScale(start), xScale(end)],
     );
 
-    this.canvas.addEventListener("mousedown", (event) => {
-      event.stopPropagation();
-      const chrom = pixelToChrom(event.offsetX, pxRanges);
-      this.onChromosomeClick(chrom);
-    });
-
     renderOverviewPlot(
       this.ctx,
-      totalChromSize,
-      this.dimensions,
-      yRange,
       chromRanges,
-      pxRanges,
+      this.pxRanges,
       xScale,
       yScale,
-      dotsPerChrom
+      dotsPerChrom,
+      this.chromSizes
     );
 
     if (selectedChrom !== null) {
-      const chromPxRange = pxRanges[selectedChrom];
+      const chromPxRange = this.pxRanges[selectedChrom];
       const chromWith = rangeSize(chromPxRange);
 
       this.marker.style.height = `${this.dimensions.height}px`;
@@ -95,18 +94,16 @@ export class OverviewTrack extends CanvasTrack {
 
 function renderOverviewPlot(
   ctx: CanvasRenderingContext2D,
-  totalChromSize: number,
-  dimensions: Dimensions,
-  yRange: Rng,
   chromRanges: Record<string, Rng>,
   pxRanges: Record<string, Rng>,
   xScale: Scale,
   yScale: Scale,
-  dotsPerChrom: Record<string, RenderDot[]>
+  dotsPerChrom: Record<string, RenderDot[]>,
+  chromSizes: Record<string, number>
 ) {
   // Draw the initial lines
   Object.values(chromRanges).forEach(([_chromStart, chromEnd]) =>
-    drawVerticalLine(this.ctx, chromEnd, xScale),
+    drawVerticalLine(ctx, chromEnd, xScale),
   );
 
   Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
@@ -114,10 +111,10 @@ function renderOverviewPlot(
     const pxRange = padRange(pxRanges[chrom], pad);
 
     const chromXScale = (pos: number) => {
-      return linearScale(pos, [0, this.chromSizes[chrom]], pxRange);
+      return linearScale(pos, [0, chromSizes[chrom]], pxRange);
     };
 
-    drawDotsScaled(this.ctx, dotData, chromXScale, yScale, DOT_SIZE);
+    drawDotsScaled(ctx, dotData, chromXScale, yScale, DOT_SIZE);
   });
 }
 
