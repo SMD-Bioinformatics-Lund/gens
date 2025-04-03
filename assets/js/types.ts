@@ -41,6 +41,8 @@ interface CanvasDetail {
   chrom: string;
 }
 
+type OverviewData = Record<string, RenderDot[]>
+
 interface Region {
   chrom: string,
   start: number,

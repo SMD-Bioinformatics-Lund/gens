@@ -60,30 +60,20 @@ export async function initCanvases({
 
     const gensDb = new GensDb(sampleId, caseId, genomeBuild);
     
-    gensTracks.initialize(gensDb);
+    const allChromData = await gensDb.getAllChromData();
+    const overviewCovData = await gensDb.getOverviewCovData();
+    const overviewBafData = await gensDb.getOverviewBafData();
+
+    gensTracks.initialize(allChromData, overviewCovData, overviewBafData);
 
     // @ts-ignore
     const startRegion: Region = window.regionConfig;
-    const startRange: [number, number] = [startRegion.start, startRegion.end];
-
-    // annotationTrack.initialize("Annotation", thinTrackHeight);
+    const startRange: Rng = [startRegion.start, startRegion.end];
 
     // FIXME: Clean this up, so that I can collaborate with Markus
     const defaultAnnots = ["mimisbrunnr"];
 
     gensTracks.render(gensDb, startRegion, defaultAnnots);
-
-    // renderTracks(
-    //     gensDb,
-    //     startRegion,
-    //     defaultAnnots,
-    //     ideogramTrack,
-    //     annotationsContainer,
-    //     coverageTrack,
-    //     bafTrack,
-    //     transcriptTrack,
-    //     variantTrack,
-    // );
 
     // FIXME: Look into how to parse this for predefined start URLs
     inputControls.initialize(

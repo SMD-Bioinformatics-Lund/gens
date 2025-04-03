@@ -75,14 +75,18 @@ export class GensTracks extends HTMLElement {
     }
 
     // FIXME: Should async be removed from here?
-    async initialize(gensDb: GensDb) {
+    async initialize(
+        allChromData: Record<string, ChromosomeInfo>,
+        overviewCovData: OverviewData,
+        overviewBafData: OverviewData,
+    ) {
         this.coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
         this.bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
         this.variantTrack.initialize("Variant", THIN_TRACK_HEIGHT);
         this.transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
         this.ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
 
-        const allChromData = await gensDb.getAllChromData();
+        // const allChromData = await gensDb.getAllChromData();
         // const chromSizes = Object.fromEntries(
         //     Object.values(allChromData).map((data) => [data.chrom, data.size]),
         // );
@@ -99,11 +103,8 @@ export class GensTracks extends HTMLElement {
             chromSizes,
         );
 
-        const covData = await gensDb.getOverviewCovData();
-        this.overviewTrackCov.render(null, covData, COV_Y_RANGE);
-
-        const bafData = await gensDb.getOverviewBafData();
-        this.overviewTrackBaf.render(null, bafData, BAF_Y_RANGE);
+        this.overviewTrackCov.render(null, overviewCovData, COV_Y_RANGE);
+        this.overviewTrackBaf.render(null, overviewBafData, BAF_Y_RANGE);
     }
 
     // FIXME: Can it be preloaded, so that this does not need to be async?
@@ -113,23 +114,26 @@ export class GensTracks extends HTMLElement {
 
         const chromInfo = await gensDb.getChromData(region.chrom);
         this.ideogramTrack.render(region.chrom, chromInfo, range);
-    
+
         // FIXME: Move this somewhere?
-        removeChildren(this.annotationsContainer)
+        removeChildren(this.annotationsContainer);
         for (const source of annotationSources) {
             const annotTrack = new BandTrack();
             this.annotationsContainer.appendChild(annotTrack);
             annotTrack.initialize(source, THIN_TRACK_HEIGHT);
-            const annotations = await gensDb.getAnnotations(region.chrom, source);
+            const annotations = await gensDb.getAnnotations(
+                region.chrom,
+                source,
+            );
             annotTrack.render(range, annotations);
         }
-    
+
         const covData = await gensDb.getCov(region.chrom);
         this.coverageTrack.render(range, COV_Y_RANGE, covData);
-    
+
         const bafData = await gensDb.getBaf(region.chrom);
         this.bafTrack.render(range, BAF_Y_RANGE, bafData);
-    
+
         const transcriptData = await gensDb.getTranscripts(region.chrom);
         this.transcriptTrack.render(range, transcriptData);
     }
