@@ -3,7 +3,7 @@ import { renderBands, renderBorder } from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
     initialize(label: string, trackHeight: number) {
-        super.initialize(label, trackHeight);
+        super.initializeCanvas(label, trackHeight);
     }
 
     render(xRange: [number, number], annotations: RenderBand[]) {

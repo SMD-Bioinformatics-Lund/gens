@@ -27,7 +27,7 @@ export class CanvasTrack extends HTMLElement {
         this._root.appendChild(template.content.cloneNode(true));
     }
 
-    initialize(label: string, trackHeight: number) {
+    initializeCanvas(label: string, trackHeight: number) {
         // const header = this._root.getElementById("header")
         // header.innerHTML = label;
         this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;

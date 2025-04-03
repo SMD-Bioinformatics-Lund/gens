@@ -51,6 +51,8 @@ const BAF_Y_RANGE: [number, number] = [0, 1];
 const THICK_TRACK_HEIGHT = 80;
 const THIN_TRACK_HEIGHT = 20;
 
+// FIXME: Query from the backend
+
 export async function initCanvases({
     sampleName,
     sampleId,
@@ -72,7 +74,6 @@ export async function initCanvases({
     selectedVariant: string;
     annotationFile: string;
 }) {
-
     // FIXME: Looks like there should be a "tracks" web component
     const ideogramTrack = document.getElementById(
         "ideogram-track",
@@ -101,15 +102,29 @@ export async function initCanvases({
 
     console.log(overviewTrackCov);
 
+    const gensDb = new GensDb(sampleId, caseId, genomeBuild);
+
     coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
     bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
     variantTrack.initialize("Variant", THIN_TRACK_HEIGHT);
     transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
     ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
 
-    overviewTrackCov.initialize("Overview (cov)", THIN_TRACK_HEIGHT);
-    overviewTrackBaf.initialize("Overview (baf)", THIN_TRACK_HEIGHT);
+    const allChromData = await gensDb.getAllChromData();
+    const chromSizes: Record<string, number> = Object.fromEntries(
+        Object.entries(allChromData).map(([chrom, data]) => [chrom, data.size]),
+    );
 
+    overviewTrackCov.initialize(
+        "Overview (cov)",
+        THIN_TRACK_HEIGHT,
+        chromSizes,
+    );
+    overviewTrackBaf.initialize(
+        "Overview (baf)",
+        THIN_TRACK_HEIGHT,
+        chromSizes,
+    );
 
     const covData = await getOverviewData(sampleId, caseId, "cov");
     overviewTrackCov.render(null, covData);
@@ -128,8 +143,6 @@ export async function initCanvases({
     // @ts-ignore
     const startRegion: Region = window.regionConfig;
     const startRange: [number, number] = [startRegion.start, startRegion.end];
-
-    const gensDb = new GensDb(sampleId, caseId, genomeBuild);
 
     // annotationTrack.initialize("Annotation", thinTrackHeight);
 
@@ -290,9 +303,7 @@ async function initializeTracks(
     bafTrack: DotTrack,
     variantTrack: BandTrack,
     transcriptTrack: BandTrack,
-) {
-
-}
+) {}
 
 async function renderTracks(
     gensDb: GensDb,
@@ -311,7 +322,7 @@ async function renderTracks(
         `Rendering. Chrom: ${region.chrom} Range: ${range} Annot: ${annotationSources}`,
     );
 
-    const chromInfo = await gensDb.getIdeogramData(region.chrom);
+    const chromInfo = await gensDb.getChromData(region.chrom);
     ideogramTrack.render(region.chrom, chromInfo, range);
 
     while (annotationsContainer.firstChild) {

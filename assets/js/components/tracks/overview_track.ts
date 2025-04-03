@@ -1,15 +1,27 @@
 import { CanvasTrack } from "./canvas_track";
 
 export class OverviewTrack extends CanvasTrack {
-    initialize(label: string, trackHeight: number) {
-        super.initialize(label, trackHeight);
+    chromSizes: Record<string, number> = {};
+
+    initialize(
+        label: string,
+        trackHeight: number,
+        chromSizes: Record<string, number>,
+    ) {
+        super.initializeCanvas(label, trackHeight);
+        this.chromSizes = chromSizes;
     }
 
     // What are the inputs?
-    render(selectedChrom: string|null, dotsPerChrom: Record<string, RenderDot[]>) {
+    render(
+        selectedChrom: string | null,
+        dotsPerChrom: Record<string, RenderDot[]>,
+    ) {
         super.syncDimensions();
 
         console.log("Ready for plotting now");
+
+        markRegions(this.chromSizes, this.dimensions.width);
 
         // This is the key function
         // get-multiple-coverages
@@ -26,7 +38,14 @@ export class OverviewTrack extends CanvasTrack {
     }
 }
 
-function markRegions(chromLengths: number[], xDim: number) {
+function markRegions(
+    ctx: CanvasRenderingContext2D,
+    chromLengths: Record<string, number>,
+    width: number,
+) {
+    Object.entries(chromLengths).forEach(([chrom, length]) => {
+
+    });
     // Render vertical lines for each chromosome
 }
 

@@ -4,8 +4,9 @@ import {
     getCovData,
     getSVVariantData,
     getTranscriptData,
-    getIdeogramData,
+    getIdeogramData as getChromosomeData,
 } from "./requests";
+import { CHROMOSOME_NAMES } from "./util/constants";
 
 export class GensDb {
     sampleId: string;
@@ -84,12 +85,20 @@ export class GensDb {
         return this.variantsCache[chrom];
     }
 
-    private ideogramCache: Record<string, ChromosomeInfo> = {};
-    async getIdeogramData(chrom: string): Promise<ChromosomeInfo> {
-        const isCached = this.ideogramCache[chrom] !== undefined;
+    private chromCache: Record<string, ChromosomeInfo> = {};
+    async getChromData(chrom: string): Promise<ChromosomeInfo> {
+        const isCached = this.chromCache[chrom] !== undefined;
         if (!isCached) {
-            this.ideogramCache[chrom] = await getIdeogramData(chrom, this.genomeBuild);
+            this.chromCache[chrom] = await getChromosomeData(chrom, this.genomeBuild);
         }
-        return this.ideogramCache[chrom];
+        return this.chromCache[chrom];
     }
+    async getAllChromData(): Promise<Record<string, ChromosomeInfo>> {
+        CHROMOSOME_NAMES.forEach(async (chrom) => {
+            if (this.chromCache[chrom] === undefined) {
+                this.chromCache[chrom] = await getChromosomeData(chrom, this.genomeBuild);
+            }
+        })
+        return this.chromCache;
+    } 
 }
