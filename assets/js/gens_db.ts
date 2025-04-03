@@ -5,7 +5,7 @@ import {
     getSVVariantData,
     getTranscriptData,
     getIdeogramData,
-} from "./tmp";
+} from "./requests";
 
 export class GensDb {
     sampleId: string;

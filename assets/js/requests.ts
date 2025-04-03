@@ -137,11 +137,45 @@ export async function getBafData(
     return getDotData(sampleId, caseId, chrom, "baf");
 }
 
-export async function getIdeogramData(chrom: string, genomeBuild: number): Promise<ChromosomeInfo> {
-    const chromosomeInfo = await get("get-chromosome-info", {
+export async function getOverviewData(
+    sampleId: string,
+    caseId: string,
+    covOrBaf: string,
+): Promise<Record<string, RenderDot[]>> {
+    const query = {
+        sample_id: sampleId,
+        case_id: caseId,
+        cov_or_baf: covOrBaf,
+    };
+
+    const overviewData: { chrom: string; pos: number; value: number }[] =
+        await get("dev-get-multiple-coverages", query);
+
+    const dataPerChrom: Record<string, RenderDot[]> = {};
+
+    overviewData.forEach((element) => {
+        if (dataPerChrom[element.chrom] === undefined) {
+            dataPerChrom[element.chrom] = [];
+        };
+        const point: RenderDot = {
+            x: element.pos,
+            y: element.pos,
+            color: "black",
+        };
+        dataPerChrom[element.chrom].push(point);
+    });
+
+    return dataPerChrom;
+}
+
+export async function getIdeogramData(
+    chrom: string,
+    genomeBuild: number,
+): Promise<ChromosomeInfo> {
+    const chromosomeInfo = (await get("get-chromosome-info", {
         chromosome: chrom,
         genome_build: genomeBuild,
-    }) as ChromosomeInfo;
+    })) as ChromosomeInfo;
 
     return chromosomeInfo;
 

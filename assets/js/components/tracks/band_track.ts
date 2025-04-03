@@ -1,7 +1,7 @@
 import { CanvasTrack } from "./canvas_track";
 import { renderBands, renderBorder } from "./render_utils";
 
-export class AnnotationTrack extends CanvasTrack {
+export class BandTrack extends CanvasTrack {
     initialize(label: string, trackHeight: number) {
         super.initialize(label, trackHeight);
     }
@@ -20,4 +20,4 @@ export class AnnotationTrack extends CanvasTrack {
 
 export function test() {}
 
-customElements.define("annotation-track", AnnotationTrack);
+customElements.define("band-track", BandTrack);

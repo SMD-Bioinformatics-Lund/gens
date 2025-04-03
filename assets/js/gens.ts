@@ -22,16 +22,16 @@ export {
 
 import "./components/simple_track";
 import "./components/tracks/canvas_track";
-import "./components/tracks/annotation_track";
+import "./components/tracks/band_track";
 import "./components/tracks/dot_track";
 import "./components/tracks/ideogram_track";
-// import "./components/tracks/coverage_track";
+import "./components/tracks/overview_track";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
-import { AnnotationTrack } from "./components/tracks/annotation_track";
-import { CanvasTrack } from "./components/tracks/canvas_track";
+import { BandTrack } from "./components/tracks/band_track";
 import { DotTrack } from "./components/tracks/dot_track";
 import { IdeogramTrack } from "./components/tracks/ideogram_track";
+import { OverviewTrack } from "./components/tracks/overview_track";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
 import { get } from "./fetch";
@@ -39,9 +39,10 @@ import {
     getAnnotationDataForChrom,
     getBafData,
     getCovData,
+    getOverviewData,
     getSVVariantData,
     getTranscriptData,
-} from "./tmp";
+} from "./requests";
 import { GensDb } from "./gens_db";
 // import { get } from "http";
 
@@ -71,20 +72,24 @@ export async function initCanvases({
     selectedVariant: string;
     annotationFile: string;
 }) {
-    const ideogramTrack = document.getElementById("ideogram-track") as IdeogramTrack;
-    const overviewTrack = document.getElementById("overview-track") as CanvasTrack;
+
+    // FIXME: Looks like there should be a "tracks" web component
+    const ideogramTrack = document.getElementById(
+        "ideogram-track",
+    ) as IdeogramTrack;
+    const overviewTrackCov = document.getElementById(
+        "overview-track-cov",
+    ) as OverviewTrack;
+    const overviewTrackBaf = document.getElementById(
+        "overview-track-baf",
+    ) as OverviewTrack;
 
     const coverageTrack = document.getElementById("coverage-track") as DotTrack;
     const bafTrack = document.getElementById("baf-track") as DotTrack;
-    // const annotationTrack = document.getElementById(
-    //     "annotation-track",
-    // ) as AnnotationTrack;
     const transcriptTrack = document.getElementById(
         "transcript-track",
-    ) as AnnotationTrack;
-    const variantTrack = document.getElementById(
-        "variant-track",
-    ) as AnnotationTrack;
+    ) as BandTrack;
+    const variantTrack = document.getElementById("variant-track") as BandTrack;
 
     const annotationsContainer = document.getElementById(
         "annotations-container",
@@ -93,6 +98,24 @@ export async function initCanvases({
     const inputControls = document.getElementById(
         "input-controls",
     ) as InputControls;
+
+    console.log(overviewTrackCov);
+
+    coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
+    bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
+    variantTrack.initialize("Variant", THIN_TRACK_HEIGHT);
+    transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
+    ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
+
+    overviewTrackCov.initialize("Overview (cov)", THIN_TRACK_HEIGHT);
+    overviewTrackBaf.initialize("Overview (baf)", THIN_TRACK_HEIGHT);
+
+
+    const covData = await getOverviewData(sampleId, caseId, "cov");
+    overviewTrackCov.render(null, covData);
+
+    const bafData = await getOverviewData(sampleId, caseId, "baf");
+    overviewTrackBaf.render(null, bafData);
 
     // const tracks = {
     //     annotation: AnnotationTrack,
@@ -107,18 +130,6 @@ export async function initCanvases({
     const startRange: [number, number] = [startRegion.start, startRegion.end];
 
     const gensDb = new GensDb(sampleId, caseId, genomeBuild);
-
-
-
-    coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
-    bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
-    variantTrack.initialize("Variant", THIN_TRACK_HEIGHT);
-    transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
-
-    overviewTrack.initialize("Overview", THIN_TRACK_HEIGHT);
-    ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
-
-
 
     // annotationTrack.initialize("Annotation", thinTrackHeight);
 
@@ -164,7 +175,7 @@ export async function initCanvases({
                 transcriptTrack,
                 variantTrack,
             );
-            
+
             // const xRange: [number, number] = [startRegion.start, startRegion.end];
             // const yRange: [number, number] = [-4, 4];
             // coverageTrack.render(xRange, yRange, dots);
@@ -269,6 +280,20 @@ export async function initCanvases({
     // };
 }
 
+async function initializeTracks(
+    sampleId: string,
+    caseId: string,
+    ideogramTrack: IdeogramTrack,
+    overviewTrackCov: OverviewTrack,
+    overviewTrackBaf: OverviewTrack,
+    coverageTrack: DotTrack,
+    bafTrack: DotTrack,
+    variantTrack: BandTrack,
+    transcriptTrack: BandTrack,
+) {
+
+}
+
 async function renderTracks(
     gensDb: GensDb,
     region: Region,
@@ -277,8 +302,8 @@ async function renderTracks(
     annotationsContainer: HTMLDivElement,
     coverageTrack: DotTrack,
     bafTrack: DotTrack,
-    transcriptsTrack: AnnotationTrack,
-    variantsTrack: AnnotationTrack,
+    transcriptsTrack: BandTrack,
+    variantsTrack: BandTrack,
 ) {
     const range: [number, number] = [region.start, region.end];
 
@@ -286,25 +311,22 @@ async function renderTracks(
         `Rendering. Chrom: ${region.chrom} Range: ${range} Annot: ${annotationSources}`,
     );
 
+    const chromInfo = await gensDb.getIdeogramData(region.chrom);
+    ideogramTrack.render(region.chrom, chromInfo, range);
+
     while (annotationsContainer.firstChild) {
-        annotationsContainer.removeChild(annotationsContainer.firstChild)
+        annotationsContainer.removeChild(annotationsContainer.firstChild);
     }
     for (const source of annotationSources) {
         console.log("Looping out a new track", source);
-        const annotTrack = new AnnotationTrack();
+        const annotTrack = new BandTrack();
         annotationsContainer.appendChild(annotTrack);
         annotTrack.initialize(source, THIN_TRACK_HEIGHT);
-        const annotations = await gensDb.getAnnotations(
-            region.chrom,
-            source,
-        );            
+        const annotations = await gensDb.getAnnotations(region.chrom, source);
         annotTrack.render(range, annotations);
     }
 
     // annotationTrack.render(range, annotations);
-
-    const chromInfo = await gensDb.getIdeogramData(region.chrom);
-    ideogramTrack.render(region.chrom, chromInfo, range);
 
     const covData = await gensDb.getCov(region.chrom);
     coverageTrack.render(range, COV_Y_RANGE, covData);
@@ -317,7 +339,6 @@ async function renderTracks(
 
     // const variantsData = await gensDb.getVariants(region.chrom);
     // variantsTrack.render(range, variantsData);
-
 }
 
 // Make hard link and copy link to clipboard
