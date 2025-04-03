@@ -11,11 +11,13 @@ export class GensDb {
     sampleId: string;
     caseId: string;
     genomeBuild: number;
+    apiURL: string;
 
-    constructor(sampleId: string, caseId: string, genomeBuild: number) {
+    constructor(sampleId: string, caseId: string, genomeBuild: number, apiURL: string) {
         this.sampleId = sampleId;
         this.caseId = caseId;
         this.genomeBuild = genomeBuild;
+        this.apiURL = apiURL;
     }
 
     private annotCache: Record<string, Record<string, RenderBand[]>> = {};
@@ -29,7 +31,7 @@ export class GensDb {
                 this.annotCache[chrom] = {};
             }
 
-            const annotations = await getAnnotationDataForChrom(chrom, source);
+            const annotations = await getAnnotationDataForChrom(chrom, source, this.apiURL);
             this.annotCache[chrom][source] = annotations;
         }
         return this.annotCache[chrom][source];
@@ -42,6 +44,7 @@ export class GensDb {
             this.covCache[chrom] = await getCovData(
                 this.sampleId,
                 this.caseId,
+                this.apiURL,
                 chrom,
             );
         }
@@ -55,6 +58,7 @@ export class GensDb {
             this.bafCache[chrom] = await getBafData(
                 this.sampleId,
                 this.caseId,
+                this.apiURL,
                 chrom,
             );
         }
@@ -65,7 +69,7 @@ export class GensDb {
     async getTranscripts(chrom: string): Promise<RenderBand[]> {
         const isCached = this.transcriptCache[chrom] !== undefined;
         if (!isCached) {
-            this.transcriptCache[chrom] = await getTranscriptData(chrom);
+            this.transcriptCache[chrom] = await getTranscriptData(chrom, this.apiURL);
         }
         return this.transcriptCache[chrom];
     }
@@ -88,7 +92,7 @@ export class GensDb {
     async getIdeogramData(chrom: string): Promise<ChromosomeInfo> {
         const isCached = this.ideogramCache[chrom] !== undefined;
         if (!isCached) {
-            this.ideogramCache[chrom] = await getIdeogramData(chrom, this.genomeBuild);
+            this.ideogramCache[chrom] = await getIdeogramData(chrom, this.genomeBuild, this.apiURL);
         }
         return this.ideogramCache[chrom];
     }

@@ -58,6 +58,7 @@ export async function initCanvases({
     hgFileDir,
     uiColors,
     scoutBaseURL,
+    gensApiURL,
     selectedVariant,
     annotationFile,
 }: {
@@ -68,6 +69,7 @@ export async function initCanvases({
     hgFileDir: string;
     uiColors: UIColors;
     scoutBaseURL: string;
+    gensApiURL: string;
     selectedVariant: string;
     annotationFile: string;
 }) {
@@ -106,7 +108,7 @@ export async function initCanvases({
     const startRegion: Region = window.regionConfig;
     const startRange: [number, number] = [startRegion.start, startRegion.end];
 
-    const gensDb = new GensDb(sampleId, caseId, genomeBuild);
+    const gensDb = new GensDb(sampleId, caseId, genomeBuild, gensApiURL);
 
 
 
@@ -185,6 +187,7 @@ export async function initCanvases({
                 variantTrack,
             );
         },
+        gensApiURL,
     );
 
     // initialize and return the different canvases

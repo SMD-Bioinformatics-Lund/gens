@@ -25,6 +25,7 @@ function rgbArrayToString(rgbArray: number[]): string {
 export async function getAnnotationDataForChrom(
     chrom: string,
     source: string,
+    apiURL: string,
 ): Promise<RenderBand[]> {
     const query = {
         sample_id: undefined,
@@ -33,7 +34,7 @@ export async function getAnnotationDataForChrom(
         collapsed: true,
         source: source,
     };
-    const annotsResult = await get("get-annotation-data", query);
+    const annotsResult = await get(new URL("get-annotation-data", apiURL).href, query);
     const annotations = annotsResult.annotations as AnnotationEntry[];
     return annotations.map((annot) => {
         return {
@@ -44,14 +45,14 @@ export async function getAnnotationDataForChrom(
     });
 }
 
-export async function getTranscriptData(chrom: string): Promise<RenderBand[]> {
+export async function getTranscriptData(chrom: string, apiURL: string): Promise<RenderBand[]> {
     const query = {
         sample_id: undefined,
         region: `${chrom}:1-None`,
         genome_build: 38,
         collapsed: true,
     };
-    const results = await get("get-transcript-data", query);
+    const results = await get(new URL("get-transcript-data", apiURL).href, query);
     const transcripts = results.transcripts;
 
     const transcriptsToRender = transcripts.map((transcript) => {
@@ -71,6 +72,7 @@ export async function getSVVariantData(
     case_id: string,
     genome_build: number,
     chrom: string,
+    apiURL: string,
 ) {
     // FIXME: Specify sample
     const query = {
@@ -81,7 +83,7 @@ export async function getSVVariantData(
         collapsed: true,
         variant_category: "sv",
     };
-    const results = await get("get-variant-data", query);
+    const results = await get(new URL("get-variant-data", apiURL).href, query);
     const variants = results.variants;
     const toRender = variants.map((variant) => {
         return {
@@ -96,6 +98,7 @@ export async function getSVVariantData(
 async function getDotData(
     sampleId: string,
     caseId: string,
+    apiURL: string,
     chrom: string,
     covOrBaf: string,
 ): Promise<RenderDot[]> {
@@ -108,7 +111,7 @@ async function getDotData(
         cov_or_baf: covOrBaf,
     };
 
-    const results = await get("dev-get-data", query);
+    const results = await get(new URL("dev-get-data", apiURL).href, query);
 
     const renderData = results.data.map((d) => {
         return {
@@ -124,21 +127,23 @@ async function getDotData(
 export async function getCovData(
     sampleId: string,
     caseId: string,
+    apiURL: string,
     chrom: string,
 ): Promise<RenderDot[]> {
-    return getDotData(sampleId, caseId, chrom, "cov");
+    return getDotData(sampleId, caseId, apiURL, chrom, "cov");
 }
 
 export async function getBafData(
     sampleId: string,
     caseId: string,
+    apiURL: string,
     chrom: string,
 ): Promise<RenderDot[]> {
-    return getDotData(sampleId, caseId, chrom, "baf");
+    return getDotData(sampleId, caseId, apiURL, chrom, "baf");
 }
 
-export async function getIdeogramData(chrom: string, genomeBuild: number): Promise<ChromosomeInfo> {
-    const chromosomeInfo = await get("get-chromosome-info", {
+export async function getIdeogramData(chrom: string, genomeBuild: number, apiURL: string): Promise<ChromosomeInfo> {
+    const chromosomeInfo = await get(new URL("get-chromosome-info", apiURL).href, {
         chromosome: chrom,
         genome_build: genomeBuild,
     }) as ChromosomeInfo;

@@ -132,12 +132,13 @@ export class InputControls extends HTMLElement {
         onRegionChanged: (region: Region) => void,
         onAnnotationChanged: (region: Region, source: string) => void,
         onPositionChange: (newXRange: [number, number]) => void,
+        apiURL: string,
     ) {
         this.fullRegion = fullRegion;
         this.updatePosition([fullRegion.start, fullRegion.end]);
         // this.regionField.value = `${fullRegion.chrom}:${fullRegion.start}-${fullRegion.end}`;
 
-        get("get-annotation-sources", { genome_build: 38 }).then((result) => {
+        get(new URL("get-annotation-sources", apiURL).href, { genome_build: 38 }).then((result) => {
             const filenames = result.sources;
             for (const filename of filenames) {
                 const opt = document.createElement("option");

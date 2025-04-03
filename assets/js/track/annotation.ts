@@ -35,7 +35,8 @@ export class AnnotationTrack extends BaseAnnotationTrack {
     near: number,
     far: number,
     genomeBuild: number,
-    defaultAnnotation: string
+    defaultAnnotation: string,
+    apiURL: string
   ) {
     // Dimensions of track canvas
     const visibleHeight = 300; // Visible height for expanded canvas, overflows for scroll
@@ -83,6 +84,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
     this.annotSourceList(defaultAnnotation);
 
     // GENS api parameters
+    this.apiURL = apiURL
     this.additionalQueryParams = { source: defaultAnnotation };
 
     this.maxResolution = 6; // define other max resolution
@@ -92,7 +94,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
 
   // Fills the list with source files
   annotSourceList(defaultAnnotation: string) {
-    get("get-annotation-sources", { genome_build: this.genomeBuild })
+    get(new URL(this.apiURL, "get-annotation-sources").href, { genome_build: this.genomeBuild })
       .then((result) => {
         if (result.sources.length > 0) {
           this.sourceList.style.visibility = "visible";

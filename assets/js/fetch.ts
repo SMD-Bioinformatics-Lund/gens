@@ -1,6 +1,5 @@
 // Fetch.js
 // functions for making api requests to Gens
-/* global _apiHost */
 
 async function request(url: string, params: string, method: RequestType = "GET") {
   // options passed to the fetch request
@@ -20,8 +19,7 @@ async function request(url: string, params: string, method: RequestType = "GET")
     }
   }
   // fetch returns a promise
-  // @ts-expect-error - FIXME: This should not be global
-  const response = await fetch(_apiHost + url, options);
+  const response = await fetch(url, options);
 
   if (response.status !== 200) {
     return generateErrorResponse(

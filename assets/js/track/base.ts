@@ -87,6 +87,7 @@ export class BaseAnnotationTrack {
   trackTitle: HTMLDivElement | null;
   trackData: any;
 
+  apiURL: string;
   apiEntrypoint: string;
   sampleName: string;
   genomeBuild: number;
