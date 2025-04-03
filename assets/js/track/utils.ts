@@ -106,6 +106,6 @@ export function padRange(range: Rng, pad: number): Rng {
 
 export function removeChildren(container: HTMLElement) {
     while (container.firstChild) {
-        container.removeChild(this.annotationsContainer.firstChild);
+        container.removeChild(container.firstChild);
     }
 }

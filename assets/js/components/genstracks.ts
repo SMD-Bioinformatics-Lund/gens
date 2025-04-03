@@ -18,14 +18,15 @@ const template = document.createElement("template");
 template.innerHTML = String.raw`
     <div id="container">
         <ideogram-track id="ideogram-track"></ideogram-track>
-        <overview-track id="overview-track-cov"></overview-track>
-        <overview-track id="overview-track-baf"></overview-track>
     
         <dot-track id="coverage-track"></dot-track>
         <dot-track id="baf-track"></dot-track>
         <div id="annotations-container"></div>
         <band-track id="transcript-track"></band-track>
         <band-track id="variant-track" hidden></band-track>
+
+        <overview-track id="overview-track-cov"></overview-track>
+        <overview-track id="overview-track-baf"></overview-track>
     </div>
 `;
 
