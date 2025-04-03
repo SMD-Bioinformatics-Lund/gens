@@ -159,7 +159,7 @@ export async function getOverviewData(
         };
         const point: RenderDot = {
             x: element.pos,
-            y: element.pos,
+            y: element.value,
             color: "black",
         };
         dataPerChrom[element.chrom].push(point);

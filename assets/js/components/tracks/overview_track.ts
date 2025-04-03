@@ -1,7 +1,12 @@
 import { drawLine } from "../../draw";
 import { drawVerticalLine } from "../../draw/shapes";
 import { CanvasTrack } from "./canvas_track";
-import { getPixelRange, scaleToPixels } from "./render_utils";
+import {
+    getPixelPosInRange,
+    renderBorder,
+    renderDots,
+    scaleToPixels,
+} from "./render_utils";
 
 export class OverviewTrack extends CanvasTrack {
     totalChromSize: number;
@@ -23,39 +28,47 @@ export class OverviewTrack extends CanvasTrack {
     ) {
         super.syncDimensions();
 
-        console.log("Ready for plotting now");
+        renderBorder(this.ctx, this.dimensions);
 
-
-        // const chromStartPositions = [];
-        const pxStartPositions = getPxStartPositions(this.chromSizes, this.dimensions.width);
-        
+        const pxRanges = getPxRanges(this.chromSizes, this.dimensions.width);
         // Draw the initial lines
-        Object.values(pxStartPositions).forEach((pxPos) =>
-            drawVerticalLine(this.ctx, pxPos),
+        Object.values(pxRanges).forEach(([_pxStart, pxEnd]) =>
+            drawVerticalLine(this.ctx, pxEnd),
         );
+
+        Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
+            const pxXRange = pxRanges[chrom];
+            const pxYRange: [number, number] = [0, this.dimensions.height];
+            console.log("Rendering dots");
+
+            // FIXME: We should have the data X and Y ranges here
+            // Also, we need a render dots where we can select where to render
+            renderDots(this.ctx, dotData, pxXRange, pxYRange, this.dimensions)
+        });
     }
 }
 
-function getPxStartPositions(
+function getPxRanges(
     chromSizes: Record<string, number>,
     screenWidth: number,
-): Record<string, number> {
-
+): Record<string, [number, number]> {
     const totalChromSize = Object.values(chromSizes).reduce(
         (tot, size) => tot + size,
         0,
     );
 
-    const pxStartPositions: Record<string, number> = {};
+    const pxStartPositions: Record<string, [number, number]> = {};
     let sumPos = 0;
     Object.entries(chromSizes).forEach(([chrom, chromLength]) => {
+        const startPos = sumPos;
         sumPos += chromLength;
-        const pxPos = scaleToPixels(
-            sumPos,
-            totalChromSize,
-            screenWidth,
-        );
-        pxStartPositions[chrom] = pxPos;
+
+        const posRange = [startPos, sumPos];
+        const pxRange = posRange.map((pos) =>
+            scaleToPixels(pos, totalChromSize, screenWidth),
+        ) as [number, number];
+
+        pxStartPositions[chrom] = pxRange;
     });
     return pxStartPositions;
 }
