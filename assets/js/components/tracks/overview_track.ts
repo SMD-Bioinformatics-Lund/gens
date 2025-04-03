@@ -1,3 +1,5 @@
+import { drawLine } from "../../draw";
+import { drawVerticalLine } from "../../draw/shapes";
 import { CanvasTrack } from "./canvas_track";
 import { getPixelRange, scaleToPixels } from "./render_utils";
 
@@ -56,6 +58,8 @@ function markRegions(
         sumPos += chromLength;
         const pxPos = scaleToPixels(sumPos, totalChromSize, screenWidth);
         console.log("Rendering at", pxPos);
+
+        drawVerticalLine(ctx, pxPos);
     });
     // Render vertical lines for each chromosome
 }

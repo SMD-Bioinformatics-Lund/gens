@@ -83,6 +83,10 @@ export function stringToHash(in_str: string) {
     return hash;
 }
 
+/**
+ * Given a map key -> object
+ * Extract a map key -> object.value
+ */
 export function extractFromMap<T>(
     orig: Record<string, any>,
     extract: (string) => T,

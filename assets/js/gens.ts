@@ -117,8 +117,6 @@ export async function initCanvases({
     // );
     const chromSizes = extractFromMap(allChromData, data => data.size);
 
-    // console.log(allChromData);
-    // console.log(chromSizes);
 
     overviewTrackCov.initialize(
         "Overview (cov)",
