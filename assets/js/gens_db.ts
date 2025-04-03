@@ -5,6 +5,7 @@ import {
     getSVVariantData,
     getTranscriptData,
     getIdeogramData as getChromosomeData,
+    getOverviewData,
 } from "./requests";
 import { CHROMOSOME_NAMES } from "./util/constants";
 
@@ -108,5 +109,13 @@ export class GensDb {
             }),
         );
         return this.chromCache;
+    }
+
+    async getOverviewCovData(): Promise<Record<string, RenderDot[]>> {
+        return getOverviewData(this.sampleId, this.caseId, "cov")
+    }
+
+    async getOverviewBafData(): Promise<Record<string, RenderDot[]>> {
+        return getOverviewData(this.sampleId, this.caseId, "cov")
     }
 }

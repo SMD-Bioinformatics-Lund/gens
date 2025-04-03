@@ -103,3 +103,9 @@ export function rangeSize(range: [number, number]): number {
 export function padRange(range: Rng, pad: number): Rng {
     return [range[0] + pad, range[1] - pad];
 }
+
+export function removeChildren(container: HTMLElement) {
+    while (container.firstChild) {
+        container.removeChild(this.annotationsContainer.firstChild);
+    }
+}
