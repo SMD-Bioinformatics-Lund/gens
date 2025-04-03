@@ -1,3 +1,5 @@
+import { rangeSize } from "../../track/utils";
+
 export function renderBorder(
     ctx: CanvasRenderingContext2D,
     canvasDim: { height: number; width: number },
@@ -113,4 +115,12 @@ export function newDrawRect(
         ctx.fill(path);
     }
     return path;
+}
+
+export function linearScale(pos: number, dataRange: Rng, pxRange: Rng): number {
+    const scaleFactor = rangeSize(pxRange) / rangeSize(dataRange);
+    // We want non-zero data (-4, +3) to start from zero-coordinate
+    const zeroBasedPos = pos - dataRange[0];
+    const pxPos = zeroBasedPos * scaleFactor + pxRange[0];
+    return pxPos;
 }

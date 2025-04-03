@@ -1,22 +1,11 @@
-import { start } from "repl";
-import { drawLine } from "../../draw";
-import { drawHorizontalLine, drawVerticalLine } from "../../draw/shapes";
+import { drawVerticalLine } from "../../draw/shapes";
 import { transformMap, padRange, rangeSize } from "../../track/utils";
 import { CanvasTrack } from "./canvas_track";
-import {
-    getPixelPosInRange,
-    renderBorder,
-    renderDots,
-    scaleToPixels,
-} from "./render_utils";
+import { linearScale, renderBorder } from "./render_utils";
 
-function linearScale(pos: number, dataRange: Rng, pxRange: Rng): number {
-    const scaleFactor = rangeSize(pxRange) / rangeSize(dataRange);
-    // We want non-zero data (-4, +3) to start from zero-coordinate
-    const zeroBasedPos = pos - dataRange[0]
-    const pxPos = zeroBasedPos * scaleFactor + pxRange[0];
-    return pxPos;
-}
+
+const X_PAD = 5;
+const DOT_SIZE = 2;
 
 export class OverviewTrack extends CanvasTrack {
     totalChromSize: number;
@@ -70,8 +59,7 @@ export class OverviewTrack extends CanvasTrack {
         );
 
         Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
-
-            const pad = 4;
+            const pad = X_PAD;
             const pxRange = padRange(pxRanges[chrom], pad);
 
             const chromXScale = (pos: number) => {
@@ -79,11 +67,6 @@ export class OverviewTrack extends CanvasTrack {
             };
 
             drawDotsScaled(this.ctx, dotData, chromXScale, yScale);
-
-            // FIXME: We should have the data X and Y ranges here
-            // Also, we need a render dots where we can select where to render
-            // renderDots(this.ctx, dotData, pxXRange, pxYRange, this.dimensions);
-            // renderDotsCustom(this.ctx, dotData, pxXRange, xRange, yRange, this.dimensions)
         });
     }
 }
@@ -94,8 +77,7 @@ function drawDotsScaled(
     xScale: Scale,
     yScale: Scale,
 ) {
-
-    const dotSize = 2;
+    const dotSize = DOT_SIZE;
     dots.forEach((dot) => {
         ctx.fillStyle = dot.color;
         const xPixel = xScale(dot.x);
@@ -133,7 +115,5 @@ function drawSegmentDots(dots: RenderDot[], pxRange: [number, number]) {}
 
 // This will actually be multiple parts
 function additionalText() {}
-
-export function test() {}
 
 customElements.define("overview-track", OverviewTrack);
