@@ -1,7 +1,7 @@
 import { drawVerticalLine } from "../../draw/shapes";
 import { transformMap, padRange, rangeSize } from "../../track/utils";
 import { CanvasTrack } from "./canvas_track";
-import { linearScale, renderBorder } from "./render_utils";
+import { drawDotsScaled, linearScale, renderBorder } from "./render_utils";
 
 
 const X_PAD = 5;
@@ -25,6 +25,7 @@ export class OverviewTrack extends CanvasTrack {
         selectedChrom: string | null,
         dotsPerChrom: Record<string, RenderDot[]>,
         yRange: [number, number],
+        onChromosomeClick: (chrom: string) => void
     ) {
         super.syncDimensions();
 
@@ -66,31 +67,26 @@ export class OverviewTrack extends CanvasTrack {
                 return linearScale(pos, [0, this.chromSizes[chrom]], pxRange);
             };
 
-            drawDotsScaled(this.ctx, dotData, chromXScale, yScale);
+            drawDotsScaled(this.ctx, dotData, chromXScale, yScale, DOT_SIZE);
         });
+
+        this.canvas.addEventListener("mousedown", (event) => {
+            event.stopPropagation();
+            const chrom = pixelToChrom(event.offsetX, pxRanges);
+            onChromosomeClick(chrom);
+        })
     }
 }
 
-function drawDotsScaled(
-    ctx: CanvasRenderingContext2D,
-    dots: RenderDot[],
-    xScale: Scale,
-    yScale: Scale,
-) {
-    const dotSize = DOT_SIZE;
-    dots.forEach((dot) => {
-        ctx.fillStyle = dot.color;
-        const xPixel = xScale(dot.x);
-        const yPixel = yScale(dot.y);
-
-        ctx.fillRect(
-            xPixel - dotSize / 2,
-            yPixel - dotSize / 2,
-            dotSize,
-            dotSize,
-        );
-    });
+function pixelToChrom(xPixel: number, pxRanges: Record<string, Rng>): string {
+    for (const [chrom, range] of Object.entries(pxRanges)) {
+        if (xPixel >= range[0] && xPixel < range[1]) {
+            return chrom
+        }
+    }
+    throw Error(`Something went wrong, no chromosome range matched position: ${xPixel}`);
 }
+
 
 function getChromRanges(
     chromSizes: Record<string, number>,

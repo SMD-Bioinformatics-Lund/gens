@@ -18,14 +18,14 @@ export {
     queryRegionOrGene,
 } from "./navigation";
 
-import "./components/genstracks"
+import "./components/genstracks";
 import { GensTracks } from "./components/genstracks";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
-import { GensDb } from "./gens_db";
-
+import { GensDb } from "./state/gens_db";
+import { GensSession } from "./state/session";
 
 // FIXME: Query from the backend
 
@@ -39,6 +39,7 @@ export async function initCanvases({
     scoutBaseURL,
     selectedVariant,
     annotationFile,
+    startRegion,
 }: {
     sampleName: string;
     sampleId: string;
@@ -49,9 +50,8 @@ export async function initCanvases({
     scoutBaseURL: string;
     selectedVariant: string;
     annotationFile: string;
+    startRegion: Region;
 }) {
-    // FIXME: Looks like there should be a "tracks" web component
-
     const gensTracks = document.getElementById("gens-tracks") as GensTracks;
 
     const inputControls = document.getElementById(
@@ -59,70 +59,86 @@ export async function initCanvases({
     ) as InputControls;
 
     const gensDb = new GensDb(sampleId, caseId, genomeBuild);
-    
+
     const allChromData = await gensDb.getAllChromData();
     const overviewCovData = await gensDb.getOverviewCovData();
     const overviewBafData = await gensDb.getOverviewBafData();
 
-    gensTracks.initialize(allChromData, overviewCovData, overviewBafData);
+    const onChromClick = async (chrom) => {
+        const chromData = await gensDb.getChromData(chrom);
+        inputControls.updateChromosome(chrom, chromData.size);
+        const selectedAnnots = inputControls.getAnnotations();
+        const region = inputControls.getRegion();
 
-    // @ts-ignore
-    const startRegion: Region = window.regionConfig;
-    const startRange: Rng = [startRegion.start, startRegion.end];
+        const renderData = await fetchRenderData(
+            gensDb,
+            startRegion.chrom,
+            selectedAnnots,
+        );
+        gensTracks.render(renderData, region);
+    };
 
-    // FIXME: Clean this up, so that I can collaborate with Markus
-    const defaultAnnots = [annotationFile];
+    gensTracks.initialize(
+        allChromData,
+        overviewCovData,
+        overviewBafData,
+        onChromClick,
+    );
 
-    const renderData = await fetchRenderData(gensDb, startRegion, defaultAnnots);
+    const renderData = await fetchRenderData(
+        gensDb,
+        startRegion.chrom,
+        [annotationFile],
+    );
     gensTracks.render(renderData, startRegion);
 
     // FIXME: Look into how to parse this for predefined start URLs
     inputControls.initialize(
         startRegion,
-        defaultAnnots,
-        async (region) => {
-        },
-        async (region, source) => {
-            const renderData = await fetchRenderData(gensDb, startRegion, defaultAnnots);
+        [annotationFile],
+        async (region) => {},
+        async (region, _source) => {
+            const selectedAnnots = inputControls.getAnnotations();
+            const renderData = await fetchRenderData(
+                gensDb,
+                region.chrom,
+                selectedAnnots,
+            );
             gensTracks.render(renderData, region);
         },
         async (_newXRange) => {
+            const selectedAnnots = inputControls.getAnnotations();
             const region = inputControls.getRegion();
-            const renderData = await fetchRenderData(gensDb, startRegion, defaultAnnots);
+            const renderData = await fetchRenderData(
+                gensDb,
+                region.chrom,
+                selectedAnnots,
+            );
             gensTracks.render(renderData, region);
         },
     );
-
-    // initialize and return the different canvases
-    // WEBGL values
-    const near = 0.1;
-    const far = 100;
-    const lineMargin = 2; // Margin for line thickness
-    // // Listener values
-    // const inputField = document.getElementById("region-field");
 }
 
-async function fetchRenderData(gensDb: GensDb, region: Region, annotSources: string[]): Promise<RenderData> {
-
+async function fetchRenderData(
+    gensDb: GensDb,
+    chrom: string,
+    annotSources: string[],
+): Promise<RenderData> {
     const annotationData = {};
     for (const source of annotSources) {
-        const annotData = await gensDb.getAnnotations(
-            region.chrom,
-            source,
-        )
+        const annotData = await gensDb.getAnnotations(chrom, source);
         annotationData[source] = annotData;
     }
 
     const renderData: RenderData = {
-        chromInfo: await gensDb.getChromData(region.chrom),
+        chromInfo: await gensDb.getChromData(chrom),
         annotations: annotationData,
-        covData: await gensDb.getCov(region.chrom),
-        bafData: await gensDb.getBaf(region.chrom),
-        transcriptData: await gensDb.getTranscripts(region.chrom)
-    }
+        covData: await gensDb.getCov(chrom),
+        bafData: await gensDb.getBaf(chrom),
+        transcriptData: await gensDb.getTranscripts(chrom),
+    };
     return renderData;
 }
-
 
 // Make hard link and copy link to clipboard
 export function copyPermalink(genomeBuild, region) {

@@ -6,8 +6,8 @@ import {
     getTranscriptData,
     getIdeogramData as getChromosomeData,
     getOverviewData,
-} from "./requests";
-import { CHROMOSOME_NAMES } from "./util/constants";
+} from "../requests";
+import { CHROMOSOME_NAMES } from "../util/constants";
 
 export class GensDb {
     sampleId: string;

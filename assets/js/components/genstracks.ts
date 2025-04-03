@@ -77,6 +77,7 @@ export class GensTracks extends HTMLElement {
         allChromData: Record<string, ChromosomeInfo>,
         overviewCovData: OverviewData,
         overviewBafData: OverviewData,
+        chromClick: (string) => void
     ) {
         this.coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
         this.bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
@@ -97,8 +98,8 @@ export class GensTracks extends HTMLElement {
             chromSizes,
         );
 
-        this.overviewTrackCov.render(null, overviewCovData, COV_Y_RANGE);
-        this.overviewTrackBaf.render(null, overviewBafData, BAF_Y_RANGE);
+        this.overviewTrackCov.render(null, overviewCovData, COV_Y_RANGE, chromClick);
+        this.overviewTrackBaf.render(null, overviewBafData, BAF_Y_RANGE, chromClick);
     }
 
     render(data: RenderData, region: Region) {

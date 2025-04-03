@@ -114,7 +114,7 @@ async function getDotData(
         return {
             x: (d.start + d.end) / 2,
             y: d.value,
-            color: "blue", // Should this be assigned later actually?
+            color: "black", // Should this be assigned later actually?
         };
     });
 
@@ -178,62 +178,5 @@ export async function getIdeogramData(
     })) as ChromosomeInfo;
 
     return chromosomeInfo;
-
-    // const bands = result.bands;
-
-    // const stainToColor = STYLE.colors.stainToColor;
-
-    // // FIXME: Think, how do we want to deal with colors in the end?
-    // const renderBands = bands.map((band) => {
-    //     let color = "black";
-    //     if (stainToColor[band.stain] !== undefined) {
-    //         color = stainToColor[band.stain];
-    //     } else {
-    //         console.error("Unhandled stain: ", band.stain);
-    //     }
-
-    //     return {
-    //         start: band.start,
-    //         end: band.end,
-    //         color,
-    //         label: band.id
-    //     }
-    // })
-
-    // return renderBands;
 }
 
-// export async function getCovAndBafFromOldAPI(
-//     region: Region,
-// ): Promise<{ cov: any; baf: any }> {
-//     const regionString = `${region.chrom}:${region.start}-${region.end}`;
-//     const query = {
-//         region: regionString,
-//         case_id: "hg002-2",
-//         sample_id: "hg002-2",
-//         genome_build: 38,
-//         hg_filedir: undefined,
-//         x_pos: 930,
-//         y_pos: 94,
-//         plot_height: 180,
-//         extra_plot_width: 930,
-//         top_bottom_padding: 8,
-//         x_ampl: 1395,
-//         baf_y_start: 1,
-//         baf_y_end: 0,
-//         log2_y_start: 4,
-//         log2_y_end: -4,
-//         reduce_data: 1,
-//     };
-
-//     const covResults = await get("get-coverage", query);
-//     const bafRaw = covResults.baf;
-//     const bafPoints = parseResponseToPoints(bafRaw);
-//     const covRaw = covResults.data;
-//     const covPoints = parseResponseToPoints(covRaw);
-
-//     return {
-//         cov: covPoints,
-//         baf: bafPoints,
-//     };
-// }

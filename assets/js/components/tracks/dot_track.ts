@@ -1,5 +1,5 @@
 import { CanvasTrack } from "./canvas_track";
-import { renderBorder, renderDots } from "./render_utils";
+import { drawDotsScaled, linearScale, renderBorder, renderDots } from "./render_utils";
 
 export class DotTrack extends CanvasTrack {
     initialize(label: string, trackHeight: number) {
@@ -13,14 +13,11 @@ export class DotTrack extends CanvasTrack {
     ) {
         super.syncDimensions();
 
-        // const viewNts = endNt - startNt;
-        // const scaleFactor = this._canvas.width / viewNts
+        const xScale = this.getScale(xRange, "x");
+        const yScale = this.getScale(yRange, "y");
 
-        // FIXME: Scaling should be performed before
-        // FIXME: Rendering area inside border?
         renderBorder(this.ctx, this.dimensions);
-
-        renderDots(this.ctx, dots, xRange, yRange, this.dimensions);
+        drawDotsScaled(this.ctx, dots, xScale, yScale);
     }
 }
 

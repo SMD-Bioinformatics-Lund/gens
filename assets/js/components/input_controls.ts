@@ -5,6 +5,7 @@ import {
     zoomInNew,
     zoomOutNew,
 } from "../navigation";
+import { GensDb } from "../state/gens_db";
 
 const BUTTON_ZOOM_COLOR = "#8fbcbb";
 const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
@@ -50,7 +51,6 @@ template.innerHTML = String.raw`
     }
     </style>
     <div style="display: flex; align-items: center; gap: 8px;">
-        <select id="source-list" multiple></select>
         <button id="pan-left" class='button pan'>
             <span id="arrow-left" class='icon' title='Left'></span>
         </button>
@@ -67,6 +67,7 @@ template.innerHTML = String.raw`
             <input onFocus='this.select();' id='region-field' type='text' size=20>
             <input id="submit" type='submit' class='button' title='Submit range'>
         </div>
+        <select id="source-list" multiple></select>
     </div>
 `;
 
@@ -81,7 +82,7 @@ export class InputControls extends HTMLElement {
     private regionField: HTMLInputElement;
     private submit: HTMLButtonElement;
 
-    private fullRegion: Region;
+    private region: Region;
 
     connectedCallback() {
         this._root = this.attachShadow({ mode: "open" });
@@ -110,10 +111,10 @@ export class InputControls extends HTMLElement {
         return parseRegionDesignation(this.regionField.value);
     }
 
-    getSources(): string[] {
-        const selected = Array.from(this.annotationSourceList.selectedOptions).map(
-            (option) => option.value,
-        );
+    getAnnotations(): string[] {
+        const selected = Array.from(
+            this.annotationSourceList.selectedOptions,
+        ).map((option) => option.value);
         return selected;
     }
 
@@ -122,8 +123,16 @@ export class InputControls extends HTMLElement {
         return [region.start, region.end];
     }
 
+    updateChromosome(chrom: string, chromLength: number) {
+        this.region.chrom = chrom;
+        this.region.start = 1;
+        this.region.end = chromLength;
+
+        this.regionField.value = `${this.region.chrom}:${this.region.start}-${this.region.end}`;
+    }
+
     updatePosition(range: [number, number]) {
-        this.regionField.value = `${this.fullRegion.chrom}:${range[0]}-${range[1]}`;
+        this.regionField.value = `${this.region.chrom}:${range[0]}-${range[1]}`;
     }
 
     initialize(
@@ -133,7 +142,7 @@ export class InputControls extends HTMLElement {
         onAnnotationChanged: (region: Region, source: string) => void,
         onPositionChange: (newXRange: [number, number]) => void,
     ) {
-        this.fullRegion = fullRegion;
+        this.region = fullRegion;
         this.updatePosition([fullRegion.start, fullRegion.end]);
         // this.regionField.value = `${fullRegion.chrom}:${fullRegion.start}-${fullRegion.end}`;
 

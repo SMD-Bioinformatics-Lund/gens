@@ -1,4 +1,4 @@
-import { renderBorder } from "./render_utils";
+import { linearScale, renderBorder } from "./render_utils";
 
 // FIXME: Move somewhere
 const PADDING_LEFT = 5;
@@ -18,7 +18,7 @@ export class CanvasTrack extends HTMLElement {
     protected _root: ShadowRoot;
     protected canvas: HTMLCanvasElement;
     protected ctx: CanvasRenderingContext2D;
-    protected dimensions: {width: number, height: number};
+    protected dimensions: { width: number; height: number };
     protected _scaleFactor: number;
     protected trackContainer: HTMLDivElement;
 
@@ -35,7 +35,9 @@ export class CanvasTrack extends HTMLElement {
         this.canvas.height = trackHeight;
         this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
-        this.trackContainer = this._root.getElementById("track-container") as HTMLDivElement;
+        this.trackContainer = this._root.getElementById(
+            "track-container",
+        ) as HTMLDivElement;
 
         this.syncDimensions();
 
@@ -43,12 +45,11 @@ export class CanvasTrack extends HTMLElement {
     }
 
     syncDimensions() {
-
         if (this.canvas == undefined) {
             console.error("Cannot run syncDimensions before initialize");
         }
 
-        const availWidth = this.trackContainer.clientWidth
+        const availWidth = this.trackContainer.clientWidth;
 
         // const viewNts = end - start;
 
@@ -59,6 +60,20 @@ export class CanvasTrack extends HTMLElement {
             width: this.canvas.width,
             height: this.canvas.height,
         };
+    }
+
+    getScale(range: Rng, type = "string"): Scale {
+        if (!["x", "y"].includes(type)) {
+            throw Error(`Unknown scale type: ${type}, expected x or y`);
+        }
+
+        const endDim =
+            type == "x" ? this.dimensions.width : this.dimensions.height;
+
+        const scale = (pos: number) => {
+            return linearScale(pos, range, [0, endDim]);
+        };
+        return scale;
     }
 }
 

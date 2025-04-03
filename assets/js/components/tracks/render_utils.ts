@@ -124,3 +124,25 @@ export function linearScale(pos: number, dataRange: Rng, pxRange: Rng): number {
     const pxPos = zeroBasedPos * scaleFactor + pxRange[0];
     return pxPos;
 }
+
+
+export function drawDotsScaled(
+    ctx: CanvasRenderingContext2D,
+    dots: RenderDot[],
+    xScale: Scale,
+    yScale: Scale,
+    dotSize: number = 2,
+) {
+    dots.forEach((dot) => {
+        ctx.fillStyle = dot.color;
+        const xPixel = xScale(dot.x);
+        const yPixel = yScale(dot.y);
+
+        ctx.fillRect(
+            xPixel - dotSize / 2,
+            yPixel - dotSize / 2,
+            dotSize,
+            dotSize,
+        );
+    });
+}
