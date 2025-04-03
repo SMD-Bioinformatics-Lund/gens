@@ -23,6 +23,14 @@ interface RenderDot {
     color: string,
 }
 
+interface RenderData {
+  chromInfo: ChromosomeInfo,
+  annotations: Record<string, RenderBand>,
+  covData: RenderDot[],
+  bafData: RenderDot[],
+  transcriptData: RenderBand[]
+}
+
 type Rng = [number, number];
 
 interface ColorPoint {

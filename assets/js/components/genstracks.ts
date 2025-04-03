@@ -74,8 +74,7 @@ export class GensTracks extends HTMLElement {
         ) as HTMLDivElement;
     }
 
-    // FIXME: Should async be removed from here?
-    async initialize(
+    initialize(
         allChromData: Record<string, ChromosomeInfo>,
         overviewCovData: OverviewData,
         overviewBafData: OverviewData,
@@ -86,10 +85,6 @@ export class GensTracks extends HTMLElement {
         this.transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
         this.ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
 
-        // const allChromData = await gensDb.getAllChromData();
-        // const chromSizes = Object.fromEntries(
-        //     Object.values(allChromData).map((data) => [data.chrom, data.size]),
-        // );
         const chromSizes = extractFromMap(allChromData, (data) => data.size);
 
         this.overviewTrackCov.initialize(
@@ -107,35 +102,34 @@ export class GensTracks extends HTMLElement {
         this.overviewTrackBaf.render(null, overviewBafData, BAF_Y_RANGE);
     }
 
-    // FIXME: Can it be preloaded, so that this does not need to be async?
-    // I guess all data loading ideally could be handled outside?
-    async render(gensDb: GensDb, region: Region, annotationSources: string[]) {
+    render(data: RenderData, region: Region) {
         const range: [number, number] = [region.start, region.end];
 
-        const chromInfo = await gensDb.getChromData(region.chrom);
-        this.ideogramTrack.render(region.chrom, chromInfo, range);
+        // const chromInfo = await gensDb.getChromData(region.chrom);
+        this.ideogramTrack.render(region.chrom, data.chromInfo, range);
 
         // FIXME: Move this somewhere?
         removeChildren(this.annotationsContainer);
-        for (const source of annotationSources) {
+        Object.entries(data).forEach(([source, data]) => {
             const annotTrack = new BandTrack();
             this.annotationsContainer.appendChild(annotTrack);
             annotTrack.initialize(source, THIN_TRACK_HEIGHT);
-            const annotations = await gensDb.getAnnotations(
-                region.chrom,
-                source,
-            );
-            annotTrack.render(range, annotations);
-        }
+            annotTrack.render(range, data);
+        })
+        // for (const source of annotationSources) {
+        //     const annotTrack = new BandTrack();
+        //     this.annotationsContainer.appendChild(annotTrack);
+        //     annotTrack.initialize(source, THIN_TRACK_HEIGHT);
 
-        const covData = await gensDb.getCov(region.chrom);
-        this.coverageTrack.render(range, COV_Y_RANGE, covData);
+        //     annotTrack.render(range, annotations);
+        // }
 
-        const bafData = await gensDb.getBaf(region.chrom);
-        this.bafTrack.render(range, BAF_Y_RANGE, bafData);
+        this.coverageTrack.render(range, COV_Y_RANGE, data.covData);
 
-        const transcriptData = await gensDb.getTranscripts(region.chrom);
-        this.transcriptTrack.render(range, transcriptData);
+        // const bafData = await gensDb.getBaf(region.chrom);
+        this.bafTrack.render(range, BAF_Y_RANGE, data.bafData);
+
+        this.transcriptTrack.render(range, data.transcriptData);
     }
 }
 
