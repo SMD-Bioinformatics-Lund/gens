@@ -39,11 +39,6 @@ export class OverviewTrack extends CanvasTrack {
     ) {
         super.syncDimensions();
 
-        // const xScale = (pos: number) => {
-        //     const xPixel = getPixelPosInRange(dot.x, xRange, pxWidth) + paddedPxXRange[0];
-
-        // }
-
         const totalChromSize = Object.values(this.chromSizes).reduce(
             (tot, size) => tot + size,
             0,
@@ -69,25 +64,12 @@ export class OverviewTrack extends CanvasTrack {
             drawVerticalLine(this.ctx, chromEnd, xScale),
         );
 
-        for (let y = -1; y < 1; y += 0.2) {
-            drawHorizontalLine(this.ctx, y, yScale, "blue");
-        }
-
-        for (let y = -4; y < 4; y += 1) {
-            drawHorizontalLine(this.ctx, y, yScale, "red");
-        }
-
         const pxRanges: Record<string, Rng> = transformMap(
             chromRanges,
             ([start, end]) => [xScale(start), xScale(end)],
         );
 
-        // const pxRanges = chromRanges.map(([start, end]) => [xScale(start), xScale(end)]);
-
         Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
-            // const totalNtRange =
-            // const pxXRange = pxRanges[chrom];
-            // const pxYRange: [number, number] = [0, this.dimensions.height];
 
             const pad = 4;
             const pxRange = padRange(pxRanges[chrom], pad);
