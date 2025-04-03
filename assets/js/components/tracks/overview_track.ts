@@ -25,42 +25,52 @@ export class OverviewTrack extends CanvasTrack {
 
         console.log("Ready for plotting now");
 
-        markRegions(this.ctx, this.chromSizes, this.dimensions.width);
 
-        // This is the key function
-        // get-multiple-coverages
-        // results: { 1: { baf: [] } }
-
-        // get-overview-chrom-dim, not needed or?
-
-        // const annotWithinRange = annotations.filter(
-        //     (annot) => annot.start >= xRange[0] && annot.end <= xRange[1],
-        // );
-
-        // renderBorder(this.ctx, this.dimensions);
-        // renderBands(this.ctx, this.dimensions, annotWithinRange, xRange);
+        // const chromStartPositions = [];
+        const pxStartPositions = getPxStartPositions(this.chromSizes, this.dimensions.width);
+        
+        // Draw the initial lines
+        Object.values(pxStartPositions).forEach((pxPos) =>
+            drawVerticalLine(this.ctx, pxPos),
+        );
     }
 }
 
-function markRegions(
-    ctx: CanvasRenderingContext2D,
-    chromLengths: Record<string, number>,
+function getPxStartPositions(
+    chromSizes: Record<string, number>,
     screenWidth: number,
-) {
+): Record<string, number> {
 
-    const totalChromSize = Object.values(chromLengths).reduce(
+    const totalChromSize = Object.values(chromSizes).reduce(
         (tot, size) => tot + size,
         0,
     );
 
+    const pxStartPositions: Record<string, number> = {};
     let sumPos = 0;
-    Object.entries(chromLengths).forEach(([chrom, chromLength]) => {
+    Object.entries(chromSizes).forEach(([chrom, chromLength]) => {
         sumPos += chromLength;
-        const pxPos = scaleToPixels(sumPos, totalChromSize, screenWidth);
-        console.log("Rendering at", pxPos);
-
-        drawVerticalLine(ctx, pxPos);
+        const pxPos = scaleToPixels(
+            sumPos,
+            totalChromSize,
+            screenWidth,
+        );
+        pxStartPositions[chrom] = pxPos;
     });
+    return pxStartPositions;
+}
+
+function markRegions(
+    ctx: CanvasRenderingContext2D,
+    pxStartPositions: number[],
+) {
+    // let sumPos = 0;
+    // Object.entries(chromLengths).forEach(([chrom, chromLength]) => {
+    //     sumPos += chromLength;
+    //     const pxPos = scaleToPixels(sumPos, totalChromSize, screenWidth);
+    //     console.log("Rendering at", pxPos);
+    //     drawVerticalLine(ctx, pxPos);
+    // });
     // Render vertical lines for each chromosome
 }
 
