@@ -17,7 +17,7 @@ export class IdeogramTrack extends CanvasTrack {
     private markerElement: HTMLDivElement;
 
     initialize(label: string, trackHeight: number) {
-        super.initialize(label, trackHeight);
+        super.initializeCanvas(label, trackHeight);
         setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
 
         const markerElement = setupMarkerElement(trackHeight);

@@ -20,13 +20,19 @@ export function renderBands(
         // const color = `rgb(${rgbs[0]},${rgbs[1]},${rgbs[2]})`;
         ctx.fillStyle = annot.color;
 
-        const xPxStart = getPixelPosition(annot.start, xRange, canvasDim.width);
-        const xPxEnd = getPixelPosition(annot.end, xRange, canvasDim.width);
+        const xPxStart = getPixelRange(annot.start, xRange, canvasDim.width);
+        const xPxEnd = getPixelRange(annot.end, xRange, canvasDim.width);
         ctx.fillRect(xPxStart, 0, xPxEnd - xPxStart, canvasDim.height);
     });
 }
 
-function getPixelPosition(
+export function scaleToPixels(dataPos: number, dataSize: number, viewSize: number) {
+    const scaleFactor = viewSize / dataSize;
+    const pixelPos = dataPos * scaleFactor;
+    return pixelPos;
+}
+
+export function getPixelRange(
     pos: number,
     range: [number, number],
     viewSize: number,
@@ -47,8 +53,8 @@ export function renderDots(
 ) {
     dots.forEach((dot) => {
         ctx.fillStyle = dot.color;
-        const xPixel = getPixelPosition(dot.x, xRange, canvasDim.width);
-        const yPixel = getPixelPosition(dot.y, yRange, canvasDim.height);
+        const xPixel = getPixelRange(dot.x, xRange, canvasDim.width);
+        const yPixel = getPixelRange(dot.y, yRange, canvasDim.height);
         ctx.fillRect(
             xPixel - dotSize / 2,
             yPixel - dotSize / 2,

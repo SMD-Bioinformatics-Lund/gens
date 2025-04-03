@@ -3,7 +3,7 @@ import { renderBorder, renderDots } from "./render_utils";
 
 export class DotTrack extends CanvasTrack {
     initialize(label: string, trackHeight: number) {
-        super.initialize(label, trackHeight);
+        super.initializeCanvas(label, trackHeight);
     }
 
     render(

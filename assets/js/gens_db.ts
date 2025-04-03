@@ -25,7 +25,6 @@ export class GensDb {
             this.annotCache[chrom] !== undefined &&
             this.annotCache[chrom][source] !== undefined;
         if (!isCached) {
-
             if (this.annotCache[chrom] === undefined) {
                 this.annotCache[chrom] = {};
             }
@@ -89,16 +88,25 @@ export class GensDb {
     async getChromData(chrom: string): Promise<ChromosomeInfo> {
         const isCached = this.chromCache[chrom] !== undefined;
         if (!isCached) {
-            this.chromCache[chrom] = await getChromosomeData(chrom, this.genomeBuild);
+            this.chromCache[chrom] = await getChromosomeData(
+                chrom,
+                this.genomeBuild,
+            );
         }
         return this.chromCache[chrom];
     }
+    // FIXME: This would be better as a single request I think
     async getAllChromData(): Promise<Record<string, ChromosomeInfo>> {
-        CHROMOSOME_NAMES.forEach(async (chrom) => {
-            if (this.chromCache[chrom] === undefined) {
-                this.chromCache[chrom] = await getChromosomeData(chrom, this.genomeBuild);
-            }
-        })
+        await Promise.all(
+            CHROMOSOME_NAMES.map(async (chrom) => {
+                if (this.chromCache[chrom] === undefined) {
+                    this.chromCache[chrom] = await getChromosomeData(
+                        chrom,
+                        this.genomeBuild,
+                    );
+                }
+            }),
+        );
         return this.chromCache;
-    } 
+    }
 }

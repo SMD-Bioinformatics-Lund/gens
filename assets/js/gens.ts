@@ -44,6 +44,7 @@ import {
     getTranscriptData,
 } from "./requests";
 import { GensDb } from "./gens_db";
+import { extractFromMap } from "./track/utils";
 // import { get } from "http";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
@@ -111,9 +112,13 @@ export async function initCanvases({
     ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
 
     const allChromData = await gensDb.getAllChromData();
-    const chromSizes: Record<string, number> = Object.fromEntries(
-        Object.entries(allChromData).map(([chrom, data]) => [chrom, data.size]),
-    );
+    // const chromSizes = Object.fromEntries(
+    //     Object.values(allChromData).map((data) => [data.chrom, data.size]),
+    // );
+    const chromSizes = extractFromMap(allChromData, data => data.size);
+
+    // console.log(allChromData);
+    // console.log(chromSizes);
 
     overviewTrackCov.initialize(
         "Overview (cov)",

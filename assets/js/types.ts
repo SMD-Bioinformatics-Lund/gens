@@ -108,6 +108,7 @@ interface ChromosomeBand {
 }
 
 interface ChromosomeInfo {
+  chrom: string,
   centromere: {start: number, end: number},
   size: number,
   bands: ChromosomeBand[]

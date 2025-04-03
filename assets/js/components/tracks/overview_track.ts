@@ -1,7 +1,9 @@
 import { CanvasTrack } from "./canvas_track";
+import { getPixelRange, scaleToPixels } from "./render_utils";
 
 export class OverviewTrack extends CanvasTrack {
-    chromSizes: Record<string, number> = {};
+    totalChromSize: number;
+    chromSizes: Record<string, number>;
 
     initialize(
         label: string,
@@ -21,7 +23,7 @@ export class OverviewTrack extends CanvasTrack {
 
         console.log("Ready for plotting now");
 
-        markRegions(this.chromSizes, this.dimensions.width);
+        markRegions(this.ctx, this.chromSizes, this.dimensions.width);
 
         // This is the key function
         // get-multiple-coverages
@@ -41,10 +43,19 @@ export class OverviewTrack extends CanvasTrack {
 function markRegions(
     ctx: CanvasRenderingContext2D,
     chromLengths: Record<string, number>,
-    width: number,
+    screenWidth: number,
 ) {
-    Object.entries(chromLengths).forEach(([chrom, length]) => {
 
+    const totalChromSize = Object.values(chromLengths).reduce(
+        (tot, size) => tot + size,
+        0,
+    );
+
+    let sumPos = 0;
+    Object.entries(chromLengths).forEach(([chrom, chromLength]) => {
+        sumPos += chromLength;
+        const pxPos = scaleToPixels(sumPos, totalChromSize, screenWidth);
+        console.log("Rendering at", pxPos);
     });
     // Render vertical lines for each chromosome
 }
