@@ -1,8 +1,8 @@
-import "./components/tracks/canvas_track";
-import "./components/tracks/band_track";
-import "./components/tracks/dot_track";
-import "./components/tracks/ideogram_track";
-import "./components/tracks/overview_track";
+import "./tracks/canvas_track";
+import "./tracks/band_track";
+import "./tracks/dot_track";
+import "./tracks/ideogram_track";
+import "./tracks/overview_track";
 import { IdeogramTrack } from "./tracks/ideogram_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
@@ -48,28 +48,28 @@ export class GensTracks extends HTMLElement {
         this._root = this.attachShadow({ mode: "open" });
         this._root.appendChild(template.content.cloneNode(true));
 
-        this.ideogramTrack = document.getElementById(
+        this.ideogramTrack = this._root.getElementById(
             "ideogram-track",
         ) as IdeogramTrack;
-        this.overviewTrackCov = document.getElementById(
+        this.overviewTrackCov = this._root.getElementById(
             "overview-track-cov",
         ) as OverviewTrack;
-        this.overviewTrackBaf = document.getElementById(
+        this.overviewTrackBaf = this._root.getElementById(
             "overview-track-baf",
         ) as OverviewTrack;
 
-        this.coverageTrack = document.getElementById(
+        this.coverageTrack = this._root.getElementById(
             "coverage-track",
         ) as DotTrack;
-        this.bafTrack = document.getElementById("baf-track") as DotTrack;
-        this.transcriptTrack = document.getElementById(
+        this.bafTrack = this._root.getElementById("baf-track") as DotTrack;
+        this.transcriptTrack = this._root.getElementById(
             "transcript-track",
         ) as BandTrack;
-        this.variantTrack = document.getElementById(
+        this.variantTrack = this._root.getElementById(
             "variant-track",
         ) as BandTrack;
 
-        this.annotationsContainer = document.getElementById(
+        this.annotationsContainer = this._root.getElementById(
             "annotations-container",
         ) as HTMLDivElement;
     }

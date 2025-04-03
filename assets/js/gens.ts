@@ -1,7 +1,5 @@
 // GENS module
 
-import { InteractiveCanvas } from "./interactive";
-import { OverviewCanvas } from "./overview";
 // import {
 //     VariantTrack,
 //     AnnotationTrack,
@@ -26,18 +24,7 @@ import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
-import { get } from "./fetch";
-import {
-    getAnnotationDataForChrom,
-    getBafData,
-    getCovData,
-    getOverviewData,
-    getSVVariantData,
-    getTranscriptData,
-} from "./requests";
 import { GensDb } from "./gens_db";
-import { extractFromMap } from "./track/utils";
-// import { get } from "http";
 
 
 // FIXME: Query from the backend
