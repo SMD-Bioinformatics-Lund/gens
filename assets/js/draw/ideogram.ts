@@ -21,8 +21,6 @@ export function drawChromosome(
         path: drawChromosomeShape(ctx, shiftX, shiftY, dim, centromere, color),
     };
 
-    console.log("Draw chromosome");
-
     const lineWidth = 1;
 
     ctx.clip(chromPath.path);

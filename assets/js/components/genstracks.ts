@@ -8,8 +8,6 @@ import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { extractFromMap, removeChildren } from "../track/utils";
-import { GensDb } from "../gens_db";
-import { getOverviewData } from "../requests";
 
 const THICK_TRACK_HEIGHT = 80;
 const THIN_TRACK_HEIGHT = 20;
