@@ -41,7 +41,6 @@ export class OverviewTrack extends CanvasTrack {
         Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
             const pxXRange = pxRanges[chrom];
             // const pxYRange: [number, number] = [0, this.dimensions.height];
-            console.log("Rendering dots");
 
             const xRange: Rng = [0, this.chromSizes[chrom]];
 
@@ -62,15 +61,15 @@ function renderDotsCustom(
     dim: Dimensions
 ) {
     const pad = 2;
-    const paddedXRange = padRange(xRange, pad);
+    const paddedPxXRange = padRange(pxXRange, pad);
 
-    const pxWidth = rangeSize(paddedXRange);
+    const pxWidth = rangeSize(paddedPxXRange);
 
     const dotSize = 2;
     dots.forEach((dot) => {
         ctx.fillStyle = dot.color;
         // Scale and shift to the correct window
-        const xPixel = getPixelPosInRange(dot.x, xRange, pxWidth) + paddedXRange[0];
+        const xPixel = getPixelPosInRange(dot.x, xRange, pxWidth) + paddedPxXRange[0];
         const yPixel = getPixelPosInRange(dot.y, yRange, dim.height)
         ctx.fillRect(xPixel - dotSize / 2, yPixel - dotSize / 2, dotSize, dotSize)
     })

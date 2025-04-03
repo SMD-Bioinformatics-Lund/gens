@@ -48,10 +48,13 @@ export class CanvasTrack extends HTMLElement {
             console.error("Cannot run syncDimensions before initialize");
         }
 
+        const availWidth = this.trackContainer.clientWidth
+
         // const viewNts = end - start;
 
         // FIXME: Not the responsibility of this component
-        this.canvas.width = window.innerWidth - PADDING_LEFT;
+        this.canvas.width = availWidth;
+        // this.canvas.width = window.innerWidth - PADDING_LEFT;
         this.dimensions = {
             width: this.canvas.width,
             height: this.canvas.height,
