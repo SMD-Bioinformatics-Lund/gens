@@ -1,10 +1,8 @@
 import tippy, { followCursor } from "tippy.js";
 import { drawChromosome } from "../../draw/ideogram";
-import { drawRect } from "../../draw/shapes";
 import { createChromosomeTooltip } from "../../track/ideogram";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { newDrawRect, renderBands } from "./render_utils";
 
 interface DrawPaths {
     chromosome: { path: Path2D };
@@ -91,7 +89,7 @@ function setupTooltip(
 
     canvas.addEventListener("mousemove", (event) => {
         const drawPaths = getDrawPaths();
-        if (drawPaths === null) {
+        if (drawPaths === undefined) {
             return;
         }
         drawPaths.bands.forEach((bandPath) => {

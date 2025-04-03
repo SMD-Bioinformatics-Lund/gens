@@ -71,9 +71,9 @@ export async function initCanvases({
     const startRange: Rng = [startRegion.start, startRegion.end];
 
     // FIXME: Clean this up, so that I can collaborate with Markus
-    const defaultAnnots = ["mimisbrunnr"];
+    const defaultAnnots = [annotationFile];
 
-    const renderData = fetchRenderData(gensDb, startRegion, defaultAnnots);
+    const renderData = await fetchRenderData(gensDb, startRegion, defaultAnnots);
     gensTracks.render(renderData, startRegion);
 
     // FIXME: Look into how to parse this for predefined start URLs
@@ -83,12 +83,12 @@ export async function initCanvases({
         async (region) => {
         },
         async (region, source) => {
-            const renderData = fetchRenderData(gensDb, startRegion, defaultAnnots);
+            const renderData = await fetchRenderData(gensDb, startRegion, defaultAnnots);
             gensTracks.render(renderData, region);
         },
         async (_newXRange) => {
             const region = inputControls.getRegion();
-            const renderData = fetchRenderData(gensDb, startRegion, defaultAnnots);
+            const renderData = await fetchRenderData(gensDb, startRegion, defaultAnnots);
             gensTracks.render(renderData, region);
         },
     );
@@ -102,7 +102,7 @@ export async function initCanvases({
     // const inputField = document.getElementById("region-field");
 }
 
-async function fetchRenderData(gensDb: GensDb, region: Region, annotSources: string[]): RenderData {
+async function fetchRenderData(gensDb: GensDb, region: Region, annotSources: string[]): Promise<RenderData> {
 
     const annotationData = {};
     for (const source of annotSources) {

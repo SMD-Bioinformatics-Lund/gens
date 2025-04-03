@@ -25,7 +25,7 @@ interface RenderDot {
 
 interface RenderData {
   chromInfo: ChromosomeInfo,
-  annotations: Record<string, RenderBand>,
+  annotations: Record<string, RenderBand[]>,
   covData: RenderDot[],
   bafData: RenderDot[],
   transcriptData: RenderBand[]

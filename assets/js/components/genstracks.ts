@@ -108,19 +108,13 @@ export class GensTracks extends HTMLElement {
 
         // FIXME: Move this somewhere?
         removeChildren(this.annotationsContainer);
-        Object.entries(data).forEach(([source, data]) => {
+        Object.entries(data.annotations).forEach(([source, annotData]) => {
             const annotTrack = new BandTrack();
             this.annotationsContainer.appendChild(annotTrack);
             annotTrack.initialize(source, THIN_TRACK_HEIGHT);
-            annotTrack.render(range, data);
+            console.log(annotData);
+            annotTrack.render(range, annotData);
         })
-        // for (const source of annotationSources) {
-        //     const annotTrack = new BandTrack();
-        //     this.annotationsContainer.appendChild(annotTrack);
-        //     annotTrack.initialize(source, THIN_TRACK_HEIGHT);
-
-        //     annotTrack.render(range, annotations);
-        // }
 
         this.coverageTrack.render(range, COV_Y_RANGE, data.covData);
 
