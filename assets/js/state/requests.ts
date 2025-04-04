@@ -56,6 +56,8 @@ export async function getTranscriptData(
   return transcriptsToRender;
 }
 
+const zip = (a: number[], b: number[]) => a.map((key, idx) => [key, b[idx]]);
+
 export async function getSVVariantData(
   sample_id: string,
   case_id: string,
@@ -102,7 +104,6 @@ export async function getDotData(
   const entrypoint = covOrBaf == "cov" ? "sample/coverage" : "sample/baf"
   const results = await get(new URL(entrypoint, apiURI).href, query);
 
-  const zip = (a: number[], b: number[]) => a.map((key, idx) => [key, b[idx]]);
   const renderData = zip(results[0].position, results[0].value).map((xy) => {
     return {
       x: xy[0],
@@ -142,21 +143,24 @@ export async function getOverviewData(
     cov_or_baf: covOrBaf,
   };
 
-  const overviewData: { chrom: string; pos: number; value: number }[] =
-    await get(new URL("dev-get-multiple-coverages", apiURI).href, query);
+  // const entrypoint = covOrBaf == "cov" ? "sample/coverage" : "sample/baf"
+  const overviewData: { region: string; position: number[]; value: number[]; zoom: string | null }[] =
+    await get(new URL("sample/overview", apiURI).href, query);
 
   const dataPerChrom: Record<string, RenderDot[]> = {};
 
   overviewData.forEach((element) => {
-    if (dataPerChrom[element.chrom] === undefined) {
-      dataPerChrom[element.chrom] = [];
+    if (dataPerChrom[element.region] === undefined) {
+      dataPerChrom[element.region] = [];
     }
-    const point: RenderDot = {
-      x: element.pos,
-      y: element.value,
-      color: "black",
-    };
-    dataPerChrom[element.chrom].push(point);
+    const points: RenderDot[] = zip(element.position, element.value).map((xy) => {
+      return {
+        x: xy[0],
+        y: xy[1],
+        color: "#954000", // not as boring
+      }
+    })
+    dataPerChrom[element.region] = points;
   });
 
   return dataPerChrom;

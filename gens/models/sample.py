@@ -59,4 +59,4 @@ class GenomeCoverage(RWModel):
     region: str | None
     position: list[int]
     value: list[float]
-    zoom: str | None
+    zoom: str | None = None

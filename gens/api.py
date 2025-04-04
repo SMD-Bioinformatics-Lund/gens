@@ -252,19 +252,17 @@ def dev_get_multiple_coverages(sample_id: str, case_id: str, cov_or_baf: str) ->
     if cov_or_baf not in {"cov", "baf"}:
         raise ValueError(f"Expected cov_or_baf to be 'cov' or 'baf'")
 
-    results = []
+    results: list[GenomeCoverage] = []
     for chrom in json_data.keys():
         chrom_data = json_data[chrom][cov_or_baf]
 
-        for (pos, value) in chrom_data:
-            datapoint = {
-                "chrom": chrom,
-                "pos": pos,
-                "value": value
-            }
-            results.append(datapoint)
+        results.append(GenomeCoverage(
+            region=chrom,
+            position=[pos for (pos, _) in chrom_data],
+            value=[val for (_, val) in chrom_data],
+        ))
 
-    return results
+    return jsonable_encoder(results)
 
 
 def get_multiple_coverages() -> dict[str, Any] | tuple[Any, int]:
