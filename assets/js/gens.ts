@@ -22,10 +22,12 @@ import "./components/genstracks";
 import { GensTracks } from "./components/genstracks";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
+import { parseCoverage, parseTranscripts, parseVariants } from "./components/tracks/render_utils";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
 import { GensAPI as GensAPI } from "./state/gens_api";
 import { GensSession } from "./state/session";
+import { transformMap } from "./track/utils";
 
 // FIXME: Query from the backend
 
@@ -128,15 +130,20 @@ async function fetchRenderData(
     annotationData[source] = annotData;
   }
 
+  const overviewCovRaw = await gensDb.getOverviewCovData()
+  const overviewCovRender = transformMap(overviewCovRaw, (cov => parseCoverage(cov)))
+  const overviewBafRaw = await gensDb.getOverviewBafData()
+  const overviewBafRender = transformMap(overviewBafRaw, (cov => parseCoverage(cov)))
+
   const renderData: RenderData = {
     chromInfo: await gensDb.getChromData(chrom),
     annotations: annotationData,
-    covData: await gensDb.getCov(chrom),
-    bafData: await gensDb.getBaf(chrom),
-    transcriptData: await gensDb.getTranscripts(chrom),
-    variantData: await gensDb.getVariants(chrom),
-    overviewCovData: await gensDb.getOverviewCovData(),
-    overviewBafData: await gensDb.getOverviewBafData(),
+    covData: parseCoverage(await gensDb.getCov(chrom)),
+    bafData: parseCoverage(await gensDb.getBaf(chrom)),
+    transcriptData: parseTranscripts(await gensDb.getTranscripts(chrom)),
+    variantData: parseVariants(await gensDb.getVariants(chrom)),
+    overviewCovData: overviewCovRender,
+    overviewBafData: overviewBafRender,
   };
   return renderData;
 }

@@ -1,10 +1,10 @@
 import {
   getAnnotationData,
-  getSVVariantData,
+  getChromToSVs,
   getTranscriptData,
   getIdeogramData as getChromosomeData,
   getOverviewData,
-  getDotData,
+  getCoverage,
 } from "./requests";
 import { CHROMOSOME_NAMES } from "../util/constants";
 
@@ -26,8 +26,8 @@ export class GensAPI {
     this.apiURL = gensApiURL;
   }
 
-  private annotCache: Record<string, Record<string, RenderBand[]>> = {};
-  async getAnnotations(chrom: string, source: string): Promise<RenderBand[]> {
+  private annotCache: Record<string, Record<string, APIAnnotation[]>> = {};
+  async getAnnotations(chrom: string, source: string): Promise<APIAnnotation[]> {
     const isCached =
       this.annotCache[chrom] !== undefined &&
       this.annotCache[chrom][source] !== undefined;
@@ -42,11 +42,11 @@ export class GensAPI {
     return this.annotCache[chrom][source];
   }
 
-  private covCache: Record<string, RenderDot[]> = {};
-  async getCov(chrom: string): Promise<RenderDot[]> {
+  private covCache: Record<string, APICoverage[]> = {};
+  async getCov(chrom: string): Promise<APICoverage[]> {
     const isCached = this.covCache[chrom] !== undefined;
     if (!isCached) {
-      this.covCache[chrom] = await getDotData(
+      this.covCache[chrom] = await getCoverage(
         this.sampleId,
         this.caseId,
         chrom,
@@ -57,11 +57,11 @@ export class GensAPI {
     return this.covCache[chrom];
   }
 
-  private bafCache: Record<string, RenderDot[]> = {};
-  async getBaf(chrom: string): Promise<RenderDot[]> {
+  private bafCache: Record<string, APICoverage[]> = {};
+  async getBaf(chrom: string): Promise<APICoverage[]> {
     const isCached = this.bafCache[chrom] !== undefined;
     if (!isCached) {
-      this.bafCache[chrom] = await getDotData(
+      this.bafCache[chrom] = await getCoverage(
         this.sampleId,
         this.caseId,
         chrom,
@@ -72,8 +72,8 @@ export class GensAPI {
     return this.bafCache[chrom];
   }
 
-  private transcriptCache: Record<string, RenderBand[]> = {};
-  async getTranscripts(chrom: string): Promise<RenderBand[]> {
+  private transcriptCache: Record<string, APITranscript[]> = {};
+  async getTranscripts(chrom: string): Promise<APITranscript[]> {
     const isCached = this.transcriptCache[chrom] !== undefined;
     if (!isCached) {
       this.transcriptCache[chrom] = await getTranscriptData(chrom, this.apiURL);
@@ -81,11 +81,11 @@ export class GensAPI {
     return this.transcriptCache[chrom];
   }
 
-  private variantsCache: Record<string, RenderBand[]> = null;
-  async getVariants(chrom: string): Promise<RenderBand[]> {
+  private variantsCache: Record<string, APIVariant[]> = null;
+  async getVariants(chrom: string): Promise<APIVariant[]> {
     const isCached = this.variantsCache !== null;
     if (!isCached) {
-      this.variantsCache = await getSVVariantData(
+      this.variantsCache = await getChromToSVs(
         this.sampleId,
         this.caseId,
         this.genomeBuild,
@@ -124,8 +124,8 @@ export class GensAPI {
     return this.chromCache;
   }
 
-  private overviewCovCache: Record<string, RenderDot[]> = null;
-  async getOverviewCovData(): Promise<Record<string, RenderDot[]>> {
+  private overviewCovCache: Record<string, APICoverage[]> = null;
+  async getOverviewCovData(): Promise<Record<string, APICoverage[]>> {
     if (this.overviewCovCache === null) {
       this.overviewCovCache = await getOverviewData(
         this.sampleId,
@@ -137,8 +137,8 @@ export class GensAPI {
     return this.overviewCovCache;
   }
 
-  private overviewBafCache: Record<string, RenderDot[]> = null;
-  async getOverviewBafData(): Promise<Record<string, RenderDot[]>> {
+  private overviewBafCache: Record<string, APICoverage[]> = null;
+  async getOverviewBafData(): Promise<Record<string, APICoverage[]>> {
     if (this.overviewBafCache === null) {
       this.overviewBafCache = await getOverviewData(
         this.sampleId,
