@@ -70,6 +70,10 @@ export class CanvasTrack extends HTMLElement {
     this.canvas.addEventListener("mousemove", (event) => {
       this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
 
+      if (this.hoverTargets == null) {
+        return;
+      }
+
       const hovered = this.hoverTargets.find(
         (target) =>
           event.offsetX >= target.x1 &&
