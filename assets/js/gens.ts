@@ -24,7 +24,7 @@ import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
-import { GensDb } from "./state/gens_db";
+import { GensAPI as GensAPI } from "./state/gens_api";
 import { GensSession } from "./state/session";
 
 // FIXME: Query from the backend
@@ -37,6 +37,7 @@ export async function initCanvases({
   hgFileDir,
   uiColors,
   scoutBaseURL,
+  gensApiURL,
   selectedVariant,
   annotationFile,
   startRegion,
@@ -48,6 +49,7 @@ export async function initCanvases({
   hgFileDir: string;
   uiColors: UIColors;
   scoutBaseURL: string;
+  gensApiURL: string;
   selectedVariant: string;
   annotationFile: string;
   startRegion: Region;
@@ -58,20 +60,20 @@ export async function initCanvases({
     "input-controls",
   ) as InputControls;
 
-  const gensDb = new GensDb(sampleId, caseId, genomeBuild);
+  const api = new GensAPI(sampleId, caseId, genomeBuild, gensApiURL);
 
-  const allChromData = await gensDb.getAllChromData();
-  const overviewCovData = await gensDb.getOverviewCovData();
-  const overviewBafData = await gensDb.getOverviewBafData();
+  const allChromData = await api.getAllChromData();
+  const overviewCovData = await api.getOverviewCovData();
+  const overviewBafData = await api.getOverviewBafData();
 
   const onChromClick = async (chrom) => {
-    const chromData = await gensDb.getChromData(chrom);
+    const chromData = await api.getChromData(chrom);
     inputControls.updateChromosome(chrom, chromData.size);
     const selectedAnnots = inputControls.getAnnotations();
     const region = inputControls.getRegion();
 
     const renderData = await fetchRenderData(
-      gensDb,
+      api,
       startRegion.chrom,
       selectedAnnots,
     );
@@ -80,7 +82,7 @@ export async function initCanvases({
 
   gensTracks.initialize(allChromData, onChromClick);
 
-  const renderData = await fetchRenderData(gensDb, startRegion.chrom, [
+  const renderData = await fetchRenderData(api, startRegion.chrom, [
     annotationFile,
   ]);
   gensTracks.render(renderData, startRegion);
@@ -93,7 +95,7 @@ export async function initCanvases({
     async (region, _source) => {
       const selectedAnnots = inputControls.getAnnotations();
       const renderData = await fetchRenderData(
-        gensDb,
+        api,
         region.chrom,
         selectedAnnots,
       );
@@ -103,17 +105,18 @@ export async function initCanvases({
       const selectedAnnots = inputControls.getAnnotations();
       const region = inputControls.getRegion();
       const renderData = await fetchRenderData(
-        gensDb,
+        api,
         region.chrom,
         selectedAnnots,
       );
       gensTracks.render(renderData, region);
     },
+    gensApiURL,
   );
 }
 
 async function fetchRenderData(
-  gensDb: GensDb,
+  gensDb: GensAPI,
   chrom: string,
   annotSources: string[],
 ): Promise<RenderData> {

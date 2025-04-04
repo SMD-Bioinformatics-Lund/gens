@@ -1,23 +1,29 @@
 import {
   getAnnotationData,
-  getBafData,
-  getCovData,
   getSVVariantData,
   getTranscriptData,
   getIdeogramData as getChromosomeData,
   getOverviewData,
-} from "../tmp";
+  getDotData,
+} from "./requests";
 import { CHROMOSOME_NAMES } from "../util/constants";
 
-export class GensDb {
+export class GensAPI {
   sampleId: string;
   caseId: string;
   genomeBuild: number;
+  apiURL: string;
 
-  constructor(sampleId: string, caseId: string, genomeBuild: number) {
+  constructor(
+    sampleId: string,
+    caseId: string,
+    genomeBuild: number,
+    gensApiURL: string,
+  ) {
     this.sampleId = sampleId;
     this.caseId = caseId;
     this.genomeBuild = genomeBuild;
+    this.apiURL = gensApiURL;
   }
 
   private annotCache: Record<string, Record<string, RenderBand[]>> = {};
@@ -30,7 +36,7 @@ export class GensDb {
         this.annotCache[chrom] = {};
       }
 
-      const annotations = await getAnnotationData(chrom, source);
+      const annotations = await getAnnotationData(chrom, source, this.apiURL);
       this.annotCache[chrom][source] = annotations;
     }
     return this.annotCache[chrom][source];
@@ -40,10 +46,12 @@ export class GensDb {
   async getCov(chrom: string): Promise<RenderDot[]> {
     const isCached = this.covCache[chrom] !== undefined;
     if (!isCached) {
-      this.covCache[chrom] = await getCovData(
+      this.covCache[chrom] = await getDotData(
         this.sampleId,
         this.caseId,
         chrom,
+        "cov",
+        this.apiURL,
       );
     }
     return this.covCache[chrom];
@@ -53,10 +61,12 @@ export class GensDb {
   async getBaf(chrom: string): Promise<RenderDot[]> {
     const isCached = this.bafCache[chrom] !== undefined;
     if (!isCached) {
-      this.bafCache[chrom] = await getBafData(
+      this.bafCache[chrom] = await getDotData(
         this.sampleId,
         this.caseId,
         chrom,
+        "baf",
+        this.apiURL,
       );
     }
     return this.bafCache[chrom];
@@ -66,7 +76,7 @@ export class GensDb {
   async getTranscripts(chrom: string): Promise<RenderBand[]> {
     const isCached = this.transcriptCache[chrom] !== undefined;
     if (!isCached) {
-      this.transcriptCache[chrom] = await getTranscriptData(chrom);
+      this.transcriptCache[chrom] = await getTranscriptData(chrom, this.apiURL);
     }
     return this.transcriptCache[chrom];
   }
@@ -80,6 +90,7 @@ export class GensDb {
         this.caseId,
         this.genomeBuild,
         chrom,
+        this.apiURL,
       );
     }
     return this.variantsCache[chrom];
@@ -89,7 +100,11 @@ export class GensDb {
   async getChromData(chrom: string): Promise<ChromosomeInfo> {
     const isCached = this.chromCache[chrom] !== undefined;
     if (!isCached) {
-      this.chromCache[chrom] = await getChromosomeData(chrom, this.genomeBuild);
+      this.chromCache[chrom] = await getChromosomeData(
+        chrom,
+        this.genomeBuild,
+        this.apiURL,
+      );
     }
     return this.chromCache[chrom];
   }
@@ -101,6 +116,7 @@ export class GensDb {
           this.chromCache[chrom] = await getChromosomeData(
             chrom,
             this.genomeBuild,
+            this.apiURL
           );
         }
       }),
@@ -111,7 +127,12 @@ export class GensDb {
   private overviewCovCache: Record<string, RenderDot[]> = null;
   async getOverviewCovData(): Promise<Record<string, RenderDot[]>> {
     if (this.overviewCovCache === null) {
-      this.overviewCovCache = await getOverviewData(this.sampleId, this.caseId, "cov");
+      this.overviewCovCache = await getOverviewData(
+        this.sampleId,
+        this.caseId,
+        "cov",
+        this.apiURL
+      );
     }
     return this.overviewCovCache;
   }
@@ -119,8 +140,13 @@ export class GensDb {
   private overviewBafCache: Record<string, RenderDot[]> = null;
   async getOverviewBafData(): Promise<Record<string, RenderDot[]>> {
     if (this.overviewBafCache === null) {
-      this.overviewBafCache = await getOverviewData(this.sampleId, this.caseId, "baf");
+      this.overviewBafCache = await getOverviewData(
+        this.sampleId,
+        this.caseId,
+        "baf",
+        this.apiURL
+      );
     }
-    return this.overviewBafCache
+    return this.overviewBafCache;
   }
 }

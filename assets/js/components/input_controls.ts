@@ -1,11 +1,11 @@
 import { get } from "../fetch";
 import {
-    getPan,
-    parseRegionDesignation,
-    zoomInNew,
-    zoomOutNew,
+  getPan,
+  parseRegionDesignation,
+  zoomInNew,
+  zoomOutNew,
 } from "../navigation";
-import { GensDb } from "../state/gens_db";
+import { GensAPI } from "../state/gens_api";
 
 const BUTTON_ZOOM_COLOR = "#8fbcbb";
 const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
@@ -72,134 +72,132 @@ template.innerHTML = String.raw`
 `;
 
 export class InputControls extends HTMLElement {
-    private _root: ShadowRoot;
+  private _root: ShadowRoot;
 
-    private annotationSourceList: HTMLSelectElement;
-    private panLeft: HTMLButtonElement;
-    private panRight: HTMLButtonElement;
-    private zoomIn: HTMLButtonElement;
-    private zoomOut: HTMLButtonElement;
-    private regionField: HTMLInputElement;
-    private submit: HTMLButtonElement;
+  private annotationSourceList: HTMLSelectElement;
+  private panLeft: HTMLButtonElement;
+  private panRight: HTMLButtonElement;
+  private zoomIn: HTMLButtonElement;
+  private zoomOut: HTMLButtonElement;
+  private regionField: HTMLInputElement;
+  private submit: HTMLButtonElement;
 
-    private region: Region;
+  private region: Region;
 
-    connectedCallback() {
-        this._root = this.attachShadow({ mode: "open" });
-        this._root.appendChild(template.content.cloneNode(true));
+  connectedCallback() {
+    this._root = this.attachShadow({ mode: "open" });
+    this._root.appendChild(template.content.cloneNode(true));
 
-        this.annotationSourceList = this._root.getElementById(
-            "source-list",
-        ) as HTMLSelectElement;
-        this.panLeft = this._root.getElementById(
-            "pan-left",
-        ) as HTMLButtonElement;
-        this.panRight = this._root.getElementById(
-            "pan-right",
-        ) as HTMLButtonElement;
-        this.zoomIn = this._root.getElementById("zoom-in") as HTMLButtonElement;
-        this.zoomOut = this._root.getElementById(
-            "zoom-out",
-        ) as HTMLButtonElement;
-        this.regionField = this._root.getElementById(
-            "region-field",
-        ) as HTMLInputElement;
-        this.submit = this._root.getElementById("submit") as HTMLButtonElement;
-    }
+    this.annotationSourceList = this._root.getElementById(
+      "source-list",
+    ) as HTMLSelectElement;
+    this.panLeft = this._root.getElementById("pan-left") as HTMLButtonElement;
+    this.panRight = this._root.getElementById("pan-right") as HTMLButtonElement;
+    this.zoomIn = this._root.getElementById("zoom-in") as HTMLButtonElement;
+    this.zoomOut = this._root.getElementById("zoom-out") as HTMLButtonElement;
+    this.regionField = this._root.getElementById(
+      "region-field",
+    ) as HTMLInputElement;
+    this.submit = this._root.getElementById("submit") as HTMLButtonElement;
+  }
 
-    getRegion(): Region {
-        return parseRegionDesignation(this.regionField.value);
-    }
+  getRegion(): Region {
+    return parseRegionDesignation(this.regionField.value);
+  }
 
-    getAnnotations(): string[] {
-        const selected = Array.from(
-            this.annotationSourceList.selectedOptions,
-        ).map((option) => option.value);
-        return selected;
-    }
+  getAnnotations(): string[] {
+    const selected = Array.from(this.annotationSourceList.selectedOptions).map(
+      (option) => option.value,
+    );
+    return selected;
+  }
 
-    getRange(): [number, number] {
-        const region = parseRegionDesignation(this.regionField.value);
-        return [region.start, region.end];
-    }
+  getRange(): [number, number] {
+    const region = parseRegionDesignation(this.regionField.value);
+    return [region.start, region.end];
+  }
 
-    updateChromosome(chrom: string, chromLength: number) {
-        this.region.chrom = chrom;
-        this.region.start = 1;
-        this.region.end = chromLength;
+  updateChromosome(chrom: string, chromLength: number) {
+    this.region.chrom = chrom;
+    this.region.start = 1;
+    this.region.end = chromLength;
 
-        this.regionField.value = `${this.region.chrom}:${this.region.start}-${this.region.end}`;
-    }
+    this.regionField.value = `${this.region.chrom}:${this.region.start}-${this.region.end}`;
+  }
 
-    updatePosition(range: [number, number]) {
-        this.regionField.value = `${this.region.chrom}:${range[0]}-${range[1]}`;
-    }
+  updatePosition(range: [number, number]) {
+    this.regionField.value = `${this.region.chrom}:${range[0]}-${range[1]}`;
+  }
 
-    initialize(
-        fullRegion: Region,
-        defaultAnnots: string[],
-        onRegionChanged: (region: Region) => void,
-        onAnnotationChanged: (region: Region, source: string) => void,
-        onPositionChange: (newXRange: [number, number]) => void,
-    ) {
-        this.region = fullRegion;
-        this.updatePosition([fullRegion.start, fullRegion.end]);
-        // this.regionField.value = `${fullRegion.chrom}:${fullRegion.start}-${fullRegion.end}`;
+  initialize(
+    fullRegion: Region,
+    defaultAnnots: string[],
+    onRegionChanged: (region: Region) => void,
+    onAnnotationChanged: (region: Region, source: string) => void,
+    onPositionChange: (newXRange: [number, number]) => void,
+    apiURL: string,
+  ) {
+    this.region = fullRegion;
+    this.updatePosition([fullRegion.start, fullRegion.end]);
+    // this.regionField.value = `${fullRegion.chrom}:${fullRegion.start}-${fullRegion.end}`;
 
-        get("get-annotation-sources", { genome_build: 38 }).then((result) => {
-            const filenames = result.sources;
-            for (const filename of filenames) {
-                const opt = document.createElement("option");
-                opt.value = filename;
-                opt.innerHTML = filename;
-                if (defaultAnnots.includes(filename)) {
-                    opt.selected = true;
-                }
-                this.annotationSourceList.appendChild(opt);
-            }
-        });
-        // this.annotationSourceList.value = defaultAnnot;
+    // FIXME: Move this out from here
+    get(new URL("get-annotation-sources", apiURL).href, {
+      genome_build: 38,
+    }).then((result) => {
+      const filenames = result.sources;
+      for (const filename of filenames) {
+        const opt = document.createElement("option");
+        opt.value = filename;
+        opt.innerHTML = filename;
+        if (defaultAnnots.includes(filename)) {
+          opt.selected = true;
+        }
+        this.annotationSourceList.appendChild(opt);
+      }
+    });
+    // this.annotationSourceList.value = defaultAnnot;
 
-        this.annotationSourceList.addEventListener("change", async () => {
-            const annotationSource = this.annotationSourceList.value;
-            const region = parseRegionDesignation(this.regionField.value);
+    this.annotationSourceList.addEventListener("change", async () => {
+      const annotationSource = this.annotationSourceList.value;
+      const region = parseRegionDesignation(this.regionField.value);
 
-            onAnnotationChanged(region, annotationSource);
-        });
+      onAnnotationChanged(region, annotationSource);
+    });
 
-        this.panLeft.onclick = () => {
-            const newXRange = getPan(this.getRange(), "left");
-            this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
-            onPositionChange(newXRange);
-        };
+    this.panLeft.onclick = () => {
+      const newXRange = getPan(this.getRange(), "left");
+      this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
+      onPositionChange(newXRange);
+    };
 
-        this.panRight.onclick = () => {
-            const newXRange = getPan(this.getRange(), "right");
-            this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
-            onPositionChange(newXRange);
-        };
+    this.panRight.onclick = () => {
+      const newXRange = getPan(this.getRange(), "right");
+      this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
+      onPositionChange(newXRange);
+    };
 
-        this.zoomIn.onclick = () => {
-            const currXRange = this.getRange();
-            const newXRange = zoomInNew(currXRange);
-            this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
-            onPositionChange(newXRange);
-        };
+    this.zoomIn.onclick = () => {
+      const currXRange = this.getRange();
+      const newXRange = zoomInNew(currXRange);
+      this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
+      onPositionChange(newXRange);
+    };
 
-        this.zoomOut.onclick = () => {
-            const currXRange = this.getRange();
-            const newXRange = zoomOutNew(currXRange);
-            // const newMin = newXRange[0];
-            const newMax = Math.min(newXRange[1], fullRegion.end);
-            this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newMax}`;
-            onPositionChange(newXRange);
-        };
+    this.zoomOut.onclick = () => {
+      const currXRange = this.getRange();
+      const newXRange = zoomOutNew(currXRange);
+      // const newMin = newXRange[0];
+      const newMax = Math.min(newXRange[1], fullRegion.end);
+      this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newMax}`;
+      onPositionChange(newXRange);
+    };
 
-        this.submit.onclick = () => {
-            const range = this.getRange();
-            onPositionChange(range);
-        };
-    }
+    this.submit.onclick = () => {
+      const range = this.getRange();
+      onPositionChange(range);
+    };
+  }
 }
 
 customElements.define("input-controls", InputControls);

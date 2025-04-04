@@ -24,7 +24,7 @@ gens_bp = Blueprint(
 )
 
 
-@gens_bp.route("/<path:sample_name>", methods=["GET"])
+@gens_bp.route("/viewer/<path:sample_name>", methods=["GET"])
 def display_case(sample_name: str) -> str:
     """
     Renders the Gens template
