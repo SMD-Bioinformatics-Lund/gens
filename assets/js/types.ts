@@ -1,3 +1,85 @@
+interface APIAnnotation {
+  chrom: string,
+  color: [number, number, number],
+  end: number,
+  genome_build: number,
+  name: string,
+  score: number | null,
+  source: string,
+  start: number,
+  strand: string
+}
+
+interface APITranscriptPart {
+  start: number,
+  end: number,
+  exon_number?: number,
+  feature: "exon"
+}
+
+interface APITranscript {
+  chrom: string,
+  start: number,
+  end: number,
+  feature: APITranscriptPart[],
+  gene_name: string,
+  genome_build: number,
+  height_order: number,
+  hgnc_id: string,
+  mane: string,
+  refseq_id: string,
+  strand: string,
+  transcript_biotype: string,
+  transcript_id: string,
+}
+
+interface APIVariant {
+  alternative: string,
+  cadd_score: string,
+  case_id: string,
+  category: string,
+  chromosome: string,
+  cytoband_start: string,
+  cytoband_end: string,
+  display_name: string,
+  document_id: string,
+  end: number,
+  end_chrom: string,
+  filters: string[],
+  gatk: string,
+  hgnc_ids: string[],
+  hgnc_symbols: string[],
+  institute: string,
+  length: number,
+  missing_data: boolean,
+  panels: string[],
+  phast_conservation: string[],
+  phylop_conservation: string[],
+  position: number,
+  quality: number,
+  rank_score: number,
+  rank_score_results: {category: string, score: number}[],
+  reference: string,
+  samples: any[],
+  simple_id: string,
+  sub_category: string,
+  variant_id: string,
+  variant_rank: number,
+  variant_type: string
+}
+
+interface APICoverageDot {
+  pos: number,
+  value: number,
+}
+
+interface APICoverageBin {
+  start: number,
+  end: number,
+  value: number,
+  zoom: string,
+}
+
 interface AnnotationEntry {
   chrom: string,
   color: number[],
@@ -10,12 +92,16 @@ interface AnnotationEntry {
 }
 
 
-
+// FIXME: This should be looked over
 interface RenderBand {
+  id: string,
   start: number,
   end: number,
   color: string,
   label?: string,
+  y1?: number,
+  y2?: number,
+  // nbrOverlap?: number
 }
 
 interface RenderDot {
@@ -25,6 +111,8 @@ interface RenderDot {
 }
 
 type Scale = (value: number) => number
+
+type ColorScale = (level: string) => string
 
 interface RenderData {
   chromInfo: ChromosomeInfo,

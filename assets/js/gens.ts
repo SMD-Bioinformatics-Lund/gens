@@ -22,10 +22,18 @@ import "./components/genstracks";
 import { GensTracks } from "./components/genstracks";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
+import {
+  parseCoverageDot,
+  parseCoverageBin,
+  parseTranscripts,
+  parseVariants,
+  parseAnnotations,
+} from "./components/tracks/render_utils";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
 import { GensAPI as GensAPI } from "./state/gens_api";
 import { GensSession } from "./state/session";
+import { transformMap } from "./track/utils";
 
 // FIXME: Query from the backend
 
@@ -63,8 +71,8 @@ export async function initCanvases({
   const api = new GensAPI(sampleId, caseId, genomeBuild, gensApiURL);
 
   const allChromData = await api.getAllChromData();
-  const overviewCovData = await api.getOverviewCovData();
-  const overviewBafData = await api.getOverviewBafData();
+  // const overviewCovData = await api.getOverviewCovData();
+  // const overviewBafData = await api.getOverviewBafData();
 
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);
@@ -120,23 +128,37 @@ async function fetchRenderData(
   chrom: string,
   annotSources: string[],
 ): Promise<RenderData> {
-  console.log("Getting data to render for chrom", chrom);
-
-  const annotationData = {};
+  const parsedAnnotationData = {};
   for (const source of annotSources) {
     const annotData = await gensDb.getAnnotations(chrom, source);
-    annotationData[source] = annotData;
+    parsedAnnotationData[source] = parseAnnotations(annotData);
   }
+
+  const overviewCovRaw = await gensDb.getOverviewCovData();
+  const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
+    parseCoverageDot(cov),
+  );
+  const overviewBafRaw = await gensDb.getOverviewBafData();
+  const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
+    parseCoverageDot(cov),
+  );
+
+  const covRaw = await gensDb.getCov(chrom);
+  const covData = parseCoverageBin(covRaw)
+
+  const bafRaw = await gensDb.getBaf(chrom);
+  const transcriptsRaw = await gensDb.getTranscripts(chrom);
+  const variantsRaw = await gensDb.getVariants(chrom);
 
   const renderData: RenderData = {
     chromInfo: await gensDb.getChromData(chrom),
-    annotations: annotationData,
-    covData: await gensDb.getCov(chrom),
-    bafData: await gensDb.getBaf(chrom),
-    transcriptData: await gensDb.getTranscripts(chrom),
-    variantData: await gensDb.getVariants(chrom),
-    overviewCovData: await gensDb.getOverviewCovData(),
-    overviewBafData: await gensDb.getOverviewBafData(),
+    annotations: parsedAnnotationData,
+    covData,
+    bafData: parseCoverageBin(bafRaw),
+    transcriptData: parseTranscripts(transcriptsRaw),
+    variantData: parseVariants(variantsRaw),
+    overviewCovData: overviewCovRender,
+    overviewBafData: overviewBafRender,
   };
   return renderData;
 }

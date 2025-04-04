@@ -129,6 +129,7 @@ function cytogeneticIdeogram(
 
     const renderBands = chromInfo.bands.map((band) => {
         return {
+            id: band.id,
             label: band.id,
             start: band.start * scale,
             end: band.end * scale,
