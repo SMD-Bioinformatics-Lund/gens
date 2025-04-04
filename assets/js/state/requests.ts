@@ -96,19 +96,20 @@ export async function getDotData(
   const query = {
     sample_id: sampleId,
     case_id: caseId,
-    region_str: `${chrom}:1-None`,
-    cov_or_baf: covOrBaf,
+    region: `${chrom}:1-None`,
   };
 
-  const results = await get(new URL("dev-get-data", apiURI).href, query);
+  const entrypoint = covOrBaf == "cov" ? "sample/coverage" : "sample/baf"
+  const results = await get(new URL(entrypoint, apiURI).href, query);
 
-  const renderData = results.data.map((d) => {
+  const zip = (a: number[], b: number[]) => a.map((key, idx) => [key, b[idx]]);
+  const renderData = zip(results[0].position, results[0].value).map((xy) => {
     return {
-      x: (d.start + d.end) / 2,
-      y: d.value,
-      color: "black", // Should this be assigned later actually?
-    };
-  });
+      x: xy[0],
+      y: xy[1],
+      color: "teal", // not as boring
+    }
+  })
 
   return renderData;
 }
