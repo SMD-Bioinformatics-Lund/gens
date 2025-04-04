@@ -5,7 +5,8 @@ interface AnnotationEntry {
   end: number,
   genome_build: number,
   name: string,
-  source: string
+  source: string,
+  score?: number
 }
 
 
@@ -31,6 +32,8 @@ interface RenderData {
   covData: RenderDot[],
   bafData: RenderDot[],
   transcriptData: RenderBand[],
+  // FIXME: Will need a dedicated type for exons
+  variantData: RenderBand[],
   overviewCovData: Record<string, RenderDot[]>,
   overviewBafData: Record<string, RenderDot[]>,
 }
