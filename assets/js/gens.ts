@@ -63,8 +63,8 @@ export async function initCanvases({
   const api = new GensAPI(sampleId, caseId, genomeBuild, gensApiURL);
 
   const allChromData = await api.getAllChromData();
-  const overviewCovData = await api.getOverviewCovData();
-  const overviewBafData = await api.getOverviewBafData();
+  // const overviewCovData = await api.getOverviewCovData();
+  // const overviewBafData = await api.getOverviewBafData();
 
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);

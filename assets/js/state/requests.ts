@@ -63,7 +63,6 @@ export async function getSVVariantData(
   chrom: string,
   apiURI: string,
 ) {
-  // FIXME: Specify sample
   const query = {
     sample_id,
     case_id,
@@ -74,10 +73,12 @@ export async function getSVVariantData(
   };
   const results = await get(new URL("get-variant-data", apiURI).href, query);
   const variants = results.variants;
+  console.log("Raw variants", variants);
   const toRender = variants.map((variant) => {
     return {
-      start: variant.start,
+      start: variant.position,
       end: variant.end,
+      label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
       color: "red",
     };
   });
