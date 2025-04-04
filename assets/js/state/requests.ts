@@ -1,15 +1,11 @@
 import { get } from "../fetch";
 
-// FIXME: Move to utils
-function rgbArrayToString(rgbArray: number[]): string {
-  return `rgb(${rgbArray[0]},${rgbArray[1]},${rgbArray[2]})`;
-}
 
 export async function getAnnotationData(
   chrom: string,
   source: string,
   apiURI: string,
-): Promise<RenderBand[]> {
+): Promise<APIAnnotation[]> {
   const query = {
     sample_id: undefined,
     region: `${chrom}:1-None`,
@@ -17,24 +13,18 @@ export async function getAnnotationData(
     collapsed: true,
     source: source,
   };
-  const annotsResult = await get(new URL("get-annotation-data", apiURI).href, query);
-  const annotations = annotsResult.annotations as AnnotationEntry[];
-  return annotations.map((annot) => {
-    const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
-    const label = `${annot.name}, ${annot.start}-${annot.end}${rankScore}`;
-    return {
-      start: annot.start,
-      end: annot.end,
-      color: rgbArrayToString(annot.color),
-      label,
-    };
-  });
+  const annotsResult = await get(
+    new URL("get-annotation-data", apiURI).href,
+    query,
+  );
+  const annotations = annotsResult.annotations as APIAnnotation[];
+  return annotations;
 }
 
 export async function getTranscriptData(
   chrom: string,
   apiURI: string,
-): Promise<RenderBand[]> {
+): Promise<APITranscript[]> {
   const query = {
     sample_id: undefined,
     region: `${chrom}:1-None`,
@@ -42,28 +32,20 @@ export async function getTranscriptData(
     collapsed: true,
   };
   const results = await get(new URL("get-transcript-data", apiURI).href, query);
-  const transcripts = results.transcripts;
+  const transcripts = results.transcripts as APITranscript[];
 
-  const transcriptsToRender = transcripts.map((transcript) => {
-    return {
-      start: transcript.start,
-      end: transcript.end,
-      color: "blue",
-      label: `${transcript.gene_name} (${transcript.transcript_id})`,
-    };
-  });
-
-  return transcriptsToRender;
+  return transcripts;
 }
 
-export async function getSVVariantData(
+// Seems the API call does not consider chromosome at the moment
+// Returning all sorted on chromosome for now
+export async function getChromToSVs(
   sample_id: string,
   case_id: string,
   genome_build: number,
   chrom: string,
   apiURI: string,
-) {
-  // FIXME: Specify sample
+): Promise<Record<string, APIVariant[]>> {
   const query = {
     sample_id,
     case_id,
@@ -74,24 +56,29 @@ export async function getSVVariantData(
   };
   const results = await get(new URL("get-variant-data", apiURI).href, query);
   const variants = results.variants;
-  const toRender = variants.map((variant) => {
-    return {
-      start: variant.start,
-      end: variant.end,
-      color: "red",
-    };
+  // FIXME: Move this color logic to after the call to the API class
+
+  const chromToVariants: Record<string, APIVariant[]> = {};
+  variants.forEach((variant) => {
+    const chrom = variant.chromosome;
+    if (chromToVariants[chrom] === undefined) {
+      chromToVariants[chrom] = [];
+    }
+    chromToVariants[chrom].push(variant);
   });
-  return toRender;
+
+  return chromToVariants;
+
+
 }
 
-export async function getDotData(
+export async function getCoverage(
   sampleId: string,
   caseId: string,
   chrom: string,
   covOrBaf: "cov" | "baf",
   apiURI: string,
-): Promise<RenderDot[]> {
-  // const regionString = `${region.chrom}:${region.start}-${region.end}`;
+): Promise<APICoverageBin[]> {
 
   const query = {
     sample_id: sampleId,
@@ -102,39 +89,16 @@ export async function getDotData(
 
   const results = await get(new URL("dev-get-data", apiURI).href, query);
 
-  const renderData = results.data.map((d) => {
-    return {
-      x: (d.start + d.end) / 2,
-      y: d.value,
-      color: "black", // Should this be assigned later actually?
-    };
-  });
+  return results.data;
 
-  return renderData;
 }
-
-// export async function getCovData(
-//     sampleId: string,
-//     caseId: string,
-//     chrom: string,
-// ): Promise<RenderDot[]> {
-//     return getDotData(sampleId, caseId, chrom, "cov");
-// }
-
-// export async function getBafData(
-//     sampleId: string,
-//     caseId: string,
-//     chrom: string,
-// ): Promise<RenderDot[]> {
-//     return getDotData(sampleId, caseId, chrom, "baf");
-// }
 
 export async function getOverviewData(
   sampleId: string,
   caseId: string,
   covOrBaf: "cov" | "baf",
   apiURI: string,
-): Promise<Record<string, RenderDot[]>> {
+): Promise<Record<string, APICoverageDot[]>> {
   const query = {
     sample_id: sampleId,
     case_id: caseId,
@@ -144,18 +108,13 @@ export async function getOverviewData(
   const overviewData: { chrom: string; pos: number; value: number }[] =
     await get(new URL("dev-get-multiple-coverages", apiURI).href, query);
 
-  const dataPerChrom: Record<string, RenderDot[]> = {};
+  const dataPerChrom: Record<string, APICoverageDot[]> = {};
 
   overviewData.forEach((element) => {
     if (dataPerChrom[element.chrom] === undefined) {
       dataPerChrom[element.chrom] = [];
     }
-    const point: RenderDot = {
-      x: element.pos,
-      y: element.value,
-      color: "black",
-    };
-    dataPerChrom[element.chrom].push(point);
+    dataPerChrom[element.chrom].push(element);
   });
 
   return dataPerChrom;
