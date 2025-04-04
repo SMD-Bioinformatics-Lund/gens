@@ -10,7 +10,7 @@ interface AnnotationEntry {
 }
 
 
-
+// FIXME: This should be looked over
 interface RenderBand {
   start: number,
   end: number,
@@ -18,6 +18,7 @@ interface RenderBand {
   label?: string,
   y1?: number,
   y2?: number,
+  nbrOverlap?: number
 }
 
 interface RenderDot {

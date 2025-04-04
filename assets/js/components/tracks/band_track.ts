@@ -1,3 +1,4 @@
+import { getNOverlaps } from "../../track/utils";
 import { CanvasTrack } from "./canvas_track";
 import { renderBands, renderBorder } from "./render_utils";
 
@@ -14,18 +15,17 @@ export class BandTrack extends CanvasTrack {
   ) {
     const dimensions = super.syncDimensions();
 
-    const bandsWithinRange = bands.filter(
-      (annot) => annot.start >= xRange[0] && annot.end <= xRange[1],
+    // FIXME: We should keep those stretching over the full screen
+    let bandsWithinRange = bands.filter(
+      (annot) => annot.start > xRange[0] && annot.end <= xRange[1],
     );
+
+    bandsWithinRange = bandsWithinRange.sort((band1, band2) => band1.start < band2.start ? -1 : 1);
+
+    const nOverlaps = getNOverlaps(bandsWithinRange);
 
     // Hover
     const xScale = this.getScale(xRange, "x");
-
-    // const noMatchColor = "black";
-    // // const exceededColor = "gray";
-    // const colorPool = ["red", "blue", "green", "orange"];
-    // const allLevels = [...new Set(annotations.map(annot => annot.label))];
-    // const colorScale = this.getColorScale(allLevels, colorPool, noMatchColor);
 
     // FIXME: Break out method
     // FIXME: How to deal with y position for bands?
@@ -40,22 +40,21 @@ export class BandTrack extends CanvasTrack {
       y2 = this.dimensions.height;
     }
 
-    console.log("Assigned y1 y2", y1, y2);
-
-    const scaledBands = bandsWithinRange.map((band) => {
+    const shift = 5;
+    const scaledBands = bandsWithinRange.map((band, i) => {
         const scaledBand = Object.create(band);
-        scaledBand.y1 = y1;
-        scaledBand.y2 = y2;
+        scaledBand.y1 = y1 + shift * nOverlaps[i];
+        scaledBand.y2 = y2 + shift * nOverlaps[i];
         return scaledBand;
     });
 
-    this.hoverTargets = bands.map((band) => {
+    this.hoverTargets = scaledBands.map((band) => {
       return {
         label: band.label,
         x1: xScale(band.start),
         x2: xScale(band.end),
-        y1,
-        y2,
+        y1: band.y1,
+        y2: band.y2,
       };
     });
 

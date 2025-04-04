@@ -78,7 +78,6 @@ export async function getSVVariantData(
   };
   const results = await get(new URL("get-variant-data", apiURI).href, query);
   const variants = results.variants;
-  console.log("Raw variants", variants);
   // FIXME: Move this color logic to after the call to the API class
   const colorMap = {
     del: "red",
