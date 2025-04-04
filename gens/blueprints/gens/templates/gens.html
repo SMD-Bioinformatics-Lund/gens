@@ -115,7 +115,9 @@
             chrom: chromJs,
             start: startJs,
             end: endJs,
-        }
+        },
+        // FIXME: This should come from the backend
+        gensApiURL: "http://localhost:5000/api/"
     })
     // draw statis content
     const visualizationContainer = document.getElementById('visualization-container')

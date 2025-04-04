@@ -17,7 +17,7 @@ export async function getAnnotationData(
     collapsed: true,
     source: source,
   };
-  const annotsResult = await get(new URL("get-annotation-data").href, query);
+  const annotsResult = await get(new URL("get-annotation-data", apiURI).href, query);
   const annotations = annotsResult.annotations as AnnotationEntry[];
   return annotations.map((annot) => {
     const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
@@ -41,7 +41,7 @@ export async function getTranscriptData(
     genome_build: 38,
     collapsed: true,
   };
-  const results = await get(new URL("get-transcript-data").href, query);
+  const results = await get(new URL("get-transcript-data", apiURI).href, query);
   const transcripts = results.transcripts;
 
   const transcriptsToRender = transcripts.map((transcript) => {
