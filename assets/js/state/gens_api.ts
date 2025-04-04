@@ -81,11 +81,11 @@ export class GensAPI {
     return this.transcriptCache[chrom];
   }
 
-  private variantsCache: Record<string, RenderBand[]> = {};
+  private variantsCache: Record<string, RenderBand[]> = null;
   async getVariants(chrom: string): Promise<RenderBand[]> {
-    const isCached = this.variantsCache[chrom] !== undefined;
+    const isCached = this.variantsCache !== null;
     if (!isCached) {
-      this.variantsCache[chrom] = await getSVVariantData(
+      this.variantsCache = await getSVVariantData(
         this.sampleId,
         this.caseId,
         this.genomeBuild,

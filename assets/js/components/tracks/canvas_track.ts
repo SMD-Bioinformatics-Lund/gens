@@ -123,6 +123,7 @@ export class CanvasTrack extends HTMLElement {
     return this.dimensions;
   }
 
+  // FIXME: Move scales to generic utils instead
   getScale(range: Rng, type: "x" | "y"): Scale {
     if (!["x", "y"].includes(type)) {
       throw Error(`Unknown scale type: ${type}, expected x or y`);
@@ -134,6 +135,20 @@ export class CanvasTrack extends HTMLElement {
       return linearScale(pos, range, [0, endDim]);
     };
     return scale;
+  }
+
+  getColorScale(levels: string[], colorPool: string[], defaultColor: string): ColorScale {
+    const colorScale = (level: string) => {
+      const levelIndex = levels.indexOf(level);
+      if (levelIndex == -1) {
+        return defaultColor
+      } else if (levelIndex >= colorPool.length) {
+        return defaultColor;
+      } else {
+        return colorPool[levelIndex]
+      }
+    }
+    return colorScale;
   }
 }
 

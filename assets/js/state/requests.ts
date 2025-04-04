@@ -17,7 +17,10 @@ export async function getAnnotationData(
     collapsed: true,
     source: source,
   };
-  const annotsResult = await get(new URL("get-annotation-data", apiURI).href, query);
+  const annotsResult = await get(
+    new URL("get-annotation-data", apiURI).href,
+    query,
+  );
   const annotations = annotsResult.annotations as AnnotationEntry[];
   return annotations.map((annot) => {
     const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
@@ -56,13 +59,15 @@ export async function getTranscriptData(
   return transcriptsToRender;
 }
 
+// Seems the API call does not consider chromosome at the moment
+// Returning all sorted on chromosome for now
 export async function getSVVariantData(
   sample_id: string,
   case_id: string,
   genome_build: number,
   chrom: string,
   apiURI: string,
-) {
+): Promise<Record<string, RenderBand[]>> {
   const query = {
     sample_id,
     case_id,
@@ -74,15 +79,30 @@ export async function getSVVariantData(
   const results = await get(new URL("get-variant-data", apiURI).href, query);
   const variants = results.variants;
   console.log("Raw variants", variants);
-  const toRender = variants.map((variant) => {
-    return {
+  // FIXME: Move this color logic to after the call to the API class
+  const colorMap = {
+    del: "red",
+    dup: "blue",
+    inv: "green",
+  };
+  const chromToVariants: Record<string, RenderBand[]> = {};
+  variants.forEach((variant) => {
+    const band = {
       start: variant.position,
       end: variant.end,
       label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
-      color: "red",
+      color:
+        colorMap[variant.sub_category] != undefined
+          ? colorMap[variant.sub_category]
+          : "black",
     };
+    const chrom = variant.chromosome;
+    if (chromToVariants[chrom] === undefined) {
+        chromToVariants[chrom] = [];
+    }
+    chromToVariants[chrom].push(band);
   });
-  return toRender;
+  return chromToVariants;
 }
 
 export async function getDotData(

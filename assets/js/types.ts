@@ -16,6 +16,8 @@ interface RenderBand {
   end: number,
   color: string,
   label?: string,
+  y1?: number,
+  y2?: number,
 }
 
 interface RenderDot {
@@ -25,6 +27,8 @@ interface RenderDot {
 }
 
 type Scale = (value: number) => number
+
+type ColorScale = (level: string) => string
 
 interface RenderData {
   chromInfo: ChromosomeInfo,

@@ -13,22 +13,18 @@ export function renderBorder(
 
 export function renderBands(
     ctx: CanvasRenderingContext2D,
-    canvasDim: { height: number; width: number },
+    // canvasDim: { height: number; width: number },
     annots: RenderBand[],
-    xRange: [number, number],
+    xScale: Scale,
 ) {
-    annots.forEach((annot) => {
-        // const rgbs = annot.color;
-        // const color = `rgb(${rgbs[0]},${rgbs[1]},${rgbs[2]})`;
-        ctx.fillStyle = annot.color;
-
-        const xPxStart = getPixelPosInRange(
-            annot.start,
-            xRange,
-            canvasDim.width,
-        );
-        const xPxEnd = getPixelPosInRange(annot.end, xRange, canvasDim.width);
-        ctx.fillRect(xPxStart, 0, xPxEnd - xPxStart, canvasDim.height);
+    annots.forEach((band) => {
+        ctx.fillStyle = band.color;
+        const xPxStart = xScale(band.start);
+        const xPxEnd = xScale(band.end);
+        ctx.fillStyle = band.color;
+        const width = xPxEnd - xPxStart
+        const height = band.y2 - band.y1
+        ctx.fillRect(xPxStart, band.y1, width, height);
     });
 }
 

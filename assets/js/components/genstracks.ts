@@ -101,7 +101,9 @@ export class GensTracks extends HTMLElement {
     const range: [number, number] = [region.start, region.end];
 
     console.log("Nbr variants to render", data.variantData.length);
-    this.variantTrack.render(range, data.variantData);
+    // FIXME: Move to constants
+    const bandHeight = 5;
+    this.variantTrack.render(range, data.variantData, { bandHeight });
 
     this.overviewTrackCov.render(region, data.overviewCovData, COV_Y_RANGE);
     this.overviewTrackBaf.render(region, data.overviewBafData, BAF_Y_RANGE);
