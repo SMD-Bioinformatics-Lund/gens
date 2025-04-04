@@ -6,7 +6,7 @@ import {
   getTranscriptData,
   getIdeogramData as getChromosomeData,
   getOverviewData,
-} from "../requests";
+} from "../tmp";
 import { CHROMOSOME_NAMES } from "../util/constants";
 
 export class GensDb {
