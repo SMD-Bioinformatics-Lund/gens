@@ -9,6 +9,88 @@ info:
 servers:
   - url: /api
 paths:
+  /sample/coverage:
+    get:
+      summary: Get coverage
+      operationId: gens.api.dev_get_coverage
+      parameters:
+        - name: sample_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: case_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Successfully retrieved cov data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  zoom:
+                    type: string
+                  position:
+                    type: array
+                    items:
+                      type: number
+                  value:
+                    type: array
+                    items:
+                      type: number
+  /sample/baf:
+    get:
+      summary: Get coverage
+      operationId: gens.api.dev_get_baf
+      parameters:
+        - name: sample_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: case_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Successfully retrieved cov data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  zoom:
+                    type: string
+                  position:
+                    type: array
+                    items:
+                      type: number
+                  value:
+                    type: array
+                    items:
+                      type: number
   /dev-get-data:
     get:
       summary: Get raw cov or baf (dev)
