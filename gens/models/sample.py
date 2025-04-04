@@ -48,3 +48,15 @@ class SampleInfo(RWModel, CreatedAtModel):
         """Serialize a Path object as string"""
 
         return str(path)
+
+
+class GenomeCoverage(RWModel):
+    """Contains genome coverage info for scatter plots.
+    
+    The genome coverage is represented by paired list of position and value.
+    """
+
+    region: str | None
+    position: list[int]
+    value: list[float]
+    zoom: str | None = None

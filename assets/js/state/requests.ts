@@ -37,6 +37,8 @@ export async function getTranscriptData(
   return transcripts;
 }
 
+const zip = (a: number[], b: number[]) => a.map((key, idx) => [key, b[idx]]);
+
 // Seems the API call does not consider chromosome at the moment
 // Returning all sorted on chromosome for now
 export async function getChromToSVs(
@@ -83,13 +85,20 @@ export async function getCoverage(
   const query = {
     sample_id: sampleId,
     case_id: caseId,
-    region_str: `${chrom}:1-None`,
-    cov_or_baf: covOrBaf,
+    region: `${chrom}:1-None`,
   };
 
-  const results = await get(new URL("dev-get-data", apiURI).href, query);
+  const entrypoint = covOrBaf == "cov" ? "sample/coverage" : "sample/baf"
+  const results = await get(new URL(entrypoint, apiURI).href, query);
 
-  return results.data;
+  const renderData = zip(results[0].position, results[0].value).map((xy) => {
+    return {
+      x: xy[0],
+      y: xy[1],
+      color: "teal", // not as boring
+    }
+  })
+
 
 }
 
@@ -105,16 +114,25 @@ export async function getOverviewData(
     cov_or_baf: covOrBaf,
   };
 
-  const overviewData: { chrom: string; pos: number; value: number }[] =
-    await get(new URL("dev-get-multiple-coverages", apiURI).href, query);
+  // const entrypoint = covOrBaf == "cov" ? "sample/coverage" : "sample/baf"
+  const overviewData: { region: string; position: number[]; value: number[]; zoom: string | null }[] =
+    await get(new URL("sample/overview", apiURI).href, query);
 
   const dataPerChrom: Record<string, APICoverageDot[]> = {};
 
   overviewData.forEach((element) => {
-    if (dataPerChrom[element.chrom] === undefined) {
-      dataPerChrom[element.chrom] = [];
+    if (dataPerChrom[element.region] === undefined) {
+      dataPerChrom[element.region] = [];
     }
-    dataPerChrom[element.chrom].push(element);
+    const points: RenderDot[] = zip(element.position, element.value).map((xy) => {
+      return {
+        x: xy[0],
+        y: xy[1],
+        color: "#954000", // not as boring
+      }
+    })
+    dataPerChrom[element.region] = points;
+
   });
 
   return dataPerChrom;
