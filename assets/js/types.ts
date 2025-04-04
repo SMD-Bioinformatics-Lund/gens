@@ -32,6 +32,8 @@ interface RenderData {
   covData: RenderDot[],
   bafData: RenderDot[],
   transcriptData: RenderBand[],
+  // FIXME: Will need a dedicated type for exons
+  variantData: RenderBand[],
   overviewCovData: Record<string, RenderDot[]>,
   overviewBafData: Record<string, RenderDot[]>,
 }

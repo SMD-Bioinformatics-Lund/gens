@@ -23,7 +23,7 @@ template.innerHTML = String.raw`
         <dot-track id="baf-track"></dot-track>
         <div id="annotations-container"></div>
         <band-track id="transcript-track"></band-track>
-        <band-track id="variant-track" hidden></band-track>
+        <band-track id="variant-track"></band-track>
 
         <overview-track id="overview-track-cov"></overview-track>
         <overview-track id="overview-track-baf"></overview-track>

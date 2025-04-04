@@ -131,6 +131,7 @@ async function fetchRenderData(
     covData: await gensDb.getCov(chrom),
     bafData: await gensDb.getBaf(chrom),
     transcriptData: await gensDb.getTranscripts(chrom),
+    variantData: await gensDb.getVariants(chrom),
     overviewCovData: await gensDb.getOverviewCovData(),
     overviewBafData: await gensDb.getOverviewBafData(),
   };
