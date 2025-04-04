@@ -72,7 +72,7 @@ export function isWithinElementVisibleBbox(
 }
 
 // Convert to 32bit integer
-export function stringToHash(in_str: string) {
+export function stringToHash(in_str: string): number {
     let hash = 0;
     if (in_str.length === 0) return hash;
     for (let i = 0; i < in_str.length; i++) {
