@@ -141,10 +141,12 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
   return annotations.map((annot) => {
     const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
     const label = `${annot.name}, ${annot.start}-${annot.end}${rankScore}`;
+    const colorStr = rgbArrayToString(annot.color)
     return {
+      id: `${annot.start}_${annot.end}_${colorStr}`,
       start: annot.start,
       end: annot.end,
-      color: rgbArrayToString(annot.color),
+      color: colorStr,
       label,
     };
   });
@@ -153,14 +155,26 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
 export function parseTranscripts(transcripts: APITranscript[]): RenderBand[] {
   const transcriptsToRender = transcripts.map((transcript) => {
     return {
+      id: `${transcript.start}_${transcript.end}_${transcript.transcript_id}`,
       start: transcript.start,
       end: transcript.end,
       color: "blue",
-      label: `${transcript.gene_name} (${transcript.transcript_id})`,
+      label: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
     };
   });
 
-  return transcriptsToRender;
+  // FIXME: This should be done on the backend
+  const seenIds = new Set();
+  const filteredDuplicates = transcriptsToRender.filter((tr) => {
+    if (seenIds.has(tr.id)) {
+      return false;
+    } else {
+      seenIds.add(tr.id);
+      return true;
+    }
+  });
+
+  return filteredDuplicates;
 }
 
 export function parseVariants(variants: APIVariant[]): RenderBand[] {
@@ -171,6 +185,7 @@ export function parseVariants(variants: APIVariant[]): RenderBand[] {
   };
   return variants.map((variant) => {
     return {
+      id: `${variant.position}_${variant.end}_${variant.variant_type}_${variant.sub_category}`,
       start: variant.position,
       end: variant.end,
       label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,

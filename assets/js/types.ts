@@ -94,13 +94,14 @@ interface AnnotationEntry {
 
 // FIXME: This should be looked over
 interface RenderBand {
+  id: string,
   start: number,
   end: number,
   color: string,
   label?: string,
   y1?: number,
   y2?: number,
-  nbrOverlap?: number
+  // nbrOverlap?: number
 }
 
 interface RenderDot {

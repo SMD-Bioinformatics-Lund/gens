@@ -27,6 +27,7 @@ import {
   parseCoverageBin,
   parseTranscripts,
   parseVariants,
+  parseAnnotations,
 } from "./components/tracks/render_utils";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
@@ -127,10 +128,10 @@ async function fetchRenderData(
   chrom: string,
   annotSources: string[],
 ): Promise<RenderData> {
-  const annotationData = {};
+  const parsedAnnotationData = {};
   for (const source of annotSources) {
     const annotData = await gensDb.getAnnotations(chrom, source);
-    annotationData[source] = annotData;
+    parsedAnnotationData[source] = parseAnnotations(annotData);
   }
 
   const overviewCovRaw = await gensDb.getOverviewCovData();
@@ -151,7 +152,7 @@ async function fetchRenderData(
 
   const renderData: RenderData = {
     chromInfo: await gensDb.getChromData(chrom),
-    annotations: annotationData,
+    annotations: parsedAnnotationData,
     covData,
     bafData: parseCoverageBin(bafRaw),
     transcriptData: parseTranscripts(transcriptsRaw),

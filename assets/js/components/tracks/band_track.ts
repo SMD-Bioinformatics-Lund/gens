@@ -15,6 +15,9 @@ export class BandTrack extends CanvasTrack {
   ) {
     const dimensions = super.syncDimensions();
 
+    console.log("Label:", this.label);
+    console.log("Bands: ", bands);
+
     // FIXME: We should keep those stretching over the full screen
     let bandsWithinRange = bands.filter(
       (annot) => annot.start > xRange[0] && annot.end <= xRange[1],
