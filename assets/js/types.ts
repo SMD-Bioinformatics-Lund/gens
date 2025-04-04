@@ -23,6 +23,20 @@ interface RenderDot {
     color: string,
 }
 
+type Scale = (value: number) => number
+
+interface RenderData {
+  chromInfo: ChromosomeInfo,
+  annotations: Record<string, RenderBand[]>,
+  covData: RenderDot[],
+  bafData: RenderDot[],
+  transcriptData: RenderBand[],
+  overviewCovData: Record<string, RenderDot[]>,
+  overviewBafData: Record<string, RenderDot[]>,
+}
+
+type Rng = [number, number];
+
 interface ColorPoint {
   x: number,
   y: number,
@@ -38,6 +52,8 @@ interface CanvasDetail {
   bands: { id: string }[];
   chrom: string;
 }
+
+type OverviewData = Record<string, RenderDot[]>
 
 interface Region {
   chrom: string,
@@ -108,6 +124,7 @@ interface ChromosomeBand {
 }
 
 interface ChromosomeInfo {
+  chrom: string,
   centromere: {start: number, end: number},
   size: number,
   bands: ChromosomeBand[]

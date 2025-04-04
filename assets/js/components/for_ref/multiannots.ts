@@ -65,8 +65,6 @@ export class MultiAnnots extends HTMLElement {
   }
 
   connectedCallback() {
-    console.log("Is connected");
-
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
 
@@ -101,7 +99,6 @@ export class MultiAnnots extends HTMLElement {
 
   private async _makeTrack(container: HTMLElement, source: string) {
 
-    console.log("Attempting to run getAnnotationData for source", source);
     const annotations = await getAnnotationData(source)
 
     const chr1Start = 0;

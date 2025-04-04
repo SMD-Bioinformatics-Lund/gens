@@ -1,10 +1,8 @@
 import tippy, { followCursor } from "tippy.js";
 import { drawChromosome } from "../../draw/ideogram";
-import { drawRect } from "../../draw/shapes";
 import { createChromosomeTooltip } from "../../track/ideogram";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { newDrawRect, renderBands } from "./render_utils";
 
 interface DrawPaths {
     chromosome: { path: Path2D };
@@ -17,7 +15,7 @@ export class IdeogramTrack extends CanvasTrack {
     private markerElement: HTMLDivElement;
 
     initialize(label: string, trackHeight: number) {
-        super.initialize(label, trackHeight);
+        super.initializeCanvas(label, trackHeight);
         setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
 
         const markerElement = setupMarkerElement(trackHeight);
@@ -70,7 +68,7 @@ function setupMarkerElement(trackHeight: number): HTMLDivElement {
 
     markerElement.style.height = `${trackHeight - 2}px`;
     markerElement.style.width = "0px";
-    markerElement.style.top = `0px`;
+    markerElement.style.top = "0px";
     markerElement.style.marginLeft = `${leftMargin}px`;
 
     return markerElement
@@ -91,7 +89,7 @@ function setupTooltip(
 
     canvas.addEventListener("mousemove", (event) => {
         const drawPaths = getDrawPaths();
-        if (drawPaths === null) {
+        if (drawPaths === undefined) {
             return;
         }
         drawPaths.bands.forEach((bandPath) => {

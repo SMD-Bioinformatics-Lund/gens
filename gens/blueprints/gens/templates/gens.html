@@ -51,37 +51,22 @@
         </div>
     </div>
 
-    <!-- FIXME: Use real styling -->
-    <br>
-    
-    <ideogram-track id="ideogram-track"></ideogram-track>
-    <!-- <p>Overview navigation track here</p> -->
-    <overview-track id="overview-track-cov"></overview-track>
-    <overview-track id="overview-track-baf"></overview-track>
+    <div style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
+        <input-controls id="input-controls"></input-controls>
+    </div>
 
-    <dot-track id="coverage-track"></dot-track>
-    <dot-track id="baf-track"></dot-track>
-    <div id="annotations-container"></div>
-    <!-- <annotation-track id="annotation-track"></annotation-track> -->
-    <band-track id="transcript-track"></band-track>
-    <band-track id="variant-track" hidden></band-track>
+    <div style="margin-left: 2px; margin-right: 10px;">
+        <gens-tracks id="gens-tracks"></gens-tracks>
+    </div>
 
-    <input-controls id="input-controls"></input-controls>
 
-    <div id='visualization-container'>
-        <!-- <div id="cytogenetic-ideogram"></div>
-        <div id='interactive-container'>
-            <canvas id='interactive-content'></canvas>
-            <canvas id='interactive-static'></canvas>
-            <div id='interactive-marker' class='marker'></div>
-            <div id='loading-div'>LOADING...</div>
-        </div> -->
 
+    <!-- <div id='visualization-container'>
         <div id='overview-container'>
             <canvas id='overview-static'></canvas>
             <div class='marker' id='overview-marker'></div>
         </div>
-    </div>
+    </div> -->
 </div>
 <script>
     $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
@@ -105,14 +90,6 @@
     const chromJs = {{ chrom }} !== undefined ? {{ chrom }} : "1";
     const genomeBuildJs = {{ genome_build }}
 
-    window.regionConfig = {
-        chrom: chromJs,
-        start: startJs,
-        end: endJs,
-        genome_build: genomeBuildJs
-    }
-
-
     // // Redraw when new region is requested
     // document.addEventListener('data-loaded', () => {
     //     // hide loading
@@ -134,6 +111,11 @@
         scoutBaseURL: '{{ scout_base_url | safe }}',
         selectedVariant: '{{ selected_variant }}',
         annotationFile: '{{ annotation }}',
+        startRegion: {
+            chrom: chromJs,
+            start: startJs,
+            end: endJs,
+        }
     })
     // draw statis content
     const visualizationContainer = document.getElementById('visualization-container')

@@ -1,3 +1,5 @@
+import { rangeSize } from "../../track/utils";
+
 export function renderBorder(
     ctx: CanvasRenderingContext2D,
     canvasDim: { height: number; width: number },
@@ -20,13 +22,27 @@ export function renderBands(
         // const color = `rgb(${rgbs[0]},${rgbs[1]},${rgbs[2]})`;
         ctx.fillStyle = annot.color;
 
-        const xPxStart = getPixelPosition(annot.start, xRange, canvasDim.width);
-        const xPxEnd = getPixelPosition(annot.end, xRange, canvasDim.width);
+        const xPxStart = getPixelPosInRange(
+            annot.start,
+            xRange,
+            canvasDim.width,
+        );
+        const xPxEnd = getPixelPosInRange(annot.end, xRange, canvasDim.width);
         ctx.fillRect(xPxStart, 0, xPxEnd - xPxStart, canvasDim.height);
     });
 }
 
-function getPixelPosition(
+export function scaleToPixels(
+    dataPos: number,
+    dataSize: number,
+    viewSize: number,
+) {
+    const scaleFactor = viewSize / dataSize;
+    const pixelPos = dataPos * scaleFactor;
+    return pixelPos;
+}
+
+export function getPixelPosInRange(
     pos: number,
     range: [number, number],
     viewSize: number,
@@ -37,6 +53,9 @@ function getPixelPosition(
     return pixelPos;
 }
 
+// FIXME: Think through this
+// In particular the getPixelPosInRange
+// Does it make sense?
 export function renderDots(
     ctx: CanvasRenderingContext2D,
     dots: RenderDot[],
@@ -47,8 +66,8 @@ export function renderDots(
 ) {
     dots.forEach((dot) => {
         ctx.fillStyle = dot.color;
-        const xPixel = getPixelPosition(dot.x, xRange, canvasDim.width);
-        const yPixel = getPixelPosition(dot.y, yRange, canvasDim.height);
+        const xPixel = getPixelPosInRange(dot.x, xRange, canvasDim.width);
+        const yPixel = getPixelPosInRange(dot.y, yRange, canvasDim.height);
         ctx.fillRect(
             xPixel - dotSize / 2,
             yPixel - dotSize / 2,
@@ -96,4 +115,34 @@ export function newDrawRect(
         ctx.fill(path);
     }
     return path;
+}
+
+export function linearScale(pos: number, dataRange: Rng, pxRange: Rng): number {
+    const scaleFactor = rangeSize(pxRange) / rangeSize(dataRange);
+    // We want non-zero data (-4, +3) to start from zero-coordinate
+    const zeroBasedPos = pos - dataRange[0];
+    const pxPos = zeroBasedPos * scaleFactor + pxRange[0];
+    return pxPos;
+}
+
+
+export function drawDotsScaled(
+    ctx: CanvasRenderingContext2D,
+    dots: RenderDot[],
+    xScale: Scale,
+    yScale: Scale,
+    dotSize: number = 2,
+) {
+    dots.forEach((dot) => {
+        ctx.fillStyle = dot.color;
+        const xPixel = xScale(dot.x);
+        const yPixel = yScale(dot.y);
+
+        ctx.fillRect(
+            xPixel - dotSize / 2,
+            yPixel - dotSize / 2,
+            dotSize,
+            dotSize,
+        );
+    });
 }
