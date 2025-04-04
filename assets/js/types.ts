@@ -5,7 +5,8 @@ interface AnnotationEntry {
   end: number,
   genome_build: number,
   name: string,
-  source: string
+  source: string,
+  score?: number
 }
 
 

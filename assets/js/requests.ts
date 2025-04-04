@@ -22,7 +22,7 @@ function rgbArrayToString(rgbArray: number[]): string {
     return `rgb(${rgbArray[0]},${rgbArray[1]},${rgbArray[2]})`;
 }
 
-export async function getAnnotationDataForChrom(
+export async function getAnnotationData(
     chrom: string,
     source: string,
 ): Promise<RenderBand[]> {
@@ -36,10 +36,13 @@ export async function getAnnotationDataForChrom(
     const annotsResult = await get("get-annotation-data", query);
     const annotations = annotsResult.annotations as AnnotationEntry[];
     return annotations.map((annot) => {
+        const rankScore = annot.score ? `, Rankscore: ${annot.score}` : '';
+        const label = `${annot.name}, ${annot.start}-${annot.end}${rankScore}`;
         return {
             start: annot.start,
             end: annot.end,
             color: rgbArrayToString(annot.color),
+            label
         };
     });
 }

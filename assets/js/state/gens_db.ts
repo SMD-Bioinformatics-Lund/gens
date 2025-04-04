@@ -1,5 +1,5 @@
 import {
-  getAnnotationDataForChrom,
+  getAnnotationData,
   getBafData,
   getCovData,
   getSVVariantData,
@@ -30,7 +30,7 @@ export class GensDb {
         this.annotCache[chrom] = {};
       }
 
-      const annotations = await getAnnotationDataForChrom(chrom, source);
+      const annotations = await getAnnotationData(chrom, source);
       this.annotCache[chrom][source] = annotations;
     }
     return this.annotCache[chrom][source];
