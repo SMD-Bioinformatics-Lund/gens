@@ -23,7 +23,8 @@ import { GensTracks } from "./components/genstracks";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 import {
-  parseCoverage,
+  parseCoverageDot,
+  parseCoverageBin,
   parseTranscripts,
   parseVariants,
 } from "./components/tracks/render_utils";
@@ -126,8 +127,6 @@ async function fetchRenderData(
   chrom: string,
   annotSources: string[],
 ): Promise<RenderData> {
-  console.log("Getting data to render for chrom", chrom);
-
   const annotationData = {};
   for (const source of annotSources) {
     const annotData = await gensDb.getAnnotations(chrom, source);
@@ -136,18 +135,15 @@ async function fetchRenderData(
 
   const overviewCovRaw = await gensDb.getOverviewCovData();
   const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
-    parseCoverage(cov),
+    parseCoverageDot(cov),
   );
   const overviewBafRaw = await gensDb.getOverviewBafData();
   const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
-    parseCoverage(cov),
+    parseCoverageDot(cov),
   );
 
   const covRaw = await gensDb.getCov(chrom);
-  const covData = parseCoverage(covRaw)
-
-  console.log(covRaw);
-  console.log(covData);
+  const covData = parseCoverageBin(covRaw)
 
   const bafRaw = await gensDb.getBaf(chrom);
   const transcriptsRaw = await gensDb.getTranscripts(chrom);
@@ -157,7 +153,7 @@ async function fetchRenderData(
     chromInfo: await gensDb.getChromData(chrom),
     annotations: annotationData,
     covData,
-    bafData: parseCoverage(bafRaw),
+    bafData: parseCoverageBin(bafRaw),
     transcriptData: parseTranscripts(transcriptsRaw),
     variantData: parseVariants(variantsRaw),
     overviewCovData: overviewCovRender,

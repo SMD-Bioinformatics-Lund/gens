@@ -182,10 +182,22 @@ export function parseVariants(variants: APIVariant[]): RenderBand[] {
   });
 }
 
-export function parseCoverage(coverage: APICoverageBin[]): RenderDot[] {
+export function parseCoverageBin(coverage: APICoverageBin[]): RenderDot[] {
   const renderData = coverage.map((d) => {
     return {
       x: (d.start + d.end) / 2,
+      y: d.value,
+      color: "black", // Should be handled by a later scale?
+    };
+  });
+
+  return renderData;
+}
+
+export function parseCoverageDot(coverage: APICoverageDot[]): RenderDot[] {
+  const renderData = coverage.map((d) => {
+    return {
+      x: d.pos,
       y: d.value,
       color: "black", // Should be handled by a later scale?
     };

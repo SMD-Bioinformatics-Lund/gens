@@ -100,7 +100,6 @@ export class GensTracks extends HTMLElement {
   render(data: RenderData, region: Region) {
     const range: [number, number] = [region.start, region.end];
 
-    console.log("Nbr variants to render", data.variantData.length);
     // FIXME: Move to constants
     const bandHeight = 5;
     this.variantTrack.render(range, data.variantData, { bandHeight });
@@ -112,7 +111,6 @@ export class GensTracks extends HTMLElement {
 
     removeChildren(this.annotationsContainer);
     Object.entries(data.annotations).forEach(([source, annotData]) => {
-      console.log("Rendering annotation", source);
       const annotTrack = new BandTrack();
       this.annotationsContainer.appendChild(annotTrack);
       annotTrack.initialize(source, THIN_TRACK_HEIGHT);
