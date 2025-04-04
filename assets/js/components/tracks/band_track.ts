@@ -38,6 +38,16 @@ export class BandTrack extends CanvasTrack {
     // Hover
     const xScale = this.getScale(xRange, "x");
 
+    this.hoverTargets = annotations.map((band) => {
+      return {
+        label: band.label,
+        x1: xScale(band.start),
+        x2: xScale(band.end),
+        y1: 0,
+        y2: this.dimensions.height
+      }
+    })
+
     renderBorder(this.ctx, dimensions);
     renderBands(this.ctx, dimensions, annotWithinRange, xRange);
 

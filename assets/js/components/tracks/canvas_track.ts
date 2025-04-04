@@ -31,6 +31,13 @@ export class CanvasTrack extends HTMLElement {
   protected label: string;
 
   private tooltip: Tooltip;
+  hoverTargets: {
+    label: string;
+    x1: number;
+    x2: number;
+    y1: number;
+    y2: number;
+  }[];
 
   // private tooltipEl: HTMLDivElement;
   // private popperInstance: ReturnType<typeof createPopper> | null = null;
@@ -62,11 +69,36 @@ export class CanvasTrack extends HTMLElement {
     this.tooltip = new Tooltip(this.trackContainer);
     this.canvas.addEventListener("mousemove", (event) => {
       this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
+
+      const hovered = this.hoverTargets.find(
+        (target) =>
+          event.offsetX >= target.x1 &&
+          event.offsetX <= target.x2 &&
+          event.offsetY >= target.y1 &&
+          event.offsetY <= target.y2,
+      );
+
+      if (hovered) {
+        this.tooltip.tooltipEl.textContent = hovered.label;
+        this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
+      } else {
+        this.tooltip.onMouseLeave();
+      }
     });
     this.canvas.addEventListener("mouseleave", () => {
       this.tooltip.onMouseLeave();
     });
   }
+
+  setHoverTargets(
+    hoverTargets: {
+      label: string;
+      x1: number;
+      x2: number;
+      y1: number;
+      y2: number;
+    }[],
+  ) {}
 
   syncDimensions() {
     if (this.canvas == undefined) {
@@ -87,7 +119,7 @@ export class CanvasTrack extends HTMLElement {
     return this.dimensions;
   }
 
-  getScale(range: Rng, type = "string"): Scale {
+  getScale(range: Rng, type: "x" | "y"): Scale {
     if (!["x", "y"].includes(type)) {
       throw Error(`Unknown scale type: ${type}, expected x or y`);
     }
