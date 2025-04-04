@@ -30,6 +30,8 @@ export class CanvasTrack extends HTMLElement {
   protected trackContainer: HTMLDivElement;
   protected label: string;
 
+  protected expanded: boolean;
+
   private tooltip: Tooltip;
   hoverTargets: {
     label: string;
@@ -45,9 +47,11 @@ export class CanvasTrack extends HTMLElement {
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
+
+    this.expanded = false;
   }
 
-  initializeCanvas(label: string, trackHeight: number) {
+  initializeCanvas(label: string, trackHeight: number, expandedHeight: number|null = null) {
     // const header = this._root.getElementById("header")
     // header.innerHTML = label;
     this.label = label;
@@ -60,9 +64,24 @@ export class CanvasTrack extends HTMLElement {
       "track-container",
     ) as HTMLDivElement;
 
+    if (expandedHeight != null) {
+      this.initializeExpandable(trackHeight, expandedHeight);
+    }
+    
     this.syncDimensions();
-
     renderBorder(this.ctx, this.dimensions);
+  }
+
+  initializeExpandable(height: number, expandedHeight: number) {
+    this.trackContainer.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+
+      this.expanded = !this.expanded;
+      this.canvas.height = this.expanded ? expandedHeight : height;
+      this.syncDimensions();
+
+      console.log("Expand");
+    });
   }
 
   initializeTooltip() {

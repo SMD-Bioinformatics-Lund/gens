@@ -77,7 +77,7 @@ export class GensTracks extends HTMLElement {
   ) {
     this.coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
     this.bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
-    this.variantTrack.initialize("Variant", THICK_TRACK_HEIGHT);
+    this.variantTrack.initialize("Variant", THIN_TRACK_HEIGHT, THICK_TRACK_HEIGHT);
     this.transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
     this.ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
 

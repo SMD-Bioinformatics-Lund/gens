@@ -3,8 +3,8 @@ import { CanvasTrack } from "./canvas_track";
 import { renderBands, renderBorder } from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
-  initialize(label: string, trackHeight: number) {
-    super.initializeCanvas(label, trackHeight);
+  initialize(label: string, trackHeight: number, thickTrackHeight: number|null = null) {
+    super.initializeCanvas(label, trackHeight, thickTrackHeight);
     this.initializeTooltip();
   }
 
@@ -13,10 +13,8 @@ export class BandTrack extends CanvasTrack {
     bands: RenderBand[],
     settings: { bandHeight: number | null } = { bandHeight: null },
   ) {
+    // this.canvas.height = 300;
     const dimensions = super.syncDimensions();
-
-    console.log("Label:", this.label);
-    console.log("Bands: ", bands);
 
     // FIXME: We should keep those stretching over the full screen
     let bandsWithinRange = bands.filter(
