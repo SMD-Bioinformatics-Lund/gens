@@ -78,7 +78,7 @@ export async function getCoverage(
   chrom: string,
   covOrBaf: "cov" | "baf",
   apiURI: string,
-): Promise<APICoverage[]> {
+): Promise<APICoverageBin[]> {
 
   const query = {
     sample_id: sampleId,
@@ -98,7 +98,7 @@ export async function getOverviewData(
   caseId: string,
   covOrBaf: "cov" | "baf",
   apiURI: string,
-): Promise<Record<string, APICoverage[]>> {
+): Promise<Record<string, APICoverageDot[]>> {
   const query = {
     sample_id: sampleId,
     case_id: caseId,
@@ -108,7 +108,7 @@ export async function getOverviewData(
   const overviewData: { chrom: string; pos: number; value: number }[] =
     await get(new URL("dev-get-multiple-coverages", apiURI).href, query);
 
-  const dataPerChrom: Record<string, APICoverage[]> = {};
+  const dataPerChrom: Record<string, APICoverageDot[]> = {};
 
   overviewData.forEach((element) => {
     if (dataPerChrom[element.chrom] === undefined) {

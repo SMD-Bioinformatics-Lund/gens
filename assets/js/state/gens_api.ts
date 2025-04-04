@@ -42,8 +42,8 @@ export class GensAPI {
     return this.annotCache[chrom][source];
   }
 
-  private covCache: Record<string, APICoverage[]> = {};
-  async getCov(chrom: string): Promise<APICoverage[]> {
+  private covCache: Record<string, APICoverageBin[]> = {};
+  async getCov(chrom: string): Promise<APICoverageBin[]> {
     const isCached = this.covCache[chrom] !== undefined;
     if (!isCached) {
       this.covCache[chrom] = await getCoverage(
@@ -57,8 +57,8 @@ export class GensAPI {
     return this.covCache[chrom];
   }
 
-  private bafCache: Record<string, APICoverage[]> = {};
-  async getBaf(chrom: string): Promise<APICoverage[]> {
+  private bafCache: Record<string, APICoverageBin[]> = {};
+  async getBaf(chrom: string): Promise<APICoverageBin[]> {
     const isCached = this.bafCache[chrom] !== undefined;
     if (!isCached) {
       this.bafCache[chrom] = await getCoverage(
@@ -124,8 +124,8 @@ export class GensAPI {
     return this.chromCache;
   }
 
-  private overviewCovCache: Record<string, APICoverage[]> = null;
-  async getOverviewCovData(): Promise<Record<string, APICoverage[]>> {
+  private overviewCovCache: Record<string, APICoverageDot[]> = null;
+  async getOverviewCovData(): Promise<Record<string, APICoverageDot[]>> {
     if (this.overviewCovCache === null) {
       this.overviewCovCache = await getOverviewData(
         this.sampleId,
@@ -137,8 +137,8 @@ export class GensAPI {
     return this.overviewCovCache;
   }
 
-  private overviewBafCache: Record<string, APICoverage[]> = null;
-  async getOverviewBafData(): Promise<Record<string, APICoverage[]>> {
+  private overviewBafCache: Record<string, APICoverageDot[]> = null;
+  async getOverviewBafData(): Promise<Record<string, APICoverageDot[]>> {
     if (this.overviewBafCache === null) {
       this.overviewBafCache = await getOverviewData(
         this.sampleId,

@@ -105,23 +105,23 @@ export class GensTracks extends HTMLElement {
     const bandHeight = 5;
     this.variantTrack.render(range, data.variantData, { bandHeight });
 
-    // this.overviewTrackCov.render(region, data.overviewCovData, COV_Y_RANGE);
-    // this.overviewTrackBaf.render(region, data.overviewBafData, BAF_Y_RANGE);
+    this.overviewTrackCov.render(region, data.overviewCovData, COV_Y_RANGE);
+    this.overviewTrackBaf.render(region, data.overviewBafData, BAF_Y_RANGE);
 
-    // this.ideogramTrack.render(region.chrom, data.chromInfo, range);
+    this.ideogramTrack.render(region.chrom, data.chromInfo, range);
 
-    // removeChildren(this.annotationsContainer);
-    // Object.entries(data.annotations).forEach(([source, annotData]) => {
-    //   console.log("Rendering annotation", source);
-    //   const annotTrack = new BandTrack();
-    //   this.annotationsContainer.appendChild(annotTrack);
-    //   annotTrack.initialize(source, THIN_TRACK_HEIGHT);
-    //   annotTrack.render(range, annotData);
-    // });
+    removeChildren(this.annotationsContainer);
+    Object.entries(data.annotations).forEach(([source, annotData]) => {
+      console.log("Rendering annotation", source);
+      const annotTrack = new BandTrack();
+      this.annotationsContainer.appendChild(annotTrack);
+      annotTrack.initialize(source, THIN_TRACK_HEIGHT);
+      annotTrack.render(range, annotData);
+    });
 
-    // this.coverageTrack.render(range, COV_Y_RANGE, data.covData);
-    // this.bafTrack.render(range, BAF_Y_RANGE, data.bafData);
-    // this.transcriptTrack.render(range, data.transcriptData);
+    this.coverageTrack.render(range, COV_Y_RANGE, data.covData);
+    this.bafTrack.render(range, BAF_Y_RANGE, data.bafData);
+    this.transcriptTrack.render(range, data.transcriptData);
   }
 }
 

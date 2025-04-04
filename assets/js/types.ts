@@ -68,11 +68,17 @@ interface APIVariant {
   variant_type: string
 }
 
-interface APICoverage {
+interface APICoverageDot {
   pos: number,
   value: number,
 }
 
+interface APICoverageBin {
+  start: number,
+  end: number,
+  value: number,
+  zoom: string,
+}
 
 interface AnnotationEntry {
   chrom: string,

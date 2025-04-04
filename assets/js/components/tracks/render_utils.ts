@@ -164,28 +164,28 @@ export function parseTranscripts(transcripts: APITranscript[]): RenderBand[] {
 }
 
 export function parseVariants(variants: APIVariant[]): RenderBand[] {
-      const colorMap = {
-        del: "red",
-        dup: "blue",
-        inv: "green",
-      };
-      return variants.map((variant) => {
-        return {
-          start: variant.position,
-          end: variant.end,
-          label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
-          color:
-            colorMap[variant.sub_category] != undefined
-              ? colorMap[variant.sub_category]
-              : "black",
-        };
-      });
+  const colorMap = {
+    del: "red",
+    dup: "blue",
+    inv: "green",
+  };
+  return variants.map((variant) => {
+    return {
+      start: variant.position,
+      end: variant.end,
+      label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
+      color:
+        colorMap[variant.sub_category] != undefined
+          ? colorMap[variant.sub_category]
+          : "black",
+    };
+  });
 }
 
-export function parseCoverage(coverage: APICoverage[]): RenderDot[] {
+export function parseCoverage(coverage: APICoverageBin[]): RenderDot[] {
   const renderData = coverage.map((d) => {
     return {
-      x: d.pos,
+      x: (d.start + d.end) / 2,
       y: d.value,
       color: "black", // Should be handled by a later scale?
     };
