@@ -14,6 +14,8 @@ export class IdeogramTrack extends CanvasTrack {
 
     private markerElement: HTMLDivElement;
 
+    private renderData: IdeogramTrackData;
+
     initialize(label: string, trackHeight: number) {
         super.initializeCanvas(label, trackHeight);
         setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
@@ -21,11 +23,22 @@ export class IdeogramTrack extends CanvasTrack {
         const markerElement = setupMarkerElement(trackHeight);
         this.trackContainer.appendChild(markerElement);
         this.markerElement = markerElement;
-
     }
 
-    render(chrom: string, chromInfo: ChromosomeInfo, xRange: [number, number]) {
+    updateRenderData(renderData) {
+        this.renderData = renderData;
+    }
+
+    render() {
+
+        if (this.renderData == null) {
+            throw Error("Render data required");
+        }
+
         super.syncDimensions();
+
+        const { chromInfo, xRange } = this.renderData;
+
         this.drawPaths = cytogeneticIdeogram(
             this.ctx,
             chromInfo,

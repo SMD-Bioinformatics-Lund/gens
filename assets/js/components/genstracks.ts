@@ -78,8 +78,12 @@ export class GensTracks extends HTMLElement {
   ) {
     this.coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
     this.bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
-    this.variantTrack.initialize("Variant", THIN_TRACK_HEIGHT, THICK_TRACK_HEIGHT);
-    this.transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
+    this.variantTrack.initialize(
+      "Variant",
+      THIN_TRACK_HEIGHT,
+      THICK_TRACK_HEIGHT,
+    );
+    this.transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT, THICK_TRACK_HEIGHT);
     this.ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
 
     const chromSizes = transformMap(allChromData, (data) => data.size);
@@ -99,28 +103,64 @@ export class GensTracks extends HTMLElement {
   }
 
   render(data: RenderData, region: Region) {
-    const range: [number, number] = [region.start, region.end];
+    const xRange: [number, number] = [region.start, region.end];
 
     // FIXME: Move to constants
     const bandHeight = STYLE.render.bandHeight;
-    this.variantTrack.render(range, data.variantData, { bandHeight });
+    this.variantTrack.updateRenderData({
+      xRange,
+      bands: data.variantData,
+      settings: { bandHeight },
+    });
+    this.variantTrack.render();
 
-    this.overviewTrackCov.render(region, data.overviewCovData, COV_Y_RANGE);
-    this.overviewTrackBaf.render(region, data.overviewBafData, BAF_Y_RANGE);
+    this.overviewTrackCov.updateRenderData({
+      region,
+      dotsPerChrom: data.overviewCovData,
+      yRange: COV_Y_RANGE,
+    });
+    this.overviewTrackCov.render();
+    this.overviewTrackBaf.updateRenderData({
+      region,
+      dotsPerChrom: data.overviewBafData,
+      yRange: BAF_Y_RANGE,
+    });
+    this.overviewTrackBaf.render();
 
-    this.ideogramTrack.render(region.chrom, data.chromInfo, range);
+    this.ideogramTrack.updateRenderData({ chromInfo: data.chromInfo, xRange });
+    this.ideogramTrack.render();
 
     removeChildren(this.annotationsContainer);
     Object.entries(data.annotations).forEach(([source, annotData]) => {
       const annotTrack = new BandTrack();
       this.annotationsContainer.appendChild(annotTrack);
-      annotTrack.initialize(source, THIN_TRACK_HEIGHT);
-      annotTrack.render(range, annotData, { bandHeight });
+      annotTrack.initialize(source, THIN_TRACK_HEIGHT, THICK_TRACK_HEIGHT);
+      annotTrack.updateRenderData({
+        xRange,
+        bands: annotData,
+        settings: { bandHeight },
+      });
+      annotTrack.render();
     });
 
-    this.coverageTrack.render(range, COV_Y_RANGE, data.covData);
-    this.bafTrack.render(range, BAF_Y_RANGE, data.bafData);
-    this.transcriptTrack.render(range, data.transcriptData, { bandHeight });
+    this.coverageTrack.updateRenderData({
+      xRange,
+      yRange: COV_Y_RANGE,
+      dots: data.covData,
+    });
+    this.coverageTrack.render();
+    this.bafTrack.updateRenderData({
+      xRange,
+      yRange: BAF_Y_RANGE,
+      dots: data.bafData,
+    });
+    this.bafTrack.render();
+    this.transcriptTrack.updateRenderData({
+      xRange,
+      bands: data.transcriptData,
+      settings: { bandHeight },
+    });
+    this.transcriptTrack.render();
   }
 }
 

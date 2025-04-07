@@ -13,8 +13,10 @@ export class OverviewTrack extends CanvasTrack {
   marker: HTMLDivElement;
   onChromosomeClick: (chrom: string) => void;
 
-  renderData: Record<string, RenderDot[]> | null = null;
+  // renderData: Record<string, RenderDot[]> | null = null;
   pxRanges: Record<string, Rng> = {};
+
+  renderData: OverviewTrackData | null;
 
   initialize(
     label: string,
@@ -25,6 +27,7 @@ export class OverviewTrack extends CanvasTrack {
     super.initializeCanvas(label, trackHeight);
     this.chromSizes = chromSizes;
 
+    // FIXME: Put in function
     const marker = document.createElement("div") as HTMLDivElement;
     marker.style.height = `${this.dimensions.height}px`;
     marker.style.width = "0px";
@@ -43,12 +46,20 @@ export class OverviewTrack extends CanvasTrack {
     });
   }
 
+  updateRenderData(renderData: OverviewTrackData) {
+    this.renderData = renderData;
+  }
+
   render(
-    viewRegion: Region | null,
-    dotsPerChrom: Record<string, RenderDot[]>,
-    yRange: [number, number],
   ) {
+
+    if (this.renderData == null) {
+      throw Error("No render data assigned");
+    }
+
     super.syncDimensions();
+
+    const { region: viewRegion, dotsPerChrom, yRange } = this.renderData;
 
     renderBorder(this.ctx, this.dimensions);
 

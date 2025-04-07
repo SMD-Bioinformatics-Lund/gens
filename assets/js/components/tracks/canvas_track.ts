@@ -30,6 +30,7 @@ export class CanvasTrack extends HTMLElement {
   protected trackContainer: HTMLDivElement;
   protected label: string;
 
+  // FIXME: Make this an attribute instead
   protected expanded: boolean;
 
   private tooltip: Tooltip;
@@ -49,29 +50,29 @@ export class CanvasTrack extends HTMLElement {
     this._root.appendChild(template.content.cloneNode(true));
 
     this.expanded = false;
+
   }
 
   initializeCanvas(label: string, trackHeight: number, expandedHeight: number|null = null) {
-    // const header = this._root.getElementById("header")
-    // header.innerHTML = label;
     this.label = label;
     this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
-    // this.canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
     this.canvas.height = trackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     this.trackContainer = this._root.getElementById(
       "track-container",
     ) as HTMLDivElement;
-
+    
     if (expandedHeight != null) {
       this.initializeExpandable(trackHeight, expandedHeight);
     }
-    
+
     this.syncDimensions();
-    renderBorder(this.ctx, this.dimensions);
+    // renderBorder(this.ctx, this.dimensions);
+    // this.render();
   }
 
+  // FIXME: Move to attribute component
   initializeExpandable(height: number, expandedHeight: number) {
     this.trackContainer.addEventListener("contextmenu", (event) => {
       event.preventDefault();
@@ -79,11 +80,13 @@ export class CanvasTrack extends HTMLElement {
       this.expanded = !this.expanded;
       this.canvas.height = this.expanded ? expandedHeight : height;
       this.syncDimensions();
-
-      console.log("Expand");
+      this.render();
     });
   }
 
+  render() {}
+
+  // FIXME: Should this live outside the class?
   initializeTooltip() {
     this.tooltip = new Tooltip(this.trackContainer);
     this.canvas.addEventListener("mousemove", (event) => {
@@ -142,33 +145,7 @@ export class CanvasTrack extends HTMLElement {
     return this.dimensions;
   }
 
-  // FIXME: Move scales to generic utils instead
-  getScale(range: Rng, type: "x" | "y"): Scale {
-    if (!["x", "y"].includes(type)) {
-      throw Error(`Unknown scale type: ${type}, expected x or y`);
-    }
 
-    const endDim = type == "x" ? this.dimensions.width : this.dimensions.height;
-
-    const scale = (pos: number) => {
-      return linearScale(pos, range, [0, endDim]);
-    };
-    return scale;
-  }
-
-  getColorScale(levels: string[], colorPool: string[], defaultColor: string): ColorScale {
-    const colorScale = (level: string) => {
-      const levelIndex = levels.indexOf(level);
-      if (levelIndex == -1) {
-        return defaultColor
-      } else if (levelIndex >= colorPool.length) {
-        return defaultColor;
-      } else {
-        return colorPool[levelIndex]
-      }
-    }
-    return colorScale;
-  }
 }
 
 customElements.define("canvas-track", CanvasTrack);
