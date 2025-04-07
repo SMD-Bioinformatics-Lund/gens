@@ -141,7 +141,7 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
   return annotations.map((annot) => {
     const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
     const label = `${annot.name}, ${annot.start}-${annot.end}${rankScore}`;
-    const colorStr = rgbArrayToString(annot.color)
+    const colorStr = rgbArrayToString(annot.color);
     return {
       id: `${annot.start}_${annot.end}_${colorStr}`,
       start: annot.start,
@@ -177,12 +177,10 @@ export function parseTranscripts(transcripts: APITranscript[]): RenderBand[] {
   return filteredDuplicates;
 }
 
-export function parseVariants(variants: APIVariant[]): RenderBand[] {
-  const colorMap = {
-    del: "red",
-    dup: "blue",
-    inv: "green",
-  };
+export function parseVariants(
+  variants: APIVariant[],
+  variantColorMap: VariantColors,
+): RenderBand[] {
   return variants.map((variant) => {
     return {
       id: `${variant.position}_${variant.end}_${variant.variant_type}_${variant.sub_category}`,
@@ -190,31 +188,37 @@ export function parseVariants(variants: APIVariant[]): RenderBand[] {
       end: variant.end,
       label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
       color:
-        colorMap[variant.sub_category] != undefined
-          ? colorMap[variant.sub_category]
-          : "black",
+      variantColorMap[variant.sub_category] != undefined
+          ? variantColorMap[variant.sub_category]
+          : variantColorMap.default,
     };
   });
 }
 
-export function parseCoverageBin(coverage: APICoverageBin[]): RenderDot[] {
+export function parseCoverageBin(
+  coverage: APICoverageBin[],
+  color: string,
+): RenderDot[] {
   const renderData = coverage.map((d) => {
     return {
       x: (d.start + d.end) / 2,
       y: d.value,
-      color: "black", // Should be handled by a later scale?
+      color,
     };
   });
 
   return renderData;
 }
 
-export function parseCoverageDot(coverage: APICoverageDot[]): RenderDot[] {
+export function parseCoverageDot(
+  coverage: APICoverageDot[],
+  color: string,
+): RenderDot[] {
   const renderData = coverage.map((d) => {
     return {
       x: d.pos,
       y: d.value,
-      color: "black", // Should be handled by a later scale?
+      color,
     };
   });
 

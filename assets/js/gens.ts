@@ -34,6 +34,7 @@ import {
 import { GensAPI as GensAPI } from "./state/gens_api";
 import { GensSession } from "./state/session";
 import { transformMap } from "./track/utils";
+import { STYLE } from "./util/constants";
 
 // FIXME: Query from the backend
 
@@ -80,7 +81,7 @@ export async function initCanvases({
     const selectedAnnots = inputControls.getAnnotations();
     const region = inputControls.getRegion();
 
-    const renderData = await fetchRenderData(
+    const renderData = await parseRenderData(
       api,
       startRegion.chrom,
       selectedAnnots,
@@ -90,7 +91,7 @@ export async function initCanvases({
 
   gensTracks.initialize(allChromData, onChromClick);
 
-  const renderData = await fetchRenderData(api, startRegion.chrom, [
+  const renderData = await parseRenderData(api, startRegion.chrom, [
     annotationFile,
   ]);
   gensTracks.render(renderData, startRegion);
@@ -102,7 +103,7 @@ export async function initCanvases({
     async (region) => {},
     async (region, _source) => {
       const selectedAnnots = inputControls.getAnnotations();
-      const renderData = await fetchRenderData(
+      const renderData = await parseRenderData(
         api,
         region.chrom,
         selectedAnnots,
@@ -112,7 +113,7 @@ export async function initCanvases({
     async (_newXRange) => {
       const selectedAnnots = inputControls.getAnnotations();
       const region = inputControls.getRegion();
-      const renderData = await fetchRenderData(
+      const renderData = await parseRenderData(
         api,
         region.chrom,
         selectedAnnots,
@@ -123,11 +124,12 @@ export async function initCanvases({
   );
 }
 
-async function fetchRenderData(
+async function parseRenderData(
   gensDb: GensAPI,
   chrom: string,
   annotSources: string[],
 ): Promise<RenderData> {
+
   const parsedAnnotationData = {};
   for (const source of annotSources) {
     const annotData = await gensDb.getAnnotations(chrom, source);
@@ -136,11 +138,11 @@ async function fetchRenderData(
 
   const overviewCovRaw = await gensDb.getOverviewCovData();
   const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
-    parseCoverageDot(cov),
+    parseCoverageDot(cov, STYLE.colors.darkGray),
   );
   const overviewBafRaw = await gensDb.getOverviewBafData();
   const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
-    parseCoverageDot(cov),
+    parseCoverageDot(cov, STYLE.colors.darkGray),
   );
 
   const covRaw = await gensDb.getCov(chrom);
@@ -153,10 +155,10 @@ async function fetchRenderData(
   const renderData: RenderData = {
     chromInfo: await gensDb.getChromData(chrom),
     annotations: parsedAnnotationData,
-    covData: parseCoverageDot(covRaw),
-    bafData: parseCoverageDot(bafRaw),
+    covData: parseCoverageDot(covRaw, STYLE.colors.teal),
+    bafData: parseCoverageDot(bafRaw, STYLE.colors.orange),
     transcriptData: parseTranscripts(transcriptsRaw),
-    variantData: parseVariants(variantsRaw),
+    variantData: parseVariants(variantsRaw, STYLE.colors.variantColors),
     overviewCovData: overviewCovRender,
     overviewBafData: overviewBafRender,
   };
@@ -176,4 +178,4 @@ export function copyPermalink(genomeBuild, region) {
   tempElement.remove(); // remove temp node
 }
 
-export { CHROMOSOMES, setupGenericEventManager } from "./track";
+export { setupGenericEventManager } from "./track";

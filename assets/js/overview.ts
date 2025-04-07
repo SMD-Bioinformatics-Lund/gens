@@ -1,6 +1,6 @@
 // Overview canvas definition
 
-import { BaseScatterTrack, CHROMOSOMES } from "./track";
+import { BaseScatterTrack } from "./track";
 import { create, get } from "./fetch";
 import {
   createGraph,
@@ -11,7 +11,7 @@ import {
 } from "./draw";
 
 import { drawTrack } from "./navigation";
-import { FONTSIZES } from "./util/constants";
+import { CHROMOSOMES, FONTSIZES } from "./util/constants";
 
 export class OverviewCanvas extends BaseScatterTrack {
   fullPlotWidth: number;

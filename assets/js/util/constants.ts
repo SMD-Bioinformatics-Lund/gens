@@ -15,7 +15,15 @@ export const STYLE = {
         darkGray: "#333",
         yellow: "#dcd16f",
         red: "#f00",
+        teal: "teal",
+        orange: "#954000",
         transparentYellow: "#dcd16f44",
+        variantColors: {
+            del: "red",
+            dup: "blue",
+            inv: "green",
+            default: "gray",
+        },
         stainToColor: {
             acen: "#673888",
             gneg: "#FFFAF0",
@@ -28,7 +36,7 @@ export const STYLE = {
     }
 }
 
-export const CHROMOSOME_NAMES = [
+export const CHROMOSOMES = [
     "1",
     "2",
     "3",
@@ -53,4 +61,5 @@ export const CHROMOSOME_NAMES = [
     "22",
     "X",
     "Y",
-];
+  ];
+  

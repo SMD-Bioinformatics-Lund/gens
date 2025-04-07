@@ -1,3 +1,4 @@
+import { CHROMOSOMES } from "../util/constants";
 import {
   getAnnotationData,
   getChromToSVs,
@@ -6,7 +7,6 @@ import {
   getOverviewData,
   getCoverage,
 } from "./requests";
-import { CHROMOSOME_NAMES } from "../util/constants";
 
 export class GensAPI {
   sampleId: string;
@@ -111,7 +111,7 @@ export class GensAPI {
   // FIXME: This would be better as a single request I think
   async getAllChromData(): Promise<Record<string, ChromosomeInfo>> {
     await Promise.all(
-      CHROMOSOME_NAMES.map(async (chrom) => {
+      CHROMOSOMES.map(async (chrom) => {
         if (this.chromCache[chrom] === undefined) {
           this.chromCache[chrom] = await getChromosomeData(
             chrom,

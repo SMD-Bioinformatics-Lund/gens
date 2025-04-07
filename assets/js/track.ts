@@ -1,6 +1,6 @@
 // Entrypoint for track module
 
-export { CHROMOSOMES } from "./track/constants";
+import { CHROMOSOMES } from "./util/constants";
 export { VariantTrack } from "./track/variant";
 export { TranscriptTrack } from "./track/transcript";
 // export { AnnotationTrack } from "./track/annotation";

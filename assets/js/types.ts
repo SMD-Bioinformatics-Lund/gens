@@ -344,3 +344,10 @@ type InteractiveFeature = {
   step: number;
   color: string;
 };
+
+type VariantColors = {
+  del: string,
+  dup: string,
+  inv: string,
+  default: string,
+}

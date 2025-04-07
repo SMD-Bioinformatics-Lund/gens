@@ -95,7 +95,6 @@ export async function getCoverage(
     return {
       pos: pos[0],
       value: val[1],
-      // color: "teal", // not as boring
     }
   })
 
@@ -128,7 +127,6 @@ export async function getOverviewData(
       return {
         pos: xy[0],
         value: xy[1],
-        // color: "#954000", // not as boring
       }
     })
     dataPerChrom[element.region] = points;
