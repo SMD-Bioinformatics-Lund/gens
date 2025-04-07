@@ -13,7 +13,6 @@ export class OverviewTrack extends CanvasTrack {
   marker: HTMLDivElement;
   onChromosomeClick: (chrom: string) => void;
 
-  // renderData: Record<string, RenderDot[]> | null = null;
   pxRanges: Record<string, Rng> = {};
 
   renderData: OverviewTrackData | null;

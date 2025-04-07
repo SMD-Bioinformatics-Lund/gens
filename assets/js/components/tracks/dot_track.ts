@@ -2,11 +2,8 @@ import { CanvasTrack } from "./canvas_track";
 import {
   drawDotsScaled,
   getLinearScale,
-  linearScale,
   renderBorder,
-  renderDots,
 } from "./render_utils";
-import { ResizableTrack } from "./resizable_track";
 
 export class DotTrack extends CanvasTrack {
   renderData: DotTrackData | null;

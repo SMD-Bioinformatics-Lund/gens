@@ -225,10 +225,7 @@ export function parseCoverageDot(
   return renderData;
 }
 
-// FIXME: Move scales to generic utils instead
 export function getLinearScale(domain: Rng, range: Rng): Scale {
-
-  // const endDim = type == "x" ? dimensions.width : dimensions.height;
 
   const scale = (pos: number) => {
     return linearScale(pos, domain, range);

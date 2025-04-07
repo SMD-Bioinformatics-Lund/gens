@@ -84,10 +84,6 @@ export class CanvasTrack extends HTMLElement {
     }
 
     this.syncDimensions();
-    // renderBorder(this.ctx, this.dimensions);
-    // this.render();
-
-    // this.canvas.style.width = `${availWidth}px`;
   }
 
   // FIXME: Move to attribute component
@@ -154,14 +150,10 @@ export class CanvasTrack extends HTMLElement {
     const availWidth = this.getBoundingClientRect().width;
     const availHeight = this.assignedHeight;
 
-    console.log(`Syncing dimensions ${availWidth} ${availHeight}`);
-
     const pixelRatio = 2;
 
     const displayWidth = Math.floor(availWidth);
     const displayHeight = Math.floor(availHeight);
-    // const displayWidth = 1800;
-    // const displayHeight = 40;
 
     const actualWidth = displayWidth * pixelRatio;
     const actualHeight = displayHeight * pixelRatio;
@@ -169,9 +161,6 @@ export class CanvasTrack extends HTMLElement {
     if (this.canvas.width !== actualWidth || this.canvas.height !== actualHeight) {
       this.canvas.width = actualWidth;
       this.canvas.height = actualHeight;
-
-      // this.canvas.style.width = `${displayWidth}px`;
-      // this.canvas.style.height = `${displayHeight}px`;
 
       const ctx = this.canvas.getContext("2d");
       ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
@@ -186,23 +175,6 @@ export class CanvasTrack extends HTMLElement {
     return this.dimensions;
   }
 
-  // syncDimensions() {
-  //   if (this.canvas == undefined) {
-  //     console.error("Cannot run syncDimensions before initialize");
-  //   }
-
-  //   const availWidth = this.trackContainer.clientWidth;
-
-  //   console.log("Sync dimension for width", availWidth);
-
-  //   this.canvas.width = availWidth;
-  //   this.canvas.style.width = `${availWidth}px`;
-  //   this.dimensions = {
-  //     width: this.canvas.width,
-  //     height: this.canvas.height,
-  //   };
-  //   return this.dimensions;
-  // }
 }
 
 customElements.define("canvas-track", CanvasTrack);
