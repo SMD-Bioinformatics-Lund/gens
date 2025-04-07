@@ -13,9 +13,6 @@ export class DotTrack extends CanvasTrack {
     ) {
         super.syncDimensions();
 
-        console.log(this.label);
-        console.log(dots);
-
         const xScale = this.getScale(xRange, "x");
         const yScale = this.getScale(yRange, "y");
 
