@@ -1,24 +1,36 @@
 import { CanvasTrack } from "./canvas_track";
-import { drawDotsScaled, linearScale, renderBorder, renderDots } from "./render_utils";
+import {
+  drawDotsScaled,
+  getLinearScale,
+  renderBorder,
+} from "./render_utils";
 
 export class DotTrack extends CanvasTrack {
-    initialize(label: string, trackHeight: number) {
-        super.initializeCanvas(label, trackHeight);
+  renderData: DotTrackData | null;
+
+  initialize(label: string, trackHeight: number) {
+    super.initializeCanvas(label, trackHeight);
+  }
+
+  updateRenderData(renderData: DotTrackData) {
+    this.renderData = renderData;
+  }
+
+  render() {
+    if (this.renderData == null) {
+      throw Error(`Render data should be assigned before render (current track: ${this.label})`);
     }
 
-    render(
-        xRange: [number, number],
-        yRange: [number, number],
-        dots: RenderDot[],
-    ) {
-        super.syncDimensions();
+    const { xRange, yRange, dots } = this.renderData;
 
-        const xScale = this.getScale(xRange, "x");
-        const yScale = this.getScale(yRange, "y");
+    super.syncDimensions();
 
-        renderBorder(this.ctx, this.dimensions);
-        drawDotsScaled(this.ctx, dots, xScale, yScale);
-    }
+    const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
+    const yScale = getLinearScale(yRange, [0, this.dimensions.height]);
+
+    renderBorder(this.ctx, this.dimensions);
+    drawDotsScaled(this.ctx, dots, xScale, yScale);
+  }
 }
 
 customElements.define("dot-track", DotTrack);

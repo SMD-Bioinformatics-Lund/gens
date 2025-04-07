@@ -24,7 +24,6 @@ import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 import {
   parseCoverageDot,
-  parseCoverageBin,
   parseTranscripts,
   parseVariants,
   parseAnnotations,
@@ -32,7 +31,6 @@ import {
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
 import { GensAPI as GensAPI } from "./state/gens_api";
-import { GensSession } from "./state/session";
 import { transformMap } from "./track/utils";
 import { STYLE } from "./util/constants";
 
@@ -72,8 +70,6 @@ export async function initCanvases({
   const api = new GensAPI(sampleId, caseId, genomeBuild, gensApiURL);
 
   const allChromData = await api.getAllChromData();
-  // const overviewCovData = await api.getOverviewCovData();
-  // const overviewBafData = await api.getOverviewBafData();
 
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);
@@ -86,7 +82,8 @@ export async function initCanvases({
       startRegion.chrom,
       selectedAnnots,
     );
-    gensTracks.render(renderData, region);
+    gensTracks.updateRenderData(renderData, region);
+    gensTracks.render();
   };
 
   gensTracks.initialize(allChromData, onChromClick);
@@ -94,7 +91,8 @@ export async function initCanvases({
   const renderData = await parseRenderData(api, startRegion.chrom, [
     annotationFile,
   ]);
-  gensTracks.render(renderData, startRegion);
+  gensTracks.updateRenderData(renderData, startRegion);
+  gensTracks.render();
 
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
@@ -108,7 +106,8 @@ export async function initCanvases({
         region.chrom,
         selectedAnnots,
       );
-      gensTracks.render(renderData, region);
+      gensTracks.updateRenderData(renderData, region);
+      gensTracks.render();
     },
     async (_newXRange) => {
       const selectedAnnots = inputControls.getAnnotations();
@@ -118,7 +117,8 @@ export async function initCanvases({
         region.chrom,
         selectedAnnots,
       );
-      gensTracks.render(renderData, region);
+      gensTracks.updateRenderData(renderData, region);
+      gensTracks.render();
     },
     gensApiURL,
   );

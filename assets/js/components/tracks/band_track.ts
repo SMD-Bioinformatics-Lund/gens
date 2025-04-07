@@ -1,18 +1,39 @@
 import { getNOverlaps } from "../../track/utils";
 import { CanvasTrack } from "./canvas_track";
-import { renderBands, renderBorder } from "./render_utils";
+import { getLinearScale, renderBands, renderBorder } from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
-  initialize(label: string, trackHeight: number, thickTrackHeight: number|null = null) {
+  renderData: {
+    xRange: Rng;
+    bands: RenderBand[];
+    settings: { bandHeight: number | null };
+  } | null;
+
+  initialize(
+    label: string,
+    trackHeight: number,
+    thickTrackHeight: number | null = null,
+  ) {
     super.initializeCanvas(label, trackHeight, thickTrackHeight);
     this.initializeTooltip();
   }
 
-  render(
-    xRange: [number, number],
-    bands: RenderBand[],
-    settings: { bandHeight: number | null } = { bandHeight: null },
-  ) {
+  updateRenderData(renderData: {
+    xRange: Rng;
+    bands: RenderBand[];
+    settings: { bandHeight: number | null };
+  }) {
+    this.renderData = renderData;
+  }
+
+  render() {
+    console.log("Band render called");
+    if (this.renderData == null) {
+      throw Error(`No render data assigned for track: ${this.label}`)
+    }
+
+    const { bands, xRange, settings } = this.renderData;
+
     // this.canvas.height = 300;
     const dimensions = super.syncDimensions();
 
@@ -21,12 +42,14 @@ export class BandTrack extends CanvasTrack {
       (annot) => annot.start > xRange[0] && annot.end <= xRange[1],
     );
 
-    bandsWithinRange = bandsWithinRange.sort((band1, band2) => band1.start < band2.start ? -1 : 1);
+    bandsWithinRange = bandsWithinRange.sort((band1, band2) =>
+      band1.start < band2.start ? -1 : 1,
+    );
 
     const nOverlaps = getNOverlaps(bandsWithinRange);
 
     // Hover
-    const xScale = this.getScale(xRange, "x");
+    const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
     // FIXME: Break out method
     // FIXME: How to deal with y position for bands?
@@ -43,10 +66,10 @@ export class BandTrack extends CanvasTrack {
 
     const shift = 5;
     const scaledBands = bandsWithinRange.map((band, i) => {
-        const scaledBand = Object.create(band);
-        scaledBand.y1 = y1 + shift * nOverlaps[i];
-        scaledBand.y2 = y2 + shift * nOverlaps[i];
-        return scaledBand;
+      const scaledBand = Object.create(band);
+      scaledBand.y1 = y1 + shift * nOverlaps[i];
+      scaledBand.y2 = y2 + shift * nOverlaps[i];
+      return scaledBand;
     });
 
     this.hoverTargets = scaledBands.map((band) => {

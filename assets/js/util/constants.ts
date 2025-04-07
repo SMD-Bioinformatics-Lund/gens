@@ -9,6 +9,9 @@ export const FONTSIZES = {
 }
 
 export const STYLE = {
+    render: {
+        bandHeight: 5
+    },
     colors: {
         white: "#FFF",
         black: "#000",

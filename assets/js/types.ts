@@ -110,6 +110,23 @@ interface RenderDot {
     color: string,
 }
 
+interface DotTrackData {
+  xRange: Rng,
+  yRange: Rng,
+  dots: RenderDot[]
+}
+
+interface IdeogramTrackData {
+  chromInfo: ChromosomeInfo,
+  xRange: Rng
+}
+
+interface OverviewTrackData {
+  region: Region | null,
+  dotsPerChrom: Record<string, RenderDot[]>,
+  yRange: Rng
+}
+
 type Scale = (value: number) => number
 
 type ColorScale = (level: string) => string

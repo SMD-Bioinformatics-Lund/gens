@@ -8,30 +8,48 @@ import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { transformMap, removeChildren } from "../track/utils";
+import { STYLE } from "../util/constants";
 
 const THICK_TRACK_HEIGHT = 80;
 const THIN_TRACK_HEIGHT = 20;
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
+// FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-    <div id="container">
-        <ideogram-track id="ideogram-track"></ideogram-track>
-    
-        <dot-track id="coverage-track"></dot-track>
-        <dot-track id="baf-track"></dot-track>
-        <div id="annotations-container"></div>
-        <band-track id="transcript-track"></band-track>
-        <band-track id="variant-track"></band-track>
+  <style>
+    :host {
+      display: block;
+      width: 100%;
+    }
+    #container {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow-x: hidden;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+  </style>
+  <div id="container">
+      <ideogram-track id="ideogram-track"></ideogram-track>
+  
+      <dot-track id="coverage-track"></dot-track>
+      <dot-track id="baf-track"></dot-track>
+      <div id="annotations-container"></div>
+      <band-track id="transcript-track"></band-track>
+      <band-track id="variant-track"></band-track>
 
-        <overview-track id="overview-track-cov"></overview-track>
-        <overview-track id="overview-track-baf"></overview-track>
-    </div>
+      <overview-track id="overview-track-cov"></overview-track>
+      <overview-track id="overview-track-baf"></overview-track>
+  </div>
 `;
 
 export class GensTracks extends HTMLElement {
   protected _root: ShadowRoot;
+
+  parentContainer: HTMLDivElement;
 
   ideogramTrack: IdeogramTrack;
   overviewTrackCov: OverviewTrack;
@@ -41,11 +59,21 @@ export class GensTracks extends HTMLElement {
   transcriptTrack: BandTrack;
   variantTrack: BandTrack;
 
+  isInitialized = false;
+
   annotationsContainer: HTMLDivElement;
+
+  annotTracks: BandTrack[];
 
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
+
+    window.addEventListener("resize", () => {
+      if (this.isInitialized) {
+        this.render();
+      }
+    });
 
     this.ideogramTrack = this._root.getElementById(
       "ideogram-track",
@@ -77,8 +105,16 @@ export class GensTracks extends HTMLElement {
   ) {
     this.coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
     this.bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
-    this.variantTrack.initialize("Variant", THIN_TRACK_HEIGHT, THICK_TRACK_HEIGHT);
-    this.transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT);
+    this.variantTrack.initialize(
+      "Variant",
+      THIN_TRACK_HEIGHT,
+      THICK_TRACK_HEIGHT,
+    );
+    this.transcriptTrack.initialize(
+      "Transcript",
+      THIN_TRACK_HEIGHT,
+      THICK_TRACK_HEIGHT,
+    );
     this.ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
 
     const chromSizes = transformMap(allChromData, (data) => data.size);
@@ -97,29 +133,78 @@ export class GensTracks extends HTMLElement {
     );
   }
 
-  render(data: RenderData, region: Region) {
-    const range: [number, number] = [region.start, region.end];
+  updateRenderData(data: RenderData, region: Region) {
+    const xRange: [number, number] = [region.start, region.end];
 
     // FIXME: Move to constants
-    const bandHeight = 5;
-    this.variantTrack.render(range, data.variantData, { bandHeight });
+    const bandHeight = STYLE.render.bandHeight;
+    this.variantTrack.updateRenderData({
+      xRange,
+      bands: data.variantData,
+      settings: { bandHeight },
+    });
 
-    this.overviewTrackCov.render(region, data.overviewCovData, COV_Y_RANGE);
-    this.overviewTrackBaf.render(region, data.overviewBafData, BAF_Y_RANGE);
+    this.overviewTrackCov.updateRenderData({
+      region,
+      dotsPerChrom: data.overviewCovData,
+      yRange: COV_Y_RANGE,
+    });
+    this.overviewTrackBaf.updateRenderData({
+      region,
+      dotsPerChrom: data.overviewBafData,
+      yRange: BAF_Y_RANGE,
+    });
 
-    this.ideogramTrack.render(region.chrom, data.chromInfo, range);
+    this.ideogramTrack.updateRenderData({ chromInfo: data.chromInfo, xRange });
 
     removeChildren(this.annotationsContainer);
+    this.annotTracks = [];
     Object.entries(data.annotations).forEach(([source, annotData]) => {
       const annotTrack = new BandTrack();
       this.annotationsContainer.appendChild(annotTrack);
-      annotTrack.initialize(source, THIN_TRACK_HEIGHT);
-      annotTrack.render(range, annotData);
+      annotTrack.initialize(source, THIN_TRACK_HEIGHT, THICK_TRACK_HEIGHT);
+      annotTrack.updateRenderData({
+        xRange,
+        bands: annotData,
+        settings: { bandHeight },
+      });
+      this.annotTracks.push(annotTrack);
     });
 
-    this.coverageTrack.render(range, COV_Y_RANGE, data.covData);
-    this.bafTrack.render(range, BAF_Y_RANGE, data.bafData);
-    this.transcriptTrack.render(range, data.transcriptData);
+    this.coverageTrack.updateRenderData({
+      xRange,
+      yRange: COV_Y_RANGE,
+      dots: data.covData,
+    });
+    this.bafTrack.updateRenderData({
+      xRange,
+      yRange: BAF_Y_RANGE,
+      dots: data.bafData,
+    });
+    this.transcriptTrack.updateRenderData({
+      xRange,
+      bands: data.transcriptData,
+      settings: { bandHeight },
+    });
+
+    this.isInitialized = true;
+  }
+
+  public render() {
+
+    console.log("Gens tracks bound", this.getBoundingClientRect());
+
+    this.transcriptTrack.render();
+    this.coverageTrack.render();
+    this.bafTrack.render();
+    this.variantTrack.render();
+    this.overviewTrackCov.render();
+    this.overviewTrackBaf.render();
+    this.ideogramTrack.render();
+
+    for (const track of this.annotTracks) {
+      track.render();
+    }
   }
 }
 

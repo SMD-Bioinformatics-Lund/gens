@@ -188,7 +188,7 @@ export function parseVariants(
       end: variant.end,
       label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
       color:
-      variantColorMap[variant.sub_category] != undefined
+        variantColorMap[variant.sub_category] != undefined
           ? variantColorMap[variant.sub_category]
           : variantColorMap.default,
     };
@@ -225,3 +225,28 @@ export function parseCoverageDot(
   return renderData;
 }
 
+export function getLinearScale(domain: Rng, range: Rng): Scale {
+
+  const scale = (pos: number) => {
+    return linearScale(pos, domain, range);
+  };
+  return scale;
+}
+
+export function getColorScale(
+  levels: string[],
+  colorPool: string[],
+  defaultColor: string,
+): ColorScale {
+  const colorScale = (level: string) => {
+    const levelIndex = levels.indexOf(level);
+    if (levelIndex == -1) {
+      return defaultColor;
+    } else if (levelIndex >= colorPool.length) {
+      return defaultColor;
+    } else {
+      return colorPool[levelIndex];
+    }
+  };
+  return colorScale;
+}

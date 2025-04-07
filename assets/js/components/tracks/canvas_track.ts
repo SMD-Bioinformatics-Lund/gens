@@ -1,24 +1,34 @@
-import { linearScale, renderBorder } from "./render_utils";
-import { createPopper } from "@popperjs/core";
-import {
-  createTooltipDiv,
-  makeVirtualElementNew,
-  tooltipOnMouseMove,
-  Tooltip,
-} from "./tooltip_utils";
+import { Tooltip } from "./tooltip_utils";
 
 // FIXME: Move somewhere
-const PADDING_LEFT = 5;
+const PADDING_SIDES = 0;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-    <div id="container" data-state="nodata" style="padding-left: ${PADDING_LEFT}px; padding-right: ${PADDING_LEFT}">
-        <div id='track-container' style="position: relative;">
-            <canvas id='canvas'></canvas>
-            <!-- <canvas id='canvas-offscreen'></canvas> -->
-            <!-- <div id='titles'></div> -->
-        </div>
-    </div>
+  <style>
+    :host {
+      display: block;
+      width: 100%;
+    }
+    #container {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      padding-left: ${PADDING_SIDES}px;
+      padding-right: ${PADDING_SIDES}px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+  <div id="container" data-state="nodata">
+      <div id='track-container' style="position: relative;">
+          <canvas id='canvas'></canvas>
+      </div>
+  </div>
 `;
 
 export class CanvasTrack extends HTMLElement {
@@ -30,6 +40,9 @@ export class CanvasTrack extends HTMLElement {
   protected trackContainer: HTMLDivElement;
   protected label: string;
 
+  protected assignedHeight: number;
+
+  // FIXME: Make this an attribute instead
   protected expanded: boolean;
 
   private tooltip: Tooltip;
@@ -51,13 +64,15 @@ export class CanvasTrack extends HTMLElement {
     this.expanded = false;
   }
 
-  initializeCanvas(label: string, trackHeight: number, expandedHeight: number|null = null) {
-    // const header = this._root.getElementById("header")
-    // header.innerHTML = label;
+  initializeCanvas(
+    label: string,
+    trackHeight: number,
+    expandedHeight: number | null = null,
+  ) {
     this.label = label;
     this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
-    // this.canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
-    this.canvas.height = trackHeight;
+    // this.canvas.height = trackHeight;
+    this.assignedHeight = trackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     this.trackContainer = this._root.getElementById(
@@ -67,23 +82,25 @@ export class CanvasTrack extends HTMLElement {
     if (expandedHeight != null) {
       this.initializeExpandable(trackHeight, expandedHeight);
     }
-    
+
     this.syncDimensions();
-    renderBorder(this.ctx, this.dimensions);
   }
 
+  // FIXME: Move to attribute component
   initializeExpandable(height: number, expandedHeight: number) {
     this.trackContainer.addEventListener("contextmenu", (event) => {
       event.preventDefault();
 
       this.expanded = !this.expanded;
-      this.canvas.height = this.expanded ? expandedHeight : height;
+      this.assignedHeight = this.expanded ? expandedHeight : height;
       this.syncDimensions();
-
-      console.log("Expand");
+      this.render();
     });
   }
 
+  render() {}
+
+  // FIXME: Should this live outside the class?
   initializeTooltip() {
     this.tooltip = new Tooltip(this.trackContainer);
     this.canvas.addEventListener("mousemove", (event) => {
@@ -124,51 +141,40 @@ export class CanvasTrack extends HTMLElement {
   ) {}
 
   syncDimensions() {
-    if (this.canvas == undefined) {
+    if (!this.canvas || !this.trackContainer) {
       console.error("Cannot run syncDimensions before initialize");
+      return;
     }
+    
+    // Must include the padding here. Otherwise this triggers an infinite resize loop.
+    const availWidth = this.getBoundingClientRect().width;
+    const availHeight = this.assignedHeight;
 
-    const availWidth = this.trackContainer.clientWidth;
+    const pixelRatio = 2;
 
-    // const viewNts = end - start;
+    const displayWidth = Math.floor(availWidth);
+    const displayHeight = Math.floor(availHeight);
 
-    // FIXME: Not the responsibility of this component
-    this.canvas.width = availWidth;
-    // this.canvas.width = window.innerWidth - PADDING_LEFT;
+    const actualWidth = displayWidth * pixelRatio;
+    const actualHeight = displayHeight * pixelRatio;
+
+    if (this.canvas.width !== actualWidth || this.canvas.height !== actualHeight) {
+      this.canvas.width = actualWidth;
+      this.canvas.height = actualHeight;
+
+      const ctx = this.canvas.getContext("2d");
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      // this.canvas.width = displayWidth;
+    }
+    
+
     this.dimensions = {
-      width: this.canvas.width,
-      height: this.canvas.height,
+      width: displayWidth,
+      height: displayHeight,
     };
     return this.dimensions;
   }
 
-  // FIXME: Move scales to generic utils instead
-  getScale(range: Rng, type: "x" | "y"): Scale {
-    if (!["x", "y"].includes(type)) {
-      throw Error(`Unknown scale type: ${type}, expected x or y`);
-    }
-
-    const endDim = type == "x" ? this.dimensions.width : this.dimensions.height;
-
-    const scale = (pos: number) => {
-      return linearScale(pos, range, [0, endDim]);
-    };
-    return scale;
-  }
-
-  getColorScale(levels: string[], colorPool: string[], defaultColor: string): ColorScale {
-    const colorScale = (level: string) => {
-      const levelIndex = levels.indexOf(level);
-      if (levelIndex == -1) {
-        return defaultColor
-      } else if (levelIndex >= colorPool.length) {
-        return defaultColor;
-      } else {
-        return colorPool[levelIndex]
-      }
-    }
-    return colorScale;
-  }
 }
 
 customElements.define("canvas-track", CanvasTrack);
