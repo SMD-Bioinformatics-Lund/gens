@@ -1,4 +1,8 @@
-import { getNOverlaps } from "../../track/utils";
+import {
+  getOverlapInfo,
+  rangesOverlap,
+  rangeSurroundsRange,
+} from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 import { getLinearScale, renderBands, renderBorder } from "./render_utils";
@@ -28,37 +32,26 @@ export class BandTrack extends CanvasTrack {
     settings: { bandPad: number };
   }) {
     this.renderData = renderData;
-    const { bands, xRange, settings } = this.renderData;
-
-    // FIXME: We should keep those stretching over the full screen
-    const bandsToRender = bands
-      .filter((annot) => annot.start > xRange[0] && annot.end <= xRange[1])
-      .sort((band1, band2) => (band1.start < band2.start ? -1 : 1));
-
-    const nOverlap = getNOverlaps(bandsToRender);
-    const maxOverlap = Math.max(...Object.values(nOverlap));
-
-    console.log(`Max overlaps ${maxOverlap} for label ${this.label}`);
-
-    this.processedRenderData = {
-      bands: bandsToRender,
-      numberTracks: maxOverlap + 1,
-      nPriorBandOverlaps: nOverlap,
-    };
   }
 
   render() {
-    console.log("Band render called");
     if (this.renderData == null) {
       throw Error(`No render data assigned for track: ${this.label}`);
     }
 
-    const { xRange, settings } = this.renderData;
-    const {
-      bands,
-      nPriorBandOverlaps: nOverlap,
-      numberTracks,
-    } = this.processedRenderData;
+    const { bands, xRange, settings } = this.renderData;
+
+    const overlapInfo = getOverlapInfo(
+      bands.sort((b1, b2) => (b1.start <= b2.start ? -1 : 1)),
+    );
+    console.log(overlapInfo);
+    const maxLane = Math.max(
+      ...Object.values(overlapInfo).map((band) => band.lane),
+    );
+    const numberTracks = maxLane + 1;
+
+    console.log(overlapInfo)
+    console.log(maxLane, numberTracks);
 
     if (this.expanded) {
       // FIXME: Refactor
@@ -66,18 +59,17 @@ export class BandTrack extends CanvasTrack {
       const singleBandHeight =
         STYLE.render.trackHeight.thin -
         (STYLE.render.topBottomPadding + STYLE.render.bandPadding) * 2;
-      const multiTrackHeight = (STYLE.render.topBottomPadding * 2) + (singleBandHeight + STYLE.render.bandPadding * 2) * numberTracks 
+      const multiTrackHeight =
+        STYLE.render.topBottomPadding * 2 +
+        (singleBandHeight + STYLE.render.bandPadding * 2) * numberTracks;
       const assignedHeight = multiTrackHeight;
       // const assignedHeight = STYLE.render.trackHeight.thin * numberTracks;
-      console.log("Assigning height", assignedHeight);
       this.assignedHeight = assignedHeight;
     }
 
     const dimensions = super.syncDimensions();
 
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
-
-    // FIXME: Expand to include all data?
 
     const yScale = getYScale(
       STYLE.render.topBottomPadding,
@@ -90,7 +82,7 @@ export class BandTrack extends CanvasTrack {
     // Looking a bit strange sometimes for multiple stacked tracks
     const scaledBands: RenderBand[] = bands.map((band) => {
       const scaledBand = Object.create(band);
-      const bandNOverlap = nOverlap[band.id];
+      const bandNOverlap = overlapInfo[band.id].lane;
       let yRange = yScale(bandNOverlap, this.expanded);
       scaledBand.y1 = yRange[0];
       scaledBand.y2 = yRange[1];
@@ -123,10 +115,6 @@ function getYScale(
     const renderingArea =
       renderingHeight - topBottomPad * 2 - bandPad * numberTracks;
     const trackHeight = renderingArea / numberTracks;
-
-    console.log(
-      `renderingArea ${renderingArea} numberTracks ${numberTracks} trackHeight ${trackHeight}`,
-    );
 
     let yShift = 0;
     if (expanded) {

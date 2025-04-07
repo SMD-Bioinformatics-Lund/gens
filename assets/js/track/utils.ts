@@ -116,14 +116,16 @@ export function removeChildren(container: HTMLElement) {
  * Get the number of prior ranges overlapping the current target
  * Assumes ranges sorted on their start position
  */
-export function getNOverlaps(
-  ranges: { id: string, start: number; end: number }[],
-): Record<string, number> {
-  const nOverlapping = {};
+export function getOverlapInfo(
+  ranges: { id: string; start: number; end: number }[],
+): Record<string, { nOverlapping: number; lane: number }> {
+  const returnInfo: Record<string, { nOverlapping: number; lane: number }> = {};
 
-  let overlapping: { start: number; end: number }[] = [];
+  let overlapping: { start: number; end: number; lane: number }[] = [];
   ranges.forEach((currBand) => {
-    const passed = [];
+    const passed: {start: number, end: number, lane: number}[] = [];
+
+    console.log("Looking at band", currBand);
 
     overlapping.forEach((overlapBand) => {
       if (currBand.start >= overlapBand.end) {
@@ -137,16 +139,36 @@ export function getNOverlaps(
       overlapping.splice(index, 1);
     });
 
-    //   currBand.nbrOverlap = overlapping.length;
-    if (nOverlapping[currBand.id] != null) {
+    // Find the first now available track
+    const lanesInUse = new Set(overlapping.map((band) => band.lane));
+    let currentLane = lanesInUse.size;
+    // Is there a lower now available
+    for (let i = 0; i < lanesInUse.size; i++) {
+      if (!lanesInUse.has(i)) {
+        currentLane = i;
+        break;
+      }
+    }
+
+    if (returnInfo[currBand.id] != null) {
       console.error(`ID ${currBand.id} is present multiple times`);
     }
-    nOverlapping[currBand.id] = overlapping.length;
+    const currTrackInfo = {
+      nOverlapping: overlapping.length,
+      lane: currentLane,
+    };
+    returnInfo[currBand.id] = currTrackInfo;
 
-    overlapping.push(currBand);
+    console.log("Added with lane", currentLane);
+
+    overlapping.push({
+      start: currBand.start,
+      end: currBand.end,
+      lane: currentLane,
+    });
   });
 
-  return nOverlapping;
+  return returnInfo;
 }
 
 export function zip<A, B>(a: A[], b: B[]): [A, B][] {
@@ -154,4 +176,16 @@ export function zip<A, B>(a: A[], b: B[]): [A, B][] {
     throw Error(`Arrays are of different length: ${a.length} ${b.length}`);
   }
   return a.map((key, idx) => [key, b[idx]]);
+}
+
+export function pointInRange(point: number, range: Rng): boolean {
+  return point > range[0] && point < range[1];
+}
+
+export function rangeSurroundsRange(range1: Rng, range2: Rng): boolean {
+  return range1[0] <= range2[0] && range1[1] >= range2[1];
+}
+
+export function rangesOverlap(range1: Rng, range2: Rng): boolean {
+  return pointInRange(range1[0], range2) || pointInRange(range1[0], range2);
 }
