@@ -1,7 +1,7 @@
 import { Tooltip } from "./tooltip_utils";
 
 // FIXME: Move somewhere
-const PADDING_SIDES = 10;
+const PADDING_SIDES = 0;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -40,6 +40,8 @@ export class CanvasTrack extends HTMLElement {
   protected trackContainer: HTMLDivElement;
   protected label: string;
 
+  protected assignedHeight: number;
+
   // FIXME: Make this an attribute instead
   protected expanded: boolean;
 
@@ -69,7 +71,8 @@ export class CanvasTrack extends HTMLElement {
   ) {
     this.label = label;
     this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
-    this.canvas.height = trackHeight;
+    // this.canvas.height = trackHeight;
+    this.assignedHeight = trackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     this.trackContainer = this._root.getElementById(
@@ -93,7 +96,7 @@ export class CanvasTrack extends HTMLElement {
       event.preventDefault();
 
       this.expanded = !this.expanded;
-      this.canvas.height = this.expanded ? expandedHeight : height;
+      this.assignedHeight = this.expanded ? expandedHeight : height;
       this.syncDimensions();
       this.render();
     });
@@ -146,23 +149,39 @@ export class CanvasTrack extends HTMLElement {
       console.error("Cannot run syncDimensions before initialize");
       return;
     }
-
+    
     // Must include the padding here. Otherwise this triggers an infinite resize loop.
     const availWidth = this.getBoundingClientRect().width;
-    // const availWidth = this.getBoundingClientRect().width;
-    // const availWidth = this.trackContainer.clientWidth - 2 * PADDING_SIDES;
-    // const availWidth = this.trackContainer.clientWidth - 2 * PADDING_SIDES;
-    const newWidth = Math.floor(availWidth);
+    const availHeight = this.assignedHeight;
 
-    if (this.canvas.width !== newWidth) {
-      this.canvas.width = newWidth;
-      // this.canvas.style.width = `${availWidth}px`;
+    console.log(`Syncing dimensions ${availWidth} ${availHeight}`);
+
+    const pixelRatio = 2;
+
+    const displayWidth = Math.floor(availWidth);
+    const displayHeight = Math.floor(availHeight);
+    // const displayWidth = 1800;
+    // const displayHeight = 40;
+
+    const actualWidth = displayWidth * pixelRatio;
+    const actualHeight = displayHeight * pixelRatio;
+
+    if (this.canvas.width !== actualWidth || this.canvas.height !== actualHeight) {
+      this.canvas.width = actualWidth;
+      this.canvas.height = actualHeight;
+
+      // this.canvas.style.width = `${displayWidth}px`;
+      // this.canvas.style.height = `${displayHeight}px`;
+
+      const ctx = this.canvas.getContext("2d");
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      // this.canvas.width = displayWidth;
     }
     
 
     this.dimensions = {
-      width: this.canvas.width,
-      height: this.canvas.height,
+      width: displayWidth,
+      height: displayHeight,
     };
     return this.dimensions;
   }

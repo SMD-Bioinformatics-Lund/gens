@@ -27,6 +27,7 @@ export class BandTrack extends CanvasTrack {
   }
 
   render() {
+    console.log("Band render called");
     if (this.renderData == null) {
       throw Error(`No render data assigned for track: ${this.label}`)
     }

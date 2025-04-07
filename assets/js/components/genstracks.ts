@@ -9,7 +9,6 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { transformMap, removeChildren } from "../track/utils";
 import { STYLE } from "../util/constants";
-import { CanvasTrack } from "./tracks/canvas_track";
 
 const THICK_TRACK_HEIGHT = 80;
 const THIN_TRACK_HEIGHT = 20;
@@ -29,6 +28,8 @@ template.innerHTML = String.raw`
       max-width: 100%;
       box-sizing: border-box;
       overflow-x: hidden;
+      padding-left: 10px;
+      padding-right: 10px;
     }
   </style>
   <div id="container">
@@ -72,25 +73,33 @@ export class GensTracks extends HTMLElement {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
 
-    const container = this._root.getElementById("container") as HTMLDivElement;
-    this.resizeObserver = new ResizeObserver((entries) => {
-      if (this.resizeDebounceTimer !== null) {
-        clearTimeout(this.resizeDebounceTimer);
+    // const container = this._root.getElementById("container") as HTMLDivElement;
+    // this.resizeObserver = new ResizeObserver((entries) => {
+    //   if (this.resizeDebounceTimer !== null) {
+    //     clearTimeout(this.resizeDebounceTimer);
+    //   }
+
+    //   this.resizeDebounceTimer = window.setTimeout(() => {
+    //     this.resizeDebounceTimer = null;
+
+    //     const entry = entries[0];
+    //     const { width, height } = entry.contentRect;
+    //     console.log("Debounced resize:", width, height);
+    //     if (this.isInitialized) {
+    //       this.render();
+    //     }
+    //   }, DEBOUNCE_MS);
+    // });
+
+    // this.resizeObserver.observe(this);
+    // this.resizeObserver.observe(this);
+
+    window.addEventListener("resize", () => {
+      if (this.isInitialized) {
+        this.render();
       }
-
-      this.resizeDebounceTimer = window.setTimeout(() => {
-        this.resizeDebounceTimer = null;
-
-        const entry = entries[0];
-        const { width, height } = entry.contentRect;
-        console.log("Debounced resize:", width, height);
-        if (this.isInitialized) {
-          this.render();
-        }
-      }, DEBOUNCE_MS);
+      // console.log("Window resized, host now:", this.getBoundingClientRect());
     });
-
-    this.resizeObserver.observe(container);
 
     this.ideogramTrack = this._root.getElementById(
       "ideogram-track",
@@ -208,6 +217,9 @@ export class GensTracks extends HTMLElement {
   }
 
   public render() {
+
+    console.log("Gens tracks bound", this.getBoundingClientRect());
+
     this.transcriptTrack.render();
     this.coverageTrack.render();
     this.bafTrack.render();
