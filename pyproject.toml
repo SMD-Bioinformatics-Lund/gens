@@ -42,6 +42,8 @@ dependencies = [
   "pydantic",
   "pydantic-settings",
   "pydantic-extra-types",
+  "gunicorn",
+  "a2wsgi",
 ]
 
 [project.urls]
