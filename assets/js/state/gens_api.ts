@@ -42,8 +42,8 @@ export class GensAPI {
     return this.annotCache[chrom][source];
   }
 
-  private covCache: Record<string, APICoverageBin[]> = {};
-  async getCov(chrom: string): Promise<APICoverageBin[]> {
+  private covCache: Record<string, APICoverageDot[]> = {};
+  async getCov(chrom: string): Promise<APICoverageDot[]> {
     const isCached = this.covCache[chrom] !== undefined;
     if (!isCached) {
       this.covCache[chrom] = await getCoverage(
@@ -57,8 +57,8 @@ export class GensAPI {
     return this.covCache[chrom];
   }
 
-  private bafCache: Record<string, APICoverageBin[]> = {};
-  async getBaf(chrom: string): Promise<APICoverageBin[]> {
+  private bafCache: Record<string, APICoverageDot[]> = {};
+  async getBaf(chrom: string): Promise<APICoverageDot[]> {
     const isCached = this.bafCache[chrom] !== undefined;
     if (!isCached) {
       this.bafCache[chrom] = await getCoverage(

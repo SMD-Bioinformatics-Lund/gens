@@ -1,4 +1,5 @@
 import { get } from "../fetch";
+import { zip } from "../track/utils";
 
 
 export async function getAnnotationData(
@@ -37,7 +38,6 @@ export async function getTranscriptData(
   return transcripts;
 }
 
-const zip = (a: number[], b: number[]) => a.map((key, idx) => [key, b[idx]]);
 
 // Seems the API call does not consider chromosome at the moment
 // Returning all sorted on chromosome for now
@@ -80,7 +80,7 @@ export async function getCoverage(
   chrom: string,
   covOrBaf: "cov" | "baf",
   apiURI: string,
-): Promise<APICoverageBin[]> {
+): Promise<APICoverageDot[]> {
 
   const query = {
     sample_id: sampleId,
@@ -91,15 +91,15 @@ export async function getCoverage(
   const entrypoint = covOrBaf == "cov" ? "sample/coverage" : "sample/baf"
   const results = await get(new URL(entrypoint, apiURI).href, query);
 
-  const renderData = zip(results[0].position, results[0].value).map((xy) => {
+  const renderData: APICoverageDot[] = zip(results[0].position, results[0].value).map(([pos, val]) => {
     return {
-      x: xy[0],
-      y: xy[1],
-      color: "teal", // not as boring
+      pos: pos[0],
+      value: val[1],
+      // color: "teal", // not as boring
     }
   })
 
-
+  return renderData;
 }
 
 export async function getOverviewData(
@@ -124,11 +124,11 @@ export async function getOverviewData(
     if (dataPerChrom[element.region] === undefined) {
       dataPerChrom[element.region] = [];
     }
-    const points: RenderDot[] = zip(element.position, element.value).map((xy) => {
+    const points: APICoverageDot[] = zip(element.position, element.value).map((xy) => {
       return {
-        x: xy[0],
-        y: xy[1],
-        color: "#954000", // not as boring
+        pos: xy[0],
+        value: xy[1],
+        // color: "#954000", // not as boring
       }
     })
     dataPerChrom[element.region] = points;

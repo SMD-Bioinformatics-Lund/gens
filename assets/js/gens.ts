@@ -144,7 +144,7 @@ async function fetchRenderData(
   );
 
   const covRaw = await gensDb.getCov(chrom);
-  const covData = parseCoverageBin(covRaw)
+  // const covData = parseCoverageBin(covRaw)
 
   const bafRaw = await gensDb.getBaf(chrom);
   const transcriptsRaw = await gensDb.getTranscripts(chrom);
@@ -153,8 +153,8 @@ async function fetchRenderData(
   const renderData: RenderData = {
     chromInfo: await gensDb.getChromData(chrom),
     annotations: parsedAnnotationData,
-    covData,
-    bafData: parseCoverageBin(bafRaw),
+    covData: parseCoverageDot(covRaw),
+    bafData: parseCoverageDot(bafRaw),
     transcriptData: parseTranscripts(transcriptsRaw),
     variantData: parseVariants(variantsRaw),
     overviewCovData: overviewCovRender,

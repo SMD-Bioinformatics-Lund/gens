@@ -145,3 +145,10 @@ export function getNOverlaps(
 
   return nOverlapping;
 }
+
+export function zip<A, B>(a: A[], b: B[]): [A, B][] {
+  if (a.length !== b.length) {
+    throw Error(`Arrays are of different length: ${a.length} ${b.length}`);
+  }
+  return a.map((key, idx) => [key, b[idx]]);
+}
