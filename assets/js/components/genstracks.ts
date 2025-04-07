@@ -10,8 +10,8 @@ import { BandTrack } from "./tracks/band_track";
 import { transformMap, removeChildren } from "../track/utils";
 import { STYLE } from "../util/constants";
 
-const THICK_TRACK_HEIGHT = 80;
-const THIN_TRACK_HEIGHT = 20;
+// const THICK_TRACK_HEIGHT = 80;
+// const THIN_TRACK_HEIGHT = 20;
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
@@ -103,31 +103,33 @@ export class GensTracks extends HTMLElement {
     allChromData: Record<string, ChromosomeInfo>,
     chromClick: (string) => void,
   ) {
-    this.coverageTrack.initialize("Coverage", THICK_TRACK_HEIGHT);
-    this.bafTrack.initialize("BAF", THICK_TRACK_HEIGHT);
+    const trackHeight = STYLE.render.trackHeight;
+
+    this.coverageTrack.initialize("Coverage", trackHeight.thick);
+    this.bafTrack.initialize("BAF", trackHeight.thick);
     this.variantTrack.initialize(
       "Variant",
-      THIN_TRACK_HEIGHT,
-      THICK_TRACK_HEIGHT,
+      trackHeight.thin,
+      trackHeight.thick,
     );
     this.transcriptTrack.initialize(
       "Transcript",
-      THIN_TRACK_HEIGHT,
-      THICK_TRACK_HEIGHT,
+      trackHeight.thin,
+      trackHeight.thick,
     );
-    this.ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
+    this.ideogramTrack.initialize("Ideogram", trackHeight.thin);
 
     const chromSizes = transformMap(allChromData, (data) => data.size);
 
     this.overviewTrackCov.initialize(
       "Overview (cov)",
-      THICK_TRACK_HEIGHT,
+      trackHeight.thick,
       chromSizes,
       chromClick,
     );
     this.overviewTrackBaf.initialize(
       "Overview (baf)",
-      THICK_TRACK_HEIGHT,
+      trackHeight.thick,
       chromSizes,
       chromClick,
     );
@@ -137,11 +139,11 @@ export class GensTracks extends HTMLElement {
     const xRange: [number, number] = [region.start, region.end];
 
     // FIXME: Move to constants
-    const bandHeight = STYLE.render.bandHeight;
+    const bandPad = STYLE.render.topBottomPadding;
     this.variantTrack.updateRenderData({
       xRange,
       bands: data.variantData,
-      settings: { bandHeight },
+      settings: { bandPad: bandPad },
     });
 
     this.overviewTrackCov.updateRenderData({
@@ -162,11 +164,12 @@ export class GensTracks extends HTMLElement {
     Object.entries(data.annotations).forEach(([source, annotData]) => {
       const annotTrack = new BandTrack();
       this.annotationsContainer.appendChild(annotTrack);
-      annotTrack.initialize(source, THIN_TRACK_HEIGHT, THICK_TRACK_HEIGHT);
+      const trackHeight = STYLE.render.trackHeight;
+      annotTrack.initialize(source, trackHeight.thin, trackHeight.thick);
       annotTrack.updateRenderData({
         xRange,
         bands: annotData,
-        settings: { bandHeight },
+        settings: { bandPad },
       });
       this.annotTracks.push(annotTrack);
     });
@@ -184,7 +187,7 @@ export class GensTracks extends HTMLElement {
     this.transcriptTrack.updateRenderData({
       xRange,
       bands: data.transcriptData,
-      settings: { bandHeight },
+      settings: { bandPad },
     });
 
     this.isInitialized = true;

@@ -117,9 +117,9 @@ export function removeChildren(container: HTMLElement) {
  * Assumes ranges sorted on their start position
  */
 export function getNOverlaps(
-  ranges: { start: number; end: number }[],
-): number[] {
-  const nOverlapping: number[] = [];
+  ranges: { id: string, start: number; end: number }[],
+): Record<string, number> {
+  const nOverlapping = {};
 
   let overlapping: { start: number; end: number }[] = [];
   ranges.forEach((currBand) => {
@@ -138,7 +138,10 @@ export function getNOverlaps(
     });
 
     //   currBand.nbrOverlap = overlapping.length;
-    nOverlapping.push(overlapping.length);
+    if (nOverlapping[currBand.id] != null) {
+      console.error(`ID ${currBand.id} is present multiple times`);
+    }
+    nOverlapping[currBand.id] = overlapping.length;
 
     overlapping.push(currBand);
   });

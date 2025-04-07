@@ -102,7 +102,7 @@ export class CanvasTrack extends HTMLElement {
 
   // FIXME: Should this live outside the class?
   initializeTooltip() {
-    this.tooltip = new Tooltip(this.trackContainer);
+    this.tooltip = new Tooltip(document.body);
     this.canvas.addEventListener("mousemove", (event) => {
       this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
 

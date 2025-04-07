@@ -1,5 +1,5 @@
 import { chromSizes } from "../../helper";
-import { rangeSize } from "../../track/utils";
+import { getNOverlaps, rangeSize } from "../../track/utils";
 
 export function renderBorder(
   ctx: CanvasRenderingContext2D,
@@ -26,6 +26,9 @@ export function renderBands(
     const width = xPxEnd - xPxStart;
     const height = band.y2 - band.y1;
     ctx.fillRect(xPxStart, band.y1, width, height);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(xPxStart, band.y1, width, height);
   });
 }
 
@@ -226,7 +229,6 @@ export function parseCoverageDot(
 }
 
 export function getLinearScale(domain: Rng, range: Rng): Scale {
-
   const scale = (pos: number) => {
     return linearScale(pos, domain, range);
   };
@@ -249,4 +251,39 @@ export function getColorScale(
     }
   };
   return colorScale;
+}
+
+export function shiftOverlappingBands(
+  bandsWithinRange: RenderBand[],
+  xRange: Rng,
+  bandHeight: number,
+  xScale: Scale,
+  yScale: Scale,
+) {
+  const nOverlaps = getNOverlaps(bandsWithinRange);
+
+  // Hover
+
+  // FIXME: Break out method
+  // FIXME: How to deal with y position for bands?
+  let y1;
+  let y2;
+  if (bandHeight != null) {
+    const remainder = this.dimensions.height - bandHeight;
+    y1 = remainder / 2;
+    y2 = this.dimensions.height - remainder / 2;
+  } else {
+    y1 = 0;
+    y2 = this.dimensions.height;
+  }
+
+  const shift = 5;
+  const scaledBands = bandsWithinRange.map((band, i) => {
+    const scaledBand = Object.create(band);
+    scaledBand.y1 = y1 + shift * nOverlaps[i];
+    scaledBand.y2 = y2 + shift * nOverlaps[i];
+    return scaledBand;
+  });
+
+  return scaledBands;
 }
