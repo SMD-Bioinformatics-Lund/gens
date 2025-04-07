@@ -1,25 +1,27 @@
-import { linearScale, renderBorder } from "./render_utils";
-import { createPopper } from "@popperjs/core";
-import {
-  createTooltipDiv,
-  makeVirtualElementNew,
-  tooltipOnMouseMove,
-  Tooltip,
-} from "./tooltip_utils";
+import { Tooltip } from "./tooltip_utils";
 
 // FIXME: Move somewhere
-const PADDING_SIDES = 50;
+const PADDING_SIDES = 10;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>
+    :host {
+      display: block;
+      width: 100%;
+    }
     #container {
-      padding-left: 50px;
-      padding-right: 50px;
-      border: 1px solid red;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      padding-left: ${PADDING_SIDES}px;
+      padding-right: ${PADDING_SIDES}px;
     }
     canvas {
       display: block;
+      width: 100%;
+      box-sizing: border-box;
     }
   </style>
   <div id="container" data-state="nodata">
@@ -58,10 +60,13 @@ export class CanvasTrack extends HTMLElement {
     this._root.appendChild(template.content.cloneNode(true));
 
     this.expanded = false;
-
   }
 
-  initializeCanvas(label: string, trackHeight: number, expandedHeight: number|null = null) {
+  initializeCanvas(
+    label: string,
+    trackHeight: number,
+    expandedHeight: number | null = null,
+  ) {
     this.label = label;
     this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
     this.canvas.height = trackHeight;
@@ -70,7 +75,7 @@ export class CanvasTrack extends HTMLElement {
     this.trackContainer = this._root.getElementById(
       "track-container",
     ) as HTMLDivElement;
-    
+
     if (expandedHeight != null) {
       this.initializeExpandable(trackHeight, expandedHeight);
     }
@@ -78,6 +83,8 @@ export class CanvasTrack extends HTMLElement {
     this.syncDimensions();
     // renderBorder(this.ctx, this.dimensions);
     // this.render();
+
+    // this.canvas.style.width = `${availWidth}px`;
   }
 
   // FIXME: Move to attribute component
@@ -139,25 +146,26 @@ export class CanvasTrack extends HTMLElement {
       console.error("Cannot run syncDimensions before initialize");
       return;
     }
-  
-    const availWidth = this.trackContainer.clientWidth - 100;
-    // const pixelRatio = window.devicePixelRatio || 1;
-  
+
+    // Must include the padding here. Otherwise this triggers an infinite resize loop.
+    const availWidth = this.getBoundingClientRect().width;
+    // const availWidth = this.getBoundingClientRect().width;
+    // const availWidth = this.trackContainer.clientWidth - 2 * PADDING_SIDES;
+    // const availWidth = this.trackContainer.clientWidth - 2 * PADDING_SIDES;
     const newWidth = Math.floor(availWidth);
-    // const newWidth = Math.floor(availWidth * pixelRatio);
-  
+
     if (this.canvas.width !== newWidth) {
       this.canvas.width = newWidth;
-      this.canvas.style.width = `${availWidth}px`;
+      // this.canvas.style.width = `${availWidth}px`;
     }
-  
+    
+
     this.dimensions = {
       width: this.canvas.width,
       height: this.canvas.height,
     };
     return this.dimensions;
   }
-  
 
   // syncDimensions() {
   //   if (this.canvas == undefined) {
@@ -176,8 +184,6 @@ export class CanvasTrack extends HTMLElement {
   //   };
   //   return this.dimensions;
   // }
-
-
 }
 
 customElements.define("canvas-track", CanvasTrack);

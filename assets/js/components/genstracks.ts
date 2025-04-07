@@ -26,6 +26,9 @@ template.innerHTML = String.raw`
     }
     #container {
       width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow-x: hidden;
     }
   </style>
   <div id="container">
@@ -42,10 +45,13 @@ template.innerHTML = String.raw`
   </div>
 `;
 
+const DEBOUNCE_MS = 500;
+
 export class GensTracks extends HTMLElement {
   protected _root: ShadowRoot;
 
   private resizeObserver: ResizeObserver;
+  private resizeDebounceTimer: number | null = null;
   parentContainer: HTMLDivElement;
 
   ideogramTrack: IdeogramTrack;
@@ -68,17 +74,21 @@ export class GensTracks extends HTMLElement {
 
     const container = this._root.getElementById("container") as HTMLDivElement;
     this.resizeObserver = new ResizeObserver((entries) => {
-      console.log("Resize triggered");
+      if (this.resizeDebounceTimer !== null) {
+        clearTimeout(this.resizeDebounceTimer);
+      }
 
-      for (const entry of entries) {
+      this.resizeDebounceTimer = window.setTimeout(() => {
+        this.resizeDebounceTimer = null;
+
+        const entry = entries[0];
         const { width, height } = entry.contentRect;
-        console.log("Observed resize: ", width, height, "is initialized: ", this.isInitialized);
-      }
-
-      if (this.isInitialized) {
-        this.render();
-      }
-    })
+        console.log("Debounced resize:", width, height);
+        if (this.isInitialized) {
+          this.render();
+        }
+      }, DEBOUNCE_MS);
+    });
 
     this.resizeObserver.observe(container);
 
@@ -198,7 +208,6 @@ export class GensTracks extends HTMLElement {
   }
 
   public render() {
-
     this.transcriptTrack.render();
     this.coverageTrack.render();
     this.bafTrack.render();
