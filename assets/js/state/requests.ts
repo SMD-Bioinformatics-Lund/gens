@@ -91,10 +91,12 @@ export async function getCoverage(
   const entrypoint = covOrBaf == "cov" ? "sample/coverage" : "sample/baf"
   const results = await get(new URL(entrypoint, apiURI).href, query);
 
-  const renderData: APICoverageDot[] = zip(results[0].position, results[0].value).map(([pos, val]) => {
+  const regionResult: {position: number[], value: number[]} = results[0];
+
+  const renderData: APICoverageDot[] = zip(regionResult.position, regionResult.value).map(([pos, val]) => {
     return {
-      pos: pos[0],
-      value: val[1],
+      pos: pos,
+      value: val,
     }
   })
 

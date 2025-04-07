@@ -225,11 +225,3 @@ export function parseCoverageDot(
   return renderData;
 }
 
-// export function parseOverviewCoverage(coverage: Record<string, APICoverage[]>): Record<string, APICoverage> {
-//   Object.assign(Object.entries(coverage).map(([chromSizes, coverage]) => {
-//     const renderData = parseCoverage(coverage);
-//     return [chrom, renderData]
-//   }))
-// }
-
-// map
