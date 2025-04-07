@@ -72,8 +72,6 @@ export class CanvasTrack extends HTMLElement {
     this.label = label;
     this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
 
-
-    // FIXME: OK, let's try working with this one directly from band_track.ts
     this.assignedHeight = trackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 

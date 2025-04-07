@@ -10,8 +10,6 @@ import { BandTrack } from "./tracks/band_track";
 import { transformMap, removeChildren } from "../track/utils";
 import { STYLE } from "../util/constants";
 
-// const THICK_TRACK_HEIGHT = 80;
-// const THIN_TRACK_HEIGHT = 20;
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
@@ -139,7 +137,7 @@ export class GensTracks extends HTMLElement {
     const xRange: [number, number] = [region.start, region.end];
 
     // FIXME: Move to constants
-    const bandPad = STYLE.bandTrack.topBottomPadding;
+    const bandPad = STYLE.bandTrack.trackPadding;
     this.variantTrack.updateRenderData({
       xRange,
       bands: data.variantData,

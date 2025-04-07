@@ -10,7 +10,7 @@ export const FONTSIZES = {
 
 export const STYLE = {
     bandTrack: {
-        topBottomPadding: 8,
+        trackPadding: 8,
         bandPadding: 1,
         trackHeight: {
             thin: 40,

@@ -1,21 +1,10 @@
-import {
-  getOverlapInfo,
-  rangesOverlap,
-  rangeSurroundsRange,
-} from "../../track/utils";
+import { getOverlapInfo } from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 import { getLinearScale, renderBands, renderBorder } from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
-  // FIXME: Should this be calculated outside the track?
-  processedRenderData: {
-    bands: RenderBand[];
-    numberTracks: number;
-    // How many bands are already rendered that overlaps with the current one
-    nPriorBandOverlaps: Record<string, number>;
-  };
 
   initialize(
     label: string,
@@ -39,32 +28,27 @@ export class BandTrack extends CanvasTrack {
       throw Error(`No render data assigned for track: ${this.label}`);
     }
 
-    const { bands, xRange, settings } = this.renderData;
+    const { bands, xRange } = this.renderData;
 
     const overlapInfo = getOverlapInfo(
       bands.sort((b1, b2) => (b1.start <= b2.start ? -1 : 1)),
     );
-    console.log(overlapInfo);
     const maxLane = Math.max(
       ...Object.values(overlapInfo).map((band) => band.lane),
     );
     const numberTracks = maxLane + 1;
 
-    console.log(overlapInfo)
-    console.log(maxLane, numberTracks);
-
     if (this.expanded) {
-      // FIXME: Refactor
 
-      const singleBandHeight =
-        STYLE.bandTrack.trackHeight.thin -
-        (STYLE.bandTrack.topBottomPadding + STYLE.bandTrack.bandPadding) * 2;
-      const multiTrackHeight =
-        STYLE.bandTrack.topBottomPadding * 2 +
-        (singleBandHeight + STYLE.bandTrack.bandPadding * 2) * numberTracks;
-      const assignedHeight = multiTrackHeight;
-      // const assignedHeight = STYLE.render.trackHeight.thin * numberTracks;
-      this.assignedHeight = assignedHeight;
+      const style = STYLE.bandTrack;
+      const expandedHeight = getTrackHeight(
+        style.trackHeight.thin,
+        numberTracks,
+        style.trackPadding,
+        style.bandPadding,
+      );
+
+      this.assignedHeight = expandedHeight;
     }
 
     const dimensions = super.syncDimensions();
@@ -72,14 +56,12 @@ export class BandTrack extends CanvasTrack {
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
     const yScale = getYScale(
-      STYLE.bandTrack.topBottomPadding,
+      STYLE.bandTrack.trackPadding,
       STYLE.bandTrack.bandPadding,
       this.expanded ? numberTracks : 1,
       dimensions.height,
     );
 
-    // FIXME: Verify - is it working correctly
-    // Looking a bit strange sometimes for multiple stacked tracks
     const scaledBands: RenderBand[] = bands.map((band) => {
       const scaledBand = Object.create(band);
       const bandNOverlap = overlapInfo[band.id].lane;
@@ -89,16 +71,7 @@ export class BandTrack extends CanvasTrack {
       return scaledBand;
     });
 
-    // FIXME: Util function?
-    this.hoverTargets = scaledBands.map((band) => {
-      return {
-        label: band.label,
-        x1: xScale(band.start),
-        x2: xScale(band.end),
-        y1: band.y1,
-        y2: band.y2,
-      };
-    });
+    this.hoverTargets = getBoundBoxes(scaledBands, xScale);
 
     renderBorder(this.ctx, dimensions);
     renderBands(this.ctx, scaledBands, xScale);
@@ -125,6 +98,29 @@ function getYScale(
 
     return [y1, y2];
   };
+}
+
+function getBoundBoxes(bands, xScale: Scale) {
+  return bands.map((band) => {
+    return {
+      label: band.label,
+      x1: xScale(band.start),
+      x2: xScale(band.end),
+      y1: band.y1,
+      y2: band.y2,
+    };
+  });
+}
+
+function getTrackHeight(
+  trackHeight: number,
+  numberTracks: number,
+  trackPadding: number,
+  bandPadding: number,
+): number {
+  const singleBandHeight = trackHeight - (trackPadding + bandPadding) * 2;
+  const multiTrackHeight = trackPadding * 2 + bandPadding * 2 * numberTracks;
+  return multiTrackHeight;
 }
 
 customElements.define("band-track", BandTrack);

@@ -115,6 +115,7 @@ export function removeChildren(container: HTMLElement) {
 // FIXME: Unit testing is needed for this function
 /**
  * Get the number of prior ranges overlapping the current target
+ * Also calculates the first free "lane", i.e. the first position where no range is present
  * Assumes ranges sorted on their start position
  */
 export function getOverlapInfo(
@@ -125,8 +126,6 @@ export function getOverlapInfo(
   let overlapping: { start: number; end: number; lane: number }[] = [];
   ranges.forEach((currBand) => {
     const passed: {start: number, end: number, lane: number}[] = [];
-
-    console.log("Looking at band", currBand);
 
     overlapping.forEach((overlapBand) => {
       if (currBand.start >= overlapBand.end) {
@@ -183,10 +182,16 @@ export function pointInRange(point: number, range: Rng): boolean {
   return point > range[0] && point < range[1];
 }
 
+/**
+ * range1 is a superset of range2, i.e.:
+ * 
+ * range1[0] ---------------------- range1[1]
+ *        range2[0] -------- range2[1]
+ */
 export function rangeSurroundsRange(range1: Rng, range2: Rng): boolean {
   return range1[0] <= range2[0] && range1[1] >= range2[1];
 }
 
-export function rangesOverlap(range1: Rng, range2: Rng): boolean {
-  return pointInRange(range1[0], range2) || pointInRange(range1[0], range2);
+export function range1OverlapsRange2(range1: Rng, range2: Rng): boolean {
+  return pointInRange(range1[0], range2) || pointInRange(range1[0], range2)
 }
