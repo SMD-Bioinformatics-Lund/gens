@@ -61,7 +61,14 @@ export class BandTrack extends CanvasTrack {
     } = this.processedRenderData;
 
     if (this.expanded) {
-      const assignedHeight = STYLE.render.trackHeight.thin * numberTracks;
+      // FIXME: Refactor
+
+      const singleBandHeight =
+        STYLE.render.trackHeight.thin -
+        (STYLE.render.topBottomPadding + STYLE.render.bandPadding) * 2;
+      const multiTrackHeight = (STYLE.render.topBottomPadding * 2) + (singleBandHeight + STYLE.render.bandPadding * 2) * numberTracks 
+      const assignedHeight = multiTrackHeight;
+      // const assignedHeight = STYLE.render.trackHeight.thin * numberTracks;
       console.log("Assigning height", assignedHeight);
       this.assignedHeight = assignedHeight;
     }
@@ -74,7 +81,8 @@ export class BandTrack extends CanvasTrack {
 
     const yScale = getYScale(
       STYLE.render.topBottomPadding,
-      numberTracks,
+      STYLE.render.bandPadding,
+      this.expanded ? numberTracks : 1,
       dimensions.height,
     );
 
@@ -106,13 +114,14 @@ export class BandTrack extends CanvasTrack {
 }
 
 function getYScale(
+  topBottomPad: number,
   bandPad: number,
-  maxOverlap: number,
+  numberTracks: number,
   renderingHeight: number,
 ): (number, bool) => Rng {
   return (pos: number, expanded: boolean) => {
-    const renderingArea = renderingHeight - bandPad * 2;
-    const numberTracks = expanded ? maxOverlap : 1;
+    const renderingArea =
+      renderingHeight - topBottomPad * 2 - bandPad * numberTracks;
     const trackHeight = renderingArea / numberTracks;
 
     console.log(
@@ -123,8 +132,8 @@ function getYScale(
     if (expanded) {
       yShift = pos * trackHeight;
     }
-    const y1 = bandPad + yShift;
-    const y2 = bandPad + yShift + trackHeight;
+    const y1 = topBottomPad + yShift + bandPad;
+    const y2 = topBottomPad + yShift + trackHeight - bandPad;
 
     return [y1, y2];
   };

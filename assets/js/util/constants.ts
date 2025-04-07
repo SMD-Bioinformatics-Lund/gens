@@ -10,7 +10,8 @@ export const FONTSIZES = {
 
 export const STYLE = {
     render: {
-        topBottomPadding: 10,
+        topBottomPadding: 8,
+        bandPadding: 1,
         trackHeight: {
             thin: 40,
             thick: 80,
