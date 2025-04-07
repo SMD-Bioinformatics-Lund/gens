@@ -9,7 +9,7 @@ export const FONTSIZES = {
 }
 
 export const STYLE = {
-    render: {
+    bandTrack: {
         topBottomPadding: 8,
         bandPadding: 1,
         trackHeight: {

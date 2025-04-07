@@ -103,7 +103,7 @@ export class GensTracks extends HTMLElement {
     allChromData: Record<string, ChromosomeInfo>,
     chromClick: (string) => void,
   ) {
-    const trackHeight = STYLE.render.trackHeight;
+    const trackHeight = STYLE.bandTrack.trackHeight;
 
     this.coverageTrack.initialize("Coverage", trackHeight.thick);
     this.bafTrack.initialize("BAF", trackHeight.thick);
@@ -139,7 +139,7 @@ export class GensTracks extends HTMLElement {
     const xRange: [number, number] = [region.start, region.end];
 
     // FIXME: Move to constants
-    const bandPad = STYLE.render.topBottomPadding;
+    const bandPad = STYLE.bandTrack.topBottomPadding;
     this.variantTrack.updateRenderData({
       xRange,
       bands: data.variantData,
@@ -164,7 +164,7 @@ export class GensTracks extends HTMLElement {
     Object.entries(data.annotations).forEach(([source, annotData]) => {
       const annotTrack = new BandTrack();
       this.annotationsContainer.appendChild(annotTrack);
-      const trackHeight = STYLE.render.trackHeight;
+      const trackHeight = STYLE.bandTrack.trackHeight;
       annotTrack.initialize(source, trackHeight.thin, trackHeight.thick);
       annotTrack.updateRenderData({
         xRange,

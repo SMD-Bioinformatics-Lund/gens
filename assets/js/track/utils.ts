@@ -112,6 +112,7 @@ export function removeChildren(container: HTMLElement) {
   }
 }
 
+// FIXME: Unit testing is needed for this function
 /**
  * Get the number of prior ranges overlapping the current target
  * Assumes ranges sorted on their start position

@@ -57,11 +57,11 @@ export class BandTrack extends CanvasTrack {
       // FIXME: Refactor
 
       const singleBandHeight =
-        STYLE.render.trackHeight.thin -
-        (STYLE.render.topBottomPadding + STYLE.render.bandPadding) * 2;
+        STYLE.bandTrack.trackHeight.thin -
+        (STYLE.bandTrack.topBottomPadding + STYLE.bandTrack.bandPadding) * 2;
       const multiTrackHeight =
-        STYLE.render.topBottomPadding * 2 +
-        (singleBandHeight + STYLE.render.bandPadding * 2) * numberTracks;
+        STYLE.bandTrack.topBottomPadding * 2 +
+        (singleBandHeight + STYLE.bandTrack.bandPadding * 2) * numberTracks;
       const assignedHeight = multiTrackHeight;
       // const assignedHeight = STYLE.render.trackHeight.thin * numberTracks;
       this.assignedHeight = assignedHeight;
@@ -72,8 +72,8 @@ export class BandTrack extends CanvasTrack {
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
     const yScale = getYScale(
-      STYLE.render.topBottomPadding,
-      STYLE.render.bandPadding,
+      STYLE.bandTrack.topBottomPadding,
+      STYLE.bandTrack.bandPadding,
       this.expanded ? numberTracks : 1,
       dimensions.height,
     );
