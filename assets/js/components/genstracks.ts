@@ -9,30 +9,44 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { transformMap, removeChildren } from "../track/utils";
 import { STYLE } from "../util/constants";
+import { CanvasTrack } from "./tracks/canvas_track";
 
 const THICK_TRACK_HEIGHT = 80;
 const THIN_TRACK_HEIGHT = 20;
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
+// FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-    <div id="container">
-        <ideogram-track id="ideogram-track"></ideogram-track>
-    
-        <dot-track id="coverage-track"></dot-track>
-        <dot-track id="baf-track"></dot-track>
-        <div id="annotations-container"></div>
-        <band-track id="transcript-track"></band-track>
-        <band-track id="variant-track"></band-track>
+  <style>
+    :host {
+      display: block;
+      width: 100%;
+    }
+    #container {
+      width: 100%;
+    }
+  </style>
+  <div id="container">
+      <ideogram-track id="ideogram-track"></ideogram-track>
+  
+      <dot-track id="coverage-track"></dot-track>
+      <dot-track id="baf-track"></dot-track>
+      <div id="annotations-container"></div>
+      <band-track id="transcript-track"></band-track>
+      <band-track id="variant-track"></band-track>
 
-        <overview-track id="overview-track-cov"></overview-track>
-        <overview-track id="overview-track-baf"></overview-track>
-    </div>
+      <overview-track id="overview-track-cov"></overview-track>
+      <overview-track id="overview-track-baf"></overview-track>
+  </div>
 `;
 
 export class GensTracks extends HTMLElement {
   protected _root: ShadowRoot;
+
+  private resizeObserver: ResizeObserver;
+  parentContainer: HTMLDivElement;
 
   ideogramTrack: IdeogramTrack;
   overviewTrackCov: OverviewTrack;
@@ -42,11 +56,31 @@ export class GensTracks extends HTMLElement {
   transcriptTrack: BandTrack;
   variantTrack: BandTrack;
 
+  isInitialized = false;
+
   annotationsContainer: HTMLDivElement;
+
+  annotTracks: BandTrack[];
 
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
+
+    const container = this._root.getElementById("container") as HTMLDivElement;
+    this.resizeObserver = new ResizeObserver((entries) => {
+      console.log("Resize triggered");
+
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        console.log("Observed resize: ", width, height, "is initialized: ", this.isInitialized);
+      }
+
+      if (this.isInitialized) {
+        this.render();
+      }
+    })
+
+    this.resizeObserver.observe(container);
 
     this.ideogramTrack = this._root.getElementById(
       "ideogram-track",
@@ -83,7 +117,11 @@ export class GensTracks extends HTMLElement {
       THIN_TRACK_HEIGHT,
       THICK_TRACK_HEIGHT,
     );
-    this.transcriptTrack.initialize("Transcript", THIN_TRACK_HEIGHT, THICK_TRACK_HEIGHT);
+    this.transcriptTrack.initialize(
+      "Transcript",
+      THIN_TRACK_HEIGHT,
+      THICK_TRACK_HEIGHT,
+    );
     this.ideogramTrack.initialize("Ideogram", THIN_TRACK_HEIGHT);
 
     const chromSizes = transformMap(allChromData, (data) => data.size);
@@ -102,7 +140,7 @@ export class GensTracks extends HTMLElement {
     );
   }
 
-  render(data: RenderData, region: Region) {
+  updateRenderData(data: RenderData, region: Region) {
     const xRange: [number, number] = [region.start, region.end];
 
     // FIXME: Move to constants
@@ -112,25 +150,22 @@ export class GensTracks extends HTMLElement {
       bands: data.variantData,
       settings: { bandHeight },
     });
-    this.variantTrack.render();
 
     this.overviewTrackCov.updateRenderData({
       region,
       dotsPerChrom: data.overviewCovData,
       yRange: COV_Y_RANGE,
     });
-    this.overviewTrackCov.render();
     this.overviewTrackBaf.updateRenderData({
       region,
       dotsPerChrom: data.overviewBafData,
       yRange: BAF_Y_RANGE,
     });
-    this.overviewTrackBaf.render();
 
     this.ideogramTrack.updateRenderData({ chromInfo: data.chromInfo, xRange });
-    this.ideogramTrack.render();
 
     removeChildren(this.annotationsContainer);
+    this.annotTracks = [];
     Object.entries(data.annotations).forEach(([source, annotData]) => {
       const annotTrack = new BandTrack();
       this.annotationsContainer.appendChild(annotTrack);
@@ -140,7 +175,7 @@ export class GensTracks extends HTMLElement {
         bands: annotData,
         settings: { bandHeight },
       });
-      annotTrack.render();
+      this.annotTracks.push(annotTrack);
     });
 
     this.coverageTrack.updateRenderData({
@@ -148,19 +183,33 @@ export class GensTracks extends HTMLElement {
       yRange: COV_Y_RANGE,
       dots: data.covData,
     });
-    this.coverageTrack.render();
     this.bafTrack.updateRenderData({
       xRange,
       yRange: BAF_Y_RANGE,
       dots: data.bafData,
     });
-    this.bafTrack.render();
     this.transcriptTrack.updateRenderData({
       xRange,
       bands: data.transcriptData,
       settings: { bandHeight },
     });
+
+    this.isInitialized = true;
+  }
+
+  public render() {
+
     this.transcriptTrack.render();
+    this.coverageTrack.render();
+    this.bafTrack.render();
+    this.variantTrack.render();
+    this.overviewTrackCov.render();
+    this.overviewTrackBaf.render();
+    this.ideogramTrack.render();
+
+    for (const track of this.annotTracks) {
+      track.render();
+    }
   }
 }
 

@@ -8,17 +8,25 @@ import {
 } from "./tooltip_utils";
 
 // FIXME: Move somewhere
-const PADDING_LEFT = 5;
+const PADDING_SIDES = 50;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-    <div id="container" data-state="nodata" style="padding-left: ${PADDING_LEFT}px; padding-right: ${PADDING_LEFT}">
-        <div id='track-container' style="position: relative;">
-            <canvas id='canvas'></canvas>
-            <!-- <canvas id='canvas-offscreen'></canvas> -->
-            <!-- <div id='titles'></div> -->
-        </div>
-    </div>
+  <style>
+    #container {
+      padding-left: 50px;
+      padding-right: 50px;
+      border: 1px solid red;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+  <div id="container" data-state="nodata">
+      <div id='track-container' style="position: relative;">
+          <canvas id='canvas'></canvas>
+      </div>
+  </div>
 `;
 
 export class CanvasTrack extends HTMLElement {
@@ -127,23 +135,47 @@ export class CanvasTrack extends HTMLElement {
   ) {}
 
   syncDimensions() {
-    if (this.canvas == undefined) {
+    if (!this.canvas || !this.trackContainer) {
       console.error("Cannot run syncDimensions before initialize");
+      return;
     }
-
-    const availWidth = this.trackContainer.clientWidth;
-
-    // const viewNts = end - start;
-
-    // FIXME: Not the responsibility of this component
-    this.canvas.width = availWidth;
-    // this.canvas.width = window.innerWidth - PADDING_LEFT;
+  
+    const availWidth = this.trackContainer.clientWidth - 100;
+    // const pixelRatio = window.devicePixelRatio || 1;
+  
+    const newWidth = Math.floor(availWidth);
+    // const newWidth = Math.floor(availWidth * pixelRatio);
+  
+    if (this.canvas.width !== newWidth) {
+      this.canvas.width = newWidth;
+      this.canvas.style.width = `${availWidth}px`;
+    }
+  
     this.dimensions = {
       width: this.canvas.width,
       height: this.canvas.height,
     };
     return this.dimensions;
   }
+  
+
+  // syncDimensions() {
+  //   if (this.canvas == undefined) {
+  //     console.error("Cannot run syncDimensions before initialize");
+  //   }
+
+  //   const availWidth = this.trackContainer.clientWidth;
+
+  //   console.log("Sync dimension for width", availWidth);
+
+  //   this.canvas.width = availWidth;
+  //   this.canvas.style.width = `${availWidth}px`;
+  //   this.dimensions = {
+  //     width: this.canvas.width,
+  //     height: this.canvas.height,
+  //   };
+  //   return this.dimensions;
+  // }
 
 
 }

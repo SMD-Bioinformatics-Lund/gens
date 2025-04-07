@@ -28,7 +28,7 @@ export class BandTrack extends CanvasTrack {
 
   render() {
     if (this.renderData == null) {
-      throw Error("No render data assigned")
+      throw Error(`No render data assigned for track: ${this.label}`)
     }
 
     const { bands, xRange, settings } = this.renderData;

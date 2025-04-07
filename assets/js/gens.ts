@@ -84,7 +84,7 @@ export async function initCanvases({
       startRegion.chrom,
       selectedAnnots,
     );
-    gensTracks.render(renderData, region);
+    gensTracks.updateRenderData(renderData, region);
   };
 
   gensTracks.initialize(allChromData, onChromClick);
@@ -92,7 +92,8 @@ export async function initCanvases({
   const renderData = await parseRenderData(api, startRegion.chrom, [
     annotationFile,
   ]);
-  gensTracks.render(renderData, startRegion);
+  gensTracks.updateRenderData(renderData, startRegion);
+  gensTracks.render();
 
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
@@ -106,7 +107,8 @@ export async function initCanvases({
         region.chrom,
         selectedAnnots,
       );
-      gensTracks.render(renderData, region);
+      gensTracks.updateRenderData(renderData, region);
+      gensTracks.render();
     },
     async (_newXRange) => {
       const selectedAnnots = inputControls.getAnnotations();
@@ -116,7 +118,8 @@ export async function initCanvases({
         region.chrom,
         selectedAnnots,
       );
-      gensTracks.render(renderData, region);
+      gensTracks.updateRenderData(renderData, region);
+      gensTracks.render();
     },
     gensApiURL,
   );
