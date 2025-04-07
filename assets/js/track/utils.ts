@@ -123,10 +123,14 @@ export function getOverlapInfo(
 ): Record<string, { nOverlapping: number; lane: number }> {
   const returnInfo: Record<string, { nOverlapping: number; lane: number }> = {};
 
+  // Set of active ranges
   let overlapping: { start: number; end: number; lane: number }[] = [];
+
+  // Go over each range
   ranges.forEach((currBand) => {
     const passed: {start: number, end: number, lane: number}[] = [];
 
+    // Check for active ranges no longer overlapping the latest range
     overlapping.forEach((overlapBand) => {
       if (currBand.start >= overlapBand.end) {
         passed.push(overlapBand);
@@ -139,10 +143,9 @@ export function getOverlapInfo(
       overlapping.splice(index, 1);
     });
 
-    // Find the first now available track
+    // Find the first now available lane (n(overlapping)+1 is the common case)
     const lanesInUse = new Set(overlapping.map((band) => band.lane));
     let currentLane = lanesInUse.size;
-    // Is there a lower now available
     for (let i = 0; i < lanesInUse.size; i++) {
       if (!lanesInUse.has(i)) {
         currentLane = i;
@@ -157,9 +160,8 @@ export function getOverlapInfo(
       nOverlapping: overlapping.length,
       lane: currentLane,
     };
+    // Store lane and n overlapping info for the current band
     returnInfo[currBand.id] = currTrackInfo;
-
-    console.log("Added with lane", currentLane);
 
     overlapping.push({
       start: currBand.start,

@@ -39,7 +39,6 @@ export class BandTrack extends CanvasTrack {
     const numberTracks = maxLane + 1;
 
     if (this.expanded) {
-
       const style = STYLE.bandTrack;
       const expandedHeight = getTrackHeight(
         style.trackHeight.thin,
@@ -119,7 +118,8 @@ function getTrackHeight(
   bandPadding: number,
 ): number {
   const singleBandHeight = trackHeight - (trackPadding + bandPadding) * 2;
-  const multiTrackHeight = trackPadding * 2 + bandPadding * 2 * numberTracks;
+  const multiTrackHeight =
+    trackPadding * 2 + (singleBandHeight + bandPadding * 2) * numberTracks;
   return multiTrackHeight;
 }
 

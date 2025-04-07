@@ -193,8 +193,6 @@ export class GensTracks extends HTMLElement {
 
   public render() {
 
-    console.log("Gens tracks bound", this.getBoundingClientRect());
-
     this.transcriptTrack.render();
     this.coverageTrack.render();
     this.bafTrack.render();

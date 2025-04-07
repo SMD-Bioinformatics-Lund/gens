@@ -54,9 +54,6 @@ export class CanvasTrack extends HTMLElement {
     y2: number;
   }[];
 
-  // private tooltipEl: HTMLDivElement;
-  // private popperInstance: ReturnType<typeof createPopper> | null = null;
-
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
