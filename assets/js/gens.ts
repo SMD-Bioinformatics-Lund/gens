@@ -24,7 +24,6 @@ import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 import {
   parseCoverageDot,
-  parseCoverageBin,
   parseTranscripts,
   parseVariants,
   parseAnnotations,
@@ -32,7 +31,6 @@ import {
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
 import { GensAPI as GensAPI } from "./state/gens_api";
-import { GensSession } from "./state/session";
 import { transformMap } from "./track/utils";
 import { STYLE } from "./util/constants";
 

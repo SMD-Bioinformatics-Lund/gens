@@ -8,6 +8,7 @@ import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { transformMap, removeChildren } from "../track/utils";
+import { STYLE } from "../util/constants";
 
 const THICK_TRACK_HEIGHT = 80;
 const THIN_TRACK_HEIGHT = 20;
@@ -101,7 +102,7 @@ export class GensTracks extends HTMLElement {
     const range: [number, number] = [region.start, region.end];
 
     // FIXME: Move to constants
-    const bandHeight = 5;
+    const bandHeight = STYLE.render.bandHeight;
     this.variantTrack.render(range, data.variantData, { bandHeight });
 
     this.overviewTrackCov.render(region, data.overviewCovData, COV_Y_RANGE);
@@ -114,12 +115,12 @@ export class GensTracks extends HTMLElement {
       const annotTrack = new BandTrack();
       this.annotationsContainer.appendChild(annotTrack);
       annotTrack.initialize(source, THIN_TRACK_HEIGHT);
-      annotTrack.render(range, annotData);
+      annotTrack.render(range, annotData, { bandHeight });
     });
 
     this.coverageTrack.render(range, COV_Y_RANGE, data.covData);
     this.bafTrack.render(range, BAF_Y_RANGE, data.bafData);
-    this.transcriptTrack.render(range, data.transcriptData);
+    this.transcriptTrack.render(range, data.transcriptData, { bandHeight });
   }
 }
 
