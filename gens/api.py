@@ -337,7 +337,7 @@ def dev_get_coverage(sample_id: str, case_id: str, region: list[str]) -> tuple[d
     if len(region) == 0:
         return (jsonify({"detail": "No regions specified. Gör om, gör rätt!!!"}), 416)
 
-    db: Database = current_app.config["GENS_DB"]
+    db: Database[Any] = current_app.config["GENS_DB"]
 
     result: list[GenomeCoverage] = [dev_get_data(collection=db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id, region_str=reg, cov_or_baf='cov') for reg in region]
     return jsonable_encoder(result)
@@ -348,7 +348,7 @@ def dev_get_baf(sample_id: str, case_id: str, region: list[str]) -> tuple[dict[s
         msg = f"Invalid case_id: {sample_id}"
         LOG.error(msg)
         return (jsonify({"detail": msg}), 416)
-    db: Database = current_app.config["GENS_DB"]
+    db: Database[Any] = current_app.config["GENS_DB"]
     result: list[GenomeCoverage] = [dev_get_data(collection=db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id, region_str=reg, cov_or_baf='baf') for reg in region]
     return jsonable_encoder(result)
 
