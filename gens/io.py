@@ -7,6 +7,7 @@ import logging
 from enum import Enum
 from fractions import Fraction
 from pathlib import Path
+from typing import Any
 
 from pymongo.collection import Collection
 from pysam import TabixFile
@@ -57,7 +58,7 @@ def tabix_query(
     return [r.split("\t") for r in records]
 
 
-def get_scatter_data(collection: Collection[dict], sample_id: str, case_id: str, region_str: str, cov_or_baf: str) -> GenomeCoverage:
+def get_scatter_data(collection: Collection[dict[str, Any]], sample_id: str, case_id: str, region_str: str, cov_or_baf: str) -> GenomeCoverage:
     """Development entrypoint for getting the coverage of a region."""
     # TODO respond with 404 error if file is not found
     sample_obj = query_sample(collection, sample_id, case_id)
