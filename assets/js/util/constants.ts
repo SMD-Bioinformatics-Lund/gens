@@ -15,7 +15,8 @@ export const STYLE = {
         trackHeight: {
             thin: 40,
             thick: 80,
-        }
+        },
+        edgeColor: "gray",
     },
     colors: {
         white: "#FFF",

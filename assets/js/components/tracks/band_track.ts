@@ -65,6 +65,7 @@ export class BandTrack extends CanvasTrack {
       let yRange = yScale(bandNOverlap, this.expanded);
       scaledBand.y1 = yRange[0];
       scaledBand.y2 = yRange[1];
+      scaledBand.edgeColor = STYLE.bandTrack.edgeColor;
       return scaledBand;
     });
 

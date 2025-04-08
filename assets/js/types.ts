@@ -98,6 +98,8 @@ interface RenderBand {
   start: number,
   end: number,
   color: string,
+  edgeColor?: string,
+  edgeWidth?: number
   label?: string,
   y1?: number,
   y2?: number,

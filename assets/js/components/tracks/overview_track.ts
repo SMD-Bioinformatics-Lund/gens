@@ -38,7 +38,10 @@ export class OverviewTrack extends CanvasTrack {
     this.getRenderData = getRenderData;
     this.onChromosomeClick = onChromosomeClick;
 
-    const marker = createChromMarker();
+    const marker = createChromMarker(
+      this.dimensions.height,
+      STYLE.colors.transparentYellow,
+    );
     this.trackContainer.appendChild(marker);
     this.marker = marker;
 
@@ -94,19 +97,24 @@ export class OverviewTrack extends CanvasTrack {
     );
 
     const chromStartPos = chromRanges[chromosome][0];
-    renderSelectedChromMarker(this.marker, xScale, xRange, chromStartPos, this.dimensions.height);
+    renderSelectedChromMarker(
+      this.marker,
+      xScale,
+      xRange,
+      chromStartPos,
+      this.dimensions.height,
+    );
   }
 }
 
-function createChromMarker() {
-    const marker = document.createElement("div") as HTMLDivElement;
-    marker.style.height = `${this.dimensions.height}px`;
-    marker.style.width = "0px";
-    marker.style.backgroundColor = STYLE.colors.transparentYellow;
-    marker.style.position = "absolute";
-    marker.style.top = "0px";
-    return marker;
-
+function createChromMarker(canvasHeight: number, color: string) {
+  const marker = document.createElement("div") as HTMLDivElement;
+  marker.style.height = `${canvasHeight}px`;
+  marker.style.width = "0px";
+  marker.style.backgroundColor = color;
+  marker.style.position = "absolute";
+  marker.style.top = "0px";
+  return marker;
 }
 
 function renderSelectedChromMarker(
@@ -114,7 +122,7 @@ function renderSelectedChromMarker(
   xScale: Scale,
   xRange: Rng,
   chromStartPos: number,
-  canvasHeight: number
+  canvasHeight: number,
 ) {
   const viewPxRange: Rng = [
     xScale(xRange[0] + chromStartPos),

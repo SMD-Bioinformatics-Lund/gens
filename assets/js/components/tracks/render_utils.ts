@@ -14,7 +14,6 @@ export function renderBorder(
 
 export function renderBands(
   ctx: CanvasRenderingContext2D,
-  // canvasDim: { height: number; width: number },
   annots: RenderBand[],
   xScale: Scale,
 ) {
@@ -26,8 +25,8 @@ export function renderBands(
     const width = xPxEnd - xPxStart;
     const height = band.y2 - band.y1;
     ctx.fillRect(xPxStart, band.y1, width, height);
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = band.edgeColor || "black";
+    ctx.lineWidth = band.edgeWidth || 1;
     ctx.strokeRect(xPxStart, band.y1, width, height);
   });
 }

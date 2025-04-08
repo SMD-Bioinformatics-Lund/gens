@@ -18,8 +18,8 @@ export {
   queryRegionOrGene,
 } from "./navigation";
 
-import "./components/genstracks";
-import { GensTracks } from "./components/genstracks";
+import "./components/tracksmanager";
+import { TracksManager } from "./components/tracksmanager";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 import {
@@ -61,7 +61,7 @@ export async function initCanvases({
   annotationFile: string;
   startRegion: Region;
 }) {
-  const gensTracks = document.getElementById("gens-tracks") as GensTracks;
+  const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
   const inputControls = document.getElementById(
     "input-controls",

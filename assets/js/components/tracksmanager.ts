@@ -45,18 +45,18 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-export class GensTracks extends HTMLElement {
+export class TracksManager extends HTMLElement {
   protected _root: ShadowRoot;
 
   parentContainer: HTMLDivElement;
 
-  ideogramTrack: IdeogramTrack;
-  overviewTrackCov: OverviewTrack;
-  overviewTrackBaf: OverviewTrack;
-  coverageTrack: DotTrack;
-  bafTrack: DotTrack;
-  transcriptTrack: BandTrack;
-  variantTrack: BandTrack;
+  // ideogramTrack: IdeogramTrack;
+  // overviewTrackCov: OverviewTrack;
+  // overviewTrackBaf: OverviewTrack;
+  // coverageTrack: DotTrack;
+  // bafTrack: DotTrack;
+  // transcriptTrack: BandTrack;
+  // variantTrack: BandTrack;
 
   isInitialized = false;
 
@@ -75,6 +75,10 @@ export class GensTracks extends HTMLElement {
         this.render();
       }
     });
+
+    this.parentContainer = this._root.getElementById(
+      "container",
+    ) as HTMLDivElement;
 
     // this.ideogramTrack = this._root.getElementById(
     //   "ideogram-track",
@@ -110,6 +114,7 @@ export class GensTracks extends HTMLElement {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
     const coverageTrack = new DotTrack();
+    this.parentContainer.appendChild(coverageTrack);
     coverageTrack.initialize(
       "Coverage",
       trackHeight.thick,
@@ -123,6 +128,7 @@ export class GensTracks extends HTMLElement {
     );
 
     const bafTrack = new DotTrack();
+    this.parentContainer.appendChild(bafTrack);
     bafTrack.initialize("BAF", trackHeight.thick, BAF_Y_RANGE, async () => {
       return {
         xRange: getXRange(),
@@ -131,6 +137,7 @@ export class GensTracks extends HTMLElement {
     });
 
     const variantTrack = new BandTrack();
+    this.parentContainer.appendChild(variantTrack);
     variantTrack.initialize("Variant", trackHeight.thin, async () => {
       return {
         xRange: getXRange(),
@@ -139,6 +146,7 @@ export class GensTracks extends HTMLElement {
     });
 
     const transcriptTrack = new BandTrack();
+    this.parentContainer.appendChild(transcriptTrack);
     transcriptTrack.initialize("Transcript", trackHeight.thin, async () => {
       return {
         xRange: getXRange(),
@@ -147,6 +155,7 @@ export class GensTracks extends HTMLElement {
     });
 
     const ideogramTrack = new IdeogramTrack();
+    this.parentContainer.appendChild(ideogramTrack);
     ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
       return {
         xRange: getXRange(),
@@ -157,6 +166,7 @@ export class GensTracks extends HTMLElement {
     const chromSizes = transformMap(allChromData, (data) => data.size);
 
     const overviewTrackCov = new OverviewTrack();
+    this.parentContainer.appendChild(overviewTrackCov);
     overviewTrackCov.initialize(
       "Overview (cov)",
       trackHeight.thick,
@@ -173,6 +183,7 @@ export class GensTracks extends HTMLElement {
     );
 
     const overviewTrackBaf = new OverviewTrack();
+    this.parentContainer.appendChild(overviewTrackBaf);
     overviewTrackBaf.initialize(
       "Overview (baf)",
       trackHeight.thick,
@@ -213,4 +224,4 @@ export class GensTracks extends HTMLElement {
   }
 }
 
-customElements.define("gens-tracks", GensTracks);
+customElements.define("gens-tracks", TracksManager);
