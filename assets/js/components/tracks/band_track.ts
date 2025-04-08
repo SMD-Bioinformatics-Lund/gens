@@ -30,7 +30,6 @@ export class BandTrack extends CanvasTrack {
 
     const { bands, xRange } = this.renderData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
-    console.log(ntsPerPx);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
     const dimensions = super.syncDimensions();
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
@@ -67,23 +66,20 @@ export class BandTrack extends CanvasTrack {
     // FIXME: Different hover boxes for sub-ranges (exons)
     this.hoverTargets = getBoundBoxes(renderBand, xScale);
     renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
-    // renderBands(this.ctx, renderBand, xScale);
 
     renderBand.forEach((band) => drawBand(this.ctx, band, xScale, showDetails, this.isExpanded()));
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
-    if (this.isExpanded()) {
-      const style = STYLE.bandTrack;
-      const expandedHeight = getTrackHeight(
-        style.trackHeight.thin,
-        numberLanes,
-        style.trackPadding,
-        style.bandPadding,
-        showDetails,
-      );
-      super.setExpandedHeight(expandedHeight);
-    }
+    const style = STYLE.bandTrack;
+    const expandedHeight = getTrackHeight(
+      style.trackHeight.thin,
+      numberLanes,
+      style.trackPadding,
+      style.bandPadding,
+      showDetails,
+    );
+    super.setExpandedHeight(expandedHeight);
   }
 }
 

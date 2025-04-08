@@ -85,9 +85,7 @@ export function getTrackHeight(
 
   const singleBandHeight = trackHeight - (trackPadding + bandPadding) * 2;
 
-  console.log("Single", singleBandHeight);
   const multiTrackHeight =
     trackPadding * 2 + (singleBandHeight + bandPadding * 2 + labelHeight) * numberTracks;
-  console.log("Multi", multiTrackHeight);
   return multiTrackHeight;
 }
