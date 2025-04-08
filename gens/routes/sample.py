@@ -2,15 +2,13 @@
 
 from typing import Any, Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Query
 from gens.crud.samples import get_sample
 from gens.models.sample import GenomeCoverage, SampleInfo
-from pymongo.database import Database
 from gens.io import get_overview_data, get_scatter_data
-from gens.db.db import get_db
 from gens.db.collections import SAMPLES_COLLECTION
 
-from .utils import ApiTags, ScatterDataType
+from .utils import ApiTags, ScatterDataType, GensDb
 
 
 router = APIRouter(prefix="/sample")
@@ -24,7 +22,7 @@ async def get_genome_coverage(
     sample_id: str,
     case_id: str,
     region: Annotated[list[str], Query(min_length=1)],
-    db: Database[Any] = Depends(get_db),
+    db: GensDb,
 ) -> list[GenomeCoverage]:
     """Get genome coverage information."""
 
@@ -39,7 +37,7 @@ async def get_genome_baf(
     sample_id: str,
     case_id: str,
     region: Annotated[list[str], Query(min_length=1)],
-    db: Database[Any] = Depends(get_db),
+    db: GensDb,
 ) -> list[GenomeCoverage]:
     """Get genome beta allele frequency information."""
 
@@ -51,7 +49,7 @@ async def get_cov_overview(
     sample_id: str,
     case_id: str,
     data_type: ScatterDataType,
-    db: Database[Any] = Depends(get_db),
+    db: GensDb,
 ):
     """Get aggregated overview coverage information."""
 
