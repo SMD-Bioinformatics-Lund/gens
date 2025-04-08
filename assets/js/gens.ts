@@ -30,7 +30,7 @@ import {
 } from "./components/tracks/render_utils";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
-import { API as API } from "./state/api";
+import { API } from "./state/api";
 import { transformMap } from "./track/utils";
 import { STYLE } from "./util/constants";
 

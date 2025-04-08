@@ -156,6 +156,7 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
   });
 }
 
+// FIXME: Should this one be here?
 function parseExons(
   geneId: string,
   transcriptParts: APITranscriptPart[],
@@ -174,6 +175,7 @@ function parseExons(
   });
 }
 
+// FIXME: Should this one be here?
 export function parseTranscripts(
   transcripts: APITranscript[],
 ): RenderBand[] {

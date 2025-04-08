@@ -36,13 +36,13 @@ export class BandTrack extends CanvasTrack {
 
     const { numberLanes, bandOverlaps } = getOverlapInfo(bands);
 
-    const labelSize = (this.isExpanded() && showDetails) ? 20 : 0;
+    const labelSize = this.isExpanded() && showDetails ? 20 : 0;
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,
       STYLE.bandTrack.bandPadding,
       this.isExpanded() ? numberLanes : 1,
       this.dimensions.height,
-      labelSize
+      labelSize,
     );
 
     const renderBand: RenderBand[] = bands.map((band) => {
@@ -57,7 +57,7 @@ export class BandTrack extends CanvasTrack {
       renderBand.y2 = yRange[1];
       renderBand.edgeColor = STYLE.bandTrack.edgeColor;
       renderBand.label = band.id;
-      
+
       return renderBand;
     });
 
@@ -67,7 +67,9 @@ export class BandTrack extends CanvasTrack {
     this.hoverTargets = getBoundBoxes(renderBand, xScale);
     renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
-    renderBand.forEach((band) => drawBand(this.ctx, band, xScale, showDetails, this.isExpanded()));
+    renderBand.forEach((band) =>
+      drawBand(this.ctx, band, xScale, showDetails, this.isExpanded()),
+    );
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
@@ -123,6 +125,7 @@ function drawBand(
   }
 }
 
+// FIXME: Util
 function drawLabel(
   ctx: CanvasRenderingContext2D,
   label: string,
@@ -141,6 +144,7 @@ function drawLabel(
   ctx.fillText(label, textX, textY);
 }
 
+// FIXME: Util
 function drawArrow(
   ctx: CanvasRenderingContext2D,
   bandHeight: number,

@@ -13,6 +13,7 @@ export function getVisibleYCoordinates(
   return { y1, y2 };
 }
 
+// FIXME: Make it deal with sub-bands as well
 export function getBoundBoxes(bands, xScale: Scale): HoverBox[] {
   return bands.map((band) => {
     return {

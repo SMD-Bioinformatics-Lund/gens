@@ -11,7 +11,6 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { CHROMOSOMES, STYLE } from "../util/constants";
 import { CanvasTrack } from "./tracks/canvas_track";
-// import { TranscriptsTrack } from "./tracks/transcripts_track";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -78,8 +77,6 @@ export class TracksManager extends HTMLElement {
     const bafTrack = new DotTrack();
     const variantTrack = new BandTrack();
     const transcriptTrack = new BandTrack();
-    // const transcriptTrack = new TranscriptsTrack();
-
     const ideogramTrack = new IdeogramTrack();
 
     const annotationTracks = new AnnotationTracks();
@@ -158,7 +155,7 @@ export class TracksManager extends HTMLElement {
     );
 
     await transcriptTrack.initialize(
-      "New transcript",
+      "Transcripts",
       trackHeight.thin,
       async () => {
         return {

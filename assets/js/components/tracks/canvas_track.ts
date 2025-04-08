@@ -31,6 +31,7 @@ template.innerHTML = String.raw`
   </div>
 `;
 
+// FIXME: Util
 class Expander {
   expandedHeight: number = null;
   isExpanded: boolean;
@@ -61,10 +62,6 @@ export class CanvasTrack extends HTMLElement {
 
   private expander: Expander;
 
-  // protected assignedHeight: number;
-
-  // FIXME: Make this an attribute instead
-  // protected expanded: boolean;
 
   private tooltip: Tooltip;
   hoverTargets: {
