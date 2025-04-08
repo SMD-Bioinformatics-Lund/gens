@@ -11,7 +11,7 @@ export const FONTSIZES = {
 const colors = {
     white: "#FFF",
     black: "#000",
-    darkGray: "#333",
+    darkGray: "#555",
     lightGray: "#ccc",
     yellow: "#dcd16f",
     red: "#f00",

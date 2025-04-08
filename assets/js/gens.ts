@@ -117,13 +117,10 @@ async function initialize(
   inputControls.initialize(
     startRegion,
     [defaultAnnotation],
-    async (_region) => {},
     async (_region, _source) => {
-      // await tracks.updateRenderData();
       tracks.render(true);
     },
     async (_newXRange) => {
-      // await tracks.updateRenderData();
       tracks.render(true);
     },
     gensApiURI,

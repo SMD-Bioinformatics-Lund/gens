@@ -6,6 +6,7 @@ import { getLinearScale, renderBands, renderBorder } from "./render_utils";
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
+  xRange: Rng | null;
 
   async initialize(
     label: string,
