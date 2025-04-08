@@ -19,7 +19,6 @@ export class BandTrack extends CanvasTrack {
   }
 
   async render(updateData: boolean) {
-    
     if (updateData || this.renderData == null) {
       this.renderData = await this.getRenderData();
     }

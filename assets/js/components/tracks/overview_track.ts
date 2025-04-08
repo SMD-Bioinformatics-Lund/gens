@@ -6,7 +6,6 @@ import {
   drawDotsScaled,
   linearScale,
   renderBorder,
-  scaleToPixels,
 } from "./render_utils";
 
 const X_PAD = 5;
@@ -164,8 +163,8 @@ function renderOverviewPlot(
     const coloredDots = dotData.map((dot) => {
       const copyDot = Object.create(dot);
       copyDot.color = STYLE.colors.darkGray;
-      return copyDot
-    })
+      return copyDot;
+    });
     drawDotsScaled(ctx, coloredDots, chromXScale, yScale, DOT_SIZE);
   });
 }

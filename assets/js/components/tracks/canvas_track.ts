@@ -31,11 +31,6 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-// export abstract class Track extends HTMLElement {
-//   abstract render(updateData: boolean);
-//   abstract label: string;
-// }
-
 export class CanvasTrack extends HTMLElement {
   public label: string;
 
@@ -59,10 +54,6 @@ export class CanvasTrack extends HTMLElement {
     y1: number;
     y2: number;
   }[];
-
-  constructor() {
-    super();
-  }
 
   render(updateData: boolean) {}
 

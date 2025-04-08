@@ -135,7 +135,6 @@ export class InputControls extends HTMLElement {
   initialize(
     fullRegion: Region,
     defaultAnnots: string[],
-    onRegionChanged: (region: Region) => void,
     onAnnotationChanged: (region: Region, source: string) => void,
     onPositionChange: (newXRange: [number, number]) => void,
     apiURL: string,

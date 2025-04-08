@@ -6,7 +6,6 @@ template.innerHTML = String.raw`
     <div id="container"></div>
 `;
 
-
 export class AnnotationTracks extends HTMLElement {
   protected _root: ShadowRoot;
   public label: string = "Annotation tracks";
@@ -45,7 +44,7 @@ export class AnnotationTracks extends HTMLElement {
 
     removeChildren(this.parentContainer);
 
-    const {xRange, annotations} = this.renderData;
+    const { xRange, annotations } = this.renderData;
 
     for (const annotData of annotations) {
       const annotTrack = new BandTrack();
@@ -56,8 +55,8 @@ export class AnnotationTracks extends HTMLElement {
         async () => {
           return {
             bands: annotData,
-            xRange
-          }
+            xRange,
+          };
         },
       );
       await annotTrack.render(true);
