@@ -131,7 +131,8 @@ interface RenderExon {
   start: number,
   end: number,
   exonNumber: number,
-  label: string
+  label: string,
+  band?: RenderBand
 }
 
 interface RenderTranscript {
@@ -140,7 +141,8 @@ interface RenderTranscript {
   end: number,
   label?: string,
   strand?: "+" | "-",
-  exons: RenderExon[]
+  exons: RenderExon[],
+  band?: RenderBand,
 }
 
 interface TranscriptsTrackData {

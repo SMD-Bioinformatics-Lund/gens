@@ -57,6 +57,12 @@ export class CanvasTrack extends HTMLElement {
 
   render(updateData: boolean) { }
 
+  getNtsPerPixel(xRange: Rng) {
+    const nNts = xRange[1] - xRange[0];
+    const nPxs = this.dimensions.width;
+    return nNts / nPxs;
+  }
+
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
