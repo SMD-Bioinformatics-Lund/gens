@@ -139,8 +139,9 @@ interface RenderTranscript {
   id: string,
   start: number,
   end: number,
-  label?: string,
-  strand?: "+" | "-",
+  info: string,
+  label: string,
+  strand: "+" | "-",
   exons: RenderExon[],
   band?: RenderBand,
 }

@@ -174,13 +174,15 @@ function parseExons(
 export function parseTranscripts(
   transcripts: APITranscript[],
 ): RenderTranscript[] {
-  const transcriptsToRender = transcripts.map((transcript) => {
+  const transcriptsToRender: RenderTranscript[] = transcripts.map((transcript) => {
     const exons = parseExons(transcript.transcript_id, transcript.features);
     return {
       id: transcript.transcript_id,
       start: transcript.start,
       end: transcript.end,
-      label: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
+      label: transcript.gene_name,
+      info: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
+      strand: transcript.strand as "+" | "-",
       exons,
     };
   });

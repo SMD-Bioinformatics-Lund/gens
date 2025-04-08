@@ -13,9 +13,9 @@ export class BandTrack extends CanvasTrack {
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
   ) {
-    const expandable = true;
-    super.initializeCanvas(label, trackHeight, expandable);
+    super.initializeCanvas(label, trackHeight);
     this.initializeTooltip();
+    this.initializeExpander(trackHeight);
     this.getRenderData = getRenderData;
   }
 
@@ -44,7 +44,7 @@ export class BandTrack extends CanvasTrack {
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,
       STYLE.bandTrack.bandPadding,
-      this.expanded ? numberLanes : 1,
+      this.isExpanded() ? numberLanes : 1,
       this.dimensions.height,
     );
   
@@ -55,14 +55,22 @@ export class BandTrack extends CanvasTrack {
         throw Error(`Missing ID: ${band.id}`);
       }
       const bandNOverlap = bandOverlaps[band.id].lane;
-      let yRange = yScale(bandNOverlap, this.expanded);
+      let yRange = yScale(bandNOverlap, this.isExpanded());
       scaledBand.y1 = yRange[0];
       scaledBand.y2 = yRange[1];
       scaledBand.edgeColor = STYLE.bandTrack.edgeColor;
       return scaledBand;
     });
 
-    if (this.expanded) {
+    this.setExpandedHeight(numberLanes);
+
+    renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
+    renderBands(this.ctx, scaledBands, xScale);
+    this.hoverTargets = getBoundBoxes(scaledBands, xScale);
+  }
+
+  setExpandedHeight(numberLanes: number) {
+    if (this.isExpanded()) {
       const style = STYLE.bandTrack;
       const expandedHeight = getTrackHeight(
         style.trackHeight.thin,
@@ -70,13 +78,8 @@ export class BandTrack extends CanvasTrack {
         style.trackPadding,
         style.bandPadding,
       );
-
-      this.assignedHeight = expandedHeight;
+      super.setExpandedHeight(expandedHeight);
     }
-
-    renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
-    renderBands(this.ctx, scaledBands, xScale);
-    this.hoverTargets = getBoundBoxes(scaledBands, xScale);
   }
 }
 

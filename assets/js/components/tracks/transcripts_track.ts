@@ -13,9 +13,9 @@ export class TranscriptsTrack extends CanvasTrack {
     trackHeight: number,
     getRenderData: () => Promise<TranscriptsTrackData>,
   ) {
-    const expandable = true;
-    super.initializeCanvas(label, trackHeight, expandable);
+    super.initializeCanvas(label, trackHeight);
     this.initializeTooltip();
+    this.initializeExpander(trackHeight);
     this.getRenderData = getRenderData;
   }
 
@@ -34,13 +34,13 @@ export class TranscriptsTrack extends CanvasTrack {
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,
       STYLE.bandTrack.bandPadding,
-      this.expanded ? numberLanes : 1,
+      this.isExpanded() ? numberLanes : 1,
       this.dimensions.height,
     );
 
     transcripts.forEach((transcript) => {
       const bandNOverlap = bandOverlaps[transcript.id].lane;
-      let yRange = yScale(bandNOverlap, this.expanded);
+      let yRange = yScale(bandNOverlap, this.isExpanded());
 
       const y1 = yRange[0];
       const y2 = yRange[1];
@@ -62,23 +62,11 @@ export class TranscriptsTrack extends CanvasTrack {
       return transcript;
     });
 
-    if (this.expanded) {
-      const style = STYLE.bandTrack;
-      const expandedHeight = getTrackHeight(
-        style.trackHeight.thin,
-        numberLanes,
-        style.trackPadding,
-        style.bandPadding,
-      );
-
-      this.assignedHeight = expandedHeight;
-    }
+    this.setExpandedHeight(numberLanes);
 
     const transcriptBands = transcripts.map((tr) => tr.band);
     this.hoverTargets = getBoundBoxes(transcriptBands, xScale);
-
     renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
-
     const ntsPerPx = this.getNtsPerPixel(xRange);
     console.log(ntsPerPx);
 
@@ -90,6 +78,19 @@ export class TranscriptsTrack extends CanvasTrack {
       drawTranscript(this.ctx, tr, xScale, showDetails),
     );
   }
+
+  setExpandedHeight(numberLanes: number) {
+    // Assign expanded height (only needed to do once atm actually)
+    const style = STYLE.bandTrack;
+    // FIXME: Do this based on the zoom / current region
+    const expandedHeight = getTrackHeight(
+      style.trackHeight.thin,
+      numberLanes,
+      style.trackPadding,
+      style.bandPadding,
+    );
+    super.setExpandedHeight(expandedHeight);
+  }
 }
 
 function drawTranscript(
@@ -100,15 +101,15 @@ function drawTranscript(
 ) {
   const band = transcript.band;
 
-  const isForward = transcript.strand == "+" ? "+" : "-";
+  const isForward = transcript.strand == "+";
 
   const y1 = band.y1;
   const y2 = band.y2;
   const height = y2 - y1;
 
   // Body
-  const xPxStart = xScale(band.start);
-  const xPxEnd = xScale(band.end);
+  const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
+  const [xPxStart, xPxEnd] = xPxRange;
   ctx.fillStyle = STYLE.colors.lightGray;
   const width = xPxEnd - xPxStart;
   ctx.fillRect(xPxStart, y1, width, height);
@@ -123,23 +124,53 @@ function drawTranscript(
       ctx.fillRect(xPxStart, y1, width, height);
     });
 
-    const arrowHeight = height;
-    const arrowWidth = arrowHeight * 0.5;
-    const arrowYCenter = y1 + height / 2;
-    ctx.fillStyle = STYLE.colors.darkGray;
-    ctx.beginPath();
-    if (isForward) {
-      ctx.moveTo(xPxEnd + arrowWidth, arrowYCenter);
-      ctx.lineTo(xPxEnd, arrowYCenter - arrowHeight / 2);
-      ctx.lineTo(xPxEnd, arrowYCenter + arrowHeight / 2);
-    } else {
-      ctx.moveTo(xPxStart - arrowWidth, arrowYCenter);
-      ctx.lineTo(xPxEnd, arrowYCenter - arrowHeight / 2);
-      ctx.lineTo(xPxEnd, arrowYCenter + arrowHeight / 2);
-    }
-    ctx.closePath();
-    ctx.fill();
+    drawArrow(ctx, height, y1, isForward, xPxRange);
+    drawLabel(ctx, transcript.label, xPxRange, y2);
   }
+}
+
+function drawLabel(
+  ctx: CanvasRenderingContext2D,
+  label: string,
+  xPxRange: Rng,
+  bottomY: number,
+) {
+  const [xPxStart, xPxEnd] = xPxRange;
+  const textX = (xPxStart + xPxEnd) / 2;
+  const textY = bottomY + 4;
+
+  ctx.font = "12px sans-serif";
+  ctx.fillStyle = STYLE.colors.darkGray;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+
+  ctx.fillText(label, textX, textY);
+}
+
+function drawArrow(
+  ctx: CanvasRenderingContext2D,
+  bandHeight: number,
+  y1: number,
+  isForward: boolean,
+  xPxRange: Rng,
+) {
+  const [xPxStart, xPxEnd] = xPxRange;
+  const arrowHeight = bandHeight;
+  const arrowWidth = arrowHeight * 0.5;
+  const arrowYCenter = y1 + bandHeight / 2;
+  ctx.fillStyle = STYLE.colors.darkGray;
+  ctx.beginPath();
+  if (isForward) {
+    ctx.moveTo(xPxEnd + arrowWidth, arrowYCenter);
+    ctx.lineTo(xPxEnd, arrowYCenter - arrowHeight / 2);
+    ctx.lineTo(xPxEnd, arrowYCenter + arrowHeight / 2);
+  } else {
+    ctx.moveTo(xPxStart - arrowWidth, arrowYCenter);
+    ctx.lineTo(xPxStart, arrowYCenter - arrowHeight / 2);
+    ctx.lineTo(xPxStart, arrowYCenter + arrowHeight / 2);
+  }
+  ctx.closePath();
+  ctx.fill();
 }
 
 customElements.define("transcripts-track", TranscriptsTrack);

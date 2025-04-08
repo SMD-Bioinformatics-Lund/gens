@@ -31,7 +31,7 @@ export class OverviewTrack extends CanvasTrack {
     yRange: Rng,
     getRenderData: () => Promise<OverviewTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight, false);
+    super.initializeCanvas(label, trackHeight);
     this.chromSizes = chromSizes;
     this.yRange = yRange;
     this.getRenderData = getRenderData;

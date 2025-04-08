@@ -22,7 +22,7 @@ export class IdeogramTrack extends CanvasTrack {
     trackHeight: number,
     getRenderData: () => Promise<IdeogramTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight, false);
+    super.initializeCanvas(label, trackHeight);
     setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
 
     const markerElement = setupMarkerElement(trackHeight);
