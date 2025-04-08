@@ -97,16 +97,16 @@ function drawBand(
   // Body
   const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
   const [xPxStart, xPxEnd] = xPxRange;
-  ctx.fillStyle = STYLE.colors.lightGray;
+  ctx.fillStyle = band.color;
   const width = xPxEnd - xPxStart;
   ctx.fillRect(xPxStart, y1, width, height);
 
   if (showDetails) {
     if (band.subBands != null) {
-      band.subBands.forEach((exon) => {
-        const xPxStart = xScale(exon.start);
-        const xPxEnd = xScale(exon.end);
-        ctx.fillStyle = STYLE.colors.orange;
+      band.subBands.forEach((subBand) => {
+        const xPxStart = xScale(subBand.start);
+        const xPxEnd = xScale(subBand.end);
+        ctx.fillStyle = subBand.color;
         const width = xPxEnd - xPxStart;
         ctx.fillRect(xPxStart, y1, width, height);
       });

@@ -88,74 +88,74 @@ export class TracksManager extends HTMLElement {
     const overviewTrackBaf = new OverviewTrack();
 
     this.tracks.push(
-      // ideogramTrack,
-      // coverageTrack,
-      // bafTrack,
-      // annotationTracks,
-      // variantTrack,
+      ideogramTrack,
+      coverageTrack,
+      bafTrack,
+      annotationTracks,
+      variantTrack,
       transcriptTrack,
-      // overviewTrackCov,
-      // overviewTrackBaf,
+      overviewTrackCov,
+      overviewTrackBaf,
     );
 
     for (const track of this.tracks) {
       this.parentContainer.appendChild(track);
     }
 
-    // await coverageTrack.initialize(
-    //   "Coverage",
-    //   trackHeight.thick,
-    //   COV_Y_RANGE,
-    //   async () => {
-    //     return {
-    //       xRange: getXRange(),
-    //       dots: await dataSource.getCovData(),
-    //     };
-    //   },
-    // );
+    await coverageTrack.initialize(
+      "Coverage",
+      trackHeight.thick,
+      COV_Y_RANGE,
+      async () => {
+        return {
+          xRange: getXRange(),
+          dots: await dataSource.getCovData(),
+        };
+      },
+    );
 
-    // await bafTrack.initialize(
-    //   "BAF",
-    //   trackHeight.thick,
-    //   BAF_Y_RANGE,
-    //   async () => {
-    //     return {
-    //       xRange: getXRange(),
-    //       dots: await dataSource.getBafData(),
-    //     };
-    //   },
-    // );
+    await bafTrack.initialize(
+      "BAF",
+      trackHeight.thick,
+      BAF_Y_RANGE,
+      async () => {
+        return {
+          xRange: getXRange(),
+          dots: await dataSource.getBafData(),
+        };
+      },
+    );
 
-    // await annotationTracks.initialize(trackHeight.thin, async () => {
-    //   const annotSources = getAnnotSources();
-    //   const annotationsData = [];
-    //   for (const annotSource of annotSources) {
-    //     const annotData = await dataSource.getAnnotation(annotSource);
-    //     annotationsData.push(annotData);
-    //   }
-    //   return {
-    //     xRange: getXRange(),
-    //     annotations: annotationsData,
-    //   };
-    // });
+    await annotationTracks.initialize(trackHeight.thin, async () => {
+      const annotSources = getAnnotSources();
+      const annotationsData = [];
+      for (const annotSource of annotSources) {
+        const annotData = await dataSource.getAnnotation(annotSource);
+        annotationsData.push(annotData);
+      }
+      return {
+        xRange: getXRange(),
+        annotations: annotationsData,
+      };
+    });
 
-    // await variantTrack.initialize("Variant", trackHeight.thin, async () => {
-    //   return {
-    //     xRange: getXRange(),
-    //     bands: await dataSource.getVariantData(),
-    //   };
-    // });
+    await variantTrack.initialize("Variant", trackHeight.thin, async () => {
+      return {
+        xRange: getXRange(),
+        bands: await dataSource.getVariantData(),
+      };
+    });
 
-    // await transcriptTrack.initialize(
-    //   "Transcript",
-    //   trackHeight.thin,
-    //   async () => {
-    //     return {
-    //       xRange: getXRange(),
-    //       bands: await dataSource.getTranscriptData(),
-    //     };
-    //   },
-    // );
+    await transcriptTrack.initialize(
+      "Transcript",
+      trackHeight.thin,
+      async () => {
+        return {
+          xRange: getXRange(),
+          bands: await dataSource.getTranscriptData(),
+        };
+      },
+    );
 
     await transcriptTrack.initialize(
       "New transcript",
@@ -168,47 +168,47 @@ export class TracksManager extends HTMLElement {
       },
     );
 
-    // await ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
-    //   return {
-    //     xRange: getXRange(),
-    //     chromInfo: await dataSource.getChromInfo(),
-    //   };
-    // });
+    await ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
+      return {
+        xRange: getXRange(),
+        chromInfo: await dataSource.getChromInfo(),
+      };
+    });
 
-    // const chromSizes = {};
-    // for (const chromosome of CHROMOSOMES) {
-    //   chromSizes[chromosome] = getChromInfo(chromosome).size;
-    // }
+    const chromSizes = {};
+    for (const chromosome of CHROMOSOMES) {
+      chromSizes[chromosome] = getChromInfo(chromosome).size;
+    }
 
-    // await overviewTrackCov.initialize(
-    //   "Overview (cov)",
-    //   trackHeight.thick,
-    //   chromSizes,
-    //   chromClick,
-    //   COV_Y_RANGE,
-    //   async () => {
-    //     return {
-    //       dotsPerChrom: await dataSource.getOverviewCovData(),
-    //       xRange: getXRange(),
-    //       chromosome: getChromosome(),
-    //     };
-    //   },
-    // );
+    await overviewTrackCov.initialize(
+      "Overview (cov)",
+      trackHeight.thick,
+      chromSizes,
+      chromClick,
+      COV_Y_RANGE,
+      async () => {
+        return {
+          dotsPerChrom: await dataSource.getOverviewCovData(),
+          xRange: getXRange(),
+          chromosome: getChromosome(),
+        };
+      },
+    );
 
-    // await overviewTrackBaf.initialize(
-    //   "Overview (baf)",
-    //   trackHeight.thick,
-    //   chromSizes,
-    //   chromClick,
-    //   BAF_Y_RANGE,
-    //   async () => {
-    //     return {
-    //       dotsPerChrom: await dataSource.getOverviewBafData(),
-    //       xRange: getXRange(),
-    //       chromosome: getChromosome(),
-    //     };
-    //   },
-    // );
+    await overviewTrackBaf.initialize(
+      "Overview (baf)",
+      trackHeight.thick,
+      chromSizes,
+      chromClick,
+      BAF_Y_RANGE,
+      async () => {
+        return {
+          dotsPerChrom: await dataSource.getOverviewBafData(),
+          xRange: getXRange(),
+          chromosome: getChromosome(),
+        };
+      },
+    );
   }
 
   public render(updateData: boolean) {

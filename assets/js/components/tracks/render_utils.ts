@@ -1,4 +1,5 @@
 import { rangeSize } from "../../track/utils";
+import { STYLE } from "../../util/constants";
 
 export function renderBorder(
   ctx: CanvasRenderingContext2D,
@@ -142,7 +143,7 @@ export function rgbArrayToString(rgbArray: number[]): string {
 export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
   return annotations.map((annot) => {
     const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
-    const label = `${annot.name}, ${annot.start}-${annot.end}${rankScore}`;
+    const label = annot.name;
     const colorStr = rgbArrayToString(annot.color);
     return {
       id: `${annot.start}_${annot.end}_${colorStr}`,
@@ -150,6 +151,7 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
       end: annot.end,
       color: colorStr,
       label,
+      info: `${annot.start}-${annot.end} (${label})`
     };
   });
 }
@@ -165,6 +167,7 @@ function parseExons(
       id: `${geneId}_exon${part.exon_number}_${part.start}_${part.end}`,
       start: part.start,
       end: part.end,
+      color: STYLE.colors.teal,
       label: `${part.exon_number} ${part.start}-${part.end}`,
     };
     return renderBand;
@@ -181,6 +184,7 @@ export function parseTranscripts(
       start: transcript.start,
       end: transcript.end,
       label: transcript.gene_name,
+      color: STYLE.colors.lightGray,
       info: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
       direction: transcript.strand as "+" | "-",
       subBands: exons,
