@@ -32,7 +32,7 @@ export class TranscriptsTrack extends CanvasTrack {
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
     const { numberLanes, bandOverlaps } = getOverlapInfo(transcripts);
-    const labelSize = this.isExpanded() ? 20 : 0;
+    const labelSize = (this.isExpanded() && showDetails) ? 20 : 0;
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,
       STYLE.bandTrack.bandPadding,
