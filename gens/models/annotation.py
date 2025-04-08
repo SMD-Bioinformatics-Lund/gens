@@ -2,11 +2,11 @@
 
 from typing import Any, Literal
 
-from pydantic import PositiveInt, field_serializer
+from pydantic import PositiveInt, field_serializer, Field
 from pydantic_extra_types.color import Color
 
-from gens.models.base import RWModel
-from gens.models.genomic import Chromosome, DnaStrand, GenomeBuild
+from .base import RWModel, CreatedAtModel, ModifiedAtModel, PydanticObjectId
+from .genomic import Chromosome, DnaStrand, GenomeBuild
 
 
 class AnnotationRecord(RWModel):
@@ -28,6 +28,21 @@ class AnnotationRecord(RWModel):
     ) -> tuple[int, int, int] | tuple[int, int, int, float]:
         """Serialize RGB as tuple"""
         return color.as_rgb_tuple()
+
+
+class AnnotationTrack(RWModel, CreatedAtModel, ModifiedAtModel):
+    """Annotation track."""
+    
+    name: str
+    maintainer: str | None = None
+    genome_build: GenomeBuild
+    annotations: list[AnnotationRecord]
+
+
+class AnnotationTrackInDb(AnnotationTrack):
+    """Database representation of annotation track."""
+
+    track_id: PydanticObjectId = Field(alias="_id")
 
 
 class ExonFeature(RWModel):
