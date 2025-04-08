@@ -113,8 +113,6 @@ async function initialize(
   getChromInfo: (string) => ChromosomeInfo,
   renderDataSource: RenderDataSource,
 ) {
-  console.log("In initialize");
-
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
     startRegion,
@@ -141,7 +139,6 @@ async function initialize(
   );
 
   // await tracks.updateRenderData();
-  console.log("Outside tracks.render");
   tracks.render(true);
 }
 

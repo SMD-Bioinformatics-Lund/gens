@@ -150,7 +150,6 @@ export class TracksManager extends HTMLElement {
       "Transcript",
       trackHeight.thin,
       async () => {
-        console.log("Getting the rendering data for transcripts");
         return {
           xRange: getXRange(),
           bands: await dataSource.getTranscriptData(),
@@ -203,7 +202,6 @@ export class TracksManager extends HTMLElement {
 
   public render(updateData: boolean) {
     for (const track of this.tracks) {
-      console.log("Looping to render", track.label);
       track.render(updateData);
     }
   }
