@@ -60,7 +60,6 @@ interface APIVariant {
   rank_score: number,
   rank_score_results: {category: string, score: number}[],
   reference: string,
-  samples: any[],
   simple_id: string,
   sub_category: string,
   variant_id: string,
