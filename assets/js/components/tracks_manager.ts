@@ -11,6 +11,7 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { CHROMOSOMES, STYLE } from "../util/constants";
 import { CanvasTrack } from "./tracks/canvas_track";
+import { TranscriptsTrack } from "./tracks/transcripts_track";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -39,13 +40,11 @@ export class TracksManager extends HTMLElement {
   protected _root: ShadowRoot;
 
   parentContainer: HTMLDivElement;
-
   isInitialized = false;
-
   annotationsContainer: HTMLDivElement;
 
   // FIXME: Think about a shared interface
-  tracks: (CanvasTrack|AnnotationTracks)[] = [];
+  tracks: (CanvasTrack | AnnotationTracks)[] = [];
 
   // This one needs a dedicated component I think
   annotationTracks: BandTrack[] = [];
@@ -78,7 +77,8 @@ export class TracksManager extends HTMLElement {
     const coverageTrack = new DotTrack();
     const bafTrack = new DotTrack();
     const variantTrack = new BandTrack();
-    const transcriptTrack = new BandTrack();
+    const transcriptTrack = new TranscriptsTrack();
+
     const ideogramTrack = new IdeogramTrack();
 
     const annotationTracks = new AnnotationTracks();
@@ -134,8 +134,8 @@ export class TracksManager extends HTMLElement {
       }
       return {
         xRange: getXRange(),
-        annotations: annotationsData
-      }
+        annotations: annotationsData,
+      };
     });
 
     await variantTrack.initialize("Variant", trackHeight.thin, async () => {
@@ -145,14 +145,25 @@ export class TracksManager extends HTMLElement {
       };
     });
 
+    // await transcriptTrack.initialize(
+    //   "Transcript",
+    //   trackHeight.thin,
+    //   async () => {
+    //     return {
+    //       xRange: getXRange(),
+    //       bands: await dataSource.getTranscriptData(),
+    //     };
+    //   },
+    // );
+
     await transcriptTrack.initialize(
-      "Transcript",
+      "New transcript",
       trackHeight.thin,
       async () => {
         return {
           xRange: getXRange(),
-          bands: await dataSource.getTranscriptData(),
-        };
+          transcripts: await dataSource.getTranscriptData(),
+        }
       },
     );
 

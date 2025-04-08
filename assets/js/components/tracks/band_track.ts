@@ -1,4 +1,4 @@
-import { getOverlapInfo } from "../../track/utils";
+import { getOverlapInfo, getTrackHeight } from "../../track/expand_track_utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 import { getLinearScale, renderBands, renderBorder } from "./render_utils";
@@ -6,7 +6,6 @@ import { getLinearScale, renderBands, renderBorder } from "./render_utils";
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
-  xRange: Rng | null;
 
   async initialize(
     label: string,
@@ -20,6 +19,10 @@ export class BandTrack extends CanvasTrack {
   }
 
   async render(updateData: boolean) {
+    if (this.getRenderData == undefined) {
+      throw Error(`No getRenderData set up for track, must initialize first`);
+    }
+
     if (updateData || this.renderData == null) {
       this.renderData = await this.getRenderData();
     }
@@ -106,18 +109,6 @@ function getBoundBoxes(bands, xScale: Scale) {
       y2: band.y2,
     };
   });
-}
-
-function getTrackHeight(
-  trackHeight: number,
-  numberTracks: number,
-  trackPadding: number,
-  bandPadding: number,
-): number {
-  const singleBandHeight = trackHeight - (trackPadding + bandPadding) * 2;
-  const multiTrackHeight =
-    trackPadding * 2 + (singleBandHeight + bandPadding * 2) * numberTracks;
-  return multiTrackHeight;
 }
 
 customElements.define("band-track", BandTrack);

@@ -5,7 +5,7 @@ import {
   zoomInNew,
   zoomOutNew,
 } from "../navigation";
-import { GensAPI } from "../state/gens_api";
+import { API } from "../state/api";
 
 const BUTTON_ZOOM_COLOR = "#8fbcbb";
 const BUTTON_NAVIGATE_COLOR = "#6db2c5;";

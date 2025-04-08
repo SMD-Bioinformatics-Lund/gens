@@ -21,7 +21,7 @@ interface APITranscript {
   chrom: string,
   start: number,
   end: number,
-  feature: APITranscriptPart[],
+  features: APITranscriptPart[],
   gene_name: string,
   genome_build: number,
   height_order: number,
@@ -126,6 +126,28 @@ interface BandTrackData {
   bands: RenderBand[],
 }
 
+interface RenderExon {
+  id: string,
+  start: number,
+  end: number,
+  exonNumber: number,
+  label: string
+}
+
+interface RenderTranscript {
+  id: string,
+  start: number,
+  end: number,
+  label?: string,
+  strand?: "+" | "-",
+  exons: RenderExon[]
+}
+
+interface TranscriptsTrackData {
+  xRange: Rng,
+  transcripts: RenderTranscript[],
+}
+
 interface IdeogramTrackData {
   chromInfo: ChromosomeInfo,
   xRange: Rng
@@ -146,7 +168,7 @@ interface RenderDataSource {
   getAnnotation: (string) => Promise<RenderBand[]>,
   getCovData: () => Promise<RenderDot[]>,
   getBafData: () => Promise<RenderDot[]>,
-  getTranscriptData: () => Promise<RenderBand[]>,
+  getTranscriptData: () => Promise<RenderTranscript[]>,
   getVariantData: () => Promise<RenderBand[]>,
   getOverviewCovData: () => Promise<Record<string, RenderDot[]>>,
   getOverviewBafData: () => Promise<Record<string, RenderDot[]>>,

@@ -3,7 +3,7 @@ import { rangeSize } from "../../track/utils";
 export function renderBorder(
   ctx: CanvasRenderingContext2D,
   canvasDim: { height: number; width: number },
-  color: string
+  color: string,
 ) {
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, canvasDim.width, canvasDim.height);
@@ -154,14 +154,30 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
   });
 }
 
-export function parseTranscripts(transcripts: APITranscript[]): RenderBand[] {
+function parseExons(transcriptParts: APITranscriptPart[]): RenderExon[] {
+  const exons = transcriptParts.filter((part) => part.feature == "exon");
+
+  return exons.map((part) => {
+    return {
+      start: part.start,
+      end: part.end,
+      exonNumber: part.exon_number,
+      label: `${part.exon_number} ${part.start}-${part.end}`,
+    };
+  });
+}
+
+export function parseTranscripts(
+  transcripts: APITranscript[],
+): RenderTranscript[] {
   const transcriptsToRender = transcripts.map((transcript) => {
+    const exons = parseExons(transcript.features);
     return {
       id: `${transcript.start}_${transcript.end}_${transcript.transcript_id}`,
       start: transcript.start,
       end: transcript.end,
-      color: "blue",
       label: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
+      exons,
     };
   });
 
@@ -252,4 +268,3 @@ export function getColorScale(
   };
   return colorScale;
 }
-

@@ -30,7 +30,7 @@ import {
 } from "./components/tracks/render_utils";
 // import { AnnotationTrack } from "./components/tracks/annotation_track";
 // import { CoverageTrack } from "./components/tracks/coverage_track";
-import { GensAPI as GensAPI } from "./state/gens_api";
+import { API as API } from "./state/api";
 import { transformMap } from "./track/utils";
 import { STYLE } from "./util/constants";
 
@@ -67,7 +67,7 @@ export async function initCanvases({
     "input-controls",
   ) as InputControls;
 
-  const api = new GensAPI(sampleId, caseId, genomeBuild, gensApiURL);
+  const api = new API(sampleId, caseId, genomeBuild, gensApiURL);
 
   const renderDataSource = getRenderDataSource(
     api,
@@ -140,7 +140,7 @@ async function initialize(
 }
 
 function getRenderDataSource(
-  gensAPI: GensAPI,
+  gensAPI: API,
   getChrom: () => string,
 ): RenderDataSource {
   const getChromInfo = async () => {

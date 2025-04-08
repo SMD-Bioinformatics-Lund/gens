@@ -55,7 +55,7 @@ export class CanvasTrack extends HTMLElement {
     y2: number;
   }[];
 
-  render(updateData: boolean) {}
+  render(updateData: boolean) { }
 
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
