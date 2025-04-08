@@ -15,7 +15,6 @@ function drawEventManager({ target, throttleTime }) {
     ];
     let lastEventTime = 0;
     return (event) => {
-        const now = Date.now();
         if (throttleTime < Date.now() - lastEventTime || event.detail.force) {
             lastEventTime = Date.now();
             for (const track of tracks) {
@@ -112,9 +111,8 @@ export async function drawTrack({
     start,
     end,
     genomeBuild = "38",
-    exclude = [],
-    force = false,
-    ...kwargs
+    exclude: _exclude = [],
+    force: _force = false,
 }) {
     // update input field
     const region = await limitRegionToChromosome({

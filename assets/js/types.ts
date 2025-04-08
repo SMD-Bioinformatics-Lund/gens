@@ -235,6 +235,7 @@ interface Transcript {
   mane: string;
   scale: number;
   color: string;
+  // eslint-disable-next-line
   features: any[];
 
   x1?: number;
@@ -252,7 +253,9 @@ interface Transcript {
 }
 
 interface Tooltip {
+  // eslint-disable-next-line
   instance: any; // Popper.js instance
+  // eslint-disable-next-line
   virtualElement: any;
   tooltip: HTMLDivElement;
   isDisplayed: boolean;
@@ -261,6 +264,7 @@ interface Tooltip {
 interface VirtualDOMElement {
   x: number; // Placeholder for Popper.js
   y: number; // Placeholder for Popper.js
+  // eslint-disable-next-line
   toJSON: () => any; // Placeholder for Popper.js
   width: number;
   height: number;
@@ -371,6 +375,7 @@ type DisplayElement = {
   feature?: string;
   features: string[];
   isDisplayed?: boolean;
+  // eslint-disable-next-line
   tooltip?: any;
   visibleX1?: number;
   visibleX2?: number;
@@ -387,6 +392,7 @@ type RequestType = "GET" | "POST" | "PUT" | "DELETE";
 
 type RequestOptions = {
   method: RequestType;
+  // eslint-disable-next-line
   headers: any;
   body?: string;
 };

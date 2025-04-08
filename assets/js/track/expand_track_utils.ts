@@ -14,7 +14,7 @@ export function getOverlapInfo(
     {};
 
   // Set of active ranges
-  let overlapping: { start: number; end: number; lane: number }[] = [];
+  const overlapping: { start: number; end: number; lane: number }[] = [];
 
   // Go over each range
   ranges.forEach((currBand) => {

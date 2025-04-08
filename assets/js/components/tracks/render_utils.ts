@@ -142,7 +142,7 @@ export function rgbArrayToString(rgbArray: number[]): string {
 
 export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
   return annotations.map((annot) => {
-    const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
+    // const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
     const label = annot.name;
     const colorStr = rgbArrayToString(annot.color);
     return {

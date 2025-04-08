@@ -199,9 +199,9 @@ function getChromRanges(
   return chromRanges;
 }
 
-function drawSegmentDots(dots: RenderDot[], pxRange: [number, number]) {}
+// function drawSegmentDots(dots: RenderDot[], pxRange: [number, number]) {}
 
 // This will actually be multiple parts
-function additionalText() {}
+// function additionalText() {}
 
 customElements.define("overview-track", OverviewTrack);

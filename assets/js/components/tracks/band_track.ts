@@ -2,7 +2,7 @@ import { getOverlapInfo, getTrackHeight } from "../../track/expand_track_utils";
 import { getBandYScale, getBoundBoxes } from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { getLinearScale, renderBands, renderBorder } from "./render_utils";
+import { getLinearScale, renderBorder } from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
@@ -50,7 +50,7 @@ export class BandTrack extends CanvasTrack {
         throw Error(`Missing ID: ${band.id}`);
       }
       const bandNOverlap = bandOverlaps[band.id].lane;
-      let yRange = yScale(bandNOverlap, this.isExpanded());
+      const yRange = yScale(bandNOverlap, this.isExpanded());
 
       const renderBand = Object.create(band);
       renderBand.y1 = yRange[0];

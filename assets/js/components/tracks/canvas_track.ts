@@ -72,7 +72,7 @@ export class CanvasTrack extends HTMLElement {
     y2: number;
   }[];
 
-  render(updateData: boolean) {}
+  render(_updateData: boolean) {}
 
   isExpanded(): boolean {
     return this.expander.isExpanded;
@@ -160,7 +160,7 @@ export class CanvasTrack extends HTMLElement {
   }
 
   setHoverTargets(
-    hoverTargets: {
+    _hoverTargets: {
       label: string;
       x1: number;
       x2: number;

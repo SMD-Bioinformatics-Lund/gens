@@ -61,11 +61,11 @@ describe("test limitRegionToChromosome ", () => {
   });
 
   test("test end pos outside chromosome", () => {
-    const chromSizeMock = jest
-      .spyOn(helper, "chromSizes")
-      // @ts-expect-error
-      .mockReturnValueOnce(mockRes)
-      .mockName("chromSizes");
+    // const _chromSizeMock = jest
+    //   .spyOn(helper, "chromSizes")
+    //   // @ts-expect-error ...
+    //   .mockReturnValueOnce(mockRes)
+    //   .mockName("chromSizes");
 
     limitRegionToChromosome({ chrom: 1, start: 4000, end: 6000 }).then(
       (region) => {
@@ -75,11 +75,11 @@ describe("test limitRegionToChromosome ", () => {
   });
 
   test("test start pos outside chromosome", () => {
-    const chromSizeMock = jest
-      .spyOn(helper, "chromSizes")
-      // @ts-expect-error
-      .mockReturnValueOnce(mockRes)
-      .mockName("chromSizes");
+    // const _chromSizeMock = jest
+    //   .spyOn(helper, "chromSizes")
+    //   // @ts-expect-error ...
+    //   .mockReturnValueOnce(mockRes)
+    //   .mockName("chromSizes");
 
     limitRegionToChromosome({ chrom: 1, start: -1000, end: 2000 }).then(
       (region) => {
@@ -89,11 +89,11 @@ describe("test limitRegionToChromosome ", () => {
   });
 
   test("test start pos is null", () => {
-    const chromSizeMock = jest
-      .spyOn(helper, "chromSizes")
-      // @ts-expect-error
-      .mockReturnValueOnce(mockRes)
-      .mockName("chromSizes");
+    // const _chromSizeMock = jest
+    //   .spyOn(helper, "chromSizes")
+    //   // @ts-expect-error ...
+    //   .mockReturnValueOnce(mockRes)
+    //   .mockName("chromSizes");
 
     limitRegionToChromosome({ chrom: 1, start: null, end: 2000 }).then(
       (region) => {
@@ -103,11 +103,11 @@ describe("test limitRegionToChromosome ", () => {
   });
 
   test("test end pos is null", () => {
-    const chromSizeMock = jest
-      .spyOn(helper, "chromSizes")
-      // @ts-expect-error
-      .mockReturnValueOnce(mockRes)
-      .mockName("chromSizes");
+    // const _chromSizeMock = jest
+    //   .spyOn(helper, "chromSizes")
+    //   // @ts-expect-error ...
+    //   .mockReturnValueOnce(mockRes)
+    //   .mockName("chromSizes");
 
     limitRegionToChromosome({ chrom: 1, start: 1000, end: null }).then(
       (region) => {
@@ -117,11 +117,11 @@ describe("test limitRegionToChromosome ", () => {
   });
 
   test("test start and end pos is outsize chrom", () => {
-    const chromSizeMock = jest
-      .spyOn(helper, "chromSizes")
-      // @ts-expect-error
-      .mockReturnValueOnce(mockRes)
-      .mockName("chromSizes");
+    // const _chromSizeMock = jest
+    //   .spyOn(helper, "chromSizes")
+    //   // @ts-expect-error ...
+    //   .mockReturnValueOnce(mockRes)
+    //   .mockName("chromSizes");
 
     limitRegionToChromosome({ chrom: 1, start: -2000, end: 10000 }).then(
       (region) => {
@@ -131,11 +131,11 @@ describe("test limitRegionToChromosome ", () => {
   });
 
   test("test if start and end are retained", () => {
-    const chromSizeMock = jest
-      .spyOn(helper, "chromSizes")
-      // @ts-expect-error
-      .mockReturnValueOnce(mockRes)
-      .mockName("chromSizes");
+    // const _chromSizeMock = jest
+    //   .spyOn(helper, "chromSizes")
+    //   // @ts-expect-error ...
+    //   .mockReturnValueOnce(mockRes)
+    //   .mockName("chromSizes");
 
     limitRegionToChromosome({ chrom: 1, start: 1, end: 5000 }).then(
       (region) => {

@@ -125,7 +125,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
 
   // Draws annotations in given range
   // @ts-expect-error - FIXME, resolve the type errors here
-  async drawOffScreenTrack({ startPos, endPos, maxHeightOrder, data }) {
+  async drawOffScreenTrack({ startPos, endPos, maxHeightOrder: _maxHeightOrder, data }) {
     const textSize = 10;
 
     // store positions used when rendering the canvas

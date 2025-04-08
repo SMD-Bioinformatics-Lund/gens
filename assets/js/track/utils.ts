@@ -31,12 +31,12 @@ export function getBandYScale(
   bandPad: number,
   numberTracks: number,
   renderingHeight: number,
-  labelSize: number = 0
+  labelSize: number = 0,
 ): BandYScale {
   return (pos: number, expanded: boolean) => {
     const renderingArea =
       renderingHeight - topBottomPad * 2 - bandPad * numberTracks;
-    
+
     const trackHeight = renderingArea / numberTracks;
 
     let yShift = 0;
@@ -73,7 +73,10 @@ export function getVisibleXCoordinates(
 // each input is an object with start/ end coordinates
 // f          >----------------<
 // s   >---------<
-export function isElementOverlapping(first: any, second: any) {
+export function isElementOverlapping(
+  first: { start: number; end: number },
+  second: { start: number; end: number },
+) {
   if (
     (first.start > second.start && first.start < second.end) || //
     (first.end > second.start && first.end < second.end) ||
@@ -124,7 +127,7 @@ export function stringToHash(in_str: string): number {
  * Extract a map key -> object.value
  */
 export function transformMap<T>(
-  orig: Record<string, any>,
+  orig: Record<string, T>,
   extract: (string) => T,
 ): Record<string, T> {
   const entries = Object.entries(orig);

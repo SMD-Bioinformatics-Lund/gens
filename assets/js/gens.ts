@@ -37,15 +37,10 @@ import { STYLE } from "./util/constants";
 // FIXME: Query from the backend
 
 export async function initCanvases({
-  sampleName,
   sampleId,
   caseId,
   genomeBuild,
-  hgFileDir,
-  uiColors,
-  scoutBaseURL,
   gensApiURL,
-  selectedVariant,
   annotationFile,
   startRegion,
 }: {

@@ -1,6 +1,5 @@
 // Generic functions related to drawing annotation tracks
 
-import internal from "stream";
 import { get } from "../fetch";
 import { hideTooltip } from "./tooltip";
 
@@ -42,8 +41,8 @@ export class BaseScatterTrack {
   hgFileDir: string;
   borderColor: string;
   titleColor: string;
-  drawCanvas: any;
-  context: any;
+  drawCanvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
 
   constructor({ caseId, sampleName, genomeBuild, hgFileDir }) {
     // setup IO
@@ -78,6 +77,7 @@ export class BaseAnnotationTrack {
   minHeight: number;
   preventDrawingTrack: boolean;
   colorSchema: ColorSchema;
+  // eslint-disable-next-line
   drawOffScreenTrack: any;
 
   trackContainer: HTMLDivElement | null;
@@ -85,6 +85,7 @@ export class BaseAnnotationTrack {
   // Canvases for static content
   contentCanvas: HTMLCanvasElement | null;
   trackTitle: HTMLDivElement | null;
+  // eslint-disable-next-line
   trackData: any;
 
   apiURL: string;
@@ -103,6 +104,7 @@ export class BaseAnnotationTrack {
   onscreenPosition: { start: number | null; end: number | null };
 
   maxResolution: number;
+  // eslint-disable-next-line
   geneticElements: any[];
 
   constructor(
@@ -111,7 +113,7 @@ export class BaseAnnotationTrack {
     far: number,
     visibleHeight: number,
     minHeight: number,
-    colorSchema: ColorSchema = null
+    colorSchema: ColorSchema = null,
   ) {
     // Track variables
     this.featureHeight = 20;
@@ -162,7 +164,7 @@ export class BaseAnnotationTrack {
     this.trackContainer.style.width = this.width + "px";
     // set xlabel
     const x_label = this.trackContainer.parentElement.querySelector(
-      ".track-xlabel"
+      ".track-xlabel",
     ) as HTMLElement;
     x_label.style.left = `${xPos - 60}px`;
 
@@ -177,14 +179,14 @@ export class BaseAnnotationTrack {
     this.trackTitle.style.width = this.width + "px";
     this.trackTitle.style.height = this.minHeight + "px";
 
+    // eslint-disable-next-line
     this.trackContainer.parentElement.addEventListener("draw", (event: any) => {
-      this.drawTrack({...event.detail.region}, this.expanded);
+      this.drawTrack({ ...event.detail.region }, this.expanded);
     });
-
 
     // Setup context menu
     this.trackContainer.addEventListener(
-      "contextmenu", 
+      "contextmenu",
       async (event) => {
         event.preventDefault();
         // hide all tooltips
@@ -209,7 +211,7 @@ export class BaseAnnotationTrack {
         this.blitCanvas(this.onscreenPosition.start, this.onscreenPosition.end);
         this.drawDynamicOverlay();
       },
-      false
+      false,
     );
   }
 
@@ -259,19 +261,22 @@ export class BaseAnnotationTrack {
   // if new chromosome selected --> cache all annotations for chrom
   // if new region in offscreen canvas --> blit image
   // if new region outside offscreen canvas --> redraw offscreen using cache
-  async drawTrack({
-    chrom,
-    start,
-    end,
-    forceRedraw = false,
-    hideWhileLoading = false,
-  }: {
-    chrom: string;
-    start: number;
-    end: number;
-    forceRedraw: boolean;
-    hideWhileLoading: boolean;
-  }, expanded: boolean) {
+  async drawTrack(
+    {
+      chrom,
+      start,
+      end,
+      forceRedraw = false,
+      hideWhileLoading = false,
+    }: {
+      chrom: string;
+      start: number;
+      end: number;
+      forceRedraw: boolean;
+      hideWhileLoading: boolean;
+    },
+    expanded: boolean,
+  ) {
     if (this.preventDrawingTrack) return; // disable drawing track
     // store genomic position of the region to draw
     this.onscreenPosition.start = start;
@@ -297,8 +302,8 @@ export class BaseAnnotationTrack {
             genome_build: this.genomeBuild,
             collapsed: !expanded,
           },
-          this.additionalQueryParams
-        ) // parameters specific to track type
+          this.additionalQueryParams,
+        ), // parameters specific to track type
       );
       // disable track if data loading encountered an error
       if (this.trackData.status === "error") {
@@ -352,7 +357,8 @@ export class BaseAnnotationTrack {
 
     // Debugging
     const offscreenOffset = Math.round(
-      (chromStart - this.offscreenPosition.start) * this.offscreenPosition.scale
+      (chromStart - this.offscreenPosition.start) *
+        this.offscreenPosition.scale,
     );
     const elementWidth = Math.round(width * this.offscreenPosition.scale);
 
@@ -366,7 +372,7 @@ export class BaseAnnotationTrack {
       0, // dX
       0, // dY
       this.contentCanvas.width, // dWidth
-      this.drawCanvas.height // dHeight
+      this.drawCanvas.height, // dHeight
     );
   }
 

@@ -18,7 +18,7 @@ export function makeVirtualDOMElement({
   x2: number;
   y1: number;
   y2: number;
-  canvas: any;
+  canvas: HTMLCanvasElement;
 }): { getBoundingClientRect: () => VirtualDOMElement } {
   return {
     getBoundingClientRect: generateGetBoundingClientRect(
