@@ -8,6 +8,32 @@ export const FONTSIZES = {
     "medium": 18
 }
 
+const colors = {
+    white: "#FFF",
+    black: "#000",
+    darkGray: "#333",
+    yellow: "#dcd16f",
+    red: "#f00",
+    teal: "teal",
+    orange: "#954000",
+    transparentYellow: "#dcd16f44",
+    variantColors: {
+        del: "red",
+        dup: "blue",
+        inv: "green",
+        default: "gray",
+    },
+    stainToColor: {
+        acen: "#673888",
+        gneg: "#FFFAF0",
+        gvar: "#4C6D94",
+        gpos25: "#333",
+        gpos50: "#777",
+        gpos75: "#AAA",
+        gpos100: "#EEE",
+    }
+}
+
 export const STYLE = {
     bandTrack: {
         trackPadding: 8,
@@ -16,33 +42,9 @@ export const STYLE = {
             thin: 40,
             thick: 80,
         },
-        edgeColor: "gray",
+        edgeColor: colors.darkGray,
     },
-    colors: {
-        white: "#FFF",
-        black: "#000",
-        darkGray: "#333",
-        yellow: "#dcd16f",
-        red: "#f00",
-        teal: "teal",
-        orange: "#954000",
-        transparentYellow: "#dcd16f44",
-        variantColors: {
-            del: "red",
-            dup: "blue",
-            inv: "green",
-            default: "gray",
-        },
-        stainToColor: {
-            acen: "#673888",
-            gneg: "#FFFAF0",
-            gvar: "#4C6D94",
-            gpos25: "#333",
-            gpos50: "#777",
-            gpos75: "#AAA",
-            gpos100: "#EEE",
-        }
-    }
+    colors,
 }
 
 export const CHROMOSOMES = [

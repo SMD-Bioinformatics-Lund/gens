@@ -75,9 +75,6 @@ export async function initCanvases({
       const region = inputControls.getRegion();
       return region.chrom;
     },
-    () => {
-      return inputControls.getAnnotations();
-    },
   );
 
   const allChromData = await api.getAllChromData();
@@ -85,13 +82,14 @@ export async function initCanvases({
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);
     inputControls.updateChromosome(chrom, chromData.size);
-    gensTracks.updateRenderData();
-    gensTracks.render();
+    // await gensTracks.updateRenderData();
+    const updateData = true;
+    gensTracks.render(updateData);
   };
 
   const getChromInfo = (chromosome: string) => {
     return allChromData[chromosome];
-  }
+  };
 
   initialize(
     inputControls,
@@ -105,7 +103,7 @@ export async function initCanvases({
   );
 }
 
-function initialize(
+async function initialize(
   inputControls: InputControls,
   tracks: TracksManager,
   startRegion: Region,
@@ -115,7 +113,7 @@ function initialize(
   getChromInfo: (string) => ChromosomeInfo,
   renderDataSource: RenderDataSource,
 ) {
-
+  console.log("In initialize");
 
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
@@ -123,44 +121,41 @@ function initialize(
     [defaultAnnotation],
     async (_region) => {},
     async (_region, _source) => {
-      tracks.updateRenderData();
-      tracks.render();
+      // await tracks.updateRenderData();
+      tracks.render(true);
     },
     async (_newXRange) => {
-      tracks.updateRenderData();
-      tracks.render();
+      // await tracks.updateRenderData();
+      tracks.render(true);
     },
     gensApiURI,
   );
 
-  tracks.initialize(
+  await tracks.initialize(
     getChromInfo,
     onChromClick,
     renderDataSource,
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
+    () => inputControls.getAnnotSources(),
   );
 
-  tracks.updateRenderData();
-  tracks.render();
+  // await tracks.updateRenderData();
+  console.log("Outside tracks.render");
+  tracks.render(true);
 }
 
 function getRenderDataSource(
   gensAPI: GensAPI,
   getChrom: () => string,
-  getAnnotSources: () => string[],
 ): RenderDataSource {
   const getChromInfo = async () => {
     return await gensAPI.getChromData(getChrom());
   };
 
-  const getAnnotations = async () => {
-    const parsedAnnotationData = {};
-    for (const source of getAnnotSources()) {
-      const annotData = await gensAPI.getAnnotations(getChrom(), source);
-      parsedAnnotationData[source] = parseAnnotations(annotData);
-    }
-    return parsedAnnotationData;
+  const getAnnotation = async (source: string) => {
+    const annotData = await gensAPI.getAnnotations(getChrom(), source);
+    return parseAnnotations(annotData);
   };
 
   const getCovData = async () => {
@@ -201,7 +196,7 @@ function getRenderDataSource(
 
   const renderDataSource: RenderDataSource = {
     getChromInfo,
-    getAnnotations,
+    getAnnotation,
     getCovData,
     getBafData,
     getTranscriptData,

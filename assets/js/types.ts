@@ -117,6 +117,11 @@ interface DotTrackData {
   dots: RenderDot[]
 }
 
+interface AnnotationTracksData {
+  xRange: Rng,
+  annotations: RenderBand[][],
+}
+
 interface BandTrackData {
   xRange: Rng,
   bands: RenderBand[],
@@ -139,7 +144,7 @@ type ColorScale = (level: string) => string
 
 interface RenderDataSource {
   getChromInfo: () => Promise<ChromosomeInfo>,
-  getAnnotations: () => Promise<Record<string, RenderBand[]>>,
+  getAnnotation: (string) => Promise<RenderBand[]>,
   getCovData: () => Promise<RenderDot[]>,
   getBafData: () => Promise<RenderDot[]>,
   getTranscriptData: () => Promise<RenderBand[]>,

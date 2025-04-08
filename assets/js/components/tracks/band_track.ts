@@ -12,19 +12,16 @@ export class BandTrack extends CanvasTrack {
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight);
+    const expandable = true;
+    super.initializeCanvas(label, trackHeight, expandable);
     this.initializeTooltip();
     this.getRenderData = getRenderData;
-    await this.updateRenderData();
   }
 
-  async updateRenderData() {
-    this.renderData = await this.getRenderData();
-  }
-
-  render() {
-    if (this.renderData == null) {
-      throw Error(`No render data assigned for track: ${this.label}`);
+  async render(updateData: boolean) {
+    
+    if (updateData || this.renderData == null) {
+      this.renderData = await this.getRenderData();
     }
 
     const { bands, xRange } = this.renderData;

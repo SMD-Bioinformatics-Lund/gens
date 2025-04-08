@@ -22,7 +22,7 @@ export class IdeogramTrack extends CanvasTrack {
     trackHeight: number,
     getRenderData: () => Promise<IdeogramTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight);
+    super.initializeCanvas(label, trackHeight, false);
     setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
 
     const markerElement = setupMarkerElement(trackHeight);
@@ -33,13 +33,9 @@ export class IdeogramTrack extends CanvasTrack {
     await this.getRenderData();
   }
 
-  async updateRenderData() {
-    this.renderData = await this.getRenderData();
-  }
-
-  render() {
-    if (this.renderData == null) {
-      throw Error("Render data required");
+  async render(updateData: boolean) {
+    if (updateData || this.renderData == null) {
+      this.renderData = await this.getRenderData();
     }
 
     super.syncDimensions();

@@ -105,7 +105,7 @@ export class InputControls extends HTMLElement {
     return parseRegionDesignation(this.regionField.value);
   }
 
-  getAnnotations(): string[] {
+  getAnnotSources(): string[] {
     const selected = Array.from(this.annotationSourceList.selectedOptions).map(
       (option) => option.value,
     );

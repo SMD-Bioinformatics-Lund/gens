@@ -3,13 +3,15 @@ import "./tracks/band_track";
 import "./tracks/dot_track";
 import "./tracks/ideogram_track";
 import "./tracks/overview_track";
+import "./tracks/annotation_tracks";
 import { IdeogramTrack } from "./tracks/ideogram_track";
+import { AnnotationTracks } from "./tracks/annotation_tracks";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
-import { transformMap, removeChildren } from "../track/utils";
 import { CHROMOSOMES, STYLE } from "../util/constants";
 import { CanvasTrack } from "./tracks/canvas_track";
+import { getAnnotationData } from "../state/requests";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -31,18 +33,7 @@ template.innerHTML = String.raw`
       padding-right: 10px;
     }
   </style>
-  <div id="container">
-      <!-- <ideogram-track id="ideogram-track"></ideogram-track>
-  
-      <dot-track id="coverage-track"></dot-track>
-      <dot-track id="baf-track"></dot-track>
-      <div id="annotations-container"></div>
-      <band-track id="transcript-track"></band-track>
-      <band-track id="variant-track"></band-track>
-
-      <overview-track id="overview-track-cov"></overview-track>
-      <overview-track id="overview-track-baf"></overview-track> -->
-  </div>
+  <div id="container"></div>
 `;
 
 export class TracksManager extends HTMLElement {
@@ -54,7 +45,11 @@ export class TracksManager extends HTMLElement {
 
   annotationsContainer: HTMLDivElement;
 
-  tracks: CanvasTrack[] = [];
+  // FIXME: Think about a shared interface
+  tracks: (CanvasTrack|AnnotationTracks)[] = [];
+
+  // This one needs a dedicated component I think
+  annotationTracks: BandTrack[] = [];
 
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
@@ -62,7 +57,7 @@ export class TracksManager extends HTMLElement {
 
     window.addEventListener("resize", () => {
       if (this.isInitialized) {
-        this.render();
+        this.render(false);
       }
     });
 
@@ -74,14 +69,39 @@ export class TracksManager extends HTMLElement {
   async initialize(
     getChromInfo: (string) => ChromosomeInfo,
     chromClick: (string) => void,
-    renderDataSource: RenderDataSource,
+    dataSource: RenderDataSource,
     getChromosome: () => string,
     getXRange: () => Rng,
+    getAnnotSources: () => string[],
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
     const coverageTrack = new DotTrack();
-    this.parentContainer.appendChild(coverageTrack);
+    const bafTrack = new DotTrack();
+    const variantTrack = new BandTrack();
+    const transcriptTrack = new BandTrack();
+    const ideogramTrack = new IdeogramTrack();
+
+    const annotationTracks = new AnnotationTracks();
+
+    const overviewTrackCov = new OverviewTrack();
+    const overviewTrackBaf = new OverviewTrack();
+
+    this.tracks.push(
+      ideogramTrack,
+      coverageTrack,
+      bafTrack,
+      annotationTracks,
+      variantTrack,
+      transcriptTrack,
+      overviewTrackCov,
+      overviewTrackBaf,
+    );
+
+    for (const track of this.tracks) {
+      this.parentContainer.appendChild(track);
+    }
+
     await coverageTrack.initialize(
       "Coverage",
       trackHeight.thick,
@@ -89,44 +109,59 @@ export class TracksManager extends HTMLElement {
       async () => {
         return {
           xRange: getXRange(),
-          dots: await renderDataSource.getCovData(),
+          dots: await dataSource.getCovData(),
         };
       },
     );
 
-    const bafTrack = new DotTrack();
-    this.parentContainer.appendChild(bafTrack);
-    await bafTrack.initialize("BAF", trackHeight.thick, BAF_Y_RANGE, async () => {
+    await bafTrack.initialize(
+      "BAF",
+      trackHeight.thick,
+      BAF_Y_RANGE,
+      async () => {
+        return {
+          xRange: getXRange(),
+          dots: await dataSource.getBafData(),
+        };
+      },
+    );
+
+    await annotationTracks.initialize(trackHeight.thin, async () => {
+      const annotSources = getAnnotSources();
+      const annotationsData = [];
+      for (const annotSource of annotSources) {
+        const annotData = await dataSource.getAnnotation(annotSource);
+        annotationsData.push(annotData);
+      }
       return {
         xRange: getXRange(),
-        dots: await renderDataSource.getBafData(),
-      };
+        annotations: annotationsData
+      }
     });
 
-    const variantTrack = new BandTrack();
-    this.parentContainer.appendChild(variantTrack);
     await variantTrack.initialize("Variant", trackHeight.thin, async () => {
       return {
         xRange: getXRange(),
-        bands: await renderDataSource.getVariantData(),
+        bands: await dataSource.getVariantData(),
       };
     });
 
-    const transcriptTrack = new BandTrack();
-    this.parentContainer.appendChild(transcriptTrack);
-    await transcriptTrack.initialize("Transcript", trackHeight.thin, async () => {
-      return {
-        xRange: getXRange(),
-        bands: await renderDataSource.getTranscriptData(),
-      };
-    });
+    await transcriptTrack.initialize(
+      "Transcript",
+      trackHeight.thin,
+      async () => {
+        console.log("Getting the rendering data for transcripts");
+        return {
+          xRange: getXRange(),
+          bands: await dataSource.getTranscriptData(),
+        };
+      },
+    );
 
-    const ideogramTrack = new IdeogramTrack();
-    this.parentContainer.appendChild(ideogramTrack);
     await ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
       return {
         xRange: getXRange(),
-        chromInfo: await renderDataSource.getChromInfo(),
+        chromInfo: await dataSource.getChromInfo(),
       };
     });
 
@@ -135,8 +170,6 @@ export class TracksManager extends HTMLElement {
       chromSizes[chromosome] = getChromInfo(chromosome).size;
     }
 
-    const overviewTrackCov = new OverviewTrack();
-    this.parentContainer.appendChild(overviewTrackCov);
     await overviewTrackCov.initialize(
       "Overview (cov)",
       trackHeight.thick,
@@ -145,15 +178,13 @@ export class TracksManager extends HTMLElement {
       COV_Y_RANGE,
       async () => {
         return {
-          dotsPerChrom: await renderDataSource.getOverviewCovData(),
+          dotsPerChrom: await dataSource.getOverviewCovData(),
           xRange: getXRange(),
           chromosome: getChromosome(),
         };
       },
     );
 
-    const overviewTrackBaf = new OverviewTrack();
-    this.parentContainer.appendChild(overviewTrackBaf);
     await overviewTrackBaf.initialize(
       "Overview (baf)",
       trackHeight.thick,
@@ -162,34 +193,18 @@ export class TracksManager extends HTMLElement {
       BAF_Y_RANGE,
       async () => {
         return {
-          dotsPerChrom: await renderDataSource.getOverviewBafData(),
+          dotsPerChrom: await dataSource.getOverviewBafData(),
           xRange: getXRange(),
           chromosome: getChromosome(),
         };
       },
     );
-
-    this.tracks.push(
-      coverageTrack,
-      bafTrack,
-      variantTrack,
-      transcriptTrack,
-      ideogramTrack,
-      overviewTrackCov,
-      overviewTrackBaf,
-    );
   }
 
-  updateRenderData() {
+  public render(updateData: boolean) {
     for (const track of this.tracks) {
-      track.updateRenderData();
-    }
-    this.isInitialized = true;
-  }
-
-  public render() {
-    for (const track of this.tracks) {
-      track.render();
+      console.log("Looping to render", track.label);
+      track.render(updateData);
     }
   }
 }
