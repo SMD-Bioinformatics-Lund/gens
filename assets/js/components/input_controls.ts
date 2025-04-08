@@ -105,7 +105,7 @@ export class InputControls extends HTMLElement {
     return parseRegionDesignation(this.regionField.value);
   }
 
-  getAnnotations(): string[] {
+  getAnnotSources(): string[] {
     const selected = Array.from(this.annotationSourceList.selectedOptions).map(
       (option) => option.value,
     );
@@ -113,6 +113,9 @@ export class InputControls extends HTMLElement {
   }
 
   getRange(): [number, number] {
+    if (this.regionField.value == null) {
+      throw Error("Must initialize before accessing getRange")
+    }
     const region = parseRegionDesignation(this.regionField.value);
     return [region.start, region.end];
   }
@@ -132,7 +135,6 @@ export class InputControls extends HTMLElement {
   initialize(
     fullRegion: Region,
     defaultAnnots: string[],
-    onRegionChanged: (region: Region) => void,
     onAnnotationChanged: (region: Region, source: string) => void,
     onPositionChange: (newXRange: [number, number]) => void,
     apiURL: string,

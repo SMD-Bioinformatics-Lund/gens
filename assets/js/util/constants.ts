@@ -8,6 +8,33 @@ export const FONTSIZES = {
     "medium": 18
 }
 
+const colors = {
+    white: "#FFF",
+    black: "#000",
+    darkGray: "#555",
+    lightGray: "#ccc",
+    yellow: "#dcd16f",
+    red: "#f00",
+    teal: "teal",
+    orange: "#954000",
+    transparentYellow: "#dcd16f44",
+    variantColors: {
+        del: "red",
+        dup: "blue",
+        inv: "green",
+        default: "gray",
+    },
+    stainToColor: {
+        acen: "#673888",
+        gneg: "#FFFAF0",
+        gvar: "#4C6D94",
+        gpos25: "#333",
+        gpos50: "#777",
+        gpos75: "#AAA",
+        gpos100: "#EEE",
+    }
+}
+
 export const STYLE = {
     bandTrack: {
         trackPadding: 8,
@@ -15,33 +42,13 @@ export const STYLE = {
         trackHeight: {
             thin: 40,
             thick: 80,
-        }
-    },
-    colors: {
-        white: "#FFF",
-        black: "#000",
-        darkGray: "#333",
-        yellow: "#dcd16f",
-        red: "#f00",
-        teal: "teal",
-        orange: "#954000",
-        transparentYellow: "#dcd16f44",
-        variantColors: {
-            del: "red",
-            dup: "blue",
-            inv: "green",
-            default: "gray",
         },
-        stainToColor: {
-            acen: "#673888",
-            gneg: "#FFFAF0",
-            gvar: "#4C6D94",
-            gpos25: "#333",
-            gpos50: "#777",
-            gpos75: "#AAA",
-            gpos100: "#EEE",
-        }
-    }
+        edgeColor: colors.darkGray,
+    },
+    tracks: {
+        edgeColor: colors.lightGray,
+    },
+    colors,
 }
 
 export const CHROMOSOMES = [

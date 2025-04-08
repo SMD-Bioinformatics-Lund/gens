@@ -32,13 +32,14 @@ template.innerHTML = String.raw`
 `;
 
 export class CanvasTrack extends HTMLElement {
+  public label: string;
+
   protected _root: ShadowRoot;
   protected canvas: HTMLCanvasElement;
   protected ctx: CanvasRenderingContext2D;
   protected dimensions: { width: number; height: number };
   protected _scaleFactor: number;
   protected trackContainer: HTMLDivElement;
-  protected label: string;
 
   protected assignedHeight: number;
 
@@ -54,6 +55,8 @@ export class CanvasTrack extends HTMLElement {
     y2: number;
   }[];
 
+  render(updateData: boolean) {}
+
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
@@ -64,7 +67,7 @@ export class CanvasTrack extends HTMLElement {
   initializeCanvas(
     label: string,
     trackHeight: number,
-    maxExpandedHeight: number | null = null,
+    expandable: boolean,
   ) {
     this.label = label;
     this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
@@ -76,8 +79,10 @@ export class CanvasTrack extends HTMLElement {
       "track-container",
     ) as HTMLDivElement;
 
-    if (maxExpandedHeight != null) {
-      this.initializeExpandable(trackHeight, maxExpandedHeight);
+    if (expandable) {
+      // FIXME: This *2 is not intended to be used
+      // The expanded size is dynamic
+      this.initializeExpandable(trackHeight, trackHeight * 2);
     }
 
     this.syncDimensions();
@@ -91,11 +96,9 @@ export class CanvasTrack extends HTMLElement {
       this.expanded = !this.expanded;
       this.assignedHeight = this.expanded ? expandedHeight : height;
       this.syncDimensions();
-      this.render();
+      this.render(false);
     });
   }
-
-  render() {}
 
   // FIXME: Should this live outside the class?
   initializeTooltip() {

@@ -5,27 +5,23 @@ import { getLinearScale, renderBands, renderBorder } from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
+  getRenderData: () => Promise<BandTrackData>;
+  xRange: Rng | null;
 
-  initialize(
+  async initialize(
     label: string,
     trackHeight: number,
-    thickTrackHeight: number | null = null,
+    getRenderData: () => Promise<BandTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight, thickTrackHeight);
+    const expandable = true;
+    super.initializeCanvas(label, trackHeight, expandable);
     this.initializeTooltip();
+    this.getRenderData = getRenderData;
   }
 
-  updateRenderData(renderData: {
-    xRange: Rng;
-    bands: RenderBand[];
-    settings: { bandPad: number };
-  }) {
-    this.renderData = renderData;
-  }
-
-  render() {
-    if (this.renderData == null) {
-      throw Error(`No render data assigned for track: ${this.label}`);
+  async render(updateData: boolean) {
+    if (updateData || this.renderData == null) {
+      this.renderData = await this.getRenderData();
     }
 
     const { bands, xRange } = this.renderData;
@@ -67,12 +63,13 @@ export class BandTrack extends CanvasTrack {
       let yRange = yScale(bandNOverlap, this.expanded);
       scaledBand.y1 = yRange[0];
       scaledBand.y2 = yRange[1];
+      scaledBand.edgeColor = STYLE.bandTrack.edgeColor;
       return scaledBand;
     });
 
     this.hoverTargets = getBoundBoxes(scaledBands, xScale);
 
-    renderBorder(this.ctx, dimensions);
+    renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
     renderBands(this.ctx, scaledBands, xScale);
   }
 }

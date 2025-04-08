@@ -98,6 +98,8 @@ interface RenderBand {
   start: number,
   end: number,
   color: string,
+  edgeColor?: string,
+  edgeWidth?: number
   label?: string,
   y1?: number,
   y2?: number,
@@ -112,14 +114,17 @@ interface RenderDot {
 
 interface DotTrackData {
   xRange: Rng,
-  yRange: Rng,
   dots: RenderDot[]
+}
+
+interface AnnotationTracksData {
+  xRange: Rng,
+  annotations: RenderBand[][],
 }
 
 interface BandTrackData {
   xRange: Rng,
   bands: RenderBand[],
-  settings: { bandPad: number }
 }
 
 interface IdeogramTrackData {
@@ -128,25 +133,24 @@ interface IdeogramTrackData {
 }
 
 interface OverviewTrackData {
-  region: Region | null,
   dotsPerChrom: Record<string, RenderDot[]>,
-  yRange: Rng
+  chromosome: string,
+  xRange: Rng,
 }
 
 type Scale = (value: number) => number
 
 type ColorScale = (level: string) => string
 
-interface RenderData {
-  chromInfo: ChromosomeInfo,
-  annotations: Record<string, RenderBand[]>,
-  covData: RenderDot[],
-  bafData: RenderDot[],
-  transcriptData: RenderBand[],
-  // FIXME: Will need a dedicated type for exons
-  variantData: RenderBand[],
-  overviewCovData: Record<string, RenderDot[]>,
-  overviewBafData: Record<string, RenderDot[]>,
+interface RenderDataSource {
+  getChromInfo: () => Promise<ChromosomeInfo>,
+  getAnnotation: (string) => Promise<RenderBand[]>,
+  getCovData: () => Promise<RenderDot[]>,
+  getBafData: () => Promise<RenderDot[]>,
+  getTranscriptData: () => Promise<RenderBand[]>,
+  getVariantData: () => Promise<RenderBand[]>,
+  getOverviewCovData: () => Promise<Record<string, RenderDot[]>>,
+  getOverviewBafData: () => Promise<Record<string, RenderDot[]>>,
 }
 
 type Rng = [number, number];

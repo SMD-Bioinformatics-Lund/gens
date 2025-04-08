@@ -11,6 +11,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
  - Resolution increased 2x for tracks
+ - Tracks are dynamic, meaning that they can be created and removed on run-time
 
 ### Fixed
 

@@ -1,20 +1,19 @@
-import { chromSizes } from "../../helper";
-import { getOverlapInfo, rangeSize } from "../../track/utils";
+import { rangeSize } from "../../track/utils";
 
 export function renderBorder(
   ctx: CanvasRenderingContext2D,
   canvasDim: { height: number; width: number },
+  color: string
 ) {
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, canvasDim.width, canvasDim.height);
-  ctx.strokeStyle = "black";
+  ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.strokeRect(0, 0, canvasDim.width, canvasDim.height);
 }
 
 export function renderBands(
   ctx: CanvasRenderingContext2D,
-  // canvasDim: { height: number; width: number },
   annots: RenderBand[],
   xScale: Scale,
 ) {
@@ -26,8 +25,8 @@ export function renderBands(
     const width = xPxEnd - xPxStart;
     const height = band.y2 - band.y1;
     ctx.fillRect(xPxStart, band.y1, width, height);
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = band.edgeColor || "black";
+    ctx.lineWidth = band.edgeWidth || 1;
     ctx.strokeRect(xPxStart, band.y1, width, height);
   });
 }

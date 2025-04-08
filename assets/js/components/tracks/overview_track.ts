@@ -2,7 +2,11 @@ import { drawVerticalLine } from "../../draw/shapes";
 import { transformMap, padRange, rangeSize } from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { drawDotsScaled, linearScale, renderBorder, scaleToPixels } from "./render_utils";
+import {
+  drawDotsScaled,
+  linearScale,
+  renderBorder,
+} from "./render_utils";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;
@@ -12,55 +16,57 @@ export class OverviewTrack extends CanvasTrack {
   chromSizes: Record<string, number>;
   marker: HTMLDivElement;
   onChromosomeClick: (chrom: string) => void;
+  yRange: Rng;
 
   pxRanges: Record<string, Rng> = {};
 
   renderData: OverviewTrackData | null;
+  getRenderData: () => Promise<OverviewTrackData>;
 
-  initialize(
+  async initialize(
     label: string,
     trackHeight: number,
     chromSizes: Record<string, number>,
     onChromosomeClick: (chrom: string) => void,
+    yRange: Rng,
+    getRenderData: () => Promise<OverviewTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight);
+    super.initializeCanvas(label, trackHeight, false);
     this.chromSizes = chromSizes;
+    this.yRange = yRange;
+    this.getRenderData = getRenderData;
+    this.onChromosomeClick = onChromosomeClick;
 
-    // FIXME: Put in function
-    const marker = document.createElement("div") as HTMLDivElement;
-    marker.style.height = `${this.dimensions.height}px`;
-    marker.style.width = "0px";
-    marker.style.backgroundColor = STYLE.colors.transparentYellow;
-    marker.style.position = "absolute";
-    marker.style.top = "0px";
+    const marker = createChromMarker(
+      this.dimensions.height,
+      STYLE.colors.transparentYellow,
+    );
     this.trackContainer.appendChild(marker);
     this.marker = marker;
-
-    this.onChromosomeClick = onChromosomeClick;
 
     this.canvas.addEventListener("mousedown", (event) => {
       event.stopPropagation();
       const chrom = pixelToChrom(event.offsetX, this.pxRanges);
       this.onChromosomeClick(chrom);
     });
+
+    await this.updateRenderData();
   }
 
-  updateRenderData(renderData: OverviewTrackData) {
-    this.renderData = renderData;
+  async updateRenderData() {
+    this.renderData = await this.getRenderData();
   }
 
-  render(
-  ) {
-
-    if (this.renderData == null) {
-      throw Error("No render data assigned");
+  async render(updateData: boolean) {
+    if (updateData || this.renderData == null) {
+      this.renderData = await this.getRenderData();
     }
 
     super.syncDimensions();
 
-    const { region: viewRegion, dotsPerChrom, yRange } = this.renderData;
+    const { xRange, chromosome, dotsPerChrom } = this.renderData;
 
-    renderBorder(this.ctx, this.dimensions);
+    renderBorder(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
 
     const totalChromSize = Object.values(this.chromSizes).reduce(
       (tot, size) => tot + size,
@@ -72,14 +78,14 @@ export class OverviewTrack extends CanvasTrack {
     };
 
     const yScale = (pos: number) => {
-      return linearScale(pos, yRange, [0, this.dimensions.height]);
+      return linearScale(pos, this.yRange, [0, this.dimensions.height]);
     };
 
     const chromRanges = getChromRanges(this.chromSizes);
-    this.pxRanges = transformMap(
-      chromRanges,
-      ([start, end]) => [xScale(start), xScale(end)],
-    );
+    this.pxRanges = transformMap(chromRanges, ([start, end]) => [
+      xScale(start),
+      xScale(end),
+    ]);
 
     renderOverviewPlot(
       this.ctx,
@@ -88,23 +94,46 @@ export class OverviewTrack extends CanvasTrack {
       xScale,
       yScale,
       dotsPerChrom,
-      this.chromSizes
+      this.chromSizes,
     );
 
-    if (viewRegion !== null) {
-      // const chromPxRange = this.pxRanges[viewRegion.chrom];
-      const chromStartPos = chromRanges[viewRegion.chrom][0];
-      const viewPxRange: Rng = [
-        xScale(viewRegion.start + chromStartPos),
-        xScale(viewRegion.end + chromStartPos)
-      ];
-      const markerWidth = rangeSize(viewPxRange);
-
-      this.marker.style.height = `${this.dimensions.height}px`;
-      this.marker.style.width = `${markerWidth}px`;
-      this.marker.style.left = `${viewPxRange[0]}px`;
-    }
+    const chromStartPos = chromRanges[chromosome][0];
+    renderSelectedChromMarker(
+      this.marker,
+      xScale,
+      xRange,
+      chromStartPos,
+      this.dimensions.height,
+    );
   }
+}
+
+function createChromMarker(canvasHeight: number, color: string) {
+  const marker = document.createElement("div") as HTMLDivElement;
+  marker.style.height = `${canvasHeight}px`;
+  marker.style.width = "0px";
+  marker.style.backgroundColor = color;
+  marker.style.position = "absolute";
+  marker.style.top = "0px";
+  return marker;
+}
+
+function renderSelectedChromMarker(
+  marker: HTMLDivElement,
+  xScale: Scale,
+  xRange: Rng,
+  chromStartPos: number,
+  canvasHeight: number,
+) {
+  const viewPxRange: Rng = [
+    xScale(xRange[0] + chromStartPos),
+    xScale(xRange[1] + chromStartPos),
+  ];
+  const markerWidth = rangeSize(viewPxRange);
+
+  marker.style.height = `${canvasHeight}px`;
+  marker.style.width = `${markerWidth}px`;
+  marker.style.left = `${viewPxRange[0]}px`;
 }
 
 function renderOverviewPlot(
@@ -114,11 +143,11 @@ function renderOverviewPlot(
   xScale: Scale,
   yScale: Scale,
   dotsPerChrom: Record<string, RenderDot[]>,
-  chromSizes: Record<string, number>
+  chromSizes: Record<string, number>,
 ) {
   // Draw the initial lines
   Object.values(chromRanges).forEach(([_chromStart, chromEnd]) =>
-    drawVerticalLine(ctx, chromEnd, xScale),
+    drawVerticalLine(ctx, chromEnd, xScale, STYLE.tracks.edgeColor),
   );
 
   Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
@@ -129,7 +158,14 @@ function renderOverviewPlot(
       return linearScale(pos, [0, chromSizes[chrom]], pxRange);
     };
 
-    drawDotsScaled(ctx, dotData, chromXScale, yScale, DOT_SIZE);
+    // FIXME: The coloring should probably be done here directly
+    // Not in the data generation step
+    const coloredDots = dotData.map((dot) => {
+      const copyDot = Object.create(dot);
+      copyDot.color = STYLE.colors.darkGray;
+      return copyDot;
+    });
+    drawDotsScaled(ctx, coloredDots, chromXScale, yScale, DOT_SIZE);
   });
 }
 
