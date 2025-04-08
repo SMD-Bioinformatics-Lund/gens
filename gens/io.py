@@ -1,21 +1,25 @@
 """Functions for loading and converting data."""
 
+import gzip
 import itertools
+import json
 import logging
 from enum import Enum
 from fractions import Fraction
+from pathlib import Path
 
 from pymongo.collection import Collection
 from pysam import TabixFile
 
 from gens.models.genomic import Chromosome
-from gens.models.sample import GenomeCoverage
+from gens.models.sample import GenomeCoverage, ZoomLevel
 from gens.db import (
     query_sample,
 )
 from gens.db.collections import (
     SAMPLES_COLLECTION,
 )
+from gens.routes.utils import ScatterDataType
 
 BAF_SUFFIX = ".baf.bed.gz"
 COV_SUFFIX = ".cov.bed.gz"
@@ -23,16 +27,6 @@ JSON_SUFFIX = ".overview.json.gz"
 
 
 LOG = logging.getLogger(__name__)
-
-
-class ZoomLevel(Enum):
-    """Valid zoom or resolution levels."""
-
-    A = "a"
-    B = "b"
-    C = "c"
-    D = "d"
-    O = "o"
 
 
 def tabix_query(
@@ -63,8 +57,7 @@ def tabix_query(
     return [r.split("\t") for r in records]
 
 
-# FIXME: This is not ready for production
-def dev_get_data(collection: Collection[dict], sample_id: str, case_id: str, region_str: str, cov_or_baf: str) -> GenomeCoverage:
+def get_scatter_data(collection: Collection[dict], sample_id: str, case_id: str, region_str: str, cov_or_baf: str) -> GenomeCoverage:
     """Development entrypoint for getting the coverage of a region."""
     # TODO respond with 404 error if file is not found
     sample_obj = query_sample(collection, sample_id, case_id)
@@ -104,6 +97,27 @@ def dev_get_data(collection: Collection[dict], sample_id: str, case_id: str, reg
             end = int(entry[2])
             positions.append(round((start + end) / 2))
             values.append(float(entry[3]))
-        return GenomeCoverage(region=region, zoom=zoom, position=positions, value=values)
+        return GenomeCoverage(region=region, zoom=ZoomLevel(zoom), position=positions, value=values)
 
     return parse_raw_tabix([r.split("\t") for r in records])
+
+
+def get_overview_data(file: Path, data_type: ScatterDataType) -> list[GenomeCoverage]:
+    """Read overview data from json file."""
+
+    if not file.is_file():
+        raise FileNotFoundError(f"Overview file {file} is not found")
+
+    with gzip.open(file, "r") as json_gz:
+        json_data = json.loads(json_gz.read().decode("utf-8"))
+
+    results: list[GenomeCoverage] = []
+    for chrom in json_data.keys():
+        chrom_data = json_data[chrom]["cov" if data_type == ScatterDataType.COV else "baf"]
+
+        results.append(GenomeCoverage(
+            region=chrom,
+            position=[pos for (pos, _) in chrom_data],
+            value=[val for (_, val) in chrom_data],
+        ))
+    return results

@@ -31,3 +31,21 @@ def get_db_connection(mongo_uri: MongoDsn, db_name: str) -> Database[Any]:
     """Get database connection."""
     db: Database[Any] = pymongo.MongoClient(str(mongo_uri)).get_database(name=db_name)
     return db
+
+
+class GensDb:
+    """Database connection."""
+
+    def __init__(self, uri: MongoDsn):
+        """Setup database connection instance."""
+
+        self._client = pymongo.MongoClient(str(uri))
+
+
+def get_db() -> Generator[Database[Any], None, None]:
+    """Connect to a database."""
+    try:
+        client = pymongo.MongoClient(str(settings.gens_db.connection))
+        yield client.get_database(settings.gens_db.database)
+    finally:
+        client.close()
