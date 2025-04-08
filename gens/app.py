@@ -7,8 +7,7 @@ from logging.config import dictConfig
 from typing import Any
 
 from fastapi import FastAPI
-from a2wsgi import ASGIMiddleware
-from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from asgiref.wsgi import WsgiToAsgi
 from flask import Flask, redirect, request, url_for
 from flask_compress import Compress  # type: ignore
 from flask_login import current_user  # type: ignore
@@ -50,7 +49,7 @@ def create_app() -> Flask:
     #application = connexion.FlaskApp(__name__, specification_dir="openapi/")
     #application.add_api("openapi.yaml")
     # setup fastapi app
-    fastapi_app = FastAPI(title="Gens", root_path="/api")
+    fastapi_app = FastAPI(title="Gens")
     add_api_routers(fastapi_app)
 
     # create and configure flask frontend
@@ -92,12 +91,10 @@ def create_app() -> Flask:
             return redirect(login_url)
 
     # mount flask app to FastAPI app
-    flask_app.wsgi_app = DispatcherMiddleware(flask_app.wsgi_app, {
-        '/': flask_app,
-        '/api': ASGIMiddleware(fastapi_app),
-    })
+    fastapi_app.mount('/', WsgiToAsgi(flask_app))
+    return fastapi_app
 
-    return flask_app
+    #return fastapi_app
 
 
 def add_api_routers(app: FastAPI):
