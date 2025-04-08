@@ -100,8 +100,11 @@ interface RenderBand {
   edgeColor?: string,
   edgeWidth?: number
   label?: string,
+  info?: string,
+  direction?: "+" | "-",
   y1?: number,
   y2?: number,
+  subBands?: RenderBand[],
   // nbrOverlap?: number
 }
 
@@ -148,7 +151,7 @@ interface RenderTranscript {
 
 interface TranscriptsTrackData {
   xRange: Rng,
-  transcripts: RenderTranscript[],
+  bands: RenderBand[],
 }
 
 interface IdeogramTrackData {
@@ -181,7 +184,7 @@ interface RenderDataSource {
   getAnnotation: (string) => Promise<RenderBand[]>,
   getCovData: () => Promise<RenderDot[]>,
   getBafData: () => Promise<RenderDot[]>,
-  getTranscriptData: () => Promise<RenderTranscript[]>,
+  getTranscriptData: () => Promise<RenderBand[]>,
   getVariantData: () => Promise<RenderBand[]>,
   getOverviewCovData: () => Promise<Record<string, RenderDot[]>>,
   getOverviewBafData: () => Promise<Record<string, RenderDot[]>>,

@@ -11,7 +11,7 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { CHROMOSOMES, STYLE } from "../util/constants";
 import { CanvasTrack } from "./tracks/canvas_track";
-import { TranscriptsTrack } from "./tracks/transcripts_track";
+// import { TranscriptsTrack } from "./tracks/transcripts_track";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -77,7 +77,8 @@ export class TracksManager extends HTMLElement {
     const coverageTrack = new DotTrack();
     const bafTrack = new DotTrack();
     const variantTrack = new BandTrack();
-    const transcriptTrack = new TranscriptsTrack();
+    const transcriptTrack = new BandTrack();
+    // const transcriptTrack = new TranscriptsTrack();
 
     const ideogramTrack = new IdeogramTrack();
 
@@ -87,63 +88,63 @@ export class TracksManager extends HTMLElement {
     const overviewTrackBaf = new OverviewTrack();
 
     this.tracks.push(
-      ideogramTrack,
-      coverageTrack,
-      bafTrack,
-      annotationTracks,
-      variantTrack,
+      // ideogramTrack,
+      // coverageTrack,
+      // bafTrack,
+      // annotationTracks,
+      // variantTrack,
       transcriptTrack,
-      overviewTrackCov,
-      overviewTrackBaf,
+      // overviewTrackCov,
+      // overviewTrackBaf,
     );
 
     for (const track of this.tracks) {
       this.parentContainer.appendChild(track);
     }
 
-    await coverageTrack.initialize(
-      "Coverage",
-      trackHeight.thick,
-      COV_Y_RANGE,
-      async () => {
-        return {
-          xRange: getXRange(),
-          dots: await dataSource.getCovData(),
-        };
-      },
-    );
+    // await coverageTrack.initialize(
+    //   "Coverage",
+    //   trackHeight.thick,
+    //   COV_Y_RANGE,
+    //   async () => {
+    //     return {
+    //       xRange: getXRange(),
+    //       dots: await dataSource.getCovData(),
+    //     };
+    //   },
+    // );
 
-    await bafTrack.initialize(
-      "BAF",
-      trackHeight.thick,
-      BAF_Y_RANGE,
-      async () => {
-        return {
-          xRange: getXRange(),
-          dots: await dataSource.getBafData(),
-        };
-      },
-    );
+    // await bafTrack.initialize(
+    //   "BAF",
+    //   trackHeight.thick,
+    //   BAF_Y_RANGE,
+    //   async () => {
+    //     return {
+    //       xRange: getXRange(),
+    //       dots: await dataSource.getBafData(),
+    //     };
+    //   },
+    // );
 
-    await annotationTracks.initialize(trackHeight.thin, async () => {
-      const annotSources = getAnnotSources();
-      const annotationsData = [];
-      for (const annotSource of annotSources) {
-        const annotData = await dataSource.getAnnotation(annotSource);
-        annotationsData.push(annotData);
-      }
-      return {
-        xRange: getXRange(),
-        annotations: annotationsData,
-      };
-    });
+    // await annotationTracks.initialize(trackHeight.thin, async () => {
+    //   const annotSources = getAnnotSources();
+    //   const annotationsData = [];
+    //   for (const annotSource of annotSources) {
+    //     const annotData = await dataSource.getAnnotation(annotSource);
+    //     annotationsData.push(annotData);
+    //   }
+    //   return {
+    //     xRange: getXRange(),
+    //     annotations: annotationsData,
+    //   };
+    // });
 
-    await variantTrack.initialize("Variant", trackHeight.thin, async () => {
-      return {
-        xRange: getXRange(),
-        bands: await dataSource.getVariantData(),
-      };
-    });
+    // await variantTrack.initialize("Variant", trackHeight.thin, async () => {
+    //   return {
+    //     xRange: getXRange(),
+    //     bands: await dataSource.getVariantData(),
+    //   };
+    // });
 
     // await transcriptTrack.initialize(
     //   "Transcript",
@@ -162,52 +163,52 @@ export class TracksManager extends HTMLElement {
       async () => {
         return {
           xRange: getXRange(),
-          transcripts: await dataSource.getTranscriptData(),
+          bands: await dataSource.getTranscriptData(),
         }
       },
     );
 
-    await ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
-      return {
-        xRange: getXRange(),
-        chromInfo: await dataSource.getChromInfo(),
-      };
-    });
+    // await ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
+    //   return {
+    //     xRange: getXRange(),
+    //     chromInfo: await dataSource.getChromInfo(),
+    //   };
+    // });
 
-    const chromSizes = {};
-    for (const chromosome of CHROMOSOMES) {
-      chromSizes[chromosome] = getChromInfo(chromosome).size;
-    }
+    // const chromSizes = {};
+    // for (const chromosome of CHROMOSOMES) {
+    //   chromSizes[chromosome] = getChromInfo(chromosome).size;
+    // }
 
-    await overviewTrackCov.initialize(
-      "Overview (cov)",
-      trackHeight.thick,
-      chromSizes,
-      chromClick,
-      COV_Y_RANGE,
-      async () => {
-        return {
-          dotsPerChrom: await dataSource.getOverviewCovData(),
-          xRange: getXRange(),
-          chromosome: getChromosome(),
-        };
-      },
-    );
+    // await overviewTrackCov.initialize(
+    //   "Overview (cov)",
+    //   trackHeight.thick,
+    //   chromSizes,
+    //   chromClick,
+    //   COV_Y_RANGE,
+    //   async () => {
+    //     return {
+    //       dotsPerChrom: await dataSource.getOverviewCovData(),
+    //       xRange: getXRange(),
+    //       chromosome: getChromosome(),
+    //     };
+    //   },
+    // );
 
-    await overviewTrackBaf.initialize(
-      "Overview (baf)",
-      trackHeight.thick,
-      chromSizes,
-      chromClick,
-      BAF_Y_RANGE,
-      async () => {
-        return {
-          dotsPerChrom: await dataSource.getOverviewBafData(),
-          xRange: getXRange(),
-          chromosome: getChromosome(),
-        };
-      },
-    );
+    // await overviewTrackBaf.initialize(
+    //   "Overview (baf)",
+    //   trackHeight.thick,
+    //   chromSizes,
+    //   chromClick,
+    //   BAF_Y_RANGE,
+    //   async () => {
+    //     return {
+    //       dotsPerChrom: await dataSource.getOverviewBafData(),
+    //       xRange: getXRange(),
+    //       chromosome: getChromosome(),
+    //     };
+    //   },
+    // );
   }
 
   public render(updateData: boolean) {

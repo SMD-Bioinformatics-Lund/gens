@@ -157,34 +157,35 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
 function parseExons(
   geneId: string,
   transcriptParts: APITranscriptPart[],
-): RenderExon[] {
+): RenderBand[] {
   const exons = transcriptParts.filter((part) => part.feature == "exon");
 
   return exons.map((part) => {
-    return {
+    const renderBand = {
       id: `${geneId}_exon${part.exon_number}_${part.start}_${part.end}`,
       start: part.start,
       end: part.end,
-      exonNumber: part.exon_number,
       label: `${part.exon_number} ${part.start}-${part.end}`,
     };
+    return renderBand;
   });
 }
 
 export function parseTranscripts(
   transcripts: APITranscript[],
-): RenderTranscript[] {
-  const transcriptsToRender: RenderTranscript[] = transcripts.map((transcript) => {
+): RenderBand[] {
+  const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
     const exons = parseExons(transcript.transcript_id, transcript.features);
-    return {
+    const renderBand: RenderBand = {
       id: transcript.transcript_id,
       start: transcript.start,
       end: transcript.end,
       label: transcript.gene_name,
       info: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
-      strand: transcript.strand as "+" | "-",
-      exons,
+      direction: transcript.strand as "+" | "-",
+      subBands: exons,
     };
+    return renderBand;
   });
 
   // FIXME: This should be done on the backend
