@@ -17,7 +17,7 @@ export class IdeogramTrack extends CanvasTrack {
   private renderData: IdeogramTrackData;
   private getRenderData: () => Promise<IdeogramTrackData>;
 
-  initialize(
+  async initialize(
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<IdeogramTrackData>,
@@ -30,6 +30,7 @@ export class IdeogramTrack extends CanvasTrack {
     this.markerElement = markerElement;
 
     this.getRenderData = getRenderData;
+    await this.getRenderData();
   }
 
   async updateRenderData() {

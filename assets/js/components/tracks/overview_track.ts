@@ -24,7 +24,7 @@ export class OverviewTrack extends CanvasTrack {
   renderData: OverviewTrackData | null;
   getRenderData: () => Promise<OverviewTrackData>;
 
-  initialize(
+  async initialize(
     label: string,
     trackHeight: number,
     chromSizes: Record<string, number>,
@@ -50,6 +50,8 @@ export class OverviewTrack extends CanvasTrack {
       const chrom = pixelToChrom(event.offsetX, this.pxRanges);
       this.onChromosomeClick(chrom);
     });
+
+    await this.updateRenderData();
   }
 
   async updateRenderData() {

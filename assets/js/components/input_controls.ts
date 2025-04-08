@@ -113,6 +113,9 @@ export class InputControls extends HTMLElement {
   }
 
   getRange(): [number, number] {
+    if (this.regionField.value == null) {
+      throw Error("Must initialize before accessing getRange")
+    }
     const region = parseRegionDesignation(this.regionField.value);
     return [region.start, region.end];
   }

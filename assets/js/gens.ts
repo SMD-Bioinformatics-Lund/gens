@@ -18,8 +18,8 @@ export {
   queryRegionOrGene,
 } from "./navigation";
 
-import "./components/tracksmanager";
-import { TracksManager } from "./components/tracksmanager";
+import "./components/tracks_manager";
+import { TracksManager } from "./components/tracks_manager";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 import {
@@ -89,32 +89,60 @@ export async function initCanvases({
     gensTracks.render();
   };
 
-  gensTracks.initialize(
-    allChromData,
+  const getChromInfo = (chromosome: string) => {
+    return allChromData[chromosome];
+  }
+
+  initialize(
+    inputControls,
+    gensTracks,
+    startRegion,
+    annotationFile,
+    gensApiURL,
+    onChromClick,
+    getChromInfo,
+    renderDataSource,
+  );
+}
+
+function initialize(
+  inputControls: InputControls,
+  tracks: TracksManager,
+  startRegion: Region,
+  defaultAnnotation: string,
+  gensApiURI: string,
+  onChromClick: (string) => void,
+  getChromInfo: (string) => ChromosomeInfo,
+  renderDataSource: RenderDataSource,
+) {
+
+
+  // FIXME: Look into how to parse this for predefined start URLs
+  inputControls.initialize(
+    startRegion,
+    [defaultAnnotation],
+    async (_region) => {},
+    async (_region, _source) => {
+      tracks.updateRenderData();
+      tracks.render();
+    },
+    async (_newXRange) => {
+      tracks.updateRenderData();
+      tracks.render();
+    },
+    gensApiURI,
+  );
+
+  tracks.initialize(
+    getChromInfo,
     onChromClick,
     renderDataSource,
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
   );
 
-  gensTracks.updateRenderData();
-  gensTracks.render();
-
-  // FIXME: Look into how to parse this for predefined start URLs
-  inputControls.initialize(
-    startRegion,
-    [annotationFile],
-    async (region) => {},
-    async (_region, _source) => {
-      gensTracks.updateRenderData();
-      gensTracks.render();
-    },
-    async (_newXRange) => {
-      gensTracks.updateRenderData();
-      gensTracks.render();
-    },
-    gensApiURL,
-  );
+  tracks.updateRenderData();
+  tracks.render();
 }
 
 function getRenderDataSource(

@@ -8,7 +8,7 @@ import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { transformMap, removeChildren } from "../track/utils";
-import { STYLE } from "../util/constants";
+import { CHROMOSOMES, STYLE } from "../util/constants";
 import { CanvasTrack } from "./tracks/canvas_track";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
@@ -50,21 +50,11 @@ export class TracksManager extends HTMLElement {
 
   parentContainer: HTMLDivElement;
 
-  // ideogramTrack: IdeogramTrack;
-  // overviewTrackCov: OverviewTrack;
-  // overviewTrackBaf: OverviewTrack;
-  // coverageTrack: DotTrack;
-  // bafTrack: DotTrack;
-  // transcriptTrack: BandTrack;
-  // variantTrack: BandTrack;
-
   isInitialized = false;
 
   annotationsContainer: HTMLDivElement;
 
-  tracks: CanvasTrack[];
-
-  annotTracks: BandTrack[];
+  tracks: CanvasTrack[] = [];
 
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
@@ -79,33 +69,10 @@ export class TracksManager extends HTMLElement {
     this.parentContainer = this._root.getElementById(
       "container",
     ) as HTMLDivElement;
-
-    // this.ideogramTrack = this._root.getElementById(
-    //   "ideogram-track",
-    // ) as IdeogramTrack;
-    // this.overviewTrackCov = this._root.getElementById(
-    //   "overview-track-cov",
-    // ) as OverviewTrack;
-    // this.overviewTrackBaf = this._root.getElementById(
-    //   "overview-track-baf",
-    // ) as OverviewTrack;
-
-    // this.coverageTrack = this._root.getElementById(
-    //   "coverage-track",
-    // ) as DotTrack;
-    // this.bafTrack = this._root.getElementById("baf-track") as DotTrack;
-    // this.transcriptTrack = this._root.getElementById(
-    //   "transcript-track",
-    // ) as BandTrack;
-    // this.variantTrack = this._root.getElementById("variant-track") as BandTrack;
-
-    // this.annotationsContainer = this._root.getElementById(
-    //   "annotations-container",
-    // ) as HTMLDivElement;
   }
 
-  initialize(
-    allChromData: Record<string, ChromosomeInfo>,
+  async initialize(
+    getChromInfo: (string) => ChromosomeInfo,
     chromClick: (string) => void,
     renderDataSource: RenderDataSource,
     getChromosome: () => string,
@@ -115,7 +82,7 @@ export class TracksManager extends HTMLElement {
 
     const coverageTrack = new DotTrack();
     this.parentContainer.appendChild(coverageTrack);
-    coverageTrack.initialize(
+    await coverageTrack.initialize(
       "Coverage",
       trackHeight.thick,
       COV_Y_RANGE,
@@ -129,7 +96,7 @@ export class TracksManager extends HTMLElement {
 
     const bafTrack = new DotTrack();
     this.parentContainer.appendChild(bafTrack);
-    bafTrack.initialize("BAF", trackHeight.thick, BAF_Y_RANGE, async () => {
+    await bafTrack.initialize("BAF", trackHeight.thick, BAF_Y_RANGE, async () => {
       return {
         xRange: getXRange(),
         dots: await renderDataSource.getBafData(),
@@ -138,7 +105,7 @@ export class TracksManager extends HTMLElement {
 
     const variantTrack = new BandTrack();
     this.parentContainer.appendChild(variantTrack);
-    variantTrack.initialize("Variant", trackHeight.thin, async () => {
+    await variantTrack.initialize("Variant", trackHeight.thin, async () => {
       return {
         xRange: getXRange(),
         bands: await renderDataSource.getVariantData(),
@@ -147,7 +114,7 @@ export class TracksManager extends HTMLElement {
 
     const transcriptTrack = new BandTrack();
     this.parentContainer.appendChild(transcriptTrack);
-    transcriptTrack.initialize("Transcript", trackHeight.thin, async () => {
+    await transcriptTrack.initialize("Transcript", trackHeight.thin, async () => {
       return {
         xRange: getXRange(),
         bands: await renderDataSource.getTranscriptData(),
@@ -156,18 +123,21 @@ export class TracksManager extends HTMLElement {
 
     const ideogramTrack = new IdeogramTrack();
     this.parentContainer.appendChild(ideogramTrack);
-    ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
+    await ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
       return {
         xRange: getXRange(),
         chromInfo: await renderDataSource.getChromInfo(),
       };
     });
 
-    const chromSizes = transformMap(allChromData, (data) => data.size);
+    const chromSizes = {};
+    for (const chromosome of CHROMOSOMES) {
+      chromSizes[chromosome] = getChromInfo(chromosome).size;
+    }
 
     const overviewTrackCov = new OverviewTrack();
     this.parentContainer.appendChild(overviewTrackCov);
-    overviewTrackCov.initialize(
+    await overviewTrackCov.initialize(
       "Overview (cov)",
       trackHeight.thick,
       chromSizes,
@@ -184,7 +154,7 @@ export class TracksManager extends HTMLElement {
 
     const overviewTrackBaf = new OverviewTrack();
     this.parentContainer.appendChild(overviewTrackBaf);
-    overviewTrackBaf.initialize(
+    await overviewTrackBaf.initialize(
       "Overview (baf)",
       trackHeight.thick,
       chromSizes,

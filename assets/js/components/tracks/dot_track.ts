@@ -10,10 +10,11 @@ export class DotTrack extends CanvasTrack {
   getRenderData: () => Promise<DotTrackData>;
   yRange: Rng;
 
-  initialize(label: string, trackHeight: number, yRange: Rng, getRenderData: () => Promise<DotTrackData>) {
+  async initialize(label: string, trackHeight: number, yRange: Rng, getRenderData: () => Promise<DotTrackData>) {
     super.initializeCanvas(label, trackHeight);
     this.getRenderData = getRenderData;
     this.yRange = yRange;
+    await this.updateRenderData();
   }
 
   async updateRenderData() {

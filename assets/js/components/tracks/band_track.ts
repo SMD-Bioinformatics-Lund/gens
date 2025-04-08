@@ -7,7 +7,7 @@ export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
 
-  initialize(
+  async initialize(
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
@@ -15,6 +15,7 @@ export class BandTrack extends CanvasTrack {
     super.initializeCanvas(label, trackHeight);
     this.initializeTooltip();
     this.getRenderData = getRenderData;
+    await this.updateRenderData();
   }
 
   async updateRenderData() {
