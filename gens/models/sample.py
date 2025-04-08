@@ -1,5 +1,6 @@
 """Models related to sample information."""
 
+from enum import Enum
 from pathlib import Path
 
 from pydantic import computed_field, field_serializer
@@ -17,6 +18,16 @@ def _get_tabix_path(path: Path, check: bool = False) -> Path:
     if check and not idx_path.is_file():
         raise FileNotFoundError("Index file: {idx_path} was not found.")
     return idx_path
+
+
+class ZoomLevel(Enum):
+    """Valid zoom or resolution levels."""
+
+    A = "a"
+    B = "b"
+    C = "c"
+    D = "d"
+    O = "o"
 
 
 class SampleInfo(RWModel, CreatedAtModel):
@@ -59,4 +70,4 @@ class GenomeCoverage(RWModel):
     region: str | None
     position: list[int]
     value: list[float]
-    zoom: str | None = None
+    zoom: ZoomLevel | None = None

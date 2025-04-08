@@ -1,9 +1,14 @@
 """Shared support functions and data."""
 
-from enum import Enum
+from enum import StrEnum
 
 
-class ApiTags(Enum):
+class ApiTags(StrEnum):
     SAMPLE = "sample"
     ANNOT = "annotation"
     AUTH = "authentication"
+
+
+class ScatterDataType(StrEnum):
+    COV = "coverage"
+    BAF = "baf"
