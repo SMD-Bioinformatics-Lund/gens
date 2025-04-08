@@ -5,7 +5,7 @@ export class Tooltip {
     public tooltipEl: HTMLDivElement;
     public popperInstance: ReturnType<typeof createPopper> | null = null;
 
-    constructor(container: HTMLDivElement) {
+    constructor(container: HTMLElement) {
         const tt = createTooltipDiv();
         this.tooltipEl = tt;
         container.appendChild(tt);
@@ -64,7 +64,7 @@ export function createTooltipDiv(): HTMLDivElement {
   const tt = document.createElement("div");
   tt.className = "tooltip";
   tt.style.position = "absolute";
-  tt.style.zIndex = "1000";
+  tt.style.zIndex = "9999";
   tt.style.display = "none";
 
   // FIXME: Can we use the .scss styling instead?

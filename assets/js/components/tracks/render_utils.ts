@@ -1,5 +1,5 @@
 import { chromSizes } from "../../helper";
-import { rangeSize } from "../../track/utils";
+import { getOverlapInfo, rangeSize } from "../../track/utils";
 
 export function renderBorder(
   ctx: CanvasRenderingContext2D,
@@ -26,6 +26,9 @@ export function renderBands(
     const width = xPxEnd - xPxStart;
     const height = band.y2 - band.y1;
     ctx.fillRect(xPxStart, band.y1, width, height);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(xPxStart, band.y1, width, height);
   });
 }
 
@@ -182,11 +185,12 @@ export function parseVariants(
   variantColorMap: VariantColors,
 ): RenderBand[] {
   return variants.map((variant) => {
+    const id = `${variant.position}_${variant.end}_${variant.variant_type}_${variant.sub_category}`;
     return {
-      id: `${variant.position}_${variant.end}_${variant.variant_type}_${variant.sub_category}`,
+      id,
       start: variant.position,
       end: variant.end,
-      label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
+      label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length} (${id})`,
       color:
         variantColorMap[variant.sub_category] != undefined
           ? variantColorMap[variant.sub_category]
@@ -226,7 +230,6 @@ export function parseCoverageDot(
 }
 
 export function getLinearScale(domain: Rng, range: Rng): Scale {
-
   const scale = (pos: number) => {
     return linearScale(pos, domain, range);
   };
@@ -250,3 +253,4 @@ export function getColorScale(
   };
   return colorScale;
 }
+

@@ -9,8 +9,13 @@ export const FONTSIZES = {
 }
 
 export const STYLE = {
-    render: {
-        bandHeight: 5
+    bandTrack: {
+        trackPadding: 8,
+        bandPadding: 1,
+        trackHeight: {
+            thin: 40,
+            thick: 80,
+        }
     },
     colors: {
         white: "#FFF",

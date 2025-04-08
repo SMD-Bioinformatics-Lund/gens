@@ -54,9 +54,6 @@ export class CanvasTrack extends HTMLElement {
     y2: number;
   }[];
 
-  // private tooltipEl: HTMLDivElement;
-  // private popperInstance: ReturnType<typeof createPopper> | null = null;
-
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
@@ -67,11 +64,11 @@ export class CanvasTrack extends HTMLElement {
   initializeCanvas(
     label: string,
     trackHeight: number,
-    expandedHeight: number | null = null,
+    maxExpandedHeight: number | null = null,
   ) {
     this.label = label;
     this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
-    // this.canvas.height = trackHeight;
+
     this.assignedHeight = trackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
@@ -79,8 +76,8 @@ export class CanvasTrack extends HTMLElement {
       "track-container",
     ) as HTMLDivElement;
 
-    if (expandedHeight != null) {
-      this.initializeExpandable(trackHeight, expandedHeight);
+    if (maxExpandedHeight != null) {
+      this.initializeExpandable(trackHeight, maxExpandedHeight);
     }
 
     this.syncDimensions();
@@ -102,7 +99,7 @@ export class CanvasTrack extends HTMLElement {
 
   // FIXME: Should this live outside the class?
   initializeTooltip() {
-    this.tooltip = new Tooltip(this.trackContainer);
+    this.tooltip = new Tooltip(document.body);
     this.canvas.addEventListener("mousemove", (event) => {
       this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
 

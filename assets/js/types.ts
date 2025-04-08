@@ -116,6 +116,12 @@ interface DotTrackData {
   dots: RenderDot[]
 }
 
+interface BandTrackData {
+  xRange: Rng,
+  bands: RenderBand[],
+  settings: { bandPad: number }
+}
+
 interface IdeogramTrackData {
   chromInfo: ChromosomeInfo,
   xRange: Rng
