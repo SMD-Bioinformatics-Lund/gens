@@ -82,17 +82,13 @@ export class TranscriptsTrack extends CanvasTrack {
     const ntsPerPx = this.getNtsPerPixel(xRange);
     console.log(ntsPerPx);
 
-    const zoomThres = 100000;
+    // const zoomThres = 100000;
+    // const arrowThres = 5000;
 
-    if (ntsPerPx > zoomThres) {
-      console.log("Rendering bands");
-      renderBands(this.ctx, transcriptBands, xScale);
-    } else {
-      console.log("Rendering transcripts");
-      // renderBands(this.ctx, transcriptBands, xScale);
-      // renderTranscripts(this.ctx, transcripts, xScale);
-      transcripts.forEach((tr) => drawTranscript(this.ctx, tr, xScale));
-    }
+    const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
+    transcripts.forEach((tr) =>
+      drawTranscript(this.ctx, tr, xScale, showDetails),
+    );
   }
 }
 
@@ -100,8 +96,11 @@ function drawTranscript(
   ctx: CanvasRenderingContext2D,
   transcript: RenderTranscript,
   xScale: (number) => number,
+  showDetails: boolean,
 ) {
   const band = transcript.band;
+
+  const isForward = transcript.strand == "+" ? "+" : "-";
 
   const y1 = band.y1;
   const y2 = band.y2;
@@ -114,14 +113,33 @@ function drawTranscript(
   const width = xPxEnd - xPxStart;
   ctx.fillRect(xPxStart, y1, width, height);
 
-  transcript.exons.forEach((exon) => {
+  if (showDetails) {
     // Exons
-    const xPxStart = xScale(exon.start);
-    const xPxEnd = xScale(exon.end);
-    ctx.fillStyle = "purple";
-    const width = xPxEnd - xPxStart;
-    ctx.fillRect(xPxStart, y1, width, height);
-  })
+    transcript.exons.forEach((exon) => {
+      const xPxStart = xScale(exon.start);
+      const xPxEnd = xScale(exon.end);
+      ctx.fillStyle = STYLE.colors.orange;
+      const width = xPxEnd - xPxStart;
+      ctx.fillRect(xPxStart, y1, width, height);
+    });
+
+    const arrowHeight = height;
+    const arrowWidth = arrowHeight * 0.5;
+    const arrowYCenter = y1 + height / 2;
+    ctx.fillStyle = STYLE.colors.darkGray;
+    ctx.beginPath();
+    if (isForward) {
+      ctx.moveTo(xPxEnd + arrowWidth, arrowYCenter);
+      ctx.lineTo(xPxEnd, arrowYCenter - arrowHeight / 2);
+      ctx.lineTo(xPxEnd, arrowYCenter + arrowHeight / 2);
+    } else {
+      ctx.moveTo(xPxStart - arrowWidth, arrowYCenter);
+      ctx.lineTo(xPxEnd, arrowYCenter - arrowHeight / 2);
+      ctx.lineTo(xPxEnd, arrowYCenter + arrowHeight / 2);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
 }
 
 customElements.define("transcripts-track", TranscriptsTrack);

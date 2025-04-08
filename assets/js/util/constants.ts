@@ -47,6 +47,10 @@ export const STYLE = {
     },
     tracks: {
         edgeColor: colors.lightGray,
+        // nts per pixel
+        zoomLevel: {
+            showDetails: 5000
+        }
     },
     colors,
 }
