@@ -1,14 +1,14 @@
 """Functions for handeling database connection."""
 
 import logging
-from typing import Any
+from typing import Any, Generator
 
 import pymongo
 from flask import current_app as app
 from pydantic import MongoDsn
 from pymongo.database import Database
 
-from ..config import settings
+from gens.config import settings
 
 LOG = logging.getLogger(__name__)
 
