@@ -69,7 +69,7 @@ export class BandTrack extends CanvasTrack {
 
     this.hoverTargets = getBoundBoxes(scaledBands, xScale);
 
-    renderBorder(this.ctx, dimensions);
+    renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
     renderBands(this.ctx, scaledBands, xScale);
   }
 }

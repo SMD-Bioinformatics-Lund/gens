@@ -67,7 +67,7 @@ export class OverviewTrack extends CanvasTrack {
 
     const { xRange, chromosome, dotsPerChrom } = this.renderData;
 
-    renderBorder(this.ctx, this.dimensions);
+    renderBorder(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
 
     const totalChromSize = Object.values(this.chromSizes).reduce(
       (tot, size) => tot + size,
@@ -148,7 +148,7 @@ function renderOverviewPlot(
 ) {
   // Draw the initial lines
   Object.values(chromRanges).forEach(([_chromStart, chromEnd]) =>
-    drawVerticalLine(ctx, chromEnd, xScale),
+    drawVerticalLine(ctx, chromEnd, xScale, STYLE.tracks.edgeColor),
   );
 
   Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
@@ -159,7 +159,14 @@ function renderOverviewPlot(
       return linearScale(pos, [0, chromSizes[chrom]], pxRange);
     };
 
-    drawDotsScaled(ctx, dotData, chromXScale, yScale, DOT_SIZE);
+    // FIXME: The coloring should probably be done here directly
+    // Not in the data generation step
+    const coloredDots = dotData.map((dot) => {
+      const copyDot = Object.create(dot);
+      copyDot.color = STYLE.colors.darkGray;
+      return copyDot
+    })
+    drawDotsScaled(ctx, coloredDots, chromXScale, yScale, DOT_SIZE);
   });
 }
 

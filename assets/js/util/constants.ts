@@ -12,6 +12,7 @@ const colors = {
     white: "#FFF",
     black: "#000",
     darkGray: "#333",
+    lightGray: "#ccc",
     yellow: "#dcd16f",
     red: "#f00",
     teal: "teal",
@@ -43,6 +44,9 @@ export const STYLE = {
             thick: 80,
         },
         edgeColor: colors.darkGray,
+    },
+    tracks: {
+        edgeColor: colors.lightGray,
     },
     colors,
 }

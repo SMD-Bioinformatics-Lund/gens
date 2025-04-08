@@ -1,13 +1,13 @@
-import { chromSizes } from "../../helper";
-import { getOverlapInfo, rangeSize } from "../../track/utils";
+import { rangeSize } from "../../track/utils";
 
 export function renderBorder(
   ctx: CanvasRenderingContext2D,
   canvasDim: { height: number; width: number },
+  color: string
 ) {
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, canvasDim.width, canvasDim.height);
-  ctx.strokeStyle = "black";
+  ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.strokeRect(0, 0, canvasDim.width, canvasDim.height);
 }

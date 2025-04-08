@@ -1,3 +1,4 @@
+import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 import {
   drawDotsScaled,
@@ -34,7 +35,7 @@ export class DotTrack extends CanvasTrack {
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
     const yScale = getLinearScale(yRange, [0, this.dimensions.height]);
 
-    renderBorder(this.ctx, this.dimensions);
+    renderBorder(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
     drawDotsScaled(this.ctx, dots, xScale, yScale);
   }
 }
