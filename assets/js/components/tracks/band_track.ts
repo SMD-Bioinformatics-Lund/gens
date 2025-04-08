@@ -52,21 +52,13 @@ export class BandTrack extends CanvasTrack {
       }
       const bandNOverlap = bandOverlaps[band.id].lane;
       let yRange = yScale(bandNOverlap, this.isExpanded());
-      const y1 = yRange[0];
-      const y2 = yRange[1];
-      const edgeColor = STYLE.bandTrack.edgeColor;
 
-      const renderBand = {
-        id: band.id,
-        start: band.start,
-        end: band.end,
-        y1,
-        y2,
-        color: "blue",
-        edgeColor,
-        label: band.id,
-      };
-
+      const renderBand = Object.create(band);
+      renderBand.y1 = yRange[0];
+      renderBand.y2 = yRange[1];
+      renderBand.edgeColor = STYLE.bandTrack.edgeColor;
+      renderBand.label = band.id;
+      
       return renderBand;
     });
 
@@ -77,19 +69,18 @@ export class BandTrack extends CanvasTrack {
     renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
     // renderBands(this.ctx, renderBand, xScale);
 
-    bands.forEach((band) => drawBand(this.ctx, band, xScale, showDetails, this.isExpanded()));
+    renderBand.forEach((band) => drawBand(this.ctx, band, xScale, showDetails, this.isExpanded()));
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
     if (this.isExpanded()) {
       const style = STYLE.bandTrack;
-      const showLabels = false;
       const expandedHeight = getTrackHeight(
         style.trackHeight.thin,
         numberLanes,
         style.trackPadding,
         style.bandPadding,
-        showLabels,
+        showDetails,
       );
       super.setExpandedHeight(expandedHeight);
     }
@@ -103,8 +94,6 @@ function drawBand(
   showDetails: boolean,
   isExpanded: boolean,
 ) {
-  console.log("Drawing", band);
-
   const y1 = band.y1;
   const y2 = band.y2;
   const height = y2 - y1;
