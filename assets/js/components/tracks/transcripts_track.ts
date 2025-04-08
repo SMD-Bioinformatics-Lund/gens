@@ -1,7 +1,9 @@
-import { getTrackHeight } from "../../track/expand_track_utils";
-import { getOverlapInfo } from "../../track/utils";
+import { getOverlapInfo, getTrackHeight } from "../../track/expand_track_utils";
+import { getBandYScale, getBoundBoxes } from "../../track/utils";
 import { STYLE } from "../../util/constants";
+import { calculateBands } from "./band_track";
 import { CanvasTrack } from "./canvas_track";
+import { getLinearScale, renderBands, renderBorder } from "./render_utils";
 
 export class TranscriptsTrack extends CanvasTrack {
   renderData: TranscriptsTrackData | null;
@@ -25,27 +27,31 @@ export class TranscriptsTrack extends CanvasTrack {
 
     const { xRange, transcripts } = this.renderData;
 
-    // FIXME: Generalize with the band tracks
-    const overlapInfo = getOverlapInfo(
-        transcripts.sort((b1, b2) => (b1.start <= b2.start ? -1 : 1)),
-    );
-    const maxLane = Math.max(
-      ...Object.values(overlapInfo).map((band) => band.lane),
-    );
-    const numberTracks = maxLane + 1;
-        if (this.expanded) {
-          const style = STYLE.bandTrack;
-          const expandedHeight = getTrackHeight(
-            style.trackHeight.thin,
-            numberTracks,
-            style.trackPadding,
-            style.bandPadding,
-          );
-    
-          this.assignedHeight = expandedHeight;
-        }
+    const dimensions = super.syncDimensions();
 
-    console.log("Rendering the new transcript");
+    const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
+    const { bands: adjustedTranscripts, numberLanes } = calculateBands(
+      transcripts,
+      dimensions.height,
+      this.dimensions.height,
+    );
+
+    if (this.expanded) {
+      const style = STYLE.bandTrack;
+      const expandedHeight = getTrackHeight(
+        style.trackHeight.thin,
+        numberLanes,
+        style.trackPadding,
+        style.bandPadding,
+      );
+
+      this.assignedHeight = expandedHeight;
+    }
+
+    this.hoverTargets = getBoundBoxes(adjustedTranscripts, xScale);
+
+    renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
+    renderBands(this.ctx, adjustedTranscripts, xScale);
   }
 }
 

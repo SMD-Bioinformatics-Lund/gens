@@ -96,7 +96,7 @@ interface RenderBand {
   id: string,
   start: number,
   end: number,
-  color: string,
+  color?: string,
   edgeColor?: string,
   edgeWidth?: number
   label?: string,
@@ -159,9 +159,19 @@ interface OverviewTrackData {
   xRange: Rng,
 }
 
+interface HoverBox {
+  label: string,
+  x1: number,
+  x2: number,
+  y1: number,
+  y2: number,
+}
+
 type Scale = (value: number) => number
 
 type ColorScale = (level: string) => string
+
+type BandYScale = (lane: number, expanded: boolean) => Rng
 
 interface RenderDataSource {
   getChromInfo: () => Promise<ChromosomeInfo>,

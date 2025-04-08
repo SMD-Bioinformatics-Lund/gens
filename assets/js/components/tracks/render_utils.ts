@@ -154,11 +154,15 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
   });
 }
 
-function parseExons(transcriptParts: APITranscriptPart[]): RenderExon[] {
+function parseExons(
+  geneId: string,
+  transcriptParts: APITranscriptPart[],
+): RenderExon[] {
   const exons = transcriptParts.filter((part) => part.feature == "exon");
 
   return exons.map((part) => {
     return {
+      id: `${geneId}_exon${part.exon_number}_${part.start}_${part.end}`,
       start: part.start,
       end: part.end,
       exonNumber: part.exon_number,
@@ -171,9 +175,9 @@ export function parseTranscripts(
   transcripts: APITranscript[],
 ): RenderTranscript[] {
   const transcriptsToRender = transcripts.map((transcript) => {
-    const exons = parseExons(transcript.features);
+    const exons = parseExons(transcript.transcript_id, transcript.features);
     return {
-      id: `${transcript.start}_${transcript.end}_${transcript.transcript_id}`,
+      id: transcript.transcript_id,
       start: transcript.start,
       end: transcript.end,
       label: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,

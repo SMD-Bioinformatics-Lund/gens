@@ -1,4 +1,5 @@
 import { getOverlapInfo, getTrackHeight } from "../../track/expand_track_utils";
+import { getBandYScale, getBoundBoxes } from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 import { getLinearScale, renderBands, renderBorder } from "./render_utils";
@@ -29,19 +30,20 @@ export class BandTrack extends CanvasTrack {
 
     const { bands, xRange } = this.renderData;
 
-    const overlapInfo = getOverlapInfo(
-      bands.sort((b1, b2) => (b1.start <= b2.start ? -1 : 1)),
+    const dimensions = super.syncDimensions();
+
+    const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
+    const { bands: adjustedBands, numberLanes } = calculateBands(
+      bands,
+      dimensions.height,
+      this.dimensions.height,
     );
-    const maxLane = Math.max(
-      ...Object.values(overlapInfo).map((band) => band.lane),
-    );
-    const numberTracks = maxLane + 1;
 
     if (this.expanded) {
       const style = STYLE.bandTrack;
       const expandedHeight = getTrackHeight(
         style.trackHeight.thin,
-        numberTracks,
+        numberLanes,
         style.trackPadding,
         style.bandPadding,
       );
@@ -49,66 +51,37 @@ export class BandTrack extends CanvasTrack {
       this.assignedHeight = expandedHeight;
     }
 
-    const dimensions = super.syncDimensions();
-
-    const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
-
-    const yScale = getYScale(
-      STYLE.bandTrack.trackPadding,
-      STYLE.bandTrack.bandPadding,
-      this.expanded ? numberTracks : 1,
-      dimensions.height,
-    );
-
-    const scaledBands: RenderBand[] = bands.map((band) => {
-      const scaledBand = Object.create(band);
-      const bandNOverlap = overlapInfo[band.id].lane;
-      let yRange = yScale(bandNOverlap, this.expanded);
-      scaledBand.y1 = yRange[0];
-      scaledBand.y2 = yRange[1];
-      scaledBand.edgeColor = STYLE.bandTrack.edgeColor;
-      return scaledBand;
-    });
-
-    this.hoverTargets = getBoundBoxes(scaledBands, xScale);
-
     renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
-    renderBands(this.ctx, scaledBands, xScale);
+    renderBands(this.ctx, adjustedBands, xScale);
+    this.hoverTargets = getBoundBoxes(adjustedBands, xScale);
   }
 }
 
-function getYScale(
-  topBottomPad: number,
-  bandPad: number,
+export function calculateBands(
+  bands: RenderBand[],
   numberTracks: number,
-  renderingHeight: number,
-): (number, bool) => Rng {
-  return (pos: number, expanded: boolean) => {
-    const renderingArea =
-      renderingHeight - topBottomPad * 2 - bandPad * numberTracks;
-    const trackHeight = renderingArea / numberTracks;
+  canvasHeight: number,
+): { bands: RenderBand[]; numberLanes: number } {
+  const yScale = getBandYScale(
+    STYLE.bandTrack.trackPadding,
+    STYLE.bandTrack.bandPadding,
+    this.expanded ? numberTracks : 1,
+    canvasHeight,
+  );
 
-    let yShift = 0;
-    if (expanded) {
-      yShift = pos * trackHeight;
-    }
-    const y1 = topBottomPad + yShift + bandPad;
-    const y2 = topBottomPad + yShift + trackHeight - bandPad;
+  const overlapInfo = getOverlapInfo(bands);
 
-    return [y1, y2];
-  };
-}
-
-function getBoundBoxes(bands, xScale: Scale) {
-  return bands.map((band) => {
-    return {
-      label: band.label,
-      x1: xScale(band.start),
-      x2: xScale(band.end),
-      y1: band.y1,
-      y2: band.y2,
-    };
+  const scaledBands: RenderBand[] = bands.map((band) => {
+    const scaledBand = Object.create(band);
+    const bandNOverlap = overlapInfo[band.id].lane;
+    let yRange = yScale(bandNOverlap, this.expanded);
+    scaledBand.y1 = yRange[0];
+    scaledBand.y2 = yRange[1];
+    scaledBand.edgeColor = STYLE.bandTrack.edgeColor;
+    return scaledBand;
   });
+
+  return { bands: scaledBands, numberLanes: overlapInfo.numberLanes };
 }
 
 customElements.define("band-track", BandTrack);

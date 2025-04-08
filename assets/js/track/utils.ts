@@ -13,6 +13,40 @@ export function getVisibleYCoordinates(
   return { y1, y2 };
 }
 
+export function getBoundBoxes(bands, xScale: Scale): HoverBox[] {
+  return bands.map((band) => {
+    return {
+      label: band.label,
+      x1: xScale(band.start),
+      x2: xScale(band.end),
+      y1: band.y1,
+      y2: band.y2,
+    };
+  });
+}
+
+export function getBandYScale(
+  topBottomPad: number,
+  bandPad: number,
+  numberTracks: number,
+  renderingHeight: number,
+): BandYScale {
+  return (pos: number, expanded: boolean) => {
+    const renderingArea =
+      renderingHeight - topBottomPad * 2 - bandPad * numberTracks;
+    const trackHeight = renderingArea / numberTracks;
+
+    let yShift = 0;
+    if (expanded) {
+      yShift = pos * trackHeight;
+    }
+    const y1 = topBottomPad + yShift + bandPad;
+    const y2 = topBottomPad + yShift + trackHeight - bandPad;
+
+    return [y1, y2];
+  };
+}
+
 export function getVisibleXCoordinates(
   screenPositions: ScreenPositions,
   feature: { start: number; end: number },
@@ -111,8 +145,6 @@ export function removeChildren(container: HTMLElement) {
     container.removeChild(container.firstChild);
   }
 }
-
-
 
 export function zip<A, B>(a: A[], b: B[]): [A, B][] {
   if (a.length !== b.length) {
