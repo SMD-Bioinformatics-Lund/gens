@@ -30,10 +30,12 @@ export function getBandYScale(
   bandPad: number,
   numberTracks: number,
   renderingHeight: number,
+  labelSize: number = 0
 ): BandYScale {
   return (pos: number, expanded: boolean) => {
     const renderingArea =
       renderingHeight - topBottomPad * 2 - bandPad * numberTracks;
+    
     const trackHeight = renderingArea / numberTracks;
 
     let yShift = 0;
@@ -41,7 +43,7 @@ export function getBandYScale(
       yShift = pos * trackHeight;
     }
     const y1 = topBottomPad + yShift + bandPad;
-    const y2 = topBottomPad + yShift + trackHeight - bandPad;
+    const y2 = topBottomPad + yShift + trackHeight - bandPad - labelSize;
 
     return [y1, y2];
   };

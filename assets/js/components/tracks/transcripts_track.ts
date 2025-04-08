@@ -25,17 +25,20 @@ export class TranscriptsTrack extends CanvasTrack {
     }
 
     const { xRange, transcripts } = this.renderData;
-
+    const ntsPerPx = this.getNtsPerPixel(xRange);
+    console.log(ntsPerPx);
+    const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
     const dimensions = super.syncDimensions();
-
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
     const { numberLanes, bandOverlaps } = getOverlapInfo(transcripts);
+    const labelSize = this.isExpanded() ? 20 : 0;
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,
       STYLE.bandTrack.bandPadding,
       this.isExpanded() ? numberLanes : 1,
       this.dimensions.height,
+      labelSize
     );
 
     transcripts.forEach((transcript) => {
@@ -62,24 +65,18 @@ export class TranscriptsTrack extends CanvasTrack {
       return transcript;
     });
 
-    this.setExpandedHeight(numberLanes);
+    this.setExpandedTrackHeight(numberLanes, showDetails);
 
     const transcriptBands = transcripts.map((tr) => tr.band);
     this.hoverTargets = getBoundBoxes(transcriptBands, xScale);
     renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
-    const ntsPerPx = this.getNtsPerPixel(xRange);
-    console.log(ntsPerPx);
 
-    // const zoomThres = 100000;
-    // const arrowThres = 5000;
-
-    const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
     transcripts.forEach((tr) =>
-      drawTranscript(this.ctx, tr, xScale, showDetails),
+      drawTranscript(this.ctx, tr, xScale, showDetails, this.isExpanded()),
     );
   }
 
-  setExpandedHeight(numberLanes: number) {
+  setExpandedTrackHeight(numberLanes: number, showLabels: boolean) {
     // Assign expanded height (only needed to do once atm actually)
     const style = STYLE.bandTrack;
     // FIXME: Do this based on the zoom / current region
@@ -88,6 +85,7 @@ export class TranscriptsTrack extends CanvasTrack {
       numberLanes,
       style.trackPadding,
       style.bandPadding,
+      showLabels,
     );
     super.setExpandedHeight(expandedHeight);
   }
@@ -98,6 +96,7 @@ function drawTranscript(
   transcript: RenderTranscript,
   xScale: (number) => number,
   showDetails: boolean,
+  isExpanded: boolean,
 ) {
   const band = transcript.band;
 
@@ -125,7 +124,10 @@ function drawTranscript(
     });
 
     drawArrow(ctx, height, y1, isForward, xPxRange);
-    drawLabel(ctx, transcript.label, xPxRange, y2);
+
+    if (isExpanded) {
+      drawLabel(ctx, transcript.label, xPxRange, y2);
+    }
   }
 }
 
@@ -137,10 +139,10 @@ function drawLabel(
 ) {
   const [xPxStart, xPxEnd] = xPxRange;
   const textX = (xPxStart + xPxEnd) / 2;
-  const textY = bottomY + 4;
+  const textY = bottomY + STYLE.tracks.textPadding;
 
-  ctx.font = "12px sans-serif";
-  ctx.fillStyle = STYLE.colors.darkGray;
+  ctx.font = STYLE.tracks.font;
+  ctx.fillStyle = STYLE.tracks.textColor;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
 

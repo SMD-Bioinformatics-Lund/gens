@@ -77,9 +77,17 @@ export function getTrackHeight(
   numberTracks: number,
   trackPadding: number,
   bandPadding: number,
+  showLabels: boolean,
 ): number {
+
+  // FIXME
+  const labelHeight = showLabels ? 20 : 0;
+
   const singleBandHeight = trackHeight - (trackPadding + bandPadding) * 2;
+
+  console.log("Single", singleBandHeight);
   const multiTrackHeight =
-    trackPadding * 2 + (singleBandHeight + bandPadding * 2) * numberTracks;
+    trackPadding * 2 + (singleBandHeight + bandPadding * 2 + labelHeight) * numberTracks;
+  console.log("Multi", multiTrackHeight);
   return multiTrackHeight;
 }

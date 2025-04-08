@@ -72,11 +72,13 @@ export class BandTrack extends CanvasTrack {
   setExpandedHeight(numberLanes: number) {
     if (this.isExpanded()) {
       const style = STYLE.bandTrack;
+      const showLabels = false;
       const expandedHeight = getTrackHeight(
         style.trackHeight.thin,
         numberLanes,
         style.trackPadding,
         style.bandPadding,
+        showLabels
       );
       super.setExpandedHeight(expandedHeight);
     }
