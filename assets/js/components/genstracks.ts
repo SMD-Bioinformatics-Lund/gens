@@ -9,6 +9,7 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { transformMap, removeChildren } from "../track/utils";
 import { STYLE } from "../util/constants";
+import { CanvasTrack } from "./tracks/canvas_track";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -31,7 +32,7 @@ template.innerHTML = String.raw`
     }
   </style>
   <div id="container">
-      <ideogram-track id="ideogram-track"></ideogram-track>
+      <!-- <ideogram-track id="ideogram-track"></ideogram-track>
   
       <dot-track id="coverage-track"></dot-track>
       <dot-track id="baf-track"></dot-track>
@@ -40,7 +41,7 @@ template.innerHTML = String.raw`
       <band-track id="variant-track"></band-track>
 
       <overview-track id="overview-track-cov"></overview-track>
-      <overview-track id="overview-track-baf"></overview-track>
+      <overview-track id="overview-track-baf"></overview-track> -->
   </div>
 `;
 
@@ -61,6 +62,8 @@ export class GensTracks extends HTMLElement {
 
   annotationsContainer: HTMLDivElement;
 
+  tracks: CanvasTrack[];
+
   annotTracks: BandTrack[];
 
   connectedCallback() {
@@ -73,135 +76,138 @@ export class GensTracks extends HTMLElement {
       }
     });
 
-    this.ideogramTrack = this._root.getElementById(
-      "ideogram-track",
-    ) as IdeogramTrack;
-    this.overviewTrackCov = this._root.getElementById(
-      "overview-track-cov",
-    ) as OverviewTrack;
-    this.overviewTrackBaf = this._root.getElementById(
-      "overview-track-baf",
-    ) as OverviewTrack;
+    // this.ideogramTrack = this._root.getElementById(
+    //   "ideogram-track",
+    // ) as IdeogramTrack;
+    // this.overviewTrackCov = this._root.getElementById(
+    //   "overview-track-cov",
+    // ) as OverviewTrack;
+    // this.overviewTrackBaf = this._root.getElementById(
+    //   "overview-track-baf",
+    // ) as OverviewTrack;
 
-    this.coverageTrack = this._root.getElementById(
-      "coverage-track",
-    ) as DotTrack;
-    this.bafTrack = this._root.getElementById("baf-track") as DotTrack;
-    this.transcriptTrack = this._root.getElementById(
-      "transcript-track",
-    ) as BandTrack;
-    this.variantTrack = this._root.getElementById("variant-track") as BandTrack;
+    // this.coverageTrack = this._root.getElementById(
+    //   "coverage-track",
+    // ) as DotTrack;
+    // this.bafTrack = this._root.getElementById("baf-track") as DotTrack;
+    // this.transcriptTrack = this._root.getElementById(
+    //   "transcript-track",
+    // ) as BandTrack;
+    // this.variantTrack = this._root.getElementById("variant-track") as BandTrack;
 
-    this.annotationsContainer = this._root.getElementById(
-      "annotations-container",
-    ) as HTMLDivElement;
+    // this.annotationsContainer = this._root.getElementById(
+    //   "annotations-container",
+    // ) as HTMLDivElement;
   }
 
   initialize(
     allChromData: Record<string, ChromosomeInfo>,
     chromClick: (string) => void,
+    renderDataSource: RenderDataSource,
+    getChromosome: () => string,
+    getXRange: () => Rng,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
-    this.coverageTrack.initialize("Coverage", trackHeight.thick);
-    this.bafTrack.initialize("BAF", trackHeight.thick);
-    this.variantTrack.initialize(
-      "Variant",
-      trackHeight.thin,
+    const coverageTrack = new DotTrack();
+    coverageTrack.initialize(
+      "Coverage",
       trackHeight.thick,
+      COV_Y_RANGE,
+      async () => {
+        return {
+          xRange: getXRange(),
+          dots: await renderDataSource.getCovData(),
+        };
+      },
     );
-    this.transcriptTrack.initialize(
-      "Transcript",
-      trackHeight.thin,
-      trackHeight.thick,
-    );
-    this.ideogramTrack.initialize("Ideogram", trackHeight.thin);
+
+    const bafTrack = new DotTrack();
+    bafTrack.initialize("BAF", trackHeight.thick, BAF_Y_RANGE, async () => {
+      return {
+        xRange: getXRange(),
+        dots: await renderDataSource.getBafData(),
+      };
+    });
+
+    const variantTrack = new BandTrack();
+    variantTrack.initialize("Variant", trackHeight.thin, async () => {
+      return {
+        xRange: getXRange(),
+        bands: await renderDataSource.getVariantData(),
+      };
+    });
+
+    const transcriptTrack = new BandTrack();
+    transcriptTrack.initialize("Transcript", trackHeight.thin, async () => {
+      return {
+        xRange: getXRange(),
+        bands: await renderDataSource.getTranscriptData(),
+      };
+    });
+
+    const ideogramTrack = new IdeogramTrack();
+    ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
+      return {
+        xRange: getXRange(),
+        chromInfo: await renderDataSource.getChromInfo(),
+      };
+    });
 
     const chromSizes = transformMap(allChromData, (data) => data.size);
 
-    this.overviewTrackCov.initialize(
+    const overviewTrackCov = new OverviewTrack();
+    overviewTrackCov.initialize(
       "Overview (cov)",
       trackHeight.thick,
       chromSizes,
       chromClick,
+      COV_Y_RANGE,
+      async () => {
+        return {
+          dotsPerChrom: await renderDataSource.getOverviewCovData(),
+          xRange: getXRange(),
+          chromosome: getChromosome(),
+        };
+      },
     );
-    this.overviewTrackBaf.initialize(
+
+    const overviewTrackBaf = new OverviewTrack();
+    overviewTrackBaf.initialize(
       "Overview (baf)",
       trackHeight.thick,
       chromSizes,
       chromClick,
+      BAF_Y_RANGE,
+      async () => {
+        return {
+          dotsPerChrom: await renderDataSource.getOverviewBafData(),
+          xRange: getXRange(),
+          chromosome: getChromosome(),
+        };
+      },
+    );
+
+    this.tracks.push(
+      coverageTrack,
+      bafTrack,
+      variantTrack,
+      transcriptTrack,
+      ideogramTrack,
+      overviewTrackCov,
+      overviewTrackBaf,
     );
   }
 
-  updateRenderData(data: RenderData, region: Region) {
-    const xRange: [number, number] = [region.start, region.end];
-
-    // FIXME: Move to constants
-    const bandPad = STYLE.bandTrack.trackPadding;
-    this.variantTrack.updateRenderData({
-      xRange,
-      bands: data.variantData,
-      settings: { bandPad: bandPad },
-    });
-
-    this.overviewTrackCov.updateRenderData({
-      region,
-      dotsPerChrom: data.overviewCovData,
-      yRange: COV_Y_RANGE,
-    });
-    this.overviewTrackBaf.updateRenderData({
-      region,
-      dotsPerChrom: data.overviewBafData,
-      yRange: BAF_Y_RANGE,
-    });
-
-    this.ideogramTrack.updateRenderData({ chromInfo: data.chromInfo, xRange });
-
-    removeChildren(this.annotationsContainer);
-    this.annotTracks = [];
-    Object.entries(data.annotations).forEach(([source, annotData]) => {
-      const annotTrack = new BandTrack();
-      this.annotationsContainer.appendChild(annotTrack);
-      const trackHeight = STYLE.bandTrack.trackHeight;
-      annotTrack.initialize(source, trackHeight.thin, trackHeight.thick);
-      annotTrack.updateRenderData({
-        xRange,
-        bands: annotData,
-        settings: { bandPad },
-      });
-      this.annotTracks.push(annotTrack);
-    });
-
-    this.coverageTrack.updateRenderData({
-      xRange,
-      yRange: COV_Y_RANGE,
-      dots: data.covData,
-    });
-    this.bafTrack.updateRenderData({
-      xRange,
-      yRange: BAF_Y_RANGE,
-      dots: data.bafData,
-    });
-    this.transcriptTrack.updateRenderData({
-      xRange,
-      bands: data.transcriptData,
-      settings: { bandPad },
-    });
-
+  updateRenderData() {
+    for (const track of this.tracks) {
+      track.updateRenderData();
+    }
     this.isInitialized = true;
   }
 
   public render() {
-
-    this.transcriptTrack.render();
-    this.coverageTrack.render();
-    this.bafTrack.render();
-    this.variantTrack.render();
-    this.overviewTrackCov.render();
-    this.overviewTrackBaf.render();
-    this.ideogramTrack.render();
-
-    for (const track of this.annotTracks) {
+    for (const track of this.tracks) {
       track.render();
     }
   }

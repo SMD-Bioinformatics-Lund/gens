@@ -2,7 +2,12 @@ import { drawVerticalLine } from "../../draw/shapes";
 import { transformMap, padRange, rangeSize } from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { drawDotsScaled, linearScale, renderBorder, scaleToPixels } from "./render_utils";
+import {
+  drawDotsScaled,
+  linearScale,
+  renderBorder,
+  scaleToPixels,
+} from "./render_utils";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;
@@ -12,31 +17,30 @@ export class OverviewTrack extends CanvasTrack {
   chromSizes: Record<string, number>;
   marker: HTMLDivElement;
   onChromosomeClick: (chrom: string) => void;
+  yRange: Rng;
 
   pxRanges: Record<string, Rng> = {};
 
   renderData: OverviewTrackData | null;
+  getRenderData: () => Promise<OverviewTrackData>;
 
   initialize(
     label: string,
     trackHeight: number,
     chromSizes: Record<string, number>,
     onChromosomeClick: (chrom: string) => void,
+    yRange: Rng,
+    getRenderData: () => Promise<OverviewTrackData>,
   ) {
     super.initializeCanvas(label, trackHeight);
     this.chromSizes = chromSizes;
+    this.yRange = yRange;
+    this.getRenderData = getRenderData;
+    this.onChromosomeClick = onChromosomeClick;
 
-    // FIXME: Put in function
-    const marker = document.createElement("div") as HTMLDivElement;
-    marker.style.height = `${this.dimensions.height}px`;
-    marker.style.width = "0px";
-    marker.style.backgroundColor = STYLE.colors.transparentYellow;
-    marker.style.position = "absolute";
-    marker.style.top = "0px";
+    const marker = createChromMarker();
     this.trackContainer.appendChild(marker);
     this.marker = marker;
-
-    this.onChromosomeClick = onChromosomeClick;
 
     this.canvas.addEventListener("mousedown", (event) => {
       event.stopPropagation();
@@ -45,20 +49,18 @@ export class OverviewTrack extends CanvasTrack {
     });
   }
 
-  updateRenderData(renderData: OverviewTrackData) {
-    this.renderData = renderData;
+  async updateRenderData() {
+    this.renderData = await this.getRenderData();
   }
 
-  render(
-  ) {
-
+  render() {
     if (this.renderData == null) {
       throw Error("No render data assigned");
     }
 
     super.syncDimensions();
 
-    const { region: viewRegion, dotsPerChrom, yRange } = this.renderData;
+    const { xRange, chromosome, dotsPerChrom } = this.renderData;
 
     renderBorder(this.ctx, this.dimensions);
 
@@ -72,14 +74,14 @@ export class OverviewTrack extends CanvasTrack {
     };
 
     const yScale = (pos: number) => {
-      return linearScale(pos, yRange, [0, this.dimensions.height]);
+      return linearScale(pos, this.yRange, [0, this.dimensions.height]);
     };
 
     const chromRanges = getChromRanges(this.chromSizes);
-    this.pxRanges = transformMap(
-      chromRanges,
-      ([start, end]) => [xScale(start), xScale(end)],
-    );
+    this.pxRanges = transformMap(chromRanges, ([start, end]) => [
+      xScale(start),
+      xScale(end),
+    ]);
 
     renderOverviewPlot(
       this.ctx,
@@ -88,23 +90,41 @@ export class OverviewTrack extends CanvasTrack {
       xScale,
       yScale,
       dotsPerChrom,
-      this.chromSizes
+      this.chromSizes,
     );
 
-    if (viewRegion !== null) {
-      // const chromPxRange = this.pxRanges[viewRegion.chrom];
-      const chromStartPos = chromRanges[viewRegion.chrom][0];
-      const viewPxRange: Rng = [
-        xScale(viewRegion.start + chromStartPos),
-        xScale(viewRegion.end + chromStartPos)
-      ];
-      const markerWidth = rangeSize(viewPxRange);
-
-      this.marker.style.height = `${this.dimensions.height}px`;
-      this.marker.style.width = `${markerWidth}px`;
-      this.marker.style.left = `${viewPxRange[0]}px`;
-    }
+    const chromStartPos = chromRanges[chromosome][0];
+    renderSelectedChromMarker(this.marker, xScale, xRange, chromStartPos, this.dimensions.height);
   }
+}
+
+function createChromMarker() {
+    const marker = document.createElement("div") as HTMLDivElement;
+    marker.style.height = `${this.dimensions.height}px`;
+    marker.style.width = "0px";
+    marker.style.backgroundColor = STYLE.colors.transparentYellow;
+    marker.style.position = "absolute";
+    marker.style.top = "0px";
+    return marker;
+
+}
+
+function renderSelectedChromMarker(
+  marker: HTMLDivElement,
+  xScale: Scale,
+  xRange: Rng,
+  chromStartPos: number,
+  canvasHeight: number
+) {
+  const viewPxRange: Rng = [
+    xScale(xRange[0] + chromStartPos),
+    xScale(xRange[1] + chromStartPos),
+  ];
+  const markerWidth = rangeSize(viewPxRange);
+
+  marker.style.height = `${canvasHeight}px`;
+  marker.style.width = `${markerWidth}px`;
+  marker.style.left = `${viewPxRange[0]}px`;
 }
 
 function renderOverviewPlot(
@@ -114,7 +134,7 @@ function renderOverviewPlot(
   xScale: Scale,
   yScale: Scale,
   dotsPerChrom: Record<string, RenderDot[]>,
-  chromSizes: Record<string, number>
+  chromSizes: Record<string, number>,
 ) {
   // Draw the initial lines
   Object.values(chromRanges).forEach(([_chromStart, chromEnd]) =>

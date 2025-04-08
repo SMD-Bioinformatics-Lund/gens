@@ -7,13 +7,17 @@ import {
 
 export class DotTrack extends CanvasTrack {
   renderData: DotTrackData | null;
+  getRenderData: () => Promise<DotTrackData>;
+  yRange: Rng;
 
-  initialize(label: string, trackHeight: number) {
+  initialize(label: string, trackHeight: number, yRange: Rng, getRenderData: () => Promise<DotTrackData>) {
     super.initializeCanvas(label, trackHeight);
+    this.getRenderData = getRenderData;
+    this.yRange = yRange;
   }
 
-  updateRenderData(renderData: DotTrackData) {
-    this.renderData = renderData;
+  async updateRenderData() {
+    this.renderData = await this.getRenderData();
   }
 
   render() {
@@ -21,7 +25,8 @@ export class DotTrack extends CanvasTrack {
       throw Error(`Render data should be assigned before render (current track: ${this.label})`);
     }
 
-    const { xRange, yRange, dots } = this.renderData;
+    const { xRange, dots } = this.renderData;
+    const yRange = this.yRange;
 
     super.syncDimensions();
 

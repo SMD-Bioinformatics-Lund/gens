@@ -69,29 +69,35 @@ export async function initCanvases({
 
   const api = new GensAPI(sampleId, caseId, genomeBuild, gensApiURL);
 
+  const renderDataSource = getRenderDataSource(
+    api,
+    () => {
+      const region = inputControls.getRegion();
+      return region.chrom;
+    },
+    () => {
+      return inputControls.getAnnotations();
+    },
+  );
+
   const allChromData = await api.getAllChromData();
 
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);
     inputControls.updateChromosome(chrom, chromData.size);
-    const selectedAnnots = inputControls.getAnnotations();
-    const region = inputControls.getRegion();
-
-    const renderData = await parseRenderData(
-      api,
-      startRegion.chrom,
-      selectedAnnots,
-    );
-    gensTracks.updateRenderData(renderData, region);
+    gensTracks.updateRenderData();
     gensTracks.render();
   };
 
-  gensTracks.initialize(allChromData, onChromClick);
+  gensTracks.initialize(
+    allChromData,
+    onChromClick,
+    renderDataSource,
+    () => inputControls.getRegion().chrom,
+    () => inputControls.getRange(),
+  );
 
-  const renderData = await parseRenderData(api, startRegion.chrom, [
-    annotationFile,
-  ]);
-  gensTracks.updateRenderData(renderData, startRegion);
+  gensTracks.updateRenderData();
   gensTracks.render();
 
   // FIXME: Look into how to parse this for predefined start URLs
@@ -99,70 +105,83 @@ export async function initCanvases({
     startRegion,
     [annotationFile],
     async (region) => {},
-    async (region, _source) => {
-      const selectedAnnots = inputControls.getAnnotations();
-      const renderData = await parseRenderData(
-        api,
-        region.chrom,
-        selectedAnnots,
-      );
-      gensTracks.updateRenderData(renderData, region);
+    async (_region, _source) => {
+      gensTracks.updateRenderData();
       gensTracks.render();
     },
     async (_newXRange) => {
-      const selectedAnnots = inputControls.getAnnotations();
-      const region = inputControls.getRegion();
-      const renderData = await parseRenderData(
-        api,
-        region.chrom,
-        selectedAnnots,
-      );
-      gensTracks.updateRenderData(renderData, region);
+      gensTracks.updateRenderData();
       gensTracks.render();
     },
     gensApiURL,
   );
 }
 
-async function parseRenderData(
-  gensDb: GensAPI,
-  chrom: string,
-  annotSources: string[],
-): Promise<RenderData> {
-
-  const parsedAnnotationData = {};
-  for (const source of annotSources) {
-    const annotData = await gensDb.getAnnotations(chrom, source);
-    parsedAnnotationData[source] = parseAnnotations(annotData);
-  }
-
-  const overviewCovRaw = await gensDb.getOverviewCovData();
-  const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
-    parseCoverageDot(cov, STYLE.colors.darkGray),
-  );
-  const overviewBafRaw = await gensDb.getOverviewBafData();
-  const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
-    parseCoverageDot(cov, STYLE.colors.darkGray),
-  );
-
-  const covRaw = await gensDb.getCov(chrom);
-  // const covData = parseCoverageBin(covRaw)
-
-  const bafRaw = await gensDb.getBaf(chrom);
-  const transcriptsRaw = await gensDb.getTranscripts(chrom);
-  const variantsRaw = await gensDb.getVariants(chrom);
-
-  const renderData: RenderData = {
-    chromInfo: await gensDb.getChromData(chrom),
-    annotations: parsedAnnotationData,
-    covData: parseCoverageDot(covRaw, STYLE.colors.teal),
-    bafData: parseCoverageDot(bafRaw, STYLE.colors.orange),
-    transcriptData: parseTranscripts(transcriptsRaw),
-    variantData: parseVariants(variantsRaw, STYLE.colors.variantColors),
-    overviewCovData: overviewCovRender,
-    overviewBafData: overviewBafRender,
+function getRenderDataSource(
+  gensAPI: GensAPI,
+  getChrom: () => string,
+  getAnnotSources: () => string[],
+): RenderDataSource {
+  const getChromInfo = async () => {
+    return await gensAPI.getChromData(getChrom());
   };
-  return renderData;
+
+  const getAnnotations = async () => {
+    const parsedAnnotationData = {};
+    for (const source of getAnnotSources()) {
+      const annotData = await gensAPI.getAnnotations(getChrom(), source);
+      parsedAnnotationData[source] = parseAnnotations(annotData);
+    }
+    return parsedAnnotationData;
+  };
+
+  const getCovData = async () => {
+    const covRaw = await gensAPI.getCov(getChrom());
+    return parseCoverageDot(covRaw, STYLE.colors.teal);
+  };
+
+  const getBafData = async () => {
+    const bafRaw = await gensAPI.getBaf(getChrom());
+    return parseCoverageDot(bafRaw, STYLE.colors.orange);
+  };
+
+  const getTranscriptData = async () => {
+    const transcriptsRaw = await gensAPI.getTranscripts(getChrom());
+    return parseTranscripts(transcriptsRaw);
+  };
+
+  const getVariantData = async () => {
+    const variantsRaw = await gensAPI.getVariants(getChrom());
+    return parseVariants(variantsRaw, STYLE.colors.variantColors);
+  };
+
+  const getOverviewCovData = async () => {
+    const overviewCovRaw = await gensAPI.getOverviewCovData();
+    const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
+      parseCoverageDot(cov, STYLE.colors.darkGray),
+    );
+    return overviewCovRender;
+  };
+
+  const getOverviewBafData = async () => {
+    const overviewBafRaw = await gensAPI.getOverviewBafData();
+    const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
+      parseCoverageDot(cov, STYLE.colors.darkGray),
+    );
+    return overviewBafRender;
+  };
+
+  const renderDataSource: RenderDataSource = {
+    getChromInfo,
+    getAnnotations,
+    getCovData,
+    getBafData,
+    getTranscriptData,
+    getVariantData,
+    getOverviewCovData,
+    getOverviewBafData,
+  };
+  return renderDataSource;
 }
 
 // Make hard link and copy link to clipboard

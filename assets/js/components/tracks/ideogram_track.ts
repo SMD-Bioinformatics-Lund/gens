@@ -5,170 +5,176 @@ import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 
 interface DrawPaths {
-    chromosome: { path: Path2D };
-    bands: { id: string; path: Path2D }[];
+  chromosome: { path: Path2D };
+  bands: { id: string; path: Path2D }[];
 }
 
 export class IdeogramTrack extends CanvasTrack {
-    private drawPaths: DrawPaths = undefined;
+  private drawPaths: DrawPaths = undefined;
 
-    private markerElement: HTMLDivElement;
+  private markerElement: HTMLDivElement;
 
-    private renderData: IdeogramTrackData;
+  private renderData: IdeogramTrackData;
+  private getRenderData: () => Promise<IdeogramTrackData>;
 
-    initialize(label: string, trackHeight: number) {
-        super.initializeCanvas(label, trackHeight);
-        setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
+  initialize(
+    label: string,
+    trackHeight: number,
+    getRenderData: () => Promise<IdeogramTrackData>,
+  ) {
+    super.initializeCanvas(label, trackHeight);
+    setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
 
-        const markerElement = setupMarkerElement(trackHeight);
-        this.trackContainer.appendChild(markerElement);
-        this.markerElement = markerElement;
+    const markerElement = setupMarkerElement(trackHeight);
+    this.trackContainer.appendChild(markerElement);
+    this.markerElement = markerElement;
+
+    this.getRenderData = getRenderData;
+  }
+
+  async updateRenderData() {
+    this.renderData = await this.getRenderData();
+  }
+
+  render() {
+    if (this.renderData == null) {
+      throw Error("Render data required");
     }
 
-    updateRenderData(renderData) {
-        this.renderData = renderData;
+    super.syncDimensions();
+
+    const { chromInfo, xRange } = this.renderData;
+
+    this.drawPaths = cytogeneticIdeogram(
+      this.ctx,
+      chromInfo,
+      this.dimensions,
+      xRange,
+    );
+
+    this.renderMarker(xRange, chromInfo.size);
+  }
+
+  renderMarker(xRange: [number, number], chromSize: number) {
+    // if segment of chromosome is drawn
+    const markerElement = this.markerElement;
+
+    const hideMarker = xRange[0] == 1 && xRange[1] == chromSize;
+    markerElement.hidden = hideMarker;
+    if (!hideMarker) {
+      const scale = chromSize / this.dimensions.width;
+      const pxStart = xRange[0] / scale;
+      const pxWidth = (xRange[1] - xRange[0]) / scale;
+      markerElement.style.width = `${pxWidth}px`;
+      markerElement.style.marginLeft = `${pxStart}px`;
     }
-
-    render() {
-
-        if (this.renderData == null) {
-            throw Error("Render data required");
-        }
-
-        super.syncDimensions();
-
-        const { chromInfo, xRange } = this.renderData;
-
-        this.drawPaths = cytogeneticIdeogram(
-            this.ctx,
-            chromInfo,
-            this.dimensions,
-            xRange,
-        );
-
-        this.renderMarker(xRange, chromInfo.size);
-    }
-
-    renderMarker(xRange: [number, number], chromSize: number) {
-        // if segment of chromosome is drawn
-        const markerElement = this.markerElement;
-
-        const hideMarker = xRange[0] == 1 && xRange[1] == chromSize
-        markerElement.hidden = hideMarker;
-        if (!hideMarker) {
-            const scale = chromSize / this.dimensions.width;    
-            const pxStart = xRange[0] / scale
-            const pxWidth = (xRange[1] - xRange[0]) / scale;
-            markerElement.style.width = `${pxWidth}px`;
-            markerElement.style.marginLeft = `${pxStart}px`;
-        }
-    }
+  }
 }
 
 function setupMarkerElement(trackHeight: number): HTMLDivElement {
-    const markerElement = document.createElement("div");
-    markerElement.id = "ideogram-marker";
-    markerElement.className = "marker";
+  const markerElement = document.createElement("div");
+  markerElement.id = "ideogram-marker";
+  markerElement.className = "marker";
 
-    // FIXME: Move to style constants
-    const leftMargin = 5;
+  // FIXME: Move to style constants
+  const leftMargin = 5;
 
-    markerElement.style.position = "absolute";
-    markerElement.style.backgroundColor = STYLE.colors.transparentYellow;
+  markerElement.style.position = "absolute";
+  markerElement.style.backgroundColor = STYLE.colors.transparentYellow;
 
-    markerElement.style.borderLeft = `2px solid ${STYLE.colors.red}`;
-    markerElement.style.borderRight = `2px solid ${STYLE.colors.red}`;
+  markerElement.style.borderLeft = `2px solid ${STYLE.colors.red}`;
+  markerElement.style.borderRight = `2px solid ${STYLE.colors.red}`;
 
-    markerElement.style.height = `${trackHeight - 2}px`;
-    markerElement.style.width = "0px";
-    markerElement.style.top = "0px";
-    markerElement.style.marginLeft = `${leftMargin}px`;
+  markerElement.style.height = `${trackHeight - 2}px`;
+  markerElement.style.width = "0px";
+  markerElement.style.top = "0px";
+  markerElement.style.marginLeft = `${leftMargin}px`;
 
-    return markerElement
+  return markerElement;
 }
 
 function setupTooltip(
-    canvas: HTMLCanvasElement,
-    ctx: CanvasRenderingContext2D,
-    getDrawPaths: () => DrawPaths,
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  getDrawPaths: () => DrawPaths,
 ) {
-    const tooltip = createChromosomeTooltip({});
-    tippy(canvas, {
-        arrow: true,
-        followCursor: "horizontal",
-        content: tooltip,
-        plugins: [followCursor],
-    });
+  const tooltip = createChromosomeTooltip({});
+  tippy(canvas, {
+    arrow: true,
+    followCursor: "horizontal",
+    content: tooltip,
+    plugins: [followCursor],
+  });
 
-    canvas.addEventListener("mousemove", (event) => {
-        const drawPaths = getDrawPaths();
-        if (drawPaths === undefined) {
-            return;
-        }
-        drawPaths.bands.forEach((bandPath) => {
-            const pointInPath = ctx.isPointInPath(
-                bandPath.path,
-                event.offsetX,
-                event.offsetY,
-            );
-            if (pointInPath) {
-                const ideogramClass = ".ideogram-tooltip-value";
-                tooltip.querySelector(ideogramClass).innerHTML = bandPath.id;
-            }
-        });
+  canvas.addEventListener("mousemove", (event) => {
+    const drawPaths = getDrawPaths();
+    if (drawPaths === undefined) {
+      return;
+    }
+    drawPaths.bands.forEach((bandPath) => {
+      const pointInPath = ctx.isPointInPath(
+        bandPath.path,
+        event.offsetX,
+        event.offsetY,
+      );
+      if (pointInPath) {
+        const ideogramClass = ".ideogram-tooltip-value";
+        tooltip.querySelector(ideogramClass).innerHTML = bandPath.id;
+      }
     });
+  });
 }
 
 /**
  * Generate a full chromosome ideogram with illustration and tooltip
  */
 function cytogeneticIdeogram(
-    ctx: CanvasRenderingContext2D,
-    chromInfo: ChromosomeInfo,
-    dim: Dimensions,
-    xRange: [number, number],
+  ctx: CanvasRenderingContext2D,
+  chromInfo: ChromosomeInfo,
+  dim: Dimensions,
+  xRange: [number, number],
 ): { chromosome: { path: Path2D }; bands: { id: string; path: Path2D }[] } {
-    // recalculate genomic coordinates to screen coordinates
-    const scale = dim.width / chromInfo.size;
-    const centromere =
-        chromInfo.centromere !== null
-            ? {
-                  start: Math.round(chromInfo.centromere.start * scale),
-                  end: Math.round(chromInfo.centromere.end * scale),
-              }
-            : null;
+  // recalculate genomic coordinates to screen coordinates
+  const scale = dim.width / chromInfo.size;
+  const centromere =
+    chromInfo.centromere !== null
+      ? {
+          start: Math.round(chromInfo.centromere.start * scale),
+          end: Math.round(chromInfo.centromere.end * scale),
+        }
+      : null;
 
-    const stainToColor = STYLE.colors.stainToColor;
+  const stainToColor = STYLE.colors.stainToColor;
 
-    const renderBands = chromInfo.bands.map((band) => {
-        return {
-            id: band.id,
-            label: band.id,
-            start: band.start * scale,
-            end: band.end * scale,
-            color: stainToColor[band.stain],
-        };
-    });
+  const renderBands = chromInfo.bands.map((band) => {
+    return {
+      id: band.id,
+      label: band.id,
+      start: band.start * scale,
+      end: band.end * scale,
+      color: stainToColor[band.stain],
+    };
+  });
 
-    const y = 5;
-    // const width = width - 5;
-    // const height = height - 6;
-    const drawPaths = drawChromosome(
-        ctx,
-        dim,
-        centromere,
-        STYLE.colors.white,
-        renderBands,
-    );
+  const y = 5;
+  // const width = width - 5;
+  // const height = height - 6;
+  const drawPaths = drawChromosome(
+    ctx,
+    dim,
+    centromere,
+    STYLE.colors.white,
+    renderBands,
+  );
 
-    // drawPaths.chromosome.chromInfo = {
-    //     chrom: chromosomeName,
-    //     x: x,
-    //     width: width,
-    //     scale: scale,
-    //     size: chromInfo.size,
-    // };
-    return drawPaths;
+  // drawPaths.chromosome.chromInfo = {
+  //     chrom: chromosomeName,
+  //     x: x,
+  //     width: width,
+  //     scale: scale,
+  //     size: chromInfo.size,
+  // };
+  return drawPaths;
 }
 
 customElements.define("ideogram-track", IdeogramTrack);

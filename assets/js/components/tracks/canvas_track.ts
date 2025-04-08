@@ -31,7 +31,7 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-export class CanvasTrack extends HTMLElement {
+export abstract class CanvasTrack extends HTMLElement {
   protected _root: ShadowRoot;
   protected canvas: HTMLCanvasElement;
   protected ctx: CanvasRenderingContext2D;
@@ -95,7 +95,9 @@ export class CanvasTrack extends HTMLElement {
     });
   }
 
-  render() {}
+  abstract updateRenderData();
+
+  abstract render();
 
   // FIXME: Should this live outside the class?
   initializeTooltip() {
@@ -173,5 +175,3 @@ export class CanvasTrack extends HTMLElement {
   }
 
 }
-
-customElements.define("canvas-track", CanvasTrack);

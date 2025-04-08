@@ -5,22 +5,20 @@ import { getLinearScale, renderBands, renderBorder } from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
+  getRenderData: () => Promise<BandTrackData>;
 
   initialize(
     label: string,
     trackHeight: number,
-    thickTrackHeight: number | null = null,
+    getRenderData: () => Promise<BandTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight, thickTrackHeight);
+    super.initializeCanvas(label, trackHeight);
     this.initializeTooltip();
+    this.getRenderData = getRenderData;
   }
 
-  updateRenderData(renderData: {
-    xRange: Rng;
-    bands: RenderBand[];
-    settings: { bandPad: number };
-  }) {
-    this.renderData = renderData;
+  async updateRenderData() {
+    this.renderData = await this.getRenderData();
   }
 
   render() {
