@@ -103,7 +103,7 @@ export class TracksManager extends HTMLElement {
     }
 
     await coverageTrack.initialize(
-      "Coverage",
+      "Log2 Ratio",
       trackHeight.thick,
       COV_Y_RANGE,
       COV_Y_TICKS,
@@ -116,7 +116,7 @@ export class TracksManager extends HTMLElement {
     );
 
     await bafTrack.initialize(
-      "BAF",
+      "B Allele Freq",
       trackHeight.thick,
       BAF_Y_RANGE,
       BAF_Y_TICKS,

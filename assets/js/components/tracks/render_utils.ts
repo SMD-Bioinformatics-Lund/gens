@@ -319,17 +319,15 @@ export function drawLabel(
     padding?: number;
     font?: string;
     textColor?: string;
-  } = { },
+  } = {},
 ) {
-  console.log("Rendering label", label);
-
   const {
     withFrame = true,
     textBaseline = "top",
     padding = STYLE.tracks.textFramePadding,
     font = STYLE.tracks.font,
     textColor = STYLE.tracks.textColor,
-    textAlign = "left"
+    textAlign = "left",
   } = style;
 
   ctx.font = font;
@@ -338,8 +336,6 @@ export function drawLabel(
   const textWidth = metrics.width;
   const textHeight =
     metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-
-  console.log(`text width ${textWidth} height ${textHeight}`)
 
   if (withFrame) {
     const x1 = leftX - padding;
@@ -360,17 +356,20 @@ export function drawLabel(
   ctx.fillStyle = textColor;
   ctx.textAlign = textAlign;
   ctx.textBaseline = textBaseline;
-  console.log("Drawing text at", label, leftX, topY);
   ctx.fillText(label, leftX, topY);
 }
 
 export function drawBox(
   ctx: CanvasRenderingContext2D,
   box: Box,
-  fill: string = STYLE.tracks.backgroundColor,
-  border: string = STYLE.tracks.edgeColor,
-  borderWidth: number = STYLE.tracks.gridLineWidth,
+  style: { fill?: string; border?: string; borderWidth?: number } = {},
 ) {
+  const {
+    fill = STYLE.tracks.backgroundColor,
+    border = STYLE.tracks.edgeColor,
+    borderWidth = STYLE.tracks.gridLineWidth,
+  } = style;
+
   ctx.fillStyle = fill;
   ctx.fillRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 

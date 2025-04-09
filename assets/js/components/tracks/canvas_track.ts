@@ -148,11 +148,11 @@ export class CanvasTrack extends HTMLElement {
 
   }
 
-  drawLabel() {
+  drawLabel(shiftRight: number = 0) {
     drawLabel(
       this.ctx,
       this.label,
-      STYLE.tracks.textPadding,
+      STYLE.tracks.textPadding + shiftRight,
       STYLE.tracks.textPadding,
       {textBaseline: "top"}
     );

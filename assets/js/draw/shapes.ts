@@ -1,6 +1,6 @@
 // draw basic objects and shapes
 
-import { drawLabel } from "../components/tracks/render_utils";
+import { drawBox, drawLabel } from "../components/tracks/render_utils";
 import { STYLE } from "../util/constants";
 
 //  Draw data points
@@ -90,13 +90,21 @@ export function drawText({
 
 export function drawYAxis(
   ctx: CanvasRenderingContext2D,
-  y: number,
+  ys: number[],
   yScale: Scale,
+  yRange: Rng,
 ) {
-  drawLabel(ctx, y.toString(), 0, yScale(y), {
-    withFrame: false,
-    textBaseline: "middle",
-  });
+  console.log(yRange);
+  const box = { x1: 0, x2: 25, y1: yScale(yRange[0]), y2: yScale(yRange[1]) };
+  drawBox(ctx, box, { fill: "white" });
+
+  for (const y of ys) {
+    drawLabel(ctx, y.toString(), 20, yScale(y), {
+      textBaseline: "middle",
+      textAlign: "right",
+      withFrame: false,
+    });
+  }
 }
 
 export function drawHorizontalLine(
