@@ -85,123 +85,123 @@ export class TracksManager extends HTMLElement {
     const overviewTrackCov = new OverviewTrack();
     const overviewTrackBaf = new OverviewTrack();
 
-    // this.tracks.push(
-    //   ideogramTrack,
-    //   coverageTrack,
-    //   bafTrack,
-    //   annotationTracks,
-    //   variantTrack,
-    //   transcriptTrack,
-    //   overviewTrackCov,
-    //   overviewTrackBaf,
-    // );
+    this.tracks.push(
+      ideogramTrack,
+      coverageTrack,
+      bafTrack,
+      annotationTracks,
+      variantTrack,
+      transcriptTrack,
+      overviewTrackCov,
+      overviewTrackBaf,
+    );
 
-    // for (const track of this.tracks) {
-    //   this.parentContainer.appendChild(track);
-    // }
+    for (const track of this.tracks) {
+      this.parentContainer.appendChild(track);
+    }
 
-    // await coverageTrack.initialize(
-    //   "Log2 Ratio",
-    //   trackHeight.thick,
-    //   COV_Y_RANGE,
-    //   COV_Y_TICKS,
-    //   async () => {
-    //     return {
-    //       xRange: getXRange(),
-    //       dots: await dataSource.getCovData(),
-    //     };
-    //   },
-    // );
+    await coverageTrack.initialize(
+      "Log2 Ratio",
+      trackHeight.thick,
+      COV_Y_RANGE,
+      COV_Y_TICKS,
+      async () => {
+        return {
+          xRange: getXRange(),
+          dots: await dataSource.getCovData(),
+        };
+      },
+    );
 
-    // await bafTrack.initialize(
-    //   "B Allele Freq",
-    //   trackHeight.thick,
-    //   BAF_Y_RANGE,
-    //   BAF_Y_TICKS,
-    //   async () => {
-    //     return {
-    //       xRange: getXRange(),
-    //       dots: await dataSource.getBafData(),
-    //     };
-    //   },
-    // );
+    await bafTrack.initialize(
+      "B Allele Freq",
+      trackHeight.thick,
+      BAF_Y_RANGE,
+      BAF_Y_TICKS,
+      async () => {
+        return {
+          xRange: getXRange(),
+          dots: await dataSource.getBafData(),
+        };
+      },
+    );
 
-    // await annotationTracks.initialize(trackHeight.thin, async () => {
-    //   const annotSources = getAnnotSources();
-    //   const annotationsData: {source: string, bands: RenderBand[]}[] = [];
-    //   for (const annotSource of annotSources) {
-    //     const bands = await dataSource.getAnnotation(annotSource);
-    //     const annotData = {
-    //       source: annotSource,
-    //       bands,
-    //     };
-    //     annotationsData.push(annotData);
-    //   }
-    //   return {
-    //     xRange: getXRange(),
-    //     annotations: annotationsData,
-    //   };
-    // });
+    await annotationTracks.initialize(trackHeight.thin, async () => {
+      const annotSources = getAnnotSources();
+      const annotationsData: {source: string, bands: RenderBand[]}[] = [];
+      for (const annotSource of annotSources) {
+        const bands = await dataSource.getAnnotation(annotSource);
+        const annotData = {
+          source: annotSource,
+          bands,
+        };
+        annotationsData.push(annotData);
+      }
+      return {
+        xRange: getXRange(),
+        annotations: annotationsData,
+      };
+    });
 
-    // await variantTrack.initialize("Variant", trackHeight.thin, async () => {
-    //   return {
-    //     xRange: getXRange(),
-    //     bands: await dataSource.getVariantData(),
-    //   };
-    // });
+    await variantTrack.initialize("Variant", trackHeight.thin, async () => {
+      return {
+        xRange: getXRange(),
+        bands: await dataSource.getVariantData(),
+      };
+    });
 
-    // await transcriptTrack.initialize(
-    //   "Transcript",
-    //   trackHeight.thin,
-    //   async () => {
-    //     return {
-    //       xRange: getXRange(),
-    //       bands: await dataSource.getTranscriptData(),
-    //     };
-    //   },
-    // );
+    await transcriptTrack.initialize(
+      "Transcript",
+      trackHeight.thin,
+      async () => {
+        return {
+          xRange: getXRange(),
+          bands: await dataSource.getTranscriptData(),
+        };
+      },
+    );
 
-    // await ideogramTrack.initialize("Ideogram", trackHeight.extraThin, async () => {
-    //   return {
-    //     xRange: getXRange(),
-    //     chromInfo: await dataSource.getChromInfo(),
-    //   };
-    // });
+    await ideogramTrack.initialize("Ideogram", trackHeight.extraThin, async () => {
+      return {
+        xRange: getXRange(),
+        chromInfo: await dataSource.getChromInfo(),
+      };
+    });
 
-    // const chromSizes = {};
-    // for (const chromosome of CHROMOSOMES) {
-    //   chromSizes[chromosome] = getChromInfo(chromosome).size;
-    // }
+    const chromSizes = {};
+    for (const chromosome of CHROMOSOMES) {
+      chromSizes[chromosome] = getChromInfo(chromosome).size;
+    }
 
-    // await overviewTrackCov.initialize(
-    //   "Overview (cov)",
-    //   trackHeight.thick,
-    //   chromSizes,
-    //   chromClick,
-    //   COV_Y_RANGE,
-    //   async () => {
-    //     return {
-    //       dotsPerChrom: await dataSource.getOverviewCovData(),
-    //       xRange: getXRange(),
-    //       chromosome: getChromosome(),
-    //     };
-    //   },
-    // );
+    await overviewTrackCov.initialize(
+      "Overview (cov)",
+      trackHeight.thick,
+      chromSizes,
+      chromClick,
+      COV_Y_RANGE,
+      async () => {
+        return {
+          dotsPerChrom: await dataSource.getOverviewCovData(),
+          xRange: getXRange(),
+          chromosome: getChromosome(),
+        };
+      },
+    );
 
-    // await overviewTrackBaf.initialize(
-    //   "Overview (baf)",
-    //   trackHeight.thick,
-    //   chromSizes,
-    //   chromClick,
-    //   BAF_Y_RANGE,
-    //   async () => {
-    //     return {
-    //       dotsPerChrom: await dataSource.getOverviewBafData(),
-    //       xRange: getXRange(),
-    //       chromosome: getChromosome(),
-    //     };
-    //   },
-    // );
+    await overviewTrackBaf.initialize(
+      "Overview (baf)",
+      trackHeight.thick,
+      chromSizes,
+      chromClick,
+      BAF_Y_RANGE,
+      async () => {
+        return {
+          dotsPerChrom: await dataSource.getOverviewBafData(),
+          xRange: getXRange(),
+          chromosome: getChromosome(),
+        };
+      },
+    );
   }
 
   public render(updateData: boolean) {

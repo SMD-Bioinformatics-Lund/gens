@@ -114,6 +114,8 @@ body {
 .header {
   font-size: 22px;
   padding: 15px 20px;
+  position: sticky;
+  top: 0;
 
   display: flex;
   flex-direction: row;
@@ -145,9 +147,28 @@ body {
   cursor: pointer;
 }
 
+// #main-container {
+//   grid-row: 1;
+//   grid-column: 1;
+// }
+
 #main-container {
-  grid-row: 1;
-  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#gens-tracks {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 #button-container {
