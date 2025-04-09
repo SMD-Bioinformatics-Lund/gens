@@ -36,6 +36,11 @@ template.innerHTML = String.raw`
         width: 16px;
         height: 16px;
     }
+    #container {
+      display: "flex",
+      align-items: "center",
+      gap: "8px"
+    }
     #arrow-left {
         background: url(${SVG_BASE}/arrow-left.svg) no-repeat top left;
     }
@@ -49,7 +54,7 @@ template.innerHTML = String.raw`
         background: url(${SVG_BASE}/zoom-out.svg) no-repeat top left;
     }
     </style>
-    <div style="display: flex; align-items: center; gap: 8px;">
+    <div id="container" style="display: flex; align-items: center; gap: 8px;">
         <button id="pan-left" class='button pan'>
             <span id="arrow-left" class='icon' title='Left'></span>
         </button>

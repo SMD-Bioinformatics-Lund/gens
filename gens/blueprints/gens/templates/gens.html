@@ -36,7 +36,8 @@
 <!-- {{ loading() }} -->
 <div id='main-container'>
     <div class="header">
-        <div id='left-group'>
+        <top-bar id="top-bar"></top-bar>
+        <!-- <div id='left-group'>
             <a id="home-link" href="{{ url_for('home.home') }}">
                 <div id="logo-container">
                     <span class='logo'></span>
@@ -48,8 +49,10 @@
         <div id='center-group'>
             <span class='bold' title='Sample ID'>{{sample_name}} | {{case_id}} | {{individual_id}}</span>
             <span class='version'>(Genome build: {{genome_build}})</span>
-        </div>
+        </div> -->
     </div>
+
+
 
     <div style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
         <input-controls id="input-controls"></input-controls>

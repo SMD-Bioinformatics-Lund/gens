@@ -10,6 +10,8 @@ export {
   queryRegionOrGene,
 } from "./navigation";
 
+import "./components/top_bar";
+// import { TopBar } from "./components/top_bar";
 import "./components/tracks_manager";
 import { TracksManager } from "./components/tracks_manager";
 import "./components/input_controls";
