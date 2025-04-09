@@ -94,7 +94,6 @@ export function drawYAxis(
   yScale: Scale,
   yRange: Rng,
 ) {
-  console.log(yRange);
   const box = { x1: 0, x2: 25, y1: yScale(yRange[0]), y2: yScale(yRange[1]) };
   drawBox(ctx, box, { fillColor: "white" });
 

@@ -5,47 +5,13 @@ import {
   zoomInNew,
   zoomOutNew,
 } from "../navigation";
-import { STYLE } from "../util/constants";
-
-// const BUTTON_ZOOM_COLOR = "#8fbcbb";
-// const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
-// const BUTTON_SUBMIT_COLOR = "#6db2c5;";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <!-- <link rel='stylesheet' href='/gens/static/gens.min.css' type='text/css'> -->
   <style>
-  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
-  .button {
-    border: 0px;
-    /* box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3); */
-    padding: 8px 20px;
-    cursor: pointer;
-    background: #FAFBFC;
-    border: 1px solid rgba(27, 31, 35, 0.15);
-    border-radius: 4px;
-    transition: box-shadow 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .button i {
-    font-size: 20px;
-    line-height: 1;
-  }
+  /* @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'); */
 
-  /* Add a hover effect to give visual feedback */
-  .button:hover {
-    background: #E7EEF2;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    transform: scale(1.03);
-  }
-
-  /* Optional: active effect for when the button is pressed */
-  .button:active {
-    transform: scale(0.98);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  }
   #container {
     display: "flex";
     align-items: "center";
@@ -73,7 +39,7 @@ template.innerHTML = String.raw`
       <button id="pan-right" class='button pan'>
         <i class="fas fa-arrow-right"></i>
       </button>
-      <input onFocus='this.select();' id='region-field' type='text' size=20>
+      <input onFocus='this.select();' id='region-field' type='text' class="text-input">
       <button id="submit" class='button pan'>
         <i class="fas fa-search"></i>
       </button>
@@ -82,15 +48,12 @@ template.innerHTML = String.raw`
 `;
 
 export class InputControls extends HTMLElement {
-  private _root: ShadowRoot;
-
   private annotationSourceList: HTMLSelectElement;
   private panLeft: HTMLButtonElement;
   private panRight: HTMLButtonElement;
   private zoomIn: HTMLButtonElement;
   private zoomOut: HTMLButtonElement;
   private regionField: HTMLInputElement;
-  private submit: HTMLButtonElement;
 
   private region: Region;
 
@@ -107,11 +70,12 @@ export class InputControls extends HTMLElement {
     this.regionField = this.querySelector(
       "#region-field",
     ) as HTMLInputElement;
-    this.submit = this.querySelector("#submit") as HTMLButtonElement;
+    // this.submit = this.querySelector("#submit") as HTMLButtonElement;
   }
 
   getRegion(): Region {
-    return parseRegionDesignation(this.regionField.value);
+    return this.region;
+    // return parseRegionDesignation(this.regionField.value);
   }
 
   getAnnotSources(): string[] {
