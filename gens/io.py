@@ -4,7 +4,6 @@ import gzip
 import itertools
 import json
 import logging
-from enum import Enum
 from fractions import Fraction
 from pathlib import Path
 from typing import Any
@@ -16,9 +15,6 @@ from gens.models.genomic import Chromosome
 from gens.models.sample import GenomeCoverage, ZoomLevel
 from gens.db import (
     query_sample,
-)
-from gens.db.collections import (
-    SAMPLES_COLLECTION,
 )
 from gens.routes.utils import ScatterDataType
 
