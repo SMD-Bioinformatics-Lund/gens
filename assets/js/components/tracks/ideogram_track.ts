@@ -22,7 +22,7 @@ export class IdeogramTrack extends CanvasTrack {
     trackHeight: number,
     getRenderData: () => Promise<IdeogramTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight, false);
+    super.initializeCanvas(label, trackHeight);
     setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
 
     const markerElement = setupMarkerElement(trackHeight);
@@ -46,7 +46,6 @@ export class IdeogramTrack extends CanvasTrack {
       this.ctx,
       chromInfo,
       this.dimensions,
-      xRange,
     );
 
     this.renderMarker(xRange, chromInfo.size);
@@ -129,7 +128,6 @@ function cytogeneticIdeogram(
   ctx: CanvasRenderingContext2D,
   chromInfo: ChromosomeInfo,
   dim: Dimensions,
-  xRange: [number, number],
 ): { chromosome: { path: Path2D }; bands: { id: string; path: Path2D }[] } {
   // recalculate genomic coordinates to screen coordinates
   const scale = dim.width / chromInfo.size;
@@ -153,9 +151,6 @@ function cytogeneticIdeogram(
     };
   });
 
-  const y = 5;
-  // const width = width - 5;
-  // const height = height - 6;
   const drawPaths = drawChromosome(
     ctx,
     dim,

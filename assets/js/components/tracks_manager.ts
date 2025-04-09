@@ -39,13 +39,11 @@ export class TracksManager extends HTMLElement {
   protected _root: ShadowRoot;
 
   parentContainer: HTMLDivElement;
-
   isInitialized = false;
-
   annotationsContainer: HTMLDivElement;
 
   // FIXME: Think about a shared interface
-  tracks: (CanvasTrack|AnnotationTracks)[] = [];
+  tracks: (CanvasTrack | AnnotationTracks)[] = [];
 
   // This one needs a dedicated component I think
   annotationTracks: BandTrack[] = [];
@@ -134,8 +132,8 @@ export class TracksManager extends HTMLElement {
       }
       return {
         xRange: getXRange(),
-        annotations: annotationsData
-      }
+        annotations: annotationsData,
+      };
     });
 
     await variantTrack.initialize("Variant", trackHeight.thin, async () => {
@@ -153,6 +151,17 @@ export class TracksManager extends HTMLElement {
           xRange: getXRange(),
           bands: await dataSource.getTranscriptData(),
         };
+      },
+    );
+
+    await transcriptTrack.initialize(
+      "Transcripts",
+      trackHeight.thin,
+      async () => {
+        return {
+          xRange: getXRange(),
+          bands: await dataSource.getTranscriptData(),
+        }
       },
     );
 

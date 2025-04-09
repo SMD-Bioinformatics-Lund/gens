@@ -47,6 +47,13 @@ export const STYLE = {
     },
     tracks: {
         edgeColor: colors.lightGray,
+        // nts per pixel
+        zoomLevel: {
+            showDetails: 5000
+        },
+        font: "12px sans-serif",
+        textColor: colors.darkGray,
+        textPadding: 4,
     },
     colors,
 }

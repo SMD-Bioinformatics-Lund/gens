@@ -15,7 +15,6 @@ function drawEventManager({ target, throttleTime }) {
     ];
     let lastEventTime = 0;
     return (event) => {
-        const now = Date.now();
         if (throttleTime < Date.now() - lastEventTime || event.detail.force) {
             lastEventTime = Date.now();
             for (const track of tracks) {
@@ -112,9 +111,8 @@ export async function drawTrack({
     start,
     end,
     genomeBuild = "38",
-    exclude = [],
-    force = false,
-    ...kwargs
+    exclude: _exclude = [],
+    force: _force = false,
 }) {
     // update input field
     const region = await limitRegionToChromosome({
@@ -221,7 +219,6 @@ export function panTracks(direction = "left", speed = 0.1) {
         chrom: pos.chrom,
         start: pos.start,
         end: pos.end,
-        drawTitle: false,
         exclude: ["cytogenetic-ideogram"],
     });
 }
@@ -258,7 +255,6 @@ export function zoomIn() {
         start: pos.start,
         end: pos.end,
         exclude: ["cytogenetic-ideogram"],
-        drawTitle: false,
     });
 }
 
@@ -273,7 +269,6 @@ export function zoomOut() {
         start: pos.start,
         end: pos.end,
         exclude: ["cytogenetic-ideogram"],
-        drawTitle: false,
     });
 }
 

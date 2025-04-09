@@ -141,7 +141,7 @@ export function setupGenericEventManager({
   });
 }
 
-export function createChromosomeTooltip({ bandId }: { bandId?: string }) {
+export function createChromosomeTooltip({ bandId: _bandId }: { bandId?: string }) {
   const element = document.createElement("div");
   element.id = "ideogram-tooltip";
   const name = document.createElement("span");
@@ -220,6 +220,7 @@ function drawChromosome({
   y: number;
   width: number;
   height: number;
+  // eslint-disable-next-line
   centromere: any;
   color: string;
   bands: BandPath[];

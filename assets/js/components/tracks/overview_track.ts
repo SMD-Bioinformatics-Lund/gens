@@ -31,7 +31,7 @@ export class OverviewTrack extends CanvasTrack {
     yRange: Rng,
     getRenderData: () => Promise<OverviewTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight, false);
+    super.initializeCanvas(label, trackHeight);
     this.chromSizes = chromSizes;
     this.yRange = yRange;
     this.getRenderData = getRenderData;
@@ -199,9 +199,9 @@ function getChromRanges(
   return chromRanges;
 }
 
-function drawSegmentDots(dots: RenderDot[], pxRange: [number, number]) {}
+// function drawSegmentDots(dots: RenderDot[], pxRange: [number, number]) {}
 
 // This will actually be multiple parts
-function additionalText() {}
+// function additionalText() {}
 
 customElements.define("overview-track", OverviewTrack);

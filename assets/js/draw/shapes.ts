@@ -4,7 +4,7 @@
 export function drawPoints({
     ctx,
     data,
-    color, // FIXME: Currently not used?
+    color: _color, // FIXME: Currently not used?
 }: {
     ctx: CanvasRenderingContext2D;
     data: number[];
@@ -186,7 +186,6 @@ export function drawRect({
     color = null,
     fillColor = null,
     open = false,
-    debug = false,
 }: {
     ctx: CanvasRenderingContext2D;
     x: number;

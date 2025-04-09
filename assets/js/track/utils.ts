@@ -13,6 +13,43 @@ export function getVisibleYCoordinates(
   return { y1, y2 };
 }
 
+// FIXME: Make it deal with sub-bands as well
+export function getBoundBoxes(bands, xScale: Scale): HoverBox[] {
+  return bands.map((band) => {
+    return {
+      label: band.label,
+      x1: xScale(band.start),
+      x2: xScale(band.end),
+      y1: band.y1,
+      y2: band.y2,
+    };
+  });
+}
+
+export function getBandYScale(
+  topBottomPad: number,
+  bandPad: number,
+  numberTracks: number,
+  renderingHeight: number,
+  labelSize: number = 0,
+): BandYScale {
+  return (pos: number, expanded: boolean) => {
+    const renderingArea =
+      renderingHeight - topBottomPad * 2 - bandPad * numberTracks;
+
+    const trackHeight = renderingArea / numberTracks;
+
+    let yShift = 0;
+    if (expanded) {
+      yShift = pos * trackHeight;
+    }
+    const y1 = topBottomPad + yShift + bandPad;
+    const y2 = topBottomPad + yShift + trackHeight - bandPad - labelSize;
+
+    return [y1, y2];
+  };
+}
+
 export function getVisibleXCoordinates(
   screenPositions: ScreenPositions,
   feature: { start: number; end: number },
@@ -36,7 +73,10 @@ export function getVisibleXCoordinates(
 // each input is an object with start/ end coordinates
 // f          >----------------<
 // s   >---------<
-export function isElementOverlapping(first: any, second: any) {
+export function isElementOverlapping(
+  first: { start: number; end: number },
+  second: { start: number; end: number },
+) {
   if (
     (first.start > second.start && first.start < second.end) || //
     (first.end > second.start && first.end < second.end) ||
@@ -86,8 +126,8 @@ export function stringToHash(in_str: string): number {
  * Given a map key -> object
  * Extract a map key -> object.value
  */
-export function transformMap<T>(
-  orig: Record<string, any>,
+export function transformMap<A,T>(
+  orig: Record<string, A>,
   extract: (string) => T,
 ): Record<string, T> {
   const entries = Object.entries(orig);
@@ -112,67 +152,6 @@ export function removeChildren(container: HTMLElement) {
   }
 }
 
-// FIXME: Unit testing is needed for this function
-/**
- * Get the number of prior ranges overlapping the current target
- * Also calculates the first free "lane", i.e. the first position where no range is present
- * Assumes ranges sorted on their start position
- */
-export function getOverlapInfo(
-  ranges: { id: string; start: number; end: number }[],
-): Record<string, { nOverlapping: number; lane: number }> {
-  const returnInfo: Record<string, { nOverlapping: number; lane: number }> = {};
-
-  // Set of active ranges
-  let overlapping: { start: number; end: number; lane: number }[] = [];
-
-  // Go over each range
-  ranges.forEach((currBand) => {
-    const passed: {start: number, end: number, lane: number}[] = [];
-
-    // Check for active ranges no longer overlapping the latest range
-    overlapping.forEach((overlapBand) => {
-      if (currBand.start >= overlapBand.end) {
-        passed.push(overlapBand);
-      }
-    });
-
-    // Remove those passed
-    passed.forEach((passedBand) => {
-      const index = overlapping.indexOf(passedBand);
-      overlapping.splice(index, 1);
-    });
-
-    // Find the first now available lane (n(overlapping)+1 is the common case)
-    const lanesInUse = new Set(overlapping.map((band) => band.lane));
-    let currentLane = lanesInUse.size;
-    for (let i = 0; i < lanesInUse.size; i++) {
-      if (!lanesInUse.has(i)) {
-        currentLane = i;
-        break;
-      }
-    }
-
-    if (returnInfo[currBand.id] != null) {
-      console.error(`ID ${currBand.id} is present multiple times`);
-    }
-    const currTrackInfo = {
-      nOverlapping: overlapping.length,
-      lane: currentLane,
-    };
-    // Store lane and n overlapping info for the current band
-    returnInfo[currBand.id] = currTrackInfo;
-
-    overlapping.push({
-      start: currBand.start,
-      end: currBand.end,
-      lane: currentLane,
-    });
-  });
-
-  return returnInfo;
-}
-
 export function zip<A, B>(a: A[], b: B[]): [A, B][] {
   if (a.length !== b.length) {
     throw Error(`Arrays are of different length: ${a.length} ${b.length}`);
@@ -186,7 +165,7 @@ export function pointInRange(point: number, range: Rng): boolean {
 
 /**
  * range1 is a superset of range2, i.e.:
- * 
+ *
  * range1[0] ---------------------- range1[1]
  *        range2[0] -------- range2[1]
  */
@@ -195,5 +174,5 @@ export function rangeSurroundsRange(range1: Rng, range2: Rng): boolean {
 }
 
 export function range1OverlapsRange2(range1: Rng, range2: Rng): boolean {
-  return pointInRange(range1[0], range2) || pointInRange(range1[0], range2)
+  return pointInRange(range1[0], range2) || pointInRange(range1[0], range2);
 }

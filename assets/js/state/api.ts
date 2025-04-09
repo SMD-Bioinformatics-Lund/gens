@@ -8,7 +8,7 @@ import {
   getCoverage,
 } from "./requests";
 
-export class GensAPI {
+export class API {
   sampleId: string;
   caseId: string;
   genomeBuild: number;

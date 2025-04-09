@@ -31,6 +31,7 @@ template.innerHTML = String.raw`
   </div>
 `;
 
+
 export class CanvasTrack extends HTMLElement {
   public label: string;
 
@@ -40,11 +41,11 @@ export class CanvasTrack extends HTMLElement {
   protected dimensions: { width: number; height: number };
   protected _scaleFactor: number;
   protected trackContainer: HTMLDivElement;
+  protected defaultTrackHeight: number;
+  private currentHeight: number;
 
-  protected assignedHeight: number;
+  private expander: Expander;
 
-  // FIXME: Make this an attribute instead
-  protected expanded: boolean;
 
   private tooltip: Tooltip;
   hoverTargets: {
@@ -55,46 +56,58 @@ export class CanvasTrack extends HTMLElement {
     y2: number;
   }[];
 
-  render(updateData: boolean) {}
+  render(_updateData: boolean) {}
+
+  isExpanded(): boolean {
+    return this.expander.isExpanded;
+  }
+
+  setExpandedHeight(height: number) {
+    this.expander.expandedHeight = height;
+    if (this.expander.isExpanded) {
+      this.currentHeight = height;
+      this.syncDimensions();
+    }
+  }
+
+  getNtsPerPixel(xRange: Rng) {
+    const nNts = xRange[1] - xRange[0];
+    const nPxs = this.dimensions.width;
+    return nNts / nPxs;
+  }
 
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
-
-    this.expanded = false;
   }
 
-  initializeCanvas(
-    label: string,
-    trackHeight: number,
-    expandable: boolean,
-  ) {
+  initializeCanvas(label: string, trackHeight: number) {
     this.label = label;
     this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
 
-    this.assignedHeight = trackHeight;
+    this.defaultTrackHeight = trackHeight;
+    this.currentHeight = trackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     this.trackContainer = this._root.getElementById(
       "track-container",
     ) as HTMLDivElement;
 
-    if (expandable) {
-      // FIXME: This *2 is not intended to be used
-      // The expanded size is dynamic
-      this.initializeExpandable(trackHeight, trackHeight * 2);
-    }
-
     this.syncDimensions();
   }
 
   // FIXME: Move to attribute component
-  initializeExpandable(height: number, expandedHeight: number) {
+  initializeExpander(height: number) {
+    this.expander = new Expander();
+
     this.trackContainer.addEventListener("contextmenu", (event) => {
       event.preventDefault();
 
-      this.expanded = !this.expanded;
-      this.assignedHeight = this.expanded ? expandedHeight : height;
+      this.expander.toggle();
+
+      this.currentHeight = this.expander.isExpanded
+        ? this.expander.expandedHeight
+        : height;
       this.syncDimensions();
       this.render(false);
     });
@@ -131,7 +144,7 @@ export class CanvasTrack extends HTMLElement {
   }
 
   setHoverTargets(
-    hoverTargets: {
+    _hoverTargets: {
       label: string;
       x1: number;
       x2: number;
@@ -145,10 +158,10 @@ export class CanvasTrack extends HTMLElement {
       console.error("Cannot run syncDimensions before initialize");
       return;
     }
-    
+
     // Must include the padding here. Otherwise this triggers an infinite resize loop.
     const availWidth = this.getBoundingClientRect().width;
-    const availHeight = this.assignedHeight;
+    const availHeight = this.currentHeight;
 
     const pixelRatio = 2;
 
@@ -158,7 +171,10 @@ export class CanvasTrack extends HTMLElement {
     const actualWidth = displayWidth * pixelRatio;
     const actualHeight = displayHeight * pixelRatio;
 
-    if (this.canvas.width !== actualWidth || this.canvas.height !== actualHeight) {
+    if (
+      this.canvas.width !== actualWidth ||
+      this.canvas.height !== actualHeight
+    ) {
       this.canvas.width = actualWidth;
       this.canvas.height = actualHeight;
 
@@ -166,7 +182,6 @@ export class CanvasTrack extends HTMLElement {
       ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
       // this.canvas.width = displayWidth;
     }
-    
 
     this.dimensions = {
       width: displayWidth,
@@ -174,7 +189,22 @@ export class CanvasTrack extends HTMLElement {
     };
     return this.dimensions;
   }
+}
 
+class Expander {
+  expandedHeight: number = null;
+  isExpanded: boolean;
+
+  constructor() {
+    this.isExpanded = false;
+  }
+
+  toggle() {
+    this.isExpanded = !this.isExpanded;
+    if (this.isExpanded && this.expandedHeight == null) {
+      console.error("Need to assign an expanded height");
+    }
+  }
 }
 
 customElements.define("canvas-track", CanvasTrack);

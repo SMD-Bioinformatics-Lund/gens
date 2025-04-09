@@ -1,9 +1,10 @@
 import { rangeSize } from "../../track/utils";
+import { STYLE } from "../../util/constants";
 
 export function renderBorder(
   ctx: CanvasRenderingContext2D,
   canvasDim: { height: number; width: number },
-  color: string
+  color: string,
 ) {
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, canvasDim.width, canvasDim.height);
@@ -141,8 +142,8 @@ export function rgbArrayToString(rgbArray: number[]): string {
 
 export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
   return annotations.map((annot) => {
-    const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
-    const label = `${annot.name}, ${annot.start}-${annot.end}${rankScore}`;
+    // const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
+    const label = annot.name;
     const colorStr = rgbArrayToString(annot.color);
     return {
       id: `${annot.start}_${annot.end}_${colorStr}`,
@@ -150,19 +151,47 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
       end: annot.end,
       color: colorStr,
       label,
+      info: `${annot.start}-${annot.end} (${label})`
     };
   });
 }
 
-export function parseTranscripts(transcripts: APITranscript[]): RenderBand[] {
-  const transcriptsToRender = transcripts.map((transcript) => {
-    return {
-      id: `${transcript.start}_${transcript.end}_${transcript.transcript_id}`,
+// FIXME: Should this one be here?
+function parseExons(
+  geneId: string,
+  transcriptParts: APITranscriptPart[],
+): RenderBand[] {
+  const exons = transcriptParts.filter((part) => part.feature == "exon");
+
+  return exons.map((part) => {
+    const renderBand = {
+      id: `${geneId}_exon${part.exon_number}_${part.start}_${part.end}`,
+      start: part.start,
+      end: part.end,
+      color: STYLE.colors.teal,
+      label: `${part.exon_number} ${part.start}-${part.end}`,
+    };
+    return renderBand;
+  });
+}
+
+// FIXME: Should this one be here?
+export function parseTranscripts(
+  transcripts: APITranscript[],
+): RenderBand[] {
+  const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
+    const exons = parseExons(transcript.transcript_id, transcript.features);
+    const renderBand: RenderBand = {
+      id: transcript.transcript_id,
       start: transcript.start,
       end: transcript.end,
-      color: "blue",
-      label: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
+      label: transcript.gene_name,
+      color: STYLE.colors.lightGray,
+      info: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
+      direction: transcript.strand as "+" | "-",
+      subBands: exons,
     };
+    return renderBand;
   });
 
   // FIXME: This should be done on the backend
@@ -253,3 +282,46 @@ export function getColorScale(
   return colorScale;
 }
 
+export function drawArrow(
+  ctx: CanvasRenderingContext2D,
+  bandHeight: number,
+  y1: number,
+  isForward: boolean,
+  xPxRange: Rng,
+) {
+  const [xPxStart, xPxEnd] = xPxRange;
+  const arrowHeight = bandHeight;
+  const arrowWidth = arrowHeight * 0.5;
+  const arrowYCenter = y1 + bandHeight / 2;
+  ctx.fillStyle = STYLE.colors.darkGray;
+  ctx.beginPath();
+  if (isForward) {
+    ctx.moveTo(xPxEnd + arrowWidth, arrowYCenter);
+    ctx.lineTo(xPxEnd, arrowYCenter - arrowHeight / 2);
+    ctx.lineTo(xPxEnd, arrowYCenter + arrowHeight / 2);
+  } else {
+    ctx.moveTo(xPxStart - arrowWidth, arrowYCenter);
+    ctx.lineTo(xPxStart, arrowYCenter - arrowHeight / 2);
+    ctx.lineTo(xPxStart, arrowYCenter + arrowHeight / 2);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+export function drawLabel(
+  ctx: CanvasRenderingContext2D,
+  label: string,
+  xPxRange: Rng,
+  bottomY: number,
+) {
+  const [xPxStart, xPxEnd] = xPxRange;
+  const textX = (xPxStart + xPxEnd) / 2;
+  const textY = bottomY + STYLE.tracks.textPadding;
+
+  ctx.font = STYLE.tracks.font;
+  ctx.fillStyle = STYLE.tracks.textColor;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+
+  ctx.fillText(label, textX, textY);
+}
