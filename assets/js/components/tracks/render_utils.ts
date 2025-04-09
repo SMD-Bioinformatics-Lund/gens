@@ -141,7 +141,6 @@ export function rgbArrayToString(rgbArray: number[]): string {
 }
 
 export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
-  console.log(annotations);
   const results = annotations.map((annot) => {
     // const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
     const label = annot.name;
@@ -155,7 +154,6 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
       hoverInfo: `${annot.name} (${annot.start}-${annot.end})`
     };
   });
-  console.log(results);
   return results;
 }
 

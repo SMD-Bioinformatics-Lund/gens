@@ -45,6 +45,11 @@ export class BandTrack extends CanvasTrack {
 
     const labelSize =
       this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
+
+
+    this.setExpandedTrackHeight(numberLanes, showDetails);
+    const dimensions = super.syncDimensions();
+
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,
       STYLE.bandTrack.bandPadding,
@@ -69,11 +74,6 @@ export class BandTrack extends CanvasTrack {
       return renderBand;
     });
 
-    this.setExpandedTrackHeight(numberLanes, showDetails);
-    const dimensions = super.syncDimensions();
-    console.log(
-      `${this.label} dimensions set to ${dimensions.width} ${dimensions.height}`,
-    );
 
     renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
@@ -101,7 +101,6 @@ export class BandTrack extends CanvasTrack {
       style.bandPadding,
       showDetails,
     );
-    console.log(`Expanded height: ${expandedHeight} for ${this.label}`);
     super.setExpandedHeight(expandedHeight);
   }
 }
