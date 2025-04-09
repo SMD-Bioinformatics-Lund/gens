@@ -41,7 +41,6 @@
         <span class='logo'></span>
       </div>
       <input-controls id="input-controls"></input-controls>
-        <!-- <div>Input controls</div> -->
       <div class="settings button">
         <i class="fas fa-cog"></i>
       </div>
@@ -66,14 +65,6 @@
     <!-- <div style="margin-left: 2px; margin-right: 10px; width: 100%;">
     </div> -->
 
-
-
-    <!-- <div id='visualization-container'>
-        <div id='overview-container'>
-            <canvas id='overview-static'></canvas>
-            <div class='marker' id='overview-marker'></div>
-        </div>
-    </div> -->
 </div>
 <script>
     $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
@@ -96,16 +87,6 @@
     const endJs = {{ end }}
     const chromJs = {{ chrom }} !== undefined ? {{ chrom }} : "1";
     const genomeBuildJs = {{ genome_build }}
-
-    // // Redraw when new region is requested
-    // document.addEventListener('data-loaded', () => {
-    //     // hide loading
-    //     document.querySelector('.loading-view')
-    //             .toggleAttribute('hidden');
-    //     // display grid containers
-    //     document.querySelector('#visualization-container')
-    //             .style.display = 'grid';
-    // });
 
     // Initiate variant, annotation and transcript canvases
     // and pass flask values to tracks

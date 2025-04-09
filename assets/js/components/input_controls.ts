@@ -11,8 +11,6 @@ import { STYLE } from "../util/constants";
 // const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
 // const BUTTON_SUBMIT_COLOR = "#6db2c5;";
 
-
-
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <!-- <link rel='stylesheet' href='/gens/static/gens.min.css' type='text/css'> -->
@@ -97,20 +95,19 @@ export class InputControls extends HTMLElement {
   private region: Region;
 
   connectedCallback() {
-    this._root = this.attachShadow({ mode: "open" });
-    this._root.appendChild(template.content.cloneNode(true));
+    this.appendChild(template.content.cloneNode(true));
 
-    this.annotationSourceList = this._root.getElementById(
-      "source-list",
+    this.annotationSourceList = this.querySelector(
+      "#source-list",
     ) as HTMLSelectElement;
-    this.panLeft = this._root.getElementById("pan-left") as HTMLButtonElement;
-    this.panRight = this._root.getElementById("pan-right") as HTMLButtonElement;
-    this.zoomIn = this._root.getElementById("zoom-in") as HTMLButtonElement;
-    this.zoomOut = this._root.getElementById("zoom-out") as HTMLButtonElement;
-    this.regionField = this._root.getElementById(
-      "region-field",
+    this.panLeft = this.querySelector("#pan-left") as HTMLButtonElement;
+    this.panRight = this.querySelector("#pan-right") as HTMLButtonElement;
+    this.zoomIn = this.querySelector("#zoom-in") as HTMLButtonElement;
+    this.zoomOut = this.querySelector("#zoom-out") as HTMLButtonElement;
+    this.regionField = this.querySelector(
+      "#region-field",
     ) as HTMLInputElement;
-    this.submit = this._root.getElementById("submit") as HTMLButtonElement;
+    this.submit = this.querySelector("#submit") as HTMLButtonElement;
   }
 
   getRegion(): Region {
