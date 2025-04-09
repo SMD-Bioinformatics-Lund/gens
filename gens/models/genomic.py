@@ -100,8 +100,8 @@ class GenomicRegion(RWModel):
     """Representation of a region string format."""
 
     chromosome: Chromosome
-    start: int
-    end: int
+    start: int | None
+    end: int | None
 
     @computed_field
     @property

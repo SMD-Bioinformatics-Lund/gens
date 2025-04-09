@@ -1,9 +1,8 @@
 """Routes for getting coverage information."""
 
-from typing import Any, Annotated
-
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
 from gens.crud.samples import get_sample
+from gens.models.genomic import Chromosome, GenomicRegion
 from gens.models.sample import GenomeCoverage, SampleInfo
 from gens.io import get_overview_data, get_scatter_data
 from gens.db.collections import SAMPLES_COLLECTION
@@ -21,12 +20,16 @@ router = APIRouter(prefix="/sample")
 async def get_genome_coverage(
     sample_id: str,
     case_id: str,
-    region: Annotated[list[str], Query(min_length=1)],
+    chromosome: Chromosome,
+    start: int,
+    end: int,
     db: GensDb,
-) -> list[GenomeCoverage]:
+) -> GenomeCoverage:
     """Get genome coverage information."""
 
-    return [get_scatter_data(collection=db.get_collection(SAMPLES_COLLECTION), sample_id=sample_id, case_id=case_id, region_str=reg, cov_or_baf='cov') for reg in region]
+    region = GenomicRegion(chromosome=chromosome, start=start, end=end)
+
+    return get_scatter_data(collection=db.get_collection(SAMPLES_COLLECTION), sample_id=sample_id, case_id=case_id, region=region, cov_or_baf='cov')
 
 
 @router.get(
@@ -36,12 +39,16 @@ async def get_genome_coverage(
 async def get_genome_baf(
     sample_id: str,
     case_id: str,
-    region: Annotated[list[str], Query(min_length=1)],
+    chromosome: Chromosome,
+    start: int,
+    end: int,
     db: GensDb,
-) -> list[GenomeCoverage]:
+) -> GenomeCoverage:
     """Get genome beta allele frequency information."""
 
-    return [get_scatter_data(collection=db.get_collection(SAMPLES_COLLECTION), sample_id=sample_id, case_id=case_id, region_str=reg, cov_or_baf='baf') for reg in region]
+    region = GenomicRegion(chromosome=chromosome, start=start, end=end)
+
+    return get_scatter_data(collection=db.get_collection(SAMPLES_COLLECTION), sample_id=sample_id, case_id=case_id, region=region, cov_or_baf='baf')
 
 
 @router.get("/overview/{data_type}", tags=[ApiTags.SAMPLE])
