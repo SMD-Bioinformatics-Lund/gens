@@ -107,105 +107,42 @@ body {
   display: block;
 }
 
+.button {
+  cursor: pointer;
+}
+
 .header {
   font-size: 22px;
   padding: 15px 20px;
-  display: grid;
-  grid-template-columns: 30% 40% 30%;
-  grid-template-rows: auto;
-  grid-template-areas: "header header header";
 
-  @media only screen {
-    font-family: $default-font;
-    background: $menubar-bg-color;
-    color: $menubar-font-color;
-  }
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 
-  @media only print {
-    font-family: $default-font-print;
-    background: $menubar-bg-color-print;
-    color: $menubar-font-color-print;
-  }
+  color: #333;
+  background-color: #bbcadc
+}
 
-  #left-group {
-    grid-row: 1;
-    grid-column: 1;
-    text-align: left;
-  }
+#logo-container {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: white;
+  /* background: #bbcadc; */
 
-  #center-group {
-    grid-row: 1;
-    grid-column: 2;
-    text-align: center;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  #right-group {
-    grid-row: 1;
-    grid-column: 3;
-    text-align: right;
-  }
-
-  .header-icon {
-    background-size: contain;
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    filter: invert(88%) sepia(97%) saturate(3909%) hue-rotate(179deg)
-      brightness(111%) contrast(105%);
-  }
-
-  .print-icon {
-    background-size: contain;
-    position: fixed;
-    top: 40%;
-    left: 50%;
-    width: 100px;
-    height: 100px;
-    filter: invert(70%);
-    visibility: hidden;
-  }
-
-  .info-icon {
-    position: absolute;
-  }
-
-  .bold {
-    font-weight: bold;
-  }
-
-  #home-link {
-    text-decoration: none;
-  }
-
-  #logo-container {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: inline-block;
-    background: $menubar-font-color;
-  }
-
-  .logo {
-    background: url(./svg/gens-logo-only.svg) no-repeat top left;
-    background-size: contain;
-    width: 35px;
-    height: 35px;
-    display: inherit;
-    // center in parent
-    position: relative;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  .version {
-    font-size: 12px;
-  }
-
-  .date {
-    font-size: 18px;
-    margin-left: 15px;
-  }
+.logo {
+  background: url(/gens/static/svg/gens-logo-only.svg) no-repeat top left;
+  background-size: contain;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
 }
 
 #main-container {
@@ -213,12 +150,12 @@ body {
   grid-column: 1;
 }
 
-#visualization-container {
-  height: min-content;
-  // display: none;
-  // grid-row: 1;
-  // grid-column: 1;
-}
+// #visualization-container {
+//   height: min-content;
+//   // display: none;
+//   // grid-row: 1;
+//   // grid-column: 1;
+// }
 
 #button-container {
   text-align: center;

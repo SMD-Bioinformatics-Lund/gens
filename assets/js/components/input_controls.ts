@@ -10,69 +10,62 @@ const BUTTON_ZOOM_COLOR = "#8fbcbb";
 const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
 const BUTTON_SUBMIT_COLOR = "#6db2c5;";
 
-const SVG_BASE = "/gens/static/svg";
-
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-    <!-- <link rel='stylesheet' href='/gens/static/gens.min.css' type='text/css'> -->
-    <style>
-    .button {
-        border: 0px;
-        box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
-        padding: 5px 15px;
-    }
-    .zoom {
-        background: ${BUTTON_ZOOM_COLOR}
-    }
-    .pan {
-        background: ${BUTTON_NAVIGATE_COLOR}
-    }
-    #submit {
-        background: ${BUTTON_SUBMIT_COLOR}
-    }
-    .icon {
-        background-size: contain;
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-    }
-    #container {
-      display: "flex",
-      align-items: "center",
-      gap: "8px"
-    }
-    #arrow-left {
-        background: url(${SVG_BASE}/arrow-left.svg) no-repeat top left;
-    }
-    #arrow-right {
-        background: url(${SVG_BASE}/arrow-right.svg) no-repeat top left;
-    }
-    #search-plus {
-        background: url(${SVG_BASE}/zoom-in.svg) no-repeat top left;
-    }
-    #search-minus {
-        background: url(${SVG_BASE}/zoom-out.svg) no-repeat top left;
-    }
-    </style>
-    <div id="container" style="display: flex; align-items: center; gap: 8px;">
-        <button id="pan-left" class='button pan'>
-            <span id="arrow-left" class='icon' title='Left'></span>
-        </button>
-        <button id="zoom-in" class='button zoom'>
-            <span id="search-plus" class='icon' title='Zoom in'></span>
-        </button>
-        <button id="zoom-out" class='button zoom'>
-            <span id="search-minus" class='icon' title='Zoom out'></span>
-        </button>
-        <button id="pan-right" class='button pan'>
-            <span id="arrow-right" class='icon' title='Right'></span>
-        </button>
-        <div id='region-form'>
-            <input onFocus='this.select();' id='region-field' type='text' size=20>
-            <input id="submit" type='submit' class='button' title='Submit range'>
-        </div>
-        <select id="source-list" multiple></select>
-    </div>
+  <!-- <link rel='stylesheet' href='/gens/static/gens.min.css' type='text/css'> -->
+  <style>
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+  .button {
+    border: 0px;
+    box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
+    padding: 5px 15px;
+    cursor: pointer;
+  }
+  .zoom {
+    background: ${BUTTON_ZOOM_COLOR}
+  }
+  .pan {
+    background: ${BUTTON_NAVIGATE_COLOR}
+  }
+  #submit {
+    background: ${BUTTON_SUBMIT_COLOR}
+  }
+  .icon {
+    background-size: contain;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+  }
+  #container {
+    display: "flex",
+    align-items: "center",
+    gap: "8px"
+  }
+  #source-list {
+    max-height: 100px;
+    overflow-y: auto;
+  }
+  </style>
+  <div id="container" style="display: flex; align-items: center; gap: 8px;">
+      <button id="pan-left" class='button pan'>
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <button id="zoom-in" class='button zoom'>
+        <i class="fas fa-search-plus"></i>
+      </button>
+      <button id="zoom-out" class='button zoom'>
+        <i class="fas fa-search-minus"></i>
+
+      </button>
+      <button id="pan-right" class='button pan'>
+        <i class="fas fa-arrow-right"></i>
+      </button>
+      <input onFocus='this.select();' id='region-field' type='text' size=20>
+      <button id="pan-right" class='button pan'>
+        <i class="fas fa-search"></i>
+      </button>
+      <select id="source-list" multiple></select>
+  </div>
 `;
 
 export class InputControls extends HTMLElement {
@@ -118,7 +111,7 @@ export class InputControls extends HTMLElement {
 
   getRange(): [number, number] {
     if (this.regionField.value == null) {
-      throw Error("Must initialize before accessing getRange")
+      throw Error("Must initialize before accessing getRange");
     }
     const region = parseRegionDesignation(this.regionField.value);
     return [region.start, region.end];
@@ -199,10 +192,10 @@ export class InputControls extends HTMLElement {
       onPositionChange(newXRange);
     };
 
-    this.submit.onclick = () => {
-      const range = this.getRange();
-      onPositionChange(range);
-    };
+    // this.submit.onclick = () => {
+    //   const range = this.getRange();
+    //   onPositionChange(range);
+    // };
   }
 }
 
