@@ -121,7 +121,7 @@ interface DotTrackData {
 
 interface AnnotationTracksData {
   xRange: Rng,
-  annotations: RenderBand[][],
+  annotations: {source: string, bands: RenderBand[]}[],
 }
 
 interface BandTrackData {

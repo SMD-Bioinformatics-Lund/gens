@@ -81,6 +81,7 @@ export class BandTrack extends CanvasTrack {
       style.bandPadding,
       showDetails,
     );
+    console.log(`Expanded height: ${expandedHeight} for ${this.label}`);
     super.setExpandedHeight(expandedHeight);
   }
 }

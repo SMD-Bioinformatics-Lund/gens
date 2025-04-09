@@ -125,9 +125,13 @@ export class TracksManager extends HTMLElement {
 
     await annotationTracks.initialize(trackHeight.thin, async () => {
       const annotSources = getAnnotSources();
-      const annotationsData = [];
+      const annotationsData: {source: string, bands: RenderBand[]}[] = [];
       for (const annotSource of annotSources) {
-        const annotData = await dataSource.getAnnotation(annotSource);
+        const bands = await dataSource.getAnnotation(annotSource);
+        const annotData = {
+          source: annotSource,
+          bands,
+        };
         annotationsData.push(annotData);
       }
       return {
@@ -161,7 +165,7 @@ export class TracksManager extends HTMLElement {
         return {
           xRange: getXRange(),
           bands: await dataSource.getTranscriptData(),
-        }
+        };
       },
     );
 

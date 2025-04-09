@@ -46,15 +46,15 @@ export class AnnotationTracks extends HTMLElement {
 
     const { xRange, annotations } = this.renderData;
 
-    for (const annotData of annotations) {
+    for (const {source, bands} of annotations) {
       const annotTrack = new BandTrack();
       this.parentContainer.appendChild(annotTrack);
       await annotTrack.initialize(
-        `Annot: ${annotData}`,
+        `Annot: ${source}`,
         this.trackHeight,
         async () => {
           return {
-            bands: annotData,
+            bands,
             xRange,
           };
         },
