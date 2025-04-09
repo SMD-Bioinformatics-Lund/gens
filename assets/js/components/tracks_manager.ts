@@ -158,17 +158,6 @@ export class TracksManager extends HTMLElement {
       },
     );
 
-    await transcriptTrack.initialize(
-      "Transcripts",
-      trackHeight.thin,
-      async () => {
-        return {
-          xRange: getXRange(),
-          bands: await dataSource.getTranscriptData(),
-        };
-      },
-    );
-
     await ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
       return {
         xRange: getXRange(),

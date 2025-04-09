@@ -31,7 +31,6 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-
 export class CanvasTrack extends HTMLElement {
   public label: string;
 
@@ -45,7 +44,6 @@ export class CanvasTrack extends HTMLElement {
   private currentHeight: number;
 
   private expander: Expander;
-
 
   private tooltip: Tooltip;
   hoverTargets: {
@@ -143,15 +141,9 @@ export class CanvasTrack extends HTMLElement {
     });
   }
 
-  setHoverTargets(
-    _hoverTargets: {
-      label: string;
-      x1: number;
-      x2: number;
-      y1: number;
-      y2: number;
-    }[],
-  ) {}
+  setHoverTargets(hoverTargets: HoverBox[]) {
+    this.hoverTargets = hoverTargets;
+  }
 
   syncDimensions() {
     if (!this.canvas || !this.trackContainer) {

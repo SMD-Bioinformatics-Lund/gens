@@ -1,8 +1,16 @@
 import { getOverlapInfo, getTrackHeight } from "../../track/expand_track_utils";
-import { getBandYScale, getBoundBoxes } from "../../track/utils";
+import {
+  getBandYScale,
+  getBoundBoxes as getHoverTargets,
+} from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { drawArrow, drawLabel, getLinearScale, renderBorder } from "./render_utils";
+import {
+  drawArrow,
+  drawLabel,
+  getLinearScale,
+  renderBorder,
+} from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
@@ -24,6 +32,8 @@ export class BandTrack extends CanvasTrack {
       throw Error(`No getRenderData set up for track, must initialize first`);
     }
 
+    console.log(`${this.label} render call`);
+
     if (updateData || this.renderData == null) {
       this.renderData = await this.getRenderData();
     }
@@ -31,7 +41,6 @@ export class BandTrack extends CanvasTrack {
     const { bands, xRange } = this.renderData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
-    const dimensions = super.syncDimensions();
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
     const { numberLanes, bandOverlaps } = getOverlapInfo(bands);
@@ -62,9 +71,15 @@ export class BandTrack extends CanvasTrack {
     });
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
+    const dimensions = super.syncDimensions();
+    console.log(
+      `${this.label} dimensions set to ${dimensions.width} ${dimensions.height}`,
+    );
 
     // FIXME: Different hover boxes for sub-ranges (exons)
-    this.hoverTargets = getBoundBoxes(renderBand, xScale);
+    this.setHoverTargets(
+      getHoverTargets(renderBand, xScale, (band) => band.hoverInfo),
+    );
     renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
     renderBand.forEach((band) =>
@@ -125,6 +140,5 @@ function drawBand(
     }
   }
 }
-
 
 customElements.define("band-track", BandTrack);

@@ -141,7 +141,8 @@ export function rgbArrayToString(rgbArray: number[]): string {
 }
 
 export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
-  return annotations.map((annot) => {
+  console.log(annotations);
+  const results = annotations.map((annot) => {
     // const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
     const label = annot.name;
     const colorStr = rgbArrayToString(annot.color);
@@ -151,9 +152,11 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
       end: annot.end,
       color: colorStr,
       label,
-      info: `${annot.start}-${annot.end} (${label})`
+      hoverInfo: `${annot.name} (${annot.start}-${annot.end})`
     };
   });
+  console.log(results);
+  return results;
 }
 
 // FIXME: Should this one be here?
@@ -185,9 +188,9 @@ export function parseTranscripts(
       id: transcript.transcript_id,
       start: transcript.start,
       end: transcript.end,
-      label: transcript.gene_name,
+      label: transcript.hgnc_id,
       color: STYLE.colors.lightGray,
-      info: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
+      hoverInfo: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
       direction: transcript.strand as "+" | "-",
       subBands: exons,
     };
@@ -218,7 +221,7 @@ export function parseVariants(
       id,
       start: variant.position,
       end: variant.end,
-      label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length} (${id})`,
+      hoverInfo: `${variant.variant_type} ${variant.sub_category}; length ${variant.length} (${id})`,
       color:
         variantColorMap[variant.sub_category] != undefined
           ? variantColorMap[variant.sub_category]

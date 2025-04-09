@@ -100,7 +100,7 @@ interface RenderBand {
   edgeColor?: string,
   edgeWidth?: number
   label?: string,
-  info?: string,
+  hoverInfo?: string,
   direction?: "+" | "-",
   y1?: number,
   y2?: number,
@@ -138,16 +138,16 @@ interface RenderExon {
   band?: RenderBand
 }
 
-interface RenderTranscript {
-  id: string,
-  start: number,
-  end: number,
-  info: string,
-  label: string,
-  strand: "+" | "-",
-  exons: RenderExon[],
-  band?: RenderBand,
-}
+// interface RenderTranscript {
+//   id: string,
+//   start: number,
+//   end: number,
+//   info: string,
+//   label: string,
+//   strand: "+" | "-",
+//   exons: RenderExon[],
+//   band?: RenderBand,
+// }
 
 interface TranscriptsTrackData {
   xRange: Rng,
