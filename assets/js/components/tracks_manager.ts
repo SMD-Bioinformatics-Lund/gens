@@ -56,9 +56,7 @@ export class TracksManager extends HTMLElement {
     this._root.appendChild(template.content.cloneNode(true));
 
     window.addEventListener("resize", () => {
-      if (this.isInitialized) {
-        this.render(false);
-      }
+      this.render(false);
     });
 
     this.parentContainer = this._root.getElementById(

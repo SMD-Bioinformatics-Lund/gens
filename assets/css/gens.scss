@@ -107,117 +107,100 @@ body {
   display: block;
 }
 
+.button {
+  border: 0px;
+  /* box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3); */
+  padding: 4px 10px;
+  cursor: pointer;
+  background: #FAFBFC;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  border-radius: 4px;
+  transition: box-shadow 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.button i {
+  font-size: 20px;
+  line-height: 1;
+  color: #555;
+}
+
+.button:hover {
+  background: #E7EEF2;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  transform: scale(1.01);
+}
+
+.text-input {
+  width: 150px;
+  height: 30px;
+}
+
+/* Optional: active effect for when the button is pressed */
+.button:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
 .header {
   font-size: 22px;
   padding: 15px 20px;
-  display: grid;
-  grid-template-columns: 30% 40% 30%;
-  grid-template-rows: auto;
-  grid-template-areas: "header header header";
+  position: sticky;
+  top: 0;
 
-  @media only screen {
-    font-family: $default-font;
-    background: $menubar-bg-color;
-    color: $menubar-font-color;
-  }
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 
-  @media only print {
-    font-family: $default-font-print;
-    background: $menubar-bg-color-print;
-    color: $menubar-font-color-print;
-  }
-
-  #left-group {
-    grid-row: 1;
-    grid-column: 1;
-    text-align: left;
-  }
-
-  #center-group {
-    grid-row: 1;
-    grid-column: 2;
-    text-align: center;
-  }
-
-  #right-group {
-    grid-row: 1;
-    grid-column: 3;
-    text-align: right;
-  }
-
-  .header-icon {
-    background-size: contain;
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    filter: invert(88%) sepia(97%) saturate(3909%) hue-rotate(179deg)
-      brightness(111%) contrast(105%);
-  }
-
-  .print-icon {
-    background-size: contain;
-    position: fixed;
-    top: 40%;
-    left: 50%;
-    width: 100px;
-    height: 100px;
-    filter: invert(70%);
-    visibility: hidden;
-  }
-
-  .info-icon {
-    position: absolute;
-  }
-
-  .bold {
-    font-weight: bold;
-  }
-
-  #home-link {
-    text-decoration: none;
-  }
-
-  #logo-container {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: inline-block;
-    background: $menubar-font-color;
-  }
-
-  .logo {
-    background: url(./svg/gens-logo-only.svg) no-repeat top left;
-    background-size: contain;
-    width: 35px;
-    height: 35px;
-    display: inherit;
-    // center in parent
-    position: relative;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  .version {
-    font-size: 12px;
-  }
-
-  .date {
-    font-size: 18px;
-    margin-left: 15px;
-  }
+  color: #333;
+  background-color: #bbcadc
 }
+
+#logo-container {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: white;
+  /* background: #bbcadc; */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  background: url(/gens/static/svg/gens-logo-only.svg) no-repeat top left;
+  background-size: contain;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+}
+
+// #main-container {
+//   grid-row: 1;
+//   grid-column: 1;
+// }
 
 #main-container {
-  grid-row: 1;
-  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
-#visualization-container {
-  height: min-content;
-  // display: none;
-  // grid-row: 1;
-  // grid-column: 1;
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#gens-tracks {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 #button-container {
@@ -244,33 +227,6 @@ body {
     background-color: red;
   }
 
-  .button {
-    border: 0px;
-    box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
-    padding: 5px 15px;
-
-    &--zoom-in {
-      @extend .button;
-      background: $btn-zoom-color;
-      margin-left: 5px;
-      margin-right: 2px;
-    }
-
-    &--zoom-out {
-      @extend .button;
-      background: $btn-zoom-color;
-      margin-right: 5px;
-    }
-
-    &--pan {
-      @extend .button;
-      background: $btn-navigate-color;
-    }
-    &--submit {
-      @extend .button;
-      background: $btn-submit-color;
-    }
-  }
 
   .icon {
     background-size: contain;
@@ -329,11 +285,20 @@ body {
   height: 18px;
 }
 
+#input-controls-container {
+  display: "flex";
+  align-items: "center";
+  gap: "8px";
+}
+
+
 #source-list {
-  visibility: hidden;
-  height: 100%;
-  height: 21px;
-  width: 200px;
+  max-height: 80px;
+  overflow-y: auto;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  border-radius: 4px;
+  padding: 4px;
+  font-size: 14px;
 }
 
 #times {

@@ -35,38 +35,36 @@
 {% block body %}
 <!-- {{ loading() }} -->
 <div id='main-container'>
-    <div class="header">
-        <div id='left-group'>
-            <a id="home-link" href="{{ url_for('home.home') }}">
-                <div id="logo-container">
-                    <span class='logo'></span>
-                </div>
-            </a>
-            <span class='version'>v{{ version }}</span>
-            <span class='date'>{{todays_date}}</span>
-        </div>
-        <div id='center-group'>
-            <span class='bold' title='Sample ID'>{{sample_name}} | {{case_id}} | {{individual_id}}</span>
-            <span class='version'>(Genome build: {{genome_build}})</span>
-        </div>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <div class="header">
+      <div id="logo-container">
+        <span class='logo'></span>
+      </div>
+      <input-controls id="input-controls"></input-controls>
+      <div class="settings button">
+        <i class="fas fa-cog"></i>
+      </div>
+  </div>
+  <gens-tracks id="gens-tracks" style="display: block; width: 100%;"></gens-tracks>
+
+
+    <!-- <div id='left-group'>
+        <a id="home-link" href="{{ url_for('home.home') }}">
+            <div id="logo-container">
+                <span class='logo'></span>
+            </div>
+        </a>
+        <span class='version'>v{{ version }}</span>
+        <span class='date'>{{todays_date}}</span>
     </div>
-
-    <div style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
-        <input-controls id="input-controls"></input-controls>
-    </div>
-
-    <div style="margin-left: 2px; margin-right: 10px; width: 100%;">
-        <gens-tracks id="gens-tracks" style="display: block; width: 100%;"></gens-tracks>
-    </div>
-
-
-
-    <!-- <div id='visualization-container'>
-        <div id='overview-container'>
-            <canvas id='overview-static'></canvas>
-            <div class='marker' id='overview-marker'></div>
-        </div>
+    <div id='center-group'>
+        <span class='bold' title='Sample ID'>{{sample_name}} | {{case_id}} | {{individual_id}}</span>
+        <span class='version'>(Genome build: {{genome_build}})</span>
     </div> -->
+
+    <!-- <div style="margin-left: 2px; margin-right: 10px; width: 100%;">
+    </div> -->
+
 </div>
 <script>
     $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
@@ -89,16 +87,6 @@
     const endJs = {{ end }}
     const chromJs = {{ chrom }} !== undefined ? {{ chrom }} : "1";
     const genomeBuildJs = {{ genome_build }}
-
-    // // Redraw when new region is requested
-    // document.addEventListener('data-loaded', () => {
-    //     // hide loading
-    //     document.querySelector('.loading-view')
-    //             .toggleAttribute('hidden');
-    //     // display grid containers
-    //     document.querySelector('#visualization-container')
-    //             .style.display = 'grid';
-    // });
 
     // Initiate variant, annotation and transcript canvases
     // and pass flask values to tracks
