@@ -1,3 +1,5 @@
+import { STYLE } from "../../util/constants";
+import { drawLabel, renderBackground } from "./render_utils";
 import { Tooltip } from "./tooltip_utils";
 
 // FIXME: Move somewhere
@@ -31,7 +33,6 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-
 export class CanvasTrack extends HTMLElement {
   public label: string;
 
@@ -46,15 +47,8 @@ export class CanvasTrack extends HTMLElement {
 
   private expander: Expander;
 
-
   private tooltip: Tooltip;
-  hoverTargets: {
-    label: string;
-    x1: number;
-    x2: number;
-    y1: number;
-    y2: number;
-  }[];
+  hoverTargets: HoverBox[];
 
   render(_updateData: boolean) {}
 
@@ -97,8 +91,8 @@ export class CanvasTrack extends HTMLElement {
   }
 
   // FIXME: Move to attribute component
-  initializeExpander(height: number) {
-    this.expander = new Expander();
+  initializeExpander(height: number, expanded: boolean = false) {
+    this.expander = new Expander(expanded);
 
     this.trackContainer.addEventListener("contextmenu", (event) => {
       event.preventDefault();
@@ -125,10 +119,10 @@ export class CanvasTrack extends HTMLElement {
 
       const hovered = this.hoverTargets.find(
         (target) =>
-          event.offsetX >= target.x1 &&
-          event.offsetX <= target.x2 &&
-          event.offsetY >= target.y1 &&
-          event.offsetY <= target.y2,
+          event.offsetX >= target.box.x1 &&
+          event.offsetX <= target.box.x2 &&
+          event.offsetY >= target.box.y1 &&
+          event.offsetY <= target.box.y2,
       );
 
       if (hovered) {
@@ -143,15 +137,24 @@ export class CanvasTrack extends HTMLElement {
     });
   }
 
-  setHoverTargets(
-    _hoverTargets: {
-      label: string;
-      x1: number;
-      x2: number;
-      y1: number;
-      y2: number;
-    }[],
-  ) {}
+  setHoverTargets(hoverTargets: HoverBox[]) {
+    this.hoverTargets = hoverTargets;
+  }
+
+  baseRender() {
+    this.syncDimensions();
+    renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
+  }
+
+  drawTrackLabel(shiftRight: number = 0) {
+    drawLabel(
+      this.ctx,
+      this.label,
+      STYLE.tracks.textPadding + shiftRight,
+      STYLE.tracks.textPadding,
+      {textBaseline: "top"},
+    );
+  }
 
   syncDimensions() {
     if (!this.canvas || !this.trackContainer) {
@@ -159,7 +162,6 @@ export class CanvasTrack extends HTMLElement {
       return;
     }
 
-    // Must include the padding here. Otherwise this triggers an infinite resize loop.
     const availWidth = this.getBoundingClientRect().width;
     const availHeight = this.currentHeight;
 
@@ -195,8 +197,8 @@ class Expander {
   expandedHeight: number = null;
   isExpanded: boolean;
 
-  constructor() {
-    this.isExpanded = false;
+  constructor(isExpanded: boolean) {
+    this.isExpanded = isExpanded;
   }
 
   toggle() {

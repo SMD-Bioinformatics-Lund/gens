@@ -14,10 +14,14 @@ export function getVisibleYCoordinates(
 }
 
 // FIXME: Make it deal with sub-bands as well
-export function getBoundBoxes(bands, xScale: Scale): HoverBox[] {
+export function getBoundBoxes(
+  bands,
+  xScale: Scale,
+  getLabel: (band: RenderBand) => string,
+): HoverBox[] {
   return bands.map((band) => {
     return {
-      label: band.label,
+      label: getLabel(band),
       x1: xScale(band.start),
       x2: xScale(band.end),
       y1: band.y1,
@@ -126,7 +130,7 @@ export function stringToHash(in_str: string): number {
  * Given a map key -> object
  * Extract a map key -> object.value
  */
-export function transformMap<A,T>(
+export function transformMap<A, T>(
   orig: Record<string, A>,
   extract: (string) => T,
 ): Record<string, T> {

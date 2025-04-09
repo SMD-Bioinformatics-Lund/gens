@@ -15,6 +15,9 @@ import { CanvasTrack } from "./tracks/canvas_track";
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
+const COV_Y_TICKS = [-3, -2, -1, 0, 1, 2, 3];
+const BAF_Y_TICKS = [0.2, 0.4, 0.6, 0.8]
+
 // FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -100,9 +103,10 @@ export class TracksManager extends HTMLElement {
     }
 
     await coverageTrack.initialize(
-      "Coverage",
+      "Log2 Ratio",
       trackHeight.thick,
       COV_Y_RANGE,
+      COV_Y_TICKS,
       async () => {
         return {
           xRange: getXRange(),
@@ -112,9 +116,10 @@ export class TracksManager extends HTMLElement {
     );
 
     await bafTrack.initialize(
-      "BAF",
+      "B Allele Freq",
       trackHeight.thick,
       BAF_Y_RANGE,
+      BAF_Y_TICKS,
       async () => {
         return {
           xRange: getXRange(),
@@ -125,9 +130,13 @@ export class TracksManager extends HTMLElement {
 
     await annotationTracks.initialize(trackHeight.thin, async () => {
       const annotSources = getAnnotSources();
-      const annotationsData = [];
+      const annotationsData: {source: string, bands: RenderBand[]}[] = [];
       for (const annotSource of annotSources) {
-        const annotData = await dataSource.getAnnotation(annotSource);
+        const bands = await dataSource.getAnnotation(annotSource);
+        const annotData = {
+          source: annotSource,
+          bands,
+        };
         annotationsData.push(annotData);
       }
       return {
@@ -154,18 +163,7 @@ export class TracksManager extends HTMLElement {
       },
     );
 
-    await transcriptTrack.initialize(
-      "Transcripts",
-      trackHeight.thin,
-      async () => {
-        return {
-          xRange: getXRange(),
-          bands: await dataSource.getTranscriptData(),
-        }
-      },
-    );
-
-    await ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
+    await ideogramTrack.initialize("Ideogram", trackHeight.extraThin, async () => {
       return {
         xRange: getXRange(),
         chromInfo: await dataSource.getChromInfo(),

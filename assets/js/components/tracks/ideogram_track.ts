@@ -159,13 +159,6 @@ function cytogeneticIdeogram(
     renderBands,
   );
 
-  // drawPaths.chromosome.chromInfo = {
-  //     chrom: chromosomeName,
-  //     x: x,
-  //     width: width,
-  //     scale: scale,
-  //     size: chromInfo.size,
-  // };
   return drawPaths;
 }
 

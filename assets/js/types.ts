@@ -100,7 +100,7 @@ interface RenderBand {
   edgeColor?: string,
   edgeWidth?: number
   label?: string,
-  info?: string,
+  hoverInfo?: string,
   direction?: "+" | "-",
   y1?: number,
   y2?: number,
@@ -121,7 +121,7 @@ interface DotTrackData {
 
 interface AnnotationTracksData {
   xRange: Rng,
-  annotations: RenderBand[][],
+  annotations: {source: string, bands: RenderBand[]}[],
 }
 
 interface BandTrackData {
@@ -138,16 +138,16 @@ interface RenderExon {
   band?: RenderBand
 }
 
-interface RenderTranscript {
-  id: string,
-  start: number,
-  end: number,
-  info: string,
-  label: string,
-  strand: "+" | "-",
-  exons: RenderExon[],
-  band?: RenderBand,
-}
+// interface RenderTranscript {
+//   id: string,
+//   start: number,
+//   end: number,
+//   info: string,
+//   label: string,
+//   strand: "+" | "-",
+//   exons: RenderExon[],
+//   band?: RenderBand,
+// }
 
 interface TranscriptsTrackData {
   xRange: Rng,
@@ -165,12 +165,22 @@ interface OverviewTrackData {
   xRange: Rng,
 }
 
-interface HoverBox {
-  label: string,
+interface Box {
   x1: number,
   x2: number,
   y1: number,
   y2: number,
+}
+
+interface HoverBox {
+  label: string,
+  box: Box
+}
+
+interface BoxStyle {
+  fillColor?: string,
+  borderColor?: string,
+  borderWidth?: number
 }
 
 type Scale = (value: number) => number

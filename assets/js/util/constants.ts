@@ -13,6 +13,7 @@ const colors = {
     black: "#000",
     darkGray: "#555",
     lightGray: "#ccc",
+    extraLightGray: "#eee",
     yellow: "#dcd16f",
     red: "#f00",
     teal: "teal",
@@ -37,16 +38,23 @@ const colors = {
 
 export const STYLE = {
     bandTrack: {
-        trackPadding: 8,
-        bandPadding: 1,
+        trackPadding: 15,
+        bandPadding: 2,
         trackHeight: {
-            thin: 40,
+            extraThin: 20,
+            thin: 50,
             thick: 80,
         },
         edgeColor: colors.darkGray,
     },
     tracks: {
-        edgeColor: colors.lightGray,
+        // edgeColor: colors.white,
+        edgeColor: colors.extraLightGray,
+        gridColor: colors.extraLightGray,
+        textFrameColor: colors.lightGray,
+        dashLength: 4,
+        dashGap: 8,
+        gridLineWidth: 1,
         // nts per pixel
         zoomLevel: {
             showDetails: 5000
@@ -54,6 +62,12 @@ export const STYLE = {
         font: "12px sans-serif",
         textColor: colors.darkGray,
         textPadding: 4,
+        textFramePadding: 2,
+        textLaneSize: 20,
+        backgroundColor: colors.white,
+    },
+    yAxis: {
+        width: 25,
     },
     colors,
 }

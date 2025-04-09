@@ -1,11 +1,3 @@
-// GENS module
-
-// import {
-//     VariantTrack,
-//     AnnotationTrack,
-//     TranscriptTrack,
-//     CytogeneticIdeogram,
-// } from "./track";
 export {
   setupDrawEventManager,
   drawTrack,
@@ -28,13 +20,9 @@ import {
   parseVariants,
   parseAnnotations,
 } from "./components/tracks/render_utils";
-// import { AnnotationTrack } from "./components/tracks/annotation_track";
-// import { CoverageTrack } from "./components/tracks/coverage_track";
 import { API } from "./state/api";
 import { transformMap } from "./track/utils";
 import { STYLE } from "./util/constants";
-
-// FIXME: Query from the backend
 
 export async function initCanvases({
   sampleId,
@@ -77,7 +65,6 @@ export async function initCanvases({
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);
     inputControls.updateChromosome(chrom, chromData.size);
-    // await gensTracks.updateRenderData();
     const updateData = true;
     gensTracks.render(updateData);
   };
@@ -194,19 +181,6 @@ function getRenderDataSource(
     getOverviewBafData,
   };
   return renderDataSource;
-}
-
-// Make hard link and copy link to clipboard
-export function copyPermalink(genomeBuild, region) {
-  // create element and add url to it
-  const tempElement = document.createElement("input");
-  const loc = window.location;
-  tempElement.value = `${loc.host}${loc.pathname}?genome_build=${genomeBuild}&region=${region}`;
-  // add element to DOM
-  document.body.append(tempElement);
-  tempElement.select();
-  document.execCommand("copy");
-  tempElement.remove(); // remove temp node
 }
 
 export { setupGenericEventManager } from "./track";

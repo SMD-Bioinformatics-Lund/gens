@@ -1,8 +1,13 @@
 import { getOverlapInfo, getTrackHeight } from "../../track/expand_track_utils";
-import { getBandYScale, getBoundBoxes } from "../../track/utils";
+import { getBandYScale } from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { drawArrow, drawLabel, getLinearScale, renderBorder } from "./render_utils";
+import {
+  drawArrow,
+  drawLabelBelow,
+  getLinearScale,
+  renderBackground,
+} from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
@@ -31,12 +36,16 @@ export class BandTrack extends CanvasTrack {
     const { bands, xRange } = this.renderData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
-    const dimensions = super.syncDimensions();
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
     const { numberLanes, bandOverlaps } = getOverlapInfo(bands);
 
-    const labelSize = this.isExpanded() && showDetails ? 20 : 0;
+    const labelSize =
+      this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
+
+    this.setExpandedTrackHeight(numberLanes, showDetails);
+    const dimensions = super.syncDimensions();
+
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,
       STYLE.bandTrack.bandPadding,
@@ -56,20 +65,26 @@ export class BandTrack extends CanvasTrack {
       renderBand.y1 = yRange[0];
       renderBand.y2 = yRange[1];
       renderBand.edgeColor = STYLE.bandTrack.edgeColor;
-      renderBand.label = band.id;
 
       return renderBand;
     });
 
-    this.setExpandedTrackHeight(numberLanes, showDetails);
+    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
-    // FIXME: Different hover boxes for sub-ranges (exons)
-    this.hoverTargets = getBoundBoxes(renderBand, xScale);
-    renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
+    const hoverTargets = renderBand.flatMap((band) => {
+      const bandHoverTargets = drawBand(
+        this.ctx,
+        band,
+        xScale,
+        showDetails,
+        this.isExpanded(),
+      );
+      return bandHoverTargets;
+    });
 
-    renderBand.forEach((band) =>
-      drawBand(this.ctx, band, xScale, showDetails, this.isExpanded()),
-    );
+    // getHoverTargets(renderBand, xScale, (band) => band.hoverInfo),
+    this.setHoverTargets(hoverTargets);
+    this.drawTrackLabel();
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
@@ -91,10 +106,12 @@ function drawBand(
   xScale: (number) => number,
   showDetails: boolean,
   isExpanded: boolean,
-) {
+): HoverBox[] {
   const y1 = band.y1;
   const y2 = band.y2;
   const height = y2 - y1;
+
+  const hoverBoxes: HoverBox[] = [];
 
   // Body
   const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
@@ -102,6 +119,10 @@ function drawBand(
   ctx.fillStyle = band.color;
   const width = xPxEnd - xPxStart;
   ctx.fillRect(xPxStart, y1, width, height);
+
+  const box = { x1: xPxStart, x2: xPxEnd, y1, y2 };
+  const hoverBox = { box, label: band.hoverInfo };
+  hoverBoxes.push(hoverBox);
 
   if (showDetails) {
     if (band.subBands != null) {
@@ -119,11 +140,12 @@ function drawBand(
       drawArrow(ctx, height, y1, isForward, xPxRange);
     }
 
-    if (isExpanded) {
-      drawLabel(ctx, band.label, xPxRange, y2);
+    if (isExpanded && band.label != null) {
+      drawLabelBelow(ctx, band.label, (xPxRange[0] + xPxRange[1]) / 2, y2);
     }
   }
-}
 
+  return hoverBoxes;
+}
 
 customElements.define("band-track", BandTrack);

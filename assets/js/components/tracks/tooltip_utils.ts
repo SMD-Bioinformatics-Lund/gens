@@ -67,7 +67,6 @@ export function createTooltipDiv(): HTMLDivElement {
   tt.style.zIndex = "9999";
   tt.style.display = "none";
 
-  // FIXME: Can we use the .scss styling instead?
   tt.style.background = STYLE.colors.darkGray;
   tt.style.color = STYLE.colors.white;
   tt.style.fontWeight = "bold";
@@ -75,7 +74,7 @@ export function createTooltipDiv(): HTMLDivElement {
   tt.style.fontSize = "13px";
   tt.style.borderRadius = "4px";
 
-  tt.textContent = "Hello, I am a tooltip";
+  tt.textContent = "";
   return tt;
 }
 
