@@ -483,11 +483,12 @@ export class InteractiveCanvas extends BaseScatterTrack {
         // work around
         this.titleYPos = result.y_pos - this.titleMargin;
         if (drawTitle) {
-          this.titleBbox !== null &&
+          if (this.titleBbox !== null) {
             this.blitChromName({
               textPosition: this.titleBbox,
               clearOnly: true,
             });
+          }
           this.titleBbox = this.drawTitle(`Chromosome ${result.chrom}`);
           this.blitChromName({ textPosition: this.titleBbox });
         }
