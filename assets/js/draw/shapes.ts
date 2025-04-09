@@ -1,5 +1,6 @@
 // draw basic objects and shapes
 
+import { drawLabel } from "../components/tracks/render_utils";
 import { STYLE } from "../util/constants";
 
 //  Draw data points
@@ -85,6 +86,17 @@ export function drawText({
     height:
       textBbox.actualBoundingBoxAscent + textBbox.actualBoundingBoxDescent,
   };
+}
+
+export function drawYAxis(
+  ctx: CanvasRenderingContext2D,
+  y: number,
+  yScale: Scale,
+) {
+  drawLabel(ctx, y.toString(), 0, yScale(y), {
+    withFrame: false,
+    textBaseline: "middle",
+  });
 }
 
 export function drawHorizontalLine(

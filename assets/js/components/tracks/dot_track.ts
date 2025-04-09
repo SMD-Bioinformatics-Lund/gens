@@ -1,7 +1,7 @@
 import { drawHorizontalLine } from "../../draw/shapes";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { drawDotsScaled, drawLabel, getLinearScale, renderBackground } from "./render_utils";
+import { drawDotsScaled, getLinearScale } from "./render_utils";
 
 export class DotTrack extends CanvasTrack {
   renderData: DotTrackData | null;
@@ -17,7 +17,8 @@ export class DotTrack extends CanvasTrack {
     getRenderData: () => Promise<DotTrackData>,
   ) {
     super.initializeCanvas(label, trackHeight);
-    this.initializeExpander(trackHeight);
+    const startExpanded = true;
+    this.initializeExpander(trackHeight, startExpanded);
     this.setExpandedHeight(trackHeight * 2);
     this.getRenderData = getRenderData;
     this.yRange = yRange;

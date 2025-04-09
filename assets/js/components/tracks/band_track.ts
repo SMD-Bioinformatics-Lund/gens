@@ -1,8 +1,5 @@
 import { getOverlapInfo, getTrackHeight } from "../../track/expand_track_utils";
-import {
-  getBandYScale,
-  getBoundBoxes as getHoverTargets,
-} from "../../track/utils";
+import { getBandYScale } from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 import {
@@ -115,7 +112,7 @@ function drawBand(
   const y2 = band.y2;
   const height = y2 - y1;
 
-  const hoverBoxes = [];
+  const hoverBoxes: HoverBox[] = [];
 
   // Body
   const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
@@ -123,7 +120,9 @@ function drawBand(
   ctx.fillStyle = band.color;
   const width = xPxEnd - xPxStart;
   ctx.fillRect(xPxStart, y1, width, height);
-  const hoverBox = { x1: xPxStart, x2: xPxEnd, y1, y2, label: band.hoverInfo };
+
+  const box = { x1: xPxStart, x2: xPxEnd, y1, y2 };
+  const hoverBox = { box, label: band.hoverInfo };
   hoverBoxes.push(hoverBox);
 
   if (showDetails) {

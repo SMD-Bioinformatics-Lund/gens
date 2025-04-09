@@ -312,32 +312,71 @@ export function drawLabel(
   label: string,
   leftX: number,
   topY: number,
+  style: {
+    withFrame?: boolean;
+    textBaseline?: "top" | "middle" | "bottom";
+    textAlign?: "left" | "right" | "center";
+    padding?: number;
+    font?: string;
+    textColor?: string;
+  } = { },
 ) {
-  ctx.font = STYLE.tracks.font;
-  ctx.fillStyle = STYLE.tracks.textColor;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
+  console.log("Rendering label", label);
 
-  const padding = STYLE.tracks.textFramePadding;
+  const {
+    withFrame = true,
+    textBaseline = "top",
+    padding = STYLE.tracks.textFramePadding,
+    font = STYLE.tracks.font,
+    textColor = STYLE.tracks.textColor,
+    textAlign = "left"
+  } = style;
+
+  ctx.font = font;
 
   const metrics = ctx.measureText(label);
   const textWidth = metrics.width;
-  const textHeight = metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxDescent;
+  const textHeight =
+    metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
 
-  const frameX1 = leftX - padding;
-  const frameWidth = textWidth + 2 * padding;
-  const frameY1 = topY - padding;
-  const frameHeight = textHeight + 2 * padding;
+  console.log(`text width ${textWidth} height ${textHeight}`)
 
-  ctx.fillStyle = STYLE.tracks.backgroundColor;
-  ctx.fillRect(frameX1, frameY1, frameWidth, frameHeight);
+  if (withFrame) {
+    const x1 = leftX - padding;
+    const frameWidth = textWidth + 2 * padding;
+    const y1 = topY - padding;
+    const frameHeight = textHeight + 2 * padding;
 
-  ctx.strokeStyle = STYLE.tracks.edgeColor;
-  ctx.lineWidth = STYLE.tracks.gridLineWidth;
-  ctx.strokeRect(frameX1, frameY1, frameWidth, frameHeight)
+    const box = {
+      x1,
+      x2: x1 + frameWidth,
+      y1,
+      y2: y1 + frameHeight,
+    };
 
-  ctx.fillStyle = STYLE.tracks.textColor;
+    drawBox(ctx, box);
+  }
+
+  ctx.fillStyle = textColor;
+  ctx.textAlign = textAlign;
+  ctx.textBaseline = textBaseline;
+  console.log("Drawing text at", label, leftX, topY);
   ctx.fillText(label, leftX, topY);
+}
+
+export function drawBox(
+  ctx: CanvasRenderingContext2D,
+  box: Box,
+  fill: string = STYLE.tracks.backgroundColor,
+  border: string = STYLE.tracks.edgeColor,
+  borderWidth: number = STYLE.tracks.gridLineWidth,
+) {
+  ctx.fillStyle = fill;
+  ctx.fillRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+
+  ctx.strokeStyle = border;
+  ctx.lineWidth = borderWidth;
+  ctx.strokeRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 }
 
 export function drawLabelBelow(

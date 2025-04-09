@@ -1,5 +1,5 @@
 import { STYLE } from "../../util/constants";
-import { drawLabel, drawLabelBelow, renderBackground } from "./render_utils";
+import { drawLabel, renderBackground } from "./render_utils";
 import { Tooltip } from "./tooltip_utils";
 
 // FIXME: Move somewhere
@@ -48,13 +48,7 @@ export class CanvasTrack extends HTMLElement {
   private expander: Expander;
 
   private tooltip: Tooltip;
-  hoverTargets: {
-    label: string;
-    x1: number;
-    x2: number;
-    y1: number;
-    y2: number;
-  }[];
+  hoverTargets: HoverBox[];
 
   render(_updateData: boolean) {}
 
@@ -97,8 +91,8 @@ export class CanvasTrack extends HTMLElement {
   }
 
   // FIXME: Move to attribute component
-  initializeExpander(height: number) {
-    this.expander = new Expander();
+  initializeExpander(height: number, expanded: boolean = false) {
+    this.expander = new Expander(expanded);
 
     this.trackContainer.addEventListener("contextmenu", (event) => {
       event.preventDefault();
@@ -125,10 +119,10 @@ export class CanvasTrack extends HTMLElement {
 
       const hovered = this.hoverTargets.find(
         (target) =>
-          event.offsetX >= target.x1 &&
-          event.offsetX <= target.x2 &&
-          event.offsetY >= target.y1 &&
-          event.offsetY <= target.y2,
+          event.offsetX >= target.box.x1 &&
+          event.offsetX <= target.box.x2 &&
+          event.offsetY >= target.box.y1 &&
+          event.offsetY <= target.box.y2,
       );
 
       if (hovered) {
@@ -160,6 +154,7 @@ export class CanvasTrack extends HTMLElement {
       this.label,
       STYLE.tracks.textPadding,
       STYLE.tracks.textPadding,
+      {textBaseline: "top"}
     );
   }
 
@@ -205,8 +200,8 @@ class Expander {
   expandedHeight: number = null;
   isExpanded: boolean;
 
-  constructor() {
-    this.isExpanded = false;
+  constructor(isExpanded: boolean) {
+    this.isExpanded = isExpanded;
   }
 
   toggle() {

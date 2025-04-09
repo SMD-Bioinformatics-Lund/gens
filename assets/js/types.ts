@@ -165,12 +165,16 @@ interface OverviewTrackData {
   xRange: Rng,
 }
 
-interface HoverBox {
-  label: string,
+interface Box {
   x1: number,
   x2: number,
   y1: number,
   y2: number,
+}
+
+interface HoverBox {
+  label: string,
+  box: Box
 }
 
 type Scale = (value: number) => number
