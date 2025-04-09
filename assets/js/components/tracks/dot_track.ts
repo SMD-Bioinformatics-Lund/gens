@@ -1,20 +1,27 @@
+import { drawHorizontalLine } from "../../draw/shapes";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import {
-  drawDotsScaled,
-  getLinearScale,
-  renderBorder,
-} from "./render_utils";
+import { drawDotsScaled, drawLabel, getLinearScale, renderBackground } from "./render_utils";
 
 export class DotTrack extends CanvasTrack {
   renderData: DotTrackData | null;
   getRenderData: () => Promise<DotTrackData>;
   yRange: Rng;
+  yTicks: number[];
 
-  async initialize(label: string, trackHeight: number, yRange: Rng, getRenderData: () => Promise<DotTrackData>) {
+  async initialize(
+    label: string,
+    trackHeight: number,
+    yRange: Rng,
+    yTicks: number[],
+    getRenderData: () => Promise<DotTrackData>,
+  ) {
     super.initializeCanvas(label, trackHeight);
+    this.initializeExpander(trackHeight);
+    this.setExpandedHeight(trackHeight * 2);
     this.getRenderData = getRenderData;
     this.yRange = yRange;
+    this.yTicks = yTicks;
     await this.updateRenderData();
   }
 
@@ -30,13 +37,17 @@ export class DotTrack extends CanvasTrack {
     const { xRange, dots } = this.renderData;
     const yRange = this.yRange;
 
-    super.syncDimensions();
+    super.baseRender();
 
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
     const yScale = getLinearScale(yRange, [0, this.dimensions.height]);
 
-    renderBorder(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
+    for (const yTick of this.yTicks) {
+      drawHorizontalLine(this.ctx, yTick, yScale, STYLE.colors.lightGray, true);
+    }
+
     drawDotsScaled(this.ctx, dots, xScale, yScale);
+    this.drawLabel();
   }
 }
 

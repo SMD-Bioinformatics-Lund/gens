@@ -1,3 +1,5 @@
+import { STYLE } from "../../util/constants";
+import { drawLabel, drawLabelBelow, renderBackground } from "./render_utils";
 import { Tooltip } from "./tooltip_utils";
 
 // FIXME: Move somewhere
@@ -143,6 +145,22 @@ export class CanvasTrack extends HTMLElement {
 
   setHoverTargets(hoverTargets: HoverBox[]) {
     this.hoverTargets = hoverTargets;
+  }
+
+  baseRender() {
+    console.log("Base render");
+    this.syncDimensions();
+    renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
+
+  }
+
+  drawLabel() {
+    drawLabel(
+      this.ctx,
+      this.label,
+      STYLE.tracks.textPadding,
+      STYLE.tracks.textPadding,
+    );
   }
 
   syncDimensions() {

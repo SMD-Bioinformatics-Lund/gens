@@ -5,7 +5,7 @@ import { CanvasTrack } from "./canvas_track";
 import {
   drawDotsScaled,
   linearScale,
-  renderBorder,
+  renderBackground,
 } from "./render_utils";
 
 const X_PAD = 5;
@@ -66,7 +66,7 @@ export class OverviewTrack extends CanvasTrack {
 
     const { xRange, chromosome, dotsPerChrom } = this.renderData;
 
-    renderBorder(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
+    renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
 
     const totalChromSize = Object.values(this.chromSizes).reduce(
       (tot, size) => tot + size,

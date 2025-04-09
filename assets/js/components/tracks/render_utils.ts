@@ -1,7 +1,7 @@
 import { rangeSize } from "../../track/utils";
 import { STYLE } from "../../util/constants";
 
-export function renderBorder(
+export function renderBackground(
   ctx: CanvasRenderingContext2D,
   canvasDim: { height: number; width: number },
   color: string,
@@ -151,7 +151,7 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
       end: annot.end,
       color: colorStr,
       label,
-      hoverInfo: `${annot.name} (${annot.start}-${annot.end})`
+      hoverInfo: `${annot.name} (${annot.start}-${annot.end})`,
     };
   });
   return results;
@@ -177,9 +177,7 @@ function parseExons(
 }
 
 // FIXME: Should this one be here?
-export function parseTranscripts(
-  transcripts: APITranscript[],
-): RenderBand[] {
+export function parseTranscripts(transcripts: APITranscript[]): RenderBand[] {
   const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
     const exons = parseExons(transcript.transcript_id, transcript.features);
     const renderBand: RenderBand = {
@@ -312,11 +310,43 @@ export function drawArrow(
 export function drawLabel(
   ctx: CanvasRenderingContext2D,
   label: string,
-  xPxRange: Rng,
+  leftX: number,
+  topY: number,
+) {
+  ctx.font = STYLE.tracks.font;
+  ctx.fillStyle = STYLE.tracks.textColor;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+
+  const padding = STYLE.tracks.textFramePadding;
+
+  const metrics = ctx.measureText(label);
+  const textWidth = metrics.width;
+  const textHeight = metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxDescent;
+
+  const frameX1 = leftX - padding;
+  const frameWidth = textWidth + 2 * padding;
+  const frameY1 = topY - padding;
+  const frameHeight = textHeight + 2 * padding;
+
+  ctx.fillStyle = STYLE.tracks.backgroundColor;
+  ctx.fillRect(frameX1, frameY1, frameWidth, frameHeight);
+
+  ctx.strokeStyle = STYLE.tracks.edgeColor;
+  ctx.lineWidth = STYLE.tracks.gridLineWidth;
+  ctx.strokeRect(frameX1, frameY1, frameWidth, frameHeight)
+
+  ctx.fillStyle = STYLE.tracks.textColor;
+  ctx.fillText(label, leftX, topY);
+}
+
+export function drawLabelBelow(
+  ctx: CanvasRenderingContext2D,
+  label: string,
+  centerX: number,
   bottomY: number,
 ) {
-  const [xPxStart, xPxEnd] = xPxRange;
-  const textX = (xPxStart + xPxEnd) / 2;
+  const textX = centerX;
   const textY = bottomY + STYLE.tracks.textPadding;
 
   ctx.font = STYLE.tracks.font;

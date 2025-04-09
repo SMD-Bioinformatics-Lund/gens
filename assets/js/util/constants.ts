@@ -13,6 +13,7 @@ const colors = {
     black: "#000",
     darkGray: "#555",
     lightGray: "#ccc",
+    extraLightGray: "#eee",
     yellow: "#dcd16f",
     red: "#f00",
     teal: "teal",
@@ -47,6 +48,10 @@ export const STYLE = {
     },
     tracks: {
         edgeColor: colors.lightGray,
+        gridColor: colors.extraLightGray,
+        dashLength: 1,
+        dashGap: 8,
+        gridLineWidth: 1,
         // nts per pixel
         zoomLevel: {
             showDetails: 5000
@@ -54,7 +59,9 @@ export const STYLE = {
         font: "12px sans-serif",
         textColor: colors.darkGray,
         textPadding: 4,
+        textFramePadding: 2,
         textLaneSize: 20,
+        backgroundColor: colors.white,
     },
     colors,
 }

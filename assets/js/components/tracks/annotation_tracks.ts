@@ -50,7 +50,7 @@ export class AnnotationTracks extends HTMLElement {
       const annotTrack = new BandTrack();
       this.parentContainer.appendChild(annotTrack);
       await annotTrack.initialize(
-        `Annot: ${source}`,
+        source,
         this.trackHeight,
         async () => {
           return {

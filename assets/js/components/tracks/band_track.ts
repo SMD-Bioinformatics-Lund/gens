@@ -7,9 +7,9 @@ import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 import {
   drawArrow,
-  drawLabel,
+  drawLabelBelow,
   getLinearScale,
-  renderBorder,
+  renderBackground,
 } from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
@@ -46,7 +46,6 @@ export class BandTrack extends CanvasTrack {
     const labelSize =
       this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
 
-
     this.setExpandedTrackHeight(numberLanes, showDetails);
     const dimensions = super.syncDimensions();
 
@@ -74,8 +73,7 @@ export class BandTrack extends CanvasTrack {
       return renderBand;
     });
 
-
-    renderBorder(this.ctx, dimensions, STYLE.tracks.edgeColor);
+    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
     const hoverTargets = renderBand.flatMap((band) => {
       const bandHoverTargets = drawBand(
@@ -90,6 +88,7 @@ export class BandTrack extends CanvasTrack {
 
     // getHoverTargets(renderBand, xScale, (band) => band.hoverInfo),
     this.setHoverTargets(hoverTargets);
+    this.drawLabel();
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
@@ -144,7 +143,7 @@ function drawBand(
     }
 
     if (isExpanded) {
-      drawLabel(ctx, band.label, xPxRange, y2);
+      drawLabelBelow(ctx, band.label, (xPxRange[0] + xPxRange[1]) / 2, y2);
     }
   }
 
