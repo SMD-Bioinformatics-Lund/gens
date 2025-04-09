@@ -5,10 +5,13 @@ import {
   zoomInNew,
   zoomOutNew,
 } from "../navigation";
+import { STYLE } from "../util/constants";
 
-const BUTTON_ZOOM_COLOR = "#8fbcbb";
-const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
-const BUTTON_SUBMIT_COLOR = "#6db2c5;";
+// const BUTTON_ZOOM_COLOR = "#8fbcbb";
+// const BUTTON_NAVIGATE_COLOR = "#6db2c5;";
+// const BUTTON_SUBMIT_COLOR = "#6db2c5;";
+
+
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -17,33 +20,46 @@ template.innerHTML = String.raw`
   @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
   .button {
     border: 0px;
-    box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
-    padding: 5px 15px;
+    /* box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3); */
+    padding: 8px 20px;
     cursor: pointer;
+    background: #FAFBFC;
+    border: 1px solid rgba(27, 31, 35, 0.15);
+    border-radius: 4px;
+    transition: box-shadow 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  .zoom {
-    background: ${BUTTON_ZOOM_COLOR}
+  .button i {
+    font-size: 20px;
+    line-height: 1;
   }
-  .pan {
-    background: ${BUTTON_NAVIGATE_COLOR}
+
+  /* Add a hover effect to give visual feedback */
+  .button:hover {
+    background: #E7EEF2;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transform: scale(1.03);
   }
-  #submit {
-    background: ${BUTTON_SUBMIT_COLOR}
-  }
-  .icon {
-    background-size: contain;
-    display: inline-block;
-    width: 16px;
-    height: 16px;
+
+  /* Optional: active effect for when the button is pressed */
+  .button:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
   #container {
-    display: "flex",
-    align-items: "center",
-    gap: "8px"
+    display: "flex";
+    align-items: "center";
+    gap: "8px";
   }
   #source-list {
     max-height: 100px;
     overflow-y: auto;
+    border: 1px solid rgba(27, 31, 35, 0.15);
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 14px;
   }
   </style>
   <div id="container" style="display: flex; align-items: center; gap: 8px;">
@@ -55,13 +71,12 @@ template.innerHTML = String.raw`
       </button>
       <button id="zoom-out" class='button zoom'>
         <i class="fas fa-search-minus"></i>
-
       </button>
       <button id="pan-right" class='button pan'>
         <i class="fas fa-arrow-right"></i>
       </button>
       <input onFocus='this.select();' id='region-field' type='text' size=20>
-      <button id="pan-right" class='button pan'>
+      <button id="submit" class='button pan'>
         <i class="fas fa-search"></i>
       </button>
       <select id="source-list" multiple></select>

@@ -150,13 +150,6 @@ body {
   grid-column: 1;
 }
 
-// #visualization-container {
-//   height: min-content;
-//   // display: none;
-//   // grid-row: 1;
-//   // grid-column: 1;
-// }
-
 #button-container {
   text-align: center;
   grid-row: 7;
@@ -181,33 +174,6 @@ body {
     background-color: red;
   }
 
-  .button {
-    border: 0px;
-    box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
-    padding: 5px 15px;
-
-    &--zoom-in {
-      @extend .button;
-      background: $btn-zoom-color;
-      margin-left: 5px;
-      margin-right: 2px;
-    }
-
-    &--zoom-out {
-      @extend .button;
-      background: $btn-zoom-color;
-      margin-right: 5px;
-    }
-
-    &--pan {
-      @extend .button;
-      background: $btn-navigate-color;
-    }
-    &--submit {
-      @extend .button;
-      background: $btn-submit-color;
-    }
-  }
 
   .icon {
     background-size: contain;
