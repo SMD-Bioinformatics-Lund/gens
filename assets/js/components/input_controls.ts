@@ -8,25 +8,7 @@ import {
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-  <!-- <link rel='stylesheet' href='/gens/static/gens.min.css' type='text/css'> -->
-  <style>
-  /* @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'); */
-
-  #container {
-    display: "flex";
-    align-items: "center";
-    gap: "8px";
-  }
-  #source-list {
-    max-height: 100px;
-    overflow-y: auto;
-    border: 1px solid rgba(27, 31, 35, 0.15);
-    border-radius: 4px;
-    padding: 4px;
-    font-size: 14px;
-  }
-  </style>
-  <div id="container" style="display: flex; align-items: center; gap: 8px;">
+  <div id="input-controls-container" style="display: flex; align-items: center; gap: 8px;">
       <button id="pan-left" class='button pan'>
         <i class="fas fa-arrow-left"></i>
       </button>
@@ -128,6 +110,7 @@ export class InputControls extends HTMLElement {
         if (defaultAnnots.includes(filename)) {
           opt.selected = true;
         }
+        console.log("Appending source:", opt);
         this.annotationSourceList.appendChild(opt);
       }
     });
