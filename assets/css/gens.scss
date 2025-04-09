@@ -115,7 +115,7 @@ body {
   background: #FAFBFC;
   border: 1px solid rgba(27, 31, 35, 0.15);
   border-radius: 4px;
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.1s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -128,8 +128,8 @@ body {
 
 .button:hover {
   background: #E7EEF2;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  transform: scale(1.03);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  transform: scale(1.01);
 }
 
 .text-input {
