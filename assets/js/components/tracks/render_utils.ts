@@ -281,3 +281,47 @@ export function getColorScale(
   };
   return colorScale;
 }
+
+export function drawArrow(
+  ctx: CanvasRenderingContext2D,
+  bandHeight: number,
+  y1: number,
+  isForward: boolean,
+  xPxRange: Rng,
+) {
+  const [xPxStart, xPxEnd] = xPxRange;
+  const arrowHeight = bandHeight;
+  const arrowWidth = arrowHeight * 0.5;
+  const arrowYCenter = y1 + bandHeight / 2;
+  ctx.fillStyle = STYLE.colors.darkGray;
+  ctx.beginPath();
+  if (isForward) {
+    ctx.moveTo(xPxEnd + arrowWidth, arrowYCenter);
+    ctx.lineTo(xPxEnd, arrowYCenter - arrowHeight / 2);
+    ctx.lineTo(xPxEnd, arrowYCenter + arrowHeight / 2);
+  } else {
+    ctx.moveTo(xPxStart - arrowWidth, arrowYCenter);
+    ctx.lineTo(xPxStart, arrowYCenter - arrowHeight / 2);
+    ctx.lineTo(xPxStart, arrowYCenter + arrowHeight / 2);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+export function drawLabel(
+  ctx: CanvasRenderingContext2D,
+  label: string,
+  xPxRange: Rng,
+  bottomY: number,
+) {
+  const [xPxStart, xPxEnd] = xPxRange;
+  const textX = (xPxStart + xPxEnd) / 2;
+  const textY = bottomY + STYLE.tracks.textPadding;
+
+  ctx.font = STYLE.tracks.font;
+  ctx.fillStyle = STYLE.tracks.textColor;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+
+  ctx.fillText(label, textX, textY);
+}

@@ -126,8 +126,8 @@ export function stringToHash(in_str: string): number {
  * Given a map key -> object
  * Extract a map key -> object.value
  */
-export function transformMap<T>(
-  orig: Record<string, T>,
+export function transformMap<A,T>(
+  orig: Record<string, A>,
   extract: (string) => T,
 ): Record<string, T> {
   const entries = Object.entries(orig);

@@ -274,7 +274,6 @@ export class InteractiveCanvas extends BaseScatterTrack {
             end: end,
             exclude: ["cytogenetic-ideogram"],
             force: true,
-            drawTitle: false,
           });
         }
       } else if (this.drag) {
@@ -282,8 +281,6 @@ export class InteractiveCanvas extends BaseScatterTrack {
         drawTrack({
           ...readInputField(),
           force: true,
-          displayLoading: false,
-          drawTitle: false,
         });
       }
       // reset dragging behaviour
@@ -632,7 +629,6 @@ export class InteractiveCanvas extends BaseScatterTrack {
         `${this.contentCanvas.parentElement.id}`,
         "cytogenetic-ideogram",
       ],
-      displayLoading: false,
     });
   }
 }

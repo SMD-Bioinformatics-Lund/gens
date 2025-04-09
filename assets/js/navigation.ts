@@ -219,7 +219,6 @@ export function panTracks(direction = "left", speed = 0.1) {
         chrom: pos.chrom,
         start: pos.start,
         end: pos.end,
-        drawTitle: false,
         exclude: ["cytogenetic-ideogram"],
     });
 }
@@ -256,7 +255,6 @@ export function zoomIn() {
         start: pos.start,
         end: pos.end,
         exclude: ["cytogenetic-ideogram"],
-        drawTitle: false,
     });
 }
 
@@ -271,7 +269,6 @@ export function zoomOut() {
         start: pos.start,
         end: pos.end,
         exclude: ["cytogenetic-ideogram"],
-        drawTitle: false,
     });
 }
 

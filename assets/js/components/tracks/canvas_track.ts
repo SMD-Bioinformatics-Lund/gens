@@ -31,22 +31,6 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-// FIXME: Util
-class Expander {
-  expandedHeight: number = null;
-  isExpanded: boolean;
-
-  constructor() {
-    this.isExpanded = false;
-  }
-
-  toggle() {
-    this.isExpanded = !this.isExpanded;
-    if (this.isExpanded && this.expandedHeight == null) {
-      console.error("Need to assign an expanded height");
-    }
-  }
-}
 
 export class CanvasTrack extends HTMLElement {
   public label: string;
@@ -204,6 +188,22 @@ export class CanvasTrack extends HTMLElement {
       height: displayHeight,
     };
     return this.dimensions;
+  }
+}
+
+class Expander {
+  expandedHeight: number = null;
+  isExpanded: boolean;
+
+  constructor() {
+    this.isExpanded = false;
+  }
+
+  toggle() {
+    this.isExpanded = !this.isExpanded;
+    if (this.isExpanded && this.expandedHeight == null) {
+      console.error("Need to assign an expanded height");
+    }
   }
 }
 

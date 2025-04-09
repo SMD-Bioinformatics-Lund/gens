@@ -2,7 +2,7 @@ import { getOverlapInfo, getTrackHeight } from "../../track/expand_track_utils";
 import { getBandYScale, getBoundBoxes } from "../../track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { getLinearScale, renderBorder } from "./render_utils";
+import { drawArrow, drawLabel, getLinearScale, renderBorder } from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
@@ -125,50 +125,5 @@ function drawBand(
   }
 }
 
-// FIXME: Util
-function drawLabel(
-  ctx: CanvasRenderingContext2D,
-  label: string,
-  xPxRange: Rng,
-  bottomY: number,
-) {
-  const [xPxStart, xPxEnd] = xPxRange;
-  const textX = (xPxStart + xPxEnd) / 2;
-  const textY = bottomY + STYLE.tracks.textPadding;
-
-  ctx.font = STYLE.tracks.font;
-  ctx.fillStyle = STYLE.tracks.textColor;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-
-  ctx.fillText(label, textX, textY);
-}
-
-// FIXME: Util
-function drawArrow(
-  ctx: CanvasRenderingContext2D,
-  bandHeight: number,
-  y1: number,
-  isForward: boolean,
-  xPxRange: Rng,
-) {
-  const [xPxStart, xPxEnd] = xPxRange;
-  const arrowHeight = bandHeight;
-  const arrowWidth = arrowHeight * 0.5;
-  const arrowYCenter = y1 + bandHeight / 2;
-  ctx.fillStyle = STYLE.colors.darkGray;
-  ctx.beginPath();
-  if (isForward) {
-    ctx.moveTo(xPxEnd + arrowWidth, arrowYCenter);
-    ctx.lineTo(xPxEnd, arrowYCenter - arrowHeight / 2);
-    ctx.lineTo(xPxEnd, arrowYCenter + arrowHeight / 2);
-  } else {
-    ctx.moveTo(xPxStart - arrowWidth, arrowYCenter);
-    ctx.lineTo(xPxStart, arrowYCenter - arrowHeight / 2);
-    ctx.lineTo(xPxStart, arrowYCenter + arrowHeight / 2);
-  }
-  ctx.closePath();
-  ctx.fill();
-}
 
 customElements.define("band-track", BandTrack);
