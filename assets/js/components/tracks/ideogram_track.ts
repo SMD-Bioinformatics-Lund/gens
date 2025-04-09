@@ -1,6 +1,6 @@
 import tippy, { followCursor } from "tippy.js";
 import { drawChromosome } from "../../draw/ideogram";
-import { createChromosomeTooltip } from "../../track/ideogram";
+import { createChromosomeTooltip } from "../../unused/track/ideogram";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 

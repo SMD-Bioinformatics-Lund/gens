@@ -1,5 +1,5 @@
 import { drawVerticalLine } from "../../draw/shapes";
-import { transformMap, padRange, rangeSize } from "../../track/utils";
+import { transformMap, padRange, rangeSize } from "../../unused/track/utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
 import {

@@ -2,7 +2,7 @@
 
 import { BaseAnnotationTrack } from "./base";
 import { isElementOverlapping, isWithinElementVisibleBbox } from "./utils";
-import { drawRect, drawLine, drawWaveLine, drawText } from "../draw";
+import { drawRect, drawLine, drawWaveLine, drawText } from "../../draw";
 import {
   initTrackTooltips,
   createTooltipElement,

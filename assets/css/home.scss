@@ -1,7 +1,9 @@
-@import "defaults", "navbar";
+@use "sass:color";
+@use "defaults";
+@use "navbar";
 
 $table-border-color: #ddd;
-$selected-color: adjust-color($menubar-bg-color, $lightness: +30%);
+$selected-color: color.adjust(navbar.$menubar-bg-color, $lightness: 30%);
 
 .align-right {
   text-align: right;
@@ -28,8 +30,8 @@ $selected-color: adjust-color($menubar-bg-color, $lightness: +30%);
     }
 
     thead {
-      background-color: $menubar-bg-color;
-      color: $menubar-font-color;
+      background-color: navbar.$menubar-bg-color;
+      color: navbar.$menubar-font-color;
       font-weight: bold;
     }
 
@@ -84,7 +86,7 @@ $selected-color: adjust-color($menubar-bg-color, $lightness: +30%);
     display: block;
     padding: 8px;
     text-decoration: none;
-    color: $default-font-color;
+    color: defaults.$default-font-color;
   }
 }
 
@@ -99,7 +101,7 @@ $selected-color: adjust-color($menubar-bg-color, $lightness: +30%);
   background-color: $selected-color;
 
   a {
-    color: $menubar-font-color;
+    color: navbar.$menubar-font-color;
   }
 }
 

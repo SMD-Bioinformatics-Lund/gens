@@ -23,7 +23,7 @@ import {
   parseAnnotations,
 } from "./components/tracks/render_utils";
 import { API } from "./state/api";
-import { transformMap } from "./track/utils";
+import { transformMap } from "./unused/track/utils";
 import { STYLE } from "./util/constants";
 
 export async function initCanvases({

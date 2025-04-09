@@ -1,10 +1,10 @@
 // Entrypoint for track module
 
-export { VariantTrack } from "./track/variant";
-export { TranscriptTrack } from "./track/transcript";
+export { VariantTrack } from "./unused/track/variant";
+export { TranscriptTrack } from "./unused/track/transcript";
 // export { AnnotationTrack } from "./track/annotation";
-export { BaseScatterTrack } from "./track/base";
+export { BaseScatterTrack } from "./unused/track/base";
 export {
   CytogeneticIdeogram,
   setupGenericEventManager,
-} from "./track/ideogram";
+} from "./unused/track/ideogram";

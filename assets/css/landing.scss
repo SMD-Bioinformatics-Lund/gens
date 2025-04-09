@@ -1,7 +1,8 @@
-@import "defaults", "navbar";
-
+@use "sass:color";
+@use "defaults";
+@use "navbar";
 $table-border-color: #ddd;
-$selected-color: adjust-color($menubar-bg-color, $lightness: +30%);
+$selected-color: color.adjust(navbar.$menubar-bg-color, $lightness: 30%);
 
 .align-right {
   text-align: right;
@@ -45,17 +46,17 @@ $selected-color: adjust-color($menubar-bg-color, $lightness: +30%);
   }
 
   input {
-    font-family: $default-font;
+    font-family: defaults.$default-font;
     font-size: 1.5em;
   }
 }
 
 .btn {
-  font-family: $default-font;
+  font-family: defaults.$default-font;
   font-size: 1.5em;
   border-radius: 3px;
-  color: $menubar-font-color;
-  background-color: $menubar-bg-color;
+  color: navbar.$menubar-font-color;
+  background-color: navbar.$menubar-bg-color;
   box-shadow:
     0 2px 4px 0 rgba(0, 0, 0, 0.2),
     0 3px 10px 0 rgba(0, 0, 0, 0.19);
@@ -78,6 +79,6 @@ $selected-color: adjust-color($menubar-bg-color, $lightness: +30%);
   background-color: $selected-color;
 
   a {
-    color: $menubar-font-color;
+    color: navbar.$menubar-font-color;
   }
 }

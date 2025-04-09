@@ -1,11 +1,8 @@
-@import "defaults", "navbar";
+@use "defaults";
+@use "navbar";
 // region marker
 $marker-color: rgba(#dcd16f, 0.3);
-// buttons
-$btn-zoom-color: #8fbcbb;
-$btn-navigate-color: #6db2c5;
 
-$btn-submit-color: #6db2c5;
 html,
 body {
   max-width: 100%;
@@ -70,16 +67,16 @@ body {
   box-sizing: border-box;
   padding-top: 210px;
   z-index: 10;
-  background-color: $default-bg-color;
+  background-color: defaults.$default-bg-color;
 }
 
 .help-popup {
   // dimensions and color
   display: none;
   transition: opacity 2s linear 0.5s;
-  color: $default-font-color;
-  background: $default-bg-color;
-  border: 1px solid $default-font-color;
+  color: defaults.$default-font-color;
+  background: defaults.$default-bg-color;
+  border: 1px solid defaults.$default-font-color;
   width: 300px;
   padding: 0px 10px 10px 10px;
   // positioning
@@ -255,30 +252,6 @@ html, body {
   }
 }
 
-// #interactive-container {
-//   display: grid;
-//   grid-row: 3;
-//   grid-column: 1;
-
-//   #interactive-static {
-//     z-index: 1;
-//     pointer-events: none;
-//     grid-row: 4;
-//     grid-column: 1;
-//   }
-
-//   #interactive-content {
-//     z-index: 1;
-//     grid-row: 4;
-//     grid-column: 1;
-//   }
-
-//   #interactive-marker {
-//     position: absolute;
-//     z-index: 1;
-//   }
-// }
-
 #interactive-options {
   text-align: center;
   width: 100%;
@@ -449,7 +422,7 @@ html, body {
   margin: 0;
   // style
   $black: #000;
-  background-color: $default-bg-color;
+  background-color: defaults.$default-bg-color;
 
   .loading-container {
     position: relative;
@@ -464,11 +437,11 @@ html, body {
   .message {
     font: italic 1.2em sans-serif;
     padding-right: 12px;
-    color: $default-font-color;
+    color: defaults.$default-font-color;
     flex: 1;
   }
   .spinner {
-    border-top: 3px solid rgba($menubar-bg-color, 0.5);
+    border-top: 3px solid rgba(navbar.$menubar-bg-color, 0.5);
     border-right: 3px solid transparent;
     border-radius: 50%;
     width: 30px;

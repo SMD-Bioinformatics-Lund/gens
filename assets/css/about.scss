@@ -1,4 +1,5 @@
-@import "defaults", "navbar";
+@use "defaults";
+@use "navbar";
 $tablet-width: 768px;
 $desktop-width: 1024px;
 
