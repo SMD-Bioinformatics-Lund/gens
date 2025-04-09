@@ -54,6 +54,7 @@ export const STYLE = {
         font: "12px sans-serif",
         textColor: colors.darkGray,
         textPadding: 4,
+        textLaneSize: 20,
     },
     colors,
 }
