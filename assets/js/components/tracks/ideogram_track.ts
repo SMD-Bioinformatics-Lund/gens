@@ -42,7 +42,6 @@ export class IdeogramTrack extends CanvasTrack {
 
     const { chromInfo, xRange } = this.renderData;
 
-    this.ctx.clearRect(0, 0, this.dimensions.width, this.dimensions.height);
     this.drawPaths = cytogeneticIdeogram(
       this.ctx,
       chromInfo,
