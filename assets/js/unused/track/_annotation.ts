@@ -1,7 +1,7 @@
 // Annotation track definition
 
-import { BaseAnnotationTrack } from "./base";
-import { isElementOverlapping, stringToHash } from "./utils";
+import { BaseAnnotationTrack } from "./_base";
+import { isElementOverlapping, stringToHash } from "./_utils";
 import { get } from "../../fetch";
 import { parseRegionDesignation } from "../../navigation";
 import { drawRect, drawText } from "../../draw";
@@ -10,7 +10,7 @@ import {
   createTooltipElement,
   makeVirtualDOMElement,
   updateVisibleElementCoordinates,
-} from "./tooltip";
+} from "./_tooltip";
 import { createPopper } from "@popperjs/core";
 
 

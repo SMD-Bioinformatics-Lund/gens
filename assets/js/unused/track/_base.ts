@@ -1,7 +1,7 @@
 // Generic functions related to drawing annotation tracks
 
 import { get } from "../../fetch";
-import { hideTooltip } from "./tooltip";
+import { hideTooltip } from "./_tooltip";
 
 // Calculate offscreen position
 export function calculateOffscreenWindowPos({ start, end, multiplier }) {

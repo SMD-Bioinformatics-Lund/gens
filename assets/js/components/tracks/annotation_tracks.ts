@@ -1,4 +1,4 @@
-import { removeChildren } from "../../unused/track/utils";
+import { removeChildren } from "../../unused/track/_utils";
 import { BandTrack } from "./band_track";
 
 const template = document.createElement("template");

@@ -1,10 +1,10 @@
 // functions for handling tooltips
-import { BaseAnnotationTrack } from "./base";
+import { BaseAnnotationTrack } from "./_base";
 import {
   getVisibleXCoordinates,
   getVisibleYCoordinates,
   isWithinElementBbox,
-} from "./utils";
+} from "./_utils";
 
 // make virtual DOM element that represents a annotation element
 export function makeVirtualDOMElement({

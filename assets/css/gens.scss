@@ -3,17 +3,17 @@
 // region marker
 $marker-color: rgba(#dcd16f, 0.3);
 
-html,
-body {
-  max-width: 100%;
-  min-height: 100%;
-  width: 100%;
-  overflow-x: hidden;
-  margin: 0;
-  display: grid;
-  grid-template-columns: auto;
-  grid-template-rows: auto;
-}
+// html,
+// body {
+//   // max-width: 100%;
+//   // min-height: 100%;
+//   // width: 100%;
+//   // overflow-x: hidden;
+//   // margin: 0;
+//   // display: grid;
+//   // grid-template-columns: auto;
+//   // grid-template-rows: auto;
+// }
 
 .tooltip {
   background: #333;
@@ -153,7 +153,9 @@ body {
   gap: 8px;
 
   color: #333;
-  background-color: #bbcadc
+  background-color: #bbcadc;
+
+  z-index: 1000;
 }
 
 #logo-container {
@@ -175,11 +177,6 @@ body {
   height: 35px;
   cursor: pointer;
 }
-
-// #main-container {
-//   grid-row: 1;
-//   grid-column: 1;
-// }
 
 #main-container {
   display: flex;
@@ -267,7 +264,7 @@ html, body {
 
 #source-list {
   max-height: 80px;
-  overflow-y: auto;
+  // overflow-y: auto;
   border: 1px solid rgba(27, 31, 35, 0.15);
   border-radius: 4px;
   padding: 4px;
@@ -299,7 +296,7 @@ html, body {
 .info-container[data-state="collapsed"] {
   padding-right: 0;
   border: 1px solid gray;
-  overflow-y: hidden;
+  // overflow-y: hidden;
 }
 
 .info-container[data-state="expanded"] {
@@ -347,8 +344,8 @@ html, body {
 .info-container {
   display: grid;
   grid-column: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  // overflow-y: auto;
+  // overflow-x: hidden;
   height: 100px;
 
   .info-canvas {

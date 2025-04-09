@@ -1,14 +1,14 @@
 // Variant track definition
 
-import { BaseAnnotationTrack } from "./base";
-import { isElementOverlapping, isWithinElementVisibleBbox } from "./utils";
+import { BaseAnnotationTrack } from "./_base";
+import { isElementOverlapping, isWithinElementVisibleBbox } from "./_utils";
 import { drawRect, drawLine, drawWaveLine, drawText } from "../../draw";
 import {
   initTrackTooltips,
   createTooltipElement,
   makeVirtualDOMElement,
   updateVisibleElementCoordinates,
-} from "./tooltip";
+} from "./_tooltip";
 import { createPopper } from "@popperjs/core";
 
 // Draw variants

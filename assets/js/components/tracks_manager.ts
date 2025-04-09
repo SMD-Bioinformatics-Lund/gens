@@ -30,7 +30,7 @@ template.innerHTML = String.raw`
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
-      overflow-x: hidden;
+      /* overflow-x: hidden; */
       padding-left: 10px;
       padding-right: 10px;
     }

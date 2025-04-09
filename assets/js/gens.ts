@@ -1,6 +1,5 @@
 export {
   setupDrawEventManager,
-  drawTrack,
   previousChromosome,
   nextChromosome,
   panTracks,
@@ -11,6 +10,7 @@ export {
 } from "./navigation";
 
 import "./components/top_bar";
+import "./components/util/tag_multi_select";
 // import { TopBar } from "./components/top_bar";
 import "./components/tracks_manager";
 import { TracksManager } from "./components/tracks_manager";
@@ -23,7 +23,7 @@ import {
   parseAnnotations,
 } from "./components/tracks/render_utils";
 import { API } from "./state/api";
-import { transformMap } from "./unused/track/utils";
+import { transformMap } from "./unused/track/_utils";
 import { STYLE } from "./util/constants";
 
 export async function initCanvases({
@@ -102,9 +102,11 @@ async function initialize(
     startRegion,
     [defaultAnnotation],
     async (_region, _source) => {
+      console.log("A");
       tracks.render(true);
     },
     async (_newXRange) => {
+      console.log("B");
       tracks.render(true);
     },
     gensApiURI,
@@ -119,7 +121,6 @@ async function initialize(
     () => inputControls.getAnnotSources(),
   );
 
-  // await tracks.updateRenderData();
   tracks.render(true);
 }
 
