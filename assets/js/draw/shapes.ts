@@ -96,7 +96,7 @@ export function drawYAxis(
 ) {
   console.log(yRange);
   const box = { x1: 0, x2: 25, y1: yScale(yRange[0]), y2: yScale(yRange[1]) };
-  drawBox(ctx, box, { fill: "white" });
+  drawBox(ctx, box, { fillColor: "white" });
 
   for (const y of ys) {
     drawLabel(ctx, y.toString(), 20, yScale(y), {

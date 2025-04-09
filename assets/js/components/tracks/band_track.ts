@@ -65,7 +65,6 @@ export class BandTrack extends CanvasTrack {
       renderBand.y1 = yRange[0];
       renderBand.y2 = yRange[1];
       renderBand.edgeColor = STYLE.bandTrack.edgeColor;
-      renderBand.label = band.id;
 
       return renderBand;
     });
@@ -85,7 +84,7 @@ export class BandTrack extends CanvasTrack {
 
     // getHoverTargets(renderBand, xScale, (band) => band.hoverInfo),
     this.setHoverTargets(hoverTargets);
-    this.drawLabel();
+    this.drawTrackLabel();
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
@@ -141,7 +140,7 @@ function drawBand(
       drawArrow(ctx, height, y1, isForward, xPxRange);
     }
 
-    if (isExpanded) {
+    if (isExpanded && band.label != null) {
       drawLabelBelow(ctx, band.label, (xPxRange[0] + xPxRange[1]) / 2, y2);
     }
   }

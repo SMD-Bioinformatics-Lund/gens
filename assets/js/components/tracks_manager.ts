@@ -163,7 +163,7 @@ export class TracksManager extends HTMLElement {
       },
     );
 
-    await ideogramTrack.initialize("Ideogram", trackHeight.thin, async () => {
+    await ideogramTrack.initialize("Ideogram", trackHeight.extraThin, async () => {
       return {
         xRange: getXRange(),
         chromInfo: await dataSource.getChromInfo(),

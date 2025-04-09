@@ -319,6 +319,7 @@ export function drawLabel(
     padding?: number;
     font?: string;
     textColor?: string;
+    boxStyle?: BoxStyle;
   } = {},
 ) {
   const {
@@ -328,6 +329,7 @@ export function drawLabel(
     font = STYLE.tracks.font,
     textColor = STYLE.tracks.textColor,
     textAlign = "left",
+    boxStyle = undefined
   } = style;
 
   ctx.font = font;
@@ -350,7 +352,7 @@ export function drawLabel(
       y2: y1 + frameHeight,
     };
 
-    drawBox(ctx, box);
+    drawBox(ctx, box, boxStyle);
   }
 
   ctx.fillStyle = textColor;
@@ -362,11 +364,11 @@ export function drawLabel(
 export function drawBox(
   ctx: CanvasRenderingContext2D,
   box: Box,
-  style: { fill?: string; border?: string; borderWidth?: number } = {},
+  style: BoxStyle = {},
 ) {
   const {
-    fill = STYLE.tracks.backgroundColor,
-    border = STYLE.tracks.edgeColor,
+    fillColor: fill = STYLE.tracks.backgroundColor,
+    borderColor: border = STYLE.tracks.textFrameColor,
     borderWidth = STYLE.tracks.gridLineWidth,
   } = style;
 

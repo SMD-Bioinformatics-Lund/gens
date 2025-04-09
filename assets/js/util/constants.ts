@@ -38,18 +38,21 @@ const colors = {
 
 export const STYLE = {
     bandTrack: {
-        trackPadding: 8,
-        bandPadding: 1,
+        trackPadding: 15,
+        bandPadding: 2,
         trackHeight: {
-            thin: 40,
+            extraThin: 20,
+            thin: 50,
             thick: 80,
         },
         edgeColor: colors.darkGray,
     },
     tracks: {
-        edgeColor: colors.lightGray,
+        // edgeColor: colors.white,
+        edgeColor: colors.extraLightGray,
         gridColor: colors.extraLightGray,
-        dashLength: 1,
+        textFrameColor: colors.lightGray,
+        dashLength: 4,
         dashGap: 8,
         gridLineWidth: 1,
         // nts per pixel
@@ -62,6 +65,9 @@ export const STYLE = {
         textFramePadding: 2,
         textLaneSize: 20,
         backgroundColor: colors.white,
+    },
+    yAxis: {
+        width: 25,
     },
     colors,
 }

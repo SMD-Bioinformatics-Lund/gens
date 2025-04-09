@@ -47,11 +47,10 @@ export class DotTrack extends CanvasTrack {
       drawHorizontalLine(this.ctx, yTick, yScale, STYLE.colors.lightGray, true);
     }
 
-    
     drawDotsScaled(this.ctx, dots, xScale, yScale);
     drawYAxis(this.ctx, this.yTicks, yScale, yRange);
-    const shiftRight = 25;
-    this.drawLabel(shiftRight);
+    const shiftRight = STYLE.yAxis.width;
+    this.drawTrackLabel(shiftRight);
   }
 }
 

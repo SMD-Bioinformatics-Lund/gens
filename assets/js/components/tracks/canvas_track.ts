@@ -142,19 +142,17 @@ export class CanvasTrack extends HTMLElement {
   }
 
   baseRender() {
-    console.log("Base render");
     this.syncDimensions();
     renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
-
   }
 
-  drawLabel(shiftRight: number = 0) {
+  drawTrackLabel(shiftRight: number = 0) {
     drawLabel(
       this.ctx,
       this.label,
       STYLE.tracks.textPadding + shiftRight,
       STYLE.tracks.textPadding,
-      {textBaseline: "top"}
+      {textBaseline: "top"},
     );
   }
 
@@ -164,7 +162,6 @@ export class CanvasTrack extends HTMLElement {
       return;
     }
 
-    // Must include the padding here. Otherwise this triggers an infinite resize loop.
     const availWidth = this.getBoundingClientRect().width;
     const availHeight = this.currentHeight;
 

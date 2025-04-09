@@ -177,6 +177,12 @@ interface HoverBox {
   box: Box
 }
 
+interface BoxStyle {
+  fillColor?: string,
+  borderColor?: string,
+  borderWidth?: number
+}
+
 type Scale = (value: number) => number
 
 type ColorScale = (level: string) => string
