@@ -10,7 +10,6 @@ export function drawHorizontalLineInScale(
 ) {
   const start = { x: 0, y };
   const end = { x: ctx.canvas.width, y };
-  const lineWidth = STYLE.tracks.gridLineWidth;
   drawLineInScale(ctx, start, end, null, yScale, lineStyle);
 }
 
@@ -22,7 +21,6 @@ export function drawVerticalLineInScale(
 ) {
   const start = { x, y: 0 };
   const end = { x, y: ctx.canvas.height };
-  const lineWidth = STYLE.tracks.gridLineWidth;
   drawLineInScale(ctx, start, end, xScale, null, lineStyle);
 }
 
@@ -32,9 +30,8 @@ export function drawLineInScale(
   end: Point,
   xScale: Scale,
   yScale: Scale,
-  lineStyle: LineStyle = {}
+  lineStyle: LineStyle = {},
 ) {
-
   const scaledStart = {
     x: xScale ? xScale(start.x) : start.x,
     y: yScale ? yScale(start.y) : start.y,
@@ -46,30 +43,14 @@ export function drawLineInScale(
   };
 
   // transpose coordinates .5 px to become sharper
-
   const line = {
-    x1: Math.floor(scaledStart.x) + 0.5,
-    x2: Math.floor(scaledEnd.x) + 0.5,
-    y1: Math.floor(scaledStart.y) + 0.5,
-    y2: Math.floor(scaledEnd.y) + 0.5,
+    x1: scaledStart.x,
+    x2: scaledEnd.x,
+    y1: scaledStart.y,
+    y2: scaledEnd.y,
   };
 
   drawLine(ctx, line, lineStyle);
-
-  // ctx.save();
-  // ctx.strokeStyle = color;
-  // ctx.lineWidth = lineWidth;
-  // if (dashed) {
-  //   ctx.setLineDash([STYLE.tracks.dashLength, STYLE.tracks.dashGap]);
-  // } else {
-  //   ctx.setLineDash([]);
-  // }
-
-  // ctx.beginPath();
-  // ctx.moveTo(x1, y1);
-  // ctx.lineTo(x2, y2);
-  // ctx.stroke();
-  // ctx.restore();
 }
 
 export function drawLine(

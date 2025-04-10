@@ -162,6 +162,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
     // update chromosome title event
     this.contentCanvas.addEventListener(
       "update-title",
+      // eslint-disable-next-line
       (event: any) => {
         const len = event.detail.bands.length;
         if (len > 0) {

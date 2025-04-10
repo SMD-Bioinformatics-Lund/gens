@@ -20,7 +20,7 @@ export async function initCanvases({
   sampleId,
   caseId,
   genomeBuild,
-  scoutBaseURL,
+  scoutBaseURL: _scoutBaseURL,
   gensApiURL,
   annotationFile,
   startRegion,
