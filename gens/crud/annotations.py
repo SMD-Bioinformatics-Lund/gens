@@ -5,7 +5,7 @@ from pymongo.database import Database
 
 from gens.models.annotation import AnnotationTrackInDb
 from gens.models.base import PydanticObjectId
-from gens.models.genomic import Chromosome, GenomeBuild
+from gens.models.genomic import GenomeBuild
 from .collections import ANNOTATIONS_COLLECTION
 
 
