@@ -8,10 +8,11 @@ from pymongo.database import Database
 
 from gens import version
 from gens.config import UI_COLORS, settings
+from gens.crud.genomic import get_chromosome_info
 from gens.db import query_sample
 from gens.db.collections import SAMPLES_COLLECTION
-from gens.graph import parse_region_str
-from gens.models.genomic import GenomeBuild
+from gens.models.genomic import GenomeBuild, GenomicRegion
+from gens.genomic import parse_region_str
 
 LOG = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ def display_case(sample_name: str) -> str:
     with current_app.app_context():
         genome_build = GenomeBuild(int(request.args.get("genome_build", "38")))
 
-    parsed_region = parse_region_str(region, genome_build)
+    parsed_region = parse_region_str(region)
     if not parsed_region:
         abort(416)
 
@@ -65,31 +66,18 @@ def display_case(sample_name: str) -> str:
     # get annotation track
     annotation = request.args.get("annotation", settings.default_annotation_track)
 
-    (_, region) = parsed_region
-
-    # FIXME: This is due to mypys lack of understanding of the "computer_field" in the pydantic models
-    # Look into how to resolve this
-    chromosome = region.chromosome.value  # type: ignore
-    start_pos = region.start  # type: ignore
-    end_pos = region.end  # type: ignore
-
-    if chromosome is None:
-        raise ValueError("Expected a region with a valid chromosome value")
-
-    if start_pos is None:
-        raise ValueError("Expected a region with a valid start value")
-
-    if end_pos is None:
-        raise ValueError("Expected a region with a valid end value")
+    if parsed_region.end is None:
+        chrom_info = get_chromosome_info(db, parsed_region.chromosome, genome_build)
+        parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})
 
 
     return render_template(
         "gens.html",
         ui_colors=UI_COLORS,
         scout_base_url=settings.scout_url,
-        chrom=chromosome,
-        start=start_pos,
-        end=end_pos,
+        chrom=parsed_region.chromosome,
+        start=parsed_region.start,
+        end=parsed_region.end,
         sample_name=sample_name,
         individual_id=individual_id,
         case_id=case_id,
