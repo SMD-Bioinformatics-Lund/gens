@@ -7,7 +7,7 @@ from flask import current_app as app
 from flask.cli import with_appcontext
 from pymongo.database import Database
 
-from gens.commands.util import ChoiceType
+from gens.cli.util import ChoiceType
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.db.index import create_index, get_indexes
 from gens.db.samples import delete_sample
