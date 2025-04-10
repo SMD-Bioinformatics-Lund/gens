@@ -90,7 +90,7 @@ def create_app() -> Flask:
             return redirect(login_url)
 
     # mount flask app to FastAPI app
-    fastapi_app.mount('/', WsgiToAsgi(flask_app))
+    fastapi_app.mount('/app', WsgiToAsgi(flask_app))
     return fastapi_app
 
     #return fastapi_app

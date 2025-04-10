@@ -9,10 +9,8 @@ from gens.db.db import GensDb
 from gens.models.genomic import GenomeBuild, GenomicRegion, Chromosome
 from gens.models.search import SearchSuggestions
 
-from .root import API_BASE_URL
 
-
-router = APIRouter(prefix=f"{API_BASE_URL}/sample")
+router = APIRouter(prefix=f"/sample")
 
 QueryParam = Annotated[str, Query(alias='q')]
 

@@ -9,9 +9,8 @@ from gens.models.genomic import GenomeBuild
 from gens.models.base import PydanticObjectId
 
 from .utils import ApiTags, GensDb
-from .root import API_BASE_URL
 
-router = APIRouter(prefix=f"{API_BASE_URL}/annotation")
+router = APIRouter(prefix="/annotation")
 
 @router.get("/", tags=[ApiTags.ANNOT])
 async def get_tracks(

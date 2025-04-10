@@ -5,10 +5,7 @@ from fastapi import APIRouter
 from gens import version
 
 
-API_BASE_URL = "/api"
-
-
-router = APIRouter(prefix=API_BASE_URL)
+router = APIRouter()
 
 
 @router.get("/")
