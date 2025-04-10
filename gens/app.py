@@ -18,7 +18,7 @@ from .cache import cache
 from .config import AuthMethod, settings
 from .db import SampleNotFoundError, init_database
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
-from .routes import annotations, sample, root, transcripts
+from .routes import annotations, sample, base
 
 dictConfig(
     {
@@ -93,14 +93,11 @@ def create_app() -> Flask:
     fastapi_app.mount('/app', WsgiToAsgi(flask_app))
     return fastapi_app
 
-    #return fastapi_app
-
 
 def add_api_routers(app: FastAPI):
-    app.include_router(root.router)
+    app.include_router(base.router)
     app.include_router(sample.router)
     app.include_router(annotations.router)
-    app.include_router(transcripts.router)
 
 
 def initialize_extensions(app: Flask) -> None:

@@ -17,8 +17,4 @@ class ApiTags(StrEnum):
     ANNOT = "annotation"
     TRANSC = "transcript"
     AUTH = "authentication"
-
-
-class ScatterDataType(StrEnum):
-    COV = "coverage"
-    BAF = "baf"
+    SEARCH = "search"

@@ -1,6 +1,6 @@
 """Models related to sample information."""
 
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 from pydantic import computed_field, field_serializer
@@ -20,7 +20,12 @@ def _get_tabix_path(path: Path, check: bool = False) -> Path:
     return idx_path
 
 
-class ZoomLevel(Enum):
+class ScatterDataType(StrEnum):
+    COV = "coverage"
+    BAF = "baf"
+
+
+class ZoomLevel(StrEnum):
     """Valid zoom or resolution levels."""
 
     A = "a"
