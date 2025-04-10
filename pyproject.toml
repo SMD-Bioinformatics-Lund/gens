@@ -39,7 +39,7 @@ dependencies = [
   "fastapi",
   "flask-compress",
   "tabulate",
-  "pydantic",
+  "pydantic[email]",
   "pydantic-settings",
   "pydantic-extra-types",
   "gunicorn",

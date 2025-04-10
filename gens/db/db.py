@@ -2,9 +2,9 @@
 
 import logging
 from typing import Any, Generator
+from flask import Flask
 
 import pymongo
-from flask import current_app as app
 from pydantic import MongoDsn
 from pymongo.database import Database
 
@@ -13,7 +13,7 @@ from gens.config import settings
 LOG = logging.getLogger(__name__)
 
 
-def init_database_connection() -> None:
+def init_database_connection(app: Flask) -> None:
     """Initialize database connection and store variables to the two databases."""
     # verify that database was properly configured
     LOG.info("Initialize db connection")
