@@ -12,13 +12,12 @@ from pymongo.database import Database
 
 from gens.cli.util import ChoiceType
 from gens.config import settings
-from gens.db import (
-    create_index,
-    get_db_connection,
-    get_indexes,
-    register_data_update,
-    store_sample,
-)
+from gens.crud.transcripts import create_transcripts
+from gens.db.index import create_index, get_indexes
+from gens.db.db import get_db_connection
+from gens.crud.annotations import register_data_update
+from gens.crud.samples import create_sample
+from gens.models.sample import SampleInfo
 from gens.db.collections import (
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
@@ -108,16 +107,11 @@ def sample(
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
     # load samples
-    store_sample(
-        db[SAMPLES_COLLECTION],
-        sample_id=sample_id,
-        case_id=case_id,
-        genome_build=genome_build,
-        baf=baf,
-        coverage=coverage,
-        overview=overview_json,
-        force=force,
-    )
+    sample_obj = SampleInfo.model_validate({
+        "sample_id": sample_id, "case_id": case_id, "genome_build": genome_build, "baf_file": baf, 
+        "coverage_file": coverage, "overview_file": overview_json
+    })
+    create_sample(db, sample_obj)
     click.secho("Finished adding a new sample to database ✔", fg="green")
 
 
@@ -227,9 +221,8 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     except Exception as err:
         raise click.UsageError(str(err))
 
-    LOG.info("Add transcripts to database")
-    db[TRANSCRIPTS_COLLECTION].insert_many(transcripts_obj)
-    register_data_update(db, TRANSCRIPTS_COLLECTION)
+    # FIXME build transcripts
+    create_transcripts(transcripts_obj, db)
     click.secho("Finished loading transcripts ✔", fg="green")
 
 

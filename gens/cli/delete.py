@@ -10,7 +10,7 @@ from pymongo.database import Database
 from gens.cli.util import ChoiceType
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.db.index import create_index, get_indexes
-from gens.db.samples import delete_sample
+from gens.crud.samples import delete_sample
 from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
@@ -45,9 +45,9 @@ def sample(sample_id: str, genome_build: int, case_id: str) -> None:
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
     delete_sample(
-        db[SAMPLES_COLLECTION],
+        db=db,
         sample_id=sample_id,
         case_id=case_id,
-        genome_build=genome_build,
+        genome_build=GenomeBuild(genome_build),
     )
     click.secho("Finished removing a sample from database ✔", fg="green")
