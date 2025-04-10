@@ -1,20 +1,39 @@
 """Routes for getting coverage information."""
 
 from fastapi import APIRouter
-from gens.crud.samples import get_sample
+from http import HTTPStatus
+from gens.crud import samples
 from gens.models.genomic import Chromosome, GenomicRegion
-from gens.models.sample import GenomeCoverage, SampleInfo, ScatterDataType
+from gens.models.sample import GenomeCoverage, SampleInfo, ScatterDataType, MultipleSamples
 from gens.io import get_overview_data, get_scatter_data
 from gens.db.collections import SAMPLES_COLLECTION
 
 from .utils import ApiTags, GensDb
 
 
-router = APIRouter(prefix="/sample")
+router = APIRouter(prefix="/samples")
+
+
+@router.post("/sample", tags=[ApiTags.SAMPLE], status_code=HTTPStatus.CREATED)
+async def create_sample(sample: SampleInfo, db: GensDb):
+    """Create a new sample in the database."""
+    samples.create_sample(db, sample)
+
+
+@router.get("/", tags=[ApiTags.SAMPLE])
+async def get_multiple_samples(
+    db: GensDb, skip: int = 0, limit: int | None = None
+    ) -> MultipleSamples:
+    """Query the database for multiple samples.
+
+    The result can be narrowed using skip and limit.
+    """
+    resp = samples.get_samples(samples_c=db[SAMPLES_COLLECTION], limit=limit, skip=skip)
+    return resp
 
 
 @router.get(
-    "/{data_type}",
+    "/sample/{data_type}",
     tags=[ApiTags.SAMPLE],
 )
 async def get_genome_coverage(
@@ -33,7 +52,7 @@ async def get_genome_coverage(
     return get_scatter_data(collection=db.get_collection(SAMPLES_COLLECTION), sample_id=sample_id, case_id=case_id, region=region, cov_or_baf=data_type)
 
 
-@router.get("/{data_type}/overview", tags=[ApiTags.SAMPLE])
+@router.get("/sample/{data_type}/overview", tags=[ApiTags.SAMPLE])
 async def get_cov_overview(
     sample_id: str,
     case_id: str,
@@ -42,6 +61,6 @@ async def get_cov_overview(
 ):
     """Get aggregated overview coverage information."""
 
-    sample_info: SampleInfo = get_sample(db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id)
+    sample_info: SampleInfo = samples.get_sample(db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id)
 
     return get_overview_data(sample_info.overview_file, data_type)
