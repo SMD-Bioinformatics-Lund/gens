@@ -7,10 +7,11 @@ from gens.models.sample import GenomeCoverage, SampleInfo
 from gens.io import get_overview_data, get_scatter_data
 from gens.db.collections import SAMPLES_COLLECTION
 
+from .root import API_BASE_URL
 from .utils import ApiTags, ScatterDataType, GensDb
 
 
-router = APIRouter(prefix="/sample")
+router = APIRouter(prefix=f"{API_BASE_URL}/sample")
 
 
 @router.get(
