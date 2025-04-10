@@ -34,11 +34,11 @@ export class InteractiveCanvas extends BaseScatterTrack {
   canvasHeight: number;
   // eslint-disable-next-line
   inputField: any;
-  offscreenPosition: OffscreenPosition;
-  onscreenPosition: OnscreenPosition;
+  offscreenPosition: _OffscreenPosition;
+  onscreenPosition: _OnscreenPosition;
 
-  baf: InteractiveFeature;
-  log2: InteractiveFeature;
+  baf: _InteractiveFeature;
+  log2: _InteractiveFeature;
 
   drawWidth: number;
 
@@ -162,7 +162,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
     // update chromosome title event
     this.contentCanvas.addEventListener(
       "update-title",
-      (event: CustomEvent<CanvasDetail>) => {
+      (event: any) => {
         const len = event.detail.bands.length;
         if (len > 0) {
           const bandIds =
@@ -187,7 +187,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
     // redraw events
     this.contentCanvas.parentElement.addEventListener(
       "draw",
-      (event: CustomEvent<RegionDetail>) => {
+      (event: CustomEvent<_RegionDetail>) => {
         this.drawInteractiveContent({
           ...event.detail.region,
           ...event.detail,

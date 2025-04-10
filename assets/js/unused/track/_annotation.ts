@@ -200,7 +200,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
         y2: canvasYPos + this.featureHeight / 2,
         features: [],
         isDisplayed: false,
-      } as DisplayElement;
+      } as _DisplayElement;
       // Draw box for annotation
       drawRect({
         ctx: this.drawCtx,

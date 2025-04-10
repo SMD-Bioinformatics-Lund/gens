@@ -64,7 +64,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
 
   // draw feature
   _drawFeature(
-    feature: DisplayElement,
+    feature: _DisplayElement,
     heightOrder,
     canvasYPos: number,
     color: string,
@@ -135,7 +135,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
       scale: scale,
       color: element.mane ? lightenColor(color, 15) : color, // lighten colors for MANE transcripts
       features: [],
-    } as Transcript;
+    } as _Transcript;
     // Keep track of latest track
     if (this.heightOrderRecord.latestHeight !== element.height_order) {
       this.heightOrderRecord = {

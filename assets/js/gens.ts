@@ -9,9 +9,6 @@ export {
   queryRegionOrGene,
 } from "./unused/_navigation";
 
-import "./components/top_bar";
-import "./components/util/tag_multi_select";
-// import { TopBar } from "./components/top_bar";
 import "./components/tracks_manager";
 import { TracksManager } from "./components/tracks_manager";
 import "./components/input_controls";
@@ -30,6 +27,7 @@ export async function initCanvases({
   sampleId,
   caseId,
   genomeBuild,
+  scoutBaseURL,
   gensApiURL,
   annotationFile,
   startRegion,
@@ -38,11 +36,8 @@ export async function initCanvases({
   sampleId: string;
   caseId: string;
   genomeBuild: number;
-  hgFileDir: string;
-  uiColors: UIColors;
   scoutBaseURL: string;
   gensApiURL: string;
-  selectedVariant: string;
   annotationFile: string;
   startRegion: Region;
 }) {

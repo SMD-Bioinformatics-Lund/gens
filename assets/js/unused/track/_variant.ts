@@ -24,7 +24,7 @@ export class VariantTrack extends BaseAnnotationTrack {
   scoutBaseURL: string;
   genomeBuild: number;
   apiEntrypoint: string;
-  labelData: VariantLabel[];
+  labelData: _VariantLabel[];
   highlightedVariantId: string;
   heightOrderRecord: {latestHeight: number, latestNameEnd: number, latestTrackEnd: number}
   additionalQueryParams: { variant_category: string, case_id: string, sample_id: string };
@@ -37,7 +37,7 @@ export class VariantTrack extends BaseAnnotationTrack {
     sampleId: string,
     caseId: string,
     genomeBuild: number,
-    colorSchema: ColorSchema,
+    colorSchema: _ColorSchema,
     scoutBaseURL: string,
     highlightedVariantId: string
   ) {
@@ -199,7 +199,7 @@ export class VariantTrack extends BaseAnnotationTrack {
       // create variant object
       const featureHeight = variantCategory === "del" ? 7 : 8;
       // FIXME: This should really be a class
-      const variantObj: DisplayElement = {
+      const variantObj: _DisplayElement = {
         id: variant.document_id,
         name: variant.display_name,
         start: variant.position,

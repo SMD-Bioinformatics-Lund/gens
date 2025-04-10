@@ -72,7 +72,7 @@ export class CytogeneticIdeogram {
     });
 
     // register event for moving and zooming region marker
-    this.targetElement.addEventListener("mark-region", (event: CustomEvent<RegionDetail>) => {
+    this.targetElement.addEventListener("mark-region", (event: CustomEvent<_RegionDetail>) => {
       // if marking a subset of chromosome
       const { chrom, start, end } = event.detail.region;
       // get marker element
@@ -103,7 +103,7 @@ export class CytogeneticIdeogram {
       }
     });
     // register event for moving and zooming region marker
-    this.targetElement.addEventListener("draw", (event: CustomEvent<RegionDetail>) => {
+    this.targetElement.addEventListener("draw", (event: CustomEvent<_RegionDetail>) => {
       // check if this is supposed to be excluded
       if (!event.detail.exclude.includes(this.targetElement.id)) {
         // remove old figures
@@ -223,9 +223,9 @@ function drawChromosome({
   // eslint-disable-next-line
   centromere: any;
   color: string;
-  bands: BandPath[];
+  bands: _BandPath[];
   lineColor?: string;
-}): {chromosome: DrawChromosome, bands: BandPath[]} {
+}): {chromosome: _DrawChromosome, bands: _BandPath[]} {
   const basePosColor = "#000"; // dark green
   const bandColors = {
     gneg: "#FFFAF0",
