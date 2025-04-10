@@ -36,6 +36,8 @@ const colors = {
     }
 }
 
+// FIXME: First step is to gather all constants here
+// FIXME: Then, the content below should be homogenized
 export const STYLE = {
     bandTrack: {
         trackPadding: 15,
@@ -46,6 +48,14 @@ export const STYLE = {
             thick: 80,
         },
         edgeColor: colors.darkGray,
+    },
+    ideogramMarker: {
+        leftMargin: 5,
+        borderWidth: 2,
+    },
+    bands: {
+        edgeColor: colors.darkGray,
+        edgeWidth: 1
     },
     tracks: {
         // edgeColor: colors.white,
@@ -68,6 +78,7 @@ export const STYLE = {
     },
     yAxis: {
         width: 25,
+        labelPos: 20,
     },
     colors,
 }

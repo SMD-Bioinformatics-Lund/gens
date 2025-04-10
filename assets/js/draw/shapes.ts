@@ -1,30 +1,6 @@
 // draw basic objects and shapes
 
-import { drawBox, drawLabel } from "./render_utils";
 import { STYLE } from "../constants";
-
-
-
-
-
-
-export function drawYAxis(
-  ctx: CanvasRenderingContext2D,
-  ys: number[],
-  yScale: Scale,
-  yRange: Rng,
-) {
-  const box = { x1: 0, x2: 25, y1: yScale(yRange[0]), y2: yScale(yRange[1]) };
-  drawBox(ctx, box, { fillColor: "white" });
-
-  for (const y of ys) {
-    drawLabel(ctx, y.toString(), 20, yScale(y), {
-      textBaseline: "middle",
-      textAlign: "right",
-      withFrame: false,
-    });
-  }
-}
 
 export function drawHorizontalLine(
   ctx: CanvasRenderingContext2D,
@@ -126,8 +102,6 @@ export function drawLine({
   ctx.stroke();
   ctx.restore();
 }
-
-
 
 // Draw an arrow in desired direction
 // Forward arrow: direction = 1

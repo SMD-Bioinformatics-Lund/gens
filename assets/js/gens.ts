@@ -13,15 +13,8 @@ import "./components/tracks_manager";
 import { TracksManager } from "./components/tracks_manager";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
-import {
-  parseCoverageDot,
-  parseTranscripts,
-  parseVariants,
-  parseAnnotations,
-} from "./draw/render_utils";
 import { API } from "./state/api";
-import { transformMap } from "./util/utils";
-import { STYLE } from "./constants";
+import { getRenderDataSource } from "./state/parse_api";
 
 export async function initCanvases({
   sampleId,
@@ -122,65 +115,4 @@ async function initialize(
   tracks.render(true);
 }
 
-function getRenderDataSource(
-  gensAPI: API,
-  getChrom: () => string,
-): RenderDataSource {
-  const getChromInfo = async () => {
-    return await gensAPI.getChromData(getChrom());
-  };
-
-  const getAnnotation = async (source: string) => {
-    const annotData = await gensAPI.getAnnotations(getChrom(), source);
-    return parseAnnotations(annotData);
-  };
-
-  const getCovData = async () => {
-    const covRaw = await gensAPI.getCov(getChrom());
-    return parseCoverageDot(covRaw, STYLE.colors.teal);
-  };
-
-  const getBafData = async () => {
-    const bafRaw = await gensAPI.getBaf(getChrom());
-    return parseCoverageDot(bafRaw, STYLE.colors.orange);
-  };
-
-  const getTranscriptData = async () => {
-    const transcriptsRaw = await gensAPI.getTranscripts(getChrom());
-    return parseTranscripts(transcriptsRaw);
-  };
-
-  const getVariantData = async () => {
-    const variantsRaw = await gensAPI.getVariants(getChrom());
-    return parseVariants(variantsRaw, STYLE.colors.variantColors);
-  };
-
-  const getOverviewCovData = async () => {
-    const overviewCovRaw = await gensAPI.getOverviewCovData();
-    const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
-      parseCoverageDot(cov, STYLE.colors.darkGray),
-    );
-    return overviewCovRender;
-  };
-
-  const getOverviewBafData = async () => {
-    const overviewBafRaw = await gensAPI.getOverviewBafData();
-    const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
-      parseCoverageDot(cov, STYLE.colors.darkGray),
-    );
-    return overviewBafRender;
-  };
-
-  const renderDataSource: RenderDataSource = {
-    getChromInfo,
-    getAnnotation,
-    getCovData,
-    getBafData,
-    getTranscriptData,
-    getVariantData,
-    getOverviewCovData,
-    getOverviewBafData,
-  };
-  return renderDataSource;
-}
 

@@ -1,7 +1,7 @@
-import { drawHorizontalLine, drawYAxis } from "../../draw/shapes";
+import { drawHorizontalLine } from "../../draw/shapes";
 import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
-import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
+import { drawDotsScaled, drawYAxis, getLinearScale } from "../../draw/render_utils";
 
 export class DotTrack extends CanvasTrack {
   renderData: DotTrackData | null;

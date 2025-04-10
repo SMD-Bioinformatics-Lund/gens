@@ -1,6 +1,25 @@
 import { rangeSize } from "../util/utils";
 import { STYLE } from "../constants";
 
+export function drawYAxis(
+  ctx: CanvasRenderingContext2D,
+  ys: number[],
+  yScale: Scale,
+  yRange: Rng,
+) {
+  const style = STYLE.yAxis;
+  const box = { x1: 0, x2: style.width, y1: yScale(yRange[0]), y2: yScale(yRange[1]) };
+  drawBox(ctx, box, { fillColor: "white" });
+
+  for (const y of ys) {
+    drawLabel(ctx, y.toString(), style.labelPos, yScale(y), {
+      textBaseline: "middle",
+      textAlign: "right",
+      withFrame: false,
+    });
+  }
+}
+
 export function renderBackground(
   ctx: CanvasRenderingContext2D,
   canvasDim: { height: number; width: number },
@@ -13,23 +32,24 @@ export function renderBackground(
   ctx.strokeRect(0, 0, canvasDim.width, canvasDim.height);
 }
 
-export function renderBands(
+export function renderBand(
   ctx: CanvasRenderingContext2D,
-  annots: RenderBand[],
+  band: RenderBand,
   xScale: Scale,
 ) {
-  annots.forEach((band) => {
-    ctx.fillStyle = band.color;
-    const xPxStart = xScale(band.start);
-    const xPxEnd = xScale(band.end);
-    ctx.fillStyle = band.color;
-    const width = xPxEnd - xPxStart;
-    const height = band.y2 - band.y1;
-    ctx.fillRect(xPxStart, band.y1, width, height);
-    ctx.strokeStyle = band.edgeColor || "black";
-    ctx.lineWidth = band.edgeWidth || 1;
-    ctx.strokeRect(xPxStart, band.y1, width, height);
-  });
+
+  const style = STYLE.bands;
+
+  ctx.fillStyle = band.color;
+  const xPxStart = xScale(band.start);
+  const xPxEnd = xScale(band.end);
+  ctx.fillStyle = band.color;
+  const width = xPxEnd - xPxStart;
+  const height = band.y2 - band.y1;
+  ctx.fillRect(xPxStart, band.y1, width, height);
+  ctx.strokeStyle = band.edgeColor || style.edgeColor;
+  ctx.lineWidth = band.edgeWidth || style.edgeWidth;
+  ctx.strokeRect(xPxStart, band.y1, width, height);
 }
 
 export function scaleToPixels(
@@ -42,6 +62,12 @@ export function scaleToPixels(
   return pixelPos;
 }
 
+/**
+ * Given a data point (pos)
+ * Within a range to display (range)
+ * And the number of corresponding pixels (viewSize)
+ * Where should the point go (return)
+ */
 export function getPixelPosInRange(
   pos: number,
   range: [number, number],
@@ -53,9 +79,6 @@ export function getPixelPosInRange(
   return pixelPos;
 }
 
-// FIXME: Think through this
-// In particular the getPixelPosInRange
-// Does it make sense?
 export function renderDots(
   ctx: CanvasRenderingContext2D,
   dots: RenderDot[],
@@ -140,121 +163,7 @@ export function rgbArrayToString(rgbArray: number[]): string {
   return `rgb(${rgbArray[0]},${rgbArray[1]},${rgbArray[2]})`;
 }
 
-export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
-  const results = annotations.map((annot) => {
-    // const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
-    const label = annot.name;
-    const colorStr = rgbArrayToString(annot.color);
-    return {
-      id: `${annot.start}_${annot.end}_${colorStr}`,
-      start: annot.start,
-      end: annot.end,
-      color: colorStr,
-      label,
-      hoverInfo: `${annot.name} (${annot.start}-${annot.end})`,
-    };
-  });
-  return results;
-}
 
-// FIXME: Should this one be here?
-function parseExons(
-  geneId: string,
-  transcriptParts: APITranscriptPart[],
-): RenderBand[] {
-  const exons = transcriptParts.filter((part) => part.feature == "exon");
-
-  return exons.map((part) => {
-    const renderBand = {
-      id: `${geneId}_exon${part.exon_number}_${part.start}_${part.end}`,
-      start: part.start,
-      end: part.end,
-      color: STYLE.colors.teal,
-      label: `${part.exon_number} ${part.start}-${part.end}`,
-    };
-    return renderBand;
-  });
-}
-
-// FIXME: Should this one be here?
-export function parseTranscripts(transcripts: APITranscript[]): RenderBand[] {
-  const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
-    const exons = parseExons(transcript.transcript_id, transcript.features);
-    const renderBand: RenderBand = {
-      id: transcript.transcript_id,
-      start: transcript.start,
-      end: transcript.end,
-      label: transcript.hgnc_id,
-      color: STYLE.colors.lightGray,
-      hoverInfo: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
-      direction: transcript.strand as "+" | "-",
-      subBands: exons,
-    };
-    return renderBand;
-  });
-
-  // FIXME: This should be done on the backend
-  const seenIds = new Set();
-  const filteredDuplicates = transcriptsToRender.filter((tr) => {
-    if (seenIds.has(tr.id)) {
-      return false;
-    } else {
-      seenIds.add(tr.id);
-      return true;
-    }
-  });
-
-  return filteredDuplicates;
-}
-
-export function parseVariants(
-  variants: APIVariant[],
-  variantColorMap: VariantColors,
-): RenderBand[] {
-  return variants.map((variant) => {
-    const id = `${variant.position}_${variant.end}_${variant.variant_type}_${variant.sub_category}`;
-    return {
-      id,
-      start: variant.position,
-      end: variant.end,
-      hoverInfo: `${variant.variant_type} ${variant.sub_category}; length ${variant.length} (${id})`,
-      color:
-        variantColorMap[variant.sub_category] != undefined
-          ? variantColorMap[variant.sub_category]
-          : variantColorMap.default,
-    };
-  });
-}
-
-export function parseCoverageBin(
-  coverage: APICoverageBin[],
-  color: string,
-): RenderDot[] {
-  const renderData = coverage.map((d) => {
-    return {
-      x: (d.start + d.end) / 2,
-      y: d.value,
-      color,
-    };
-  });
-
-  return renderData;
-}
-
-export function parseCoverageDot(
-  coverage: APICoverageDot[],
-  color: string,
-): RenderDot[] {
-  const renderData = coverage.map((d) => {
-    return {
-      x: d.pos,
-      y: d.value,
-      color,
-    };
-  });
-
-  return renderData;
-}
 
 export function getLinearScale(domain: Rng, range: Rng): Scale {
   const scale = (pos: number) => {
