@@ -2,7 +2,7 @@
 
 import itertools
 import logging
-from typing import Iterator
+from typing import Any, Iterator
 
 from pydantic import FilePath
 from pymongo import DESCENDING
@@ -36,7 +36,7 @@ class NonUniqueIndexError(Exception):
 
 
 def create_sample(
-    samples_c: Collection[dict],
+    samples_c: Collection[dict[str, Any]],
     sample_id: str,
     case_id: str,
     genome_build: GenomeBuild,
@@ -98,7 +98,7 @@ def create_sample(
 
 
 def get_samples(
-    samples_c: Collection[dict], start: int = 0, n_samples: int | None = None
+    samples_c: Collection[dict[str, Any]], start: int = 0, n_samples: int | None = None
 ) -> tuple[list[SampleInfo], int]:
     """
     Get samples stored in the databse.
@@ -124,7 +124,7 @@ def get_samples(
     return list(results), samples_c.count_documents({})
 
 
-def get_sample(samples_c: Collection[dict], sample_id: str, case_id: str | None) -> SampleInfo:
+def get_sample(samples_c: Collection[dict[str, Any]], sample_id: str, case_id: str | None) -> SampleInfo:
     """Get a sample with id."""
     result = None
     if case_id is None:
@@ -146,13 +146,13 @@ def get_sample(samples_c: Collection[dict], sample_id: str, case_id: str | None)
 
 
 def delete_sample(
-    samples_c: Collection[dict], sample_id: str, case_id: str, genome_build: int
+    samples_c: Collection[dict[str, Any]], sample_id: str, case_id: str, genome_build: GenomeBuild
 ) -> None:
     """Remove a sample from the database."""
 
     LOG.info('Removing sample "%s" from database', sample_id)
 
-    sample_filter = {
+    sample_filter: dict[str, str | GenomeBuild] = {
         "sample_id": sample_id,
         "case_id": case_id,
         "genome_build": genome_build,
