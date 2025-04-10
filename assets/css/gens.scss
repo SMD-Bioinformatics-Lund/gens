@@ -2,10 +2,21 @@
 @use "navbar";
 // region marker
 $marker-color: rgba(#dcd16f, 0.3);
+$white-color: white;
+$dark-gray-color: #333;
+$gens-blue: #567;
+// FIXME: Merge with other colors
+$button-white: #FAFBFC;
+$button-black: rgba(27, 31, 35, 0.15);
+$button-gray: #555;
+$button-hover-white: #E7EEF2;
+$header-background-blue: #bbcadc;
+$source-border-color: rgba(27, 31, 35, 0.15);
+$marker-gray-color: #7c7c7c;
 
 .tooltip {
-  background: #333;
-  color: white;
+  background: $dark-gray-color;
+  color: $white-color;
   font-weight: bold;
   padding: 4px 8px;
   font-size: 13px;
@@ -13,33 +24,33 @@ $marker-color: rgba(#dcd16f, 0.3);
   z-index: 1;
   display: none;
 
-  .feature {
-    display: none;
-  }
-
-  .feature[data-show] {
+  &[data-show] {
     display: block;
   }
-}
 
-.tooltip[data-show] {
-  display: block;
-}
+  .feature {
+    display: none;
 
-.tooltip[data-popper-placement^="top"] > .arrow {
-  bottom: -4px;
-}
+    &[data-show] {
+      display: block;
+    }
+  }
 
-.tooltip[data-popper-placement^="bottom"] > .arrow {
-  top: -4px;
-}
-
-.tooltip[data-popper-placement^="left"] > .arrow {
-  right: -4px;
-}
-
-.tooltip[data-popper-placement^="right"] > .arrow {
-  left: -4px;
+  &[data-popper-placement^="top"] > .arrow {
+    bottom: -4px;
+  }
+  
+  &[data-popper-placement^="bottom"] > .arrow {
+    top: -4px;
+  }
+  
+  &[data-popper-placement^="left"] > .arrow {
+    right: -4px;
+  }
+  
+  &[data-popper-placement^="right"] > .arrow {
+    left: -4px;
+  }
 }
 
 #loading-div {
@@ -48,7 +59,7 @@ $marker-color: rgba(#dcd16f, 0.3);
   font-family: sans-serif;
   font-size: 9pt;
   font-weight: bold;
-  color: #567;
+  color: $gens-blue;
   text-align: center;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -58,74 +69,40 @@ $marker-color: rgba(#dcd16f, 0.3);
   background-color: defaults.$default-bg-color;
 }
 
-.help-popup {
-  // dimensions and color
-  display: none;
-  transition: opacity 2s linear 0.5s;
-  color: defaults.$default-font-color;
-  background: defaults.$default-bg-color;
-  border: 1px solid defaults.$default-font-color;
-  width: 300px;
-  padding: 0px 10px 10px 10px;
-  // positioning
-  position: absolute;
-  top: 32px;
-  right: 25px;
-  z-index: 2;
-  // text properties
-  font-size: small;
-  text-align: left;
-
-  h3,
-  ul,
-  p {
-    margin-bottom: 4px;
-  }
-
-  ul,
-  p {
-    margin-top: 4px;
-  }
-}
-
-.info:hover + .help-popup {
-  display: block;
-}
-
 .button {
   border: 0px;
   /* box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3); */
   padding: 4px 10px;
   cursor: pointer;
-  background: #FAFBFC;
-  border: 1px solid rgba(27, 31, 35, 0.15);
+  background: $button-white;
+  border: 1px solid $button-black;
   border-radius: 4px;
   transition: box-shadow 0.1s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-.button i {
-  font-size: 20px;
-  line-height: 1;
-  color: #555;
-}
 
-.button:hover {
-  background: #E7EEF2;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
-  transform: scale(1.01);
+  i {
+    font-size: 20px;
+    line-height: 1;
+    color: $button-gray;
+  }
+
+  &:hover {
+    background: $button-hover-white;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+    transform: scale(1.01);
+  }
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
 }
 
 .text-input {
   width: 150px;
   height: 30px;
-}
-
-/* Optional: active effect for when the button is pressed */
-.button:active {
-  transform: scale(0.98);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .header {
@@ -140,8 +117,8 @@ $marker-color: rgba(#dcd16f, 0.3);
   justify-content: space-between;
   gap: 8px;
 
-  color: #333;
-  background-color: #bbcadc;
+  color: $dark-gray-color;
+  background-color: $header-background-blue;
 
   z-index: 1000;
 }
@@ -150,8 +127,7 @@ $marker-color: rgba(#dcd16f, 0.3);
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: white;
-  /* background: #bbcadc; */
+  background: $white-color;
 
   display: flex;
   align-items: center;
@@ -172,230 +148,34 @@ $marker-color: rgba(#dcd16f, 0.3);
   height: 100vh;
 }
 
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
-
 #gens-tracks {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-#button-container {
-  text-align: center;
-  grid-row: 7;
-  grid-column: 1;
-  margin-top: 5px;
-
-  @media only print {
-    page-break-after: always;
-  }
-
-  select {
-    margin-right: 15px;
-  }
-
-  form {
-    margin-left: 15px;
-    display: inline;
-  }
-
-  form.error:disabled {
-    outline: 5px dotted red;
-    background-color: red;
-  }
-
-
-  .icon {
-    background-size: contain;
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-  }
-}
-
-#chromosome-title {
-  display: grid;
-  grid-row: 1;
-  grid-column: 1;
-}
-
-#cytogenetic-ideogram {
-  display: grid;
-  grid-row: 2;
-  grid-column: 1;
-
-  .marker {
-    border-style: solid;
-    border-color: red;
-    border-left-width: 2px;
-    border-right-width: 2px;
-  }
-}
-
-#interactive-options {
-  text-align: center;
-  width: 100%;
-  height: 18px;
-}
-
 #input-controls-container {
-  display: "flex";
-  align-items: "center";
-  gap: "8px";
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-
 
 #source-list {
   max-height: 80px;
   // overflow-y: auto;
-  border: 1px solid rgba(27, 31, 35, 0.15);
+  border: 1px solid $source-border-color;
   border-radius: 4px;
   padding: 4px;
   font-size: 14px;
 }
 
-#times {
-  background: url(./svg/times-solid.svg) no-repeat top left;
-}
-
-#trash-alt {
-  background: url(./svg/trash-alt-regular.svg) no-repeat top left;
-}
-
 .marker {
   background-color: $marker-color;
-  border: dashed 1px #7c7c7c;
+  border: dashed 1px $marker-gray-color;
   border-top-width: 0;
   border-bottom-width: 0;
   pointer-events: none;
   position: relative;
-}
-
-.info-container[data-state="nodata"] {
-  height: 0;
-  border: none;
-}
-
-.info-container[data-state="collapsed"] {
-  padding-right: 0;
-  border: 1px solid gray;
-  // overflow-y: hidden;
-}
-
-.info-container[data-state="expanded"] {
-  padding-right: 6px;
-  border: 1px solid gray;
-}
-
-.track-container[data-state="data"] {
-  visibility: visible;
-}
-
-.track-container[data-state="nodata"] {
-  visibility: collapse;
-  height: 0;
-}
-
-#variant-container {
-  grid-row: 4;
-}
-
-#transcript-container {
-  grid-row: 5;
-}
-
-#annotation-container {
-  padding-top: 10px;
-  grid-row: 6;
-}
-
-.track-xlabel {
-  // position
-  position: relative;
-  top: 25px;
-  width: 80px;
-  z-index: 10;
-  margin: 0;
-  padding: 0;
-  // text properties
-  transform: rotate(270deg);
-  text-align: center;
-  font-size: x-small;
-  font-weight: bold;
-}
-
-.info-container {
-  display: grid;
-  grid-column: 1;
-  // overflow-y: auto;
-  // overflow-x: hidden;
-  height: 100px;
-
-  .info-canvas {
-    top: 0;
-    left: 0;
-    z-index: 0;
-    grid-row: 1;
-    grid-column: 1;
-  }
-
-  .info-titles {
-    top: 0;
-    left: 0;
-    z-index: 1;
-    grid-row: 1;
-    grid-column: 1;
-    position: relative;
-  }
-  .offscreen {
-    visibility: hidden;
-  }
-}
-
-.info-container::-webkit-scrollbar {
-  width: 6px;
-  border-left: 1px solid black;
-}
-
-.info-container::-webkit-scrollbar-track {
-  border-radius: 10px;
-}
-
-.info-container::-webkit-scrollbar-thumb {
-  background: rgba(50, 50, 50, 0.5);
-}
-
-.info {
-  background: url(./svg/info-circle-fill.svg) no-repeat top left;
-}
-
-.print {
-  background: url(./svg/printer-fill.svg) no-repeat top left;
-}
-
-.permalink {
-  background: url(./svg/link-45deg.svg) no-repeat top left;
-}
-
-.arrow-left {
-  background: url(./svg/arrow-left.svg) no-repeat top left;
-}
-
-.arrow-right {
-  background: url(./svg/arrow-right.svg) no-repeat top left;
-}
-
-.search-plus {
-  background: url(./svg/zoom-in.svg) no-repeat top left;
-}
-
-.search-minus {
-  background: url(./svg/zoom-out.svg) no-repeat top left;
 }
 
 .loading-view {
@@ -406,7 +186,6 @@ html, body {
   height: 100%;
   margin: 0;
   // style
-  $black: #000;
   background-color: defaults.$default-bg-color;
 
   .loading-container {
@@ -441,80 +220,5 @@ html, body {
   }
   100% {
     transform: rotate(360deg);
-  }
-}
-
-.content {
-  font-family: sans-serif;
-  padding-left: 10px;
-  h1 {
-    margin: 2px;
-    font-size: 1.5em;
-  }
-
-  p {
-    margin: 2px 2px 10px 0;
-  }
-
-  .version {
-    font-weight: bold;
-  }
-}
-
-#overview-container {
-  display: grid;
-  grid-row: 8;
-  grid-column: 1;
-
-  #overview-static {
-    top: 0;
-    left: 0;
-    z-index: 0;
-    grid-row: 1;
-    grid-column: 1;
-  }
-
-  #staticCanvas {
-    top: 0;
-    left: 0;
-    z-index: 0;
-    pointer-events: none;
-    grid-row: 1;
-    grid-column: 1;
-  }
-
-  #dataCanvas {
-    top: 0;
-    left: 0;
-    z-index: -1;
-    grid-row: 1;
-    grid-column: 1;
-  }
-
-  #drawCanvas {
-    top: 0;
-    left: 0;
-    visibility: hidden;
-  }
-
-  #staticOverviewCanvas {
-    top: 0;
-    left: 0;
-    z-index: 0;
-    visibility: hidden;
-  }
-
-  #drawOverviewCanvas {
-    top: 0;
-    left: 0;
-    visibility: hidden;
-  }
-
-  #overview-marker {
-    position: relative;
-  }
-
-  .marker {
-    border-color: darkred;
   }
 }
