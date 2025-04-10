@@ -18,3 +18,4 @@ class ApiTags(StrEnum):
     TRANSC = "transcript"
     AUTH = "authentication"
     SEARCH = "search"
+    USER = "user"

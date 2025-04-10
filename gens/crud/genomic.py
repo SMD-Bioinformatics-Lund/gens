@@ -1,7 +1,6 @@
 """Genomic related operations."""
 
 import logging
-import re
 from typing import Any
 
 from pymongo.database import Database
@@ -28,5 +27,5 @@ def get_chromosome_info(
         raise ValueError(
             f"Could not find data for chromosome {chromosome} in DB; genome_build: {genome_build}"
         )
-    return ChromInfo(**chrom_data)
+    return ChromInfo.model_validate(chrom_data)
 

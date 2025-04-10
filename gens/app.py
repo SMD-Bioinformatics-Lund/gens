@@ -12,11 +12,12 @@ from flask_compress import Compress  # type: ignore
 from flask_login import current_user  # type: ignore
 from werkzeug.wrappers.response import Response
 
+from gens.db.db import init_database_connection
+from gens.exceptions import SampleNotFoundError
+
 from .auth import login_manager, oauth_client
 from .blueprints import gens_bp, home_bp, login_bp
-from .cache import cache
 from .config import AuthMethod, settings
-from .db import SampleNotFoundError, init_database
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
 from .routes import annotations, sample, base
 
@@ -57,7 +58,7 @@ def create_app() -> Flask:
 
     # initialize database and store db content
     with flask_app.app_context():
-        init_database()
+        init_database_connection(flask_app)
     # connect to mongo client
     flask_app.config["DEBUG"] = True
     flask_app.config["SECRET_KEY"] = "pass"
@@ -102,7 +103,6 @@ def add_api_routers(app: FastAPI):
 
 def initialize_extensions(app: Flask) -> None:
     """Initialize flask extensions."""
-    cache.init_app(app)
     compress.init_app(app)
     login_manager.init_app(app)
 

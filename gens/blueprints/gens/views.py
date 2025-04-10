@@ -9,7 +9,6 @@ from pymongo.database import Database
 from gens import version
 from gens.config import UI_COLORS, settings
 from gens.crud.genomic import get_chromosome_info
-from gens.db import query_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.models.genomic import GenomeBuild
 from gens.genomic import parse_region_str

@@ -4,7 +4,7 @@ import datetime
 from typing import Annotated, Any, Callable
 
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, EmailStr, computed_field
 
 from gens.utils import get_timestamp
 from pydantic_core import core_schema
@@ -55,3 +55,10 @@ class _ObjectIdPydanticAnnotation:
 PydanticObjectId = Annotated[
     ObjectId, _ObjectIdPydanticAnnotation
 ]
+
+class User(CreatedAtModel, ModifiedAtModel):
+    """Stores user information."""
+
+    name: str
+    email: EmailStr
+    roles: list[str]

@@ -4,97 +4,64 @@ import itertools
 import logging
 from typing import Any, Iterator
 
-from pydantic import FilePath
 from pymongo import DESCENDING
 from pymongo.collection import Collection
 from pymongo.errors import DuplicateKeyError
 
+from gens.exceptions import NonUniqueIndexError, SampleNotFoundError
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo
 
 LOG = logging.getLogger(__name__)
 
 
-class SampleNotFoundError(Exception):
-    """The sample was not found in the database."""
-
-    def __init__(self, message: str, sample_id: str):
-        super().__init__(message)
-
-        self.sample_id = sample_id
+INDEX_FIELDS: set[str] = {"baf_index", "coverage_index"}
 
 
-class NonUniqueIndexError(Exception):
-    """A similar index already exists in the database."""
-
-    def __init__(self, message: str, sample_id: str, case_id: str, genome_build: str):
-        super().__init__(message)
-
-        self.sample_id = sample_id
-        self.case_id = case_id
-        self.genome_build = genome_build
-
-
-def create_sample(
-    samples_c: Collection[dict[str, Any]],
-    sample_id: str,
-    case_id: str,
-    genome_build: GenomeBuild,
-    baf: FilePath,
-    coverage: FilePath,
-    overview: FilePath,
-    force: bool,
-) -> None:
-    """Store a new sample in the database."""
-    LOG.info('Store sample "%s" in database', sample_id)
-    sample_obj = SampleInfo(
-        sample_id=sample_id,
-        case_id=case_id,
-        genome_build=genome_build,
-        baf_file=baf,
-        coverage_file=coverage,
-        overview_file=overview,
+def update_sample(samples_c: Collection[dict[str, Any]], sample_obj: SampleInfo) -> None:
+    """Update an existing sample in the database."""
+    result = samples_c.update_one(
+        {
+            "sample_id": sample_obj.sample_id,
+            "case_id": sample_obj.case_id,
+            "genome_build": sample_obj.genome_build,
+        },
+        {"$set": sample_obj.model_dump(exclude=INDEX_FIELDS)},
+        upsert=True,
     )
-    index_fields: set[str] = {"baf_index", "coverage_index"}
-    if force:
-        result = samples_c.update_one(
-            {
-                "sample_id": sample_id,
-                "case_id": case_id,
-                "genome_build": genome_build,
-            },
-            {"$set": sample_obj.model_dump(exclude=index_fields)},
-            upsert=True,
+    if result.modified_count == 1:
+        LOG.error(
+            'Sample with sample_id="%s" and case_id="%s" was overwritten.',
+            sample_obj.sample_id,
+            sample_obj.case_id,
         )
-        if result.modified_count == 1:
-            LOG.error(
-                'Sample with sample_id="%s" and case_id="%s" was overwritten.',
-                sample_id,
-                case_id,
-            )
-        if result.modified_count > 1:
-            raise NonUniqueIndexError(
-                (
-                    f'More than one entry matched sample_id="{sample_id}", '
-                    f'case_id="{case_id}", and genome_build="{genome_build}".'
-                    "This should never happen."
-                ),
-                sample_id,
-                case_id,
-                str(genome_build),
-            )
-    else:
-        try:
-            samples_c.insert_one(sample_obj.model_dump(exclude=index_fields))
-        except DuplicateKeyError:
-            LOG.error(
-                (
-                    "DuplicateKeyError while storing sample "
-                    'with sample_id="%s" and case_id="%s" in database.'
-                ),
-                sample_id,
-                case_id,
-            )
+    if result.modified_count > 1:
+        raise NonUniqueIndexError(
+            (
+                f'More than one entry matched sample_id="{sample_obj.sample_id}", '
+                f'case_id="{sample_obj.case_id}", and genome_build="{sample_obj.genome_build}".'
+                "This should never happen."
+            ),
+            sample_obj.sample_id,
+            sample_obj.case_id,
+            str(sample_obj.genome_build),
+        )
+
+
+def create_sample(samples_c: Collection[dict[str, Any]], sample_obj: SampleInfo) -> None:
+    """Store a new sample in the database."""
+    LOG.info(f'Store sample {sample_obj.sample_id} in database')
+    try:
+        samples_c.insert_one(sample_obj.model_dump(exclude=INDEX_FIELDS))
+    except DuplicateKeyError:
+        LOG.error(
+            (
+                "DuplicateKeyError while storing sample "
+                'with sample_id="%s" and case_id="%s" in database.'
+            ),
+            sample_obj.sample_id,
+            sample_obj.case_id,
+        )
 
 
 def get_samples(
