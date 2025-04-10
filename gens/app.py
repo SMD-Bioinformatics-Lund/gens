@@ -4,7 +4,6 @@ Whole genome visualization of BAF and log2 ratio
 
 import logging
 from logging.config import dictConfig
-from typing import Any
 
 from fastapi import FastAPI
 from asgiref.wsgi import WsgiToAsgi

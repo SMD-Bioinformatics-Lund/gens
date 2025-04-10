@@ -2,14 +2,17 @@
 
 from typing import Annotated
 from fastapi import APIRouter, Query, HTTPException
+from http import HTTPStatus
 
 from gens.crud.search import search_annotations
 from gens.db.db import GensDb
 from gens.models.genomic import GenomeBuild, GenomicRegion, Chromosome
 from gens.models.search import SearchSuggestions
 
+from .root import API_BASE_URL
 
-router = APIRouter(prefix="/sample")
+
+router = APIRouter(prefix=f"{API_BASE_URL}/sample")
 
 QueryParam = Annotated[str, Query(alias='q')]
 
@@ -27,5 +30,7 @@ def search(query: QueryParam, genome_build: GenomeBuild, db: GensDb) -> GenomicR
 @router.get('/assistant')
 def search_assistant(query: QueryParam, db: GensDb) -> SearchSuggestions:
     """Suggest hits."""
+
+    raise HTTPException(status_code=HTTPStatus.NOT_IMPLEMENTED)
 
     return SearchSuggestions()

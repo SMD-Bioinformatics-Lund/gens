@@ -7,8 +7,9 @@ from gens.crud.transcripts import get_transcripts as crud_get_transcripts
 from gens.models.annotation import TranscriptRecord
 from gens.models.genomic import Chromosome, GenomeBuild, GenomicRegion
 from .utils import ApiTags, GensDb
+from .root import API_BASE_URL
 
-router = APIRouter(prefix="/transcript", tags=[ApiTags.TRANSC])
+router = APIRouter(prefix=f"{API_BASE_URL}/transcript", tags=[ApiTags.TRANSC])
 
 
 @router.get("/track")
