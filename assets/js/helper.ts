@@ -2,7 +2,7 @@
 import { get } from "./fetch";
 
 // FIXME: Unused I think, remove?
-function cacheChromSizes(genomeBuild = "38") {
+function cacheChromSizes(_genomeBuild = "38") {
   const cache = {};
   return async (genomeBuild) => {
     if (!cache[genomeBuild]) {

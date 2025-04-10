@@ -21,7 +21,7 @@ interface APITranscript {
   chrom: string,
   start: number,
   end: number,
-  feature: APITranscriptPart[],
+  features: APITranscriptPart[],
   gene_name: string,
   genome_build: number,
   height_order: number,
@@ -60,7 +60,6 @@ interface APIVariant {
   rank_score: number,
   rank_score_results: {category: string, score: number}[],
   reference: string,
-  samples: any[],
   simple_id: string,
   sub_category: string,
   variant_id: string,
@@ -97,10 +96,15 @@ interface RenderBand {
   id: string,
   start: number,
   end: number,
-  color: string,
+  color?: string,
+  edgeColor?: string,
+  edgeWidth?: number
   label?: string,
+  hoverInfo?: string,
+  direction?: "+" | "-",
   y1?: number,
   y2?: number,
+  subBands?: RenderBand[],
   // nbrOverlap?: number
 }
 
@@ -110,20 +114,90 @@ interface RenderDot {
     color: string,
 }
 
+interface DotTrackData {
+  xRange: Rng,
+  dots: RenderDot[]
+}
+
+interface AnnotationTracksData {
+  xRange: Rng,
+  annotations: {source: string, bands: RenderBand[]}[],
+}
+
+interface BandTrackData {
+  xRange: Rng,
+  bands: RenderBand[],
+}
+
+interface RenderExon {
+  id: string,
+  start: number,
+  end: number,
+  exonNumber: number,
+  label: string,
+  band?: RenderBand
+}
+
+// interface RenderTranscript {
+//   id: string,
+//   start: number,
+//   end: number,
+//   info: string,
+//   label: string,
+//   strand: "+" | "-",
+//   exons: RenderExon[],
+//   band?: RenderBand,
+// }
+
+interface TranscriptsTrackData {
+  xRange: Rng,
+  bands: RenderBand[],
+}
+
+interface IdeogramTrackData {
+  chromInfo: ChromosomeInfo,
+  xRange: Rng
+}
+
+interface OverviewTrackData {
+  dotsPerChrom: Record<string, RenderDot[]>,
+  chromosome: string,
+  xRange: Rng,
+}
+
+interface Box {
+  x1: number,
+  x2: number,
+  y1: number,
+  y2: number,
+}
+
+interface HoverBox {
+  label: string,
+  box: Box
+}
+
+interface BoxStyle {
+  fillColor?: string,
+  borderColor?: string,
+  borderWidth?: number
+}
+
 type Scale = (value: number) => number
 
 type ColorScale = (level: string) => string
 
-interface RenderData {
-  chromInfo: ChromosomeInfo,
-  annotations: Record<string, RenderBand[]>,
-  covData: RenderDot[],
-  bafData: RenderDot[],
-  transcriptData: RenderBand[],
-  // FIXME: Will need a dedicated type for exons
-  variantData: RenderBand[],
-  overviewCovData: Record<string, RenderDot[]>,
-  overviewBafData: Record<string, RenderDot[]>,
+type BandYScale = (lane: number, expanded: boolean) => Rng
+
+interface RenderDataSource {
+  getChromInfo: () => Promise<ChromosomeInfo>,
+  getAnnotation: (string) => Promise<RenderBand[]>,
+  getCovData: () => Promise<RenderDot[]>,
+  getBafData: () => Promise<RenderDot[]>,
+  getTranscriptData: () => Promise<RenderBand[]>,
+  getVariantData: () => Promise<RenderBand[]>,
+  getOverviewCovData: () => Promise<Record<string, RenderDot[]>>,
+  getOverviewBafData: () => Promise<Record<string, RenderDot[]>>,
 }
 
 type Rng = [number, number];
@@ -171,6 +245,7 @@ interface Transcript {
   mane: string;
   scale: number;
   color: string;
+  // eslint-disable-next-line
   features: any[];
 
   x1?: number;
@@ -188,7 +263,9 @@ interface Transcript {
 }
 
 interface Tooltip {
+  // eslint-disable-next-line
   instance: any; // Popper.js instance
+  // eslint-disable-next-line
   virtualElement: any;
   tooltip: HTMLDivElement;
   isDisplayed: boolean;
@@ -197,6 +274,7 @@ interface Tooltip {
 interface VirtualDOMElement {
   x: number; // Placeholder for Popper.js
   y: number; // Placeholder for Popper.js
+  // eslint-disable-next-line
   toJSON: () => any; // Placeholder for Popper.js
   width: number;
   height: number;
@@ -307,6 +385,7 @@ type DisplayElement = {
   feature?: string;
   features: string[];
   isDisplayed?: boolean;
+  // eslint-disable-next-line
   tooltip?: any;
   visibleX1?: number;
   visibleX2?: number;
@@ -323,6 +402,7 @@ type RequestType = "GET" | "POST" | "PUT" | "DELETE";
 
 type RequestOptions = {
   method: RequestType;
+  // eslint-disable-next-line
   headers: any;
   body?: string;
 };

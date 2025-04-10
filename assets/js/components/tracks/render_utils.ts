@@ -1,20 +1,20 @@
-import { chromSizes } from "../../helper";
 import { rangeSize } from "../../track/utils";
+import { STYLE } from "../../util/constants";
 
-export function renderBorder(
+export function renderBackground(
   ctx: CanvasRenderingContext2D,
   canvasDim: { height: number; width: number },
+  color: string,
 ) {
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, canvasDim.width, canvasDim.height);
-  ctx.strokeStyle = "black";
+  ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.strokeRect(0, 0, canvasDim.width, canvasDim.height);
 }
 
 export function renderBands(
   ctx: CanvasRenderingContext2D,
-  // canvasDim: { height: number; width: number },
   annots: RenderBand[],
   xScale: Scale,
 ) {
@@ -26,6 +26,9 @@ export function renderBands(
     const width = xPxEnd - xPxStart;
     const height = band.y2 - band.y1;
     ctx.fillRect(xPxStart, band.y1, width, height);
+    ctx.strokeStyle = band.edgeColor || "black";
+    ctx.lineWidth = band.edgeWidth || 1;
+    ctx.strokeRect(xPxStart, band.y1, width, height);
   });
 }
 
@@ -138,9 +141,9 @@ export function rgbArrayToString(rgbArray: number[]): string {
 }
 
 export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
-  return annotations.map((annot) => {
-    const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
-    const label = `${annot.name}, ${annot.start}-${annot.end}${rankScore}`;
+  const results = annotations.map((annot) => {
+    // const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
+    const label = annot.name;
     const colorStr = rgbArrayToString(annot.color);
     return {
       id: `${annot.start}_${annot.end}_${colorStr}`,
@@ -148,19 +151,46 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
       end: annot.end,
       color: colorStr,
       label,
+      hoverInfo: `${annot.name} (${annot.start}-${annot.end})`,
     };
+  });
+  return results;
+}
+
+// FIXME: Should this one be here?
+function parseExons(
+  geneId: string,
+  transcriptParts: APITranscriptPart[],
+): RenderBand[] {
+  const exons = transcriptParts.filter((part) => part.feature == "exon");
+
+  return exons.map((part) => {
+    const renderBand = {
+      id: `${geneId}_exon${part.exon_number}_${part.start}_${part.end}`,
+      start: part.start,
+      end: part.end,
+      color: STYLE.colors.teal,
+      label: `${part.exon_number} ${part.start}-${part.end}`,
+    };
+    return renderBand;
   });
 }
 
+// FIXME: Should this one be here?
 export function parseTranscripts(transcripts: APITranscript[]): RenderBand[] {
-  const transcriptsToRender = transcripts.map((transcript) => {
-    return {
-      id: `${transcript.start}_${transcript.end}_${transcript.transcript_id}`,
+  const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
+    const exons = parseExons(transcript.transcript_id, transcript.features);
+    const renderBand: RenderBand = {
+      id: transcript.transcript_id,
       start: transcript.start,
       end: transcript.end,
-      color: "blue",
-      label: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
+      label: transcript.hgnc_id,
+      color: STYLE.colors.lightGray,
+      hoverInfo: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
+      direction: transcript.strand as "+" | "-",
+      subBands: exons,
     };
+    return renderBand;
   });
 
   // FIXME: This should be done on the backend
@@ -182,13 +212,14 @@ export function parseVariants(
   variantColorMap: VariantColors,
 ): RenderBand[] {
   return variants.map((variant) => {
+    const id = `${variant.position}_${variant.end}_${variant.variant_type}_${variant.sub_category}`;
     return {
-      id: `${variant.position}_${variant.end}_${variant.variant_type}_${variant.sub_category}`,
+      id,
       start: variant.position,
       end: variant.end,
-      label: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
+      hoverInfo: `${variant.variant_type} ${variant.sub_category}; length ${variant.length} (${id})`,
       color:
-      variantColorMap[variant.sub_category] != undefined
+        variantColorMap[variant.sub_category] != undefined
           ? variantColorMap[variant.sub_category]
           : variantColorMap.default,
     };
@@ -225,3 +256,143 @@ export function parseCoverageDot(
   return renderData;
 }
 
+export function getLinearScale(domain: Rng, range: Rng): Scale {
+  const scale = (pos: number) => {
+    return linearScale(pos, domain, range);
+  };
+  return scale;
+}
+
+export function getColorScale(
+  levels: string[],
+  colorPool: string[],
+  defaultColor: string,
+): ColorScale {
+  const colorScale = (level: string) => {
+    const levelIndex = levels.indexOf(level);
+    if (levelIndex == -1) {
+      return defaultColor;
+    } else if (levelIndex >= colorPool.length) {
+      return defaultColor;
+    } else {
+      return colorPool[levelIndex];
+    }
+  };
+  return colorScale;
+}
+
+export function drawArrow(
+  ctx: CanvasRenderingContext2D,
+  bandHeight: number,
+  y1: number,
+  isForward: boolean,
+  xPxRange: Rng,
+) {
+  const [xPxStart, xPxEnd] = xPxRange;
+  const arrowHeight = bandHeight;
+  const arrowWidth = arrowHeight * 0.5;
+  const arrowYCenter = y1 + bandHeight / 2;
+  ctx.fillStyle = STYLE.colors.darkGray;
+  ctx.beginPath();
+  if (isForward) {
+    ctx.moveTo(xPxEnd + arrowWidth, arrowYCenter);
+    ctx.lineTo(xPxEnd, arrowYCenter - arrowHeight / 2);
+    ctx.lineTo(xPxEnd, arrowYCenter + arrowHeight / 2);
+  } else {
+    ctx.moveTo(xPxStart - arrowWidth, arrowYCenter);
+    ctx.lineTo(xPxStart, arrowYCenter - arrowHeight / 2);
+    ctx.lineTo(xPxStart, arrowYCenter + arrowHeight / 2);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+export function drawLabel(
+  ctx: CanvasRenderingContext2D,
+  label: string,
+  leftX: number,
+  topY: number,
+  style: {
+    withFrame?: boolean;
+    textBaseline?: "top" | "middle" | "bottom";
+    textAlign?: "left" | "right" | "center";
+    padding?: number;
+    font?: string;
+    textColor?: string;
+    boxStyle?: BoxStyle;
+  } = {},
+) {
+  const {
+    withFrame = true,
+    textBaseline = "top",
+    padding = STYLE.tracks.textFramePadding,
+    font = STYLE.tracks.font,
+    textColor = STYLE.tracks.textColor,
+    textAlign = "left",
+    boxStyle = undefined
+  } = style;
+
+  ctx.font = font;
+
+  const metrics = ctx.measureText(label);
+  const textWidth = metrics.width;
+  const textHeight =
+    metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+
+  if (withFrame) {
+    const x1 = leftX - padding;
+    const frameWidth = textWidth + 2 * padding;
+    const y1 = topY - padding;
+    const frameHeight = textHeight + 2 * padding;
+
+    const box = {
+      x1,
+      x2: x1 + frameWidth,
+      y1,
+      y2: y1 + frameHeight,
+    };
+
+    drawBox(ctx, box, boxStyle);
+  }
+
+  ctx.fillStyle = textColor;
+  ctx.textAlign = textAlign;
+  ctx.textBaseline = textBaseline;
+  ctx.fillText(label, leftX, topY);
+}
+
+export function drawBox(
+  ctx: CanvasRenderingContext2D,
+  box: Box,
+  style: BoxStyle = {},
+) {
+  const {
+    fillColor: fill = STYLE.tracks.backgroundColor,
+    borderColor: border = STYLE.tracks.textFrameColor,
+    borderWidth = STYLE.tracks.gridLineWidth,
+  } = style;
+
+  ctx.fillStyle = fill;
+  ctx.fillRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+
+  ctx.strokeStyle = border;
+  ctx.lineWidth = borderWidth;
+  ctx.strokeRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+}
+
+export function drawLabelBelow(
+  ctx: CanvasRenderingContext2D,
+  label: string,
+  centerX: number,
+  bottomY: number,
+) {
+  const textX = centerX;
+  const textY = bottomY + STYLE.tracks.textPadding;
+
+  ctx.font = STYLE.tracks.font;
+  ctx.fillStyle = STYLE.tracks.textColor;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+
+  ctx.fillText(label, textX, textY);
+}

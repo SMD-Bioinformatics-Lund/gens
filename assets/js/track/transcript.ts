@@ -68,7 +68,7 @@ export class TranscriptTrack extends BaseAnnotationTrack {
     heightOrder,
     canvasYPos: number,
     color: string,
-    plotFormat
+    _plotFormat
   ) {
     // Go trough feature list and draw geometries
     const scale = this.offscreenPosition.scale;
@@ -285,7 +285,9 @@ export class TranscriptTrack extends BaseAnnotationTrack {
   }: {
     startPos: number;
     endPos: number;
+    // eslint-disable-next-line
     maxHeightOrder: any;
+    // eslint-disable-next-line
     data: any;
   }) {
     //    store positions used when rendering the canvas

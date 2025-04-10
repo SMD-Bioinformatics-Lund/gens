@@ -11,8 +11,8 @@ export function drawChromosome(
     color: string,
     bands: RenderBand[],
 ): { chromosome: { path: Path2D }; bands: { id: string, path: Path2D }[] } {
-    let shiftX = 5;
-    let shiftY = 2;
+    const shiftX = 5;
+    const shiftY = 2;
     dim = {
         width: dim.width - 5,
         height: dim.height - 5,

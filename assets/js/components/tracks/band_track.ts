@@ -1,69 +1,151 @@
-import { getNOverlaps } from "../../track/utils";
+import { getOverlapInfo, getTrackHeight } from "../../track/expand_track_utils";
+import { getBandYScale } from "../../track/utils";
+import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";
-import { renderBands, renderBorder } from "./render_utils";
+import {
+  drawArrow,
+  drawLabelBelow,
+  getLinearScale,
+  renderBackground,
+} from "./render_utils";
 
 export class BandTrack extends CanvasTrack {
-  initialize(label: string, trackHeight: number, thickTrackHeight: number|null = null) {
-    super.initializeCanvas(label, trackHeight, thickTrackHeight);
+  renderData: BandTrackData | null;
+  getRenderData: () => Promise<BandTrackData>;
+
+  async initialize(
+    label: string,
+    trackHeight: number,
+    getRenderData: () => Promise<BandTrackData>,
+  ) {
+    super.initializeCanvas(label, trackHeight);
     this.initializeTooltip();
+    this.initializeExpander(trackHeight);
+    this.getRenderData = getRenderData;
   }
 
-  render(
-    xRange: [number, number],
-    bands: RenderBand[],
-    settings: { bandHeight: number | null } = { bandHeight: null },
-  ) {
-    // this.canvas.height = 300;
-    const dimensions = super.syncDimensions();
-
-    // FIXME: We should keep those stretching over the full screen
-    let bandsWithinRange = bands.filter(
-      (annot) => annot.start > xRange[0] && annot.end <= xRange[1],
-    );
-
-    bandsWithinRange = bandsWithinRange.sort((band1, band2) => band1.start < band2.start ? -1 : 1);
-
-    const nOverlaps = getNOverlaps(bandsWithinRange);
-
-    // Hover
-    const xScale = this.getScale(xRange, "x");
-
-    // FIXME: Break out method
-    // FIXME: How to deal with y position for bands?
-    let y1;
-    let y2;
-    if (settings.bandHeight != null) {
-      const remainder = this.dimensions.height - settings.bandHeight;
-      y1 = remainder / 2;
-      y2 = this.dimensions.height - remainder / 2;
-    } else {
-      y1 = 0;
-      y2 = this.dimensions.height;
+  async render(updateData: boolean) {
+    if (this.getRenderData == undefined) {
+      throw Error(`No getRenderData set up for track, must initialize first`);
     }
 
-    const shift = 5;
-    const scaledBands = bandsWithinRange.map((band, i) => {
-        const scaledBand = Object.create(band);
-        scaledBand.y1 = y1 + shift * nOverlaps[i];
-        scaledBand.y2 = y2 + shift * nOverlaps[i];
-        return scaledBand;
+    if (updateData || this.renderData == null) {
+      this.renderData = await this.getRenderData();
+    }
+
+    const { bands, xRange } = this.renderData;
+    const ntsPerPx = this.getNtsPerPixel(xRange);
+    const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
+    const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
+
+    const { numberLanes, bandOverlaps } = getOverlapInfo(bands);
+
+    const labelSize =
+      this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
+
+    this.setExpandedTrackHeight(numberLanes, showDetails);
+    const dimensions = super.syncDimensions();
+
+    const yScale = getBandYScale(
+      STYLE.bandTrack.trackPadding,
+      STYLE.bandTrack.bandPadding,
+      this.isExpanded() ? numberLanes : 1,
+      this.dimensions.height,
+      labelSize,
+    );
+
+    const renderBand: RenderBand[] = bands.map((band) => {
+      if (bandOverlaps[band.id] == null) {
+        throw Error(`Missing ID: ${band.id}`);
+      }
+      const bandNOverlap = bandOverlaps[band.id].lane;
+      const yRange = yScale(bandNOverlap, this.isExpanded());
+
+      const renderBand = Object.create(band);
+      renderBand.y1 = yRange[0];
+      renderBand.y2 = yRange[1];
+      renderBand.edgeColor = STYLE.bandTrack.edgeColor;
+
+      return renderBand;
     });
 
-    this.hoverTargets = scaledBands.map((band) => {
-      return {
-        label: band.label,
-        x1: xScale(band.start),
-        x2: xScale(band.end),
-        y1: band.y1,
-        y2: band.y2,
-      };
+    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
+
+    const hoverTargets = renderBand.flatMap((band) => {
+      const bandHoverTargets = drawBand(
+        this.ctx,
+        band,
+        xScale,
+        showDetails,
+        this.isExpanded(),
+      );
+      return bandHoverTargets;
     });
 
-    renderBorder(this.ctx, dimensions);
-    renderBands(this.ctx, scaledBands, xScale);
-
-    // this.renderTooltip(annotWithinRange, xScale, this.dimensions);
+    // getHoverTargets(renderBand, xScale, (band) => band.hoverInfo),
+    this.setHoverTargets(hoverTargets);
+    this.drawTrackLabel();
   }
+
+  setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
+    const style = STYLE.bandTrack;
+    const expandedHeight = getTrackHeight(
+      style.trackHeight.thin,
+      numberLanes,
+      style.trackPadding,
+      style.bandPadding,
+      showDetails,
+    );
+    super.setExpandedHeight(expandedHeight);
+  }
+}
+
+function drawBand(
+  ctx: CanvasRenderingContext2D,
+  band: RenderBand,
+  xScale: (number) => number,
+  showDetails: boolean,
+  isExpanded: boolean,
+): HoverBox[] {
+  const y1 = band.y1;
+  const y2 = band.y2;
+  const height = y2 - y1;
+
+  const hoverBoxes: HoverBox[] = [];
+
+  // Body
+  const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
+  const [xPxStart, xPxEnd] = xPxRange;
+  ctx.fillStyle = band.color;
+  const width = xPxEnd - xPxStart;
+  ctx.fillRect(xPxStart, y1, width, height);
+
+  const box = { x1: xPxStart, x2: xPxEnd, y1, y2 };
+  const hoverBox = { box, label: band.hoverInfo };
+  hoverBoxes.push(hoverBox);
+
+  if (showDetails) {
+    if (band.subBands != null) {
+      band.subBands.forEach((subBand) => {
+        const xPxStart = xScale(subBand.start);
+        const xPxEnd = xScale(subBand.end);
+        ctx.fillStyle = subBand.color;
+        const width = xPxEnd - xPxStart;
+        ctx.fillRect(xPxStart, y1, width, height);
+      });
+    }
+
+    if (band.direction != null) {
+      const isForward = band.direction == "+";
+      drawArrow(ctx, height, y1, isForward, xPxRange);
+    }
+
+    if (isExpanded && band.label != null) {
+      drawLabelBelow(ctx, band.label, (xPxRange[0] + xPxRange[1]) / 2, y2);
+    }
+  }
+
+  return hoverBoxes;
 }
 
 customElements.define("band-track", BandTrack);

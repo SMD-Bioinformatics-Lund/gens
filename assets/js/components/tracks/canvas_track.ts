@@ -1,91 +1,115 @@
-import { linearScale, renderBorder } from "./render_utils";
-import { createPopper } from "@popperjs/core";
-import {
-  createTooltipDiv,
-  makeVirtualElementNew,
-  tooltipOnMouseMove,
-  Tooltip,
-} from "./tooltip_utils";
+import { STYLE } from "../../util/constants";
+import { drawLabel, renderBackground } from "./render_utils";
+import { Tooltip } from "./tooltip_utils";
 
 // FIXME: Move somewhere
-const PADDING_LEFT = 5;
+const PADDING_SIDES = 0;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-    <div id="container" data-state="nodata" style="padding-left: ${PADDING_LEFT}px; padding-right: ${PADDING_LEFT}">
-        <div id='track-container' style="position: relative;">
-            <canvas id='canvas'></canvas>
-            <!-- <canvas id='canvas-offscreen'></canvas> -->
-            <!-- <div id='titles'></div> -->
-        </div>
-    </div>
+  <style>
+    :host {
+      display: block;
+      width: 100%;
+    }
+    #container {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      padding-left: ${PADDING_SIDES}px;
+      padding-right: ${PADDING_SIDES}px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+  <div id="container" data-state="nodata">
+      <div id='track-container' style="position: relative;">
+          <canvas id='canvas'></canvas>
+      </div>
+  </div>
 `;
 
 export class CanvasTrack extends HTMLElement {
+  public label: string;
+
   protected _root: ShadowRoot;
   protected canvas: HTMLCanvasElement;
   protected ctx: CanvasRenderingContext2D;
   protected dimensions: { width: number; height: number };
   protected _scaleFactor: number;
   protected trackContainer: HTMLDivElement;
-  protected label: string;
+  protected defaultTrackHeight: number;
+  private currentHeight: number;
 
-  protected expanded: boolean;
+  private expander: Expander;
 
   private tooltip: Tooltip;
-  hoverTargets: {
-    label: string;
-    x1: number;
-    x2: number;
-    y1: number;
-    y2: number;
-  }[];
+  hoverTargets: HoverBox[];
 
-  // private tooltipEl: HTMLDivElement;
-  // private popperInstance: ReturnType<typeof createPopper> | null = null;
+  render(_updateData: boolean) {}
+
+  isExpanded(): boolean {
+    return this.expander.isExpanded;
+  }
+
+  setExpandedHeight(height: number) {
+    this.expander.expandedHeight = height;
+    if (this.expander.isExpanded) {
+      this.currentHeight = height;
+      this.syncDimensions();
+    }
+  }
+
+  getNtsPerPixel(xRange: Rng) {
+    const nNts = xRange[1] - xRange[0];
+    const nPxs = this.dimensions.width;
+    return nNts / nPxs;
+  }
 
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
-
-    this.expanded = false;
   }
 
-  initializeCanvas(label: string, trackHeight: number, expandedHeight: number|null = null) {
-    // const header = this._root.getElementById("header")
-    // header.innerHTML = label;
+  initializeCanvas(label: string, trackHeight: number) {
     this.label = label;
     this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
-    // this.canvas = this._root.querySelector("#canvas") as HTMLCanvasElement;
-    this.canvas.height = trackHeight;
+
+    this.defaultTrackHeight = trackHeight;
+    this.currentHeight = trackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     this.trackContainer = this._root.getElementById(
       "track-container",
     ) as HTMLDivElement;
 
-    if (expandedHeight != null) {
-      this.initializeExpandable(trackHeight, expandedHeight);
-    }
-    
     this.syncDimensions();
-    renderBorder(this.ctx, this.dimensions);
   }
 
-  initializeExpandable(height: number, expandedHeight: number) {
+  // FIXME: Move to attribute component
+  initializeExpander(height: number, expanded: boolean = false) {
+    this.expander = new Expander(expanded);
+
     this.trackContainer.addEventListener("contextmenu", (event) => {
       event.preventDefault();
 
-      this.expanded = !this.expanded;
-      this.canvas.height = this.expanded ? expandedHeight : height;
-      this.syncDimensions();
+      this.expander.toggle();
 
-      console.log("Expand");
+      this.currentHeight = this.expander.isExpanded
+        ? this.expander.expandedHeight
+        : height;
+      this.syncDimensions();
+      this.render(false);
     });
   }
 
+  // FIXME: Should this live outside the class?
   initializeTooltip() {
-    this.tooltip = new Tooltip(this.trackContainer);
+    this.tooltip = new Tooltip(document.body);
     this.canvas.addEventListener("mousemove", (event) => {
       this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
 
@@ -95,10 +119,10 @@ export class CanvasTrack extends HTMLElement {
 
       const hovered = this.hoverTargets.find(
         (target) =>
-          event.offsetX >= target.x1 &&
-          event.offsetX <= target.x2 &&
-          event.offsetY >= target.y1 &&
-          event.offsetY <= target.y2,
+          event.offsetX >= target.box.x1 &&
+          event.offsetX <= target.box.x2 &&
+          event.offsetY >= target.box.y1 &&
+          event.offsetY <= target.box.y2,
       );
 
       if (hovered) {
@@ -113,61 +137,75 @@ export class CanvasTrack extends HTMLElement {
     });
   }
 
-  setHoverTargets(
-    hoverTargets: {
-      label: string;
-      x1: number;
-      x2: number;
-      y1: number;
-      y2: number;
-    }[],
-  ) {}
+  setHoverTargets(hoverTargets: HoverBox[]) {
+    this.hoverTargets = hoverTargets;
+  }
+
+  baseRender() {
+    this.syncDimensions();
+    renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
+  }
+
+  drawTrackLabel(shiftRight: number = 0) {
+    drawLabel(
+      this.ctx,
+      this.label,
+      STYLE.tracks.textPadding + shiftRight,
+      STYLE.tracks.textPadding,
+      {textBaseline: "top"},
+    );
+  }
 
   syncDimensions() {
-    if (this.canvas == undefined) {
+    if (!this.canvas || !this.trackContainer) {
       console.error("Cannot run syncDimensions before initialize");
+      return;
     }
 
-    const availWidth = this.trackContainer.clientWidth;
+    const availWidth = this.getBoundingClientRect().width;
+    const availHeight = this.currentHeight;
 
-    // const viewNts = end - start;
+    const pixelRatio = 2;
 
-    // FIXME: Not the responsibility of this component
-    this.canvas.width = availWidth;
-    // this.canvas.width = window.innerWidth - PADDING_LEFT;
+    const displayWidth = Math.floor(availWidth);
+    const displayHeight = Math.floor(availHeight);
+
+    const actualWidth = displayWidth * pixelRatio;
+    const actualHeight = displayHeight * pixelRatio;
+
+    if (
+      this.canvas.width !== actualWidth ||
+      this.canvas.height !== actualHeight
+    ) {
+      this.canvas.width = actualWidth;
+      this.canvas.height = actualHeight;
+
+      const ctx = this.canvas.getContext("2d");
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      // this.canvas.width = displayWidth;
+    }
+
     this.dimensions = {
-      width: this.canvas.width,
-      height: this.canvas.height,
+      width: displayWidth,
+      height: displayHeight,
     };
     return this.dimensions;
   }
+}
 
-  // FIXME: Move scales to generic utils instead
-  getScale(range: Rng, type: "x" | "y"): Scale {
-    if (!["x", "y"].includes(type)) {
-      throw Error(`Unknown scale type: ${type}, expected x or y`);
-    }
+class Expander {
+  expandedHeight: number = null;
+  isExpanded: boolean;
 
-    const endDim = type == "x" ? this.dimensions.width : this.dimensions.height;
-
-    const scale = (pos: number) => {
-      return linearScale(pos, range, [0, endDim]);
-    };
-    return scale;
+  constructor(isExpanded: boolean) {
+    this.isExpanded = isExpanded;
   }
 
-  getColorScale(levels: string[], colorPool: string[], defaultColor: string): ColorScale {
-    const colorScale = (level: string) => {
-      const levelIndex = levels.indexOf(level);
-      if (levelIndex == -1) {
-        return defaultColor
-      } else if (levelIndex >= colorPool.length) {
-        return defaultColor;
-      } else {
-        return colorPool[levelIndex]
-      }
+  toggle() {
+    this.isExpanded = !this.isExpanded;
+    if (this.isExpanded && this.expandedHeight == null) {
+      console.error("Need to assign an expanded height");
     }
-    return colorScale;
   }
 }
 

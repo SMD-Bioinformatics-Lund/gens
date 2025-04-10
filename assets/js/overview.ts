@@ -197,6 +197,7 @@ export class OverviewCanvas extends BaseScatterTrack {
     canvas: HTMLCanvasElement;
     chrom: string;
     width: number;
+    // eslint-disable-next-line
     chromCovData: any;
   }) {
     // Draw chromosome title
@@ -309,7 +310,7 @@ export class OverviewCanvas extends BaseScatterTrack {
     }
   }
 
-  async drawOverviewContent(printing) {
+  async drawOverviewContent(_printing) {
     await this.getOverviewChromDim();
     // query gens for coverage values
     const covData = await create("get-multiple-coverages", {

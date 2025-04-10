@@ -1,11 +1,3 @@
-// GENS module
-
-// import {
-//     VariantTrack,
-//     AnnotationTrack,
-//     TranscriptTrack,
-//     CytogeneticIdeogram,
-// } from "./track";
 export {
   setupDrawEventManager,
   drawTrack,
@@ -18,36 +10,27 @@ export {
   queryRegionOrGene,
 } from "./navigation";
 
-import "./components/genstracks";
-import { GensTracks } from "./components/genstracks";
+import "./components/top_bar";
+// import { TopBar } from "./components/top_bar";
+import "./components/tracks_manager";
+import { TracksManager } from "./components/tracks_manager";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 import {
   parseCoverageDot,
-  parseCoverageBin,
   parseTranscripts,
   parseVariants,
   parseAnnotations,
 } from "./components/tracks/render_utils";
-// import { AnnotationTrack } from "./components/tracks/annotation_track";
-// import { CoverageTrack } from "./components/tracks/coverage_track";
-import { GensAPI as GensAPI } from "./state/gens_api";
-import { GensSession } from "./state/session";
+import { API } from "./state/api";
 import { transformMap } from "./track/utils";
 import { STYLE } from "./util/constants";
 
-// FIXME: Query from the backend
-
 export async function initCanvases({
-  sampleName,
   sampleId,
   caseId,
   genomeBuild,
-  hgFileDir,
-  uiColors,
-  scoutBaseURL,
   gensApiURL,
-  selectedVariant,
   annotationFile,
   startRegion,
 }: {
@@ -63,119 +46,143 @@ export async function initCanvases({
   annotationFile: string;
   startRegion: Region;
 }) {
-  const gensTracks = document.getElementById("gens-tracks") as GensTracks;
+  const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
   const inputControls = document.getElementById(
     "input-controls",
   ) as InputControls;
 
-  const api = new GensAPI(sampleId, caseId, genomeBuild, gensApiURL);
+  const api = new API(sampleId, caseId, genomeBuild, gensApiURL);
+
+  const renderDataSource = getRenderDataSource(
+    api,
+    () => {
+      const region = inputControls.getRegion();
+      return region.chrom;
+    },
+  );
 
   const allChromData = await api.getAllChromData();
-  // const overviewCovData = await api.getOverviewCovData();
-  // const overviewBafData = await api.getOverviewBafData();
 
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);
     inputControls.updateChromosome(chrom, chromData.size);
-    const selectedAnnots = inputControls.getAnnotations();
-    const region = inputControls.getRegion();
-
-    const renderData = await parseRenderData(
-      api,
-      startRegion.chrom,
-      selectedAnnots,
-    );
-    gensTracks.render(renderData, region);
+    const updateData = true;
+    gensTracks.render(updateData);
   };
 
-  gensTracks.initialize(allChromData, onChromClick);
+  const getChromInfo = (chromosome: string) => {
+    return allChromData[chromosome];
+  };
 
-  const renderData = await parseRenderData(api, startRegion.chrom, [
+  initialize(
+    inputControls,
+    gensTracks,
+    startRegion,
     annotationFile,
-  ]);
-  gensTracks.render(renderData, startRegion);
+    gensApiURL,
+    onChromClick,
+    getChromInfo,
+    renderDataSource,
+  );
+}
 
+async function initialize(
+  inputControls: InputControls,
+  tracks: TracksManager,
+  startRegion: Region,
+  defaultAnnotation: string,
+  gensApiURI: string,
+  onChromClick: (string) => void,
+  getChromInfo: (string) => ChromosomeInfo,
+  renderDataSource: RenderDataSource,
+) {
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
     startRegion,
-    [annotationFile],
-    async (region) => {},
-    async (region, _source) => {
-      const selectedAnnots = inputControls.getAnnotations();
-      const renderData = await parseRenderData(
-        api,
-        region.chrom,
-        selectedAnnots,
-      );
-      gensTracks.render(renderData, region);
+    [defaultAnnotation],
+    async (_region, _source) => {
+      tracks.render(true);
     },
     async (_newXRange) => {
-      const selectedAnnots = inputControls.getAnnotations();
-      const region = inputControls.getRegion();
-      const renderData = await parseRenderData(
-        api,
-        region.chrom,
-        selectedAnnots,
-      );
-      gensTracks.render(renderData, region);
+      tracks.render(true);
     },
-    gensApiURL,
+    gensApiURI,
   );
+
+  await tracks.initialize(
+    getChromInfo,
+    onChromClick,
+    renderDataSource,
+    () => inputControls.getRegion().chrom,
+    () => inputControls.getRange(),
+    () => inputControls.getAnnotSources(),
+  );
+
+  // await tracks.updateRenderData();
+  tracks.render(true);
 }
 
-async function parseRenderData(
-  gensDb: GensAPI,
-  chrom: string,
-  annotSources: string[],
-): Promise<RenderData> {
-
-  const parsedAnnotationData = {};
-  for (const source of annotSources) {
-    const annotData = await gensDb.getAnnotations(chrom, source);
-    parsedAnnotationData[source] = parseAnnotations(annotData);
-  }
-
-  const overviewCovRaw = await gensDb.getOverviewCovData();
-  const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
-    parseCoverageDot(cov, STYLE.colors.darkGray),
-  );
-  const overviewBafRaw = await gensDb.getOverviewBafData();
-  const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
-    parseCoverageDot(cov, STYLE.colors.darkGray),
-  );
-
-  const covRaw = await gensDb.getCov(chrom);
-  // const covData = parseCoverageBin(covRaw)
-
-  const bafRaw = await gensDb.getBaf(chrom);
-  const transcriptsRaw = await gensDb.getTranscripts(chrom);
-  const variantsRaw = await gensDb.getVariants(chrom);
-
-  const renderData: RenderData = {
-    chromInfo: await gensDb.getChromData(chrom),
-    annotations: parsedAnnotationData,
-    covData: parseCoverageDot(covRaw, STYLE.colors.teal),
-    bafData: parseCoverageDot(bafRaw, STYLE.colors.orange),
-    transcriptData: parseTranscripts(transcriptsRaw),
-    variantData: parseVariants(variantsRaw, STYLE.colors.variantColors),
-    overviewCovData: overviewCovRender,
-    overviewBafData: overviewBafRender,
+function getRenderDataSource(
+  gensAPI: API,
+  getChrom: () => string,
+): RenderDataSource {
+  const getChromInfo = async () => {
+    return await gensAPI.getChromData(getChrom());
   };
-  return renderData;
-}
 
-// Make hard link and copy link to clipboard
-export function copyPermalink(genomeBuild, region) {
-  // create element and add url to it
-  const tempElement = document.createElement("input");
-  const loc = window.location;
-  tempElement.value = `${loc.host}${loc.pathname}?genome_build=${genomeBuild}&region=${region}`;
-  // add element to DOM
-  document.body.append(tempElement);
-  tempElement.select();
-  document.execCommand("copy");
-  tempElement.remove(); // remove temp node
+  const getAnnotation = async (source: string) => {
+    const annotData = await gensAPI.getAnnotations(getChrom(), source);
+    return parseAnnotations(annotData);
+  };
+
+  const getCovData = async () => {
+    const covRaw = await gensAPI.getCov(getChrom());
+    return parseCoverageDot(covRaw, STYLE.colors.teal);
+  };
+
+  const getBafData = async () => {
+    const bafRaw = await gensAPI.getBaf(getChrom());
+    return parseCoverageDot(bafRaw, STYLE.colors.orange);
+  };
+
+  const getTranscriptData = async () => {
+    const transcriptsRaw = await gensAPI.getTranscripts(getChrom());
+    return parseTranscripts(transcriptsRaw);
+  };
+
+  const getVariantData = async () => {
+    const variantsRaw = await gensAPI.getVariants(getChrom());
+    return parseVariants(variantsRaw, STYLE.colors.variantColors);
+  };
+
+  const getOverviewCovData = async () => {
+    const overviewCovRaw = await gensAPI.getOverviewCovData();
+    const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
+      parseCoverageDot(cov, STYLE.colors.darkGray),
+    );
+    return overviewCovRender;
+  };
+
+  const getOverviewBafData = async () => {
+    const overviewBafRaw = await gensAPI.getOverviewBafData();
+    const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
+      parseCoverageDot(cov, STYLE.colors.darkGray),
+    );
+    return overviewBafRender;
+  };
+
+  const renderDataSource: RenderDataSource = {
+    getChromInfo,
+    getAnnotation,
+    getCovData,
+    getBafData,
+    getTranscriptData,
+    getVariantData,
+    getOverviewCovData,
+    getOverviewBafData,
+  };
+  return renderDataSource;
 }
 
 export { setupGenericEventManager } from "./track";
