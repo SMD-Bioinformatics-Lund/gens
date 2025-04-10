@@ -1,17 +1,23 @@
 import Choices, { InputChoice } from "choices.js";
-import { get } from "../fetch";
 import {
   getPan,
   parseRegionDesignation,
   zoomInNew,
   zoomOutNew,
 } from "../navigation";
-import 'choices.js/public/assets/styles/choices.min.css';
-
-// import "choices.js/public/assets/styles/choices.css";
+import "choices.js/public/assets/styles/choices.min.css";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
+  <style>
+    .choices__inner {
+      padding: 2px 6px;
+      min-height: auto;
+    }
+    .choices-container {
+      max-width: 300px;
+    }
+  </style>
   <div id="input-controls-container" style="display: flex; align-items: center; gap: 8px;">
       <button id="pan-left" class='button pan'>
         <i class="fas fa-arrow-left"></i>
@@ -29,15 +35,15 @@ template.innerHTML = String.raw`
       <button id="submit" class='button pan'>
         <i class="fas fa-search"></i>
       </button>
-      <select id="source-list" multiple></select>
-      <!-- <tag-multi-select id="annotation-pill-select"></tag-multi-select> -->
+      <div class="choices-container">
+        <select id="source-list" multiple></select>
+      </div>
   </div>
 `;
 
 export class InputControls extends HTMLElement {
-  private annotationSourceList: Choices;
-  
-  // private annotationSelect: TagMultiSelect;
+  private annotationSelectElement: HTMLSelectElement;
+  private annotationSelectChoices: Choices;
 
   private panLeft: HTMLButtonElement;
   private panRight: HTMLButtonElement;
@@ -50,11 +56,11 @@ export class InputControls extends HTMLElement {
   connectedCallback() {
     this.appendChild(template.content.cloneNode(true));
 
-    const sourceList = this.querySelector(
+    this.annotationSelectElement = this.querySelector(
       "#source-list",
     ) as HTMLSelectElement;
 
-    this.annotationSourceList = new Choices(sourceList, {
+    this.annotationSelectChoices = new Choices(this.annotationSelectElement, {
       placeholderValue: "Enter annotation",
       removeItemButton: true,
       itemSelectText: "",
@@ -65,14 +71,6 @@ export class InputControls extends HTMLElement {
     this.zoomIn = this.querySelector("#zoom-in") as HTMLButtonElement;
     this.zoomOut = this.querySelector("#zoom-out") as HTMLButtonElement;
     this.regionField = this.querySelector("#region-field") as HTMLInputElement;
-
-    // this.annotationSelect = this.querySelector(
-    //   "#annotation-pill-select",
-    // ) as TagMultiSelect;
-
-    // const annotations = ["BRCA1", "TP53", "EGFR"];
-    // this.annotationPillSelect.setOptions(annotations)
-    // this.annotationPillSelect.setSelected([annotations[1]]);
   }
 
   getRegion(): Region {
@@ -81,9 +79,7 @@ export class InputControls extends HTMLElement {
   }
 
   getAnnotSources(): string[] {
-    return ["Placeholders", "A", "B"]
-    // return this.annotationSourceList.value;
-    // return this.annotationSelect.getSelected();
+    return this.annotationSelectChoices.getValue(true) as string[];
   }
 
   getRange(): [number, number] {
@@ -111,48 +107,31 @@ export class InputControls extends HTMLElement {
     defaultAnnots: string[],
     onAnnotationChanged: (region: Region, sources: string[]) => void,
     onPositionChange: (newXRange: [number, number]) => void,
-    apiURL: string,
+    annotationSources: string[],
   ) {
     this.region = fullRegion;
     this.updatePosition([fullRegion.start, fullRegion.end]);
-    // this.regionField.value = `${fullRegion.chrom}:${fullRegion.start}-${fullRegion.end}`;
 
     // FIXME: Move this out from here
-    get(new URL("get-annotation-sources", apiURL).href, {
-      genome_build: 38,
-    }).then((result) => {
-      const filenames = result.sources;
-      const choices: InputChoice[] = [];
-      for (const filename of filenames) {
-        const choice = {value: filename, label: filename}
-        // const opt = document.createElement("option");
-        // opt.value = filename;
-        // opt.innerHTML = filename;
-        // if (defaultAnnots.includes(filename)) {
-        //   opt.selected = true;
-        // }
-        // console.log("Appending source:", opt);
-        // this.annotationSourceList.appendChild(opt);
+    const choices: InputChoice[] = [];
+    for (const source of annotationSources) {
+      const choice = {
+        value: source,
+        label: source,
+        selected: defaultAnnots.includes(source),
+      };
+      choices.push(choice);
+    }
+    this.annotationSelectChoices.setChoices(choices);
 
-        // const annotations = ["BRCA1", "TP53", "EGFR"];
-        choices.push(choice);
-      }
-      this.annotationSourceList.setChoices(choices, 'value', 'label', false);
+    this.annotationSelectElement.addEventListener("change", async () => {
+      const selectedSources = this.annotationSelectChoices.getValue(
+        true,
+      ) as string[];
+      const region = parseRegionDesignation(this.regionField.value);
 
-      // this.annotationSelect.setOptions(filenames)
-      // fIXME: Verify that these are within the filenames
-      // this.annotationSelect.setSelected(defaultAnnots);
+      onAnnotationChanged(region, selectedSources);
     });
-    // this.annotationSourceList.value = defaultAnnot;
-
-    // this.annotationSourceList.addEventListener("change", async () => {
-    //   console.log("Change ")
-    //   const selectedSources = [this.annotationSourceList.value];
-    //   // const selectedSources = this.annotationSourceList.getSelected();
-    //   const region = parseRegionDesignation(this.regionField.value);
-
-    //   onAnnotationChanged(region, selectedSources);
-    // });
 
     this.panLeft.onclick = () => {
       const newXRange = getPan(this.getRange(), "left");

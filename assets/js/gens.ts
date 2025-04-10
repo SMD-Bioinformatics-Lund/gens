@@ -80,7 +80,7 @@ export async function initCanvases({
     gensTracks,
     startRegion,
     annotationFile,
-    gensApiURL,
+    api,
     onChromClick,
     getChromInfo,
     renderDataSource,
@@ -92,24 +92,27 @@ async function initialize(
   tracks: TracksManager,
   startRegion: Region,
   defaultAnnotation: string,
-  gensApiURI: string,
+  api: API,
   onChromClick: (string) => void,
   getChromInfo: (string) => ChromosomeInfo,
   renderDataSource: RenderDataSource,
 ) {
+
+  const annotSources = await api.getAnnotationSources();
+
+  console.log(annotSources);
+
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
     startRegion,
     [defaultAnnotation],
     async (_region, _source) => {
-      console.log("A");
       tracks.render(true);
     },
     async (_newXRange) => {
-      console.log("B");
       tracks.render(true);
     },
-    gensApiURI,
+    annotSources
   );
 
   await tracks.initialize(
