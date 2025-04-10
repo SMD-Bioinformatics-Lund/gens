@@ -1,7 +1,7 @@
 // draw basic objects and shapes
 
-import { drawBox, drawLabel } from "../components/tracks/render_utils";
-import { STYLE } from "../util/constants";
+import { drawBox, drawLabel } from "./render_utils";
+import { STYLE } from "../constants";
 
 //  Draw data points
 export function drawPoints({

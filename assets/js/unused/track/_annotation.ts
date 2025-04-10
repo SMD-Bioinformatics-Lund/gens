@@ -1,7 +1,7 @@
 // Annotation track definition
 
 import { BaseAnnotationTrack } from "./_base";
-import { isElementOverlapping, stringToHash } from "./_utils";
+import { isElementOverlapping, stringToHash } from "../../util/utils";
 import { get } from "../../util/fetch";
 import { parseRegionDesignation } from "../_navigation";
 import { drawRect, drawText } from "../_draw";

@@ -1,5 +1,5 @@
 import { get } from "../util/fetch";
-import { CHROMOSOMES } from "../util/constants";
+import { CHROMOSOMES } from "../constants";
 import {
   getAnnotationData,
   getChromToSVs,

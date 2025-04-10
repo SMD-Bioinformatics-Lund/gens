@@ -1,7 +1,7 @@
 // Variant track definition
 
 import { BaseAnnotationTrack } from "./_base";
-import { isElementOverlapping, isWithinElementVisibleBbox } from "./_utils";
+import { isElementOverlapping, isWithinElementVisibleBbox } from "../../util/utils";
 import { drawRect, drawLine, drawWaveLine, drawText } from "../_draw";
 import {
   initTrackTooltips,

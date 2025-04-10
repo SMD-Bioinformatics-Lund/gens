@@ -1,12 +1,12 @@
 import { drawVerticalLine } from "../../draw/shapes";
-import { transformMap, padRange, rangeSize } from "../../unused/track/_utils";
-import { STYLE } from "../../util/constants";
+import { transformMap, padRange, rangeSize } from "../../util/utils";
+import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
 import {
   drawDotsScaled,
   linearScale,
   renderBackground,
-} from "./render_utils";
+} from "../../draw/render_utils";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;

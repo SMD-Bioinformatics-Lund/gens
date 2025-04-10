@@ -1,5 +1,5 @@
-import { rangeSize } from "../../unused/track/_utils";
-import { STYLE } from "../../util/constants";
+import { rangeSize } from "../util/utils";
+import { STYLE } from "../constants";
 
 export function renderBackground(
   ctx: CanvasRenderingContext2D,

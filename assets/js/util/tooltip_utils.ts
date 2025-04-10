@@ -1,5 +1,5 @@
 import { createPopper } from "@popperjs/core";
-import { STYLE } from "../../util/constants";
+import { STYLE } from "../constants";
 
 export class Tooltip {
     public tooltipEl: HTMLDivElement;

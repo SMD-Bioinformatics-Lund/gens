@@ -21,10 +21,10 @@ import {
   parseTranscripts,
   parseVariants,
   parseAnnotations,
-} from "./components/tracks/render_utils";
+} from "./draw/render_utils";
 import { API } from "./state/api";
-import { transformMap } from "./unused/track/_utils";
-import { STYLE } from "./util/constants";
+import { transformMap } from "./util/utils";
+import { STYLE } from "./constants";
 
 export async function initCanvases({
   sampleId,

@@ -1,7 +1,6 @@
 import tippy, { followCursor } from "tippy.js";
 import { drawChromosome } from "../../draw/ideogram";
-import { createChromosomeTooltip } from "../../unused/track/_ideogram";
-import { STYLE } from "../../util/constants";
+import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
 
 interface DrawPaths {
@@ -160,6 +159,19 @@ function cytogeneticIdeogram(
   );
 
   return drawPaths;
+}
+
+function createChromosomeTooltip({ bandId: _bandId }: { bandId?: string }) {
+  const element = document.createElement("div");
+  element.id = "ideogram-tooltip";
+  const name = document.createElement("span");
+  name.innerHTML = "ID:";
+  name.className = "ideogram-tooltip-key";
+  element.appendChild(name);
+  const value = document.createElement("span");
+  value.className = "ideogram-tooltip-value";
+  element.appendChild(value);
+  return element;
 }
 
 customElements.define("ideogram-track", IdeogramTrack);

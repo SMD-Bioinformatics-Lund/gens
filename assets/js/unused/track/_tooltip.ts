@@ -4,7 +4,7 @@ import {
   getVisibleXCoordinates,
   getVisibleYCoordinates,
   isWithinElementBbox,
-} from "./_utils";
+} from "../../util/utils";
 
 // make virtual DOM element that represents a annotation element
 export function makeVirtualDOMElement({

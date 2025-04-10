@@ -4,7 +4,7 @@ import { drawRect } from "../_draw";
 import { lightenColor } from "./_base";
 import tippy, { followCursor } from "tippy.js";
 import "tippy.js/dist/tippy.css";
-import { isElementOverlapping } from "./_utils";
+import { isElementOverlapping } from "../../util/utils";
 
 export class CytogeneticIdeogram {
   genomeBuild: number;

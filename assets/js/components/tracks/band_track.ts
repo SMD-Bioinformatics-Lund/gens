@@ -1,13 +1,13 @@
 import { getOverlapInfo, getTrackHeight } from "../../util/expand_track_utils";
-import { getBandYScale } from "../../unused/track/_utils";
-import { STYLE } from "../../util/constants";
+import { getBandYScale } from "../../util/utils";
+import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
 import {
   drawArrow,
   drawLabelBelow,
   getLinearScale,
   renderBackground,
-} from "./render_utils";
+} from "../../draw/render_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;

@@ -11,7 +11,7 @@ import {
 } from "./_draw";
 
 import { drawTrackDeprecated } from "./_navigation";
-import { CHROMOSOMES, FONTSIZES } from "../util/constants";
+import { CHROMOSOMES, FONTSIZES } from "../constants";
 
 export class OverviewCanvas extends BaseScatterTrack {
   fullPlotWidth: number;

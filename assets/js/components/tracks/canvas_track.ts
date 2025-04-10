@@ -1,6 +1,6 @@
-import { STYLE } from "../../util/constants";
-import { drawLabel, renderBackground } from "./render_utils";
-import { Tooltip } from "./tooltip_utils";
+import { STYLE } from "../../constants";
+import { drawLabel, renderBackground } from "../../draw/render_utils";
+import { Tooltip } from "../../util/tooltip_utils";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;

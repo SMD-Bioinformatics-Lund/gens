@@ -1,5 +1,5 @@
-import { newDrawRect } from "../components/tracks/render_utils";
-import { STYLE } from "../util/constants";
+import { newDrawRect } from "./render_utils";
+import { STYLE } from "../constants";
 
 /**
  * Render the actual chromosome
