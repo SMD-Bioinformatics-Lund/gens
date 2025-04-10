@@ -9,7 +9,7 @@ import {
   drawGraphLines,
 } from "./draw";
 import {
-  drawTrack,
+  drawTrackDeprecated,
   zoomIn,
   zoomOut,
   keyLogger,
@@ -268,7 +268,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
         if (end - start < 10) {
           zoomIn();
         } else {
-          drawTrack({
+          drawTrackDeprecated({
             chrom: this.chromosome,
             start: start,
             end: end,
@@ -278,7 +278,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
         }
       } else if (this.drag) {
         // reload window when stop draging
-        drawTrack({
+        drawTrackDeprecated({
           ...readInputField(),
           force: true,
         });
@@ -623,7 +623,7 @@ export class InteractiveCanvas extends BaseScatterTrack {
       end: region.end,
       updateCoord: false,
     });
-    drawTrack({
+    drawTrackDeprecated({
       ...region,
       exclude: [
         `${this.contentCanvas.parentElement.id}`,

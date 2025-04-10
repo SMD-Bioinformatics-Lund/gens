@@ -1,5 +1,5 @@
 import { get } from "./fetch";
-import { chromSizes } from "./helper";
+import { chromSizes } from "./unused/_helper";
 import { CHROMOSOMES } from "./util/constants";
 
 function redrawEvent({ region, exclude = [], ...kwargs }) {
@@ -106,7 +106,7 @@ export async function limitRegionToChromosome({
     };
 }
 
-export async function drawTrack({
+export async function drawTrackDeprecated({
     chrom,
     start,
     end,
@@ -114,6 +114,7 @@ export async function drawTrack({
     exclude: _exclude = [],
     force: _force = false,
 }) {
+    console.error("Drawing deprecated track");
     // update input field
     const region = await limitRegionToChromosome({
         chrom,
@@ -143,16 +144,16 @@ export async function drawTrack({
 // Else query api for genes with that name and draw that region
 export function queryRegionOrGene(query, genomeBuild = 38) {
     if (query.includes(":")) {
-        drawTrack(parseRegionDesignation(query));
+        drawTrackDeprecated(parseRegionDesignation(query));
     } else if (CHROMOSOMES.includes(query)) {
-        drawTrack({ chrom: query, start: 1, end: null });
+        drawTrackDeprecated({ chrom: query, start: 1, end: null });
     } else {
         get("search-annotation", {
             query: query,
             genome_build: genomeBuild,
         }).then((result) => {
             if (result.status === 200) {
-                drawTrack({
+                drawTrackDeprecated({
                     chrom: result.chromosome,
                     start: result.start_pos,
                     end: result.end_pos,
@@ -166,14 +167,14 @@ export function queryRegionOrGene(query, genomeBuild = 38) {
 export function nextChromosome() {
     const position = readInputField();
     const chrom = CHROMOSOMES[CHROMOSOMES.indexOf(position.chrom) + 1];
-    drawTrack({ chrom: chrom, start: 1, end: null });
+    drawTrackDeprecated({ chrom: chrom, start: 1, end: null });
 }
 
 // goto the previous chromosome
 export function previousChromosome() {
     const position = readInputField();
     const chrom = CHROMOSOMES[CHROMOSOMES.indexOf(position.chrom) - 1];
-    drawTrack({ chrom: chrom, start: 1, end: null });
+    drawTrackDeprecated({ chrom: chrom, start: 1, end: null });
 }
 
 export function getPan(
@@ -215,7 +216,7 @@ export function panTracks(direction = "left", speed = 0.1) {
         pos.end = pos.end - pos.start;
         pos.start = 1;
     }
-    drawTrack({
+    drawTrackDeprecated({
         chrom: pos.chrom,
         start: pos.start,
         end: pos.end,
@@ -250,7 +251,7 @@ export function zoomIn() {
     const factor = Math.floor((pos.end - pos.start) * 0.2);
     pos.start += factor;
     pos.end -= factor;
-    drawTrack({
+    drawTrackDeprecated({
         chrom: pos.chrom,
         start: pos.start,
         end: pos.end,
@@ -264,7 +265,7 @@ export function zoomOut() {
     const factor = Math.floor((pos.end - pos.start) / 3);
     pos.start = pos.start - factor < 1 ? 1 : pos.start - factor;
     pos.end += factor;
-    drawTrack({
+    drawTrackDeprecated({
         chrom: pos.chrom,
         start: pos.start,
         end: pos.end,
@@ -369,26 +370,26 @@ document.addEventListener("keyevent", (event: CustomEvent<KeyEventData>) => {
         }
         switch (key) {
             case "ArrowLeft":
-                previousChromosome();
+                // previousChromosome();
                 break;
             case "ArrowRight":
-                nextChromosome();
+                // nextChromosome();
                 break;
             case "a":
-                panTracks("left", 0.7);
+                // panTracks("left", 0.7);
                 break;
             case "d":
-                panTracks("right", 0.7);
+                // panTracks("right", 0.7);
                 break;
             case "ArrowUp":
             case "w":
             case "+":
-                zoomIn();
+                // zoomIn();
                 break;
             case "ArrowDown":
             case "s":
             case "-":
-                zoomOut();
+                // zoomOut();
                 break;
             default:
         }

@@ -1,22 +1,7 @@
-@import "defaults", "navbar";
+@use "defaults";
+@use "navbar";
 // region marker
 $marker-color: rgba(#dcd16f, 0.3);
-// buttons
-$btn-zoom-color: #8fbcbb;
-$btn-navigate-color: #6db2c5;
-
-$btn-submit-color: #6db2c5;
-html,
-body {
-  max-width: 100%;
-  min-height: 100%;
-  width: 100%;
-  overflow-x: hidden;
-  margin: 0;
-  display: grid;
-  grid-template-columns: auto;
-  grid-template-rows: auto;
-}
 
 .tooltip {
   background: #333;
@@ -70,16 +55,16 @@ body {
   box-sizing: border-box;
   padding-top: 210px;
   z-index: 10;
-  background-color: $default-bg-color;
+  background-color: defaults.$default-bg-color;
 }
 
 .help-popup {
   // dimensions and color
   display: none;
   transition: opacity 2s linear 0.5s;
-  color: $default-font-color;
-  background: $default-bg-color;
-  border: 1px solid $default-font-color;
+  color: defaults.$default-font-color;
+  background: defaults.$default-bg-color;
+  border: 1px solid defaults.$default-font-color;
   width: 300px;
   padding: 0px 10px 10px 10px;
   // positioning
@@ -156,7 +141,9 @@ body {
   gap: 8px;
 
   color: #333;
-  background-color: #bbcadc
+  background-color: #bbcadc;
+
+  z-index: 1000;
 }
 
 #logo-container {
@@ -178,11 +165,6 @@ body {
   height: 35px;
   cursor: pointer;
 }
-
-// #main-container {
-//   grid-row: 1;
-//   grid-column: 1;
-// }
 
 #main-container {
   display: flex;
@@ -255,30 +237,6 @@ html, body {
   }
 }
 
-// #interactive-container {
-//   display: grid;
-//   grid-row: 3;
-//   grid-column: 1;
-
-//   #interactive-static {
-//     z-index: 1;
-//     pointer-events: none;
-//     grid-row: 4;
-//     grid-column: 1;
-//   }
-
-//   #interactive-content {
-//     z-index: 1;
-//     grid-row: 4;
-//     grid-column: 1;
-//   }
-
-//   #interactive-marker {
-//     position: absolute;
-//     z-index: 1;
-//   }
-// }
-
 #interactive-options {
   text-align: center;
   width: 100%;
@@ -294,7 +252,7 @@ html, body {
 
 #source-list {
   max-height: 80px;
-  overflow-y: auto;
+  // overflow-y: auto;
   border: 1px solid rgba(27, 31, 35, 0.15);
   border-radius: 4px;
   padding: 4px;
@@ -326,7 +284,7 @@ html, body {
 .info-container[data-state="collapsed"] {
   padding-right: 0;
   border: 1px solid gray;
-  overflow-y: hidden;
+  // overflow-y: hidden;
 }
 
 .info-container[data-state="expanded"] {
@@ -374,8 +332,8 @@ html, body {
 .info-container {
   display: grid;
   grid-column: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  // overflow-y: auto;
+  // overflow-x: hidden;
   height: 100px;
 
   .info-canvas {
@@ -449,7 +407,7 @@ html, body {
   margin: 0;
   // style
   $black: #000;
-  background-color: $default-bg-color;
+  background-color: defaults.$default-bg-color;
 
   .loading-container {
     position: relative;
@@ -464,11 +422,11 @@ html, body {
   .message {
     font: italic 1.2em sans-serif;
     padding-right: 12px;
-    color: $default-font-color;
+    color: defaults.$default-font-color;
     flex: 1;
   }
   .spinner {
-    border-top: 3px solid rgba($menubar-bg-color, 0.5);
+    border-top: 3px solid rgba(navbar.$menubar-bg-color, 0.5);
     border-right: 3px solid transparent;
     border-radius: 50%;
     width: 30px;

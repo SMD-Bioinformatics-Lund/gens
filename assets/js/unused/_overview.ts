@@ -1,17 +1,17 @@
 // Overview canvas definition
 
-import { BaseScatterTrack } from "./track";
-import { create, get } from "./fetch";
+import { BaseScatterTrack } from "../track";
+import { create, get } from "../fetch";
 import {
   createGraph,
   drawPoints,
   drawGraphLines,
   drawText,
   drawRotatedText,
-} from "./draw";
+} from "../draw";
 
-import { drawTrack } from "./navigation";
-import { CHROMOSOMES, FONTSIZES } from "./util/constants";
+import { drawTrackDeprecated } from "../navigation";
+import { CHROMOSOMES, FONTSIZES } from "../util/constants";
 
 export class OverviewCanvas extends BaseScatterTrack {
   fullPlotWidth: number;
@@ -124,7 +124,7 @@ export class OverviewCanvas extends BaseScatterTrack {
           const end = this.dims[chrom].size - 1;
           // Mark region
           this.markRegion({ chrom, start, end });
-          drawTrack({ chrom, start, end }); // redraw canvas
+          drawTrackDeprecated({ chrom, start, end }); // redraw canvas
         }
       });
       this.staticCanvas.parentElement.addEventListener(

@@ -16,7 +16,7 @@ template.innerHTML = String.raw`
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
-      overflow: hidden;
+      /* overflow: hidden; */
       padding-left: ${PADDING_SIDES}px;
       padding-right: ${PADDING_SIDES}px;
     }

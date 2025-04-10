@@ -1,3 +1,4 @@
+import { get } from "../fetch";
 import { CHROMOSOMES } from "../util/constants";
 import {
   getAnnotationData,
@@ -26,8 +27,21 @@ export class API {
     this.apiURL = gensApiURL;
   }
 
+  async getAnnotationSources(): Promise<string[]> {
+    const annotSources = (await get(
+      new URL("get-annotation-sources", this.apiURL).href,
+      {
+        genome_build: this.genomeBuild,
+      },
+    )).sources as string[];
+    return annotSources;
+  }
+
   private annotCache: Record<string, Record<string, APIAnnotation[]>> = {};
-  async getAnnotations(chrom: string, source: string): Promise<APIAnnotation[]> {
+  async getAnnotations(
+    chrom: string,
+    source: string,
+  ): Promise<APIAnnotation[]> {
     const isCached =
       this.annotCache[chrom] !== undefined &&
       this.annotCache[chrom][source] !== undefined;
@@ -116,7 +130,7 @@ export class API {
           this.chromCache[chrom] = await getChromosomeData(
             chrom,
             this.genomeBuild,
-            this.apiURL
+            this.apiURL,
           );
         }
       }),
@@ -131,7 +145,7 @@ export class API {
         this.sampleId,
         this.caseId,
         "cov",
-        this.apiURL
+        this.apiURL,
       );
     }
     return this.overviewCovCache;
@@ -144,7 +158,7 @@ export class API {
         this.sampleId,
         this.caseId,
         "baf",
-        this.apiURL
+        this.apiURL,
       );
     }
     return this.overviewBafCache;

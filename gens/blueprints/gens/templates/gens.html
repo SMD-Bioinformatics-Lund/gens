@@ -20,6 +20,7 @@
 {% endblock css_style %} -->
 {% block scripts %}
     <script src='{{ url_for('gens.static', filename='gens.min.js') }}'></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock scripts %}
 
 {% macro loading() %}
@@ -35,7 +36,7 @@
 {% block body %}
 <!-- {{ loading() }} -->
 <div id='main-container'>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
   <div class="header">
       <div id="logo-container">
         <span class='logo'></span>
@@ -45,6 +46,7 @@
         <i class="fas fa-cog"></i>
       </div>
   </div>
+
   <gens-tracks id="gens-tracks" style="display: block; width: 100%;"></gens-tracks>
 
 
@@ -76,7 +78,7 @@
         printing = true;
         let mainContainer = document.querySelector('#main-container');
         // mainContainer.style.width = '1122px';
-        mainContainer.style.overflowY = 'hidden';
+        // mainContainer.style.overflowY = 'hidden';
         let loading = document.querySelector('.loading-container');
         loading.querySelector("#loading").toggleAttribute("hidden")
         loading.querySelector("#printing").toggleAttribute("hidden")

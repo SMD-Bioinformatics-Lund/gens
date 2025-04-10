@@ -1,14 +1,15 @@
 @use "sass:color";
+@use "defaults";
 // Define menuebar colors
 $menubar-font-color: #f4faff;
 $menubar-bg-color: #4c6d94;
-$menubar-bg-color-dark: adjust-color($menubar-bg-color, $lightness: -10%);
+$menubar-bg-color-dark: color.adjust($menubar-bg-color, $lightness: 10%);
 $menubar-bg-color-print: darkgrey;
 $menubar-font-color-print: white;
 // size
 
 .navbar {
-  font-family: $default-font;
+  font-family: defaults.$default-font;
   font-size: 1.5em;
   background: $menubar-bg-color;
   color: $menubar-font-color;
@@ -60,7 +61,7 @@ $menubar-font-color-print: white;
     list-style-type: none;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    // overflow: hidden;
   }
 
   li {

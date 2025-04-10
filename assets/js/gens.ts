@@ -1,6 +1,5 @@
 export {
   setupDrawEventManager,
-  drawTrack,
   previousChromosome,
   nextChromosome,
   panTracks,
@@ -11,6 +10,7 @@ export {
 } from "./navigation";
 
 import "./components/top_bar";
+import "./components/util/tag_multi_select";
 // import { TopBar } from "./components/top_bar";
 import "./components/tracks_manager";
 import { TracksManager } from "./components/tracks_manager";
@@ -23,7 +23,7 @@ import {
   parseAnnotations,
 } from "./components/tracks/render_utils";
 import { API } from "./state/api";
-import { transformMap } from "./track/utils";
+import { transformMap } from "./unused/track/_utils";
 import { STYLE } from "./util/constants";
 
 export async function initCanvases({
@@ -80,7 +80,7 @@ export async function initCanvases({
     gensTracks,
     startRegion,
     annotationFile,
-    gensApiURL,
+    api,
     onChromClick,
     getChromInfo,
     renderDataSource,
@@ -92,11 +92,16 @@ async function initialize(
   tracks: TracksManager,
   startRegion: Region,
   defaultAnnotation: string,
-  gensApiURI: string,
+  api: API,
   onChromClick: (string) => void,
   getChromInfo: (string) => ChromosomeInfo,
   renderDataSource: RenderDataSource,
 ) {
+
+  const annotSources = await api.getAnnotationSources();
+
+  console.log(annotSources);
+
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
     startRegion,
@@ -107,7 +112,7 @@ async function initialize(
     async (_newXRange) => {
       tracks.render(true);
     },
-    gensApiURI,
+    annotSources
   );
 
   await tracks.initialize(
@@ -119,7 +124,6 @@ async function initialize(
     () => inputControls.getAnnotSources(),
   );
 
-  // await tracks.updateRenderData();
   tracks.render(true);
 }
 

@@ -1,5 +1,5 @@
 // Test tracks
-import { calculateOffscreenWindowPos } from "./base";
+import { calculateOffscreenWindowPos } from "./_base";
 import "regenerator-runtime/runtime";
 
 // test that offscreen window position

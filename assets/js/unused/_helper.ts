@@ -1,5 +1,5 @@
 // Various helper functions
-import { get } from "./fetch";
+import { get } from "../fetch";
 
 // FIXME: Unused I think, remove?
 function cacheChromSizes(_genomeBuild = "38") {
