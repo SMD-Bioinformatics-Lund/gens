@@ -10,7 +10,7 @@ from flask import current_app as app
 from flask.cli import with_appcontext
 from pymongo.database import Database
 
-from gens.commands.util import ChoiceType
+from gens.cli.util import ChoiceType
 from gens.config import settings
 from gens.db import (
     create_index,
