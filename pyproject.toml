@@ -54,7 +54,7 @@ Issues = "https://github.com/SMD-Bioinformatics-Lund/gens/issues"
 Changelog = "https://github.com/SMD-Bioinformatics-Lund/gens/blob/master/CHANGELOG.md"
 
 [project.scripts]
-gens = "gens.commands:cli"
+gens = "gens.cli:cli"
 
 [tool.hatch.version]
 path = "gens/__version__.py"
