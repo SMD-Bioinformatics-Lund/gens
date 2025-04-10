@@ -36,16 +36,16 @@ def home() -> str:
     # set pagination
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * SAMPLES_PER_PAGE
-    samples, total_samples = get_samples(db.get_collection(SAMPLES_COLLECTION), start=start, n_samples=SAMPLES_PER_PAGE)
+    resp = get_samples(db.get_collection(SAMPLES_COLLECTION), skip=start, limit=SAMPLES_PER_PAGE)
     # calculate pagination
     pagination_info = {
         "from": start + 1,
         "to": start + SAMPLES_PER_PAGE,
         "current_page": page,
         "last_page": (
-            total_samples // SAMPLES_PER_PAGE
-            if total_samples % SAMPLES_PER_PAGE == 0
-            else (total_samples // SAMPLES_PER_PAGE) + 1
+            resp.records_total // SAMPLES_PER_PAGE
+            if resp.records_total % SAMPLES_PER_PAGE == 0
+            else (resp.records_total // SAMPLES_PER_PAGE) + 1
         ),
     }
     parsed_samples = [
@@ -58,13 +58,13 @@ def home() -> str:
             and os.path.isfile(smp.coverage_file),
             "created_at": smp.created_at.strftime("%Y-%m-%d"),
         }
-        for smp in samples
+        for smp in resp.data
     ]
     return render_template(
         "home.html",
         pagination=pagination_info,
         samples=parsed_samples,
-        total_samples=total_samples,
+        total_samples=resp.records_total,
         scout_base_url=str(settings.scout_url),
         version=version,
     )

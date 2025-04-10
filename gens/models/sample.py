@@ -43,7 +43,7 @@ class SampleInfo(RWModel, CreatedAtModel):
     genome_build: GenomeBuild
     baf_file: FilePath
     coverage_file: FilePath
-    overview_file: FilePath
+    overview_file: FilePath | None
 
     @computed_field()  # type: ignore
     @property

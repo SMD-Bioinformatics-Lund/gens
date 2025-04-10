@@ -9,6 +9,7 @@ from pymongo.database import Database
 from gens import version
 from gens.config import UI_COLORS, settings
 from gens.crud.genomic import get_chromosome_info
+from gens.crud.samples import get_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.models.genomic import GenomeBuild
 from gens.genomic import parse_region_str
@@ -57,7 +58,7 @@ def display_case(sample_name: str) -> str:
 
     # Check that BAF and Log2 file exists
     # FIXME move checks to the API instead
-    _ = query_sample(db[SAMPLES_COLLECTION], individual_id, case_id)
+    _ = get_sample(db.get_collection(SAMPLES_COLLECTION), individual_id, case_id)
 
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")

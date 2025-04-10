@@ -108,7 +108,7 @@ def get_sample(samples_c: Collection[dict[str, Any]], sample_id: str, case_id: s
 
 
 def delete_sample(
-    samples_c: Collection[dict[str, Any]], sample_id: str, case_id: str, genome_build: GenomeBuild
+    db: Database[Any], sample_id: str, case_id: str, genome_build: GenomeBuild
 ) -> None:
     """Remove a sample from the database."""
 
@@ -120,6 +120,7 @@ def delete_sample(
         "genome_build": genome_build,
     }
 
+    samples_c = db.get_collection(SAMPLES_COLLECTION)
     result = samples_c.find_one(sample_filter)
 
     if result is None:
