@@ -2,7 +2,7 @@
 
 import { BaseAnnotationTrack } from "./_base";
 import { isElementOverlapping, isWithinElementVisibleBbox } from "../../util/utils";
-import { drawRect, drawLine, drawWaveLine, drawText } from "../_draw";
+import { drawRect, drawWaveLine, drawText } from "../_draw";
 import {
   initTrackTooltips,
   createTooltipElement,
@@ -10,6 +10,7 @@ import {
   updateVisibleElementCoordinates,
 } from "./_tooltip";
 import { createPopper } from "@popperjs/core";
+import { drawLine } from "../../draw/shapes";
 
 // Draw variants
 const VARIANT_TR_TABLE = {

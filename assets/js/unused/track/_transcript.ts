@@ -9,8 +9,9 @@ import {
   updateVisibleElementCoordinates,
 } from "./_tooltip";
 import { createPopper } from "@popperjs/core";
-import { drawRect, drawLine, drawArrow, drawText } from "../_draw";
+import { drawRect, drawText } from "../_draw";
 import { getVisibleXCoordinates, isElementOverlapping } from "../../util/utils";
+import { drawArrow, drawLine } from "../../draw/shapes";
 
 // add feature information to tooltipElement
 function addFeatures(elem, tooltipElement) {

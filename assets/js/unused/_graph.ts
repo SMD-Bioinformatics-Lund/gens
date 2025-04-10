@@ -1,6 +1,7 @@
 // graph related objects
 import { COLORS, FONTSIZES } from "../constants";
-import { drawRect, drawLine, drawRotatedText, drawText } from "./shapes";
+import { drawLine } from "../draw/shapes";
+import { drawRect, drawRotatedText, drawText } from "./_shapes";
 
 // Draws vertical tick marks for selected values between
 // xStart and xEnd with step length.
