@@ -7,7 +7,7 @@ import {
   createGraph,
   drawVerticalTicks,
   drawGraphLines,
-} from "./draw";
+} from "./_draw";
 import {
   drawTrackDeprecated,
   zoomIn,
@@ -15,9 +15,9 @@ import {
   keyLogger,
   limitRegionToChromosome,
   readInputField,
-} from "./navigation";
-import { get } from "./fetch";
-import { BaseScatterTrack } from "./track";
+} from "./_navigation";
+import { get } from "../util/fetch";
+import { BaseScatterTrack } from "./_track";
 
 export class InteractiveCanvas extends BaseScatterTrack {
   x: number;

@@ -1,16 +1,16 @@
 // Overview canvas definition
 
-import { BaseScatterTrack } from "../track";
-import { create, get } from "../fetch";
+import { BaseScatterTrack } from "./_track";
+import { create, get } from "../util/fetch";
 import {
   createGraph,
   drawPoints,
   drawGraphLines,
   drawText,
   drawRotatedText,
-} from "../draw";
+} from "./_draw";
 
-import { drawTrackDeprecated } from "../navigation";
+import { drawTrackDeprecated } from "./_navigation";
 import { CHROMOSOMES, FONTSIZES } from "../util/constants";
 
 export class OverviewCanvas extends BaseScatterTrack {

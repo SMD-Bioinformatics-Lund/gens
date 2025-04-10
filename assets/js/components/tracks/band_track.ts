@@ -1,4 +1,4 @@
-import { getOverlapInfo, getTrackHeight } from "../../expand_track_utils";
+import { getOverlapInfo, getTrackHeight } from "../../util/expand_track_utils";
 import { getBandYScale } from "../../unused/track/_utils";
 import { STYLE } from "../../util/constants";
 import { CanvasTrack } from "./canvas_track";

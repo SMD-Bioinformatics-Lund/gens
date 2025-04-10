@@ -4,7 +4,7 @@ export {
   drawVerticalTicks,
   createGraph,
   drawGraphLines,
-} from "./draw/graph";
+} from "../draw/graph";
 export {
   drawRotatedText,
   drawPoints,
@@ -13,4 +13,4 @@ export {
   drawRect,
   drawArrow,
   drawWaveLine,
-} from "./draw/shapes";
+} from "../draw/shapes";

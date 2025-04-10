@@ -7,7 +7,7 @@ export {
   zoomOut,
   parseRegionDesignation,
   queryRegionOrGene,
-} from "./navigation";
+} from "./unused/_navigation";
 
 import "./components/top_bar";
 import "./components/util/tag_multi_select";
@@ -189,4 +189,3 @@ function getRenderDataSource(
   return renderDataSource;
 }
 
-export { setupGenericEventManager } from "./track";

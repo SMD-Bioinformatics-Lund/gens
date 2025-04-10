@@ -1,6 +1,6 @@
-import { get } from "./fetch";
-import { chromSizes } from "./unused/_helper";
-import { CHROMOSOMES } from "./util/constants";
+import { get } from "../util/fetch";
+import { chromSizes } from "./_helper";
+import { CHROMOSOMES } from "../util/constants";
 
 function redrawEvent({ region, exclude = [], ...kwargs }) {
     return new CustomEvent("draw", {
