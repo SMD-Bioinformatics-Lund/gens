@@ -4,10 +4,10 @@ import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
 import {
   drawArrow,
-  drawLabelBelow,
   getLinearScale,
   renderBackground,
 } from "../../draw/render_utils";
+import { drawLabel } from "../../draw/shapes";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
@@ -141,7 +141,10 @@ function drawBand(
     }
 
     if (isExpanded && band.label != null) {
-      drawLabelBelow(ctx, band.label, (xPxRange[0] + xPxRange[1]) / 2, y2);
+      drawLabel(ctx, band.label, (xPxRange[0] + xPxRange[1]) / 2, y2, {
+        textAlign: "center",
+        textBaseline: "top",
+      });
     }
   }
 

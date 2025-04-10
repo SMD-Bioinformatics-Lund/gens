@@ -1,5 +1,6 @@
 import { STYLE } from "../../constants";
-import { drawLabel, renderBackground } from "../../draw/render_utils";
+import { renderBackground } from "../../draw/render_utils";
+import { drawLabel } from "../../draw/shapes";
 import { Tooltip } from "../../util/tooltip_utils";
 
 // FIXME: Move somewhere

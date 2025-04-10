@@ -75,10 +75,12 @@ export const STYLE = {
         textFramePadding: 2,
         textLaneSize: 20,
         backgroundColor: colors.white,
+        frameLineWidth: 2,
     },
     yAxis: {
         width: 25,
         labelPos: 20,
+        backgroundColor: colors.white,
     },
     colors,
 }

@@ -1,4 +1,4 @@
-import { drawVerticalLine } from "../../draw/shapes";
+import { drawVerticalLineInScale } from "../../draw/shapes";
 import { transformMap, padRange, rangeSize } from "../../util/utils";
 import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
@@ -147,7 +147,9 @@ function renderOverviewPlot(
 ) {
   // Draw the initial lines
   Object.values(chromRanges).forEach(([_chromStart, chromEnd]) =>
-    drawVerticalLine(ctx, chromEnd, xScale, STYLE.tracks.edgeColor),
+    drawVerticalLineInScale(ctx, chromEnd, xScale, {
+      color: STYLE.tracks.edgeColor,
+    }),
   );
 
   Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
@@ -190,18 +192,10 @@ function getChromRanges(
     sumPos += chromLength;
 
     const posRange: Rng = [startPos, sumPos];
-    // const pxRange = posRange.map((pos) =>
-    //     scaleToPixels(pos, totalChromSize, screenWidth),
-    // ) as [number, number];
 
     chromRanges[chrom] = posRange;
   });
   return chromRanges;
 }
-
-// function drawSegmentDots(dots: RenderDot[], pxRange: [number, number]) {}
-
-// This will actually be multiple parts
-// function additionalText() {}
 
 customElements.define("overview-track", OverviewTrack);

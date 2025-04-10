@@ -144,6 +144,23 @@ interface BoxStyle {
   borderWidth?: number
 }
 
+interface LabelStyle {
+  withFrame?: boolean;
+  textBaseline?: "top" | "middle" | "bottom";
+  textAlign?: "left" | "right" | "center";
+  padding?: number;
+  font?: string;
+  textColor?: string;
+  boxStyle?: BoxStyle;
+}
+
+interface LineStyle {
+  lineWidth?: number,
+  color?: string,
+  dashed?: boolean,
+  transpose_05?: boolean,
+}
+
 type Scale = (value: number) => number
 
 type ColorScale = (level: string) => string
