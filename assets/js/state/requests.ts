@@ -1,5 +1,5 @@
 import { get } from "../util/fetch";
-import { zip } from "../unused/track/_utils";
+import { zip } from "../util/utils";
 
 
 export async function getAnnotationData(

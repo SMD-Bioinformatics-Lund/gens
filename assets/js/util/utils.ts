@@ -55,7 +55,7 @@ export function getBandYScale(
 }
 
 export function getVisibleXCoordinates(
-  screenPositions: ScreenPositions,
+  screenPositions: _ScreenPositions,
   feature: { start: number; end: number },
   scale: number,
   minWidth: number = 4,
@@ -93,7 +93,7 @@ export function isElementOverlapping(
 }
 
 // check if point is within an element
-export function isWithinElementBbox(element: ElementCoords, point: Point) {
+export function isWithinElementBbox(element: Box, point: Point) {
   return (
     element.x1 < point.x &&
     point.x < element.x2 &&
@@ -103,7 +103,7 @@ export function isWithinElementBbox(element: ElementCoords, point: Point) {
 }
 
 export function isWithinElementVisibleBbox(
-  element: DisplayElement,
+  element: _DisplayElement,
   point: Point,
 ) {
   return (

@@ -1,8 +1,11 @@
 // Variant track definition
 
 import { BaseAnnotationTrack } from "./_base";
-import { isElementOverlapping, isWithinElementVisibleBbox } from "./_utils";
-import { drawRect, drawLine, drawWaveLine, drawText } from "../_draw";
+import {
+  isElementOverlapping,
+  isWithinElementVisibleBbox,
+} from "../../util/utils";
+import { drawRect, drawWaveLine, drawText } from "../_draw";
 import {
   initTrackTooltips,
   createTooltipElement,
@@ -10,6 +13,7 @@ import {
   updateVisibleElementCoordinates,
 } from "./_tooltip";
 import { createPopper } from "@popperjs/core";
+import { drawLine } from "../../draw/shapes";
 
 // Draw variants
 const VARIANT_TR_TABLE = {
@@ -24,10 +28,18 @@ export class VariantTrack extends BaseAnnotationTrack {
   scoutBaseURL: string;
   genomeBuild: number;
   apiEntrypoint: string;
-  labelData: VariantLabel[];
+  labelData: _VariantLabel[];
   highlightedVariantId: string;
-  heightOrderRecord: {latestHeight: number, latestNameEnd: number, latestTrackEnd: number}
-  additionalQueryParams: { variant_category: string, case_id: string, sample_id: string };
+  heightOrderRecord: {
+    latestHeight: number;
+    latestNameEnd: number;
+    latestTrackEnd: number;
+  };
+  additionalQueryParams: {
+    variant_category: string;
+    case_id: string;
+    sample_id: string;
+  };
 
   constructor(
     x: number,
@@ -37,21 +49,29 @@ export class VariantTrack extends BaseAnnotationTrack {
     sampleId: string,
     caseId: string,
     genomeBuild: number,
-    colorSchema: ColorSchema,
+    colorSchema: _ColorSchema,
     scoutBaseURL: string,
-    highlightedVariantId: string
+    highlightedVariantId: string,
   ) {
     // Dimensions of track canvas
     const visibleHeight = 100; // Visible height for expanded canvas, overflows for scroll
     const minHeight = 35; // Minimized height
-    
+
     super(width, near, far, visibleHeight, minHeight, colorSchema);
 
     // Set inherited variables
-    this.drawCanvas = document.getElementById("variant-draw") as HTMLCanvasElement;
-    this.contentCanvas = document.getElementById("variant-content") as HTMLCanvasElement;
-    this.trackTitle = document.getElementById("variant-titles") as HTMLDivElement;
-    this.trackContainer = document.getElementById("variant-track-container") as HTMLDivElement;
+    this.drawCanvas = document.getElementById(
+      "variant-draw",
+    ) as HTMLCanvasElement;
+    this.contentCanvas = document.getElementById(
+      "variant-content",
+    ) as HTMLCanvasElement;
+    this.trackTitle = document.getElementById(
+      "variant-titles",
+    ) as HTMLDivElement;
+    this.trackContainer = document.getElementById(
+      "variant-track-container",
+    ) as HTMLDivElement;
 
     // Add click menu event listener linking out to the Scout variant
     this.trackContainer.addEventListener(
@@ -71,7 +91,7 @@ export class VariantTrack extends BaseAnnotationTrack {
           }
         }
       },
-      false
+      false,
     );
     this.featureHeight = 18;
     // Setup html objects now that we have gotten the canvas and div elements
@@ -137,8 +157,8 @@ export class VariantTrack extends BaseAnnotationTrack {
       filteredVariants = data.variants.filter((variant) =>
         isElementOverlapping(
           { start: variant.position, end: variant.end },
-          { start: startPos, end: endPos }
-        )
+          { start: startPos, end: endPos },
+        ),
       );
     }
     filteredVariants.sort((a, b) => a.position - b.position);
@@ -199,13 +219,13 @@ export class VariantTrack extends BaseAnnotationTrack {
       // create variant object
       const featureHeight = variantCategory === "del" ? 7 : 8;
       // FIXME: This should really be a class
-      const variantObj: DisplayElement = {
+      const variantObj: _DisplayElement = {
         id: variant.document_id,
         name: variant.display_name,
         start: variant.position,
         end: variant.end,
         x1: Math.round(
-          scale * (variant.position - this.offscreenPosition.start)
+          scale * (variant.position - this.offscreenPosition.start),
         ),
         x2: Math.round(scale * (variant.end - this.offscreenPosition.start)),
         y1: canvasYPos,
@@ -291,38 +311,44 @@ export class VariantTrack extends BaseAnnotationTrack {
           break;
         case "cnv":
         case "dup":
-          drawLine({
-            ctx: this.drawCtx,
-            x: variantObj.x1,
-            y: variantObj.y1,
-            x2: variantObj.x2,
-            y2: variantObj.y1,
-            color,
-          });
-          drawLine({
-            ctx: this.drawCtx,
-            x: variantObj.x1,
-            y: variantObj.y2,
-            x2: variantObj.x2,
-            y2: variantObj.y2,
-            color,
-          });
+          drawLine(
+            this.drawCtx,
+            {
+              x1: variantObj.x1,
+              y1: variantObj.y1,
+              x2: variantObj.x2,
+              y2: variantObj.y1,
+            },
+            { color },
+          );
+          drawLine(
+            this.drawCtx,
+            {
+              x1: variantObj.x1,
+              y1: variantObj.y2,
+              x2: variantObj.x2,
+              y2: variantObj.y2,
+            },
+            { color },
+          );
           break;
         case "bnd":
         case "inv":
           // no support for balanced events
           break;
         default: // other types of elements
-          drawLine({
-            ctx: this.drawCtx,
-            x: variantObj.x1,
-            y: variantObj.y1,
-            x2: variantObj.x2,
-            y2: variantObj.y1,
-            color,
-          });
+          drawLine(
+            this.drawCtx,
+            {
+              x1: variantObj.x1,
+              y1: variantObj.y1,
+              x2: variantObj.x2,
+              y2: variantObj.y1,
+            },
+            { color },
+          );
           console.log(
-            `Unhandled variant type ${variantCategory}; drawing default shape`
+            `Unhandled variant type ${variantCategory}; drawing default shape`,
           );
       }
       // Move and display highlighted region
@@ -371,8 +397,8 @@ export class VariantTrack extends BaseAnnotationTrack {
             margin,
             Math.min(
               this.contentCanvas.width - margin,
-              scale * (label.x - this.onscreenPosition.start)
-            )
+              scale * (label.x - this.onscreenPosition.start),
+            ),
           ),
           y: label.y,
           fontProp: label.fontProp,

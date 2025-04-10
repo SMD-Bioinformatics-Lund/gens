@@ -9,7 +9,7 @@ import { AnnotationTracks } from "./tracks/annotation_tracks";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
-import { CHROMOSOMES, STYLE } from "../util/constants";
+import { CHROMOSOMES, STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/canvas_track";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];

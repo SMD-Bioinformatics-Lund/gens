@@ -76,7 +76,7 @@ export class BaseAnnotationTrack {
   visibleHeight: number;
   minHeight: number;
   preventDrawingTrack: boolean;
-  colorSchema: ColorSchema;
+  colorSchema: _ColorSchema;
   // eslint-disable-next-line
   drawOffScreenTrack: any;
 
@@ -113,7 +113,7 @@ export class BaseAnnotationTrack {
     far: number,
     visibleHeight: number,
     minHeight: number,
-    colorSchema: ColorSchema = null,
+    colorSchema: _ColorSchema = null,
   ) {
     // Track variables
     this.featureHeight = 20;

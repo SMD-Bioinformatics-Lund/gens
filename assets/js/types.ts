@@ -79,19 +79,6 @@ interface APICoverageBin {
   zoom: string,
 }
 
-interface AnnotationEntry {
-  chrom: string,
-  color: number[],
-  start: number,
-  end: number,
-  genome_build: number,
-  name: string,
-  source: string,
-  score?: number
-}
-
-
-// FIXME: This should be looked over
 interface RenderBand {
   id: string,
   start: number,
@@ -105,7 +92,6 @@ interface RenderBand {
   y1?: number,
   y2?: number,
   subBands?: RenderBand[],
-  // nbrOverlap?: number
 }
 
 interface RenderDot {
@@ -125,31 +111,6 @@ interface AnnotationTracksData {
 }
 
 interface BandTrackData {
-  xRange: Rng,
-  bands: RenderBand[],
-}
-
-interface RenderExon {
-  id: string,
-  start: number,
-  end: number,
-  exonNumber: number,
-  label: string,
-  band?: RenderBand
-}
-
-// interface RenderTranscript {
-//   id: string,
-//   start: number,
-//   end: number,
-//   info: string,
-//   label: string,
-//   strand: "+" | "-",
-//   exons: RenderExon[],
-//   band?: RenderBand,
-// }
-
-interface TranscriptsTrackData {
   xRange: Rng,
   bands: RenderBand[],
 }
@@ -183,6 +144,23 @@ interface BoxStyle {
   borderWidth?: number
 }
 
+interface LabelStyle {
+  withFrame?: boolean;
+  textBaseline?: "top" | "middle" | "bottom";
+  textAlign?: "left" | "right" | "center";
+  padding?: number;
+  font?: string;
+  textColor?: string;
+  boxStyle?: BoxStyle;
+}
+
+interface LineStyle {
+  lineWidth?: number,
+  color?: string,
+  dashed?: boolean,
+  transpose_05?: boolean,
+}
+
 type Scale = (value: number) => number
 
 type ColorScale = (level: string) => string
@@ -202,41 +180,23 @@ interface RenderDataSource {
 
 type Rng = [number, number];
 
-interface ColorPoint {
-  x: number,
-  y: number,
-  color: string,
-}
-
-interface UIColors {
-  variants: Record<string, string>,
-  transcripts: Record<string, string>
-}
-
-interface CanvasDetail {
-  bands: { id: string }[];
-  chrom: string;
-}
-
-type OverviewData = Record<string, RenderDot[]>
-
 interface Region {
   chrom: string,
   start: number,
   end: number,
 }
 
-interface RegionDetail {
+interface _RegionDetail {
   region: Region;
   exclude?: string[];
 }
 
 interface DrawPaths {
-  chromosome: DrawChromosome;
-  bands: BandPath[];
+  chromosome: _DrawChromosome;
+  bands: _BandPath[];
 }
 
-interface Transcript {
+interface _Transcript {
   id: string;
   name: string;
   chrom: string;
@@ -271,7 +231,7 @@ interface Tooltip {
   isDisplayed: boolean;
 }
 
-interface VirtualDOMElement {
+interface _VirtualDOMElement {
   x: number; // Placeholder for Popper.js
   y: number; // Placeholder for Popper.js
   // eslint-disable-next-line
@@ -299,7 +259,7 @@ interface ChromosomeInfo {
   bands: ChromosomeBand[]
 }
 
-interface DrawChromosome {
+interface _DrawChromosome {
   path: Path2D;
   chromInfo?: {
     chrom: string;
@@ -315,7 +275,7 @@ interface Dimensions {
   height: number
 }
 
-interface BandPath {
+interface _BandPath {
   id: string;
   path: Path2D;
   start: number;
@@ -327,25 +287,25 @@ interface BandPath {
   height: number;
 }
 
-interface ChromosomeDims {
-  [key: string]: ChromosomeDim;
+interface _ChromosomeDims {
+  [key: string]: _ChromosomeDim;
 }
 
-interface ChromosomeDim {
+interface _ChromosomeDim {
   x_pos: number;
   y_pos: number;
   width: number;
   size: number;
 }
 
-interface ChromosomePos {
+interface _ChromosomePos {
   region: string;
   x_pos: number;
   y_pos: number;
   x_ampl: number; // What is this?
 }
 
-interface ColorSchema {
+interface _ColorSchema {
   default?: string;
   [key: string]: string;
 }
@@ -355,14 +315,7 @@ type Point = {
   y: number;
 };
 
-type ElementCoords = {
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
-};
-
-interface VariantLabel {
+interface _VariantLabel {
   start: number;
   end: number;
   text: string;
@@ -371,7 +324,7 @@ interface VariantLabel {
   fontProp: string;
 }
 
-type DisplayElement = {
+type _DisplayElement = {
   id: string|number;
   name: string;
   x1?: number;
@@ -393,7 +346,7 @@ type DisplayElement = {
   visibleY2?: number;
 };
 
-type ScreenPositions = {
+type _ScreenPositions = {
   start: number;
   end: number;
 };
@@ -407,18 +360,18 @@ type RequestOptions = {
   body?: string;
 };
 
-type OffscreenPosition = {
+type _OffscreenPosition = {
   start: number | null;
   end: number | null;
   scale: number | null;
 };
 
-type OnscreenPosition = {
+type _OnscreenPosition = {
   start: number | null;
   end: number | null;
 };
 
-type InteractiveFeature = {
+type _InteractiveFeature = {
   yStart: number;
   yEnd: number;
   step: number;

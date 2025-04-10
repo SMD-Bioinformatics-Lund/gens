@@ -4,7 +4,7 @@ import {
   getVisibleXCoordinates,
   getVisibleYCoordinates,
   isWithinElementBbox,
-} from "./_utils";
+} from "../../util/utils";
 
 // make virtual DOM element that represents a annotation element
 export function makeVirtualDOMElement({
@@ -19,7 +19,7 @@ export function makeVirtualDOMElement({
   y1: number;
   y2: number;
   canvas: HTMLCanvasElement;
-}): { getBoundingClientRect: () => VirtualDOMElement } {
+}): { getBoundingClientRect: () => _VirtualDOMElement } {
   return {
     getBoundingClientRect: generateGetBoundingClientRect(
       x1,
@@ -38,7 +38,7 @@ export function generateGetBoundingClientRect(
   y1: number,
   y2: number,
   canvas: HTMLCanvasElement
-): () => VirtualDOMElement {
+): () => _VirtualDOMElement {
   const track = canvas;
   return () => ({
     // Placeholders to match the Popper.js later expected format
@@ -60,8 +60,8 @@ export function updateVisibleElementCoordinates({
   screenPosition,
   scale,
 }: {
-  element: DisplayElement;
-  screenPosition: ScreenPositions;
+  element: _DisplayElement;
+  screenPosition: _ScreenPositions;
   scale: number;
 }) {
   const { x1, x2 } = getVisibleXCoordinates(screenPosition, element, scale);

@@ -1,8 +1,8 @@
 import tippy, { followCursor } from "tippy.js";
 import { drawChromosome } from "../../draw/ideogram";
-import { createChromosomeTooltip } from "../../unused/track/_ideogram";
-import { STYLE } from "../../util/constants";
+import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
+import "tippy.js/dist/tippy.css";
 
 interface DrawPaths {
   chromosome: { path: Path2D };
@@ -72,16 +72,16 @@ function setupMarkerElement(trackHeight: number): HTMLDivElement {
   markerElement.id = "ideogram-marker";
   markerElement.className = "marker";
 
-  // FIXME: Move to style constants
-  const leftMargin = 5;
+  const leftMargin = STYLE.ideogramMarker.leftMargin;
 
   markerElement.style.position = "absolute";
   markerElement.style.backgroundColor = STYLE.colors.transparentYellow;
 
-  markerElement.style.borderLeft = `2px solid ${STYLE.colors.red}`;
-  markerElement.style.borderRight = `2px solid ${STYLE.colors.red}`;
+  const bw = STYLE.ideogramMarker.borderWidth;
+  markerElement.style.borderLeft = `${bw}px solid ${STYLE.colors.red}`;
+  markerElement.style.borderRight = `${bw}px solid ${STYLE.colors.red}`;
 
-  markerElement.style.height = `${trackHeight - 2}px`;
+  markerElement.style.height = `${trackHeight - bw}px`;
   markerElement.style.width = "0px";
   markerElement.style.top = "0px";
   markerElement.style.marginLeft = `${leftMargin}px`;
@@ -160,6 +160,19 @@ function cytogeneticIdeogram(
   );
 
   return drawPaths;
+}
+
+function createChromosomeTooltip({ bandId: _bandId }: { bandId?: string }) {
+  const element = document.createElement("div");
+  element.id = "ideogram-tooltip";
+  const name = document.createElement("span");
+  name.innerHTML = "ID:";
+  name.className = "ideogram-tooltip-key";
+  element.appendChild(name);
+  const value = document.createElement("span");
+  value.className = "ideogram-tooltip-value";
+  element.appendChild(value);
+  return element;
 }
 
 customElements.define("ideogram-track", IdeogramTrack);

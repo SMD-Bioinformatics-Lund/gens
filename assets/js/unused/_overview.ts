@@ -11,7 +11,7 @@ import {
 } from "./_draw";
 
 import { drawTrackDeprecated } from "./_navigation";
-import { CHROMOSOMES, FONTSIZES } from "../util/constants";
+import { CHROMOSOMES, FONTSIZES } from "../constants";
 
 export class OverviewCanvas extends BaseScatterTrack {
   fullPlotWidth: number;
@@ -24,15 +24,15 @@ export class OverviewCanvas extends BaseScatterTrack {
   topBottomPadding: number;
   leftmostPoint: number;
   patternCanvas: HTMLCanvasElement;
-  baf: InteractiveFeature;
-  log2: InteractiveFeature;
+  baf: _InteractiveFeature;
+  log2: _InteractiveFeature;
   disabledChroms: string[];
   width: number;
   height: number;
   staticCanvas: HTMLCanvasElement;
   markerElem: HTMLElement;
-  dims: ChromosomeDims;
-  chromPos: ChromosomePos[];
+  dims: _ChromosomeDims;
+  chromPos: _ChromosomePos[];
 
   constructor(
     xPos: number,
@@ -154,7 +154,7 @@ export class OverviewCanvas extends BaseScatterTrack {
       y_pos: this.y,
       plot_width: this.fullPlotWidth,
       genome_build: this.genomeBuild,
-    }).then((result: {chrom_dims: ChromosomeDims}) => {
+    }).then((result: {chrom_dims: _ChromosomeDims}) => {
       this.dims = result.chrom_dims;
       this.chromPos = CHROMOSOMES.map((chrom) => {
         return {

@@ -1,16 +1,16 @@
 // entrypoint for drawing functions
 
+// import { drawArrow, drawLine } from "../draw/shapes";
+
 export {
   drawVerticalTicks,
   createGraph,
   drawGraphLines,
-} from "../draw/graph";
+} from "./_graph";
 export {
   drawRotatedText,
   drawPoints,
   drawText,
-  drawLine,
   drawRect,
-  drawArrow,
   drawWaveLine,
-} from "../draw/shapes";
+} from "./_shapes";

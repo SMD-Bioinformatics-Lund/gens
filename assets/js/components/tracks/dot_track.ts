@@ -1,7 +1,11 @@
-import { drawHorizontalLine, drawYAxis } from "../../draw/shapes";
-import { STYLE } from "../../util/constants";
+import { drawHorizontalLineInScale } from "../../draw/shapes";
+import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
-import { drawDotsScaled, getLinearScale } from "./render_utils";
+import {
+  drawDotsScaled,
+  drawYAxis,
+  getLinearScale,
+} from "../../draw/render_utils";
 
 export class DotTrack extends CanvasTrack {
   renderData: DotTrackData | null;
@@ -44,7 +48,10 @@ export class DotTrack extends CanvasTrack {
     const yScale = getLinearScale(yRange, [0, this.dimensions.height]);
 
     for (const yTick of this.yTicks) {
-      drawHorizontalLine(this.ctx, yTick, yScale, STYLE.colors.lightGray, true);
+      drawHorizontalLineInScale(this.ctx, yTick, yScale, {
+        color: STYLE.colors.lightGray,
+        dashed: true,
+      });
     }
 
     drawDotsScaled(this.ctx, dots, xScale, yScale);
