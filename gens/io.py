@@ -11,12 +11,9 @@ from typing import Any
 from pymongo.collection import Collection
 from pysam import TabixFile
 
-from gens.models.genomic import Chromosome
-from gens.models.sample import GenomeCoverage, ZoomLevel
-from gens.db import (
-    query_sample,
-)
-from gens.routes.utils import ScatterDataType
+from gens.crud.samples import get_sample
+from gens.models.genomic import GenomicRegion
+from gens.models.sample import GenomeCoverage, ZoomLevel, ScatterDataType
 
 BAF_SUFFIX = ".baf.bed.gz"
 COV_SUFFIX = ".cov.bed.gz"
@@ -29,9 +26,7 @@ LOG = logging.getLogger(__name__)
 def tabix_query(
     tbix: TabixFile,
     zoom_level: ZoomLevel,
-    chrom: Chromosome,
-    start: int | None = None,
-    end: int | None = None,
+    region: GenomicRegion,
     reduce: float | None = None,
 ) -> list[list[str]]:
     """
@@ -39,9 +34,9 @@ def tabix_query(
     """
 
     # Get data from bed file
-    record_name = f"{zoom_level.value}_{chrom.value}"
+    record_name = f"{zoom_level.value}_{region.chromosome}"
     try:
-        records = tbix.fetch(record_name, start, end)
+        records = tbix.fetch(record_name, region.start, region.end)
     except ValueError as err:
         LOG.error(err)
         records = iter([])
@@ -54,27 +49,21 @@ def tabix_query(
     return [r.split("\t") for r in records]
 
 
-def get_scatter_data(collection: Collection[dict[str, Any]], sample_id: str, case_id: str, region_str: str, cov_or_baf: str) -> GenomeCoverage:
+def get_scatter_data(collection: Collection[dict[str, Any]], sample_id: str, case_id: str, region: GenomicRegion, data_type: ScatterDataType) -> GenomeCoverage: # type: ignore
     """Development entrypoint for getting the coverage of a region."""
     # TODO respond with 404 error if file is not found
-    sample_obj = query_sample(collection, sample_id, case_id)
+    sample_obj = get_sample(collection, sample_id, case_id)
 
-    if cov_or_baf == "cov":
+    if data_type == ScatterDataType.COV:
         tabix_file = TabixFile(str(sample_obj.coverage_file))
     else:
         tabix_file = TabixFile(str(sample_obj.baf_file))
 
-    region, _ = region_str.split(":")
-    # start, end = [int(pos) for pos in range.split("-")]
-    # FIXME: Grabbing the full chromosome during testing
-    start = None
-    end = None
-
     # Tabix
-    record_name = f"a_{region}"
+    record_name = f"a_{region.region}"
 
     try:
-        records = tabix_file.fetch(record_name, start, end)
+        records = tabix_file.fetch(record_name, region.start, region.end)
     except ValueError as err:
         LOG.error(err)
         records = iter([])
