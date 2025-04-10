@@ -1,6 +1,6 @@
 // Cytogenetic ideogram
-import { get } from "../../fetch";
-import { drawRect } from "../../draw";
+import { get } from "../../util/fetch";
+import { drawRect } from "../_draw";
 import { lightenColor } from "./_base";
 import tippy, { followCursor } from "tippy.js";
 import "tippy.js/dist/tippy.css";

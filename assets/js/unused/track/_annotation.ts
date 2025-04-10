@@ -2,9 +2,9 @@
 
 import { BaseAnnotationTrack } from "./_base";
 import { isElementOverlapping, stringToHash } from "./_utils";
-import { get } from "../../fetch";
-import { parseRegionDesignation } from "../../navigation";
-import { drawRect, drawText } from "../../draw";
+import { get } from "../../util/fetch";
+import { parseRegionDesignation } from "../_navigation";
+import { drawRect, drawText } from "../_draw";
 import {
   initTrackTooltips,
   createTooltipElement,

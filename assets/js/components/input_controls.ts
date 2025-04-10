@@ -4,7 +4,7 @@ import {
   parseRegionDesignation,
   zoomInNew,
   zoomOutNew,
-} from "../navigation";
+} from "../unused/_navigation";
 import "choices.js/public/assets/styles/choices.min.css";
 
 const template = document.createElement("template");

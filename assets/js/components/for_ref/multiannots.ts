@@ -1,4 +1,4 @@
-import { get } from "../../fetch";
+import { get } from "../../util/fetch";
 import { MultiAnnotsTrack } from "./multiannotstrack";
 
 async function getAnnotationSources(): Promise<string[]> {

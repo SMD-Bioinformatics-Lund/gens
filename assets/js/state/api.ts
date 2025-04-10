@@ -1,4 +1,4 @@
-import { get } from "../fetch";
+import { get } from "../util/fetch";
 import { CHROMOSOMES } from "../util/constants";
 import {
   getAnnotationData,

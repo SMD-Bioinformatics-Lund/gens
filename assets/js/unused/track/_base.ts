@@ -1,6 +1,6 @@
 // Generic functions related to drawing annotation tracks
 
-import { get } from "../../fetch";
+import { get } from "../../util/fetch";
 import { hideTooltip } from "./_tooltip";
 
 // Calculate offscreen position
