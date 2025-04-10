@@ -3,7 +3,7 @@
 from enum import StrEnum
 from pathlib import Path
 
-from pydantic import computed_field, field_serializer
+from pydantic import Field, computed_field, field_serializer
 from pydantic.types import FilePath
 
 from .base import CreatedAtModel, RWModel
@@ -76,3 +76,24 @@ class GenomeCoverage(RWModel):
     position: list[int]
     value: list[float]
     zoom: ZoomLevel | None = None
+
+
+class MultipleSamples(RWModel):  # pylint: disable=too-few-public-methods
+    """Generic response model for multiple data records."""
+
+    data: list[SampleInfo] = Field(..., description="List of records from the database.")
+    records_total: int = Field(
+        ...,
+        alias="recordsTotal",
+        description="Number of db records matching the query",
+    )
+
+    @computed_field(alias="recordsFiltered")
+    @property
+    def records_filtered(self) -> int:
+        """
+        Number of db returned records after narrowing the result.
+
+        The result can be reduced with limit and skip operations etc.
+        """
+        return len(self.data)
