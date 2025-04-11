@@ -32,8 +32,9 @@ def get_transcripts(
     # build sort order
     sort_order: list[tuple[str, int]] = [("start", 1), ("height_order", 1)]
 
+    projection: dict[str, bool] = {"gene_name": True, "start": True, "end": True, "mane": True}
     cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
-        query, sort=sort_order
+        query, projection, sort=sort_order
     )
     return [
         ReducedTrackInfo.model_validate(
