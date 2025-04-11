@@ -16,7 +16,7 @@ const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
 const COV_Y_TICKS = [-3, -2, -1, 0, 1, 2, 3];
-const BAF_Y_TICKS = [0.2, 0.4, 0.6, 0.8]
+const BAF_Y_TICKS = [0.2, 0.4, 0.6, 0.8];
 
 // FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
@@ -71,6 +71,7 @@ export class TracksManager extends HTMLElement {
     getChromosome: () => string,
     getXRange: () => Rng,
     getAnnotSources: () => string[],
+    navigateToVariant: (id: string) => void,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
@@ -128,7 +129,7 @@ export class TracksManager extends HTMLElement {
 
     await annotationTracks.initialize(trackHeight.thin, async () => {
       const annotSources = getAnnotSources();
-      const annotationsData: {source: string, bands: RenderBand[]}[] = [];
+      const annotationsData: { source: string; bands: RenderBand[] }[] = [];
       for (const annotSource of annotSources) {
         const bands = await dataSource.getAnnotation(annotSource);
         const annotData = {
@@ -143,12 +144,20 @@ export class TracksManager extends HTMLElement {
       };
     });
 
-    await variantTrack.initialize("Variant", trackHeight.thin, async () => {
-      return {
-        xRange: getXRange(),
-        bands: await dataSource.getVariantData(),
-      };
-    });
+    await variantTrack.initialize(
+      "Variant",
+      trackHeight.thin,
+      async () => {
+        return {
+          xRange: getXRange(),
+          bands: await dataSource.getVariantData(),
+        };
+      },
+      (band) => {
+        console.log("Hitting band", band);
+        navigateToVariant(band.id);
+      },
+    );
 
     await transcriptTrack.initialize(
       "Transcript",
@@ -161,12 +170,16 @@ export class TracksManager extends HTMLElement {
       },
     );
 
-    await ideogramTrack.initialize("Ideogram", trackHeight.extraThin, async () => {
-      return {
-        xRange: getXRange(),
-        chromInfo: await dataSource.getChromInfo(),
-      };
-    });
+    await ideogramTrack.initialize(
+      "Ideogram",
+      trackHeight.extraThin,
+      async () => {
+        return {
+          xRange: getXRange(),
+          chromInfo: await dataSource.getChromInfo(),
+        };
+      },
+    );
 
     const chromSizes = {};
     for (const chromosome of CHROMOSOMES) {

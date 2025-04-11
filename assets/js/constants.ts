@@ -16,15 +16,11 @@ const colors = {
     extraLightGray: "#eee",
     yellow: "#dcd16f",
     red: "#f00",
-    teal: "teal",
+    teal: "#008080",
     orange: "#954000",
+    purple: "#5E4B8B",
+    gold: "#D4AF37",
     transparentYellow: "#dcd16f44",
-    variantColors: {
-        del: "red",
-        dup: "blue",
-        inv: "green",
-        default: "gray",
-    },
     stainToColor: {
         acen: "#673888",
         gneg: "#FFFAF0",
@@ -39,6 +35,13 @@ const colors = {
 // FIXME: First step is to gather all constants here
 // FIXME: Then, the content below should be homogenized
 export const STYLE = {
+    variantColors: {
+        del: colors.orange,
+        dup: colors.teal,
+        inv: colors.purple,
+        ins: colors.gold,
+        default: "gray",
+    },
     bandTrack: {
         trackPadding: 15,
         bandPadding: 2,
@@ -48,6 +51,7 @@ export const STYLE = {
             thick: 80,
         },
         edgeColor: colors.darkGray,
+        minBandWidth: 2,
     },
     ideogramMarker: {
         leftMargin: 5,

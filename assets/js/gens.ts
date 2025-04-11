@@ -14,13 +14,13 @@ import { TracksManager } from "./components/tracks_manager";
 import "./components/input_controls";
 import { InputControls } from "./components/input_controls";
 import { API } from "./state/api";
-import { getRenderDataSource } from "./state/parse_api";
+import { getRenderDataSource } from "./state/parse_data";
 
 export async function initCanvases({
   sampleId,
   caseId,
   genomeBuild,
-  scoutBaseURL: _scoutBaseURL,
+  scoutBaseURL: scoutBaseURL,
   gensApiURL,
   annotationFile,
   startRegion,
@@ -63,6 +63,13 @@ export async function initCanvases({
     return allChromData[chromosome];
   };
 
+  const navigateToVariant = (variantId) => {
+    const url = `${scoutBaseURL}/document_id/${variantId}`;
+    console.log("Visiting URL: ", url);
+    // const win = window.open(url, "_blank");
+    // win.focus();
+  }
+
   initialize(
     inputControls,
     gensTracks,
@@ -72,6 +79,7 @@ export async function initCanvases({
     onChromClick,
     getChromInfo,
     renderDataSource,
+    navigateToVariant,
   );
 }
 
@@ -81,9 +89,10 @@ async function initialize(
   startRegion: Region,
   defaultAnnotation: string,
   api: API,
-  onChromClick: (string) => void,
-  getChromInfo: (string) => ChromosomeInfo,
+  onChromClick: (chrom: string) => void,
+  getChromInfo: (chrom: string) => ChromosomeInfo,
   renderDataSource: RenderDataSource,
+  navigateToVariant: (variantId: string) => void,
 ) {
 
   const annotSources = await api.getAnnotationSources();
@@ -110,6 +119,7 @@ async function initialize(
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
     () => inputControls.getAnnotSources(),
+    navigateToVariant,
   );
 
   tracks.render(true);

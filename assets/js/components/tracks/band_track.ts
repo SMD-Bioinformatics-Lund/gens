@@ -12,16 +12,21 @@ import { drawLabel } from "../../draw/shapes";
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
+  // onBandClick: (band: RenderBand) => void | null = null;
 
   async initialize(
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
+    onElementClick: (band: RenderBand) => void = null
   ) {
     super.initializeCanvas(label, trackHeight);
-    this.initializeTooltip();
+    this.initializeInteractive();
     this.initializeExpander(trackHeight);
     this.getRenderData = getRenderData;
+    if (onElementClick != null) {
+      this.onElementClick = onElementClick;
+    }
   }
 
   async render(updateData: boolean) {
@@ -117,10 +122,10 @@ function drawBand(
   const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
   const [xPxStart, xPxEnd] = xPxRange;
   ctx.fillStyle = band.color;
-  const width = xPxEnd - xPxStart;
+  const width = Math.max(xPxEnd - xPxStart, STYLE.bandTrack.minBandWidth);
   ctx.fillRect(xPxStart, y1, width, height);
 
-  const box = { x1: xPxStart, x2: xPxEnd, y1, y2 };
+  const box = { x1: xPxStart, x2: xPxStart + width, y1, y2 };
   const hoverBox = { box, label: band.hoverInfo };
   hoverBoxes.push(hoverBox);
 

@@ -51,6 +51,8 @@ export class CanvasTrack extends HTMLElement {
   private tooltip: Tooltip;
   hoverTargets: HoverBox[];
 
+  onElementClick: (element: RenderBand|RenderDot) => void;
+
   render(_updateData: boolean) {}
 
   isExpanded(): boolean {
@@ -109,7 +111,7 @@ export class CanvasTrack extends HTMLElement {
   }
 
   // FIXME: Should this live outside the class?
-  initializeTooltip() {
+  initializeInteractive() {
     this.tooltip = new Tooltip(document.body);
     this.canvas.addEventListener("mousemove", (event) => {
       this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
@@ -125,6 +127,7 @@ export class CanvasTrack extends HTMLElement {
           event.offsetY >= target.box.y1 &&
           event.offsetY <= target.box.y2,
       );
+      this.canvas.style.cursor = hovered ? "pointer" : "default";
 
       if (hovered) {
         this.tooltip.tooltipEl.textContent = hovered.label;
@@ -140,6 +143,8 @@ export class CanvasTrack extends HTMLElement {
 
   setHoverTargets(hoverTargets: HoverBox[]) {
     this.hoverTargets = hoverTargets;
+
+
   }
 
   baseRender() {
