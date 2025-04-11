@@ -23,7 +23,7 @@ export class OverviewTrack extends CanvasTrack {
   renderData: OverviewTrackData | null;
   getRenderData: () => Promise<OverviewTrackData>;
 
-  async initialize(
+  constructor(
     label: string,
     trackHeight: number,
     chromSizes: Record<string, number>,
@@ -31,11 +31,16 @@ export class OverviewTrack extends CanvasTrack {
     yRange: Rng,
     getRenderData: () => Promise<OverviewTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight);
+    super(label, trackHeight);
+
     this.chromSizes = chromSizes;
     this.yRange = yRange;
     this.getRenderData = getRenderData;
     this.onChromosomeClick = onChromosomeClick;
+  }
+
+  initialize() {
+    super.initialize();
 
     const marker = createChromMarker(
       this.dimensions.height,
@@ -49,12 +54,6 @@ export class OverviewTrack extends CanvasTrack {
       const chrom = pixelToChrom(event.offsetX, this.pxRanges);
       this.onChromosomeClick(chrom);
     });
-
-    await this.updateRenderData();
-  }
-
-  async updateRenderData() {
-    this.renderData = await this.getRenderData();
   }
 
   async render(updateData: boolean) {

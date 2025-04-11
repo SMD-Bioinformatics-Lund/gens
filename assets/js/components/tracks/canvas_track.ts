@@ -3,6 +3,9 @@ import { renderBackground } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
 import { Tooltip } from "../../util/tooltip_utils";
 
+import { ShadowBaseElement } from "../util/shadowbase";
+import { eventInBox } from "../../util/utils";
+
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
 
@@ -34,10 +37,9 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-export class CanvasTrack extends HTMLElement {
+export class CanvasTrack extends ShadowBaseElement {
   public label: string;
 
-  protected _root: ShadowRoot;
   protected canvas: HTMLCanvasElement;
   protected ctx: CanvasRenderingContext2D;
   protected dimensions: { width: number; height: number };
@@ -48,13 +50,23 @@ export class CanvasTrack extends HTMLElement {
 
   private expander: Expander;
 
-  private tooltip: Tooltip;
   hoverTargets: HoverBox[];
+  isInitialized: boolean = false;
+  protected queuedRendering: boolean = false;
+
+  onElementClick: (element: RenderBand | RenderDot) => void | null;
 
   render(_updateData: boolean) {}
 
   isExpanded(): boolean {
     return this.expander.isExpanded;
+  }
+
+  constructor(label: string, defaultTrackHeight: number) {
+    super(template);
+
+    this.label = label;
+    this.defaultTrackHeight = defaultTrackHeight;
   }
 
   setExpandedHeight(height: number) {
@@ -71,29 +83,43 @@ export class CanvasTrack extends HTMLElement {
     return nNts / nPxs;
   }
 
-  connectedCallback() {
-    this._root = this.attachShadow({ mode: "open" });
-    this._root.appendChild(template.content.cloneNode(true));
-  }
 
-  initializeCanvas(label: string, trackHeight: number) {
-    this.label = label;
-    this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
+  initialize() {
+    if (!this.isConnected) {
+      throw Error(
+        `Component must be attached to DOM before being initialized (label: ${this.label})`,
+      );
+    }
 
-    this.defaultTrackHeight = trackHeight;
-    this.currentHeight = trackHeight;
+    this.canvas = this.root.getElementById("canvas") as HTMLCanvasElement;
+
+    this.currentHeight = this.defaultTrackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
-    this.trackContainer = this._root.getElementById(
+    this.trackContainer = this.root.getElementById(
       "track-container",
     ) as HTMLDivElement;
 
     this.syncDimensions();
+
+    this.isInitialized = true;
+  }
+
+  renderLoading() {
+    renderBackground(this.ctx, this.dimensions);
+    drawLabel(
+      this.ctx,
+      "Loading ...",
+      this.dimensions.width / 2,
+      this.dimensions.height / 2,
+      { textBaseline: "middle", textAlign: "center" },
+    );
   }
 
   // FIXME: Move to attribute component
-  initializeExpander(height: number, expanded: boolean = false) {
+  initializeExpander(expanded: boolean = false) {
     this.expander = new Expander(expanded);
+    const height = this.defaultTrackHeight;
 
     this.trackContainer.addEventListener("contextmenu", (event) => {
       event.preventDefault();
@@ -108,33 +134,45 @@ export class CanvasTrack extends HTMLElement {
     });
   }
 
-  // FIXME: Should this live outside the class?
-  initializeTooltip() {
-    this.tooltip = new Tooltip(document.body);
+  initializeInteractive(onElementClick: (el: HoverBox) => void | null = null) {
+    const tooltip = new Tooltip(document.body);
+
+    this.canvas.addEventListener("click", (event) => {
+
+      if (!this.hoverTargets || !onElementClick) {
+        return;
+      }
+
+      const hoveredTarget = this.hoverTargets.find((target) =>
+        eventInBox(event, target.box),
+      );
+
+      if (hoveredTarget && onElementClick) {
+        onElementClick(hoveredTarget);
+      }
+    });
+
     this.canvas.addEventListener("mousemove", (event) => {
-      this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
+      tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
 
       if (this.hoverTargets == null) {
         return;
       }
 
-      const hovered = this.hoverTargets.find(
-        (target) =>
-          event.offsetX >= target.box.x1 &&
-          event.offsetX <= target.box.x2 &&
-          event.offsetY >= target.box.y1 &&
-          event.offsetY <= target.box.y2,
+      const hovered = this.hoverTargets.find((target) =>
+        eventInBox(event, target.box),
       );
+      this.canvas.style.cursor = hovered ? "pointer" : "default";
 
       if (hovered) {
-        this.tooltip.tooltipEl.textContent = hovered.label;
-        this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
+        tooltip.tooltipEl.textContent = hovered.label;
+        tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
       } else {
-        this.tooltip.onMouseLeave();
+        tooltip.onMouseLeave();
       }
     });
     this.canvas.addEventListener("mouseleave", () => {
-      this.tooltip.onMouseLeave();
+      tooltip.onMouseLeave();
     });
   }
 
@@ -142,10 +180,6 @@ export class CanvasTrack extends HTMLElement {
     this.hoverTargets = hoverTargets;
   }
 
-  baseRender() {
-    this.syncDimensions();
-    renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
-  }
 
   drawTrackLabel(shiftRight: number = 0) {
     drawLabel(
@@ -153,7 +187,7 @@ export class CanvasTrack extends HTMLElement {
       this.label,
       STYLE.tracks.textPadding + shiftRight,
       STYLE.tracks.textPadding,
-      {textBaseline: "top"},
+      { textBaseline: "top", boxStyle: {} },
     );
   }
 
@@ -183,7 +217,6 @@ export class CanvasTrack extends HTMLElement {
 
       const ctx = this.canvas.getContext("2d");
       ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-      // this.canvas.width = displayWidth;
     }
 
     this.dimensions = {

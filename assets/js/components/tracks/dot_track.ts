@@ -5,6 +5,7 @@ import {
   drawDotsScaled,
   drawYAxis,
   getLinearScale,
+  renderBackground,
 } from "../../draw/render_utils";
 
 export class DotTrack extends CanvasTrack {
@@ -13,26 +14,26 @@ export class DotTrack extends CanvasTrack {
   yRange: Rng;
   yTicks: number[];
 
-  async initialize(
+  constructor(
     label: string,
     trackHeight: number,
     yRange: Rng,
     yTicks: number[],
     getRenderData: () => Promise<DotTrackData>,
   ) {
-    super.initializeCanvas(label, trackHeight);
-    const startExpanded = true;
-    this.initializeExpander(trackHeight, startExpanded);
-    this.setExpandedHeight(trackHeight * 2);
+    super(label, trackHeight);
     this.getRenderData = getRenderData;
     this.yRange = yRange;
     this.yTicks = yTicks;
-    await this.updateRenderData();
   }
 
-  async updateRenderData() {
-    this.renderData = await this.getRenderData();
+  initialize() {
+    super.initialize();
+    const startExpanded = true;
+    this.initializeExpander(startExpanded);
+    this.setExpandedHeight(this.defaultTrackHeight * 2);
   }
+
 
   async render(updateData: boolean) {
     if (updateData || this.renderData == null) {
@@ -42,10 +43,11 @@ export class DotTrack extends CanvasTrack {
     const { xRange, dots } = this.renderData;
     const yRange = this.yRange;
 
-    super.baseRender();
+    const dimensions = super.syncDimensions();
+    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
-    const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
-    const yScale = getLinearScale(yRange, [0, this.dimensions.height]);
+    const xScale = getLinearScale(xRange, [0, dimensions.width]);
+    const yScale = getLinearScale(yRange, [0, dimensions.height]);
 
     for (const yTick of this.yTicks) {
       drawHorizontalLineInScale(this.ctx, yTick, yScale, {

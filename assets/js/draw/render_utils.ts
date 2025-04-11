@@ -25,7 +25,7 @@ export function drawYAxis(
 export function renderBackground(
   ctx: CanvasRenderingContext2D,
   canvasDim: { height: number; width: number },
-  color: string,
+  color: string = STYLE.tracks.edgeColor
 ) {
   const style = STYLE.tracks;
   ctx.fillStyle = style.backgroundColor;

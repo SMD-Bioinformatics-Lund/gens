@@ -17,20 +17,18 @@ export class IdeogramTrack extends CanvasTrack {
   private renderData: IdeogramTrackData;
   private getRenderData: () => Promise<IdeogramTrackData>;
 
-  async initialize(
-    label: string,
-    trackHeight: number,
-    getRenderData: () => Promise<IdeogramTrackData>,
-  ) {
-    super.initializeCanvas(label, trackHeight);
-    setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
+  constructor(label: string, trackHeight: number, getRenderData: () => Promise<IdeogramTrackData>) {
+    super(label, trackHeight);
+    this.getRenderData = getRenderData;
+  }
 
-    const markerElement = setupMarkerElement(trackHeight);
+  initialize(
+  ) {
+    super.initialize();
+    setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
+    const markerElement = setupMarkerElement(this.defaultTrackHeight);
     this.trackContainer.appendChild(markerElement);
     this.markerElement = markerElement;
-
-    this.getRenderData = getRenderData;
-    await this.getRenderData();
   }
 
   async render(updateData: boolean) {

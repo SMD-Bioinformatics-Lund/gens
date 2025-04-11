@@ -11,12 +11,13 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { CHROMOSOMES, STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/canvas_track";
+import { prefixNts } from "../util/utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
 const COV_Y_TICKS = [-3, -2, -1, 0, 1, 2, 3];
-const BAF_Y_TICKS = [0.2, 0.4, 0.6, 0.8]
+const BAF_Y_TICKS = [0.2, 0.4, 0.6, 0.8];
 
 // FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
@@ -71,19 +72,134 @@ export class TracksManager extends HTMLElement {
     getChromosome: () => string,
     getXRange: () => Rng,
     getAnnotSources: () => string[],
+    getVariantURL: (id: string) => string,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
-    const coverageTrack = new DotTrack();
-    const bafTrack = new DotTrack();
-    const variantTrack = new BandTrack();
-    const transcriptTrack = new BandTrack();
-    const ideogramTrack = new IdeogramTrack();
+    const coverageTrack = new DotTrack(
+      "Log2 Ratio",
+      trackHeight.thick,
+      COV_Y_RANGE,
+      COV_Y_TICKS,
+      async () => {
+        return {
+          xRange: getXRange(),
+          dots: await dataSource.getCovData(),
+        };
+      },
+    );
+    const bafTrack = new DotTrack(
+      "B Allele Freq",
+      trackHeight.thick,
+      BAF_Y_RANGE,
+      BAF_Y_TICKS,
+      async () => {
+        return {
+          xRange: getXRange(),
+          dots: await dataSource.getBafData(),
+        };
+      },
+    );
+    const variantTrack = new BandTrack(
+      "Variant",
+      trackHeight.thin,
+      async () => {
+        return {
+          xRange: getXRange(),
+          bands: await dataSource.getVariantData(),
+        };
+      },
+      (box) => {
+        const element = box.element as RenderBand;
+        const url = getVariantURL(element.id);
+        return {
+          header: `${element.label}`,
+          info: [
+            {key: "Range", value: `${element.start} - ${element.end}`},
+            {key: "Length", value: prefixNts(element.end - element.start + 1)},
+            {key: "URL", value: "Scout", url},
+          ]
+        };
+      },
+    );
+    const transcriptTrack = new BandTrack(
+      "Transcript",
+      trackHeight.thin,
+      async () => {
+        return {
+          xRange: getXRange(),
+          bands: await dataSource.getTranscriptData(),
+        };
+      },
+      (box) => {
+        const element = box.element as RenderBand;
+        return {
+          header: `${element.label}`,
+          info: [
+            {key: "Range", value: `${element.start} - ${element.end}`},
+            {key: "Length", value: prefixNts(element.end - element.start + 1)},
+          ]
+        };
+      },
+    );
+    const ideogramTrack = new IdeogramTrack(
+      "Ideogram",
+      trackHeight.extraThin,
+      async () => {
+        return {
+          xRange: getXRange(),
+          chromInfo: await dataSource.getChromInfo(),
+        };
+      },
 
-    const annotationTracks = new AnnotationTracks();
+    );
 
-    const overviewTrackCov = new OverviewTrack();
-    const overviewTrackBaf = new OverviewTrack();
+    const annotationTracks = new AnnotationTracks(
+      getAnnotSources,
+      (source: string) => {
+        return getAnnotTrack(
+          source,
+          trackHeight.thin,
+          getXRange,
+          dataSource.getAnnotation,
+        );
+      },
+    );
+
+    const chromSizes = {};
+    for (const chromosome of CHROMOSOMES) {
+      chromSizes[chromosome] = getChromInfo(chromosome).size;
+    }
+
+
+    const overviewTrackCov = new OverviewTrack(
+      "Overview (cov)",
+      trackHeight.thick,
+      chromSizes,
+      chromClick,
+      COV_Y_RANGE,
+      async () => {
+        return {
+          dotsPerChrom: await dataSource.getOverviewCovData(),
+          xRange: getXRange(),
+          chromosome: getChromosome(),
+        };
+      },
+    );
+    const overviewTrackBaf = new OverviewTrack(
+      "Overview (baf)",
+      trackHeight.thick,
+      chromSizes,
+      chromClick,
+      BAF_Y_RANGE,
+      async () => {
+        return {
+          dotsPerChrom: await dataSource.getOverviewBafData(),
+          xRange: getXRange(),
+          chromosome: getChromosome(),
+        };
+      },
+    );
 
     this.tracks.push(
       ideogramTrack,
@@ -98,110 +214,10 @@ export class TracksManager extends HTMLElement {
 
     for (const track of this.tracks) {
       this.parentContainer.appendChild(track);
+      track.initialize();
+      track.renderLoading();
     }
 
-    await coverageTrack.initialize(
-      "Log2 Ratio",
-      trackHeight.thick,
-      COV_Y_RANGE,
-      COV_Y_TICKS,
-      async () => {
-        return {
-          xRange: getXRange(),
-          dots: await dataSource.getCovData(),
-        };
-      },
-    );
-
-    await bafTrack.initialize(
-      "B Allele Freq",
-      trackHeight.thick,
-      BAF_Y_RANGE,
-      BAF_Y_TICKS,
-      async () => {
-        return {
-          xRange: getXRange(),
-          dots: await dataSource.getBafData(),
-        };
-      },
-    );
-
-    await annotationTracks.initialize(trackHeight.thin, async () => {
-      const annotSources = getAnnotSources();
-      const annotationsData: {source: string, bands: RenderBand[]}[] = [];
-      for (const annotSource of annotSources) {
-        const bands = await dataSource.getAnnotation(annotSource);
-        const annotData = {
-          source: annotSource,
-          bands,
-        };
-        annotationsData.push(annotData);
-      }
-      return {
-        xRange: getXRange(),
-        annotations: annotationsData,
-      };
-    });
-
-    await variantTrack.initialize("Variant", trackHeight.thin, async () => {
-      return {
-        xRange: getXRange(),
-        bands: await dataSource.getVariantData(),
-      };
-    });
-
-    await transcriptTrack.initialize(
-      "Transcript",
-      trackHeight.thin,
-      async () => {
-        return {
-          xRange: getXRange(),
-          bands: await dataSource.getTranscriptData(),
-        };
-      },
-    );
-
-    await ideogramTrack.initialize("Ideogram", trackHeight.extraThin, async () => {
-      return {
-        xRange: getXRange(),
-        chromInfo: await dataSource.getChromInfo(),
-      };
-    });
-
-    const chromSizes = {};
-    for (const chromosome of CHROMOSOMES) {
-      chromSizes[chromosome] = getChromInfo(chromosome).size;
-    }
-
-    await overviewTrackCov.initialize(
-      "Overview (cov)",
-      trackHeight.thick,
-      chromSizes,
-      chromClick,
-      COV_Y_RANGE,
-      async () => {
-        return {
-          dotsPerChrom: await dataSource.getOverviewCovData(),
-          xRange: getXRange(),
-          chromosome: getChromosome(),
-        };
-      },
-    );
-
-    await overviewTrackBaf.initialize(
-      "Overview (baf)",
-      trackHeight.thick,
-      chromSizes,
-      chromClick,
-      BAF_Y_RANGE,
-      async () => {
-        return {
-          dotsPerChrom: await dataSource.getOverviewBafData(),
-          xRange: getXRange(),
-          chromosome: getChromosome(),
-        };
-      },
-    );
   }
 
   public render(updateData: boolean) {
@@ -210,5 +226,43 @@ export class TracksManager extends HTMLElement {
     }
   }
 }
+
+function getAnnotTrack(
+  source: string,
+  trackHeight: number,
+  getXRange: () => Rng,
+  getAnnotation: (source: string) => Promise<RenderBand[]>,
+): BandTrack {
+  const getPopupInfo = (box) => {
+    const element = box.element as RenderBand;
+    return {
+      header: `${element.label}`,
+      info: [
+        {key: "Range", value: `${element.start} - ${element.end}`},
+        {key: "Length", value: prefixNts(element.end - element.start + 1)},
+      ]
+    };
+  };
+
+  const track = new BandTrack(
+    source,
+    trackHeight,
+    () => getAnnotTrackData(source, getXRange, getAnnotation),
+    getPopupInfo,
+  );
+  return track;
+}
+
+const getAnnotTrackData = async (
+  source: string,
+  getXRange: () => Rng,
+  getAnnotation: (source: string) => Promise<RenderBand[]>,
+): Promise<BandTrackData> => {
+  const bands = await getAnnotation(source);
+  return {
+    xRange: getXRange(),
+    bands,
+  };
+};
 
 customElements.define("gens-tracks", TracksManager);

@@ -8,25 +8,43 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
+import { createPopup } from "../../util/popup_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
+  getPopupInfo: (box: HoverBox) => PopupContent;
 
-  async initialize(
+  constructor(
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
+    getPopupInfo: (box: HoverBox) => PopupContent,
   ) {
-    super.initializeCanvas(label, trackHeight);
-    this.initializeTooltip();
-    this.initializeExpander(trackHeight);
+    super(label, trackHeight);
+
     this.getRenderData = getRenderData;
+    this.getPopupInfo = getPopupInfo;
+  }
+
+  initialize() {
+    super.initialize();
+
+    const onElementClick = (box: HoverBox) => {
+      const content = this.getPopupInfo(box);
+      createPopup(this.canvas, box, content);
+    };
+
+    this.initializeInteractive(onElementClick);
+    this.initializeExpander();
   }
 
   async render(updateData: boolean) {
     if (this.getRenderData == undefined) {
       throw Error(`No getRenderData set up for track, must initialize first`);
+    }
+    if (!this.isInitialized) {
+      throw Error("Track is not initialized yet");
     }
 
     if (updateData || this.renderData == null) {
@@ -69,7 +87,7 @@ export class BandTrack extends CanvasTrack {
       return renderBand;
     });
 
-    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
+    renderBackground(this.ctx, dimensions);
 
     const hoverTargets = renderBand.flatMap((band) => {
       const bandHoverTargets = drawBand(
@@ -117,11 +135,11 @@ function drawBand(
   const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
   const [xPxStart, xPxEnd] = xPxRange;
   ctx.fillStyle = band.color;
-  const width = xPxEnd - xPxStart;
+  const width = Math.max(xPxEnd - xPxStart, STYLE.bandTrack.minBandWidth);
   ctx.fillRect(xPxStart, y1, width, height);
 
-  const box = { x1: xPxStart, x2: xPxEnd, y1, y2 };
-  const hoverBox = { box, label: band.hoverInfo };
+  const box = { x1: xPxStart, x2: xPxStart + width, y1, y2 };
+  const hoverBox: HoverBox = { box, label: band.hoverInfo, element: band };
   hoverBoxes.push(hoverBox);
 
   if (showDetails) {

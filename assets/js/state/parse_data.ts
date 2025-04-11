@@ -33,7 +33,7 @@ export function getRenderDataSource(
   
     const getVariantData = async () => {
       const variantsRaw = await gensAPI.getVariants(getChrom());
-      return parseVariants(variantsRaw, STYLE.colors.variantColors);
+      return parseVariants(variantsRaw, STYLE.variantColors);
     };
   
     const getOverviewCovData = async () => {
@@ -137,12 +137,13 @@ export function parseVariants(
   variantColorMap: VariantColors,
 ): RenderBand[] {
   return variants.map((variant) => {
-    const id = `${variant.position}_${variant.end}_${variant.variant_type}_${variant.sub_category}`;
+    const id = variant.document_id;
     return {
       id,
       start: variant.position,
       end: variant.end,
-      hoverInfo: `${variant.variant_type} ${variant.sub_category}; length ${variant.length} (${id})`,
+      hoverInfo: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
+      label: `${variant.variant_type} ${variant.sub_category}`,
       color:
         variantColorMap[variant.sub_category] != undefined
           ? variantColorMap[variant.sub_category]

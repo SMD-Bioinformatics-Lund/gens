@@ -1,4 +1,3 @@
-// Utility functions
 export function getVisibleYCoordinates(
   element: { y1: number; y2: number },
   minHeight: number = 4,
@@ -179,4 +178,27 @@ export function rangeSurroundsRange(range1: Rng, range2: Rng): boolean {
 
 export function range1OverlapsRange2(range1: Rng, range2: Rng): boolean {
   return pointInRange(range1[0], range2) || pointInRange(range1[0], range2);
+}
+
+export function eventInBox(
+  point: { offsetX: number; offsetY: number },
+  box: Box,
+): boolean {
+  return (
+    point.offsetX >= box.x1 &&
+    point.offsetX <= box.x2 &&
+    point.offsetY >= box.y1 &&
+    point.offsetY <= box.y2
+  );
+}
+
+export function prefixNts(nts: number): string {
+  if (nts < 10 ** 4) {
+    return `${nts} bp`
+  }
+  else if (nts < 10 ** 7) {
+    return `${Math.round(nts / 10 ** 3)} kb`
+  } else {
+    return `${Math.round(nts / 10 ** 6)} mb`
+  }
 }

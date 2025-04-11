@@ -79,6 +79,13 @@ interface APICoverageBin {
   zoom: string,
 }
 
+interface PopupContent {
+  header: string,
+  info?: {key: string, value: string, url?: string}[]
+}
+
+type RenderElement = RenderBand | RenderDot;
+
 interface RenderBand {
   id: string,
   start: number,
@@ -105,9 +112,9 @@ interface DotTrackData {
   dots: RenderDot[]
 }
 
-interface AnnotationTracksData {
+interface AnnotationTrackData {
   xRange: Rng,
-  annotations: {source: string, bands: RenderBand[]}[],
+  annotation: {source: string, bands: RenderBand[]},
 }
 
 interface BandTrackData {
@@ -134,8 +141,9 @@ interface Box {
 }
 
 interface HoverBox {
-  label: string,
-  box: Box
+  label: string;
+  box: Box;
+  element: RenderBand|RenderDot;
 }
 
 interface BoxStyle {

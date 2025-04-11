@@ -10,17 +10,20 @@ export {
 } from "./unused/_navigation";
 
 import "./components/tracks_manager";
-import { TracksManager } from "./components/tracks_manager";
 import "./components/input_controls";
-import { InputControls } from "./components/input_controls";
+import "./components/util/popup";
+import "./components/util/shadowbase";
+
 import { API } from "./state/api";
-import { getRenderDataSource } from "./state/parse_api";
+import { TracksManager } from "./components/tracks_manager";
+import { InputControls } from "./components/input_controls";
+import { getRenderDataSource } from "./state/parse_data";
 
 export async function initCanvases({
   sampleId,
   caseId,
   genomeBuild,
-  scoutBaseURL: _scoutBaseURL,
+  scoutBaseURL: scoutBaseURL,
   gensApiURL,
   annotationFile,
   startRegion,
@@ -63,6 +66,11 @@ export async function initCanvases({
     return allChromData[chromosome];
   };
 
+  const getVariantURL = (variantId) => {
+    const url = `${scoutBaseURL}/document_id/${variantId}`;
+    return url;
+  }
+
   initialize(
     inputControls,
     gensTracks,
@@ -72,6 +80,7 @@ export async function initCanvases({
     onChromClick,
     getChromInfo,
     renderDataSource,
+    getVariantURL,
   );
 }
 
@@ -81,14 +90,13 @@ async function initialize(
   startRegion: Region,
   defaultAnnotation: string,
   api: API,
-  onChromClick: (string) => void,
-  getChromInfo: (string) => ChromosomeInfo,
+  onChromClick: (chrom: string) => void,
+  getChromInfo: (chrom: string) => ChromosomeInfo,
   renderDataSource: RenderDataSource,
+  getVariantURL: (variantId: string) => string,
 ) {
 
   const annotSources = await api.getAnnotationSources();
-
-  console.log(annotSources);
 
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
@@ -110,6 +118,7 @@ async function initialize(
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
     () => inputControls.getAnnotSources(),
+    getVariantURL,
   );
 
   tracks.render(true);
