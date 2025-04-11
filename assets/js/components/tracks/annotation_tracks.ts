@@ -13,6 +13,7 @@ export class AnnotationTracks extends HTMLElement {
   trackHeight: number;
   getRenderData: () => Promise<AnnotationTracksData>;
   renderData: AnnotationTracksData | null;
+  getPopupInfo: (band: RenderBand) => string;
 
   parentContainer: HTMLDivElement;
 
@@ -32,9 +33,11 @@ export class AnnotationTracks extends HTMLElement {
   async initialize(
     trackHeight: number,
     getRenderData: () => Promise<AnnotationTracksData>,
+    getPopupInfo: (band: RenderBand) => string,
   ) {
     this.trackHeight = trackHeight;
     this.getRenderData = getRenderData;
+    this.getPopupInfo = getPopupInfo;
   }
 
   async render(updateData: boolean) {
@@ -58,6 +61,7 @@ export class AnnotationTracks extends HTMLElement {
             xRange,
           };
         },
+        this.getPopupInfo
       );
       await annotTrack.render(true);
     }

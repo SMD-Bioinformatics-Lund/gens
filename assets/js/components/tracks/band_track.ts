@@ -72,7 +72,7 @@ export class BandTrack extends CanvasTrack {
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
-    getPopupInfo: (band: RenderBand) => string = null,
+    getPopupInfo: (band: RenderBand) => string,
   ) {
     const onElementClick = (box: HoverBox) => {
       // const popupInfo = getPopupInfo(box.element as RenderBand);

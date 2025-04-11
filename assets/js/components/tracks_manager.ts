@@ -142,7 +142,7 @@ export class TracksManager extends HTMLElement {
         xRange: getXRange(),
         annotations: annotationsData,
       };
-    });
+    }, (band: RenderBand) => "Popup info");
 
     await variantTrack.initialize(
       "Variant",
@@ -182,6 +182,7 @@ export class TracksManager extends HTMLElement {
           bands: await dataSource.getTranscriptData(),
         };
       },
+      (_band) => "Popup"
     );
 
     await ideogramTrack.initialize(
