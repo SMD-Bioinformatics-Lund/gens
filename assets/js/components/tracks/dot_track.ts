@@ -32,12 +32,8 @@ export class DotTrack extends CanvasTrack {
     const startExpanded = true;
     this.initializeExpander(startExpanded);
     this.setExpandedHeight(this.defaultTrackHeight * 2);
-    // await this.updateRenderData();
   }
 
-  // async updateRenderData() {
-  //   this.renderData = await this.getRenderData();
-  // }
 
   async render(updateData: boolean) {
     if (updateData || this.renderData == null) {
@@ -46,8 +42,6 @@ export class DotTrack extends CanvasTrack {
 
     const { xRange, dots } = this.renderData;
     const yRange = this.yRange;
-
-    // super.baseRender();
 
     const dimensions = super.syncDimensions();
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);

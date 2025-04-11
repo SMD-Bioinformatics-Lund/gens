@@ -40,7 +40,6 @@ template.innerHTML = String.raw`
 export class CanvasTrack extends ShadowBaseElement {
   public label: string;
 
-  // protected root: ShadowRoot;
   protected canvas: HTMLCanvasElement;
   protected ctx: CanvasRenderingContext2D;
   protected dimensions: { width: number; height: number };
@@ -181,10 +180,6 @@ export class CanvasTrack extends ShadowBaseElement {
     this.hoverTargets = hoverTargets;
   }
 
-  // baseRender() {
-  //   this.syncDimensions();
-  //   renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
-  // }
 
   drawTrackLabel(shiftRight: number = 0) {
     drawLabel(
@@ -222,7 +217,6 @@ export class CanvasTrack extends ShadowBaseElement {
 
       const ctx = this.canvas.getContext("2d");
       ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-      // this.canvas.width = displayWidth;
     }
 
     this.dimensions = {

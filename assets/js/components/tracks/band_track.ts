@@ -40,7 +40,6 @@ export class BandTrack extends CanvasTrack {
   }
 
   async render(updateData: boolean) {
-
     if (this.getRenderData == undefined) {
       throw Error(`No getRenderData set up for track, must initialize first`);
     }

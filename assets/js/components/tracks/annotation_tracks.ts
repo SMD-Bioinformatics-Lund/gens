@@ -8,8 +8,6 @@ template.innerHTML = String.raw`
     <div id="container"></div>
 `;
 
-// FIXME: Refactor such that the annotation tracks can be created
-// by the track mananger, and subsequently updated from here
 export class AnnotationTracks extends ShadowBaseElement {
   protected _root: ShadowRoot;
   public label: string = "Annotation tracks";
@@ -69,8 +67,6 @@ export class AnnotationTracks extends ShadowBaseElement {
       tracks.push(track);
     }
     this.tracks = tracks;
-
-    // this.tracks.forEach((track) => track.render(true));
   }
 
   async render(updateData: boolean) {
@@ -92,7 +88,6 @@ function checkTracksDiffer(selectedSources: string[], trackSources: string[]) {
   const removedSources = trackSources.filter(
     (s) => !selectedSources.includes(s),
   );
-  // FIXME: Make smarter, currently recreates all on change
   return addedSources.length != 0 || removedSources.length != 0;
 }
 

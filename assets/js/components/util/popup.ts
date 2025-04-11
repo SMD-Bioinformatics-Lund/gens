@@ -90,20 +90,10 @@ export class GensPopup extends ShadowBaseElement {
       const entriesContainer = this.root.querySelector("#entries");
 
       for (const infoEntry of infoEntries) {
-        // const node = document.createElement("div");
-        // if (url == undefined) {
-        //   node.textContent = `${key}: ${value}`;
-        // } else {
-        //   const urlNode = document.createElement("a");
-        //   urlNode.href = url;
-        //   urlNode.textContent = `${key}: ${value}`;
-        //   node.appendChild(urlNode);
-        // }
         const node = getEntry(infoEntry)
         entriesContainer.appendChild(node);
       }
     }
-    // label.innerHTML = text;
   }
 
   connectedCallback(): void {

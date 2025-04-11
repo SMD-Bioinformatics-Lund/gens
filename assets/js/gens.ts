@@ -68,10 +68,7 @@ export async function initCanvases({
 
   const getVariantURL = (variantId) => {
     const url = `${scoutBaseURL}/document_id/${variantId}`;
-    console.log("Visiting URL: ", url);
     return url;
-    // const win = window.open(url, "_blank");
-    // win.focus();
   }
 
   initialize(
