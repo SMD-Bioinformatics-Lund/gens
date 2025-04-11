@@ -4,12 +4,13 @@ from collections import defaultdict
 from itertools import groupby
 from typing import Any
 from pymongo.database import Database
+from pymongo import DESCENDING
 import logging
 
-from gens.models.annotation import AnnotationTrackInDb
+from gens.models.annotation import AnnotationRecord, AnnotationTrackInDb, ReducedTrackInfo
 from gens.models.base import PydanticObjectId
-from gens.models.genomic import GenomeBuild, VariantCategory
-from gens.db.collections import ANNOTATIONS_COLLECTION, UPDATES_COLLECTION
+from gens.models.genomic import GenomeBuild
+from gens.db.collections import ANNOTATIONS_COLLECTION, ANNOTATION_TRACKS_COLLECTION, UPDATES_COLLECTION
 from gens.utils import get_timestamp
 from .utils import query_genomic_region
 
@@ -17,22 +18,39 @@ from .utils import query_genomic_region
 LOG = logging.getLogger(__name__)
 
 
-def get_annotation_tracks(genome_build: GenomeBuild, db: Database[Any]) -> list[str]:
+def get_annotation_tracks(genome_build: GenomeBuild | None, db: Database[Any]) -> list[AnnotationTrackInDb]:
     """Get all available annotation tracks in the database."""
 
-    result: list[str] = db.get_collection(ANNOTATIONS_COLLECTION).distinct(
-        "source", {"genome_build": genome_build.value}
-    )
-    return result
+    # build query
+    query: dict[str, GenomeBuild] = {}
+    if genome_build is not None:
+        query["genome_build"] = genome_build
+
+    cursor = db.get_collection(ANNOTATION_TRACKS_COLLECTION).find(query).sort({"name": DESCENDING})
+    return [AnnotationTrackInDb.model_validate(track) for track in cursor]
 
 
-def get_track(
-        track_id: PydanticObjectId, 
-        db: Database[Any]) -> AnnotationTrackInDb:
+def get_annotations_for_track(track_id: PydanticObjectId, db: Database[Any]) -> list[ReducedTrackInfo]:
     """Get annotation track from database."""
-    result: dict[str, Any] = db.get_collection(ANNOTATIONS_COLLECTION).find_one({"_id": track_id})
+    cursor: list[dict[str, Any]] = db.get_collection(ANNOTATIONS_COLLECTION).find_one({"track_id": track_id})
+    return [
+        ReducedTrackInfo.model_validate({
+            "record_id": doc["_id"],
+            "name": doc["name"],
+            "start": doc["start"],
+            "end": doc["end"],
+            "type": "annotation",
+        }) for doc in cursor]
 
-    return AnnotationTrackInDb.model_validate(result)
+
+def get_annotation(record_id: PydanticObjectId, db: Database[Any]) -> AnnotationRecord | None:
+    """Get annotation from the database with ID.
+    
+    Return None if there is no annotation with given id.
+    """
+    resp = db.get_collection(ANNOTATIONS_COLLECTION).find_one({"_id": record_id})
+    if resp is not None:
+        return AnnotationRecord.model_validate(resp)
 
 
 def register_data_update(db: Database[Any], track_type: str, name: str | None = None) -> None:
