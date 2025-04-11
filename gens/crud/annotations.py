@@ -7,7 +7,7 @@ from pymongo.database import Database
 from pymongo import DESCENDING
 import logging
 
-from gens.models.annotation import AnnotationRecord, AnnotationTrackInDb, ReducedTrackInfo
+from gens.models.annotation import AnnotationRecord, AnnotationTrack, AnnotationTrackInDb, ReducedTrackInfo
 from gens.models.base import PydanticObjectId
 from gens.models.genomic import GenomeBuild
 from gens.db.collections import ANNOTATIONS_COLLECTION, ANNOTATION_TRACKS_COLLECTION, UPDATES_COLLECTION
@@ -15,6 +15,36 @@ from gens.utils import get_timestamp
 
 
 LOG = logging.getLogger(__name__)
+
+
+def get_annotation_track_with_name(name: str, genome_build: GenomeBuild, db: Database[Any]) -> AnnotationTrackInDb | None:
+    """Search the database for a annotation track with NAME and genome_build.
+    
+    Return None if no track was found.
+    """
+    record = db.get_collection(ANNOTATION_TRACKS_COLLECTION).find_one({"name": name, "genome_build": genome_build})
+    if record is not None:
+        return record
+
+
+def create_annotation_track(track: AnnotationTrack, db: Database[Any]) -> PydanticObjectId:
+    """Create a new annotation track and return the track id."""
+    resp = db.get_collection(ANNOTATION_TRACKS_COLLECTION).insert_one(track.model_dump())
+    return PydanticObjectId(resp.inserted_id)
+
+
+def update_annotation_track(updated_track: AnnotationTrackInDb, db: Database[Any]) -> bool:
+    """Create a new annotation track and return the track id."""
+    resp = db.get_collection(ANNOTATION_TRACKS_COLLECTION).update_one({"_id": updated_track.track_id}, update=updated_track.model_dump(exclude=["track_id"]))
+    return resp.matched_count == 1 and resp.modified_count == 1
+
+
+def delete_annotation_track(track_id: PydanticObjectId, db: Database[Any]) -> bool:
+    """Delete annotation track with track id.
+    
+    Return true if recrod was removed."""
+    resp = db.get_collection(ANNOTATION_TRACKS_COLLECTION).delete_one({"_id": track_id})
+    return resp.deleted_count == 1
 
 
 def get_annotation_tracks(genome_build: GenomeBuild | None, db: Database[Any]) -> list[AnnotationTrackInDb]:
@@ -41,6 +71,21 @@ def get_annotations_for_track(track_id: PydanticObjectId, db: Database[Any]) -> 
             "end": doc["end"],
             "type": "annotation",
         }) for doc in cursor]
+
+
+def delete_annotations_for_track(track_id: PydanticObjectId, db: Database[Any]) -> bool:
+    """Remove annotation records that belong to a track from the database."""
+    resp = db.get_collection(ANNOTATIONS_COLLECTION).delete_many({"track_id": track_id})
+    if resp.deleted_count > 0:
+        return True
+    else:
+        return False
+
+
+def create_annotations_for_track(annotations: list[AnnotationRecord], db: Database[Any]) -> list[PydanticObjectId]:
+    """Insert annotations records in the database and return their object ids."""
+    resp = db.get_collection(ANNOTATIONS_COLLECTION).insert_many(annotations)
+    return [PydanticObjectId(id) for id in resp.inserted_ids]
 
 
 def get_annotation(record_id: PydanticObjectId, db: Database[Any]) -> AnnotationRecord | None:
