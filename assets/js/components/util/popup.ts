@@ -1,41 +1,41 @@
+import { STYLE } from "../../constants";
 import { ShadowBaseElement } from "./shadowbase";
 
+const style = STYLE.popup;
+
 const template = document.createElement("template");
-// FIXME: Use style constants
 template.innerHTML = String.raw`
   <style>
     :host {
-      background: white;
-      border: 1px solid #ccc;
-      padding: 12px;
-      boxShadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      background: ${style.backgroundColor};
+      border: ${style.borderWidth}px solid ${style.borderColor};
+      padding: ${style.padding}px;
       zIndex: 1000;
-      font-family: sans-serif;
+      font-family: ${style.font};
       max-width: 320px;
-      font-size: 14px;
-      border-radius: 6px;
+      border-radius: ${style.borderRadius}px;
     }
     #header {
-      font-weight: 600;
-      font-size: 16px;
-      color: #222;
-      margin-bottom: 8px;
+      font-weight: ${style.headerFontWeight};
+      font-size: ${style.headerSize}px;
+      color: ${style.textColor};
+      margin-bottom: ${style.margin}px;
     }
     #entries {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: ${style.entryGap}px;
     }
     .entry {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
-      color: #444;
+      gap: ${style.margin}px;
+      color: ${style.textColor};
     }
     .entry-key {
-      font-weight: 500;
-      color: #555;
+      font-weight: ${style.breadFontWeight};
+      color: ${style.textColor};
     }
     .entry-value {
       flex-shrink: 0;
@@ -51,20 +51,20 @@ template.innerHTML = String.raw`
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: ${style.margin}px;
     }
     #close-popup {
       background: transparent;
       border: none;
-      font-size: 18px;
+      font-size: ${style.headerSize}px;
       line-height: 1;
       cursor: pointer;
-      color: #888;
+      color: ${style.closeColor};
       padding: 0;
-      margin-left: 12px;
+      margin-left: ${style.padding}px;
     }
     #close-popup:hover {
-      color: #000;
+      color: ${style.textColor};
     }
   </style>
   <div id="container">
