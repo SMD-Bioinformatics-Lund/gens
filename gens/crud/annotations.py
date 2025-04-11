@@ -12,7 +12,6 @@ from gens.models.base import PydanticObjectId
 from gens.models.genomic import GenomeBuild
 from gens.db.collections import ANNOTATIONS_COLLECTION, ANNOTATION_TRACKS_COLLECTION, UPDATES_COLLECTION
 from gens.utils import get_timestamp
-from .utils import query_genomic_region
 
 
 LOG = logging.getLogger(__name__)
@@ -32,7 +31,8 @@ def get_annotation_tracks(genome_build: GenomeBuild | None, db: Database[Any]) -
 
 def get_annotations_for_track(track_id: PydanticObjectId, db: Database[Any]) -> list[ReducedTrackInfo]:
     """Get annotation track from database."""
-    cursor: list[dict[str, Any]] = db.get_collection(ANNOTATIONS_COLLECTION).find_one({"track_id": track_id})
+    projection: dict[str, bool] = {"name": True, "start": True, "end": True}
+    cursor: list[dict[str, Any]] = db.get_collection(ANNOTATIONS_COLLECTION).find({"track_id": track_id}, projection)
     return [
         ReducedTrackInfo.model_validate({
             "record_id": doc["_id"],
