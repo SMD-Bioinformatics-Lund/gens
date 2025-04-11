@@ -8,6 +8,60 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
+import { createPopper } from "@popperjs/core";
+import { computePosition, autoUpdate } from "@floating-ui/dom";
+import { GensPopup } from "../util/popup";
+
+function createPopup(
+  canvas: HTMLCanvasElement,
+  hoveredTarget: HoverBox,
+  getPopupContent: (band: RenderElement) => string,
+) {
+  const popup = document.createElement("gens-popup") as GensPopup;
+  popup.setContent(getPopupContent(hoveredTarget.element));
+  document.body.appendChild(popup);
+
+  const virtualReference = {
+    getBoundingClientRect: () => {
+      const canvasRect = canvas.getBoundingClientRect();
+      const x = canvasRect.left + hoveredTarget.box.x1;
+      const y = canvasRect.top + hoveredTarget.box.y1;
+
+      return {
+        top: y,
+        left: x,
+        bottom: y,
+        right: x,
+        width: 0,
+        height: 0,
+        x: x,
+        y: y,
+        toJSON: () => {},
+      };
+    },
+    contextElement: canvas,
+  };
+
+  const update = () => {
+    computePosition(virtualReference, popup, {
+      placement: "top",
+      middleware: [],
+    }).then(({ x, y}) => {
+      Object.assign(popup.style, {
+        left: `${x}px`, top: `${y}px`, position: "absolute",
+      });
+    });
+  };
+
+  const cleanup = autoUpdate(virtualReference, popup, update);
+
+  popup.addEventListener("close", () => {
+    cleanup();
+    popup.remove();
+  });
+
+  update();
+}
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
@@ -18,15 +72,17 @@ export class BandTrack extends CanvasTrack {
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
-    onElementClick: (band: RenderBand) => void = null
+    getPopupInfo: (band: RenderBand) => string = null,
   ) {
+    const onElementClick = (box: HoverBox) => {
+      // const popupInfo = getPopupInfo(box.element as RenderBand);
+      createPopup(this.canvas, box, getPopupInfo);
+    };
+
     super.initializeCanvas(label, trackHeight);
     this.initializeInteractive(onElementClick);
     this.initializeExpander(trackHeight);
     this.getRenderData = getRenderData;
-    // if (onElementClick != null) {
-    //   this.onElementClick = onElementClick;
-    // }
   }
 
   async render(updateData: boolean) {

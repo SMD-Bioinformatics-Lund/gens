@@ -3,7 +3,8 @@ import { renderBackground } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
 import { Tooltip } from "../../util/tooltip_utils";
 
-import { createPopper } from "@popperjs/core";
+import { ShadowBase } from "../util/shadowbase";
+import { eventInBox } from "../../util/utils";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
@@ -36,10 +37,10 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-export class CanvasTrack extends HTMLElement {
+export class CanvasTrack extends ShadowBase {
   public label: string;
 
-  protected _root: ShadowRoot;
+  // protected root: ShadowRoot;
   protected canvas: HTMLCanvasElement;
   protected ctx: CanvasRenderingContext2D;
   protected dimensions: { width: number; height: number };
@@ -50,7 +51,6 @@ export class CanvasTrack extends HTMLElement {
 
   private expander: Expander;
 
-  private tooltip: Tooltip;
   hoverTargets: HoverBox[];
 
   onElementClick: (element: RenderBand | RenderDot) => void | null;
@@ -59,6 +59,10 @@ export class CanvasTrack extends HTMLElement {
 
   isExpanded(): boolean {
     return this.expander.isExpanded;
+  }
+
+  constructor() {
+    super(template);
   }
 
   setExpandedHeight(height: number) {
@@ -75,20 +79,15 @@ export class CanvasTrack extends HTMLElement {
     return nNts / nPxs;
   }
 
-  connectedCallback() {
-    this._root = this.attachShadow({ mode: "open" });
-    this._root.appendChild(template.content.cloneNode(true));
-  }
-
   initializeCanvas(label: string, trackHeight: number) {
     this.label = label;
-    this.canvas = this._root.getElementById("canvas") as HTMLCanvasElement;
+    this.canvas = this.root.getElementById("canvas") as HTMLCanvasElement;
 
     this.defaultTrackHeight = trackHeight;
     this.currentHeight = trackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
-    this.trackContainer = this._root.getElementById(
+    this.trackContainer = this.root.getElementById(
       "track-container",
     ) as HTMLDivElement;
 
@@ -112,124 +111,51 @@ export class CanvasTrack extends HTMLElement {
     });
   }
 
-  // FIXME: Should this live outside the class?
   initializeInteractive(
-    onElementClick: (el: RenderElement) => void | null = null,
+    onElementClick: (el: HoverBox) => void | null = null,
   ) {
-    this.tooltip = new Tooltip(document.body);
-
-    if (onElementClick) {
-      this.onElementClick = onElementClick;
-    }
-
-    const inTarget = (
-      point: { offsetX: number; offsetY: number },
-      box: Box,
-    ): boolean => {
-      return (
-        point.offsetX >= box.x1 &&
-        point.offsetX <= box.x2 &&
-        point.offsetY >= box.y1 &&
-        point.offsetY <= box.y2
-      );
-    };
+    const tooltip = new Tooltip(document.body);
 
     this.canvas.addEventListener("click", (event) => {
-      if (!this.hoverTargets || !this.onElementClick) {
+
+      console.log("Click");
+
+      if (!this.hoverTargets || !onElementClick) {
         return;
       }
 
       const hoveredTarget = this.hoverTargets.find((target) =>
-        inTarget(event, target.box),
+        eventInBox(event, target.box),
       );
 
-      console.log("Found target");
-
-      if (hoveredTarget && this.onElementClick) {
-
-        const canvasRect = this.canvas.getBoundingClientRect();
-        const x = canvasRect.left + hoveredTarget.box.x1;
-        const y = canvasRect.top + hoveredTarget.box.y1;
-
-        // const popup = document.createElement("div");
-        // popup.textContent = "I am a popup";
-        // popup.style.background = "white";
-        // popup.style.border = "1px solid #ccc";
-        // popup.style.padding = "8px";
-        // popup.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
-        // popup.style.zIndex = "1000";
-        // document.body.appendChild(popup);
-
-        const virtualReference = {
-          getBoundingClientRect: () => ({
-            top: y,
-            left: x,
-            bottom: y,
-            right: x,
-            width: 0,
-            height: 0,
-            x: x,
-            y: y,
-            toJSON: () => {},
-          }),
-          contextElement: this.canvas,
-        };
-
-        const popup = document.createElement("div");
-        popup.textContent = hoveredTarget.label;
-        popup.style.background = "white";
-        popup.style.border = "1px solid #ccc";
-        popup.style.padding = "8px";
-        popup.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
-        popup.style.zIndex = "1000";
-        popup.classList.add("my-popup");
-        popup.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span>${hoveredTarget.label}</span>
-            <button id="close-popup" style="
-              background: transparent;
-              border: none;
-              font-size: 16px;
-              margin-left: 8px;
-              cursor: pointer;
-            ">&times;</button>
-          </div>
-        `;
-        popup.querySelector("#close-popup").addEventListener("click", () => {
-          popup.remove();
-        });
-        document.body.appendChild(popup);
-
-        createPopper(virtualReference, popup, {
-          placement: "top",
-          modifiers: [{ name: 'offset', options: { offset: [0, 8]}}]
-        });
-
-        this.onElementClick(hoveredTarget.element);
+      
+      if (hoveredTarget && onElementClick) {
+        console.log("Clicking with target", hoveredTarget);
+        onElementClick(hoveredTarget);
       }
     });
 
     this.canvas.addEventListener("mousemove", (event) => {
-      this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
+      tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
 
       if (this.hoverTargets == null) {
         return;
       }
 
       const hovered = this.hoverTargets.find((target) =>
-        inTarget(event, target.box),
+        eventInBox(event, target.box),
       );
       this.canvas.style.cursor = hovered ? "pointer" : "default";
 
       if (hovered) {
-        this.tooltip.tooltipEl.textContent = hovered.label;
-        this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
+        tooltip.tooltipEl.textContent = hovered.label;
+        tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
       } else {
-        this.tooltip.onMouseLeave();
+        tooltip.onMouseLeave();
       }
     });
     this.canvas.addEventListener("mouseleave", () => {
-      this.tooltip.onMouseLeave();
+      tooltip.onMouseLeave();
     });
   }
 

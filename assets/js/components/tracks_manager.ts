@@ -71,7 +71,7 @@ export class TracksManager extends HTMLElement {
     getChromosome: () => string,
     getXRange: () => Rng,
     getAnnotSources: () => string[],
-    navigateToVariant: (id: string) => void,
+    getVariantURL: (id: string) => void,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
@@ -155,7 +155,21 @@ export class TracksManager extends HTMLElement {
       },
       (band) => {
         console.log("Hitting band", band);
-        navigateToVariant(band.id);
+        const url = getVariantURL(band.id);
+        return `
+        <div style="font-family: sans-serif; max-width: 300px;">
+          <h3 style="margin: 0 0 8px; font-size: 16px; color: #333;">${band.label || "No label"}</h3>
+          <div style="font-size: 14px; color: #555;">
+            ${band.hoverInfo}
+          </div>
+          <div style="font-size: 14px; color: #555;">
+            URL:
+            <a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0077cc; text-decoration: none; font-weight: 500;">
+              Scout link
+            </a>
+          </div>
+        </div>
+        `;
       },
     );
 

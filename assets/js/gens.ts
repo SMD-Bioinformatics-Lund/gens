@@ -10,10 +10,13 @@ export {
 } from "./unused/_navigation";
 
 import "./components/tracks_manager";
-import { TracksManager } from "./components/tracks_manager";
 import "./components/input_controls";
-import { InputControls } from "./components/input_controls";
+import "./components/util/popup";
+import "./components/util/shadowbase";
+
 import { API } from "./state/api";
+import { TracksManager } from "./components/tracks_manager";
+import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 
 export async function initCanvases({
@@ -63,9 +66,10 @@ export async function initCanvases({
     return allChromData[chromosome];
   };
 
-  const navigateToVariant = (variantId) => {
+  const getVariantURL = (variantId) => {
     const url = `${scoutBaseURL}/document_id/${variantId}`;
     console.log("Visiting URL: ", url);
+    return url;
     // const win = window.open(url, "_blank");
     // win.focus();
   }
@@ -79,7 +83,7 @@ export async function initCanvases({
     onChromClick,
     getChromInfo,
     renderDataSource,
-    navigateToVariant,
+    getVariantURL,
   );
 }
 
@@ -96,8 +100,6 @@ async function initialize(
 ) {
 
   const annotSources = await api.getAnnotationSources();
-
-  console.log(annotSources);
 
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
