@@ -3,6 +3,8 @@ import { renderBackground } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
 import { Tooltip } from "../../util/tooltip_utils";
 
+import { createPopper } from "@popperjs/core";
+
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
 
@@ -51,7 +53,7 @@ export class CanvasTrack extends HTMLElement {
   private tooltip: Tooltip;
   hoverTargets: HoverBox[];
 
-  onElementClick: (element: RenderBand|RenderDot) => void | null;
+  onElementClick: (element: RenderBand | RenderDot) => void | null;
 
   render(_updateData: boolean) {}
 
@@ -111,31 +113,98 @@ export class CanvasTrack extends HTMLElement {
   }
 
   // FIXME: Should this live outside the class?
-  initializeInteractive(onElementClick: (el: RenderElement) => void | null = null) {
+  initializeInteractive(
+    onElementClick: (el: RenderElement) => void | null = null,
+  ) {
     this.tooltip = new Tooltip(document.body);
 
     if (onElementClick) {
       this.onElementClick = onElementClick;
     }
 
-    const inTarget = (point: {offsetX: number, offsetY: number}, box: Box): boolean => {
-        return point.offsetX >= box.x1 &&
+    const inTarget = (
+      point: { offsetX: number; offsetY: number },
+      box: Box,
+    ): boolean => {
+      return (
+        point.offsetX >= box.x1 &&
         point.offsetX <= box.x2 &&
         point.offsetY >= box.y1 &&
         point.offsetY <= box.y2
-    }
+      );
+    };
 
     this.canvas.addEventListener("click", (event) => {
-
       if (!this.hoverTargets || !this.onElementClick) {
         return;
       }
 
-      const hoveredTarget = this.hoverTargets.find((target) => inTarget(event, target.box));
+      const hoveredTarget = this.hoverTargets.find((target) =>
+        inTarget(event, target.box),
+      );
 
-      console.log("Found target")
+      console.log("Found target");
 
       if (hoveredTarget && this.onElementClick) {
+
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const x = canvasRect.left + hoveredTarget.box.x1;
+        const y = canvasRect.top + hoveredTarget.box.y1;
+
+        // const popup = document.createElement("div");
+        // popup.textContent = "I am a popup";
+        // popup.style.background = "white";
+        // popup.style.border = "1px solid #ccc";
+        // popup.style.padding = "8px";
+        // popup.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+        // popup.style.zIndex = "1000";
+        // document.body.appendChild(popup);
+
+        const virtualReference = {
+          getBoundingClientRect: () => ({
+            top: y,
+            left: x,
+            bottom: y,
+            right: x,
+            width: 0,
+            height: 0,
+            x: x,
+            y: y,
+            toJSON: () => {},
+          }),
+          contextElement: this.canvas,
+        };
+
+        const popup = document.createElement("div");
+        popup.textContent = hoveredTarget.label;
+        popup.style.background = "white";
+        popup.style.border = "1px solid #ccc";
+        popup.style.padding = "8px";
+        popup.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+        popup.style.zIndex = "1000";
+        popup.classList.add("my-popup");
+        popup.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>${hoveredTarget.label}</span>
+            <button id="close-popup" style="
+              background: transparent;
+              border: none;
+              font-size: 16px;
+              margin-left: 8px;
+              cursor: pointer;
+            ">&times;</button>
+          </div>
+        `;
+        popup.querySelector("#close-popup").addEventListener("click", () => {
+          popup.remove();
+        });
+        document.body.appendChild(popup);
+
+        createPopper(virtualReference, popup, {
+          placement: "top",
+          modifiers: [{ name: 'offset', options: { offset: [0, 8]}}]
+        });
+
         this.onElementClick(hoveredTarget.element);
       }
     });
@@ -147,7 +216,9 @@ export class CanvasTrack extends HTMLElement {
         return;
       }
 
-      const hovered = this.hoverTargets.find((target) => inTarget(event, target.box));
+      const hovered = this.hoverTargets.find((target) =>
+        inTarget(event, target.box),
+      );
       this.canvas.style.cursor = hovered ? "pointer" : "default";
 
       if (hovered) {
@@ -164,8 +235,6 @@ export class CanvasTrack extends HTMLElement {
 
   setHoverTargets(hoverTargets: HoverBox[]) {
     this.hoverTargets = hoverTargets;
-
-
   }
 
   baseRender() {
@@ -179,7 +248,7 @@ export class CanvasTrack extends HTMLElement {
       this.label,
       STYLE.tracks.textPadding + shiftRight,
       STYLE.tracks.textPadding,
-      {textBaseline: "top"},
+      { textBaseline: "top" },
     );
   }
 
