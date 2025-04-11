@@ -11,6 +11,7 @@ from pymongo.database import Database
 
 from gens.db.collections import ANNOTATIONS_COLLECTION
 from gens.models.annotation import AnnotationRecord
+from gens.models.base import PydanticObjectId
 from gens.models.genomic import Chromosome, GenomeBuild
 
 LOG = logging.getLogger(__name__)
@@ -107,9 +108,7 @@ def read_aed(file: Path) -> Iterator[dict[str, str]]:
             yield dict(zip(header, line))
 
 
-def parse_annotation_entry(
-    entry: dict[str, str], genome_build: GenomeBuild, annotation_name: str
-) -> AnnotationRecord | None:
+def parse_annotation_entry(entry: dict[str, str], track_id: PydanticObjectId) -> AnnotationRecord | None:
     """Parse a bed or aed entry"""
     annotation: dict[str, Any] = {}
     # parse entry and format the values
@@ -131,7 +130,6 @@ def parse_annotation_entry(
     try:
         return AnnotationRecord(
             source=annotation_name,
-            genome_build=genome_build,
             **annotation,
         )
     except Exception as err:

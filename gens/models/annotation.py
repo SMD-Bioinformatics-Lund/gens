@@ -33,7 +33,7 @@ class AnnotationRecord(GenomePosition, RWModel):
     def serialize_color(
         self, color: Color, _: Any
     ) -> tuple[int, int, int] | tuple[int, int, int, float]:
-        """Serialize RGB as tuple"""
+        """Serialize hex colors as an RGBA tuple"""
         return color.as_rgb_tuple()
 
 
