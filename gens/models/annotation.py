@@ -28,6 +28,7 @@ class AnnotationRecord(GenomePosition, RWModel):
     color: Color = Color("#808080")  # defaults to grey
     score: int | None = None
     comment: list[Comment] = []
+    metadata: dict[str, str | int | float | None] = {}
 
     @field_serializer("color")
     def serialize_color(
