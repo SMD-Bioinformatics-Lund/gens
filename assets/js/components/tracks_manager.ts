@@ -11,7 +11,6 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { CHROMOSOMES, STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/canvas_track";
-import { createPopup } from "../util/popup_utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -76,33 +75,7 @@ export class TracksManager extends HTMLElement {
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
-    const coverageTrack = new DotTrack();
-    const bafTrack = new DotTrack();
-    const variantTrack = new BandTrack();
-    const transcriptTrack = new BandTrack();
-    const ideogramTrack = new IdeogramTrack();
-
-    const annotationTracks = new AnnotationTracks();
-
-    const overviewTrackCov = new OverviewTrack();
-    const overviewTrackBaf = new OverviewTrack();
-
-    this.tracks.push(
-      ideogramTrack,
-      coverageTrack,
-      bafTrack,
-      annotationTracks,
-      variantTrack,
-      transcriptTrack,
-      overviewTrackCov,
-      overviewTrackBaf,
-    );
-
-    for (const track of this.tracks) {
-      this.parentContainer.appendChild(track);
-    }
-
-    await coverageTrack.initialize(
+    const coverageTrack = new DotTrack(
       "Log2 Ratio",
       trackHeight.thick,
       COV_Y_RANGE,
@@ -114,8 +87,7 @@ export class TracksManager extends HTMLElement {
         };
       },
     );
-
-    await bafTrack.initialize(
+    const bafTrack = new DotTrack(
       "B Allele Freq",
       trackHeight.thick,
       BAF_Y_RANGE,
@@ -127,51 +99,7 @@ export class TracksManager extends HTMLElement {
         };
       },
     );
-
-    const getAnnotTrackData = async (
-      annotSource: string,
-    ): Promise<BandTrackData> => {
-      const bands = await dataSource.getAnnotation(annotSource);
-      return {
-        xRange: getXRange(),
-        bands,
-      };
-    };
-
-    async function getAnnotTrack(source: string): Promise<BandTrack> {
-      const track = new BandTrack();
-      const getPopupInfo = (band: RenderBand) => {
-        return { header: band.label };
-      };
-      await track.initialize(
-        source,
-        trackHeight.thin,
-        () => getAnnotTrackData(source),
-        getPopupInfo,
-      );
-      return track;
-    }
-
-    await annotationTracks.initialize(getAnnotSources, getAnnotTrack);
-
-    // await annotationTracks.initialize(trackHeight.thin, async () => {
-    //   const annotSources = getAnnotSources();
-    //   const annotationsData: { source: string; bands: RenderBand[] }[] = [];
-    //   for (const annotSource of annotSources) {
-    //     const bands = await dataSource.getAnnotation(annotSource);
-    //     const annotData = {
-    //       source: annotSource,
-    //       bands,
-    //     };
-    //     annotationsData.push(annotData);
-    //   }
-    //   return {
-    //     xRange: getXRange(),
-    //     annotations: annotationsData,
-    //   };
-    // }, (band: RenderBand) => "Popup info");
-
-    await variantTrack.initialize(
+    const variantTrack = new BandTrack(
       "Variant",
       trackHeight.thin,
       async () => {
@@ -191,8 +119,7 @@ export class TracksManager extends HTMLElement {
         // }});
       },
     );
-
-    await transcriptTrack.initialize(
+    const transcriptTrack = new BandTrack(
       "Transcript",
       trackHeight.thin,
       async () => {
@@ -205,8 +132,7 @@ export class TracksManager extends HTMLElement {
         return { header: "Popup" };
       },
     );
-
-    await ideogramTrack.initialize(
+    const ideogramTrack = new IdeogramTrack(
       "Ideogram",
       trackHeight.extraThin,
       async () => {
@@ -215,6 +141,19 @@ export class TracksManager extends HTMLElement {
           chromInfo: await dataSource.getChromInfo(),
         };
       },
+
+    );
+
+    const annotationTracks = new AnnotationTracks(
+      getAnnotSources,
+      (source: string) => {
+        return getAnnotTrack(
+          source,
+          trackHeight.thin,
+          getXRange,
+          dataSource.getAnnotation,
+        );
+      },
     );
 
     const chromSizes = {};
@@ -222,7 +161,8 @@ export class TracksManager extends HTMLElement {
       chromSizes[chromosome] = getChromInfo(chromosome).size;
     }
 
-    await overviewTrackCov.initialize(
+
+    const overviewTrackCov = new OverviewTrack(
       "Overview (cov)",
       trackHeight.thick,
       chromSizes,
@@ -236,8 +176,7 @@ export class TracksManager extends HTMLElement {
         };
       },
     );
-
-    await overviewTrackBaf.initialize(
+    const overviewTrackBaf = new OverviewTrack(
       "Overview (baf)",
       trackHeight.thick,
       chromSizes,
@@ -251,6 +190,30 @@ export class TracksManager extends HTMLElement {
         };
       },
     );
+
+    this.tracks.push(
+      ideogramTrack,
+      coverageTrack,
+      bafTrack,
+      annotationTracks,
+      variantTrack,
+      transcriptTrack,
+      overviewTrackCov,
+      overviewTrackBaf,
+    );
+
+    console.log(this.tracks);
+
+    for (const track of this.tracks) {
+      this.parentContainer.appendChild(track);
+      track.initialize();
+      // track.syncDimensions();
+      track.renderLoading();
+    }
+
+    // for (const track of this.tracks) {
+    //   track.initialize();
+    // }
   }
 
   public render(updateData: boolean) {
@@ -259,5 +222,37 @@ export class TracksManager extends HTMLElement {
     }
   }
 }
+
+function getAnnotTrack(
+  source: string,
+  trackHeight: number,
+  getXRange: () => Rng,
+  getAnnotation: (source: string) => Promise<RenderBand[]>,
+): BandTrack {
+  console.log("Getting track for source", source);
+  const getPopupInfo = (band: RenderBand) => {
+    return { header: band.label };
+  };
+  const track = new BandTrack(
+    source,
+    trackHeight,
+    () => getAnnotTrackData(source, getXRange, getAnnotation),
+    getPopupInfo,
+  );
+  return track;
+}
+
+const getAnnotTrackData = async (
+  source: string,
+  getXRange: () => Rng,
+  getAnnotation: (source: string) => Promise<RenderBand[]>,
+): Promise<BandTrackData> => {
+  const bands = await getAnnotation(source);
+  console.log("Getting bands: ", bands);
+  return {
+    xRange: getXRange(),
+    bands,
+  };
+};
 
 customElements.define("gens-tracks", TracksManager);

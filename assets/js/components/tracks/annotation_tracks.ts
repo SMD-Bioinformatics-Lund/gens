@@ -15,130 +15,89 @@ export class AnnotationTracks extends ShadowBaseElement {
   public label: string = "Annotation tracks";
 
   trackHeight: number;
-  // getRenderData: () => Promise<AnnotationTrackData>;
-  // renderData: AnnotationTracksData | null;
   getPopupInfo: (band: RenderBand) => PopupContent;
 
   getAnnotationSources: () => string[];
-  getTrack: (string) => Promise<BandTrack>;
+  getTrack: (string) => BandTrack;
   tracks: BandTrack[] = [];
 
-  // parentContainer: HTMLDivElement;
-
-  constructor() {
-    super(template);
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    // this._root = this.attachShadow({ mode: "open" });
-    // this._root.appendChild(template.content.cloneNode(true));
-
-    // this.parentContainer = this._root.getElementById(
-    //   "container",
-    // ) as HTMLDivElement;
-  }
-
-  async initialize(
+  constructor(
     getAnnotSources: () => string[],
-    getTrack: (source: string) => Promise<BandTrack>,
+    getTrack: (source: string) => BandTrack,
   ) {
+    super(template);
+
     this.getAnnotationSources = getAnnotSources;
     this.getTrack = getTrack;
-
-    // const parentContainer = this._root.getElementById(
-    //   "container",
-    // ) as HTMLDivElement;
-
-    // this.trackHeight = trackHeight;
-    // this.getRenderData = getRenderData;
-    // this.getPopupInfo = getPopupInfo;
   }
 
-  // async updateTracks() {
+  connectedCallback(): void {
+    const selectedSources = this.getAnnotationSources();
+    const initialize = false;
+    this.updateTracks(selectedSources, initialize);    
+  }
 
-  //   this.tracks = await this.generateAnnotationTracks();
+  initialize() {
+    console.log("Annotation initialize");
+    const selectedSources = this.getAnnotationSources();
+    const initialize = true;
+    this.updateTracks(selectedSources, initialize);
+  }
 
-  //   // const { xRange, annotations } = renderData;
-
-  // //   for (const {source, bands} of annotations) {
-  // //     // const annotTrack = new BandTrack();
-  // //     // this.parentContainer.appendChild(annotTrack);
-  // //     // await annotTrack.initialize(
-  // //     //   source,
-  // //     //   this.trackHeight,
-  // //     //   async () => {
-  // //     //     return {
-  // //     //       bands,
-  // //     //       xRange,
-  // //     //     };
-  // //     //   },
-  // //     //   this.getPopupInfo
-  // //     // );
-  // //     await annotTrack.render(true);
-  // //   }
-  // // }
-  // }
-
-  async _sync_tracks() {
-    const newSources = await this.getAnnotationSources();
-    const currentSources = this.tracks.map((track) => track.label);
-
-    const addedSources = newSources.filter(s => !currentSources.includes(s));
-    const removedSources = currentSources.filter(s => !newSources.includes(s));
-
-    // FIXME: Make smarter, currently recreates all on change
-    if (addedSources.length != 0 || removedSources.length != 0) {
-      const container = this.root.getElementById("container");
-      removeChildren(container);
-      this.tracks = [];
-
-      for (const source of newSources) {
-        const track = await this.getTrack(source);
-        this.tracks.push(track);
-        container.appendChild(track);
-      }
+  syncDimensions() {
+    for (const track of this.tracks) {
+      track.syncDimensions();
     }
+  }
 
+  renderLoading() {
+    for (const track of this.tracks) {
+      track.renderLoading();
+    }
+  }
+
+  async updateTracks(selectedSources: string[], initialize: boolean) {
+    const container = this.root.getElementById("container");
+    removeChildren(container);
+
+    const tracks = [];
+    for (const source of selectedSources) {
+      console.log("Regenerating track", source);
+      const track = this.getTrack(source);
+      container.appendChild(track);
+      if (initialize) {
+        track.initialize();
+      }
+      tracks.push(track);
+    }
+    this.tracks = tracks;
+
+    // this.tracks.forEach((track) => track.render(true));
   }
 
   async render(updateData: boolean) {
-
     console.log("Render called");
 
-    this._sync_tracks();
+    const selectedSources = this.getAnnotationSources();
+    const trackSources = this.tracks.map((track) => track.label);
+    const tracksDiffer = checkTracksDiffer(selectedSources, trackSources);
 
-    this.tracks.forEach((track) => track.render(updateData))
-
-    // for (const track of this.tracks) {
-    //   track.render(updateData);
-    // }
+    if (tracksDiffer) {
+      console.log("Tracks differ, updating");
+      const initialize = true;
+      await this.updateTracks(selectedSources, initialize);
+    }
+    this.tracks.forEach((track) => track.render(updateData || tracksDiffer));
   }
-  // if (updateData || this.renderData == null) {
-  //   this.renderData = await this.getRenderData();
-  // }
+}
 
-  // removeChildren(this.parentContainer);
-
-  // const { xRange, annotations } = this.renderData;
-
-  //   for (const {source, bands} of annotations) {
-  //     const annotTrack = new BandTrack();
-  //     this.parentContainer.appendChild(annotTrack);
-  //     await annotTrack.initialize(
-  //       source,
-  //       this.trackHeight,
-  //       async () => {
-  //         return {
-  //           bands,
-  //           xRange,
-  //         };
-  //       },
-  //       this.getPopupInfo
-  //     );
-  //     await annotTrack.render(true);
-  //   }
-  // }
+function checkTracksDiffer(selectedSources: string[], trackSources: string[]) {
+  const addedSources = selectedSources.filter((s) => !trackSources.includes(s));
+  const removedSources = trackSources.filter(
+    (s) => !selectedSources.includes(s),
+  );
+  // FIXME: Make smarter, currently recreates all on change
+  return addedSources.length != 0 || removedSources.length != 0;
 }
 
 customElements.define("annotation-tracks", AnnotationTracks);

@@ -13,26 +13,38 @@ import { createPopup } from "../../util/popup_utils";
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
+  getPopupInfo: (HTMLCanvasElement, HoverBox) => PopupContent;
 
-  async initialize(
+  constructor(
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
     getPopupInfo: (HTMLCanvasElement, HoverBox) => PopupContent,
   ) {
+    super(label, trackHeight);
+
+    this.getRenderData = getRenderData;
+    this.getPopupInfo = getPopupInfo;
+  }
+
+  initialize() {
+    super.initialize();
+
     const onElementClick = (box: HoverBox) => {
-      createPopup(this.canvas, box, getPopupInfo);
+      createPopup(this.canvas, box, this.getPopupInfo);
     };
 
-    super.initializeCanvas(label, trackHeight);
     this.initializeInteractive(onElementClick);
-    this.initializeExpander(trackHeight);
-    this.getRenderData = getRenderData;
+    this.initializeExpander();
   }
 
   async render(updateData: boolean) {
+
     if (this.getRenderData == undefined) {
       throw Error(`No getRenderData set up for track, must initialize first`);
+    }
+    if (!this.isInitialized) {
+      throw Error("Track is not initialized yet");
     }
 
     if (updateData || this.renderData == null) {
@@ -75,7 +87,7 @@ export class BandTrack extends CanvasTrack {
       return renderBand;
     });
 
-    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
+    renderBackground(this.ctx, dimensions);
 
     const hoverTargets = renderBand.flatMap((band) => {
       const bandHoverTargets = drawBand(

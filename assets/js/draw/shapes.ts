@@ -156,7 +156,9 @@ export function drawLabel(
       y2: y1 + frameHeight,
     };
 
-    drawBox(ctx, box, boxStyle);
+    if (boxStyle != undefined) {
+      drawBox(ctx, box, boxStyle);
+    }
   }
 
   ctx.fillStyle = textColor;

@@ -52,6 +52,8 @@ export class CanvasTrack extends ShadowBaseElement {
   private expander: Expander;
 
   hoverTargets: HoverBox[];
+  isInitialized: boolean = false;
+  protected queuedRendering: boolean = false;
 
   onElementClick: (element: RenderBand | RenderDot) => void | null;
 
@@ -61,8 +63,11 @@ export class CanvasTrack extends ShadowBaseElement {
     return this.expander.isExpanded;
   }
 
-  constructor() {
+  constructor(label: string, defaultTrackHeight: number) {
     super(template);
+
+    this.label = label;
+    this.defaultTrackHeight = defaultTrackHeight;
   }
 
   setExpandedHeight(height: number) {
@@ -79,12 +84,26 @@ export class CanvasTrack extends ShadowBaseElement {
     return nNts / nPxs;
   }
 
-  initializeCanvas(label: string, trackHeight: number) {
-    this.label = label;
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    console.log(`${this.label} connected`);
+
+    // this.syncDimensions();
+  }
+
+  initialize() {
+    if (!this.isConnected) {
+      throw Error(
+        `Component must be attached to DOM before being initialized (label: ${this.label})`,
+      );
+    }
+
+    console.log(`Initializing: ${this.label}`)
+
     this.canvas = this.root.getElementById("canvas") as HTMLCanvasElement;
 
-    this.defaultTrackHeight = trackHeight;
-    this.currentHeight = trackHeight;
+    this.currentHeight = this.defaultTrackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     this.trackContainer = this.root.getElementById(
@@ -92,11 +111,26 @@ export class CanvasTrack extends ShadowBaseElement {
     ) as HTMLDivElement;
 
     this.syncDimensions();
+
+    this.isInitialized = true;
+  }
+
+  renderLoading() {
+    console.log(`${this.label} attempting rendering`, this.dimensions);
+    renderBackground(this.ctx, this.dimensions);
+    drawLabel(
+      this.ctx,
+      "Loading ...",
+      this.dimensions.width / 2,
+      this.dimensions.height / 2,
+      { textBaseline: "middle", textAlign: "center" },
+    );
   }
 
   // FIXME: Move to attribute component
-  initializeExpander(height: number, expanded: boolean = false) {
+  initializeExpander(expanded: boolean = false) {
     this.expander = new Expander(expanded);
+    const height = this.defaultTrackHeight;
 
     this.trackContainer.addEventListener("contextmenu", (event) => {
       event.preventDefault();
@@ -111,13 +145,10 @@ export class CanvasTrack extends ShadowBaseElement {
     });
   }
 
-  initializeInteractive(
-    onElementClick: (el: HoverBox) => void | null = null,
-  ) {
+  initializeInteractive(onElementClick: (el: HoverBox) => void | null = null) {
     const tooltip = new Tooltip(document.body);
 
     this.canvas.addEventListener("click", (event) => {
-
       console.log("Click");
 
       if (!this.hoverTargets || !onElementClick) {
@@ -128,7 +159,6 @@ export class CanvasTrack extends ShadowBaseElement {
         eventInBox(event, target.box),
       );
 
-      
       if (hoveredTarget && onElementClick) {
         console.log("Clicking with target", hoveredTarget);
         onElementClick(hoveredTarget);
@@ -163,10 +193,10 @@ export class CanvasTrack extends ShadowBaseElement {
     this.hoverTargets = hoverTargets;
   }
 
-  baseRender() {
-    this.syncDimensions();
-    renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
-  }
+  // baseRender() {
+  //   this.syncDimensions();
+  //   renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
+  // }
 
   drawTrackLabel(shiftRight: number = 0) {
     drawLabel(
@@ -174,7 +204,7 @@ export class CanvasTrack extends ShadowBaseElement {
       this.label,
       STYLE.tracks.textPadding + shiftRight,
       STYLE.tracks.textPadding,
-      { textBaseline: "top" },
+      { textBaseline: "top", boxStyle: {} },
     );
   }
 
