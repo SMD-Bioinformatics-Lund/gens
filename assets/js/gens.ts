@@ -96,7 +96,7 @@ async function initialize(
   onChromClick: (chrom: string) => void,
   getChromInfo: (chrom: string) => ChromosomeInfo,
   renderDataSource: RenderDataSource,
-  navigateToVariant: (variantId: string) => void,
+  getVariantURL: (variantId: string) => string,
 ) {
 
   const annotSources = await api.getAnnotationSources();
@@ -121,7 +121,7 @@ async function initialize(
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
     () => inputControls.getAnnotSources(),
-    navigateToVariant,
+    getVariantURL,
   );
 
   tracks.render(true);

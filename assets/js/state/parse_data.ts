@@ -142,7 +142,8 @@ export function parseVariants(
       id,
       start: variant.position,
       end: variant.end,
-      hoverInfo: `${variant.variant_type} ${variant.sub_category}; length ${variant.length} (${id})`,
+      hoverInfo: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
+      label: `${variant.variant_type} ${variant.sub_category}`,
       color:
         variantColorMap[variant.sub_category] != undefined
           ? variantColorMap[variant.sub_category]

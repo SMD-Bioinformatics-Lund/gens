@@ -191,3 +191,14 @@ export function eventInBox(
     point.offsetY <= box.y2
   );
 }
+
+export function prefixNts(nts: number): string {
+  if (nts < 10 ** 4) {
+    return `${nts} bp`
+  }
+  else if (nts < 10 ** 7) {
+    return `${Math.round(nts / 10 ** 3)} kb`
+  } else {
+    return `${Math.round(nts / 10 ** 6)} mb`
+  }
+}

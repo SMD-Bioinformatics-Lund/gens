@@ -84,13 +84,6 @@ export class CanvasTrack extends ShadowBaseElement {
     return nNts / nPxs;
   }
 
-  connectedCallback(): void {
-    super.connectedCallback();
-
-    console.log(`${this.label} connected`);
-
-    // this.syncDimensions();
-  }
 
   initialize() {
     if (!this.isConnected) {
@@ -98,8 +91,6 @@ export class CanvasTrack extends ShadowBaseElement {
         `Component must be attached to DOM before being initialized (label: ${this.label})`,
       );
     }
-
-    console.log(`Initializing: ${this.label}`)
 
     this.canvas = this.root.getElementById("canvas") as HTMLCanvasElement;
 
@@ -116,7 +107,6 @@ export class CanvasTrack extends ShadowBaseElement {
   }
 
   renderLoading() {
-    console.log(`${this.label} attempting rendering`, this.dimensions);
     renderBackground(this.ctx, this.dimensions);
     drawLabel(
       this.ctx,
@@ -149,7 +139,6 @@ export class CanvasTrack extends ShadowBaseElement {
     const tooltip = new Tooltip(document.body);
 
     this.canvas.addEventListener("click", (event) => {
-      console.log("Click");
 
       if (!this.hoverTargets || !onElementClick) {
         return;
@@ -160,7 +149,6 @@ export class CanvasTrack extends ShadowBaseElement {
       );
 
       if (hoveredTarget && onElementClick) {
-        console.log("Clicking with target", hoveredTarget);
         onElementClick(hoveredTarget);
       }
     });

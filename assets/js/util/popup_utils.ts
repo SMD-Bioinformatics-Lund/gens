@@ -1,22 +1,6 @@
 import { computePosition, autoUpdate } from "@floating-ui/dom";
 import { GensPopup } from "../components/util/popup";
 
-// export function makePopupContent(header: string) {
-//     const template = String.raw`<div style="font-family: sans-serif; max-width: 300px;">
-//     <h3 style="margin: 0 0 8px; font-size: 16px; color: #333;">${band.label || "No label"}</h3>
-//     <div style="font-size: 14px; color: #555;">
-//       ${band.hoverInfo}
-//     </div>
-//     <div style="font-size: 14px; color: #555;">
-//       URL:
-//       <a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0077cc; text-decoration: none; font-weight: 500;">
-//         Scout link
-//       </a>
-//     </div>
-//   </div>`;
-//   return template;
-// }
-
 export function createPopup(
   canvas: HTMLCanvasElement,
   hoveredTarget: HoverBox,

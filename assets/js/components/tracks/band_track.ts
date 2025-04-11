@@ -13,13 +13,13 @@ import { createPopup } from "../../util/popup_utils";
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
-  getPopupInfo: (HTMLCanvasElement, HoverBox) => PopupContent;
+  getPopupInfo: (box: HoverBox) => PopupContent;
 
   constructor(
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
-    getPopupInfo: (HTMLCanvasElement, HoverBox) => PopupContent,
+    getPopupInfo: (box: HoverBox) => PopupContent,
   ) {
     super(label, trackHeight);
 
@@ -31,7 +31,7 @@ export class BandTrack extends CanvasTrack {
     super.initialize();
 
     const onElementClick = (box: HoverBox) => {
-      const content = this.getPopupInfo(this.canvas, box);
+      const content = this.getPopupInfo(box);
       createPopup(this.canvas, box, content);
     };
 

@@ -38,7 +38,6 @@ export class AnnotationTracks extends ShadowBaseElement {
   }
 
   initialize() {
-    console.log("Annotation initialize");
     const selectedSources = this.getAnnotationSources();
     const initialize = true;
     this.updateTracks(selectedSources, initialize);
@@ -62,7 +61,6 @@ export class AnnotationTracks extends ShadowBaseElement {
 
     const tracks = [];
     for (const source of selectedSources) {
-      console.log("Regenerating track", source);
       const track = this.getTrack(source);
       container.appendChild(track);
       if (initialize) {
@@ -76,14 +74,12 @@ export class AnnotationTracks extends ShadowBaseElement {
   }
 
   async render(updateData: boolean) {
-    console.log("Render called");
 
     const selectedSources = this.getAnnotationSources();
     const trackSources = this.tracks.map((track) => track.label);
     const tracksDiffer = checkTracksDiffer(selectedSources, trackSources);
 
     if (tracksDiffer) {
-      console.log("Tracks differ, updating");
       const initialize = true;
       await this.updateTracks(selectedSources, initialize);
     }

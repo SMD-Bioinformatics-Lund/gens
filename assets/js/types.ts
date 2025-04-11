@@ -81,7 +81,7 @@ interface APICoverageBin {
 
 interface PopupContent {
   header: string,
-  content?: {text: string, url?: string}[]
+  info?: {key: string, value: string, url?: string}[]
 }
 
 type RenderElement = RenderBand | RenderDot;

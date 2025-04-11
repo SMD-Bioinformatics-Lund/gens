@@ -11,6 +11,7 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { CHROMOSOMES, STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/canvas_track";
+import { prefixNts } from "../util/utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -71,7 +72,7 @@ export class TracksManager extends HTMLElement {
     getChromosome: () => string,
     getXRange: () => Rng,
     getAnnotSources: () => string[],
-    getVariantURL: (id: string) => void,
+    getVariantURL: (id: string) => string,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
@@ -108,15 +109,17 @@ export class TracksManager extends HTMLElement {
           bands: await dataSource.getVariantData(),
         };
       },
-      (canvas, box) => {
-        console.log("Hitting band", box.element);
-        const url = getVariantURL(box.element.id);
+      (box) => {
+        const element = box.element as RenderBand;
+        const url = getVariantURL(element.id);
         return {
-          header: "test",
+          header: `${element.label}`,
+          info: [
+            {key: "Range", value: `${element.start} - ${element.end}`},
+            {key: "Length", value: prefixNts(element.end - element.start + 1)},
+            {key: "URL", value: "Scout", url},
+          ]
         };
-        // return createPopup(canvas, box, () => { return {
-        //   header: "test"
-        // }});
       },
     );
     const transcriptTrack = new BandTrack(
@@ -128,8 +131,15 @@ export class TracksManager extends HTMLElement {
           bands: await dataSource.getTranscriptData(),
         };
       },
-      (_band) => {
-        return { header: "Popup" };
+      (box) => {
+        const element = box.element as RenderBand;
+        return {
+          header: `${element.label}`,
+          info: [
+            {key: "Range", value: `${element.start} - ${element.end}`},
+            {key: "Length", value: prefixNts(element.end - element.start + 1)},
+          ]
+        };
       },
     );
     const ideogramTrack = new IdeogramTrack(
@@ -202,18 +212,12 @@ export class TracksManager extends HTMLElement {
       overviewTrackBaf,
     );
 
-    console.log(this.tracks);
-
     for (const track of this.tracks) {
       this.parentContainer.appendChild(track);
       track.initialize();
-      // track.syncDimensions();
       track.renderLoading();
     }
 
-    // for (const track of this.tracks) {
-    //   track.initialize();
-    // }
   }
 
   public render(updateData: boolean) {
@@ -229,10 +233,17 @@ function getAnnotTrack(
   getXRange: () => Rng,
   getAnnotation: (source: string) => Promise<RenderBand[]>,
 ): BandTrack {
-  console.log("Getting track for source", source);
-  const getPopupInfo = (band: RenderBand) => {
-    return { header: band.label };
+  const getPopupInfo = (box) => {
+    const element = box.element as RenderBand;
+    return {
+      header: `${element.label}`,
+      info: [
+        {key: "Range", value: `${element.start} - ${element.end}`},
+        {key: "Length", value: prefixNts(element.end - element.start + 1)},
+      ]
+    };
   };
+
   const track = new BandTrack(
     source,
     trackHeight,
@@ -248,7 +259,6 @@ const getAnnotTrackData = async (
   getAnnotation: (source: string) => Promise<RenderBand[]>,
 ): Promise<BandTrackData> => {
   const bands = await getAnnotation(source);
-  console.log("Getting bands: ", bands);
   return {
     xRange: getXRange(),
     bands,
