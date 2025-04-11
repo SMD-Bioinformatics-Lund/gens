@@ -1,6 +1,7 @@
-import { ShadowBase } from "./shadowbase";
+import { ShadowBaseElement } from "./shadowbase";
 
 const template = document.createElement("template");
+// FIXME: Use style constants
 template.innerHTML = String.raw`
   <style>
     :host {
@@ -9,11 +10,17 @@ template.innerHTML = String.raw`
       padding: 8px;
       boxShadow: 0 2px 10px rgba(0, 0, 0, 0.2);
       zIndex: 1000;
+      font-family: sans-serif;
+      max-width: 300px;
     }
     #container {
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+    #content {
+      display: flex;
+      flex-direction: column;
     }
     #close-popup {
       background: transparent;
@@ -24,19 +31,24 @@ template.innerHTML = String.raw`
     }
   </style>
   <div id="container">
-    <span id="label">Text</span>
+    <div id="content">
+      <h3 id="header"></h3>
+      <div id="entries"></div>
+    </div>
     <button id="close-popup">&times;</button>
   </div>
 `;
 
-export class GensPopup extends ShadowBase {
+
+export class GensPopup extends ShadowBaseElement {
   constructor() {
     super(template);
   }
 
-  setContent(text: string) {
-    const label = this.root.querySelector("#label");
-    label.innerHTML = text;
+  setContent(content: PopupContent) {
+    const header = this.root.querySelector("#header");
+    header.innerHTML = content.header;
+    // label.innerHTML = text;
   }
 
   connectedCallback(): void {

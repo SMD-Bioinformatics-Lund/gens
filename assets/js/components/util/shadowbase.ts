@@ -1,4 +1,4 @@
-export class ShadowBase extends HTMLElement {
+export class ShadowBaseElement extends HTMLElement {
   protected root: ShadowRoot;
   constructor(template: HTMLTemplateElement) {
     super();

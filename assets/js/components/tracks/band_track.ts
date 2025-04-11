@@ -8,74 +8,19 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
-import { createPopper } from "@popperjs/core";
-import { computePosition, autoUpdate } from "@floating-ui/dom";
-import { GensPopup } from "../util/popup";
-
-function createPopup(
-  canvas: HTMLCanvasElement,
-  hoveredTarget: HoverBox,
-  getPopupContent: (band: RenderElement) => string,
-) {
-  const popup = document.createElement("gens-popup") as GensPopup;
-  popup.setContent(getPopupContent(hoveredTarget.element));
-  document.body.appendChild(popup);
-
-  const virtualReference = {
-    getBoundingClientRect: () => {
-      const canvasRect = canvas.getBoundingClientRect();
-      const x = canvasRect.left + hoveredTarget.box.x1;
-      const y = canvasRect.top + hoveredTarget.box.y1;
-
-      return {
-        top: y,
-        left: x,
-        bottom: y,
-        right: x,
-        width: 0,
-        height: 0,
-        x: x,
-        y: y,
-        toJSON: () => {},
-      };
-    },
-    contextElement: canvas,
-  };
-
-  const update = () => {
-    computePosition(virtualReference, popup, {
-      placement: "top",
-      middleware: [],
-    }).then(({ x, y}) => {
-      Object.assign(popup.style, {
-        left: `${x}px`, top: `${y}px`, position: "absolute",
-      });
-    });
-  };
-
-  const cleanup = autoUpdate(virtualReference, popup, update);
-
-  popup.addEventListener("close", () => {
-    cleanup();
-    popup.remove();
-  });
-
-  update();
-}
+import { createPopup } from "../../util/popup_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
-  // onBandClick: (band: RenderBand) => void | null = null;
 
   async initialize(
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
-    getPopupInfo: (band: RenderBand) => string,
+    getPopupInfo: (HTMLCanvasElement, HoverBox) => PopupContent,
   ) {
     const onElementClick = (box: HoverBox) => {
-      // const popupInfo = getPopupInfo(box.element as RenderBand);
       createPopup(this.canvas, box, getPopupInfo);
     };
 

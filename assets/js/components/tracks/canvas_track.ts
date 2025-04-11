@@ -3,7 +3,7 @@ import { renderBackground } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
 import { Tooltip } from "../../util/tooltip_utils";
 
-import { ShadowBase } from "../util/shadowbase";
+import { ShadowBaseElement } from "../util/shadowbase";
 import { eventInBox } from "../../util/utils";
 
 // FIXME: Move somewhere
@@ -37,7 +37,7 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-export class CanvasTrack extends ShadowBase {
+export class CanvasTrack extends ShadowBaseElement {
   public label: string;
 
   // protected root: ShadowRoot;

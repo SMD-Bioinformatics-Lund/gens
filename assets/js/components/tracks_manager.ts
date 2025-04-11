@@ -11,6 +11,7 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { CHROMOSOMES, STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/canvas_track";
+import { createPopup } from "../util/popup_utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -127,22 +128,48 @@ export class TracksManager extends HTMLElement {
       },
     );
 
-    await annotationTracks.initialize(trackHeight.thin, async () => {
-      const annotSources = getAnnotSources();
-      const annotationsData: { source: string; bands: RenderBand[] }[] = [];
-      for (const annotSource of annotSources) {
-        const bands = await dataSource.getAnnotation(annotSource);
-        const annotData = {
-          source: annotSource,
-          bands,
-        };
-        annotationsData.push(annotData);
-      }
+    const getAnnotTrackData = async (
+      annotSource: string,
+    ): Promise<BandTrackData> => {
+      const bands = await dataSource.getAnnotation(annotSource);
       return {
         xRange: getXRange(),
-        annotations: annotationsData,
+        bands,
       };
-    }, (band: RenderBand) => "Popup info");
+    };
+
+    async function getAnnotTrack(source: string): Promise<BandTrack> {
+      const track = new BandTrack();
+      const getPopupInfo = (band: RenderBand) => {
+        return { header: band.label };
+      };
+      await track.initialize(
+        source,
+        trackHeight.thin,
+        () => getAnnotTrackData(source),
+        getPopupInfo,
+      );
+      return track;
+    }
+
+    await annotationTracks.initialize(getAnnotSources, getAnnotTrack);
+
+    // await annotationTracks.initialize(trackHeight.thin, async () => {
+    //   const annotSources = getAnnotSources();
+    //   const annotationsData: { source: string; bands: RenderBand[] }[] = [];
+    //   for (const annotSource of annotSources) {
+    //     const bands = await dataSource.getAnnotation(annotSource);
+    //     const annotData = {
+    //       source: annotSource,
+    //       bands,
+    //     };
+    //     annotationsData.push(annotData);
+    //   }
+    //   return {
+    //     xRange: getXRange(),
+    //     annotations: annotationsData,
+    //   };
+    // }, (band: RenderBand) => "Popup info");
 
     await variantTrack.initialize(
       "Variant",
@@ -153,23 +180,15 @@ export class TracksManager extends HTMLElement {
           bands: await dataSource.getVariantData(),
         };
       },
-      (band) => {
-        console.log("Hitting band", band);
-        const url = getVariantURL(band.id);
-        return `
-        <div style="font-family: sans-serif; max-width: 300px;">
-          <h3 style="margin: 0 0 8px; font-size: 16px; color: #333;">${band.label || "No label"}</h3>
-          <div style="font-size: 14px; color: #555;">
-            ${band.hoverInfo}
-          </div>
-          <div style="font-size: 14px; color: #555;">
-            URL:
-            <a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0077cc; text-decoration: none; font-weight: 500;">
-              Scout link
-            </a>
-          </div>
-        </div>
-        `;
+      (canvas, box) => {
+        console.log("Hitting band", box.element);
+        const url = getVariantURL(box.element.id);
+        return {
+          header: "test",
+        };
+        // return createPopup(canvas, box, () => { return {
+        //   header: "test"
+        // }});
       },
     );
 
@@ -182,7 +201,9 @@ export class TracksManager extends HTMLElement {
           bands: await dataSource.getTranscriptData(),
         };
       },
-      (_band) => "Popup"
+      (_band) => {
+        return { header: "Popup" };
+      },
     );
 
     await ideogramTrack.initialize(
