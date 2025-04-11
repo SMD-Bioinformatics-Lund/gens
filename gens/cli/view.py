@@ -10,7 +10,7 @@ from flask.cli import with_appcontext
 from pymongo.database import Database
 from tabulate import tabulate
 
-from gens.db import get_samples
+from gens.crud.samples import get_samples
 from gens.db.collections import SAMPLES_COLLECTION
 
 LOG = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ def view() -> None:
 @with_appcontext
 def samples(summary: bool) -> None:
     """View samples stored in the database"""
-    db: Database = app.config["GENS_DB"]
+    db: Database[Any] = app.config["GENS_DB"]
     # print samples to terminal
     samples_in_db, _ = get_samples(db[SAMPLES_COLLECTION])
     sample_tbl: Iterable[Any]
