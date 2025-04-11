@@ -75,7 +75,6 @@ export class InputControls extends HTMLElement {
 
   getRegion(): Region {
     return this.region;
-    // return parseRegionDesignation(this.regionField.value);
   }
 
   getAnnotSources(): string[] {
