@@ -51,7 +51,7 @@ export class CanvasTrack extends HTMLElement {
   private tooltip: Tooltip;
   hoverTargets: HoverBox[];
 
-  onElementClick: (element: RenderBand|RenderDot) => void;
+  onElementClick: (element: RenderBand|RenderDot) => void | null;
 
   render(_updateData: boolean) {}
 
@@ -111,8 +111,35 @@ export class CanvasTrack extends HTMLElement {
   }
 
   // FIXME: Should this live outside the class?
-  initializeInteractive() {
+  initializeInteractive(onElementClick: (el: RenderElement) => void | null = null) {
     this.tooltip = new Tooltip(document.body);
+
+    if (onElementClick) {
+      this.onElementClick = onElementClick;
+    }
+
+    const inTarget = (point: {offsetX: number, offsetY: number}, box: Box): boolean => {
+        return point.offsetX >= box.x1 &&
+        point.offsetX <= box.x2 &&
+        point.offsetY >= box.y1 &&
+        point.offsetY <= box.y2
+    }
+
+    this.canvas.addEventListener("click", (event) => {
+
+      if (!this.hoverTargets || !this.onElementClick) {
+        return;
+      }
+
+      const hoveredTarget = this.hoverTargets.find((target) => inTarget(event, target.box));
+
+      console.log("Found target")
+
+      if (hoveredTarget && this.onElementClick) {
+        this.onElementClick(hoveredTarget.element);
+      }
+    });
+
     this.canvas.addEventListener("mousemove", (event) => {
       this.tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
 
@@ -120,13 +147,7 @@ export class CanvasTrack extends HTMLElement {
         return;
       }
 
-      const hovered = this.hoverTargets.find(
-        (target) =>
-          event.offsetX >= target.box.x1 &&
-          event.offsetX <= target.box.x2 &&
-          event.offsetY >= target.box.y1 &&
-          event.offsetY <= target.box.y2,
-      );
+      const hovered = this.hoverTargets.find((target) => inTarget(event, target.box));
       this.canvas.style.cursor = hovered ? "pointer" : "default";
 
       if (hovered) {

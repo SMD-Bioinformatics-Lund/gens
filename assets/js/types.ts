@@ -79,6 +79,8 @@ interface APICoverageBin {
   zoom: string,
 }
 
+type RenderElement = RenderBand | RenderDot;
+
 interface RenderBand {
   id: string,
   start: number,
@@ -134,8 +136,9 @@ interface Box {
 }
 
 interface HoverBox {
-  label: string,
-  box: Box
+  label: string;
+  box: Box;
+  element: RenderBand|RenderDot;
 }
 
 interface BoxStyle {

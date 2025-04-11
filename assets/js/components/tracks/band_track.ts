@@ -21,12 +21,12 @@ export class BandTrack extends CanvasTrack {
     onElementClick: (band: RenderBand) => void = null
   ) {
     super.initializeCanvas(label, trackHeight);
-    this.initializeInteractive();
+    this.initializeInteractive(onElementClick);
     this.initializeExpander(trackHeight);
     this.getRenderData = getRenderData;
-    if (onElementClick != null) {
-      this.onElementClick = onElementClick;
-    }
+    // if (onElementClick != null) {
+    //   this.onElementClick = onElementClick;
+    // }
   }
 
   async render(updateData: boolean) {
@@ -126,7 +126,7 @@ function drawBand(
   ctx.fillRect(xPxStart, y1, width, height);
 
   const box = { x1: xPxStart, x2: xPxStart + width, y1, y2 };
-  const hoverBox = { box, label: band.hoverInfo };
+  const hoverBox: HoverBox = { box, label: band.hoverInfo, element: band };
   hoverBoxes.push(hoverBox);
 
   if (showDetails) {
