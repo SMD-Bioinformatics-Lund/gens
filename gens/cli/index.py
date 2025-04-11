@@ -7,7 +7,7 @@ from flask import current_app
 from flask.cli import with_appcontext
 from pymongo.database import Database
 
-from gens.db import create_indexes, update_indexes
+from gens.db.index import create_indexes, update_indexes
 
 LOG = logging.getLogger(__name__)
 
