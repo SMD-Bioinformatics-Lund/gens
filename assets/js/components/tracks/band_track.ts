@@ -31,7 +31,8 @@ export class BandTrack extends CanvasTrack {
     super.initialize();
 
     const onElementClick = (box: HoverBox) => {
-      createPopup(this.canvas, box, this.getPopupInfo);
+      const content = this.getPopupInfo(this.canvas, box);
+      createPopup(this.canvas, box, content);
     };
 
     this.initializeInteractive(onElementClick);

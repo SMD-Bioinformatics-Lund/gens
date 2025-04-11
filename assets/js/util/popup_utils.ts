@@ -20,13 +20,10 @@ import { GensPopup } from "../components/util/popup";
 export function createPopup(
   canvas: HTMLCanvasElement,
   hoveredTarget: HoverBox,
-  getPopupContent: (
-    canvas: HTMLCanvasElement,
-    band: RenderElement,
-  ) => PopupContent,
+  content: PopupContent,
 ) {
   const popup = document.createElement("gens-popup") as GensPopup;
-  popup.setContent(getPopupContent(canvas, hoveredTarget.element));
+  popup.setContent(content);
   document.body.appendChild(popup);
 
   const virtualReference = {
