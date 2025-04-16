@@ -83,7 +83,7 @@ def get_scatter_data(collection: Collection[dict[str, Any]], sample_id: str, cas
             end = int(entry[2])
             positions.append(round((start + end) / 2))
             values.append(float(entry[3]))
-        return GenomeCoverage(region=region, zoom=ZoomLevel(zoom), position=positions, value=values)
+        return GenomeCoverage(region=region, zoom=None if zoom is None else ZoomLevel(zoom) , position=positions, value=values)
 
     return parse_raw_tabix([r.split("\t") for r in records])
 

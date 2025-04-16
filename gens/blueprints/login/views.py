@@ -25,11 +25,12 @@ LOG = logging.getLogger(__name__)
 def load_user(user_id: str) -> LoginUser | None:
     """Returns the currently active user as an object."""
     # get database instance
-    db: Database[Any] = current_app["GENS_DB"]
+    db: Database[Any] = current_app.config["GENS_DB"]
     user_col = db.get_collection(USER_COLLECTION)
     user_obj = get_user(user_col, user_id)  # type: ignore
     if user_obj is not None:
         return LoginUser(user_obj)
+    return None
 
 
 login_bp = Blueprint(
@@ -71,14 +72,14 @@ def login() -> Response:
         user_mail = request.form.get("email")
         LOG.info("Validating user %s against Scout database", user_mail)
 
-    db: Database[Any] = current_app["GENS_DB"]
+    db: Database[Any] = current_app.config["GENS_DB"]
     user_col = db.get_collection(USER_COLLECTION)
     user_obj = get_user(user_col, user_mail)  # type: ignore
     if user_obj is None:
         flash("User not found in Scout database", "warning")
         return redirect(url_for("home.landing"))
 
-    return perform_login(user_obj)
+    return perform_login(LoginUser(user_obj))
 
 
 @login_bp.route("/authorized")

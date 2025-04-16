@@ -44,7 +44,7 @@ LOG = logging.getLogger(__name__)
 compress = Compress()
 
 
-def create_app() -> Flask:
+def create_app() -> FastAPI:
     """Create and setup Gens application."""
     #application = connexion.FlaskApp(__name__, specification_dir="openapi/")
     #application.add_api("openapi.yaml")

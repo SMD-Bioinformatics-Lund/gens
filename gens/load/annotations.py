@@ -120,17 +120,14 @@ def fmt_bed_to_annotation(entry: dict[str, str], track_id: PydanticObjectId) -> 
             import pdb; pdb.set_trace()
             raise ParserError(str(err)) from err
 
-    try:
-        return AnnotationRecord(
-            track_id=track_id,
-            name="The Nameless One" if annotation["name"] is None else annotation["name"],
-            chrom=annotation["chrom"],
-            start=annotation["start"],
-            end=annotation["end"],
-            color=annotation["color"]
-        )
-    except:
-        import pdb; pdb.set_trace()
+    return AnnotationRecord(
+        track_id=track_id,
+        name="The Nameless One" if annotation["name"] is None else annotation["name"],
+        chrom=annotation["chrom"],
+        start=annotation["start"],
+        end=annotation["end"],
+        color=annotation["color"]
+    )
 
 
 def _is_metadata_row(line: str) -> bool:
@@ -230,14 +227,16 @@ def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
         for row in reader:
             # format color
             if "Color" in row:
-                matches = re.findall(r"\d+", row['Color'])
+                matches: list[str] = re.findall(r"\d+", row['Color'])
                 # check if color is rgba
                 if len(matches) == 3:
-                    color = Color(matches)
+                    vals = ','.join(matches)
+                    color = Color(f"rgb({vals})")
                 elif len(matches) == 4:
                     # verify that opacity variable is within 0-1 else convert it
-                    matches[-1] = int(matches[-1]) / 100 if 1 <= float(matches[-1]) < 100 else matches[-1]
-                    color = Color(matches)
+                    opacity_value = str(int(matches[-1]) / 100)
+                    vals = ','.join([*matches[:-1], str(opacity_value)])
+                    color = Color(f"rgba({vals})")
                 else:
                     raise ValueError(f"Invalid RGB designation, {row['Color']}")
             else:
@@ -279,7 +278,7 @@ def format_bed_data(
     """Parse the data based on its type."""
     new_value = None if value == "." else value
     if data_type == "color":
-        return Color(DEFAULT_COLOUR) if new_value is None else Color(new_value.split(','))
+        return Color(DEFAULT_COLOUR) if new_value is None else Color(new_value)
     if data_type == "chrom":
         if not new_value:
             raise ValueError(f"field {data_type} must exist")
@@ -306,10 +305,8 @@ def fmt_aed_to_annotation(record: AedRecord, track_id: PydanticObjectId, exclude
     # try extract references from notes
     refs: list[ReferenceUrl | ScientificArticle] = []
     comments: list[Comment] = []
-    if 'note' in record:
+    if 'note' in record and isinstance(record["note"], str):
         for note in record['note'].split(';'):
-            if not isinstance(note, str):
-                continue
             if "PMID" in note:
                 match = re.search(AED_PMID_REFERENCE_NOTE, note)
                 if match:

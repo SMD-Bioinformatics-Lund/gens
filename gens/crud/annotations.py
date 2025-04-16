@@ -33,6 +33,7 @@ def get_annotation_track(genome_build: GenomeBuild, db: Database[Any], name: str
     record = db.get_collection(ANNOTATION_TRACKS_COLLECTION).find_one(query)
     if record is not None:
         return AnnotationTrackInDb.model_validate(record)
+    return None
 
 
 def create_annotation_track(track: AnnotationTrack, db: Database[Any]) -> PydanticObjectId:
@@ -72,7 +73,7 @@ def get_annotation_tracks(genome_build: GenomeBuild | None, db: Database[Any]) -
 def get_annotations_for_track(track_id: PydanticObjectId, db: Database[Any]) -> list[ReducedTrackInfo]:
     """Get annotation track from database."""
     projection: dict[str, bool] = {"name": True, "start": True, "end": True}
-    cursor: list[dict[str, Any]] = db.get_collection(ANNOTATIONS_COLLECTION).find({"track_id": track_id}, projection)
+    cursor: Any = db.get_collection(ANNOTATIONS_COLLECTION).find({"track_id": track_id}, projection)
     return [
         ReducedTrackInfo.model_validate({
             "record_id": doc["_id"],
@@ -88,7 +89,7 @@ def delete_annotations_for_track(track_id: PydanticObjectId, db: Database[Any]) 
     resp = db.get_collection(ANNOTATIONS_COLLECTION).delete_many({"track_id": track_id})
     if resp.deleted_count > 0:
         # update modified timestamp for annotation track
-        resp = db.get_collection(ANNOTATION_TRACKS_COLLECTION).update_one({"track_id": track_id}, {"$set": {"modified_at": get_timestamp()}})
+        db.get_collection(ANNOTATION_TRACKS_COLLECTION).update_one({"track_id": track_id}, {"$set": {"modified_at": get_timestamp()}})
         return True
     else:
         return False
@@ -114,6 +115,7 @@ def get_annotation(record_id: PydanticObjectId, db: Database[Any]) -> Annotation
     resp = db.get_collection(ANNOTATIONS_COLLECTION).find_one({"_id": record_id})
     if resp is not None:
         return AnnotationRecord.model_validate(resp)
+    return None
 
 
 def register_data_update(db: Database[Any], track_type: str, name: str | None = None) -> None:

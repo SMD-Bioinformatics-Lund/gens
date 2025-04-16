@@ -1,6 +1,6 @@
 """Routes for getting coverage information."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from http import HTTPStatus
 from gens.crud import samples
 from gens.models.genomic import Chromosome, GenomicRegion
@@ -49,7 +49,7 @@ async def get_genome_coverage(
 
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
 
-    return get_scatter_data(collection=db.get_collection(SAMPLES_COLLECTION), sample_id=sample_id, case_id=case_id, region=region, cov_or_baf=data_type)
+    return get_scatter_data(collection=db.get_collection(SAMPLES_COLLECTION), sample_id=sample_id, case_id=case_id, region=region, data_type=data_type)
 
 
 @router.get("/sample/{data_type}/overview", tags=[ApiTags.SAMPLE])
@@ -62,5 +62,7 @@ async def get_cov_overview(
     """Get aggregated overview coverage information."""
 
     sample_info: SampleInfo = samples.get_sample(db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id)
+    if sample_info.overview_file is None:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Sample doest not have an overview file!")
 
     return get_overview_data(sample_info.overview_file, data_type)

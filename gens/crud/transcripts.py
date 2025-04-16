@@ -55,6 +55,7 @@ def get_transcript(transcript_id: PydanticObjectId, db: Database[Any]) -> Transc
     resp = db.get_collection(TRANSCRIPTS_COLLECTION).find_one({"_id": transcript_id})
     if resp is not None:
         return TranscriptRecord.model_validate(resp)
+    return None
     
 
 def create_transcripts(transcripts: list[TranscriptRecord], db: Database[Any]):

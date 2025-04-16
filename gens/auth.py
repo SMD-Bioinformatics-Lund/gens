@@ -1,5 +1,6 @@
 """Authentication and login related functions."""
 
+from typing import Any
 from authlib.integrations.flask_client import OAuth
 from flask_login import LoginManager  # type: ignore
 from flask_login import UserMixin
@@ -21,7 +22,7 @@ class LoginUser(UserMixin):
         self.roles = user_obj.roles
 
         # set the attributes in the user_data as class attributes
-        for key, value in user_obj.model_dump():
+        for key, value in user_obj.model_dump().items():
             setattr(self, key, value)
 
     def get_id(self) -> str:

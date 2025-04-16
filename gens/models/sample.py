@@ -88,8 +88,8 @@ class MultipleSamples(RWModel):  # pylint: disable=too-few-public-methods
         description="Number of db records matching the query",
     )
 
-    @computed_field(alias="recordsFiltered")
     @property
+    @computed_field(alias="recordsFiltered")
     def records_filtered(self) -> int:
         """
         Number of db returned records after narrowing the result.

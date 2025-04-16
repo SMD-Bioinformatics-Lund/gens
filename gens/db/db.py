@@ -7,6 +7,7 @@ from flask import Flask
 import pymongo
 from pydantic import MongoDsn
 from pymongo.database import Database
+from pymongo import MongoClient
 
 from gens.config import settings
 
@@ -19,33 +20,24 @@ def init_database_connection(app: Flask) -> None:
     LOG.info("Initialize db connection")
 
     # connect to database
-    app.config["SCOUT_DB"] = pymongo.MongoClient(
+    app.config["SCOUT_DB"] = MongoClient(
         str(settings.scout_db.connection)
     ).get_database(name=settings.scout_db.database)
-    app.config["GENS_DB"] = pymongo.MongoClient(
+    app.config["GENS_DB"] = MongoClient(
         str(settings.gens_db.connection)
     ).get_database(name=settings.gens_db.database)
 
 
 def get_db_connection(mongo_uri: MongoDsn, db_name: str) -> Database[Any]:
     """Get database connection."""
-    db: Database[Any] = pymongo.MongoClient(str(mongo_uri)).get_database(name=db_name)
+    db: Database[Any] = MongoClient(str(mongo_uri)).get_database(name=db_name)
     return db
-
-
-class GensDb:
-    """Database connection."""
-
-    def __init__(self, uri: MongoDsn):
-        """Setup database connection instance."""
-
-        self._client = pymongo.MongoClient(str(uri))
 
 
 def get_db() -> Generator[Database[Any], None, None]:
     """Connect to a database."""
     try:
-        client = pymongo.MongoClient(str(settings.gens_db.connection))
+        client: MongoClient[Any] = MongoClient(str(settings.gens_db.connection))
         yield client.get_database(settings.gens_db.database)
     finally:
         client.close()

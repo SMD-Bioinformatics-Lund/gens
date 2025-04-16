@@ -24,3 +24,4 @@ def search_annotations(query: str, genome_build: GenomeBuild, db: Database[Any])
                     "start": start_elem.get("start"),
                     "end": end_elem.get("end"),
                 })
+    return None
