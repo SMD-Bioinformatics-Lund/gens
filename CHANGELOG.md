@@ -7,11 +7,14 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ## 4.0.0
 
 ### Added
- - Tracks expand with wider window size
+ - Tracks expand with wider window size.
 
 ### Changed
- - Resolution increased 2x for tracks
- - Tracks are dynamic, meaning that they can be created and removed on run-time
+ - Resolution increased 2x for tracks.
+ - Tracks are dynamic, meaning that they can be created and removed on run-time.
+ - Migrated from Connexion to FastAPI.
+ - Changed API routes and the underlying data structure for samples, annotations and transcripts.
+ - Updated CLI command for loading annotations.
 
 ### Fixed
 
