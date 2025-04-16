@@ -106,7 +106,8 @@ def fmt_bed_to_annotation(entry: dict[str, str], track_id: PydanticObjectId) -> 
     annotation: dict[str, Any] = {}
     # parse entry and format the values
     if len(entry) < len(BED_CORE_FIELDS):
-        raise ValueError(f"Malformad entry in BED file!, row: {'\t'.join(entry.values())}")
+        fields_in_row =  '\t'.join(entry.values())
+        raise ValueError(f"Malformad entry in BED file!, row: {fields_in_row}")
     for colname, value in entry.items():
         # translate name, default to existing name if not in tr table
         new_colname = FIELD_TRANSLATIONS.get(colname, colname)
