@@ -17,14 +17,22 @@ from gens.utils import get_timestamp
 LOG = logging.getLogger(__name__)
 
 
-def get_annotation_track_with_name(name: str, genome_build: GenomeBuild, db: Database[Any]) -> AnnotationTrackInDb | None:
-    """Search the database for a annotation track with NAME and genome_build.
+def get_annotation_track(genome_build: GenomeBuild, db: Database[Any], name: str | None = None, id: PydanticObjectId | None = None) -> AnnotationTrackInDb | None:
+    """Search the database for a annotation track with either NAME or ID and genome_build.
     
     Return None if no track was found.
     """
-    record = db.get_collection(ANNOTATION_TRACKS_COLLECTION).find_one({"name": name, "genome_build": genome_build})
+    if name is None and id is None:
+        raise ValueError("Either the id or name must be specified!")
+    
+    query: dict[str, str | PydanticObjectId | GenomeBuild] = {"genome_build": genome_build}
+    if name is not None:
+        query['name'] = name
+    elif id is not None:
+        query["_id"] = id
+    record = db.get_collection(ANNOTATION_TRACKS_COLLECTION).find_one(query)
     if record is not None:
-        return record
+        return AnnotationTrackInDb.model_validate(record)
 
 
 def create_annotation_track(track: AnnotationTrack, db: Database[Any]) -> PydanticObjectId:
@@ -33,9 +41,11 @@ def create_annotation_track(track: AnnotationTrack, db: Database[Any]) -> Pydant
     return PydanticObjectId(resp.inserted_id)
 
 
-def update_annotation_track(updated_track: AnnotationTrackInDb, db: Database[Any]) -> bool:
-    """Create a new annotation track and return the track id."""
-    resp = db.get_collection(ANNOTATION_TRACKS_COLLECTION).update_one({"_id": updated_track.track_id}, update=updated_track.model_dump(exclude=["track_id"]))
+def update_annotation_track(track_id: PydanticObjectId, db: Database[Any], **fields: Any) -> bool:
+    """Update fields in existing track with ID and return true if update was successfull."""
+    # build update command
+    update: dict[str, Any] = {"$set": {"modified_at": get_timestamp(), **fields}} 
+    resp = db.get_collection(ANNOTATION_TRACKS_COLLECTION).update_one({"_id": track_id}, update=update)
     return resp.matched_count == 1 and resp.modified_count == 1
 
 
@@ -77,6 +87,8 @@ def delete_annotations_for_track(track_id: PydanticObjectId, db: Database[Any]) 
     """Remove annotation records that belong to a track from the database."""
     resp = db.get_collection(ANNOTATIONS_COLLECTION).delete_many({"track_id": track_id})
     if resp.deleted_count > 0:
+        # update modified timestamp for annotation track
+        resp = db.get_collection(ANNOTATION_TRACKS_COLLECTION).update_one({"track_id": track_id}, {"$set": {"modified_at": get_timestamp()}})
         return True
     else:
         return False
@@ -84,7 +96,13 @@ def delete_annotations_for_track(track_id: PydanticObjectId, db: Database[Any]) 
 
 def create_annotations_for_track(annotations: list[AnnotationRecord], db: Database[Any]) -> list[PydanticObjectId]:
     """Insert annotations records in the database and return their object ids."""
-    resp = db.get_collection(ANNOTATIONS_COLLECTION).insert_many(annotations)
+    data: list[dict[str, Any]] = [annot.model_dump() for annot in annotations]
+    LOG.info("inserting %d annotations", len(data))
+    resp = db.get_collection(ANNOTATIONS_COLLECTION).insert_many(data)
+    if len(resp.inserted_ids) > 0:
+        # get track ids from annotations and update modified timestamp for related track
+        for track_id in {annot.track_id for annot in annotations}:
+            db.get_collection(ANNOTATION_TRACKS_COLLECTION).update_one({"track_id": track_id}, {"$set": {"modified_at": get_timestamp()}})
     return [PydanticObjectId(id) for id in resp.inserted_ids]
 
 
