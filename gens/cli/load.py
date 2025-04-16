@@ -6,8 +6,6 @@ from pathlib import Path
 from typing import Any, TextIO
 
 import click
-from flask import current_app as app
-from flask.cli import with_appcontext
 from pymongo.database import Database
 
 from gens.cli.util import ChoiceType
@@ -84,7 +82,6 @@ def load() -> None:
     type=click.Path(exists=True),
     help="Json file that contains preprocessed overview coverage",
 )
-@with_appcontext
 def sample(
     sample_id: str,
     genome_build: GenomeBuild,
@@ -94,7 +91,12 @@ def sample(
     overview_json: Path,
 ) -> None:
     """Load a sample into Gens database."""
-    db: Database[Any] = app.config["GENS_DB"]
+    gens_db_name = settings.gens_db.database
+    if gens_db_name is None:
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
+    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
@@ -220,11 +222,14 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool) -> None:
     required=True,
     help="Genome build",
 )
-@with_appcontext
 def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     """Load transcripts into the database."""
-
-    db: Database = app.config["GENS_DB"]
+    gens_db_name = settings.gens_db.database
+    if gens_db_name is None:
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
+    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) == 0:
         create_index(db, TRANSCRIPTS_COLLECTION)
@@ -255,10 +260,14 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     default=10,
     help="Timeout for queries.",
 )
-@with_appcontext
 def chromosomes(genome_build: GenomeBuild, timeout: int) -> None:
     """Load chromosome size information into the database."""
-    db: Database = app.config["GENS_DB"]
+    gens_db_name = settings.gens_db.database
+    if gens_db_name is None:
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
+    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, CHROMSIZES_COLLECTION)) == 0:
         create_index(db, CHROMSIZES_COLLECTION)

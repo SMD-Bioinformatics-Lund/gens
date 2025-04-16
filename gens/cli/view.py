@@ -5,13 +5,12 @@ from itertools import groupby
 from typing import Any, Iterable
 
 import click
-from flask import current_app as app
-from flask.cli import with_appcontext
-from pymongo.database import Database
 from tabulate import tabulate
 
 from gens.crud.samples import get_samples
 from gens.db.collections import SAMPLES_COLLECTION
+from gens.db.db import get_db_connection
+from gens.config import settings
 
 LOG = logging.getLogger(__name__)
 
@@ -23,10 +22,14 @@ def view() -> None:
 
 @view.command()
 @click.option("-s", "--summary", is_flag=True, help="Summarize the number of samples")
-@with_appcontext
 def samples(summary: bool) -> None:
     """View samples stored in the database"""
-    db: Database[Any] = app.config["GENS_DB"]
+    gens_db_name = settings.gens_db.database
+    if gens_db_name is None:
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
+    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # print samples to terminal
     samples_in_db, _ = get_samples(db[SAMPLES_COLLECTION])
     sample_tbl: Iterable[Any]
