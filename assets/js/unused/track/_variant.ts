@@ -101,7 +101,7 @@ export class VariantTrack extends BaseAnnotationTrack {
     this.genomeBuild = genomeBuild;
 
     // GENS api parameters
-    this.apiEntrypoint = "get-variant-data";
+    this.apiEntrypoint = "sample/variants";
     this.additionalQueryParams = {
       variant_category: "sv",
       sample_id: sampleId,

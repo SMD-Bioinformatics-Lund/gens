@@ -32,7 +32,7 @@ function addFeatures(elem, tooltipElement) {
 }
 
 export class TranscriptTrack extends BaseAnnotationTrack {
-  readonly apiEntrypoint: string = "get-transcript-data";
+  readonly apiEntrypoint: string = "/tracks/transcripts";
   readonly maxResolution: number = 4;
   readonly geneLineWidth: number = 2;
 

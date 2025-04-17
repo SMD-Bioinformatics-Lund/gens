@@ -1,15 +1,18 @@
 """Views for logging in and logging out users."""
 
 import logging
+from typing import Any
 
-from flask import Blueprint, flash, redirect, request, session, url_for
+from flask import Blueprint, current_app, flash, redirect, request, session, url_for
 from flask_login import login_user, logout_user
+from pymongo.database import Database
 from werkzeug.wrappers.response import Response
 
+from gens.auth import LoginUser, login_manager, oauth_client
 from gens.config import AuthMethod, settings
-from gens.db.users import LoginUser, user
+from gens.crud.user import get_user
+from gens.db.collections import USER_COLLECTION
 
-from ...auth import login_manager, oauth_client
 from ..home.views import public_endpoint
 
 # from . import controllers
@@ -20,9 +23,13 @@ LOG = logging.getLogger(__name__)
 @login_manager.user_loader
 def load_user(user_id: str) -> LoginUser | None:
     """Returns the currently active user as an object."""
-
-    user_obj = user(user_id)
-    return user_obj
+    # get database instance
+    db: Database[Any] = current_app.config["GENS_DB"]
+    user_col = db.get_collection(USER_COLLECTION)
+    user_obj = get_user(user_col, user_id)  # type: ignore
+    if user_obj is not None:
+        return LoginUser(user_obj)
+    return None
 
 
 login_bp = Blueprint(
@@ -64,12 +71,14 @@ def login() -> Response:
         user_mail = request.form.get("email")
         LOG.info("Validating user %s against Scout database", user_mail)
 
-    user_obj = user(user_mail)  # type: ignore
+    db: Database[Any] = current_app.config["GENS_DB"]
+    user_col = db.get_collection(USER_COLLECTION)
+    user_obj = get_user(user_col, user_mail)  # type: ignore
     if user_obj is None:
         flash("User not found in Scout database", "warning")
         return redirect(url_for("home.landing"))
 
-    return perform_login(user_obj)
+    return perform_login(LoginUser(user_obj))
 
 
 @login_bp.route("/authorized")

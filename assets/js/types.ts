@@ -1,13 +1,30 @@
-interface APIAnnotation {
-  chrom: string,
-  color: [number, number, number],
-  end: number,
-  genome_build: number,
+interface ApiAnnotationTrack {
+  track_id: string,
   name: string,
-  score: number | null,
-  source: string,
+  description: string,
+  maintainer: string,
+  metadata: {key: string, value: string}[],
+  genome_build: number
+}
+
+interface ApiSimplifiedAnnotation {
+  record_id: string,
+  name: string,
+  type: string,
   start: number,
-  strand: string
+  end: number,
+  color: number[] | null
+}
+
+interface ApiSimplifiedTranscript {
+  record_id: string,
+  name: string,
+  type: string,
+  start: number,
+  end: number,
+  strand: string,
+  color: number[] | null
+  features: {start: number, end: number}[]
 }
 
 interface APITranscriptPart {
@@ -86,6 +103,13 @@ interface PopupContent {
 
 type RenderElement = RenderBand | RenderDot;
 
+
+interface SimpleRenderBand {
+  start: number,
+  end: number,
+}
+
+// FIXME: This should be looked over
 interface RenderBand {
   id: string,
   start: number,
@@ -98,7 +122,7 @@ interface RenderBand {
   direction?: "+" | "-",
   y1?: number,
   y2?: number,
-  subBands?: RenderBand[],
+  subBands?: SimpleRenderBand[],
 }
 
 interface RenderDot {

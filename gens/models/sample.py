@@ -1,8 +1,9 @@
 """Models related to sample information."""
 
+from enum import StrEnum
 from pathlib import Path
 
-from pydantic import computed_field, field_serializer
+from pydantic import Field, computed_field, field_serializer
 from pydantic.types import FilePath
 
 from .base import CreatedAtModel, RWModel
@@ -19,6 +20,21 @@ def _get_tabix_path(path: Path, check: bool = False) -> Path:
     return idx_path
 
 
+class ScatterDataType(StrEnum):
+    COV = "coverage"
+    BAF = "baf"
+
+
+class ZoomLevel(StrEnum):
+    """Valid zoom or resolution levels."""
+
+    A = "a"
+    B = "b"
+    C = "c"
+    D = "d"
+    O = "o"
+
+
 class SampleInfo(RWModel, CreatedAtModel):
     """Sample record stored in the database."""
 
@@ -27,7 +43,7 @@ class SampleInfo(RWModel, CreatedAtModel):
     genome_build: GenomeBuild
     baf_file: FilePath
     coverage_file: FilePath
-    overview_file: FilePath
+    overview_file: FilePath | None
 
     @computed_field()  # type: ignore
     @property
@@ -52,11 +68,34 @@ class SampleInfo(RWModel, CreatedAtModel):
 
 class GenomeCoverage(RWModel):
     """Contains genome coverage info for scatter plots.
-    
+
     The genome coverage is represented by paired list of position and value.
     """
 
     region: str | None
     position: list[int]
     value: list[float]
-    zoom: str | None = None
+    zoom: ZoomLevel | None = None
+
+
+class MultipleSamples(RWModel):  # pylint: disable=too-few-public-methods
+    """Generic response model for multiple data records."""
+
+    data: list[SampleInfo] = Field(
+        ..., description="List of records from the database."
+    )
+    records_total: int = Field(
+        ...,
+        alias="recordsTotal",
+        description="Number of db records matching the query",
+    )
+
+    @property
+    @computed_field(alias="recordsFiltered")
+    def records_filtered(self) -> int:
+        """
+        Number of db returned records after narrowing the result.
+
+        The result can be reduced with limit and skip operations etc.
+        """
+        return len(self.data)

@@ -97,7 +97,9 @@ def get_assembly_info(
     return resp.json()
 
 
-def get_assembly_annotation(insdc_id: str, data_format: str = "embl", timeout: int = 2) -> str:
+def get_assembly_annotation(
+    insdc_id: str, data_format: str = "embl", timeout: int = 2
+) -> str:
     """Get assembly for id from EBI using INSDC id."""
     LOG.debug("Get assembly annotation for %s", insdc_id)
     resp = requests.get(

@@ -6,35 +6,44 @@ from pathlib import Path
 from typing import Any, TextIO
 
 import click
-from flask import current_app as app
-from flask.cli import with_appcontext
 from pymongo.database import Database
 
-from gens.commands.util import ChoiceType
+from gens.cli.util import ChoiceType
 from gens.config import settings
-from gens.db import (
-    create_index,
-    get_db_connection,
-    get_indexes,
+from gens.crud.annotations import (
+    create_annotation_track,
+    create_annotations_for_track,
+    delete_annotation_track,
+    delete_annotations_for_track,
+    get_annotation_track,
     register_data_update,
-    store_sample,
+    update_annotation_track,
 )
+from gens.crud.samples import create_sample
+from gens.crud.transcripts import create_transcripts
 from gens.db.collections import (
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
     SAMPLES_COLLECTION,
     TRANSCRIPTS_COLLECTION,
 )
+from gens.db.db import get_db_connection
+from gens.db.index import create_index, get_indexes
 from gens.load import (
     build_chromosomes_obj,
     build_transcripts,
     get_assembly_info,
-    parse_annotation_entry,
-    read_annotation_file,
-    update_height_order,
 )
-from gens.models.annotation import AnnotationRecord
+from gens.load.annotations import (
+    fmt_aed_to_annotation,
+    fmt_bed_to_annotation,
+    parse_aed_file,
+    parse_bed_file,
+    parse_tsv_file,
+)
+from gens.models.annotation import AnnotationRecord, AnnotationTrack
 from gens.models.genomic import GenomeBuild
+from gens.models.sample import SampleInfo
 
 LOG = logging.getLogger(__name__)
 
@@ -87,12 +96,6 @@ def load() -> None:
     type=click.Path(exists=True),
     help="Json file that contains preprocessed overview coverage",
 )
-@click.option(
-    "--force",
-    is_flag=True,
-    help="Overwrite any existing sample with the same key.",
-)
-@with_appcontext
 def sample(
     sample_id: str,
     genome_build: GenomeBuild,
@@ -100,24 +103,29 @@ def sample(
     coverage: Path,
     case_id: str,
     overview_json: Path,
-    force: bool,
 ) -> None:
     """Load a sample into Gens database."""
-    db: Database[Any] = app.config["GENS_DB"]
+    gens_db_name = settings.gens_db.database
+    if gens_db_name is None:
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
+    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
     # load samples
-    store_sample(
-        db[SAMPLES_COLLECTION],
-        sample_id=sample_id,
-        case_id=case_id,
-        genome_build=genome_build,
-        baf=baf,
-        coverage=coverage,
-        overview=overview_json,
-        force=force,
+    sample_obj = SampleInfo.model_validate(
+        {
+            "sample_id": sample_id,
+            "case_id": case_id,
+            "genome_build": genome_build,
+            "baf_file": baf,
+            "coverage_file": coverage,
+            "overview_file": overview_json,
+        }
     )
+    create_sample(db, sample_obj)
     click.secho("Finished adding a new sample to database ✔", fg="green")
 
 
@@ -126,7 +134,7 @@ def sample(
     "-f",
     "--file",
     required=True,
-    type=click.Path(exists=True),
+    type=click.Path(exists=True, path_type=Path),
     help="File or directory of annotation files to load into the database",
 )
 @click.option(
@@ -137,13 +145,13 @@ def sample(
     help="Genome build",
 )
 @click.option(
-    "-h",
-    "--header",
-    "has_header",
+    "-t",
+    "--tsv",
+    "is_tsv",
     is_flag=True,
-    help="If bed file contains a header",
+    help="Force parsing as tsv regarless of suffix.",
 )
-def annotations(file: str, genome_build: GenomeBuild, has_header: bool) -> None:
+def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool) -> None:
     """Load annotations from file into the database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
@@ -154,41 +162,75 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool) -> None:
     # if collection is not indexed, create index
     if len(get_indexes(db, ANNOTATIONS_COLLECTION)) == 0:
         create_index(db, ANNOTATIONS_COLLECTION)
-    # check if path is a directoy of a file
-    path = Path(file)
-    files = path.glob("*") if path.is_dir() else [path]
+    files = file.glob("*") if file.is_dir() else [file]
+    # get annotation tracks in database
+
     LOG.info("Processing files")
     for annot_file in files:
         # verify file format
-        if annot_file.suffix not in [".bed", ".aed"]:
+        if annot_file.suffix not in [".bed", ".aed", ".tsv"]:
             continue
         LOG.info("Processing %s", annot_file)
-        # base the annotation name on the filename
+        # get the track name from the filename
         annotation_name = annot_file.name[: -len(annot_file.suffix)]
-        parsed_annotations: list[AnnotationRecord] = []
-        for entry in read_annotation_file(
-            annot_file, annot_file.suffix[1:], has_header
-        ):
-            entry_obj = parse_annotation_entry(entry, genome_build, annotation_name)
-            if entry_obj is not None:
-                parsed_annotations.append(entry_obj)
+        track_in_db = get_annotation_track(
+            name=annotation_name, genome_build=genome_build, db=db
+        )
 
-        if len(parsed_annotations) == 0:
-            raise ValueError("Something went wrong parsing the annotaions file, no valid annotations found.")
-        # Remove existing annotations in database
-        LOG.info("Remove old entry in the database")
-        db[ANNOTATIONS_COLLECTION].delete_many({"source": annotation_name})
-        # add the annotations
+        # create a new record if it has not been added to the database
+        if track_in_db is None:
+            track = AnnotationTrack(
+                name=annotation_name, description="", genome_build=genome_build
+            )
+            track_id = create_annotation_track(track, db)
+        else:
+            track_id = track_in_db.track_id
+
+        # read annotation file an get gens compatible annotation records
+        file_format = file.suffix[1:]
+        file_meta: list[dict[str, Any]] = []
+        records: list[AnnotationRecord] = []
+        if file_format == "tsv" or is_tsv:
+            records = [
+                AnnotationRecord.model_validate({"track_id": track_id, **rec})
+                for rec in parse_tsv_file(file)
+            ]
+        elif file_format == "bed":
+            try:
+                bed_records = parse_bed_file(file)
+                records = [fmt_bed_to_annotation(rec, track_id) for rec in bed_records]
+            except ValueError as err:
+                click.secho(
+                    f"An error occured when creating loading annotation: {err}",
+                    fg="red",
+                )
+                raise click.Abort()
+        elif file_format == "aed":
+            file_meta, aed_records = parse_aed_file(file)
+            records = [fmt_aed_to_annotation(rec, track_id) for rec in aed_records]
+        # annotations = read_annotation_file(annot_file, has_header)
+
+        if len(file_meta) > 0:
+            # add metadata from file to the previously created track
+            LOG.debug("Updating existing annotation track with metadata from file.")
+            update_annotation_track(track_id=track_id, metadata=file_meta, db=db)
+
+        if len(records) == 0:
+            delete_annotation_track(track_id, db)  # cleanup
+            raise ValueError(
+                "Something went wrong parsing the annotaions file, no valid annotations found."
+            )
+
+        # remove annotations and update track if track has already been added
+        if track_in_db is not None:
+            # remove existing annotations
+            LOG.info("Remove old entries from the database")
+            if not delete_annotations_for_track(track_in_db.track_id, db):
+                LOG.warning("No annotations were removed from the database")
+
         LOG.info("Load annotations in the database")
-        db[ANNOTATIONS_COLLECTION].insert_many(
-            [annot.model_dump() for annot in parsed_annotations]
-        )
-        LOG.info("Update height order")
-        # update the height order of annotations in the database
-        update_height_order(db, annotation_name)
-        register_data_update(
-            db=db, track_type=ANNOTATIONS_COLLECTION, name=annotation_name
-        )
+        create_annotations_for_track(records, db)
+
     click.secho("Finished loading annotations ✔", fg="green")
 
 
@@ -212,11 +254,14 @@ def annotations(file: str, genome_build: GenomeBuild, has_header: bool) -> None:
     required=True,
     help="Genome build",
 )
-@with_appcontext
 def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     """Load transcripts into the database."""
-
-    db: Database = app.config["GENS_DB"]
+    gens_db_name = settings.gens_db.database
+    if gens_db_name is None:
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
+    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) == 0:
         create_index(db, TRANSCRIPTS_COLLECTION)
@@ -227,9 +272,8 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     except Exception as err:
         raise click.UsageError(str(err))
 
-    LOG.info("Add transcripts to database")
-    db[TRANSCRIPTS_COLLECTION].insert_many(transcripts_obj)
-    register_data_update(db, TRANSCRIPTS_COLLECTION)
+    # FIXME build transcripts
+    create_transcripts(transcripts_obj, db)
     click.secho("Finished loading transcripts ✔", fg="green")
 
 
@@ -248,10 +292,14 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     default=10,
     help="Timeout for queries.",
 )
-@with_appcontext
 def chromosomes(genome_build: GenomeBuild, timeout: int) -> None:
     """Load chromosome size information into the database."""
-    db: Database = app.config["GENS_DB"]
+    gens_db_name = settings.gens_db.database
+    if gens_db_name is None:
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
+    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, CHROMSIZES_COLLECTION)) == 0:
         create_index(db, CHROMSIZES_COLLECTION)

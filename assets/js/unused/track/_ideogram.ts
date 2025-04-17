@@ -197,8 +197,7 @@ export async function cytogeneticIdeogram({
 }
 
 async function getChromosomeInfo(chromosomeName, genomeBuild) {
-  const result = await get("get-chromosome-info", {
-    chromosome: chromosomeName,
+  const result = await get(`tracks/chromosomes/${chromosomeName}`, {
     genome_build: genomeBuild,
   });
   return result;

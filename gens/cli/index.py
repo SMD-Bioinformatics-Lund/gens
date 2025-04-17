@@ -3,11 +3,10 @@
 import logging
 
 import click
-from flask import current_app
-from flask.cli import with_appcontext
-from pymongo.database import Database
 
-from gens.db import create_indexes, update_indexes
+from gens.config import settings
+from gens.db.db import get_db_connection
+from gens.db.index import create_indexes, update_indexes
 
 LOG = logging.getLogger(__name__)
 
@@ -20,10 +19,14 @@ LOG = logging.getLogger(__name__)
     is_flag=True,
 )
 @click.option("-u", "--update", help="Update the indexes", is_flag=True)
-@with_appcontext
 def index(build: bool, update: bool) -> None:
     """Create indexes for the database."""
-    db: Database = current_app.config["GENS_DB"]
+    gens_db_name = settings.gens_db.database
+    if gens_db_name is None:
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
+    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
 
     if update:
         n_updated = update_indexes(db)

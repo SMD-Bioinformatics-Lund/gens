@@ -106,7 +106,7 @@ export class InputControls extends HTMLElement {
     defaultAnnots: string[],
     onAnnotationChanged: (region: Region, sources: string[]) => void,
     onPositionChange: (newXRange: [number, number]) => void,
-    annotationSources: string[],
+    annotationSources: ApiAnnotationTrack[],
   ) {
     this.region = fullRegion;
     this.updatePosition([fullRegion.start, fullRegion.end]);
@@ -115,9 +115,9 @@ export class InputControls extends HTMLElement {
     const choices: InputChoice[] = [];
     for (const source of annotationSources) {
       const choice = {
-        value: source,
-        label: source,
-        selected: defaultAnnots.includes(source),
+        value: source.track_id,
+        label: source.name,
+        selected: defaultAnnots.includes(source.name),
       };
       choices.push(choice);
     }

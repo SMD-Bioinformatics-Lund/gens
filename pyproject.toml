@@ -39,9 +39,13 @@ dependencies = [
   "fastapi",
   "flask-compress",
   "tabulate",
-  "pydantic",
+  "pydantic[email]",
   "pydantic-settings",
   "pydantic-extra-types",
+  "gunicorn",
+  "a2wsgi",
+  "uvicorn",
+  "asgiref",
 ]
 
 [project.urls]
@@ -50,7 +54,7 @@ Issues = "https://github.com/SMD-Bioinformatics-Lund/gens/issues"
 Changelog = "https://github.com/SMD-Bioinformatics-Lund/gens/blob/master/CHANGELOG.md"
 
 [project.scripts]
-gens = "gens.commands:cli"
+gens = "gens.cli:cli"
 
 [tool.hatch.version]
 path = "gens/__version__.py"

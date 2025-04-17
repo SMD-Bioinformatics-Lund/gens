@@ -27,13 +27,13 @@ export class API {
     this.apiURL = gensApiURL;
   }
 
-  async getAnnotationSources(): Promise<string[]> {
+  async getAnnotationSources(): Promise<ApiAnnotationTrack[]> {
     const annotSources = (await get(
-      new URL("get-annotation-sources", this.apiURL).href,
+      new URL("/tracks/annotations", this.apiURL).href,
       {
         genome_build: this.genomeBuild,
       },
-    )).sources as string[];
+    )) as ApiAnnotationTrack[];
     return annotSources;
   }
 
@@ -86,8 +86,8 @@ export class API {
     return this.bafCache[chrom];
   }
 
-  private transcriptCache: Record<string, APITranscript[]> = {};
-  async getTranscripts(chrom: string): Promise<APITranscript[]> {
+  private transcriptCache: Record<string, ApiSimplifiedTranscript[]> = {};
+  async getTranscripts(chrom: string): Promise<ApiSimplifiedTranscript[]> {
     const isCached = this.transcriptCache[chrom] !== undefined;
     if (!isCached) {
       this.transcriptCache[chrom] = await getTranscriptData(chrom, this.apiURL);

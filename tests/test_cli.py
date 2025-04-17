@@ -6,7 +6,7 @@ import mongomock
 import pytest
 from click.testing import CliRunner
 
-from gens.commands.load import annotations
+from gens.cli.load import annotations
 
 MONGO_HOST = "mongodb"
 MONGO_PORT = 27017
@@ -33,7 +33,7 @@ def test_load_annotation(fixture_name: str, genome_build: int, request):
     args = ["--file", str(input_file), "--genome-build", str(genome_build)]
     # add header flag if input file are of the stockholm dialect
     if "stockholm" in fixture_name:
-        args.append("--header")
+        args.append("--tsv")
 
     # run cli command
     result = runner.invoke(annotations, args)

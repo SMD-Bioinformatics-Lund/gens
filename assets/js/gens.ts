@@ -123,5 +123,3 @@ async function initialize(
 
   tracks.render(true);
 }
-
-
