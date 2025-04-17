@@ -1,3 +1,12 @@
+interface ApiAnnotationTrack {
+  track_id: string,
+  name: string,
+  description: string,
+  maintainer: string,
+  metadata: {key: string, value: string}[],
+  genome_build: number
+}
+
 interface ApiSimplifiedAnnotation {
   record_id: string,
   name: string,

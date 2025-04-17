@@ -27,13 +27,13 @@ export class API {
     this.apiURL = gensApiURL;
   }
 
-  async getAnnotationSources(): Promise<string[]> {
+  async getAnnotationSources(): Promise<ApiAnnotationTrack[]> {
     const annotSources = (await get(
-      new URL("get-annotation-sources", this.apiURL).href,
+      new URL("/tracks/annotations", this.apiURL).href,
       {
         genome_build: this.genomeBuild,
       },
-    )).sources as string[];
+    )) as ApiAnnotationTrack[];
     return annotSources;
   }
 
