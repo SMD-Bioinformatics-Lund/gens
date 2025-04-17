@@ -14,9 +14,9 @@ from gens.models.annotation import (
     ReducedTrackInfo,
     TranscriptRecord,
 )
-from gens.models.genomic import GenomeBuild, Chromosome, GenomicRegion
+from gens.models.genomic import ChromInfo, GenomeBuild, Chromosome, GenomicRegion, ReducedChromInfo
 from gens.models.base import PydanticObjectId
-from gens.crud.genomic import get_chromosome_info
+from gens.crud.genomic import get_chromosome_info, get_chromosomes
 from gens.crud.transcripts import get_transcript, get_transcripts as crud_get_transcripts
 
 from .utils import ApiTags, GensDb
@@ -66,6 +66,8 @@ async def get_transcripts(
     start = start if start is not None else 1
     if end is None:
         chrom_info = get_chromosome_info(db, chromosome, genome_build)
+        if chrom_info is None:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"No information on chromoseom: {chromosome}")
         end = chrom_info.size
 
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
@@ -84,3 +86,21 @@ async def get_transcript_with_id(
     if result is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
     return result
+
+
+@router.get("/chromosomes/", tags=[ApiTags.CHROM])
+async def get_chromosomes_with_build(genome_build: GenomeBuild, db: GensDb) -> list[ReducedChromInfo]:
+    """Query the database for all chromosomes with a given genome build."""
+    chroms = get_chromosomes(db, genome_build)
+    return chroms
+
+
+@router.get("/chromosomes/{chromosome}", tags=[ApiTags.CHROM])
+async def get_chromosome_with_build(
+    chromosome: Chromosome, genome_build: GenomeBuild, db: GensDb
+) -> ChromInfo:
+    """Query the database for a chromosome."""
+    chrom_info = get_chromosome_info(db, chromosome, genome_build)
+    if chrom_info is None:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+    return chrom_info

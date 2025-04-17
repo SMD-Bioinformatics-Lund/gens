@@ -3,7 +3,7 @@
 import re
 from enum import Enum, IntEnum, StrEnum
 
-from pydantic import computed_field, field_validator
+from pydantic import TypeAdapter, computed_field, field_validator
 from pydantic.types import PositiveFloat, PositiveInt
 
 from .base import RWModel
@@ -83,6 +83,13 @@ class ChromBand(RWModel):
     start: PositiveInt
     end: PositiveInt
     strand: DnaStrand
+
+
+class ReducedChromInfo(RWModel):
+    """Information on a chromosome."""
+
+    chrom: Chromosome
+    size: PositiveInt
 
 
 class ChromInfo(RWModel):

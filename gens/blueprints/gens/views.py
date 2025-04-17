@@ -68,6 +68,8 @@ def display_case(sample_name: str) -> str:
 
     if parsed_region.end is None:
         chrom_info = get_chromosome_info(db, parsed_region.chromosome, genome_build)
+        if chrom_info is None:
+            raise ValueError(f"Chromosome {parsed_region.chromosome} is not found in the database")
         parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})
 
 

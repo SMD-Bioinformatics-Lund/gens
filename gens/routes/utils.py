@@ -14,6 +14,7 @@ GensDb = Annotated[Database[Any], Depends(get_db)]
 
 class ApiTags(StrEnum):
     SAMPLE = "sample"
+    CHROM = "chromosome"
     ANNOT = "annotation"
     TRANSC = "transcript"
     AUTH = "authentication"
