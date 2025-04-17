@@ -3,17 +3,16 @@
 import logging
 from typing import Any
 
-from pymongo.database import Database
-from flask import Blueprint, flash, redirect, request, session, url_for, current_app
+from flask import Blueprint, current_app, flash, redirect, request, session, url_for
 from flask_login import login_user, logout_user
+from pymongo.database import Database
 from werkzeug.wrappers.response import Response
 
+from gens.auth import LoginUser, login_manager, oauth_client
 from gens.config import AuthMethod, settings
-from gens.auth import LoginUser
-
-from gens.auth import login_manager, oauth_client
 from gens.crud.user import get_user
 from gens.db.collections import USER_COLLECTION
+
 from ..home.views import public_endpoint
 
 # from . import controllers

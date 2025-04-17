@@ -8,7 +8,11 @@ from pymongo.database import Database
 
 from gens.db.collections import SAMPLES_COLLECTION
 
-from .collections import ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION, CHROMSIZES_COLLECTION
+from .collections import (
+    ANNOTATIONS_COLLECTION,
+    CHROMSIZES_COLLECTION,
+    TRANSCRIPTS_COLLECTION,
+)
 
 LOG = logging.getLogger(__name__)
 

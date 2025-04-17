@@ -5,8 +5,8 @@ Whole genome visualization of BAF and log2 ratio
 import logging
 from logging.config import dictConfig
 
-from fastapi import FastAPI
 from asgiref.wsgi import WsgiToAsgi
+from fastapi import FastAPI
 from flask import Flask, redirect, request, url_for
 from flask_compress import Compress  # type: ignore
 from flask_login import current_user  # type: ignore
@@ -19,7 +19,7 @@ from .auth import login_manager, oauth_client
 from .blueprints import gens_bp, home_bp, login_bp
 from .config import AuthMethod, settings
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
-from .routes import annotations, sample, base
+from .routes import annotations, base, sample
 
 dictConfig(
     {
@@ -46,8 +46,8 @@ compress = Compress()
 
 def create_app() -> FastAPI:
     """Create and setup Gens application."""
-    #application = connexion.FlaskApp(__name__, specification_dir="openapi/")
-    #application.add_api("openapi.yaml")
+    # application = connexion.FlaskApp(__name__, specification_dir="openapi/")
+    # application.add_api("openapi.yaml")
     # setup fastapi app
     fastapi_app = FastAPI(title="Gens")
     add_api_routers(fastapi_app)
@@ -72,7 +72,7 @@ def create_app() -> FastAPI:
     register_blueprints(flask_app)
 
     @flask_app.before_request
-    def check_user() -> Flask|None|Response: # type: ignore
+    def check_user() -> Flask | None | Response:  # type: ignore
         """Check permission if page requires authentication."""
         if settings.authentication == AuthMethod.DISABLED or not request.endpoint:
             return None
@@ -91,7 +91,7 @@ def create_app() -> FastAPI:
             return redirect(login_url)
 
     # mount flask app to FastAPI app
-    fastapi_app.mount('/app', WsgiToAsgi(flask_app))
+    fastapi_app.mount("/app", WsgiToAsgi(flask_app))
     return fastapi_app
 
 

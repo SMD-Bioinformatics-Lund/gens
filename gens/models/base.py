@@ -4,10 +4,10 @@ import datetime
 from typing import Annotated, Any, Callable
 
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, Field, EmailStr, computed_field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
+from pydantic_core import core_schema
 
 from gens.utils import get_timestamp
-from pydantic_core import core_schema
 
 
 class RWModel(BaseModel):  # pylint: disable=too-few-public-methods
@@ -52,9 +52,9 @@ class _ObjectIdPydanticAnnotation:
             serialization=core_schema.to_string_ser_schema(),
         )
 
-PydanticObjectId = Annotated[
-    ObjectId, _ObjectIdPydanticAnnotation
-]
+
+PydanticObjectId = Annotated[ObjectId, _ObjectIdPydanticAnnotation]
+
 
 class User(CreatedAtModel, ModifiedAtModel):
     """Stores user information."""

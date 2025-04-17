@@ -1,15 +1,21 @@
 """Routes for getting coverage information."""
 
-from fastapi import APIRouter, HTTPException
 from http import HTTPStatus
+
+from fastapi import APIRouter, HTTPException
+
 from gens.crud import samples
-from gens.models.genomic import Chromosome, GenomicRegion
-from gens.models.sample import GenomeCoverage, SampleInfo, ScatterDataType, MultipleSamples
-from gens.io import get_overview_data, get_scatter_data
 from gens.db.collections import SAMPLES_COLLECTION
+from gens.io import get_overview_data, get_scatter_data
+from gens.models.genomic import Chromosome, GenomicRegion
+from gens.models.sample import (
+    GenomeCoverage,
+    MultipleSamples,
+    SampleInfo,
+    ScatterDataType,
+)
 
 from .utils import ApiTags, GensDb
-
 
 router = APIRouter(prefix="/samples")
 
@@ -23,7 +29,7 @@ async def create_sample(sample: SampleInfo, db: GensDb):
 @router.get("/", tags=[ApiTags.SAMPLE])
 async def get_multiple_samples(
     db: GensDb, skip: int = 0, limit: int | None = None
-    ) -> MultipleSamples:
+) -> MultipleSamples:
     """Query the database for multiple samples.
 
     The result can be narrowed using skip and limit.
@@ -49,7 +55,13 @@ async def get_genome_coverage(
 
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
 
-    return get_scatter_data(collection=db.get_collection(SAMPLES_COLLECTION), sample_id=sample_id, case_id=case_id, region=region, data_type=data_type)
+    return get_scatter_data(
+        collection=db.get_collection(SAMPLES_COLLECTION),
+        sample_id=sample_id,
+        case_id=case_id,
+        region=region,
+        data_type=data_type,
+    )
 
 
 @router.get("/sample/{data_type}/overview", tags=[ApiTags.SAMPLE])
@@ -61,8 +73,13 @@ async def get_cov_overview(
 ):
     """Get aggregated overview coverage information."""
 
-    sample_info: SampleInfo = samples.get_sample(db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id)
+    sample_info: SampleInfo = samples.get_sample(
+        db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id
+    )
     if sample_info.overview_file is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Sample doest not have an overview file!")
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail="Sample doest not have an overview file!",
+        )
 
     return get_overview_data(sample_info.overview_file, data_type)

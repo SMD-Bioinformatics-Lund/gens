@@ -5,12 +5,12 @@ import logging
 import click
 
 from gens.cli.util import ChoiceType
+from gens.config import settings
+from gens.crud.samples import delete_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
-from gens.crud.samples import delete_sample
 from gens.models.genomic import GenomeBuild
-from gens.config import settings
 
 LOG = logging.getLogger(__name__)
 valid_genome_builds = [str(gb.value) for gb in GenomeBuild]

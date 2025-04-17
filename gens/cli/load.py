@@ -10,26 +10,40 @@ from pymongo.database import Database
 
 from gens.cli.util import ChoiceType
 from gens.config import settings
-from gens.crud.transcripts import create_transcripts
-from gens.db.index import create_index, get_indexes
-from gens.db.db import get_db_connection
-from gens.crud.annotations import create_annotation_track, create_annotations_for_track, delete_annotation_track, delete_annotations_for_track, get_annotation_track, register_data_update, update_annotation_track
+from gens.crud.annotations import (
+    create_annotation_track,
+    create_annotations_for_track,
+    delete_annotation_track,
+    delete_annotations_for_track,
+    get_annotation_track,
+    register_data_update,
+    update_annotation_track,
+)
 from gens.crud.samples import create_sample
-from gens.load.annotations import fmt_aed_to_annotation, fmt_bed_to_annotation, parse_aed_file, parse_bed_file, parse_tsv_file
-from gens.models.sample import SampleInfo
+from gens.crud.transcripts import create_transcripts
 from gens.db.collections import (
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
     SAMPLES_COLLECTION,
     TRANSCRIPTS_COLLECTION,
 )
+from gens.db.db import get_db_connection
+from gens.db.index import create_index, get_indexes
 from gens.load import (
     build_chromosomes_obj,
     build_transcripts,
     get_assembly_info,
 )
+from gens.load.annotations import (
+    fmt_aed_to_annotation,
+    fmt_bed_to_annotation,
+    parse_aed_file,
+    parse_bed_file,
+    parse_tsv_file,
+)
 from gens.models.annotation import AnnotationRecord, AnnotationTrack
 from gens.models.genomic import GenomeBuild
+from gens.models.sample import SampleInfo
 
 LOG = logging.getLogger(__name__)
 
@@ -101,10 +115,16 @@ def sample(
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
     # load samples
-    sample_obj = SampleInfo.model_validate({
-        "sample_id": sample_id, "case_id": case_id, "genome_build": genome_build, "baf_file": baf, 
-        "coverage_file": coverage, "overview_file": overview_json
-    })
+    sample_obj = SampleInfo.model_validate(
+        {
+            "sample_id": sample_id,
+            "case_id": case_id,
+            "genome_build": genome_build,
+            "baf_file": baf,
+            "coverage_file": coverage,
+            "overview_file": overview_json,
+        }
+    )
     create_sample(db, sample_obj)
     click.secho("Finished adding a new sample to database ✔", fg="green")
 
@@ -153,32 +173,42 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool) -> None:
         LOG.info("Processing %s", annot_file)
         # get the track name from the filename
         annotation_name = annot_file.name[: -len(annot_file.suffix)]
-        track_in_db = get_annotation_track(name=annotation_name, genome_build=genome_build, db=db)
+        track_in_db = get_annotation_track(
+            name=annotation_name, genome_build=genome_build, db=db
+        )
 
         # create a new record if it has not been added to the database
         if track_in_db is None:
-            track = AnnotationTrack(name=annotation_name, description="", genome_build=genome_build)
+            track = AnnotationTrack(
+                name=annotation_name, description="", genome_build=genome_build
+            )
             track_id = create_annotation_track(track, db)
         else:
             track_id = track_in_db.track_id
 
         # read annotation file an get gens compatible annotation records
         file_format = file.suffix[1:]
-        file_meta: list[dict[str, Any]]= []
+        file_meta: list[dict[str, Any]] = []
         records: list[AnnotationRecord] = []
         if file_format == "tsv" or is_tsv:
-            records = [AnnotationRecord.model_validate({"track_id": track_id, **rec}) for rec in parse_tsv_file(file)]
+            records = [
+                AnnotationRecord.model_validate({"track_id": track_id, **rec})
+                for rec in parse_tsv_file(file)
+            ]
         elif file_format == "bed":
             try:
                 bed_records = parse_bed_file(file)
                 records = [fmt_bed_to_annotation(rec, track_id) for rec in bed_records]
             except ValueError as err:
-                click.secho(f"An error occured when creating loading annotation: {err}", fg="red")
+                click.secho(
+                    f"An error occured when creating loading annotation: {err}",
+                    fg="red",
+                )
                 raise click.Abort()
         elif file_format == "aed":
             file_meta, aed_records = parse_aed_file(file)
             records = [fmt_aed_to_annotation(rec, track_id) for rec in aed_records]
-        #annotations = read_annotation_file(annot_file, has_header)
+        # annotations = read_annotation_file(annot_file, has_header)
 
         if len(file_meta) > 0:
             # add metadata from file to the previously created track
@@ -187,7 +217,9 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool) -> None:
 
         if len(records) == 0:
             delete_annotation_track(track_id, db)  # cleanup
-            raise ValueError("Something went wrong parsing the annotaions file, no valid annotations found.")
+            raise ValueError(
+                "Something went wrong parsing the annotaions file, no valid annotations found."
+            )
 
         # remove annotations and update track if track has already been added
         if track_in_db is not None:
@@ -195,7 +227,7 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool) -> None:
             LOG.info("Remove old entries from the database")
             if not delete_annotations_for_track(track_in_db.track_id, db):
                 LOG.warning("No annotations were removed from the database")
-            
+
         LOG.info("Load annotations in the database")
         create_annotations_for_track(records, db)
 

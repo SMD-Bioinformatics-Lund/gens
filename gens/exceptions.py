@@ -20,6 +20,7 @@ class RegionParserException(GraphException):
 class NoRecordsException(GraphException):
     """Record related error."""
 
+
 class SampleNotFoundError(Exception):
     """The sample was not found in the database."""
 
@@ -38,4 +39,3 @@ class NonUniqueIndexError(Exception):
         self.sample_id = sample_id
         self.case_id = case_id
         self.genome_build = genome_build
-

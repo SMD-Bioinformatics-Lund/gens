@@ -3,10 +3,10 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import AnyUrl, PositiveInt, field_serializer, Field, HttpUrl
+from pydantic import AnyUrl, Field, HttpUrl, PositiveInt, field_serializer
 from pydantic_extra_types.color import Color
 
-from .base import RWModel, CreatedAtModel, ModifiedAtModel, PydanticObjectId
+from .base import CreatedAtModel, ModifiedAtModel, PydanticObjectId, RWModel
 from .genomic import Chromosome, DnaStrand, GenomeBuild, GenomePosition
 
 
@@ -35,7 +35,7 @@ class ReferenceUrl(RWModel):
     title: str
     url: AnyUrl
 
-    @field_serializer('url')
+    @field_serializer("url")
     def serialise_url(self, url: AnyUrl, _info):
         return str(url)
 
@@ -87,10 +87,7 @@ class AnnotationRecord(GenomePosition, RWModel):
     comments: list[Comment] = []
     references: list[ReferenceUrl | ScientificArticle] = []
     metadata: list[
-        GenericMetadata
-        | UrlMetadata
-        | DatetimeMetadata
-        | DnaStrandMetadata
+        GenericMetadata | UrlMetadata | DatetimeMetadata | DnaStrandMetadata
     ] = Field(default=[], description="Optional generic metadata.")
 
     @field_serializer("color")

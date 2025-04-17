@@ -2,12 +2,12 @@
 
 import logging
 from typing import Any, Generator
-from flask import Flask
 
 import pymongo
+from flask import Flask
 from pydantic import MongoDsn
-from pymongo.database import Database
 from pymongo import MongoClient
+from pymongo.database import Database
 
 from gens.config import settings
 
@@ -23,9 +23,9 @@ def init_database_connection(app: Flask) -> None:
     app.config["SCOUT_DB"] = MongoClient(
         str(settings.scout_db.connection)
     ).get_database(name=settings.scout_db.database)
-    app.config["GENS_DB"] = MongoClient(
-        str(settings.gens_db.connection)
-    ).get_database(name=settings.gens_db.database)
+    app.config["GENS_DB"] = MongoClient(str(settings.gens_db.connection)).get_database(
+        name=settings.gens_db.database
+    )
 
 
 def get_db_connection(mongo_uri: MongoDsn, db_name: str) -> Database[Any]:

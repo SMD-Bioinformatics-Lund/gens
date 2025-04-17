@@ -2,6 +2,7 @@
 
 import logging
 from typing import Any
+
 from pymongo.database import Database
 
 from gens.models.base import User

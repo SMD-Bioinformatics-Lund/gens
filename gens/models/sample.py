@@ -68,7 +68,7 @@ class SampleInfo(RWModel, CreatedAtModel):
 
 class GenomeCoverage(RWModel):
     """Contains genome coverage info for scatter plots.
-    
+
     The genome coverage is represented by paired list of position and value.
     """
 
@@ -81,7 +81,9 @@ class GenomeCoverage(RWModel):
 class MultipleSamples(RWModel):  # pylint: disable=too-few-public-methods
     """Generic response model for multiple data records."""
 
-    data: list[SampleInfo] = Field(..., description="List of records from the database.")
+    data: list[SampleInfo] = Field(
+        ..., description="List of records from the database."
+    )
     records_total: int = Field(
         ...,
         alias="recordsTotal",

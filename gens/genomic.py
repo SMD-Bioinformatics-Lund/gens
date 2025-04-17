@@ -8,7 +8,7 @@ def parse_region_str(region: str) -> GenomicRegion:
     """Region string to individual components and validate components."""
     try:
         # split string to its components
-        raw_chromosome, pos_range = region.split(':')
+        raw_chromosome, pos_range = region.split(":")
         start, end = [
             int(pos) if pos != "None" else None for pos in pos_range.split("-")
         ]
@@ -19,9 +19,9 @@ def parse_region_str(region: str) -> GenomicRegion:
     # validate chromosome
     chromosome = Chromosome(raw_chromosome)
 
-    return GenomicRegion.model_validate({
-        "chromosome": chromosome, "start": start, "end": end
-    })
+    return GenomicRegion.model_validate(
+        {"chromosome": chromosome, "start": start, "end": end}
+    )
 
 
 def calc_zoom_level(start_pos: int, end_pos: int) -> ZoomLevel:

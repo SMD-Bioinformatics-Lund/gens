@@ -1,9 +1,9 @@
 """Gens default configuration."""
 
 import os
-from typing import Any, Tuple, Type
 from enum import Enum
 from pathlib import Path
+from typing import Any, Tuple, Type
 
 from pydantic import Field, HttpUrl, MongoDsn, model_validator
 from pydantic_settings import (
@@ -42,6 +42,7 @@ class OauthConfig(BaseSettings):
 
 class MongoDbConfig(BaseSettings):
     """Configuration for MongoDB connection."""
+
     connection: MongoDsn = Field(..., description="Database connection string.")
     database: str | None = None
 
@@ -76,11 +77,11 @@ class Settings(BaseSettings):
             "scout_url": self.scout_url,
             "default_annotation_track": self.default_annotation_track,
             "authentication": self.authentication.value,
-            "oauth": self.oauth
+            "oauth": self.oauth,
         }
 
     @model_validator(mode="after")
-    def check_oauth_opts(self) -> 'Settings':
+    def check_oauth_opts(self) -> "Settings":
         """Check that OAUTH options are set if authentication is oauth."""
         if self.authentication == AuthMethod.OAUTH:
             if not self.oauth is None:
@@ -90,7 +91,7 @@ class Settings(BaseSettings):
         return self
 
     @model_validator(mode="after")
-    def check_mongodb_connections(self) -> 'Settings':
+    def check_mongodb_connections(self) -> "Settings":
         """
         Check if dbname is given in connection string and reassign if needed.
 

@@ -2,14 +2,16 @@
 
 import logging
 from typing import Any
+
 from pymongo.database import Database
+
 from gens.crud.annotations import register_data_update
-from gens.models.annotation import TranscriptRecord, ReducedTrackInfo
+from gens.db.collections import TRANSCRIPTS_COLLECTION
+from gens.models.annotation import ReducedTrackInfo, TranscriptRecord
 from gens.models.base import PydanticObjectId
 from gens.models.genomic import GenomeBuild, GenomicRegion
-from gens.db.collections import TRANSCRIPTS_COLLECTION
-from .utils import query_genomic_region
 
+from .utils import query_genomic_region
 
 LOG = logging.getLogger(__name__)
 
@@ -32,7 +34,12 @@ def get_transcripts(
     # build sort order
     sort_order: list[tuple[str, int]] = [("start", 1), ("height_order", 1)]
 
-    projection: dict[str, bool] = {"gene_name": True, "start": True, "end": True, "mane": True}
+    projection: dict[str, bool] = {
+        "gene_name": True,
+        "start": True,
+        "end": True,
+        "mane": True,
+    }
     cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
         query, projection, sort=sort_order
     )
@@ -50,13 +57,15 @@ def get_transcripts(
     ]
 
 
-def get_transcript(transcript_id: PydanticObjectId, db: Database[Any]) -> TranscriptRecord | None:
+def get_transcript(
+    transcript_id: PydanticObjectId, db: Database[Any]
+) -> TranscriptRecord | None:
     """Get transcript with id."""
     resp = db.get_collection(TRANSCRIPTS_COLLECTION).find_one({"_id": transcript_id})
     if resp is not None:
         return TranscriptRecord.model_validate(resp)
     return None
-    
+
 
 def create_transcripts(transcripts: list[TranscriptRecord], db: Database[Any]):
     """Insert many transcripts in the database."""

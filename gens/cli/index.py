@@ -4,9 +4,9 @@ import logging
 
 import click
 
+from gens.config import settings
 from gens.db.db import get_db_connection
 from gens.db.index import create_indexes, update_indexes
-from gens.config import settings
 
 LOG = logging.getLogger(__name__)
 

@@ -51,9 +51,11 @@ def update_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
 
 def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
     """Store a new sample in the database."""
-    LOG.info(f'Store sample {sample_obj.sample_id} in database')
+    LOG.info(f"Store sample {sample_obj.sample_id} in database")
     try:
-        db.get_collection(SAMPLES_COLLECTION).insert_one(sample_obj.model_dump(exclude=INDEX_FIELDS))
+        db.get_collection(SAMPLES_COLLECTION).insert_one(
+            sample_obj.model_dump(exclude=INDEX_FIELDS)
+        )
     except DuplicateKeyError:
         LOG.error(
             (
@@ -81,12 +83,14 @@ def get_samples(
     # cast as sample object
     result = MultipleSamples(
         data=[SampleInfo.model_validate(sample) for sample in cursor],
-        recordsTotal=samples_c.count_documents({})
+        recordsTotal=samples_c.count_documents({}),
     )
     return result
 
 
-def get_sample(samples_c: Collection[dict[str, Any]], sample_id: str, case_id: str | None) -> SampleInfo:
+def get_sample(
+    samples_c: Collection[dict[str, Any]], sample_id: str, case_id: str | None
+) -> SampleInfo:
     """Get a sample with id."""
     result = None
     if case_id is None:
@@ -95,7 +99,9 @@ def get_sample(samples_c: Collection[dict[str, Any]], sample_id: str, case_id: s
         result = samples_c.find_one({"sample_id": sample_id, "case_id": case_id})
 
     if result is None:
-        raise SampleNotFoundError(f'No sample with id: "{sample_id}" in database', sample_id)
+        raise SampleNotFoundError(
+            f'No sample with id: "{sample_id}" in database', sample_id
+        )
     return SampleInfo(
         sample_id=result["sample_id"],
         case_id=result["case_id"],

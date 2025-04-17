@@ -1,8 +1,9 @@
 """Work with users."""
 
-
 from typing import Any
+
 from pymongo.collection import Collection
+
 from gens.models.base import User
 
 

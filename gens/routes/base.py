@@ -1,26 +1,26 @@
 """API root."""
 
-
-from typing import Annotated
-from fastapi import APIRouter, Query, HTTPException
 from http import HTTPStatus
+from typing import Annotated
 
+from fastapi import APIRouter, HTTPException, Query
+
+from gens import version
 from gens.crud.search import search_annotations
-from gens.crud.user import get_users as crud_get_users
-from gens.crud.user import get_user as crud_get_user
 from gens.crud.user import create_user as crud_create_user
+from gens.crud.user import get_user as crud_get_user
+from gens.crud.user import get_users as crud_get_users
 from gens.db.collections import USER_COLLECTION
 from gens.models.base import User
 from gens.models.genomic import GenomeBuild, GenomicRegion
 from gens.models.search import SearchSuggestions
-from typing import Annotated
-from fastapi import APIRouter, Query
-from gens import version
+
 from .utils import ApiTags, GensDb
 
-SearchQueryParam = Annotated[str, Query(alias='q')]
+SearchQueryParam = Annotated[str, Query(alias="q")]
 
 router = APIRouter()
+
 
 @router.get("/")
 async def read_root():
@@ -32,7 +32,9 @@ async def read_root():
 
 
 @router.get("/search/result", tags=[ApiTags.SEARCH])
-def search(query: SearchQueryParam, genome_build: GenomeBuild, db: GensDb) -> GenomicRegion:
+def search(
+    query: SearchQueryParam, genome_build: GenomeBuild, db: GensDb
+) -> GenomicRegion:
     """Search for a annotation."""
 
     result = search_annotations(query=query, genome_build=genome_build, db=db)
@@ -41,7 +43,7 @@ def search(query: SearchQueryParam, genome_build: GenomeBuild, db: GensDb) -> Ge
     return result
 
 
-@router.get('/search/assistant', tags=[ApiTags.SEARCH])
+@router.get("/search/assistant", tags=[ApiTags.SEARCH])
 def search_assistant(query: SearchQueryParam, db: GensDb) -> SearchSuggestions:
     """Suggest hits."""
 
@@ -50,7 +52,7 @@ def search_assistant(query: SearchQueryParam, db: GensDb) -> SearchSuggestions:
     return SearchSuggestions()
 
 
-@router.get('/users', tags=[ApiTags.USER])
+@router.get("/users", tags=[ApiTags.USER])
 def get_users(db: GensDb) -> list[User]:
     """Get all users in the database."""
 
@@ -58,13 +60,13 @@ def get_users(db: GensDb) -> list[User]:
     return crud_get_users(user_col)
 
 
-@router.get('/users/user', tags=[ApiTags.USER])
-def get_user(username: str, db: GensDb) -> User: # type: ignore
+@router.get("/users/user", tags=[ApiTags.USER])
+def get_user(username: str, db: GensDb) -> User:  # type: ignore
     user_col = db.get_collection(USER_COLLECTION)
     crud_get_user(user_col, username)
 
 
-@router.post('/users/user', tags=[ApiTags.USER], status_code=HTTPStatus.CREATED)
+@router.post("/users/user", tags=[ApiTags.USER], status_code=HTTPStatus.CREATED)
 def create_user(user_data: User, db: GensDb):
     user_col = db.get_collection(USER_COLLECTION)
     crud_create_user(user_col, user_data)

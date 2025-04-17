@@ -3,7 +3,9 @@
 from typing import Any
 
 
-def query_genomic_region(start_pos: int, end_pos: int, motif_type: str = "other") -> dict[str, Any]:
+def query_genomic_region(
+    start_pos: int, end_pos: int, motif_type: str = "other"
+) -> dict[str, Any]:
     """Make a query for a chromosomal region."""
     if motif_type == "sv":  # for sv are start called position
         start_name = "position"

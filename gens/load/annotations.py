@@ -1,18 +1,27 @@
 """Annotations."""
 
 import csv
-from io import TextIOWrapper
 import logging
 import re
+from datetime import datetime
+from io import TextIOWrapper
 from pathlib import Path
 from typing import Any, Iterator
-from datetime import datetime
+
+from pydantic import AnyHttpUrl, BaseModel, ValidationError
 from pydantic_extra_types.color import Color
 
-from gens.models.annotation import AnnotationRecord, Comment, DatetimeMetadata, GenericMetadata, ReferenceUrl, ScientificArticle, UrlMetadata
+from gens.models.annotation import (
+    AnnotationRecord,
+    Comment,
+    DatetimeMetadata,
+    GenericMetadata,
+    ReferenceUrl,
+    ScientificArticle,
+    UrlMetadata,
+)
 from gens.models.base import PydanticObjectId
 from gens.models.genomic import Chromosome
-from pydantic import BaseModel, AnyHttpUrl, ValidationError
 
 LOG = logging.getLogger(__name__)
 FIELD_TRANSLATIONS: dict[str, str] = {
@@ -101,12 +110,14 @@ def set_missing_fields(annotation: dict[str, str | int | None], name: str) -> No
             annotation[field_name] = "."  # default to bed null value
 
 
-def fmt_bed_to_annotation(entry: dict[str, str], track_id: PydanticObjectId) -> AnnotationRecord:
+def fmt_bed_to_annotation(
+    entry: dict[str, str], track_id: PydanticObjectId
+) -> AnnotationRecord:
     """Parse a bed or aed entry"""
     annotation: dict[str, Any] = {}
     # parse entry and format the values
     if len(entry) < len(BED_CORE_FIELDS):
-        fields_in_row =  '\t'.join(entry.values())
+        fields_in_row = "\t".join(entry.values())
         raise ValueError(f"Malformad entry in BED file!, row: {fields_in_row}")
     for colname, value in entry.items():
         # translate name, default to existing name if not in tr table
@@ -117,7 +128,9 @@ def fmt_bed_to_annotation(entry: dict[str, str], track_id: PydanticObjectId) -> 
             annotation[new_colname] = format_bed_data(new_colname, value)
         except ValueError as err:
             LOG.debug("Bad line: %s", entry)
-            import pdb; pdb.set_trace()
+            import pdb
+
+            pdb.set_trace()
             raise ParserError(str(err)) from err
 
     return AnnotationRecord(
@@ -126,21 +139,21 @@ def fmt_bed_to_annotation(entry: dict[str, str], track_id: PydanticObjectId) -> 
         chrom=annotation["chrom"],
         start=annotation["start"],
         end=annotation["end"],
-        color=annotation["color"]
+        color=annotation["color"],
     )
 
 
 def _is_metadata_row(line: str) -> bool:
     """Check if a ChaS header row contains metadata definition.
-    
-    The first three columns in a ChaS metadata row are empty. 
+
+    The first three columns in a ChaS metadata row are empty.
     """
-    row = line.rstrip().split('\t')
+    row = line.rstrip().split("\t")
     indent_len = 0
     for col in row:
         if col == "":
             indent_len += 1
-        else: 
+        else:
             break
     return indent_len == 3
 
@@ -155,7 +168,7 @@ def peek_line(fh: TextIOWrapper) -> str:
 
 def _parse_aed_property(property_def: str) -> AedPropertyDefinition:
     """Parse property names from AED files and return prefix, name and type.
-    
+
     E.g. aed:name(aed:String) -> {prefix: aed, name: name, type: str}
     """
     match = re.search(r"(\w+):(\w+)\((.+)\)", property_def)
@@ -184,19 +197,21 @@ def format_aed_entry(value: str, format: str) -> AedDatatypes:
             return AnyHttpUrl(value)
         case "aed:DateTime":
             return datetime.fromisoformat(value)
-        case "aed:Color": 
+        case "aed:Color":
             return Color(value)
         case _:
             raise ValueError(f"Unknown format, {format}")
 
 
-def _parse_aed_header(fh: TextIOWrapper) -> tuple[dict[int, AedPropertyDefinition], AedFileMetadata]:
+def _parse_aed_header(
+    fh: TextIOWrapper,
+) -> tuple[dict[int, AedPropertyDefinition], AedFileMetadata]:
     """Parse aed header and metadata rows to get column definitions.
-    
+
     Retrun definition of the columns and metadata on the track encoded in the header.
     """
     # get column definition
-    raw_header = fh.readline().rstrip().split('\t')
+    raw_header = fh.readline().rstrip().split("\t")
     col_def: dict[int, AedPropertyDefinition] = {
         col_no: _parse_aed_property(col) for col_no, col in enumerate(raw_header)
     }
@@ -206,12 +221,14 @@ def _parse_aed_header(fh: TextIOWrapper) -> tuple[dict[int, AedPropertyDefinitio
         next_line = peek_line(fh)
         if _is_metadata_row(next_line):
             # read and parse the metadata row
-            key, value = fh.readline().strip().split('\t')
+            key, value = fh.readline().strip().split("\t")
             # Not implemented yet
-            if key.startswith('namespace'):
+            if key.startswith("namespace"):
                 continue
             property = _parse_aed_property(key)
-            file_metadata.append({"name": property.name, "value": format_aed_entry(value, property.type)})
+            file_metadata.append(
+                {"name": property.name, "value": format_aed_entry(value, property.type)}
+            )
         else:
             break
     return col_def, file_metadata
@@ -219,7 +236,7 @@ def _parse_aed_header(fh: TextIOWrapper) -> tuple[dict[int, AedPropertyDefinitio
 
 def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
     """Parse a TSV to annotations records.
-    
+
     It is assumed that the first line is the header.
     """
     with open(file) as inpt:
@@ -227,43 +244,50 @@ def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
         for row in reader:
             # format color
             if "Color" in row:
-                matches: list[str] = re.findall(r"\d+", row['Color'])
+                matches: list[str] = re.findall(r"\d+", row["Color"])
                 # check if color is rgba
                 if len(matches) == 3:
-                    vals = ','.join(matches)
+                    vals = ",".join(matches)
                     color = Color(f"rgb({vals})")
                 elif len(matches) == 4:
                     # verify that opacity variable is within 0-1 else convert it
                     opacity_value = str(int(matches[-1]) / 100)
-                    vals = ','.join([*matches[:-1], str(opacity_value)])
+                    vals = ",".join([*matches[:-1], str(opacity_value)])
                     color = Color(f"rgba({vals})")
                 else:
                     raise ValueError(f"Invalid RGB designation, {row['Color']}")
             else:
                 color = Color(DEFAULT_COLOUR)
-            yield {"name": row.get("Name", "The Nameless One"), "chrom": row["Chromosome"], "start": row["Start"], "end": row["Stop"], "color" :color}
-            
+            yield {
+                "name": row.get("Name", "The Nameless One"),
+                "chrom": row["Chromosome"],
+                "start": row["Start"],
+                "end": row["Stop"],
+                "color": color,
+            }
+
 
 def parse_aed_file(file: Path) -> tuple[AedFileMetadata, AedRecords]:
     """Read aed file.
-    
-    Reference: https://assets.thermofisher.com/TFS-Assets/GSD/Handbooks/Chromosome_analysis_suite_v4.2_user-guide.pdf"""
+
+    Reference: https://assets.thermofisher.com/TFS-Assets/GSD/Handbooks/Chromosome_analysis_suite_v4.2_user-guide.pdf
+    """
     with open(file, encoding="utf-8-sig") as aed_fh:
-        #aed_reader = csv.reader(aed, delimiter="\t")
+        # aed_reader = csv.reader(aed, delimiter="\t")
         column_definitions, file_metadata = _parse_aed_header(aed_fh)
 
         # iterate over file content
         records: list[dict[str, AedDatatypes | None]] = []
         for line in aed_fh:
-            raw_cell_values = [cell.strip() for cell in line.split('\t')]
+            raw_cell_values = [cell.strip() for cell in line.split("\t")]
             if len(raw_cell_values) > len(column_definitions):
-                raise ValueError('The header contains fewer columns than the table')
+                raise ValueError("The header contains fewer columns than the table")
 
             # format cell values and store temporarily in dict
             fmt_values: dict[str, AedDatatypes | None] = {}
             for col_idx, raw_value in enumerate(raw_cell_values):
                 col_def = column_definitions[col_idx]
-                if raw_value == '':
+                if raw_value == "":
                     fmt_values[col_def.name] = None
                 else:
                     fmt_values[col_def.name] = format_aed_entry(raw_value, col_def.type)
@@ -272,9 +296,7 @@ def parse_aed_file(file: Path) -> tuple[AedFileMetadata, AedRecords]:
     return file_metadata, records
 
 
-def format_bed_data(
-    data_type: str, value: str
-) -> str | int | Color | None:
+def format_bed_data(data_type: str, value: str) -> str | int | Color | None:
     """Parse the data based on its type."""
     new_value = None if value == "." else value
     if data_type == "color":
@@ -298,64 +320,107 @@ def format_bed_data(
     return new_value
 
 
-def fmt_aed_to_annotation(record: AedRecord, track_id: PydanticObjectId, exclude_na: bool = True) -> AnnotationRecord:
+def fmt_aed_to_annotation(
+    record: AedRecord, track_id: PydanticObjectId, exclude_na: bool = True
+) -> AnnotationRecord:
     """Format a AED record to the Gens anntoation format.
-    
+
     This parser is a complement to the more general AED parser."""
     # try extract references from notes
     refs: list[ReferenceUrl | ScientificArticle] = []
     comments: list[Comment] = []
-    if 'note' in record and isinstance(record["note"], str):
-        for note in record['note'].split(';'):
+    if "note" in record and isinstance(record["note"], str):
+        for note in record["note"].split(";"):
             if "PMID" in note:
                 match = re.search(AED_PMID_REFERENCE_NOTE, note)
                 if match:
                     try:
-                        refs.append(ScientificArticle.model_validate({
-                            "title": match.group(1), "pmid": match.group(2)}))
+                        refs.append(
+                            ScientificArticle.model_validate(
+                                {"title": match.group(1), "pmid": match.group(2)}
+                            )
+                        )
                     except ValidationError as err:
-                        LOG.warning("Note could not be formatted as refeerence, '%s'; error: %s", note, err)
+                        LOG.warning(
+                            "Note could not be formatted as refeerence, '%s'; error: %s",
+                            note,
+                            err,
+                        )
             elif "http" in note or "www" in note:
                 match = re.search(AED_URL_REFERENCE_NOTE, note)
                 if match:
                     try:
-                        refs.append(ReferenceUrl.model_validate({"title": match.group(1), "url": match.group(2)}))
+                        refs.append(
+                            ReferenceUrl.model_validate(
+                                {"title": match.group(1), "url": match.group(2)}
+                            )
+                        )
                     except ValidationError as err:
-                        LOG.warning("Note could not be formatted as refeerence, '%s'; error: %s", note, err)
+                        LOG.warning(
+                            "Note could not be formatted as refeerence, '%s'; error: %s",
+                            note,
+                            err,
+                        )
             else:
                 continue
-        comments.append(Comment(comment=record['note'], username="parser"))
+        comments.append(Comment(comment=record["note"], username="parser"))
 
-    EXCLUDE_FIELDS: list[str] = ['name', 'start', 'end', 'sequence', 'color', 'note', 'value']
+    EXCLUDE_FIELDS: list[str] = [
+        "name",
+        "start",
+        "end",
+        "sequence",
+        "color",
+        "note",
+        "value",
+    ]
     # cast to database metadata format
     metadata: list[DatetimeMetadata | GenericMetadata | UrlMetadata] = []
     for field_name, value in record.items():
         if any([field_name in EXCLUDE_FIELDS, value is None and exclude_na]):
             continue
         if isinstance(value, datetime):
-            metadata.append(DatetimeMetadata(field_name=field_name, value=value, type="datetime"))
+            metadata.append(
+                DatetimeMetadata(field_name=field_name, value=value, type="datetime")
+            )
         elif isinstance(value, str):
-            metadata.append(GenericMetadata(field_name=field_name, value=value, type="string"))
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=value, type="string")
+            )
         elif isinstance(value, int):
-            metadata.append(GenericMetadata(field_name=field_name, value=value, type="integer"))
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=value, type="integer")
+            )
         elif isinstance(value, float):
-            metadata.append(GenericMetadata(field_name=field_name, value=value, type="float"))
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=value, type="float")
+            )
         elif isinstance(value, bool):
-            metadata.append(GenericMetadata(field_name=field_name, value=value, type="bool"))
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=value, type="bool")
+            )
         elif isinstance(value, AnyHttpUrl):
-            metadata.append(UrlMetadata(field_name=field_name, value=ReferenceUrl(title=field_name, url=value), type="url"))
+            metadata.append(
+                UrlMetadata(
+                    field_name=field_name,
+                    value=ReferenceUrl(title=field_name, url=value),
+                    type="url",
+                )
+            )
         else:
-            metadata.append(GenericMetadata(field_name=field_name, value=value, type="string"))
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=value, type="string")
+            )
 
     # build metadata
     return AnnotationRecord(
         track_id=track_id,
-        name=record['name'],
-        chrom=Chromosome(record['sequence'].strip("chr")),
-        start=record['start'], 
-        end=record['end'], 
-        color=record['color'],
+        name=record["name"],
+        chrom=Chromosome(record["sequence"].strip("chr")),
+        start=record["start"],
+        end=record["end"],
+        color=record["color"],
         references=refs,
         comments=comments,
-        metadata=metadata
+        metadata=metadata,
     )

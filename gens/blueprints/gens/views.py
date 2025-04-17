@@ -11,8 +11,8 @@ from gens.config import UI_COLORS, settings
 from gens.crud.genomic import get_chromosome_info
 from gens.crud.samples import get_sample
 from gens.db.collections import SAMPLES_COLLECTION
-from gens.models.genomic import GenomeBuild
 from gens.genomic import parse_region_str
+from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
@@ -69,9 +69,10 @@ def display_case(sample_name: str) -> str:
     if parsed_region.end is None:
         chrom_info = get_chromosome_info(db, parsed_region.chromosome, genome_build)
         if chrom_info is None:
-            raise ValueError(f"Chromosome {parsed_region.chromosome} is not found in the database")
+            raise ValueError(
+                f"Chromosome {parsed_region.chromosome} is not found in the database"
+            )
         parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})
-
 
     return render_template(
         "gens.html",

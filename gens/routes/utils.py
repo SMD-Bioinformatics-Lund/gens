@@ -8,7 +8,6 @@ from pymongo.database import Database
 
 from gens.db.db import get_db
 
-
 GensDb = Annotated[Database[Any], Depends(get_db)]
 
 
