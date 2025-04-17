@@ -60,7 +60,7 @@ def get_scatter_data(collection: Collection[dict[str, Any]], sample_id: str, cas
         tabix_file = TabixFile(str(sample_obj.baf_file))
 
     # Tabix
-    record_name = f"a_{region.region}"
+    record_name = f"a_{region.chromosome}"
 
     try:
         records = tabix_file.fetch(record_name, region.start, region.end)
