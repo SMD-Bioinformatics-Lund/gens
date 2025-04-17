@@ -17,7 +17,7 @@ from gens.models.annotation import (
     AnnotationRecord,
     AnnotationTrack,
     AnnotationTrackInDb,
-    ReducedTrackInfo,
+    SimplifiedTrackInfo,
 )
 from gens.models.base import PydanticObjectId
 from gens.models.genomic import GenomeBuild
@@ -102,14 +102,14 @@ def get_annotation_tracks(
 
 def get_annotations_for_track(
     track_id: PydanticObjectId, db: Database[Any]
-) -> list[ReducedTrackInfo]:
+) -> list[SimplifiedTrackInfo]:
     """Get annotation track from database."""
     projection: dict[str, bool] = {"name": True, "start": True, "end": True}
     cursor: Any = db.get_collection(ANNOTATIONS_COLLECTION).find(
         {"track_id": track_id}, projection
     )
     return [
-        ReducedTrackInfo.model_validate(
+        SimplifiedTrackInfo.model_validate(
             {
                 "record_id": doc["_id"],
                 "name": doc["name"],

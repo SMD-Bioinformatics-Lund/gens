@@ -34,10 +34,19 @@ def get_db_connection(mongo_uri: MongoDsn, db_name: str) -> Database[Any]:
     return db
 
 
-def get_db() -> Generator[Database[Any], None, None]:
+def get_gens_db() -> Generator[Database[Any], None, None]:
     """Connect to a database."""
     try:
         client: MongoClient[Any] = MongoClient(str(settings.gens_db.connection))
         yield client.get_database(settings.gens_db.database)
+    finally:
+        client.close()
+
+
+def get_scout_db() -> Generator[Database[Any], None, None]:
+    """Connect to the Scout database."""
+    try:
+        client: MongoClient[Any] = MongoClient(str(settings.gens_db.connection))
+        yield client.get_database(settings.scout_db.database)
     finally:
         client.close()

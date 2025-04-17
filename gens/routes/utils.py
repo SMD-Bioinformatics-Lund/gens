@@ -6,9 +6,11 @@ from typing import Annotated, Any
 from fastapi import Depends
 from pymongo.database import Database
 
-from gens.db.db import get_db
+from gens.db.db import get_gens_db, get_scout_db
 
-GensDb = Annotated[Database[Any], Depends(get_db)]
+GensDb = Annotated[Database[Any], Depends(get_gens_db)]
+
+ScoutDb = Annotated[Database[Any], Depends(get_scout_db)]
 
 
 class ApiTags(StrEnum):
@@ -19,3 +21,4 @@ class ApiTags(StrEnum):
     AUTH = "authentication"
     SEARCH = "search"
     USER = "user"
+    VAR = "variant"

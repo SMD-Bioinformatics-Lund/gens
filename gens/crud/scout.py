@@ -5,18 +5,17 @@ from typing import Any
 
 from pymongo.database import Database
 
-from gens.models.base import User
-from gens.models.genomic import VariantCategory
+from gens.models.genomic import GenomicRegion, VariantCategory
 
 LOG = logging.getLogger(__name__)
 
 
 def get_variants(
-    scout_db: Database[Any],
     case_id: str,
     sample_name: str,
+    region: GenomicRegion,
     variant_category: VariantCategory,
-    **kwargs: str,
+    db: Database[Any],
 ) -> Any:
     """Search the scout database for variants associated with a case.
 
@@ -36,14 +35,13 @@ def get_variants(
         ],
     }
     # add chromosome
-    if "chromosome" in kwargs:
-        query["chromosome"] = kwargs["chromosome"].value  # type: ignore
+    query["chromosome"] = region.chromosome  # type: ignore
     # add start, end position to query
-    if all(param in kwargs for param in ["start_pos", "end_pos"]):
+    if all(param is not None for param in [region.start, region.end]):
         query = {
             **query,
-            **query_genomic_region(kwargs["start_pos"], kwargs["end_pos"], variant_category),  # type: ignore
+            **query_genomic_region(region.start, region.end, variant_category),  # type: ignore
         }
     # query database
     LOG.info("Query variant database: %s", query)
-    return scout_db.variant.find(query)
+    return db.get_collection("variant").find(query)

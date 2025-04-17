@@ -47,9 +47,9 @@ async def get_genome_coverage(
     case_id: str,
     data_type: ScatterDataType,
     chromosome: Chromosome,
-    start: int,
-    end: int,
     db: GensDb,
+    start: int = 1,
+    end: int | None = None,
 ) -> GenomeCoverage:
     """Get genome coverage information."""
 

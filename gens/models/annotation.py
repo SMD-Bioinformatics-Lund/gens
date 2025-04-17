@@ -131,12 +131,19 @@ class UtrFeature(RWModel):
     end: PositiveInt
 
 
-class ReducedTrackInfo(GenomePosition, RWModel):
+class SimplifiedTrackInfo(GenomePosition, RWModel):
     """Simplified annotation for rendering basic tracks."""
 
     record_id: PydanticObjectId
     name: str
     type: str  # snv / mane
+    color: Color | None = None
+
+
+class SimplifiedTranscriptInfo(SimplifiedTrackInfo):
+    """Simplified transcript annotation."""
+
+    features: list[GenomePosition]
 
 
 class TranscriptRecord(RWModel):

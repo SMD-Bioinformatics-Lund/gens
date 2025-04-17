@@ -7,20 +7,25 @@ from pymongo.database import Database
 
 from gens.crud.annotations import register_data_update
 from gens.db.collections import TRANSCRIPTS_COLLECTION
-from gens.models.annotation import ReducedTrackInfo, TranscriptRecord
+from gens.models.annotation import SimplifiedTranscriptInfo, TranscriptRecord
 from gens.models.base import PydanticObjectId
-from gens.models.genomic import GenomeBuild, GenomicRegion
+from gens.models.genomic import GenomeBuild, GenomePosition, GenomicRegion
 
 from .utils import query_genomic_region
 
 LOG = logging.getLogger(__name__)
 
 
+def _format_features(features: list[dict[str, Any]]) -> list[GenomePosition]:
+    """Format a transcript features."""
+    return [GenomePosition(start=int(feat['start']), end=int(feat['end'])) for feat in features]
+
+
 def get_transcripts(
     region: GenomicRegion,
     genome_build: GenomeBuild,
     db: Database[Any],
-) -> list[ReducedTrackInfo]:
+) -> list[SimplifiedTranscriptInfo]:
     """Get transcript information from the database."""
     # build base query
     if region.start is None or region.end is None:
@@ -39,18 +44,20 @@ def get_transcripts(
         "start": True,
         "end": True,
         "mane": True,
+        "features": True,
     }
     cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
         query, projection, sort=sort_order
     )
     return [
-        ReducedTrackInfo.model_validate(
+        SimplifiedTranscriptInfo.model_validate(
             {
                 "record_id": doc["_id"],
                 "name": doc["gene_name"],
                 "start": doc["start"],
                 "end": doc["end"],
                 "type": doc["mane"] if doc["mane"] is not None else "non-mane",
+                "features": _format_features(doc["features"]),
             }
         )
         for doc in cursor
