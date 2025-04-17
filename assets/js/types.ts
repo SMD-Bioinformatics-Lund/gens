@@ -1,13 +1,9 @@
 interface APIAnnotation {
-  chrom: string,
-  color: [number, number, number],
-  end: number,
-  genome_build: number,
+  record_id: string,
   name: string,
-  score: number | null,
-  source: string,
+  type: string,
   start: number,
-  strand: string
+  end: number,
 }
 
 interface APITranscriptPart {

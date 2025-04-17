@@ -3,19 +3,13 @@ import { zip } from "../util/utils";
 
 
 export async function getAnnotationData(
-  chrom: string,
-  source: string,
+  track_id: string,
   apiURI: string,
 ): Promise<APIAnnotation[]> {
   const query = {
-    sample_id: undefined,
-    region: `${chrom}:1-None`,
-    genome_build: 38,
-    collapsed: true,
-    source: source,
   };
   const annotsResult = await get(
-    new URL("get-annotation-data", apiURI).href,
+    new URL(`tracks/annotations/${track_id}`, apiURI).href,
     query,
   );
   const annotations = annotsResult.annotations as APIAnnotation[];
@@ -85,13 +79,11 @@ export async function getCoverage(
   const query = {
     sample_id: sampleId,
     case_id: caseId,
-    region: `${chrom}:1-None`,
+    chromosome: chrom,
+    start: 1,
   };
 
-  const entrypoint = covOrBaf == "cov" ? "sample/coverage" : "sample/baf"
-  const results = await get(new URL(entrypoint, apiURI).href, query);
-
-  const regionResult: {position: number[], value: number[]} = results[0];
+  const regionResult: {position: number[], value: number[]} = await get(new URL(`samples/sample/${covOrBaf == "cov" ? "coverage" : "baf"}`, apiURI).href, query);
 
   const renderData: APICoverageDot[] = zip(regionResult.position, regionResult.value).map(([pos, val]) => {
     return {
@@ -115,9 +107,9 @@ export async function getOverviewData(
     cov_or_baf: covOrBaf,
   };
 
-  // const entrypoint = covOrBaf == "cov" ? "sample/coverage" : "sample/baf"
+  const dataType = covOrBaf == "cov" ? "coverage" : "baf"
   const overviewData: { region: string; position: number[]; value: number[]; zoom: string | null }[] =
-    await get(new URL("sample/overview", apiURI).href, query);
+    await get(new URL(`samples/sample/${dataType}/overview`, apiURI).href, query);
 
   const dataPerChrom: Record<string, APICoverageDot[]> = {};
 
@@ -144,9 +136,8 @@ export async function getIdeogramData(
   apiURL: string,
 ): Promise<ChromosomeInfo> {
   const chromosomeInfo = (await get(
-    new URL("get-chromosome-info", apiURL).href,
+    new URL(`tracks/chromosomes/${chrom}`, apiURL).href,
     {
-      chromosome: chrom,
       genome_build: genomeBuild,
     },
   )) as ChromosomeInfo;

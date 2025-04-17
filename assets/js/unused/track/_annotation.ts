@@ -17,7 +17,7 @@ import { createPopper } from "@popperjs/core";
 export class AnnotationTrack extends BaseAnnotationTrack {
   readonly featureHeight: number = 18;
   readonly arrowThickness: number = 2;
-  readonly apiEntrypoint: string = "get-annotation-data";
+  readonly apiEntrypoint: string = "/tracks/annotations";
 
   genomeBuild: number;
   sourceList: HTMLSelectElement;
@@ -92,7 +92,7 @@ export class AnnotationTrack extends BaseAnnotationTrack {
 
   // Fills the list with source files
   annotSourceList(defaultAnnotation: string) {
-    get("get-annotation-sources", { genome_build: this.genomeBuild })
+    get(`tracks/annotations`, { genome_build: this.genomeBuild })
       .then((result) => {
         if (result.sources.length > 0) {
           this.sourceList.style.visibility = "visible";
