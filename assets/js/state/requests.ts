@@ -24,9 +24,7 @@ export async function getTranscriptData(
     chromosome: chrom,
     genome_build: 38,
   };
-  const results = await get(new URL("/tracks/transcripts", apiURI).href, query);
-  const transcripts = results.transcripts as ApiSimplifiedTranscript[];
-
+  const transcripts = await get(new URL("/tracks/transcripts", apiURI).href, query) as ApiSimplifiedTranscript[];
   return transcripts;
 }
 
