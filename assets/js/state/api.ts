@@ -86,8 +86,8 @@ export class API {
     return this.bafCache[chrom];
   }
 
-  private transcriptCache: Record<string, APITranscript[]> = {};
-  async getTranscripts(chrom: string): Promise<APITranscript[]> {
+  private transcriptCache: Record<string, ApiSimplifiedTranscript[]> = {};
+  async getTranscripts(chrom: string): Promise<ApiSimplifiedTranscript[]> {
     const isCached = this.transcriptCache[chrom] !== undefined;
     if (!isCached) {
       this.transcriptCache[chrom] = await getTranscriptData(chrom, this.apiURL);

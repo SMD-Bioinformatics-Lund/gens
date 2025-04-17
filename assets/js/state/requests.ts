@@ -5,29 +5,27 @@ import { zip } from "../util/utils";
 export async function getAnnotationData(
   track_id: string,
   apiURI: string,
-): Promise<APIAnnotation[]> {
+): Promise<ApiSimplifiedAnnotation[]> {
   const query = {
   };
   const annotsResult = await get(
     new URL(`tracks/annotations/${track_id}`, apiURI).href,
     query,
   );
-  const annotations = annotsResult.annotations as APIAnnotation[];
+  const annotations = annotsResult.annotations as ApiSimplifiedAnnotation[];
   return annotations;
 }
 
 export async function getTranscriptData(
   chrom: string,
   apiURI: string,
-): Promise<APITranscript[]> {
+): Promise<ApiSimplifiedTranscript[]> {
   const query = {
-    sample_id: undefined,
-    region: `${chrom}:1-None`,
+    chromosome: chrom,
     genome_build: 38,
-    collapsed: true,
   };
-  const results = await get(new URL("get-transcript-data", apiURI).href, query);
-  const transcripts = results.transcripts as APITranscript[];
+  const results = await get(new URL("/tracks/transcripts", apiURI).href, query);
+  const transcripts = results.transcripts as ApiSimplifiedTranscript[];
 
   return transcripts;
 }
@@ -45,13 +43,11 @@ export async function getChromToSVs(
   const query = {
     sample_id,
     case_id,
-    region: `${chrom}:1-None`,
+    chromosome: chrom,
     genome_build,
-    collapsed: true,
-    variant_category: "sv",
+    category: "sv",
   };
-  const results = await get(new URL("get-variant-data", apiURI).href, query);
-  const variants = results.variants;
+  const variants = await get(new URL("tracks/variants", apiURI).href, query);
   // FIXME: Move this color logic to after the call to the API class
 
   const chromToVariants: Record<string, APIVariant[]> = {};
@@ -64,8 +60,6 @@ export async function getChromToSVs(
   });
 
   return chromToVariants;
-
-
 }
 
 export async function getCoverage(

@@ -22,7 +22,7 @@ async function request(url: string, params: string, method: RequestType = "GET")
   const response = await fetch(url, options);
 
   if (response.status !== 200) {
-    return generateErrorResponse(
+    throw generateErrorResponse(
       "The server responded with an unexpected status.",
     );
   }

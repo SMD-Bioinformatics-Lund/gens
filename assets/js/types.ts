@@ -1,9 +1,20 @@
-interface APIAnnotation {
+interface ApiSimplifiedAnnotation {
   record_id: string,
   name: string,
   type: string,
   start: number,
   end: number,
+  color: number[] | null
+}
+
+interface ApiSimplifiedTranscript {
+  record_id: string,
+  name: string,
+  type: string,
+  start: number,
+  end: number,
+  color: number[] | null
+  features: {start: number, end: number}[]
 }
 
 interface APITranscriptPart {
