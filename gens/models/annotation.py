@@ -144,6 +144,7 @@ class SimplifiedTranscriptInfo(SimplifiedTrackInfo):
     """Simplified transcript annotation."""
 
     features: list[GenomePosition]
+    strand: DnaStrand
 
 
 class TranscriptRecord(RWModel):

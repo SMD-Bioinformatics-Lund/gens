@@ -13,6 +13,7 @@ interface ApiSimplifiedTranscript {
   type: string,
   start: number,
   end: number,
+  strand: string,
   color: number[] | null
   features: {start: number, end: number}[]
 }
@@ -93,6 +94,13 @@ interface PopupContent {
 
 type RenderElement = RenderBand | RenderDot;
 
+
+interface SimpleRenderBand {
+  start: number,
+  end: number,
+}
+
+// FIXME: This should be looked over
 interface RenderBand {
   id: string,
   start: number,
@@ -105,7 +113,7 @@ interface RenderBand {
   direction?: "+" | "-",
   y1?: number,
   y2?: number,
-  subBands?: RenderBand[],
+  subBands?: SimpleRenderBand[],
 }
 
 interface RenderDot {

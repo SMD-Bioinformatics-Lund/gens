@@ -44,6 +44,7 @@ def get_transcripts(
         "start": True,
         "end": True,
         "mane": True,
+        "strand": True,
         "features": True,
     }
     cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
@@ -57,6 +58,7 @@ def get_transcripts(
                 "start": doc["start"],
                 "end": doc["end"],
                 "type": doc["mane"] if doc["mane"] is not None else "non-mane",
+                "strand": doc["strand"],
                 "features": _format_features(doc["features"]),
             }
         )
