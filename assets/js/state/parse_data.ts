@@ -122,10 +122,11 @@ export function parseTranscripts(transcripts: ApiSimplifiedTranscript[]): Render
   // FIXME: This should be done on the backend
   const seenIds = new Set();
   const filteredDuplicates = transcriptsToRender.filter((tr) => {
-    if (seenIds.has(tr.id)) {
+    const fingerprint = `${tr.label}_${tr.start}_${tr.end}`
+    if (seenIds.has(fingerprint)) {
       return false;
     } else {
-      seenIds.add(tr.id);
+      seenIds.add(fingerprint);
       return true;
     }
   });
