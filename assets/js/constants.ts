@@ -21,15 +21,7 @@ const colors = {
   purple: "#5E4B8B",
   gold: "#D4AF37",
   transparentYellow: "#dcd16f44",
-  stainToColor: {
-    acen: "#673888",
-    gneg: "#FFFAF0",
-    gvar: "#4C6D94",
-    gpos25: "#333",
-    gpos50: "#777",
-    gpos75: "#AAA",
-    gpos100: "#EEE",
-  },
+
 };
 
 const font = "12px sans-serif";
@@ -97,6 +89,19 @@ export const STYLE = {
     textLaneSize: 20,
     backgroundColor: colors.white,
     frameLineWidth: 2,
+  },
+  ideogramTrack: {
+    endBevelProportion: 0.05,
+    centromereIndentProportion: 0.3,
+    stainToColor: {
+      acen: "#673888",
+      gneg: "#FFFAF0",
+      gvar: "#4C6D94",
+      gpos25: "#333",
+      gpos50: "#777",
+      gpos75: "#AAA",
+      gpos100: "#EEE",
+    },
   },
   yAxis: {
     width: 25,
