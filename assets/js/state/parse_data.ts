@@ -11,8 +11,8 @@ export function getRenderDataSource(
       return await gensAPI.getChromData(getChrom());
     };
   
-    const getAnnotation = async (source: string) => {
-      const annotData = await gensAPI.getAnnotations(getChrom(), source);
+    const getAnnotation = async (recordId: string) => {
+      const annotData = await gensAPI.getAnnotations(recordId);
       return parseAnnotations(annotData);
     };
   
@@ -66,7 +66,7 @@ export function getRenderDataSource(
   }
   
 
-export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
+export function parseAnnotations(annotations: ApiSimplifiedAnnotation[]): RenderBand[] {
   const results = annotations.map((annot) => {
     // const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
     const label = annot.name;
@@ -86,32 +86,32 @@ export function parseAnnotations(annotations: APIAnnotation[]): RenderBand[] {
 // FIXME: Should this one be here?
 function parseExons(
   geneId: string,
-  transcriptParts: APITranscriptPart[],
+  exons: {start: number, end: number}[],
 ): RenderBand[] {
-  const exons = transcriptParts.filter((part) => part.feature == "exon");
+  // const exons = transcriptParts.filter((part) => part.feature == "exon");
 
-  return exons.map((part) => {
+  return exons.map((part, i) => {
     const renderBand = {
-      id: `${geneId}_exon${part.exon_number}_${part.start}_${part.end}`,
+      id: `${geneId}_exon${i + 1}_${part.start}_${part.end}`,
       start: part.start,
       end: part.end,
       color: STYLE.colors.teal,
-      label: `${part.exon_number} ${part.start}-${part.end}`,
+      label: `${i + 1} ${part.start}-${part.end}`,
     };
     return renderBand;
   });
 }
 
-export function parseTranscripts(transcripts: APITranscript[]): RenderBand[] {
+export function parseTranscripts(transcripts: ApiSimplifiedTranscript[]): RenderBand[] {
   const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
-    const exons = parseExons(transcript.transcript_id, transcript.features);
+    const exons = parseExons(transcript.record_id, transcript.features);
     const renderBand: RenderBand = {
-      id: transcript.transcript_id,
+      id: transcript.record_id,
       start: transcript.start,
       end: transcript.end,
-      label: transcript.gene_name,
+      label: transcript.name,
       color: STYLE.colors.lightGray,
-      hoverInfo: `${transcript.gene_name} (${transcript.transcript_id}) (${transcript.mane})`,
+      hoverInfo: `${transcript.name} (${transcript.record_id})`,
       direction: transcript.strand as "+" | "-",
       subBands: exons,
     };

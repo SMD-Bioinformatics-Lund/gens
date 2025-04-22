@@ -147,7 +147,7 @@ function drawBand(
       band.subBands.forEach((subBand) => {
         const xPxStart = xScale(subBand.start);
         const xPxEnd = xScale(subBand.end);
-        ctx.fillStyle = subBand.color;
+        ctx.fillStyle = band.color;
         const width = xPxEnd - xPxStart;
         ctx.fillRect(xPxStart, y1, width, height);
       });

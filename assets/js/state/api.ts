@@ -37,23 +37,24 @@ export class API {
     return annotSources;
   }
 
-  private annotCache: Record<string, Record<string, APIAnnotation[]>> = {};
+  private annotCache: Record<string, ApiSimplifiedAnnotation[]> = {};
+  // private annotCache: Record<string, Record<string, ApiSimplifiedAnnotation[]>> = {};
   async getAnnotations(
-    chrom: string,
-    source: string,
-  ): Promise<APIAnnotation[]> {
-    const isCached =
-      this.annotCache[chrom] !== undefined &&
-      this.annotCache[chrom][source] !== undefined;
+    trackId: string
+  ): Promise<ApiSimplifiedAnnotation[]> {
+    const isCached = this.annotCache[trackId];
+    // const isCached =
+    //   this.annotCache[chrom] !== undefined &&
+    //   this.annotCache[chrom][source] !== undefined;
     if (!isCached) {
-      if (this.annotCache[chrom] === undefined) {
-        this.annotCache[chrom] = {};
+      if (this.annotCache[trackId] === undefined) {
+        this.annotCache[trackId] = [];
       }
 
-      const annotations = await getAnnotationData(chrom, source, this.apiURL);
-      this.annotCache[chrom][source] = annotations;
+      const annotations = await getAnnotationData(trackId, this.apiURL);
+      this.annotCache[trackId] = annotations;
     }
-    return this.annotCache[chrom][source];
+    return this.annotCache[trackId];
   }
 
   private covCache: Record<string, APICoverageDot[]> = {};
