@@ -72,7 +72,7 @@ export class BandTrack extends CanvasTrack {
       this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
-    const dimensions = super.syncDimensions();
+    super.syncDimensions();
 
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,
@@ -97,7 +97,7 @@ export class BandTrack extends CanvasTrack {
       return renderBand;
     });
 
-    renderBackground(this.ctx, dimensions);
+    renderBackground(this.ctx, this.dimensions);
 
     const hoverTargets = renderBand.flatMap((band) => {
       const bandHoverTargets = drawBand(

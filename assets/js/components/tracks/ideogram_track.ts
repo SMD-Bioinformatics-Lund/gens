@@ -37,6 +37,7 @@ export class IdeogramTrack extends CanvasTrack {
     }
 
     super.syncDimensions();
+    this.ctx.clearRect(0, 0, this.dimensions.width, this.dimensions.height);
 
     const { chromInfo, xRange } = this.renderData;
 
@@ -45,6 +46,8 @@ export class IdeogramTrack extends CanvasTrack {
       chromInfo,
       this.dimensions,
     );
+
+    console.log(this.drawPaths);
 
     this.renderMarker(xRange, chromInfo.size);
   }

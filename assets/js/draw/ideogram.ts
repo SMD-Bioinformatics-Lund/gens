@@ -23,6 +23,7 @@ export function drawChromosome(
 
     const lineWidth = 1;
 
+    ctx.save();
     ctx.clip(chromPath.path);
     const bandPaths = bands
         .map((band) => {
