@@ -198,7 +198,6 @@ def format_aed_entry(value: str, format: str) -> AedDatatypes:
         case "aed:DateTime":
             return datetime.fromisoformat(value)
         case "aed:Color":
-            LOG.error(">>>", value)
             return Color(value)
         case _ if format.startswith("aed:"):
             return value

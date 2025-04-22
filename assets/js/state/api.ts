@@ -31,12 +31,8 @@ export class API {
   }
 
   private annotCache: Record<string, ApiSimplifiedAnnotation[]> = {};
-  // private annotCache: Record<string, Record<string, ApiSimplifiedAnnotation[]>> = {};
   async getAnnotations(trackId: string): Promise<ApiSimplifiedAnnotation[]> {
     const isCached = this.annotCache[trackId];
-    // const isCached =
-    //   this.annotCache[chrom] !== undefined &&
-    //   this.annotCache[chrom][source] !== undefined;
     if (!isCached) {
       if (this.annotCache[trackId] === undefined) {
         this.annotCache[trackId] = [];

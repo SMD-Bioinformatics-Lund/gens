@@ -19,6 +19,7 @@ export class OverviewTrack extends CanvasTrack {
   yRange: Rng;
 
   pxRanges: Record<string, Rng> = {};
+  isRendered: boolean;
 
   renderData: OverviewTrackData | null;
   getRenderData: () => Promise<OverviewTrackData>;
@@ -55,10 +56,6 @@ export class OverviewTrack extends CanvasTrack {
       this.onChromosomeClick(chrom);
     });
   }
-
-  lastXRange: Rng;
-  lastChr: string;
-  isRendered: boolean;
 
   async render(updateData: boolean) {
 
