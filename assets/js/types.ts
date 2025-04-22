@@ -27,30 +27,7 @@ interface ApiSimplifiedTranscript {
   features: {start: number, end: number}[]
 }
 
-interface APITranscriptPart {
-  start: number,
-  end: number,
-  exon_number?: number,
-  feature: "exon"
-}
-
-interface APITranscript {
-  chrom: string,
-  start: number,
-  end: number,
-  features: APITranscriptPart[],
-  gene_name: string,
-  genome_build: number,
-  height_order: number,
-  hgnc_id: string,
-  mane: string,
-  refseq_id: string,
-  strand: string,
-  transcript_biotype: string,
-  transcript_id: string,
-}
-
-interface APIVariant {
+interface ApiVariant {
   alternative: string,
   cadd_score: string,
   case_id: string,
@@ -84,12 +61,12 @@ interface APIVariant {
   variant_type: string
 }
 
-interface APICoverageDot {
+interface ApiCoverageDot {
   pos: number,
   value: number,
 }
 
-interface APICoverageBin {
+interface ApiCoverageBin {
   start: number,
   end: number,
   value: number,

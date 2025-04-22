@@ -56,7 +56,12 @@ export class OverviewTrack extends CanvasTrack {
     });
   }
 
+  lastXRange: Rng;
+  lastChr: string;
+  isRendered: boolean;
+
   async render(updateData: boolean) {
+
     if (updateData || this.renderData == null) {
       this.renderData = await this.getRenderData();
     }
@@ -64,8 +69,6 @@ export class OverviewTrack extends CanvasTrack {
     super.syncDimensions();
 
     const { xRange, chromosome, dotsPerChrom } = this.renderData;
-
-    renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
 
     const totalChromSize = Object.values(this.chromSizes).reduce(
       (tot, size) => tot + size,
@@ -86,15 +89,19 @@ export class OverviewTrack extends CanvasTrack {
       xScale(end),
     ]);
 
-    renderOverviewPlot(
-      this.ctx,
-      chromRanges,
-      this.pxRanges,
-      xScale,
-      yScale,
-      dotsPerChrom,
-      this.chromSizes,
-    );
+    if (!updateData || !this.isRendered) {
+      renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
+      renderOverviewPlot(
+        this.ctx,
+        chromRanges,
+        this.pxRanges,
+        xScale,
+        yScale,
+        dotsPerChrom,
+        this.chromSizes,
+      );
+      this.isRendered = true;
+    }
 
     const chromStartPos = chromRanges[chromosome][0];
     renderSelectedChromMarker(

@@ -1,5 +1,5 @@
 import { getOverlapInfo, getTrackHeight } from "../../util/expand_track_utils";
-import { getBandYScale } from "../../util/utils";
+import { getBandYScale, rangeInRange } from "../../util/utils";
 import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
 import {
@@ -56,7 +56,12 @@ export class BandTrack extends CanvasTrack {
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
-    const { numberLanes, bandOverlaps } = getOverlapInfo(bands);
+    const bandsWithinRange = bands.filter((band) =>
+      rangeInRange([band.start, band.end], xRange),
+    );
+
+    console.log("Calculating overlap for nbr", bandsWithinRange.length);
+    const { numberLanes, bandOverlaps } = getOverlapInfo(bandsWithinRange);
 
     const labelSize =
       this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
@@ -72,7 +77,7 @@ export class BandTrack extends CanvasTrack {
       labelSize,
     );
 
-    const renderBand: RenderBand[] = bands.map((band) => {
+    const renderBand: RenderBand[] = bandsWithinRange.map((band) => {
       if (bandOverlaps[band.id] == null) {
         throw Error(`Missing ID: ${band.id}`);
       }

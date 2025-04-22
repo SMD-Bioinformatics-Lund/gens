@@ -16,17 +16,17 @@ export async function getAnnotationData(
   return annotations;
 }
 
-export async function getTranscriptData(
-  chrom: string,
-  apiURI: string,
-): Promise<ApiSimplifiedTranscript[]> {
-  const query = {
-    chromosome: chrom,
-    genome_build: 38,
-  };
-  const transcripts = await get(new URL("/tracks/transcripts", apiURI).href, query) as ApiSimplifiedTranscript[];
-  return transcripts;
-}
+// export async function getTranscriptData(
+//   chrom: string,
+//   apiURI: string,
+// ): Promise<ApiSimplifiedTranscript[]> {
+//   // const query = {
+//   //   chromosome: chrom,
+//   //   genome_build: 38,
+//   // };
+//   // const transcripts = await get(new URL("/tracks/transcripts", apiURI).href, query) as ApiSimplifiedTranscript[];
+//   return transcripts;
+// }
 
 
 // Seems the API call does not consider chromosome at the moment
@@ -37,7 +37,7 @@ export async function getChromToSVs(
   genome_build: number,
   chrom: string,
   apiURI: string,
-): Promise<Record<string, APIVariant[]>> {
+): Promise<Record<string, ApiVariant[]>> {
   const query = {
     sample_id,
     case_id,
@@ -48,7 +48,7 @@ export async function getChromToSVs(
   const variants = await get(new URL("tracks/variants", apiURI).href, query);
   // FIXME: Move this color logic to after the call to the API class
 
-  const chromToVariants: Record<string, APIVariant[]> = {};
+  const chromToVariants: Record<string, ApiVariant[]> = {};
   variants.forEach((variant) => {
     const chrom = variant.chromosome;
     if (chromToVariants[chrom] === undefined) {
@@ -66,7 +66,7 @@ export async function getCoverage(
   chrom: string,
   covOrBaf: "cov" | "baf",
   apiURI: string,
-): Promise<APICoverageDot[]> {
+): Promise<ApiCoverageDot[]> {
 
   const query = {
     sample_id: sampleId,
@@ -77,7 +77,7 @@ export async function getCoverage(
 
   const regionResult: {position: number[], value: number[]} = await get(new URL(`samples/sample/${covOrBaf == "cov" ? "coverage" : "baf"}`, apiURI).href, query);
 
-  const renderData: APICoverageDot[] = zip(regionResult.position, regionResult.value).map(([pos, val]) => {
+  const renderData: ApiCoverageDot[] = zip(regionResult.position, regionResult.value).map(([pos, val]) => {
     return {
       pos: pos,
       value: val,
@@ -92,7 +92,7 @@ export async function getOverviewData(
   caseId: string,
   covOrBaf: "cov" | "baf",
   apiURI: string,
-): Promise<Record<string, APICoverageDot[]>> {
+): Promise<Record<string, ApiCoverageDot[]>> {
   const query = {
     sample_id: sampleId,
     case_id: caseId,
@@ -103,13 +103,13 @@ export async function getOverviewData(
   const overviewData: { region: string; position: number[]; value: number[]; zoom: string | null }[] =
     await get(new URL(`samples/sample/${dataType}/overview`, apiURI).href, query);
 
-  const dataPerChrom: Record<string, APICoverageDot[]> = {};
+  const dataPerChrom: Record<string, ApiCoverageDot[]> = {};
 
   overviewData.forEach((element) => {
     if (dataPerChrom[element.region] === undefined) {
       dataPerChrom[element.region] = [];
     }
-    const points: APICoverageDot[] = zip(element.position, element.value).map((xy) => {
+    const points: ApiCoverageDot[] = zip(element.position, element.value).map((xy) => {
       return {
         pos: xy[0],
         value: xy[1],

@@ -27,7 +27,8 @@ export function getRenderDataSource(
     };
   
     const getTranscriptData = async () => {
-      const transcriptsRaw = await gensAPI.getTranscripts(getChrom());
+      const onlyMane = true;
+      const transcriptsRaw = await gensAPI.getTranscripts(getChrom(), onlyMane);
       return parseTranscripts(transcriptsRaw);
     };
   
@@ -133,7 +134,7 @@ export function parseTranscripts(transcripts: ApiSimplifiedTranscript[]): Render
 }
 
 export function parseVariants(
-  variants: APIVariant[],
+  variants: ApiVariant[],
   variantColorMap: VariantColors,
 ): RenderBand[] {
   return variants.map((variant) => {
@@ -153,7 +154,7 @@ export function parseVariants(
 }
 
 export function parseCoverageBin(
-  coverage: APICoverageBin[],
+  coverage: ApiCoverageBin[],
   color: string,
 ): RenderDot[] {
   const renderData = coverage.map((d) => {
@@ -168,7 +169,7 @@ export function parseCoverageBin(
 }
 
 export function parseCoverageDot(
-  coverage: APICoverageDot[],
+  coverage: ApiCoverageDot[],
   color: string,
 ): RenderDot[] {
   const renderData = coverage.map((d) => {
