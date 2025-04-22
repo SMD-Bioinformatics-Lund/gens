@@ -52,7 +52,7 @@ export class IdeogramTrack extends CanvasTrack {
     //   height: this.dimensions.height
     // }
 
-    const xPadding = 50;
+    const xPadding = 10;
 
     const xScale = getLinearScale(
       [1, chromInfo.size],
