@@ -160,7 +160,9 @@ export class CanvasTrack extends ShadowBaseElement {
       const hovered = this.hoverTargets.find((target) =>
         eventInBox(event, target.box),
       );
-      this.canvas.style.cursor = hovered ? "pointer" : "default";
+      if (onElementClick) {
+        this.canvas.style.cursor = hovered ? "pointer" : "default";
+      }
 
       if (hovered) {
         tooltip.tooltipEl.textContent = hovered.label;

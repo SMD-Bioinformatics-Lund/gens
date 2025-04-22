@@ -144,7 +144,7 @@ interface Box {
 interface HoverBox {
   label: string;
   box: Box;
-  element: RenderBand|RenderDot;
+  element?: RenderBand|RenderDot;
 }
 
 interface BoxStyle {

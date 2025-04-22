@@ -10,25 +10,30 @@ interface DrawPaths {
 }
 
 export class IdeogramTrack extends CanvasTrack {
-  private drawPaths: DrawPaths = undefined;
+  // private drawPaths: DrawPaths = undefined;
 
   private markerElement: HTMLDivElement;
 
   private renderData: IdeogramTrackData;
   private getRenderData: () => Promise<IdeogramTrackData>;
 
-  constructor(label: string, trackHeight: number, getRenderData: () => Promise<IdeogramTrackData>) {
+  constructor(
+    label: string,
+    trackHeight: number,
+    getRenderData: () => Promise<IdeogramTrackData>,
+  ) {
     super(label, trackHeight);
     this.getRenderData = getRenderData;
   }
 
-  initialize(
-  ) {
+  initialize() {
     super.initialize();
-    setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
+    // setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
     const markerElement = setupMarkerElement(this.defaultTrackHeight);
     this.trackContainer.appendChild(markerElement);
-    this.markerElement = markerElement;
+    // this.markerElement = markerElement;
+
+    this.initializeInteractive();
   }
 
   async render(updateData: boolean) {
@@ -41,13 +46,23 @@ export class IdeogramTrack extends CanvasTrack {
 
     const { chromInfo, xRange } = this.renderData;
 
-    this.drawPaths = cytogeneticIdeogram(
-      this.ctx,
-      chromInfo,
-      this.dimensions,
-    );
+    const renderBands = cytogeneticIdeogram(this.ctx, chromInfo, this.dimensions);
 
-    console.log(this.drawPaths);
+    // FIXME: Offset - why is it there?
+    // FIXME: Style the hover to look like before
+
+    const targets = renderBands.map((band) => {
+      return {
+        label: band.label,
+        box: {
+          x1: band.start,
+          x2: band.end,
+          y1: 0,
+          y2: this.dimensions.height,
+        },
+      };
+    });
+    this.hoverTargets = targets;
 
     this.renderMarker(xRange, chromInfo.size);
   }
@@ -129,7 +144,7 @@ function cytogeneticIdeogram(
   ctx: CanvasRenderingContext2D,
   chromInfo: ChromosomeInfo,
   dim: Dimensions,
-): { chromosome: { path: Path2D }; bands: { id: string; path: Path2D }[] } {
+): RenderBand[] {
   // recalculate genomic coordinates to screen coordinates
   const scale = dim.width / chromInfo.size;
   const centromere =
@@ -152,7 +167,7 @@ function cytogeneticIdeogram(
     };
   });
 
-  const drawPaths = drawChromosome(
+  drawChromosome(
     ctx,
     dim,
     centromere,
@@ -160,7 +175,7 @@ function cytogeneticIdeogram(
     renderBands,
   );
 
-  return drawPaths;
+  return renderBands;
 }
 
 function createChromosomeTooltip({ bandId: _bandId }: { bandId?: string }) {
