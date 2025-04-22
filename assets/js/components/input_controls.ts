@@ -71,13 +71,6 @@ export class InputControls extends HTMLElement {
     this.zoomIn = this.querySelector("#zoom-in") as HTMLButtonElement;
     this.zoomOut = this.querySelector("#zoom-out") as HTMLButtonElement;
     this.regionField = this.querySelector("#region-field") as HTMLInputElement;
-
-    // Debounce - vänta lite
-    this.regionField.addEventListener('change', () => {
-      // Vad har Markus skrivit
-      // Gör en sökning
-      // Uppdatea dropdowngrejer
-    })
   }
 
   getRegion(): Region {

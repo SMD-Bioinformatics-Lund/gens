@@ -1,4 +1,4 @@
-import { drawChromosome, getChromosomeShape } from "../../draw/ideogram";
+import { drawChromosomeBands, getChromosomeShape } from "../../draw/ideogram";
 import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
 import "tippy.js/dist/tippy.css";
@@ -78,14 +78,13 @@ export class IdeogramTrack extends CanvasTrack {
       chromInfo.size
     );
 
-    drawChromosome(
+    drawChromosomeBands(
       this.ctx,
       this.dimensions,
-      centromere,
-      STYLE.colors.white,
       renderBands,
-      xScale,
       chromShape,
+      style.yPad,
+      style.lineWidth
     );
 
     const targets = renderBands.map((band) => {
@@ -141,93 +140,6 @@ function setupZoomMarkerElement(trackHeight: number): HTMLDivElement {
   markerElement.style.marginLeft = `${leftMargin}px`;
 
   return markerElement;
-}
-
-// function setupTooltip(
-//   canvas: HTMLCanvasElement,
-//   ctx: CanvasRenderingContext2D,
-//   getDrawPaths: () => DrawPaths,
-// ) {
-//   const tooltip = createChromosomeTooltip({});
-//   tippy(canvas, {
-//     arrow: true,
-//     followCursor: "horizontal",
-//     content: tooltip,
-//     plugins: [followCursor],
-//   });
-
-//   canvas.addEventListener("mousemove", (event) => {
-//     const drawPaths = getDrawPaths();
-//     if (drawPaths === undefined) {
-//       return;
-//     }
-//     drawPaths.bands.forEach((bandPath) => {
-//       const pointInPath = ctx.isPointInPath(
-//         bandPath.path,
-//         event.offsetX,
-//         event.offsetY,
-//       );
-//       if (pointInPath) {
-//         const ideogramClass = ".ideogram-tooltip-value";
-//         tooltip.querySelector(ideogramClass).innerHTML = bandPath.id;
-//       }
-//     });
-//   });
-// }
-
-// /**
-//  * Generate a full chromosome ideogram with illustration and tooltip
-//  */
-// function cytogeneticIdeogram(
-//   ctx: CanvasRenderingContext2D,
-//   chromInfo: ChromosomeInfo,
-//   dim: Dimensions,
-//   xScale: Scale,
-// ): RenderBand[] {
-//   // recalculate genomic coordinates to screen coordinates
-//   const centromere =
-//     chromInfo.centromere !== null
-//       ? {
-//           start: Math.round(xScale(chromInfo.centromere.start)),
-//           end: Math.round(xScale(chromInfo.centromere.end)),
-//         }
-//       : null;
-
-//   // const centromere =
-//   // chromInfo.centromere !== null
-//   //   ? {
-//   //       start: Math.round(chromInfo.centromere.start * scale),
-//   //       end: Math.round(chromInfo.centromere.end * scale),
-//   //     }
-//   //   : null;
-
-//   const stainToColor = STYLE.ideogramTrack.stainToColor;
-//   const renderBands = chromInfo.bands.map((band) => {
-//     return {
-//       id: band.id,
-//       label: band.id,
-//       start: xScale(band.start),
-//       end: xScale(band.end),
-//       color: stainToColor[band.stain],
-//     };
-//   });
-
-//   drawChromosome(ctx, dim, centromere, STYLE.colors.white, renderBands, xScale);
-
-//   return renderBands;
-// }
-
-function createChromosomeTooltip({ bandId: _bandId }: { bandId?: string }) {
-  const element = document.createElement("div");
-  element.id = "ideogram-tooltip";
-  const name = document.createElement("span");
-  name.innerHTML = "ID:";
-  name.className = "ideogram-tooltip-key";
-  element.appendChild(name);
-  const value = document.createElement("span");
-  value.className = "ideogram-tooltip-value";
-  element.appendChild(value);
-  return element;
 }
 
 customElements.define("ideogram-track", IdeogramTrack);

@@ -1,33 +1,17 @@
 import { drawRect } from "./render_utils";
 import { STYLE } from "../constants";
 
-/**
- * Render the actual chromosome
- */
-export function drawChromosome(
+export function drawChromosomeBands(
   ctx: CanvasRenderingContext2D,
   dim: Dimensions,
-  centromere: { start: number; end: number },
-  color: string,
   bands: RenderBand[],
-  xScale: Scale,
   chromShape: Path2D,
+  yPad: number,
+  lineWidth: number,
 ) {
-  const shiftX = 0;
-  const shiftY = 2;
-  // const xPadding = 50;
-  const yPadding = 5;
-  // dim = {
-  //     width: dim.width - xPadding,
-  //     height: dim.height - yPadding,
-  // };
-  // const chromPath = {
-  //     path: drawChromosomeShape(ctx, shiftX, shiftY, dim, centromere, color),
-  // };
-
-  const lineWidth = 1;
 
   ctx.save();
+  // Clip using previously calculated edge path
   ctx.clip(chromShape);
   bands
     .map((band) => {
@@ -42,16 +26,12 @@ export function drawChromosome(
         band.color,
       );
 
-      const newX = shiftX + band.start;
-      const newY = shiftY - yPadding;
-      const newWidth = band.end - band.start;
-      const newHeight = dim.height + yPadding;
       return {
         id: band.label,
-        x: newX,
-        y: newY,
-        width: newWidth,
-        height: newHeight,
+        x: band.start,
+        y: yPad,
+        width: band.end - band.start,
+        height: dim.height - yPad * 2,
         path,
       };
     })

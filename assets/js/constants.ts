@@ -96,6 +96,7 @@ export const STYLE = {
     xPad: 10,
     yPad: 4,
     lineColor: colors.darkGray,
+    lineWidth: 1,
     stainToColor: {
       acen: "#673888",
       gneg: "#FFFAF0",
