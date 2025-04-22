@@ -192,13 +192,13 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool) -> None:
         records: list[AnnotationRecord] = []
         if file_format == "tsv" or is_tsv:
             records = [
-                AnnotationRecord.model_validate({"track_id": track_id, **rec})
+                AnnotationRecord.model_validate({"track_id": track_id, "genome_build": genome_build,**rec})
                 for rec in parse_tsv_file(file)
             ]
         elif file_format == "bed":
             try:
                 bed_records = parse_bed_file(file)
-                records = [fmt_bed_to_annotation(rec, track_id) for rec in bed_records]
+                records = [fmt_bed_to_annotation(rec, track_id, genome_build) for rec in bed_records]
             except ValueError as err:
                 click.secho(
                     f"An error occured when creating loading annotation: {err}",
@@ -207,7 +207,7 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool) -> None:
                 raise click.Abort()
         elif file_format == "aed":
             file_meta, aed_records = parse_aed_file(file)
-            records = [fmt_aed_to_annotation(rec, track_id) for rec in aed_records]
+            records = [fmt_aed_to_annotation(rec, track_id, genome_build) for rec in aed_records]
         # annotations = read_annotation_file(annot_file, has_header)
 
         if len(file_meta) > 0:

@@ -21,7 +21,7 @@ from gens.models.annotation import (
     UrlMetadata,
 )
 from gens.models.base import PydanticObjectId
-from gens.models.genomic import Chromosome
+from gens.models.genomic import Chromosome, GenomeBuild
 
 LOG = logging.getLogger(__name__)
 FIELD_TRANSLATIONS: dict[str, str] = {
@@ -111,7 +111,7 @@ def set_missing_fields(annotation: dict[str, str | int | None], name: str) -> No
 
 
 def fmt_bed_to_annotation(
-    entry: dict[str, str], track_id: PydanticObjectId
+    entry: dict[str, str], track_id: PydanticObjectId, genome_build: GenomeBuild,
 ) -> AnnotationRecord:
     """Parse a bed or aed entry"""
     annotation: dict[str, Any] = {}
@@ -136,6 +136,7 @@ def fmt_bed_to_annotation(
     return AnnotationRecord(
         track_id=track_id,
         name="The Nameless One" if annotation["name"] is None else annotation["name"],
+        genome_build=genome_build,
         chrom=annotation["chrom"],
         start=annotation["start"],
         end=annotation["end"],
@@ -321,7 +322,7 @@ def format_bed_data(data_type: str, value: str) -> str | int | Color | None:
 
 
 def fmt_aed_to_annotation(
-    record: AedRecord, track_id: PydanticObjectId, exclude_na: bool = True
+    record: AedRecord, track_id: PydanticObjectId, genome_build: GenomeBuild, exclude_na: bool = True
 ) -> AnnotationRecord:
     """Format a AED record to the Gens anntoation format.
 
@@ -416,6 +417,7 @@ def fmt_aed_to_annotation(
     return AnnotationRecord(
         track_id=track_id,
         name=record["name"],
+        genome_build=genome_build,
         chrom=Chromosome(record["sequence"].strip("chr")),
         start=record["start"],
         end=record["end"],

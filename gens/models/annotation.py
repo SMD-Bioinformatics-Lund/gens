@@ -82,6 +82,7 @@ class AnnotationRecord(GenomePosition, RWModel):
     track_id: PydanticObjectId = Field(..., description="Id of the annotation track")
     name: str
     description: str | None = None
+    genome_build: GenomeBuild
     chrom: Chromosome
     color: Color = Color("#808080")  # defaults to grey
     comments: list[Comment] = []
