@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, TextIO
 
 import click
-from pymongo.database import Database
 
 from gens.cli.util import ChoiceType
 from gens.config import settings
@@ -37,6 +36,7 @@ from gens.load import (
 from gens.load.annotations import (
     fmt_aed_to_annotation,
     fmt_bed_to_annotation,
+    format_aed_file_to_annotation,
     parse_aed_file,
     parse_bed_file,
     parse_tsv_file,
@@ -206,8 +206,8 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool) -> None:
                 )
                 raise click.Abort()
         elif file_format == "aed":
-            file_meta, aed_records = parse_aed_file(file)
-            records = [fmt_aed_to_annotation(rec, track_id, genome_build) for rec in aed_records]
+            aed_data = parse_aed_file(file)
+            records = format_aed_file_to_annotation(aed_data, track_id, genome_build)
         # annotations = read_annotation_file(annot_file, has_header)
 
         if len(file_meta) > 0:

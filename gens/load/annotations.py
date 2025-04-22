@@ -3,6 +3,7 @@
 import csv
 import logging
 import re
+import pandas as pd
 from datetime import datetime
 from io import TextIOWrapper
 from pathlib import Path
@@ -50,7 +51,7 @@ class ParserError(Exception):
 class AedPropertyDefinition(BaseModel):
     """Definition of a column or metadata point in a AED file."""
 
-    prefix: str
+    prefix: str | None
     name: str
     type: str
 
@@ -172,10 +173,18 @@ def _parse_aed_property(property_def: str) -> AedPropertyDefinition:
 
     E.g. aed:name(aed:String) -> {prefix: aed, name: name, type: str}
     """
-    match = re.search(r"(\w+):(\w+)\((.+)\)", property_def)
+    #match = re.search(r"(\w+):(\w+)\((.+)\)", property_def)
+    # find prefix and type definition
+    match = re.match(r"([a-zA-Z:_]+)\(([a-zA-Z:_]+)\)", property_def)
     if match is None:
         raise ValueError(f"Unknown AED property, {property_def}")
-    prefix, name, type = match.groups()
+    # find prefix if there is a prefix
+    raw_name, type = match.groups()
+    if ':' in raw_name:
+        prefix, name = raw_name.split(':')
+    else:
+        prefix = None
+        name = raw_name
     return AedPropertyDefinition(prefix=prefix, name=name, type=type)
 
 
@@ -203,26 +212,29 @@ def format_aed_entry(value: str, format: str) -> AedDatatypes:
         case _ if format.startswith("aed:"):
             return value
         case _:
-            raise ValueError(f"Unknown format, {format}")
+            LOG.warning("Entry has unknown AED property, entry: %s fmt: %s", value, format)
+            raise ValidationError()
 
 
 def _parse_aed_header(
     fh: TextIOWrapper,
-) -> tuple[dict[int, AedPropertyDefinition], AedFileMetadata]:
+) -> tuple[list[AedPropertyDefinition], AedFileMetadata, int]:
     """Parse aed header and metadata rows to get column definitions.
 
     Retrun definition of the columns and metadata on the track encoded in the header.
     """
     # get column definition
     raw_header = fh.readline().rstrip().split("\t")
-    col_def: dict[int, AedPropertyDefinition] = {
-        col_no: _parse_aed_property(col) for col_no, col in enumerate(raw_header)
-    }
+    col_def: list[AedPropertyDefinition] = [
+        _parse_aed_property(col) for col in raw_header
+    ]
     # parase optional metadata
     file_metadata: list[dict[str, AedDatatypes]] = []
+    n_metadata_rows: int = 0
     while True:
         next_line = peek_line(fh)
         if _is_metadata_row(next_line):
+            n_metadata_rows += 1
             # read and parse the metadata row
             key, value = fh.readline().strip().split("\t")
             # Not implemented yet
@@ -234,7 +246,7 @@ def _parse_aed_header(
             )
         else:
             break
-    return col_def, file_metadata
+    return col_def, file_metadata, n_metadata_rows
 
 
 def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
@@ -270,33 +282,18 @@ def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
             }
 
 
-def parse_aed_file(file: Path) -> tuple[AedFileMetadata, AedRecords]:
+def parse_aed_file(file: Path) -> dict[str, AedFileMetadata | pd.DataFrame | list[AedPropertyDefinition]]:
     """Read aed file.
 
     Reference: https://assets.thermofisher.com/TFS-Assets/GSD/Handbooks/Chromosome_analysis_suite_v4.2_user-guide.pdf
     """
     with open(file, encoding="utf-8-sig") as aed_fh:
         # aed_reader = csv.reader(aed, delimiter="\t")
-        column_definitions, file_metadata = _parse_aed_header(aed_fh)
+        column_definitions, file_metadata, n_metadata_rows = _parse_aed_header(aed_fh)
 
-        # iterate over file content
-        records: list[dict[str, AedDatatypes | None]] = []
-        for line in aed_fh:
-            raw_cell_values = [cell.strip() for cell in line.split("\t")]
-            if len(raw_cell_values) > len(column_definitions):
-                raise ValueError("The header contains fewer columns than the table")
-
-            # format cell values and store temporarily in dict
-            fmt_values: dict[str, AedDatatypes | None] = {}
-            for col_idx, raw_value in enumerate(raw_cell_values):
-                col_def = column_definitions[col_idx]
-                if raw_value == "":
-                    fmt_values[col_def.name] = None
-                else:
-                    fmt_values[col_def.name] = format_aed_entry(raw_value, col_def.type)
-
-            records.append(fmt_values)
-    return file_metadata, records
+    # use pandas to parse the tsv file but skip the metadata rows
+    aed_df = pd.read_csv(file, sep='\t', skiprows=n_metadata_rows + 1, names=[col.name for col in column_definitions], encoding="utf-8-sig")
+    return {"definitions": column_definitions, "metadata": file_metadata, "data": aed_df} 
 
 
 def format_bed_data(data_type: str, value: str) -> str | int | Color | None:
@@ -322,9 +319,18 @@ def format_bed_data(data_type: str, value: str) -> str | int | Color | None:
         return "." if new_value in {"", None} else new_value
     return new_value
 
+def format_aed_file_to_annotation(
+    aed_file: dict[str, AedFileMetadata | pd.DataFrame | list[AedPropertyDefinition]], track_id: PydanticObjectId, genome_build: GenomeBuild, exclude_na: bool = True
+) -> list[AnnotationRecord]:
+    """Format rows in AED file to AnnotationRecords."""
+    col_def: dict[str, str] = {col.name: col.type for col in aed_file["definitions"]}
+    for _, record in aed_file['data'].iterrows():
+        import pdb; pdb.set_trace()
+        # FIXME from here
+
 
 def fmt_aed_to_annotation(
-    record: AedRecord, track_id: PydanticObjectId, genome_build: GenomeBuild, exclude_na: bool = True
+    record: pd.Series, definitions: dict[str, Any], track_id: PydanticObjectId, genome_build: GenomeBuild, exclude_na: bool = True
 ) -> AnnotationRecord:
     """Format a AED record to the Gens anntoation format.
 
@@ -380,6 +386,7 @@ def fmt_aed_to_annotation(
     # cast to database metadata format
     metadata: list[DatetimeMetadata | GenericMetadata | UrlMetadata] = []
     for field_name, value in record.items():
+        metadata.append(format_aed_entry(value))
         if any([field_name in EXCLUDE_FIELDS, value is None and exclude_na]):
             continue
         if isinstance(value, datetime):
@@ -416,15 +423,18 @@ def fmt_aed_to_annotation(
             )
 
     # build metadata
-    return AnnotationRecord(
-        track_id=track_id,
-        name=record["name"],
-        genome_build=genome_build,
-        chrom=Chromosome(record["sequence"].strip("chr")),
-        start=record["start"],
-        end=record["end"],
-        color=record["color"],
-        references=refs,
-        comments=comments,
-        metadata=metadata,
-    )
+    try:
+        return AnnotationRecord(
+            track_id=track_id,
+            name=record["name"],
+            genome_build=genome_build,
+            chrom=Chromosome(record["sequence"].strip("chr")),
+            start=record["start"],
+            end=record["end"],
+            color=record["color"],
+            references=refs,
+            comments=comments,
+            metadata=metadata,
+        )
+    except:
+        import pdb; pdb.set_trace()
