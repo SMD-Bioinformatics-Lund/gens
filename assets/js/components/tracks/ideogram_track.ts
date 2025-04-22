@@ -1,18 +1,10 @@
-import tippy, { followCursor } from "tippy.js";
 import { drawChromosome, getChromosomeShape } from "../../draw/ideogram";
 import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
 import "tippy.js/dist/tippy.css";
 import { getLinearScale } from "../../draw/render_utils";
 
-interface DrawPaths {
-  chromosome: { path: Path2D };
-  bands: { id: string; path: Path2D }[];
-}
-
 export class IdeogramTrack extends CanvasTrack {
-  // private drawPaths: DrawPaths = undefined;
-
   private markerElement: HTMLDivElement;
 
   private renderData: IdeogramTrackData;
@@ -29,10 +21,9 @@ export class IdeogramTrack extends CanvasTrack {
 
   initialize() {
     super.initialize();
-    // setupTooltip(this.canvas, this.ctx, () => this.drawPaths);
-    const markerElement = setupMarkerElement(this.defaultTrackHeight);
-    this.trackContainer.appendChild(markerElement);
-    // this.markerElement = markerElement;
+    const zoomMarkerElement = setupZoomMarkerElement(this.defaultTrackHeight);
+    this.trackContainer.appendChild(zoomMarkerElement);
+    this.markerElement = zoomMarkerElement;
 
     this.initializeInteractive();
   }
@@ -47,21 +38,15 @@ export class IdeogramTrack extends CanvasTrack {
 
     const { chromInfo, xRange } = this.renderData;
 
-    // const shrinkedDims = {
-    //   width: this.dimensions.width - 10,
-    //   height: this.dimensions.height
-    // }
-
-    const xPadding = 10;
+    const style = STYLE.ideogramTrack;
 
     const xScale = getLinearScale(
       [1, chromInfo.size],
-      [xPadding, this.dimensions.width - xPadding],
+      [style.xPad, this.dimensions.width - style.xPad],
     );
 
     let centromere = null;
     if (chromInfo.centromere !== null) {
-      console.log("Making the centromere");
       const start = Math.round(xScale(chromInfo.centromere.start));
       const end = Math.round(xScale(chromInfo.centromere.end));
       centromere = {
@@ -84,11 +69,11 @@ export class IdeogramTrack extends CanvasTrack {
 
     const chromShape = getChromosomeShape(
       this.ctx,
-      {x: 10, y: 4},
+      style.yPad,
       this.dimensions,
       centromere,
-      "black",
-      "black",
+      style.lineColor,
+      style.lineColor,
       xScale,
       chromInfo.size
     );
@@ -103,16 +88,6 @@ export class IdeogramTrack extends CanvasTrack {
       chromShape,
     );
 
-    // const renderBands = cytogeneticIdeogram(
-    //   this.ctx,
-    //   chromInfo,
-    //   this.dimensions,
-    //   xScale,
-    // );
-
-    // FIXME: Offset - why is it there?
-    // FIXME: Style the hover to look like before
-
     const targets = renderBands.map((band) => {
       return {
         label: band.label,
@@ -126,29 +101,27 @@ export class IdeogramTrack extends CanvasTrack {
     });
     this.hoverTargets = targets;
 
-    // this.renderMarker(xRange, this.dimensions.width, xScale);
+    this.renderZoomMarker(xRange, chromInfo.size, xScale);
   }
 
-  // // FIXME: Does not seem to be functional
-  // renderMarker(xRange: [number, number], chromSize: number, xScale: Scale) {
-  //   // if segment of chromosome is drawn
-  //   const markerElement = this.markerElement;
+  renderZoomMarker(xRange: [number, number], chromSize: number, xScale: Scale) {
+    const markerElement = this.markerElement;
 
-  //   const hideMarker = xRange[0] == 1 && xRange[1] == chromSize;
-  //   markerElement.hidden = hideMarker;
-  //   if (!hideMarker) {
-  //     // const scale = chromSize / renderWidth;
-  //     // const pxStart = xRange[0] / scale;
-  //     const pxStart = xScale(xRange[0]);
-  //     const pxEnd = xScale(xRange[1]);
-  //     const pxWidth = pxEnd - pxStart;
-  //     markerElement.style.width = `${pxWidth}px`;
-  //     markerElement.style.marginLeft = `${pxStart}px`;
-  //   }
-  // }
+    // Hide if not zoomed
+    const hideMarker = xRange[0] == 1 && xRange[1] == chromSize;
+    markerElement.hidden = hideMarker;
+    if (!hideMarker) {
+      const pxStart = xScale(xRange[0]);
+      const pxEnd = xScale(xRange[1]);
+      const pxWidth = pxEnd - pxStart;
+
+      markerElement.style.width = `${pxWidth}px`;
+      markerElement.style.marginLeft = `${pxStart}px`;
+    }
+  }
 }
 
-function setupMarkerElement(trackHeight: number): HTMLDivElement {
+function setupZoomMarkerElement(trackHeight: number): HTMLDivElement {
   const markerElement = document.createElement("div");
   markerElement.id = "ideogram-marker";
   markerElement.className = "marker";

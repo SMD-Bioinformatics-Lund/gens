@@ -64,9 +64,13 @@ export function drawChromosome(
   ctx.restore();
 }
 
+/**
+ * Calculate the outer contour for a chromosome
+ * Used for clipping subsequent rendering
+ */
 export function getChromosomeShape(
   ctx: CanvasRenderingContext2D,
-  pad: { x: number; y: number },
+  yPad: number,
   dim: Dimensions,
   centromerePx: { start: number; end: number; center: number },
   color: string,
@@ -74,16 +78,12 @@ export function getChromosomeShape(
   xScale: Scale,
   chromSize: number,
 ): Path2D {
-  console.log("Getting the shape");
-
-  const { x: xPad, y: yPad } = pad;
 
   const style = STYLE.ideogramTrack;
 
-  // compute basic measurement
   const bevelWidth = Math.round(dim.width * style.endBevelProportion);
 
-  // calcuate dimensions of the centromere
+  // Calculate dimensions of the centromere
   const centromereLength = centromerePx.end - centromerePx.start;
   const centromereIndent = Math.round(
     dim.height * style.centromereIndentProportion,
@@ -93,36 +93,18 @@ export function getChromosomeShape(
       ? Math.round(centromereIndent * 2.5)
       : centromereLength / 3;
 
-  // const centPx = centromere ? {
-  //     start: xScale(centromere.start),
-  //     end: xScale(centromere.end),
-  //     center: xScale((centromere.start + centromere.end) / 2),
-  // } : null;
-
-  // const centromereCenter =
-  //     centromere.start + Math.round((centromere.end - centromere.start) / 2);
-
   const chromEndRadius = Math.round((dim.height * 0.7) / 2);
-
   const xStartPx = xScale(0);
   const xEndPx = xScale(chromSize);
 
-  console.log("xStartPx", xStartPx);
-  console.log("xEndPx", xEndPx);
-  console.log("bevelWidth", bevelWidth);
-
-  // path object
+  // Setup
   const path = new Path2D();
-  // draw shape
-
-  path.moveTo(xStartPx + bevelWidth, yPad); // move to start
+  path.moveTo(xStartPx + bevelWidth, yPad);
 
   // Centromere, top indent
   if (centromerePx) {
-    console.log("Making the top indent");
     path.lineTo(centromerePx.start, yPad);
-    // path.lineTo(centromere.start, yPad);
-    // indent for centromere
+    // Indent for centromere
     path.arcTo(
       centromerePx.center,
       yPad + centromereIndent,
@@ -132,8 +114,8 @@ export function getChromosomeShape(
     );
     path.lineTo(centromerePx.end, yPad);
   }
-  path.lineTo(xEndPx - bevelWidth, yPad); // line to end cap
-  // path.lineTo(xPad + dim.width - bevelWidth + 0.5, yPad + 0.5); // line to end cap
+  // Line to end cap
+  path.lineTo(xEndPx - bevelWidth, yPad);
 
   // Right end cap
   path.arcTo(
@@ -165,7 +147,7 @@ export function getChromosomeShape(
   }
   path.lineTo(xStartPx + bevelWidth, dim.height - yPad);
 
-  // left end cap
+  // Left end cap
   path.arcTo(
     xStartPx,
     dim.height - yPad,
@@ -175,9 +157,8 @@ export function getChromosomeShape(
   );
   path.arcTo(xStartPx, yPad, xStartPx + bevelWidth, yPad, chromEndRadius);
 
-  // finish figure
+  // Finish figure
   path.closePath();
-  // setup coloring
   ctx.strokeStyle = lineColor;
   ctx.stroke(path);
   if (color !== undefined) {

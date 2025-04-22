@@ -93,6 +93,9 @@ export const STYLE = {
   ideogramTrack: {
     endBevelProportion: 0.05,
     centromereIndentProportion: 0.3,
+    xPad: 10,
+    yPad: 4,
+    lineColor: colors.darkGray,
     stainToColor: {
       acen: "#673888",
       gneg: "#FFFAF0",
