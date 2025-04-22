@@ -1,18 +1,12 @@
 import { get } from "../util/fetch";
 import { CHROMOSOMES } from "../constants";
-import {
-  getAnnotationData,
-  getChromToSVs,
-  getIdeogramData as getChromosomeData,
-  getOverviewData,
-  getCoverage,
-} from "./requests";
+import { zip } from "../util/utils";
 
 export class API {
   sampleId: string;
   caseId: string;
   genomeBuild: number;
-  apiURL: string;
+  apiURI: string;
 
   constructor(
     sampleId: string,
@@ -23,12 +17,12 @@ export class API {
     this.sampleId = sampleId;
     this.caseId = caseId;
     this.genomeBuild = genomeBuild;
-    this.apiURL = gensApiURL;
+    this.apiURI = gensApiURL;
   }
 
   async getAnnotationSources(): Promise<ApiAnnotationTrack[]> {
     const annotSources = (await get(
-      new URL("/tracks/annotations", this.apiURL).href,
+      new URL("/tracks/annotations", this.apiURI).href,
       {
         genome_build: this.genomeBuild,
       },
@@ -48,7 +42,13 @@ export class API {
         this.annotCache[trackId] = [];
       }
 
-      const annotations = await getAnnotationData(trackId, this.apiURL);
+      const query = {};
+      const annotsResult = await get(
+        new URL(`tracks/annotations/${trackId}`, this.apiURI).href,
+        query,
+      );
+      const annotations = annotsResult.annotations as ApiSimplifiedAnnotation[];
+
       this.annotCache[trackId] = annotations;
     }
     return this.annotCache[trackId];
@@ -58,13 +58,29 @@ export class API {
   async getCov(chrom: string): Promise<ApiCoverageDot[]> {
     const isCached = this.covCache[chrom] !== undefined;
     if (!isCached) {
-      this.covCache[chrom] = await getCoverage(
-        this.sampleId,
-        this.caseId,
-        chrom,
-        "cov",
-        this.apiURL,
+      const query = {
+        sample_id: this.sampleId,
+        case_id: this.caseId,
+        chromosome: chrom,
+        start: 1,
+      };
+
+      const regionResult: { position: number[]; value: number[] } = await get(
+        new URL(`samples/sample/coverage`, this.apiURI).href,
+        query,
       );
+
+      const renderData: ApiCoverageDot[] = zip(
+        regionResult.position,
+        regionResult.value,
+      ).map(([pos, val]) => {
+        return {
+          pos: pos,
+          value: val,
+        };
+      });
+
+      this.covCache[chrom] = renderData;
     }
     return this.covCache[chrom];
   }
@@ -73,19 +89,38 @@ export class API {
   async getBaf(chrom: string): Promise<ApiCoverageDot[]> {
     const isCached = this.bafCache[chrom] !== undefined;
     if (!isCached) {
-      this.bafCache[chrom] = await getCoverage(
-        this.sampleId,
-        this.caseId,
-        chrom,
-        "baf",
-        this.apiURL,
+      const query = {
+        sample_id: this.sampleId,
+        case_id: this.caseId,
+        chromosome: chrom,
+        start: 1,
+      };
+
+      const regionResult: { position: number[]; value: number[] } = await get(
+        new URL(`samples/sample/baf`, this.apiURI).href,
+        query,
       );
+
+      const renderData: ApiCoverageDot[] = zip(
+        regionResult.position,
+        regionResult.value,
+      ).map(([pos, val]) => {
+        return {
+          pos: pos,
+          value: val,
+        };
+      });
+
+      this.bafCache[chrom] = renderData;
     }
     return this.bafCache[chrom];
   }
 
   private transcriptCache: Record<string, ApiSimplifiedTranscript[]> = {};
-  async getTranscripts(chrom: string, maneOnly: boolean): Promise<ApiSimplifiedTranscript[]> {
+  async getTranscripts(
+    chrom: string,
+    maneOnly: boolean,
+  ): Promise<ApiSimplifiedTranscript[]> {
     const isCached = this.transcriptCache[chrom] !== undefined;
     if (!isCached) {
       const query = {
@@ -93,12 +128,14 @@ export class API {
         genome_build: 38,
       };
       const transcripts = (await get(
-        new URL("/tracks/transcripts", this.apiURL).href,
+        new URL("/tracks/transcripts", this.apiURI).href,
         query,
       )) as ApiSimplifiedTranscript[];
 
       if (maneOnly) {
-        this.transcriptCache[chrom] = transcripts.filter((tr) => tr.type == "MANE Select")
+        this.transcriptCache[chrom] = transcripts.filter(
+          (tr) => tr.type == "MANE Select",
+        );
       } else {
         this.transcriptCache[chrom] = transcripts;
       }
@@ -106,17 +143,20 @@ export class API {
     return this.transcriptCache[chrom];
   }
 
-  private variantsCache: Record<string, ApiVariant[]> = null;
+  private variantsCache: Record<string, ApiVariant[]> = {};
   async getVariants(chrom: string): Promise<ApiVariant[]> {
-    const isCached = this.variantsCache !== null;
+    const isCached = this.variantsCache[chrom] !== undefined;
     if (!isCached) {
-      this.variantsCache = await getChromToSVs(
-        this.sampleId,
-        this.caseId,
-        this.genomeBuild,
-        chrom,
-        this.apiURL,
-      );
+      const query = {
+        sample_id: this.sampleId,
+        case_id: this.caseId,
+        chromosome: chrom,
+        category: "sv",
+        start: 1,
+      };
+      const url = new URL("tracks/variants", this.apiURI).href;
+      const variants = await get(url, query);
+      this.variantsCache[chrom] = variants;
     }
     return this.variantsCache[chrom];
   }
@@ -125,24 +165,31 @@ export class API {
   async getChromData(chrom: string): Promise<ChromosomeInfo> {
     const isCached = this.chromCache[chrom] !== undefined;
     if (!isCached) {
-      this.chromCache[chrom] = await getChromosomeData(
-        chrom,
-        this.genomeBuild,
-        this.apiURL,
-      );
+      const chromosomeInfo = (await get(
+        new URL(`tracks/chromosomes/${chrom}`, this.apiURI).href,
+        {
+          genome_build: this.genomeBuild,
+        },
+      )) as ChromosomeInfo;
+
+      this.chromCache[chrom] = chromosomeInfo;
     }
     return this.chromCache[chrom];
   }
+
   // FIXME: This would be better as a single request I think
   async getAllChromData(): Promise<Record<string, ChromosomeInfo>> {
     await Promise.all(
       CHROMOSOMES.map(async (chrom) => {
         if (this.chromCache[chrom] === undefined) {
-          this.chromCache[chrom] = await getChromosomeData(
-            chrom,
-            this.genomeBuild,
-            this.apiURL,
-          );
+          const chromosomeInfo = (await get(
+            new URL(`tracks/chromosomes/${chrom}`, this.apiURI).href,
+            {
+              genome_build: this.genomeBuild,
+            },
+          )) as ChromosomeInfo;
+
+          this.chromCache[chrom] = chromosomeInfo;
         }
       }),
     );
@@ -156,7 +203,7 @@ export class API {
         this.sampleId,
         this.caseId,
         "cov",
-        this.apiURL,
+        this.apiURI,
       );
     }
     return this.overviewCovCache;
@@ -169,9 +216,52 @@ export class API {
         this.sampleId,
         this.caseId,
         "baf",
-        this.apiURL,
+        this.apiURI,
       );
     }
     return this.overviewBafCache;
   }
+}
+
+async function getOverviewData(
+  sampleId: string,
+  caseId: string,
+  covOrBaf: "cov" | "baf",
+  apiURI: string,
+): Promise<Record<string, ApiCoverageDot[]>> {
+  const query = {
+    sample_id: sampleId,
+    case_id: caseId,
+    cov_or_baf: covOrBaf,
+  };
+
+  const dataType = covOrBaf == "cov" ? "coverage" : "baf";
+  const overviewData: {
+    region: string;
+    position: number[];
+    value: number[];
+    zoom: string | null;
+  }[] = await get(
+    new URL(`samples/sample/${dataType}/overview`, apiURI).href,
+    query,
+  );
+
+  const dataPerChrom: Record<string, ApiCoverageDot[]> = {};
+
+  overviewData.forEach((element) => {
+    if (dataPerChrom[element.region] === undefined) {
+      dataPerChrom[element.region] = [];
+    }
+    const points: ApiCoverageDot[] = zip(element.position, element.value).map(
+      (xy) => {
+        return {
+          pos: xy[0],
+          value: xy[1],
+        };
+      },
+    );
+    dataPerChrom[element.region] = points;
+  });
+
+  return dataPerChrom;
 }

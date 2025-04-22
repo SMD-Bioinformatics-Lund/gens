@@ -85,7 +85,6 @@ export class VariantTrack extends BaseAnnotationTrack {
           };
           if (isWithinElementVisibleBbox(element, point)) {
             const url = scoutBaseURL + "/document_id/" + element.id;
-            console.log(`Visit ${url}: Scout variant`);
             const win = window.open(url, "_blank");
             win.focus();
           }
@@ -347,7 +346,7 @@ export class VariantTrack extends BaseAnnotationTrack {
             },
             { color },
           );
-          console.log(
+          console.error(
             `Unhandled variant type ${variantCategory}; drawing default shape`,
           );
       }

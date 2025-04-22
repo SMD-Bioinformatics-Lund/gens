@@ -101,7 +101,6 @@ export class GensPopup extends ShadowBaseElement {
 
     const closeButton = this.root.querySelector("#close-popup");
     closeButton.addEventListener("click", () => {
-      console.log("Close clicked");
       this.remove();
     });
   }
