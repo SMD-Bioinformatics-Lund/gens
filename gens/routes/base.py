@@ -4,9 +4,10 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.encoders import jsonable_encoder
 
 from gens import version
-from gens.crud.search import search_annotations
+from gens.crud.search import search_annotations, text_search_suggestion
 from gens.crud.user import create_user as crud_create_user
 from gens.crud.user import get_user as crud_get_user
 from gens.crud.user import get_users as crud_get_users
@@ -44,12 +45,10 @@ def search(
 
 
 @router.get("/search/assistant", tags=[ApiTags.SEARCH])
-def search_assistant(query: SearchQueryParam, db: GensDb) -> SearchSuggestions:
+def search_assistant(query: SearchQueryParam, genome_build: GenomeBuild, db: GensDb) -> SearchSuggestions:
     """Suggest hits."""
-
-    raise HTTPException(status_code=HTTPStatus.NOT_IMPLEMENTED)
-
-    return SearchSuggestions()
+    result = text_search_suggestion(query, genome_build, db)
+    return jsonable_encoder(result)
 
 
 @router.get("/users", tags=[ApiTags.USER])

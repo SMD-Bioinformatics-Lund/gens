@@ -1,12 +1,18 @@
 """Functions realted to searching for annotations and suggesting results."""
 
+import logging
 import re
 from typing import Any
 
 from pymongo.database import Database
+from pymongo.collection import Collection
+from pymongo.cursor import Cursor
 
 from gens.db.collections import ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION
 from gens.models.genomic import GenomeBuild, GenomicRegion
+from gens.models.search import SearchSuggestions, Suggestion
+
+LOG = logging.getLogger(__name__)
 
 
 def search_annotations(
@@ -33,3 +39,50 @@ def search_annotations(
                 }
             )
     return None
+
+
+def text_search_suggestion(
+    query: str, genome_build: GenomeBuild, db: Database[Any]
+) -> SearchSuggestions:
+    """Query the database and suggest entries."""
+    # annotation searches
+    annot_hits = generic_text_search(
+        query=query,
+        genome_build=genome_build,
+        collection=db.get_collection(ANNOTATIONS_COLLECTION),
+        projection={"name": True}
+    )
+    annotations = [
+        Suggestion(text=hit["name"], record_id=hit["_id"], score=hit["score"])
+        for hit in annot_hits
+    ]
+    transc_hits = generic_text_search(
+        query=query,
+        genome_build=genome_build,
+        collection=db.get_collection(TRANSCRIPTS_COLLECTION),
+        projection={"gene_name": True}
+    )
+    transc = [
+        Suggestion(text=hit["gene_name"], record_id=hit["_id"], score=hit["score"])
+        for hit in transc_hits
+    ]
+    return SearchSuggestions(
+        annotation_suggestion=annotations,
+        transcript_suggestion=transc,
+    )
+
+
+def generic_text_search(
+    query: str, genome_build: GenomeBuild, collection: Collection[Any],
+    limit: int = 10, projection: dict[str, bool] = {}
+) -> Cursor[dict[str, Any]]:
+    """Make a text search against a generic collection."""
+    result_projection: dict[str, Any] = {
+        "score": {"$meta": "textScore"},
+        **projection
+    }
+    results = collection.find(
+        {"genome_build": genome_build, "$text": {"$search": query}},
+        result_projection
+    ).sort({"score": {"$meta": "textScore"}}).limit(limit)
+    return results

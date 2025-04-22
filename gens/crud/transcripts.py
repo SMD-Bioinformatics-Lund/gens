@@ -18,7 +18,10 @@ LOG = logging.getLogger(__name__)
 
 def _format_features(features: list[dict[str, Any]]) -> list[GenomePosition]:
     """Format a transcript features."""
-    return [GenomePosition(start=int(feat['start']), end=int(feat['end'])) for feat in features]
+    return [
+        GenomePosition(start=int(feat["start"]), end=int(feat["end"]))
+        for feat in features
+    ]
 
 
 def get_transcripts(
