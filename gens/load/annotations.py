@@ -185,7 +185,7 @@ AedRecords = list[AedRecord]
 
 
 def format_aed_entry(value: str, format: str) -> AedDatatypes:
-    """Format a aed entry using the defintion from the header."""
+    """Format a aed entry using the definition from the header."""
     match format:
         case "aed:String":
             return value
@@ -198,7 +198,10 @@ def format_aed_entry(value: str, format: str) -> AedDatatypes:
         case "aed:DateTime":
             return datetime.fromisoformat(value)
         case "aed:Color":
+            LOG.error(">>>", value)
             return Color(value)
+        case _ if format.startswith("aed:"):
+            return value
         case _:
             raise ValueError(f"Unknown format, {format}")
 
