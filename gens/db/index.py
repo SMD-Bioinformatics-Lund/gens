@@ -3,7 +3,7 @@
 import logging
 from typing import Any
 
-from pymongo import ASCENDING, IndexModel
+from pymongo import ASCENDING, IndexModel, TEXT
 from pymongo.database import Database
 
 from gens.db.collections import SAMPLES_COLLECTION
@@ -43,6 +43,11 @@ INDEXES = {
             name="genome_build",
             background=True,
         ),
+        IndexModel(
+            [("name", TEXT), ("description", TEXT), ("comments.comment", TEXT)],
+            name="text_annotation_name_description_comment",
+            background=True,
+        ),
     ],
     TRANSCRIPTS_COLLECTION: [
         IndexModel(
@@ -58,6 +63,11 @@ INDEXES = {
         IndexModel(
             [("genome_build", ASCENDING)],
             name="genome_build",
+            background=True,
+        ),
+        IndexModel(
+            [("gene_name", TEXT), ("hgnc_id", TEXT), ("refseq_id", TEXT)],
+            name="text_gene_hgnc_refseq",
             background=True,
         ),
     ],
