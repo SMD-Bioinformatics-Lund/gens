@@ -167,6 +167,19 @@ export function pointInRange(point: number, range: Rng): boolean {
 }
 
 /**
+ * Check if either end of target range is inside parent range
+ *
+ * @param targetRange
+ * @param parentRange
+ */
+export function rangeInRange(targetRange: Rng, parentRange: Rng): boolean {
+  return (
+    pointInRange(targetRange[0], parentRange) ||
+    pointInRange(targetRange[1], parentRange)
+  );
+}
+
+/**
  * range1 is a superset of range2, i.e.:
  *
  * range1[0] ---------------------- range1[1]
@@ -194,11 +207,10 @@ export function eventInBox(
 
 export function prefixNts(nts: number): string {
   if (nts < 10 ** 4) {
-    return `${nts} bp`
-  }
-  else if (nts < 10 ** 7) {
-    return `${Math.round(nts / 10 ** 3)} kb`
+    return `${nts} bp`;
+  } else if (nts < 10 ** 7) {
+    return `${Math.round(nts / 10 ** 3)} kb`;
   } else {
-    return `${Math.round(nts / 10 ** 6)} mb`
+    return `${Math.round(nts / 10 ** 6)} mb`;
   }
 }

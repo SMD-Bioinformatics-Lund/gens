@@ -1,5 +1,9 @@
 import { getOverlapInfo, getTrackHeight } from "../../util/expand_track_utils";
-import { getBandYScale } from "../../util/utils";
+import {
+  getBandYScale,
+  rangeInRange,
+  rangeSurroundsRange,
+} from "../../util/utils";
 import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track";
 import {
@@ -56,7 +60,13 @@ export class BandTrack extends CanvasTrack {
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
-    const { numberLanes, bandOverlaps } = getOverlapInfo(bands);
+    const bandsInView = bands.filter(
+      (band) =>
+        rangeInRange([band.start, band.end], xRange) ||
+        rangeSurroundsRange(xRange, [band.start, band.end]),
+    );
+
+    const { numberLanes, bandOverlaps } = getOverlapInfo(bandsInView);
 
     const labelSize =
       this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
@@ -72,7 +82,7 @@ export class BandTrack extends CanvasTrack {
       labelSize,
     );
 
-    const renderBand: RenderBand[] = bands.map((band) => {
+    const renderBand: RenderBand[] = bandsInView.map((band) => {
       if (bandOverlaps[band.id] == null) {
         throw Error(`Missing ID: ${band.id}`);
       }
@@ -131,6 +141,8 @@ function drawBand(
 
   const hoverBoxes: HoverBox[] = [];
 
+  const detailColor = STYLE.colors.darkGray;
+
   // Body
   const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
   const [xPxStart, xPxEnd] = xPxRange;
@@ -147,7 +159,7 @@ function drawBand(
       band.subBands.forEach((subBand) => {
         const xPxStart = xScale(subBand.start);
         const xPxEnd = xScale(subBand.end);
-        ctx.fillStyle = band.color;
+        ctx.fillStyle = detailColor;
         const width = xPxEnd - xPxStart;
         ctx.fillRect(xPxStart, y1, width, height);
       });
@@ -155,7 +167,7 @@ function drawBand(
 
     if (band.direction != null) {
       const isForward = band.direction == "+";
-      drawArrow(ctx, height, y1, isForward, xPxRange);
+      drawArrow(ctx, height, y1, isForward, xPxRange, detailColor);
     }
 
     if (isExpanded && band.label != null) {

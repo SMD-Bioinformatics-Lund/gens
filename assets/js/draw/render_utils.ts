@@ -199,12 +199,13 @@ export function drawArrow(
   y1: number,
   isForward: boolean,
   xPxRange: Rng,
+  color: string,
 ) {
   const [xPxStart, xPxEnd] = xPxRange;
   const arrowHeight = bandHeight;
   const arrowWidth = arrowHeight * 0.5;
   const arrowYCenter = y1 + bandHeight / 2;
-  ctx.fillStyle = STYLE.colors.darkGray;
+  ctx.fillStyle = color;
   ctx.beginPath();
   if (isForward) {
     ctx.moveTo(xPxEnd + arrowWidth, arrowYCenter);
