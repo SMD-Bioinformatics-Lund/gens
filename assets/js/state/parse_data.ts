@@ -68,10 +68,13 @@ export function getRenderDataSource(
   
 
 export function parseAnnotations(annotations: ApiSimplifiedAnnotation[]): RenderBand[] {
+
+  console.log(annotations);
+
   const results = annotations.map((annot) => {
     // const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
     const label = annot.name;
-    const colorStr = rgbArrayToString(annot.color);
+    const colorStr = annot.color != null ? rgbArrayToString(annot.color) : "black";
     return {
       id: `${annot.start}_${annot.end}_${colorStr}`,
       start: annot.start,

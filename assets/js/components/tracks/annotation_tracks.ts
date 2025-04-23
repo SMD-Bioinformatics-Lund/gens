@@ -1,4 +1,3 @@
-import { AnnotationTrack } from "../../unused/track/_annotation";
 import { removeChildren } from "../../util/utils";
 import { ShadowBaseElement as ShadowBaseElement } from "../util/shadowbase";
 import { BandTrack } from "./band_track";

@@ -39,11 +39,10 @@ export class API {
       }
 
       const query = {};
-      const annotsResult = await get(
+      const annotations = await get(
         new URL(`tracks/annotations/${trackId}`, this.apiURI).href,
         query,
-      );
-      const annotations = annotsResult.annotations as ApiSimplifiedAnnotation[];
+      ) as ApiSimplifiedAnnotation[];
 
       this.annotCache[trackId] = annotations;
     }

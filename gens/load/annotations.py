@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Iterator
 
 from pydantic import AnyHttpUrl, BaseModel, ValidationError
+from pydantic_core import PydanticCustomError
 from pydantic_extra_types.color import Color
 
 from gens.models.annotation import (
@@ -192,19 +193,32 @@ def format_aed_entry(value: str, format: str) -> AedDatatypes:
         case "aed:String":
             return value
         case "aed:Integer":
-            return int(value)
+            try:
+                return int(value)
+            except ValueError:
+                LOG.warning(f"Unable to parse {value} to integer, returning as string")
+                return str(value)
         case "aed:Boolean":
             return bool(value)
         case "aed:URI":
-            return AnyHttpUrl(value)
+            try:
+                return AnyHttpUrl(value)
+            except ValueError:
+                LOG.warning("Unable to parse {value} to URI, returning as string")
+                return str(value)
         case "aed:DateTime":
             return datetime.fromisoformat(value)
         case "aed:Color":
-            return Color(value)
+            try:
+                return Color(value)
+            except PydanticCustomError:
+                LOG.warning(f"Color could not be parsed correctly, returning string as is for value: {value}")
+                return str(value)
         case _ if format.startswith("aed:"):
             return value
         case _:
-            raise ValueError(f"Unknown format, {format}")
+            LOG.warning(f"Unknown format: {format}, returning as is")
+            return value
 
 
 def _parse_aed_header(
@@ -285,7 +299,7 @@ def parse_aed_file(file: Path) -> tuple[AedFileMetadata, AedRecords]:
         for line in aed_fh:
             raw_cell_values = [cell.strip() for cell in line.split("\t")]
             if len(raw_cell_values) > len(column_definitions):
-                raise ValueError("The header contains fewer columns than the table")
+                raise ValueError(f"The header contains fewer columns than the table for row: {raw_cell_values}")
 
             # format cell values and store temporarily in dict
             fmt_values: dict[str, AedDatatypes | None] = {}
@@ -420,30 +434,35 @@ def fmt_aed_to_annotation(
             #     GenericMetadata(field_name=field_name, value=str(value), type="string")
             # )
 
-    rec_name = record["name"]
-    rec_start = record["start"]
+    try:
+        rec_start = record["start"]
+    except KeyError:
+        raise ValueError(f"start not present in record: {record}")
     rec_end = record["end"]
     rec_color = record["color"]
     rec_sequence = record["sequence"]
 
-    if not rec_name or not isinstance(rec_name, str):
-        raise ValueError(f"name expected in string format, found: {rec_name}")
+    # if not rec_name or not isinstance(rec_name, str):
+    #     raise ValueError(f"name expected in string format, found: {rec_name} for record {record}")
 
-    if not rec_start or not isinstance(rec_start, int):
-        raise ValueError(f"start expected in int format, found: {rec_start}")
-    if not rec_end or not isinstance(rec_end, int):
-        raise ValueError(f"end expected in int format, found: {rec_end}")
+    if rec_start is None or not isinstance(rec_start, int) or rec_start <= 0:
+        raise ValueError(f"start expected to be present and greater than 0, found: {rec_start} for record {record}")
+
+    if rec_end is None or not isinstance(rec_end, int):
+        raise ValueError(f"end expected in int format, found: {rec_end} for record {record}")
 
     if not rec_color or not isinstance(rec_color, Color):
-        raise ValueError(f"end expected in int format, found: {rec_color}")
+        LOG.error(f"Unknown color: {rec_color}, assigning black")
+        rec_color = Color("#000000")
+        # raise ValueError(f"color expected in Color format, found: {rec_color} for record {record}")
 
-    if not rec_sequence or not isinstance(rec_sequence, str):
+    if rec_sequence is None or not isinstance(rec_sequence, str):
         raise ValueError(f"sequence expected in str format, found: {rec_sequence}")
 
     # build metadata
     return AnnotationRecord(
         track_id=track_id,
-        name=rec_name,
+        name=str(record["name"]),
         genome_build=genome_build,
         chrom=Chromosome(rec_sequence.strip("chr")),
         start=rec_start,
