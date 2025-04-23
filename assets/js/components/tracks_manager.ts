@@ -77,6 +77,7 @@ export class TracksManager extends HTMLElement {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
     const coverageTrack = new DotTrack(
+      "log2_cov",
       "Log2 Ratio",
       trackHeight.thick,
       COV_Y_RANGE,
@@ -90,6 +91,7 @@ export class TracksManager extends HTMLElement {
       },
     );
     const bafTrack = new DotTrack(
+      "baf",
       "B Allele Freq",
       trackHeight.thick,
       BAF_Y_RANGE,
@@ -102,6 +104,7 @@ export class TracksManager extends HTMLElement {
       },
     );
     const variantTrack = new BandTrack(
+      "variant",
       "Variant",
       trackHeight.thin,
       async () => {
@@ -127,6 +130,7 @@ export class TracksManager extends HTMLElement {
       },
     );
     const transcriptTrack = new BandTrack(
+      "transcript",
       "Transcript",
       trackHeight.thin,
       async () => {
@@ -150,6 +154,7 @@ export class TracksManager extends HTMLElement {
       },
     );
     const ideogramTrack = new IdeogramTrack(
+      "ideogram",
       "Ideogram",
       trackHeight.extraThin,
       async () => {
@@ -179,6 +184,7 @@ export class TracksManager extends HTMLElement {
     }
 
     const overviewTrackCov = new OverviewTrack(
+      "overview_cov",
       "Overview (cov)",
       trackHeight.thick,
       chromSizes,
@@ -193,6 +199,7 @@ export class TracksManager extends HTMLElement {
       },
     );
     const overviewTrackBaf = new OverviewTrack(
+      "overview_baf",
       "Overview (baf)",
       trackHeight.thick,
       chromSizes,
@@ -251,6 +258,7 @@ function getAnnotTrack(
   };
 
   const track = new BandTrack(
+    sourceId,
     label,
     trackHeight,
     () => getAnnotTrackData(sourceId, getXRange, getAnnotation),

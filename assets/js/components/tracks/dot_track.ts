@@ -15,13 +15,14 @@ export class DotTrack extends CanvasTrack {
   yTicks: number[];
 
   constructor(
+    id: string,
     label: string,
     trackHeight: number,
     yRange: Rng,
     yTicks: number[],
     getRenderData: () => Promise<DotTrackData>,
   ) {
-    super(label, trackHeight);
+    super(id, label, trackHeight);
     this.getRenderData = getRenderData;
     this.yRange = yRange;
     this.yTicks = yTicks;

@@ -53,7 +53,6 @@ export async function initCanvases({
     },
     () => {
       const region = inputControls.getRegion();
-      console.log(region);
       return [region.start, region.end];
     }
   );
