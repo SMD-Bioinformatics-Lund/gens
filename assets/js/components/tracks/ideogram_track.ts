@@ -139,6 +139,8 @@ function setupZoomMarkerElement(trackHeight: number): HTMLDivElement {
   markerElement.style.top = "0px";
   markerElement.style.marginLeft = `${leftMargin}px`;
 
+  markerElement.style.pointerEvents = "none";
+
   return markerElement;
 }
 
