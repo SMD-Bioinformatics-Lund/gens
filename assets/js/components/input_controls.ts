@@ -41,6 +41,38 @@ template.innerHTML = String.raw`
   </div>
 `;
 
+class RegionController {
+  _chrom: string;
+  _start: number;
+  _end: number;
+  constructor(region: Region) {
+    this._chrom = region.chrom;
+    this._start = region.start;
+    this._end = region.end;
+  }
+
+  updateRange(range: Rng) {
+    this._start = range[0];
+    this._end = range[1];
+  }
+
+  getRange(): Rng {
+    return [this._start, this._end];
+  }
+
+  getString() {
+    return `${this._chrom}:${this._start}-${this._end}`;
+  }
+
+  getRegion(): Region {
+    return {
+      chrom: this._chrom,
+      start: this._start,
+      end: this._end
+    }
+  }
+}
+
 export class InputControls extends HTMLElement {
   private annotationSelectElement: HTMLSelectElement;
   private annotationSelectChoices: Choices;
@@ -51,7 +83,7 @@ export class InputControls extends HTMLElement {
   private zoomOut: HTMLButtonElement;
   private regionField: HTMLInputElement;
 
-  private region: Region;
+  private region: RegionController;
 
   connectedCallback() {
     this.appendChild(template.content.cloneNode(true));
@@ -74,7 +106,7 @@ export class InputControls extends HTMLElement {
   }
 
   getRegion(): Region {
-    return this.region;
+    return this.region.getRegion();
   }
 
   getAnnotSources(): { id: string; label: string }[] {
@@ -98,15 +130,14 @@ export class InputControls extends HTMLElement {
   }
 
   updateChromosome(chrom: string, chromLength: number) {
-    this.region.chrom = chrom;
-    this.region.start = 1;
-    this.region.end = chromLength;
-
-    this.regionField.value = `${this.region.chrom}:${this.region.start}-${this.region.end}`;
+    this.region = new RegionController({chrom, start:1, end: chromLength});
+    this.regionField.value = this.region.getString();
+    // this.regionField.value = `${this.region._chrom}:${this.region._start}-${this.region._end}`;
   }
 
   updatePosition(range: [number, number]) {
-    this.regionField.value = `${this.region.chrom}:${range[0]}-${range[1]}`;
+    this.region.updateRange(range);
+    this.regionField.value = this.region.getString();
   }
 
   initialize(
@@ -116,7 +147,7 @@ export class InputControls extends HTMLElement {
     onPositionChange: (newXRange: [number, number]) => void,
     annotationSources: ApiAnnotationTrack[],
   ) {
-    this.region = fullRegion;
+    this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);
 
     // FIXME: Move this out from here
@@ -142,29 +173,31 @@ export class InputControls extends HTMLElement {
 
     this.panLeft.onclick = () => {
       const newXRange = getPan(this.getRange(), "left");
-      this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
+      this.updatePosition(newXRange);
       onPositionChange(newXRange);
     };
 
     this.panRight.onclick = () => {
-      const newXRange = getPan(this.getRange(), "right");
-      this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
+      const newXRangeRaw = getPan(this.getRange(), "right");
+      const newMax = Math.min(newXRangeRaw[1], fullRegion.end);
+      const newXRange: Rng = [newXRangeRaw[0], newMax];
+      this.updatePosition(newXRange);
       onPositionChange(newXRange);
     };
 
     this.zoomIn.onclick = () => {
       const currXRange = this.getRange();
       const newXRange = zoomInNew(currXRange);
-      this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newXRange[1]}`;
+      this.updatePosition(newXRange);
       onPositionChange(newXRange);
     };
 
     this.zoomOut.onclick = () => {
       const currXRange = this.getRange();
-      const newXRange = zoomOutNew(currXRange);
-      // const newMin = newXRange[0];
-      const newMax = Math.min(newXRange[1], fullRegion.end);
-      this.regionField.value = `${fullRegion.chrom}:${newXRange[0]}-${newMax}`;
+      const newXRangeRaw = zoomOutNew(currXRange);
+      const newMax = Math.min(newXRangeRaw[1], fullRegion.end);
+      const newXRange: Rng = [newXRangeRaw[0], newMax];
+      this.updatePosition(newXRange);
       onPositionChange(newXRange);
     };
 

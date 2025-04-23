@@ -1,11 +1,37 @@
 import { STYLE } from "../constants";
-import { rgbArrayToString } from "../draw/render_utils";
-import { transformMap } from "../util/utils";
+import { prefixNts, transformMap } from "../util/utils";
 import { API } from "./api";
+
+// FIXME: Move to a correct place
+function calculateZoom (xRange: Rng) {
+  const xRangeSize = xRange[1] - xRange[0];
+  let returnVal;
+  if (xRangeSize > 100 * 10 ** 6) {
+    returnVal = "o";
+  } else if (xRangeSize > 50 * 10 ** 6) {
+    returnVal = "a";
+  } else if (xRangeSize > 10 * 10 ** 6) {
+    returnVal = "b";
+  } else if (xRangeSize > 500 * 10 ** 3 ) {
+    returnVal = "c";
+  } else {
+    returnVal = "d";
+  }
+  console.log(
+    "Current xRange: ",
+    xRange,
+    "size: ",
+    prefixNts(xRange[1] - xRange[0]),
+    "returning zoom",
+    returnVal,
+  );
+  return returnVal;
+};
 
 export function getRenderDataSource(
   gensAPI: API,
   getChrom: () => string,
+  getXRange: () => Rng,
 ): RenderDataSource {
   const getChromInfo = async () => {
     return await gensAPI.getChromData(getChrom());
@@ -17,12 +43,20 @@ export function getRenderDataSource(
   };
 
   const getCovData = async () => {
-    const covRaw = await gensAPI.getCov(getChrom());
+
+    const xRange = getXRange();
+    const zoom = calculateZoom(xRange);
+
+    const covRaw = await gensAPI.getCov(getChrom(), zoom, xRange);
     return parseCoverageDot(covRaw, STYLE.colors.teal);
   };
 
   const getBafData = async () => {
-    const bafRaw = await gensAPI.getBaf(getChrom());
+
+    const xRange = getXRange();
+    const zoom = calculateZoom(xRange);
+
+    const bafRaw = await gensAPI.getBaf(getChrom(), zoom, xRange);
     return parseCoverageDot(bafRaw, STYLE.colors.orange);
   };
 

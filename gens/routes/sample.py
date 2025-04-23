@@ -1,6 +1,7 @@
 """Routes for getting coverage information."""
 
 from http import HTTPStatus
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException
 
@@ -50,6 +51,7 @@ async def get_genome_coverage(
     db: GensDb,
     start: int = 1,
     end: int | None = None,
+    zoom_level: Literal['o', 'a', 'b', 'c', 'd'] = 'a',
 ) -> GenomeCoverage:
     """Get genome coverage information."""
 
@@ -61,6 +63,7 @@ async def get_genome_coverage(
         case_id=case_id,
         region=region,
         data_type=data_type,
+        zoom_level=zoom_level
     )
 
 

@@ -51,6 +51,11 @@ export async function initCanvases({
       const region = inputControls.getRegion();
       return region.chrom;
     },
+    () => {
+      const region = inputControls.getRegion();
+      console.log(region);
+      return [region.start, region.end];
+    }
   );
 
   const allChromData = await api.getAllChromData();

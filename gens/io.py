@@ -6,7 +6,7 @@ import json
 import logging
 from fractions import Fraction
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pymongo.collection import Collection
 from pysam import TabixFile
@@ -49,7 +49,14 @@ def tabix_query(
     return [r.split("\t") for r in records]
 
 
-def get_scatter_data(collection: Collection[dict[str, Any]], sample_id: str, case_id: str, region: GenomicRegion, data_type: ScatterDataType) -> GenomeCoverage:  # type: ignore
+def get_scatter_data(
+        collection: Collection[dict[str, Any]],
+        sample_id: str,
+        case_id: str,
+        region: GenomicRegion,
+        data_type: ScatterDataType,
+        zoom_level: Literal['o', 'a', 'b', 'c', 'd'],
+    ) -> GenomeCoverage:  # type: ignore
     """Development entrypoint for getting the coverage of a region."""
     # TODO respond with 404 error if file is not found
     sample_obj = get_sample(collection, sample_id, case_id)
@@ -59,8 +66,12 @@ def get_scatter_data(collection: Collection[dict[str, Any]], sample_id: str, cas
     else:
         tabix_file = TabixFile(str(sample_obj.baf_file))
 
+    valid_zoom_levels = {"o", "a", "b", "c", "d"}
+    if zoom_level not in valid_zoom_levels:
+        raise ValueError(f"Unexpected zoom level: {zoom_level}, valid are: {valid_zoom_levels}")
+
     # Tabix
-    record_name = f"a_{region.chromosome}"
+    record_name = f"{zoom_level}_{region.chromosome}"
 
     try:
         records = tabix_file.fetch(record_name, region.start, region.end)
@@ -104,9 +115,7 @@ def get_overview_data(file: Path, data_type: ScatterDataType) -> list[GenomeCove
 
     results: list[GenomeCoverage] = []
     for chrom in json_data.keys():
-        chrom_data = json_data[chrom][
-            "cov" if data_type == ScatterDataType.COV else "baf"
-        ]
+        chrom_data = json_data[chrom]["cov" if data_type == ScatterDataType.COV else "baf"]
 
         results.append(
             GenomeCoverage(

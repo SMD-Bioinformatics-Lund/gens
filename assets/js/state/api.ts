@@ -1,6 +1,6 @@
 import { get } from "../util/fetch";
 import { CHROMOSOMES } from "../constants";
-import { zip } from "../util/utils";
+import { stringToHash, zip } from "../util/utils";
 
 export class API {
   sampleId: string;
@@ -64,66 +64,75 @@ export class API {
     return this.annotsPerChromCache[trackId][chrom];
   }
 
-  private covCache: Record<string, ApiCoverageDot[]> = {};
-  async getCov(chrom: string): Promise<ApiCoverageDot[]> {
-    const isCached = this.covCache[chrom] !== undefined;
-    if (!isCached) {
-      const query = {
-        sample_id: this.sampleId,
-        case_id: this.caseId,
-        chromosome: chrom,
-        start: 1,
-      };
+  cachedZoomLevels = ["o", "a", "b", "c"];
 
-      const regionResult: { position: number[]; value: number[] } = await get(
-        new URL(`samples/sample/coverage`, this.apiURI).href,
-        query,
+  private covChrZoomCache: Record<string, Record<string, ApiCoverageDot[]>> =
+    {};
+  async getCov(
+    chrom: string,
+    zoom: string,
+    xRange: Rng,
+  ): Promise<ApiCoverageDot[]> {
+    const endpoint = "samples/sample/coverage";
+
+    if (this.cachedZoomLevels.includes(zoom)) {
+      const chrIsCached = this.covChrZoomCache[chrom] !== undefined;
+      if (!chrIsCached) {
+        this.covChrZoomCache[chrom] = await getDataPerZoom(
+          chrom,
+          this.cachedZoomLevels,
+          endpoint,
+          this.sampleId,
+          this.caseId,
+          this.apiURI,
+        );
+      }
+      return this.covChrZoomCache[chrom][zoom];
+    } else {
+      return getCovData(
+        this.apiURI,
+        endpoint,
+        this.sampleId,
+        this.caseId,
+        chrom,
+        zoom,
+        xRange,
       );
-
-      const renderData: ApiCoverageDot[] = zip(
-        regionResult.position,
-        regionResult.value,
-      ).map(([pos, val]) => {
-        return {
-          pos: pos,
-          value: val,
-        };
-      });
-
-      this.covCache[chrom] = renderData;
     }
-    return this.covCache[chrom];
   }
 
-  private bafCache: Record<string, ApiCoverageDot[]> = {};
-  async getBaf(chrom: string): Promise<ApiCoverageDot[]> {
-    const isCached = this.bafCache[chrom] !== undefined;
-    if (!isCached) {
-      const query = {
-        sample_id: this.sampleId,
-        case_id: this.caseId,
-        chromosome: chrom,
-        start: 1,
-      };
+  private bafCache: Record<string, Record<string, ApiCoverageDot[]>> = {};
+  async getBaf(
+    chrom: string,
+    zoom: string,
+    xRange: Rng,
+  ): Promise<ApiCoverageDot[]> {
+    const endpoint = "samples/sample/baf";
 
-      const regionResult: { position: number[]; value: number[] } = await get(
-        new URL(`samples/sample/baf`, this.apiURI).href,
-        query,
+    if (this.cachedZoomLevels.includes(zoom)) {
+      const chrIsCached = this.bafCache[chrom] !== undefined;
+      if (!chrIsCached) {
+        this.bafCache[chrom] = await getDataPerZoom(
+          chrom,
+          this.cachedZoomLevels,
+          endpoint,
+          this.sampleId,
+          this.caseId,
+          this.apiURI,
+        );
+      }
+      return this.bafCache[chrom][zoom];
+    } else {
+      return getCovData(
+        this.apiURI,
+        endpoint,
+        this.sampleId,
+        this.caseId,
+        chrom,
+        zoom,
+        xRange,
       );
-
-      const renderData: ApiCoverageDot[] = zip(
-        regionResult.position,
-        regionResult.value,
-      ).map(([pos, val]) => {
-        return {
-          pos: pos,
-          value: val,
-        };
-      });
-
-      this.bafCache[chrom] = renderData;
     }
-    return this.bafCache[chrom];
   }
 
   private transcriptCache: Record<string, ApiSimplifiedTranscript[]> = {};
@@ -231,6 +240,77 @@ export class API {
     }
     return this.overviewBafCache;
   }
+}
+
+async function getCovData(
+  apiURI: string,
+  endpoint: string,
+  sampleId: string,
+  caseId: string,
+  chrom: string,
+  zoom: string,
+  range?: Rng,
+): Promise<ApiCoverageDot[]> {
+  let query;
+  if (range != null) {
+    query = {
+      sample_id: sampleId,
+      case_id: caseId,
+      chromosome: chrom,
+      zoom_level: zoom,
+      start: range[0],
+      end: range[1],
+    };
+  } else {
+    query = {
+      sample_id: sampleId,
+      case_id: caseId,
+      chromosome: chrom,
+      zoom_level: zoom,
+      start: 1
+    };  
+  }
+
+  const regionResult: { position: number[]; value: number[] } = await get(
+    new URL(endpoint, apiURI).href,
+    query,
+  );
+  const parsedResult: ApiCoverageDot[] = zip(
+    regionResult.position,
+    regionResult.value,
+  ).map(([pos, val]) => {
+    return {
+      pos: pos,
+      value: val,
+    };
+  });
+
+  return parsedResult;
+}
+
+async function getDataPerZoom(
+  chrom: string,
+  zoomLevels: string[],
+  endpoint: string,
+  sampleId: string,
+  caseId: string,
+  apiURI: string,
+): Promise<Record<string, ApiCoverageDot[]>> {
+  const dataPerZoom: Record<string, ApiCoverageDot[]> = {};
+
+  for (const zoom of zoomLevels) {
+    const parsedResult = await getCovData(
+      apiURI,
+      endpoint,
+      sampleId,
+      caseId,
+      chrom,
+      zoom,
+    );
+    dataPerZoom[zoom] = parsedResult;
+  }
+
+  return dataPerZoom;
 }
 
 async function getOverviewData(
