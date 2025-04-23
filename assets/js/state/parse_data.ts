@@ -12,7 +12,7 @@ export function getRenderDataSource(
     };
   
     const getAnnotation = async (recordId: string) => {
-      const annotData = await gensAPI.getAnnotations(recordId);
+      const annotData = await gensAPI.getAnnotations(recordId, getChrom());
       return parseAnnotations(annotData);
     };
   
@@ -69,17 +69,14 @@ export function getRenderDataSource(
 
 export function parseAnnotations(annotations: ApiSimplifiedAnnotation[]): RenderBand[] {
 
-  console.log(annotations);
-
   const results = annotations.map((annot) => {
-    // const rankScore = annot.score ? `, Rankscore: ${annot.score}` : "";
     const label = annot.name;
-    const colorStr = annot.color != null ? rgbArrayToString(annot.color) : "black";
+    // const colorStr = annot.color != null ? rgbArrayToString(annot.color) : "black";
     return {
-      id: `${annot.start}_${annot.end}_${colorStr}`,
+      id: `${annot.start}_${annot.end}_${annot.color}_${label}`,
       start: annot.start,
       end: annot.end,
-      color: colorStr,
+      color: annot.color,
       label,
       hoverInfo: `${annot.name} (${annot.start}-${annot.end})`,
     };
@@ -87,13 +84,10 @@ export function parseAnnotations(annotations: ApiSimplifiedAnnotation[]): Render
   return results;
 }
 
-// FIXME: Should this one be here?
 function parseExons(
   geneId: string,
   exons: {start: number, end: number}[],
 ): RenderBand[] {
-  // const exons = transcriptParts.filter((part) => part.feature == "exon");
-
   return exons.map((part, i) => {
     const renderBand = {
       id: `${geneId}_exon${i + 1}_${part.start}_${part.end}`,

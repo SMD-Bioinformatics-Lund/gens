@@ -1,4 +1,4 @@
-import Choices, { InputChoice } from "choices.js";
+import Choices, { EventChoice, InputChoice } from "choices.js";
 import {
   getPan,
   parseRegionDesignation,
@@ -77,8 +77,15 @@ export class InputControls extends HTMLElement {
     return this.region;
   }
 
-  getAnnotSources(): string[] {
-    return this.annotationSelectChoices.getValue(true) as string[];
+  getAnnotSources(): {id: string, label: string}[] {
+    const selectedObjs = this.annotationSelectChoices.getValue() as EventChoice[];
+    const returnVals = selectedObjs.map((obj) => {
+      return {
+        id: obj.value,
+        label: obj.label.toString()
+      }
+    })
+    return returnVals;
   }
 
   getRange(): [number, number] {

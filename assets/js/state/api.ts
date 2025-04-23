@@ -30,12 +30,12 @@ export class API {
     return annotSources;
   }
 
-  private annotCache: Record<string, ApiSimplifiedAnnotation[]> = {};
-  async getAnnotations(trackId: string): Promise<ApiSimplifiedAnnotation[]> {
-    const isCached = this.annotCache[trackId];
+  private annotsPerChromCache: Record<string, Record<string, ApiSimplifiedAnnotation[]>> = {};
+  async getAnnotations(trackId: string, chrom: string): Promise<ApiSimplifiedAnnotation[]> {
+    const isCached = this.annotsPerChromCache[chrom] && this.annotsPerChromCache[trackId];
     if (!isCached) {
-      if (this.annotCache[trackId] === undefined) {
-        this.annotCache[trackId] = [];
+      if (this.annotsPerChromCache[trackId] === undefined) {
+        this.annotsPerChromCache[trackId] = {};
       }
 
       const query = {};
@@ -44,9 +44,17 @@ export class API {
         query,
       ) as ApiSimplifiedAnnotation[];
 
-      this.annotCache[trackId] = annotations;
+      const annotsPerChrom: Record<string, ApiSimplifiedAnnotation[]> = {};
+      annotations.forEach((annot) => {
+        if (annotsPerChrom[annot.chrom] === undefined) {
+          annotsPerChrom[annot.chrom] = [];
+        }
+        annotsPerChrom[annot.chrom].push(annot);
+      })
+
+      this.annotsPerChromCache[trackId] = annotsPerChrom;
     }
-    return this.annotCache[trackId];
+    return this.annotsPerChromCache[trackId][chrom];
   }
 
   private covCache: Record<string, ApiCoverageDot[]> = {};

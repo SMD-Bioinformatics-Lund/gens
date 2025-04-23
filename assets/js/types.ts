@@ -13,7 +13,8 @@ interface ApiSimplifiedAnnotation {
   type: string,
   start: number,
   end: number,
-  color: number[] | null
+  chrom: string,
+  color: string | null
 }
 
 interface ApiSimplifiedTranscript {

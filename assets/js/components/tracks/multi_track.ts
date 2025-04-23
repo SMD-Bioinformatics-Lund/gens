@@ -7,35 +7,35 @@ template.innerHTML = String.raw`
     <div id="container"></div>
 `;
 
-export class AnnotationTracks extends ShadowBaseElement {
+export class MultiTracks extends ShadowBaseElement {
   protected _root: ShadowRoot;
   public label: string = "Annotation tracks";
 
   trackHeight: number;
   getPopupInfo: (band: RenderBand) => PopupContent;
 
-  getAnnotationSources: () => string[];
-  getTrack: (string) => BandTrack;
+  getSources: () => { label: string; id: string }[];
+  getTrack: (id: string, label: string) => BandTrack;
   tracks: BandTrack[] = [];
 
   constructor(
-    getAnnotSources: () => string[],
-    getTrack: (source: string) => BandTrack,
+    getSources: () => { label: string; id: string }[],
+    getTrack: (id: string, label: string) => BandTrack,
   ) {
     super(template);
 
-    this.getAnnotationSources = getAnnotSources;
+    this.getSources = getSources;
     this.getTrack = getTrack;
   }
 
   connectedCallback(): void {
-    const selectedSources = this.getAnnotationSources();
+    const selectedSources = this.getSources();
     const initialize = false;
-    this.updateTracks(selectedSources, initialize);    
+    this.updateTracks(selectedSources, initialize);
   }
 
   initialize() {
-    const selectedSources = this.getAnnotationSources();
+    const selectedSources = this.getSources();
     const initialize = true;
     this.updateTracks(selectedSources, initialize);
   }
@@ -52,13 +52,16 @@ export class AnnotationTracks extends ShadowBaseElement {
     }
   }
 
-  async updateTracks(selectedSources: string[], initialize: boolean) {
+  async updateTracks(
+    selectedSources: { label: string; id: string }[],
+    initialize: boolean,
+  ) {
     const container = this.root.getElementById("container");
     removeChildren(container);
 
     const tracks = [];
     for (const source of selectedSources) {
-      const track = this.getTrack(source);
+      const track = this.getTrack(source.id, source.label);
       container.appendChild(track);
       if (initialize) {
         track.initialize();
@@ -69,10 +72,12 @@ export class AnnotationTracks extends ShadowBaseElement {
   }
 
   async render(updateData: boolean) {
-
-    const selectedSources = this.getAnnotationSources();
-    const trackSources = this.tracks.map((track) => track.label);
-    const tracksDiffer = checkTracksDiffer(selectedSources, trackSources);
+    const selectedSources = this.getSources();
+    const trackSources = this.tracks.map((track) => track.id);
+    const tracksDiffer = checkTracksDiffer(
+      selectedSources.map((s) => s.id),
+      trackSources,
+    );
 
     if (tracksDiffer) {
       const initialize = true;
@@ -82,12 +87,17 @@ export class AnnotationTracks extends ShadowBaseElement {
   }
 }
 
-function checkTracksDiffer(selectedSources: string[], trackSources: string[]) {
-  const addedSources = selectedSources.filter((s) => !trackSources.includes(s));
-  const removedSources = trackSources.filter(
-    (s) => !selectedSources.includes(s),
+function checkTracksDiffer(
+  selectedSourceIds: string[],
+  trackSourceIds: string[],
+) {
+  const addedSources = selectedSourceIds.filter(
+    (s) => !trackSourceIds.includes(s),
+  );
+  const removedSources = trackSourceIds.filter(
+    (s) => !selectedSourceIds.includes(s),
   );
   return addedSources.length != 0 || removedSources.length != 0;
 }
 
-customElements.define("annotation-tracks", AnnotationTracks);
+customElements.define("annotation-tracks", MultiTracks);
