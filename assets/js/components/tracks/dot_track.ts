@@ -43,7 +43,8 @@ export class DotTrack extends CanvasTrack {
     const { xRange, dots } = this.renderData;
     const yRange = this.yRange;
 
-    const dimensions = super.syncDimensions();
+    super.syncDimensions();
+    const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
     const xScale = getLinearScale(xRange, [0, dimensions.width]);

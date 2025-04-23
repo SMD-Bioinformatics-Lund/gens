@@ -98,7 +98,7 @@ export function renderDots(
   });
 }
 
-export function newDrawRect(
+export function drawRect(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -167,7 +167,10 @@ export function rgbArrayToString(rgbArray: number[]): string {
 }
 
 
-
+/**
+ * Builds a function used to map from domain (i.e. nucleotides)
+ * to range (i.e. pixels)
+ */
 export function getLinearScale(domain: Rng, range: Rng): Scale {
   const scale = (pos: number) => {
     return linearScale(pos, domain, range);

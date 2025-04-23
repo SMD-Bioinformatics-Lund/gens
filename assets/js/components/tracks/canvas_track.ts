@@ -83,7 +83,6 @@ export class CanvasTrack extends ShadowBaseElement {
     return nNts / nPxs;
   }
 
-
   initialize() {
     if (!this.isConnected) {
       throw Error(
@@ -138,7 +137,6 @@ export class CanvasTrack extends ShadowBaseElement {
     const tooltip = new Tooltip(document.body);
 
     this.canvas.addEventListener("click", (event) => {
-
       if (!this.hoverTargets || !onElementClick) {
         return;
       }
@@ -162,7 +160,9 @@ export class CanvasTrack extends ShadowBaseElement {
       const hovered = this.hoverTargets.find((target) =>
         eventInBox(event, target.box),
       );
-      this.canvas.style.cursor = hovered ? "pointer" : "default";
+      if (onElementClick) {
+        this.canvas.style.cursor = hovered ? "pointer" : "default";
+      }
 
       if (hovered) {
         tooltip.tooltipEl.textContent = hovered.label;
@@ -179,7 +179,6 @@ export class CanvasTrack extends ShadowBaseElement {
   setHoverTargets(hoverTargets: HoverBox[]) {
     this.hoverTargets = hoverTargets;
   }
-
 
   drawTrackLabel(shiftRight: number = 0) {
     drawLabel(
@@ -223,7 +222,6 @@ export class CanvasTrack extends ShadowBaseElement {
       width: displayWidth,
       height: displayHeight,
     };
-    return this.dimensions;
   }
 }
 
