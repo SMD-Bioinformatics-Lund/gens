@@ -30,19 +30,26 @@ export class API {
     return annotSources;
   }
 
-  private annotsPerChromCache: Record<string, Record<string, ApiSimplifiedAnnotation[]>> = {};
-  async getAnnotations(trackId: string, chrom: string): Promise<ApiSimplifiedAnnotation[]> {
-    const isCached = this.annotsPerChromCache[chrom] && this.annotsPerChromCache[trackId];
+  private annotsPerChromCache: Record<
+    string,
+    Record<string, ApiSimplifiedAnnotation[]>
+  > = {};
+  async getAnnotations(
+    trackId: string,
+    chrom: string,
+  ): Promise<ApiSimplifiedAnnotation[]> {
+    const isCached =
+      this.annotsPerChromCache[chrom] && this.annotsPerChromCache[trackId];
     if (!isCached) {
       if (this.annotsPerChromCache[trackId] === undefined) {
         this.annotsPerChromCache[trackId] = {};
       }
 
       const query = {};
-      const annotations = await get(
+      const annotations = (await get(
         new URL(`tracks/annotations/${trackId}`, this.apiURI).href,
         query,
-      ) as ApiSimplifiedAnnotation[];
+      )) as ApiSimplifiedAnnotation[];
 
       const annotsPerChrom: Record<string, ApiSimplifiedAnnotation[]> = {};
       annotations.forEach((annot) => {
@@ -50,7 +57,7 @@ export class API {
           annotsPerChrom[annot.chrom] = [];
         }
         annotsPerChrom[annot.chrom].push(annot);
-      })
+      });
 
       this.annotsPerChromCache[trackId] = annotsPerChrom;
     }

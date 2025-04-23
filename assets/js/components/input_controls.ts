@@ -77,14 +77,15 @@ export class InputControls extends HTMLElement {
     return this.region;
   }
 
-  getAnnotSources(): {id: string, label: string}[] {
-    const selectedObjs = this.annotationSelectChoices.getValue() as EventChoice[];
+  getAnnotSources(): { id: string; label: string }[] {
+    const selectedObjs =
+      this.annotationSelectChoices.getValue() as EventChoice[];
     const returnVals = selectedObjs.map((obj) => {
       return {
         id: obj.value,
-        label: obj.label.toString()
-      }
-    })
+        label: obj.label.toString(),
+      };
+    });
     return returnVals;
   }
 

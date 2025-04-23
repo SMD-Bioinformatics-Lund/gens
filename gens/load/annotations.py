@@ -427,13 +427,12 @@ def fmt_aed_to_annotation(
             )
         else:
 
-            if not value:
-                raise ValueError(f"Unexpected point for value: {value}")
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=str(value), type="string")
+            )
 
-            # metadata.append(
-            #     GenericMetadata(field_name=field_name, value=str(value), type="string")
-            # )
-
+    # Various checks to make sure the received data is in expected format
+    # This data is manually entered, meaning that various types of errors might and will be found here
     try:
         rec_start = record["start"]
     except KeyError:
@@ -441,9 +440,6 @@ def fmt_aed_to_annotation(
     rec_end = record["end"]
     rec_color = record["color"]
     rec_sequence = record["sequence"]
-
-    # if not rec_name or not isinstance(rec_name, str):
-    #     raise ValueError(f"name expected in string format, found: {rec_name} for record {record}")
 
     if rec_start is None or not isinstance(rec_start, int) or rec_start <= 0:
         raise ValueError(f"start expected to be present and greater than 0, found: {rec_start} for record {record}")
@@ -454,7 +450,6 @@ def fmt_aed_to_annotation(
     if not rec_color or not isinstance(rec_color, Color):
         LOG.error(f"Unknown color: {rec_color}, assigning black")
         rec_color = Color("#000000")
-        # raise ValueError(f"color expected in Color format, found: {rec_color} for record {record}")
 
     if rec_sequence is None or not isinstance(rec_sequence, str):
         raise ValueError(f"sequence expected in str format, found: {rec_sequence}")

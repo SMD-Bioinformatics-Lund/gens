@@ -100,4 +100,4 @@ function checkTracksDiffer(
   return addedSources.length != 0 || removedSources.length != 0;
 }
 
-customElements.define("annotation-tracks", MultiTracks);
+customElements.define("multi-tracks", MultiTracks);
