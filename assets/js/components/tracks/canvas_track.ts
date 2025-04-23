@@ -38,6 +38,7 @@ template.innerHTML = String.raw`
 `;
 
 export class CanvasTrack extends ShadowBaseElement {
+  public id: string;
   public label: string;
 
   protected canvas: HTMLCanvasElement;
@@ -62,9 +63,10 @@ export class CanvasTrack extends ShadowBaseElement {
     return this.expander.isExpanded;
   }
 
-  constructor(label: string, defaultTrackHeight: number) {
+  constructor(id: string, label: string, defaultTrackHeight: number) {
     super(template);
 
+    this.id = id;
     this.label = label;
     this.defaultTrackHeight = defaultTrackHeight;
   }

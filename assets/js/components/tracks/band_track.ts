@@ -20,12 +20,13 @@ export class BandTrack extends CanvasTrack {
   getPopupInfo: (box: HoverBox) => PopupContent;
 
   constructor(
+    id: string,
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
     getPopupInfo: (box: HoverBox) => PopupContent,
   ) {
-    super(label, trackHeight);
+    super(id, label, trackHeight);
 
     this.getRenderData = getRenderData;
     this.getPopupInfo = getPopupInfo;
@@ -60,11 +61,12 @@ export class BandTrack extends CanvasTrack {
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
-    const bandsInView = bands.filter(
-      (band) =>
-        rangeInRange([band.start, band.end], xRange) ||
-        rangeSurroundsRange(xRange, [band.start, band.end]),
-    );
+    const bandsInView = bands.filter((band) => {
+      const inRange = rangeInRange([band.start, band.end], xRange);
+      const surrounding = rangeSurroundsRange([band.start, band.end], xRange);
+
+      return inRange || surrounding;
+    });
 
     const { numberLanes, bandOverlaps } = getOverlapInfo(bandsInView);
 

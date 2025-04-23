@@ -11,11 +11,12 @@ export class IdeogramTrack extends CanvasTrack {
   private getRenderData: () => Promise<IdeogramTrackData>;
 
   constructor(
+    id: string,
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<IdeogramTrackData>,
   ) {
-    super(label, trackHeight);
+    super(id, label, trackHeight);
     this.getRenderData = getRenderData;
   }
 

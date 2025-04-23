@@ -71,24 +71,27 @@ export class TracksManager extends HTMLElement {
     dataSource: RenderDataSource,
     getChromosome: () => string,
     getXRange: () => Rng,
-    getAnnotSources: () => { id: string, label: string }[],
+    getAnnotSources: () => { id: string; label: string }[],
     getVariantURL: (id: string) => string,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
     const coverageTrack = new DotTrack(
+      "log2_cov",
       "Log2 Ratio",
       trackHeight.thick,
       COV_Y_RANGE,
       COV_Y_TICKS,
       async () => {
+        const data = await dataSource.getCovData();
         return {
           xRange: getXRange(),
-          dots: await dataSource.getCovData(),
+          dots: data,
         };
       },
     );
     const bafTrack = new DotTrack(
+      "baf",
       "B Allele Freq",
       trackHeight.thick,
       BAF_Y_RANGE,
@@ -101,6 +104,7 @@ export class TracksManager extends HTMLElement {
       },
     );
     const variantTrack = new BandTrack(
+      "variant",
       "Variant",
       trackHeight.thin,
       async () => {
@@ -115,14 +119,18 @@ export class TracksManager extends HTMLElement {
         return {
           header: `${element.label}`,
           info: [
-            {key: "Range", value: `${element.start} - ${element.end}`},
-            {key: "Length", value: prefixNts(element.end - element.start + 1)},
-            {key: "URL", value: "Scout", url},
-          ]
+            { key: "Range", value: `${element.start} - ${element.end}` },
+            {
+              key: "Length",
+              value: prefixNts(element.end - element.start + 1),
+            },
+            { key: "URL", value: "Scout", url },
+          ],
         };
       },
     );
     const transcriptTrack = new BandTrack(
+      "transcript",
       "Transcript",
       trackHeight.thin,
       async () => {
@@ -136,13 +144,17 @@ export class TracksManager extends HTMLElement {
         return {
           header: `${element.label}`,
           info: [
-            {key: "Range", value: `${element.start} - ${element.end}`},
-            {key: "Length", value: prefixNts(element.end - element.start + 1)},
-          ]
+            { key: "Range", value: `${element.start} - ${element.end}` },
+            {
+              key: "Length",
+              value: prefixNts(element.end - element.start + 1),
+            },
+          ],
         };
       },
     );
     const ideogramTrack = new IdeogramTrack(
+      "ideogram",
       "Ideogram",
       trackHeight.extraThin,
       async () => {
@@ -151,7 +163,6 @@ export class TracksManager extends HTMLElement {
           chromInfo: await dataSource.getChromInfo(),
         };
       },
-
     );
 
     const annotationTracks = new MultiTracks(
@@ -172,8 +183,8 @@ export class TracksManager extends HTMLElement {
       chromSizes[chromosome] = getChromInfo(chromosome).size;
     }
 
-
     const overviewTrackCov = new OverviewTrack(
+      "overview_cov",
       "Overview (cov)",
       trackHeight.thick,
       chromSizes,
@@ -188,6 +199,7 @@ export class TracksManager extends HTMLElement {
       },
     );
     const overviewTrackBaf = new OverviewTrack(
+      "overview_baf",
       "Overview (baf)",
       trackHeight.thick,
       chromSizes,
@@ -218,7 +230,6 @@ export class TracksManager extends HTMLElement {
       track.initialize();
       track.renderLoading();
     }
-
   }
 
   public render(updateData: boolean) {
@@ -240,13 +251,14 @@ function getAnnotTrack(
     return {
       header: `${element.label}`,
       info: [
-        {key: "Range", value: `${element.start} - ${element.end}`},
-        {key: "Length", value: prefixNts(element.end - element.start + 1)},
-      ]
+        { key: "Range", value: `${element.start} - ${element.end}` },
+        { key: "Length", value: prefixNts(element.end - element.start + 1) },
+      ],
     };
   };
 
   const track = new BandTrack(
+    sourceId,
     label,
     trackHeight,
     () => getAnnotTrackData(sourceId, getXRange, getAnnotation),

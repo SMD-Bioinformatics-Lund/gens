@@ -15,13 +15,14 @@ export class DotTrack extends CanvasTrack {
   yTicks: number[];
 
   constructor(
+    id: string,
     label: string,
     trackHeight: number,
     yRange: Rng,
     yTicks: number[],
     getRenderData: () => Promise<DotTrackData>,
   ) {
-    super(label, trackHeight);
+    super(id, label, trackHeight);
     this.getRenderData = getRenderData;
     this.yRange = yRange;
     this.yTicks = yTicks;
@@ -34,7 +35,6 @@ export class DotTrack extends CanvasTrack {
     this.setExpandedHeight(this.defaultTrackHeight * 2);
   }
 
-
   async render(updateData: boolean) {
     if (updateData || this.renderData == null) {
       this.renderData = await this.getRenderData();
@@ -42,6 +42,10 @@ export class DotTrack extends CanvasTrack {
 
     const { xRange, dots } = this.renderData;
     const yRange = this.yRange;
+
+    const dotsInRange = dots.filter(
+      (dot) => dot.x >= xRange[0] && dot.y <= xRange[1],
+    );
 
     super.syncDimensions();
     const dimensions = this.dimensions;
@@ -57,7 +61,7 @@ export class DotTrack extends CanvasTrack {
       });
     }
 
-    drawDotsScaled(this.ctx, dots, xScale, yScale);
+    drawDotsScaled(this.ctx, dotsInRange, xScale, yScale);
     drawYAxis(this.ctx, this.yTicks, yScale, yRange);
     const shiftRight = STYLE.yAxis.width;
     this.drawTrackLabel(shiftRight);
