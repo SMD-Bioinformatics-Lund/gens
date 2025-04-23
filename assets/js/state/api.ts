@@ -23,7 +23,7 @@ export class API {
 
   async getAnnotationSources(): Promise<ApiAnnotationTrack[]> {
     const annotSources = (await get(
-      new URL("/tracks/annotations", this.apiURI).href,
+      new URL("tracks/annotations", this.apiURI).href,
       {
         genome_build: this.genomeBuild,
       },
@@ -151,7 +151,7 @@ export class API {
         genome_build: 38,
       };
       const transcripts = (await get(
-        new URL("/tracks/transcripts", this.apiURI).href,
+        new URL("tracks/transcripts", this.apiURI).href,
         query,
       )) as ApiSimplifiedTranscript[];
 

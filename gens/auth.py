@@ -13,7 +13,7 @@ oauth_client = OAuth()
 
 
 class LoginUser(UserMixin):
-    """User object that controlls user roles and credentials."""
+    """User object that controls user roles and credentials."""
 
     def __init__(self, user_obj: User):
         """Create a new user object."""
