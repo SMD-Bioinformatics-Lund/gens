@@ -15,6 +15,7 @@ from gens.models.annotation import (
     AnnotationRecord,
     Comment,
     DatetimeMetadata,
+    DnaStrandMetadata,
     GenericMetadata,
     ReferenceUrl,
     ScientificArticle,
@@ -378,7 +379,7 @@ def fmt_aed_to_annotation(
         "value",
     ]
     # cast to database metadata format
-    metadata: list[DatetimeMetadata | GenericMetadata | UrlMetadata] = []
+    metadata: list[DatetimeMetadata | GenericMetadata | UrlMetadata | DnaStrandMetadata] = []
     for field_name, value in record.items():
         if any([field_name in EXCLUDE_FIELDS, value is None and exclude_na]):
             continue
@@ -411,19 +412,43 @@ def fmt_aed_to_annotation(
                 )
             )
         else:
-            metadata.append(
-                GenericMetadata(field_name=field_name, value=value, type="string")
-            )
+
+            if not value:
+                raise ValueError(f"Unexpected point for value: {value}")
+
+            # metadata.append(
+            #     GenericMetadata(field_name=field_name, value=str(value), type="string")
+            # )
+
+    rec_name = record["name"]
+    rec_start = record["start"]
+    rec_end = record["end"]
+    rec_color = record["color"]
+    rec_sequence = record["sequence"]
+
+    if not rec_name or not isinstance(rec_name, str):
+        raise ValueError(f"name expected in string format, found: {rec_name}")
+
+    if not rec_start or not isinstance(rec_start, int):
+        raise ValueError(f"start expected in int format, found: {rec_start}")
+    if not rec_end or not isinstance(rec_end, int):
+        raise ValueError(f"end expected in int format, found: {rec_end}")
+
+    if not rec_color or not isinstance(rec_color, Color):
+        raise ValueError(f"end expected in int format, found: {rec_color}")
+
+    if not rec_sequence or not isinstance(rec_sequence, str):
+        raise ValueError(f"sequence expected in str format, found: {rec_sequence}")
 
     # build metadata
     return AnnotationRecord(
         track_id=track_id,
-        name=record["name"],
+        name=rec_name,
         genome_build=genome_build,
-        chrom=Chromosome(record["sequence"].strip("chr")),
-        start=record["start"],
-        end=record["end"],
-        color=record["color"],
+        chrom=Chromosome(rec_sequence.strip("chr")),
+        start=rec_start,
+        end=rec_end,
+        color=rec_color,
         references=refs,
         comments=comments,
         metadata=metadata,
