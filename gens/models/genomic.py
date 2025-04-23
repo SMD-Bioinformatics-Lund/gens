@@ -110,7 +110,7 @@ class GenomicRegion(RWModel):
     start: int | None
     end: int | None
 
-    @computed_field
+    @computed_field()  # type: ignore
     @property
     def region(self) -> str:
         return f"{self.chromosome}:{self.start}-{self.end}"

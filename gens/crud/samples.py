@@ -83,7 +83,8 @@ def get_samples(
     # cast as sample object
     result = MultipleSamples(
         data=[SampleInfo.model_validate(sample) for sample in cursor],
-        recordsTotal=samples_c.count_documents({}),
+        # mypy cannot deal with the pydantic alias records_total -> recordsTotal, thus the ignore
+        recordsTotal=samples_c.count_documents({}),  # type: ignore
     )
     return result
 

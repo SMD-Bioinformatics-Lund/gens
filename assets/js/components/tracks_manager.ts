@@ -3,9 +3,9 @@ import "./tracks/band_track";
 import "./tracks/dot_track";
 import "./tracks/ideogram_track";
 import "./tracks/overview_track";
-import "./tracks/annotation_tracks";
+import "./tracks/multi_track";
 import { IdeogramTrack } from "./tracks/ideogram_track";
-import { AnnotationTracks } from "./tracks/annotation_tracks";
+import { MultiTracks } from "./tracks/multi_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
@@ -47,7 +47,7 @@ export class TracksManager extends HTMLElement {
   annotationsContainer: HTMLDivElement;
 
   // FIXME: Think about a shared interface
-  tracks: (CanvasTrack | AnnotationTracks)[] = [];
+  tracks: (CanvasTrack | MultiTracks)[] = [];
 
   // This one needs a dedicated component I think
   annotationTracks: BandTrack[] = [];
@@ -71,7 +71,7 @@ export class TracksManager extends HTMLElement {
     dataSource: RenderDataSource,
     getChromosome: () => string,
     getXRange: () => Rng,
-    getAnnotSources: () => string[],
+    getAnnotSources: () => { id: string, label: string }[],
     getVariantURL: (id: string) => string,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
@@ -154,11 +154,12 @@ export class TracksManager extends HTMLElement {
 
     );
 
-    const annotationTracks = new AnnotationTracks(
+    const annotationTracks = new MultiTracks(
       getAnnotSources,
-      (source: string) => {
+      (sourceId: string, label: string) => {
         return getAnnotTrack(
-          source,
+          sourceId,
+          label,
           trackHeight.thin,
           getXRange,
           dataSource.getAnnotation,
@@ -228,10 +229,11 @@ export class TracksManager extends HTMLElement {
 }
 
 function getAnnotTrack(
-  source: string,
+  sourceId: string,
+  label: string,
   trackHeight: number,
   getXRange: () => Rng,
-  getAnnotation: (source: string) => Promise<RenderBand[]>,
+  getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
 ): BandTrack {
   const getPopupInfo = (box) => {
     const element = box.element as RenderBand;
@@ -245,9 +247,9 @@ function getAnnotTrack(
   };
 
   const track = new BandTrack(
-    source,
+    label,
     trackHeight,
-    () => getAnnotTrackData(source, getXRange, getAnnotation),
+    () => getAnnotTrackData(sourceId, getXRange, getAnnotation),
     getPopupInfo,
   );
   return track;
