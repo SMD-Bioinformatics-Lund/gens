@@ -217,7 +217,7 @@ def format_aed_entry(value: str, format: str) -> AedDatatypes:
         case _ if format.startswith("aed:"):
             return value
         case _:
-            LOG.warning(f"Unknown format: {format}, returning as is")
+            LOG.warning(f"Unknown format: {format}, returning value as is ({value})")
             return value
 
 

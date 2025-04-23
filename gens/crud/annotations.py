@@ -104,7 +104,7 @@ def get_annotations_for_track(
     track_id: PydanticObjectId, db: Database[Any]
 ) -> list[SimplifiedTrackInfo]:
     """Get annotation track from database."""
-    projection: dict[str, bool] = {"name": True, "start": True, "end": True}
+    projection: dict[str, bool] = {"name": True, "start": True, "end": True, "chrom": True, "color": True}
     cursor: Any = db.get_collection(ANNOTATIONS_COLLECTION).find(
         {"track_id": track_id}, projection
     )
@@ -113,8 +113,10 @@ def get_annotations_for_track(
             {
                 "record_id": doc["_id"],
                 "name": doc["name"],
+                "chrom": doc["chrom"],
                 "start": doc["start"],
                 "end": doc["end"],
+                "color": doc["color"],
                 "type": "annotation",
             }
         )

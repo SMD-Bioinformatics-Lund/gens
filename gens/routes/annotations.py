@@ -38,7 +38,7 @@ async def get_annotations_tracks(genome_build: GenomeBuild | None, db: GensDb) -
 async def get_annotation_track(
     track_id: PydanticObjectId, db: GensDb
 ) -> list[SimplifiedTrackInfo]:
-    """Get annoations for a region."""
+    """Get annotations for a region."""
     return get_annotations_for_track(track_id=track_id, db=db)
 
 
@@ -46,7 +46,7 @@ async def get_annotation_track(
 async def get_annotation_with_id(
     record_id: PydanticObjectId, db: GensDb
 ) -> AnnotationRecord:
-    """Get annoations for a region."""
+    """Get annotations for a region."""
     result = get_annotation(record_id, db)
     if result is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)

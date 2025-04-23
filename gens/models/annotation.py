@@ -139,6 +139,7 @@ class SimplifiedTrackInfo(GenomePosition, RWModel):
     name: str
     type: str  # snv / mane
     color: Color | None = None
+    chrom: str | None = None
 
 
 class SimplifiedTranscriptInfo(SimplifiedTrackInfo):
