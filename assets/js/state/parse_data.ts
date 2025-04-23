@@ -1,8 +1,7 @@
 import { STYLE } from "../constants";
-import { prefixNts, transformMap } from "../util/utils";
+import { transformMap } from "../util/utils";
 import { API } from "./api";
 
-// FIXME: Move to a correct place
 function calculateZoom (xRange: Rng) {
   const xRangeSize = xRange[1] - xRange[0];
   let returnVal;
@@ -17,14 +16,6 @@ function calculateZoom (xRange: Rng) {
   } else {
     returnVal = "d";
   }
-  console.log(
-    "Current xRange: ",
-    xRange,
-    "size: ",
-    prefixNts(xRange[1] - xRange[0]),
-    "returning zoom",
-    returnVal,
-  );
   return returnVal;
 };
 

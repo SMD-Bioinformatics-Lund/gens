@@ -132,7 +132,6 @@ export class InputControls extends HTMLElement {
   updateChromosome(chrom: string, chromLength: number) {
     this.region = new RegionController({chrom, start:1, end: chromLength});
     this.regionField.value = this.region.getString();
-    // this.regionField.value = `${this.region._chrom}:${this.region._start}-${this.region._end}`;
   }
 
   updatePosition(range: [number, number]) {
@@ -200,11 +199,6 @@ export class InputControls extends HTMLElement {
       this.updatePosition(newXRange);
       onPositionChange(newXRange);
     };
-
-    // this.submit.onclick = () => {
-    //   const range = this.getRange();
-    //   onPositionChange(range);
-    // };
   }
 }
 

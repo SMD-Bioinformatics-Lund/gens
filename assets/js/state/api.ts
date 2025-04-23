@@ -1,12 +1,13 @@
 import { get } from "../util/fetch";
 import { CHROMOSOMES } from "../constants";
-import { stringToHash, zip } from "../util/utils";
+import { zip } from "../util/utils";
 
 export class API {
   sampleId: string;
   caseId: string;
   genomeBuild: number;
   apiURI: string;
+  cachedZoomLevels = ["o", "a", "b", "c"];
 
   constructor(
     sampleId: string,
@@ -64,8 +65,11 @@ export class API {
     return this.annotsPerChromCache[trackId][chrom];
   }
 
-  cachedZoomLevels = ["o", "a", "b", "c"];
 
+  /**
+   * Calculate base zoom levels up front
+   * Return detailed zoom levels only on demand
+   */
   private covChrZoomCache: Record<string, Record<string, ApiCoverageDot[]>> =
     {};
   async getCov(

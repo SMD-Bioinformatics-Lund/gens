@@ -76,8 +76,6 @@ export class TracksManager extends HTMLElement {
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
-
-
     const coverageTrack = new DotTrack(
       "Log2 Ratio",
       trackHeight.thick,
