@@ -16,6 +16,7 @@ export class MultiTracks extends ShadowBaseElement {
 
   getSources: () => { label: string; id: string }[];
   getTrack: (id: string, label: string) => BandTrack;
+  getDetails: (id: string) => string;
   tracks: BandTrack[] = [];
 
   constructor(

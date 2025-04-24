@@ -98,7 +98,8 @@ export function parseAnnotations(
     .map((annot) => {
       const label = annot.name;
       return {
-        id: `${annot.start}_${annot.end}_${annot.color}_${label}`,
+        id: annot.record_id,
+        // id: `${annot.start}_${annot.end}_${annot.color}_${label}`,
         start: annot.start,
         end: annot.end,
         color: annot.color,

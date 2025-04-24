@@ -24,28 +24,38 @@ export class API {
     this.apiURI = gensApiURL;
   }
 
+  getAnnotationDetails(id: string): Promise<ApiAnnotationDetails> {
+    const details = get(
+      new URL(`tracks/annotations/annotation/${id}`, this.apiURI).href,
+      {},
+    ) as Promise<ApiAnnotationDetails>;
+    return details;
+  }
+
+  getTranscriptDetails(id: string): Promise<ApiTranscriptDetails> {
+    const details = get(
+      new URL(`tracks/transcripts/transcript/${id}`, this.apiURI).href,
+      {},
+    ) as Promise<ApiTranscriptDetails>;
+    return details;
+  }
+
   getAnnotationSources(): Promise<ApiAnnotationTrack[]> {
-    const annotSources = (get(
-      new URL("tracks/annotations", this.apiURI).href,
-      {
-        genome_build: this.genomeBuild,
-      },
-    )) as Promise<ApiAnnotationTrack[]>;
+    const annotSources = get(new URL("tracks/annotations", this.apiURI).href, {
+      genome_build: this.genomeBuild,
+    }) as Promise<ApiAnnotationTrack[]>;
     return annotSources;
   }
 
   private annotsCache: Record<string, Promise<ApiSimplifiedAnnotation[]>> = {};
-  getAnnotations(
-    trackId: string,
-  ): Promise<ApiSimplifiedAnnotation[]> {
-
+  getAnnotations(trackId: string): Promise<ApiSimplifiedAnnotation[]> {
     if (this.annotsCache[trackId] === undefined) {
       const query = {};
       const annotations = get(
         new URL(`tracks/annotations/${trackId}`, this.apiURI).href,
         query,
       ) as Promise<ApiSimplifiedAnnotation[]>;
-    
+
       this.annotsCache[trackId] = annotations;
     }
 
@@ -61,11 +71,7 @@ export class API {
     string,
     Record<string, Promise<ApiCoverageDot[]>>
   > = {};
-  getCov(
-    chrom: string,
-    zoom: string,
-    xRange: Rng,
-  ): Promise<ApiCoverageDot[]> {
+  getCov(chrom: string, zoom: string, xRange: Rng): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/coverage";
 
     if (this.cachedZoomLevels.includes(zoom)) {
@@ -96,11 +102,7 @@ export class API {
 
   private bafCache: Record<string, Record<string, Promise<ApiCoverageDot[]>>> =
     {};
-  getBaf(
-    chrom: string,
-    zoom: string,
-    xRange: Rng,
-  ): Promise<ApiCoverageDot[]> {
+  getBaf(chrom: string, zoom: string, xRange: Rng): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/baf";
 
     if (this.cachedZoomLevels.includes(zoom)) {
@@ -129,22 +131,23 @@ export class API {
     }
   }
 
-  private transcriptCache: Record<string, Promise<ApiSimplifiedTranscript[]>> = {};
+  private transcriptCache: Record<string, Promise<ApiSimplifiedTranscript[]>> =
+    {};
   getTranscripts(
     chrom: string,
-    onlyMane: boolean
+    onlyMane: boolean,
   ): Promise<ApiSimplifiedTranscript[]> {
     const isCached = this.transcriptCache[chrom] !== undefined;
     if (!isCached) {
       const query = {
         chromosome: chrom,
         genome_build: 38,
-        only_mane: onlyMane
+        only_mane: onlyMane,
       };
-      const transcripts = (get(
+      const transcripts = get(
         new URL("tracks/transcripts", this.apiURI).href,
         query,
-      )) as Promise<ApiSimplifiedTranscript[]>;
+      ) as Promise<ApiSimplifiedTranscript[]>;
 
       this.transcriptCache[chrom] = transcripts;
     }
@@ -173,18 +176,17 @@ export class API {
   getChromData(chrom: string): Promise<ChromosomeInfo> {
     const isCached = this.chromCache[chrom] !== undefined;
     if (!isCached) {
-      const chromosomeInfo = (get(
+      const chromosomeInfo = get(
         new URL(`tracks/chromosomes/${chrom}`, this.apiURI).href,
         {
           genome_build: this.genomeBuild,
         },
-      )) as Promise<ChromosomeInfo>;
+      ) as Promise<ChromosomeInfo>;
 
       this.chromCache[chrom] = chromosomeInfo;
     }
     return this.chromCache[chrom];
   }
-
 
   private overviewCovCache: Promise<Record<string, ApiCoverageDot[]>> = null;
   getOverviewCovData(): Promise<Record<string, ApiCoverageDot[]>> {
@@ -242,10 +244,10 @@ async function getCovData(
     };
   }
 
-  const regionResult = await get(
-    new URL(endpoint, apiURI).href,
-    query,
-  ) as { position: number[]; value: number[] };
+  const regionResult = (await get(new URL(endpoint, apiURI).href, query)) as {
+    position: number[];
+    value: number[];
+  };
   const parsedResult: ApiCoverageDot[] = zip(
     regionResult.position,
     regionResult.value,

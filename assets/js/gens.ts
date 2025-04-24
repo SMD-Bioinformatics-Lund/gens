@@ -1,11 +1,3 @@
-// export {
-//   setupDrawEventManager,
-//   previousChromosome,
-//   nextChromosome,
-//   panTracks,
-//   queryRegionOrGene,
-// } from "./unused/_navigation";
-
 import "./components/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
@@ -126,6 +118,8 @@ async function initialize(
     () => inputControls.getRange(),
     () => inputControls.getAnnotSources(),
     getVariantURL,
+    async (id: string) => await api.getAnnotationDetails(id),
+    async (id: string) => await api.getTranscriptDetails(id),
   );
 
   tracks.render(true);

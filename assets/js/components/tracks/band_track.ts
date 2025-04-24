@@ -17,14 +17,14 @@ import { createPopup } from "../../util/popup_utils";
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
-  getPopupInfo: (box: HoverBox) => PopupContent;
+  getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
 
   constructor(
     id: string,
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
-    getPopupInfo: (box: HoverBox) => PopupContent,
+    getPopupInfo: (box: HoverBox) => Promise<PopupContent>,
   ) {
     super(id, label, trackHeight);
 
@@ -35,8 +35,8 @@ export class BandTrack extends CanvasTrack {
   initialize() {
     super.initialize();
 
-    const onElementClick = (box: HoverBox) => {
-      const content = this.getPopupInfo(box);
+    const onElementClick = async (box: HoverBox) => {
+      const content = await this.getPopupInfo(box);
       createPopup(this.canvas, box, content);
     };
 

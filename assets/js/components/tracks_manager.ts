@@ -73,6 +73,8 @@ export class TracksManager extends HTMLElement {
     getXRange: () => Rng,
     getAnnotSources: () => { id: string; label: string }[],
     getVariantURL: (id: string) => string,
+    getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
+    getTranscriptDetails: (id: string) => Promise<ApiTranscriptDetails>,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
@@ -113,12 +115,15 @@ export class TracksManager extends HTMLElement {
           bands: await dataSource.getVariantData(),
         };
       },
-      (box) => {
+      async (box) => {
+        // FIXME: Variant details as well?
         const element = box.element as RenderBand;
         const url = getVariantURL(element.id);
         return {
           header: `${element.label}`,
           info: [
+            // FIXME: Only during development
+            { key: "ID", value: element.id },
             { key: "Range", value: `${element.start} - ${element.end}` },
             {
               key: "Length",
@@ -139,17 +144,30 @@ export class TracksManager extends HTMLElement {
           bands: await dataSource.getTranscriptData(),
         };
       },
-      (box) => {
+      async (box) => {
         const element = box.element as RenderBand;
+        const details = await getTranscriptDetails(element.id);
+
+        const info: {key: string, value: string}[] = [
+          { key: "ID", value: element.id },
+          { key: "Range", value: `${element.start} - ${element.end}` },
+          {
+            key: "Length",
+            value: prefixNts(element.end - element.start + 1),
+          },
+          { key: "Transcript ID", value: details.transcript_id },
+          { key: "Biotype", value: details.transcript_biotype },
+          { key: "Gene name", value: details.gene_name },
+          { key: "MANE", value: details.mane },
+          { key: "HGNC ID", value: details.hgnc_id },
+          { key: "Refseq ID", value: details.refseq_id },
+          { key: "Strand", value: details.strand },
+          { key: "First feature", value: details.features[0].feature },
+        ]
+
         return {
           header: `${element.label}`,
-          info: [
-            { key: "Range", value: `${element.start} - ${element.end}` },
-            {
-              key: "Length",
-              value: prefixNts(element.end - element.start + 1),
-            },
-          ],
+          info,
         };
       },
     );
@@ -174,10 +192,10 @@ export class TracksManager extends HTMLElement {
           trackHeight.thin,
           getXRange,
           dataSource.getAnnotation,
+          getAnnotationDetails,
         );
       },
     );
-
 
     const overviewTrackCov = new OverviewTrack(
       "overview_cov",
@@ -241,15 +259,30 @@ function getAnnotTrack(
   trackHeight: number,
   getXRange: () => Rng,
   getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
+  getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
 ): BandTrack {
-  const getPopupInfo = (box) => {
+  const getPopupInfo = async (box) => {
     const element = box.element as RenderBand;
+    const details = await getAnnotationDetails(element.id);
+
+    const info: { key: string; value: string }[] = [
+      { key: "ID", value: element.id },
+      { key: "Range", value: `${element.start} - ${element.end}` },
+      { key: "Length", value: prefixNts(element.end - element.start + 1) },
+      { key: "Track ID", value: details.track_id },
+      { key: "Name", value: details.name },
+      { key: "description", value: details.description },
+      { key: "First comment", value: details.comments[0].comment },
+      { key: "First reference title", value: details.references[0].title },
+      {
+        key: `First metadata (${details.metadata[0].field_name})`,
+        value: details.metadata[0].value,
+      },
+    ];
+
     return {
       header: `${element.label}`,
-      info: [
-        { key: "Range", value: `${element.start} - ${element.end}` },
-        { key: "Length", value: prefixNts(element.end - element.start + 1) },
-      ],
+      info,
     };
   };
 
