@@ -1,11 +1,6 @@
 import Choices, { EventChoice, InputChoice } from "choices.js";
-import {
-  getPan,
-  parseRegionDesignation,
-  zoomInNew,
-  zoomOutNew,
-} from "../unused/_navigation";
 import "choices.js/public/assets/styles/choices.min.css";
+import { getPan, parseRegionDesignation, zoomIn, zoomOut } from "../util/navigation";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -186,14 +181,14 @@ export class InputControls extends HTMLElement {
 
     this.zoomIn.onclick = () => {
       const currXRange = this.getRange();
-      const newXRange = zoomInNew(currXRange);
+      const newXRange = zoomIn(currXRange);
       this.updatePosition(newXRange);
       onPositionChange(newXRange);
     };
 
     this.zoomOut.onclick = () => {
       const currXRange = this.getRange();
-      const newXRangeRaw = zoomOutNew(currXRange);
+      const newXRangeRaw = zoomOut(currXRange);
       const newMax = Math.min(newXRangeRaw[1], fullRegion.end);
       const newXRange: Rng = [newXRangeRaw[0], newMax];
       this.updatePosition(newXRange);

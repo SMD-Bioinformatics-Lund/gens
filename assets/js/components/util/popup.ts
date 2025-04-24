@@ -1,5 +1,5 @@
 import { STYLE } from "../../constants";
-import { ShadowBaseElement } from "./shadowbase";
+import { ShadowBaseElement } from "./shadowbaseelement";
 
 const style = STYLE.popup;
 

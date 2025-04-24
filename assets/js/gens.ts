@@ -1,18 +1,16 @@
-export {
-  setupDrawEventManager,
-  previousChromosome,
-  nextChromosome,
-  panTracks,
-  zoomIn,
-  zoomOut,
-  parseRegionDesignation,
-  queryRegionOrGene,
-} from "./unused/_navigation";
+// export {
+//   setupDrawEventManager,
+//   previousChromosome,
+//   nextChromosome,
+//   panTracks,
+//   queryRegionOrGene,
+// } from "./unused/_navigation";
 
 import "./components/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
-import "./components/util/shadowbase";
+import "./components/util/shadowbaseelement";
+import "./components/settings";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";

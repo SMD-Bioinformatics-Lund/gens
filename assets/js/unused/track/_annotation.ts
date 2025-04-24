@@ -3,7 +3,6 @@
 import { BaseAnnotationTrack } from "./_base";
 import { isElementOverlapping, stringToHash } from "../../util/utils";
 import { get } from "../../util/fetch";
-import { parseRegionDesignation } from "../_navigation";
 import { drawRect, drawText } from "../_draw";
 import {
   initTrackTooltips,
@@ -12,6 +11,7 @@ import {
   updateVisibleElementCoordinates,
 } from "./_tooltip";
 import { createPopper } from "@popperjs/core";
+import { parseRegionDesignation } from "../../util/navigation";
 
 
 export class AnnotationTrack extends BaseAnnotationTrack {
