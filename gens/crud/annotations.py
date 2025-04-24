@@ -5,6 +5,7 @@ from collections import defaultdict
 from itertools import groupby
 from typing import Any
 
+from pymongo.cursor import Cursor
 from pymongo import DESCENDING
 from pymongo.database import Database
 
@@ -105,7 +106,7 @@ def get_annotations_for_track(
 ) -> list[SimplifiedTrackInfo]:
     """Get annotation track from database."""
     projection: dict[str, bool] = {"name": True, "start": True, "end": True, "chrom": True, "color": True}
-    cursor: Any = db.get_collection(ANNOTATIONS_COLLECTION).find(
+    cursor: Cursor = db.get_collection(ANNOTATIONS_COLLECTION).find(
         {"track_id": track_id}, projection
     )
     return [

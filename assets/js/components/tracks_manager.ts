@@ -148,7 +148,7 @@ export class TracksManager extends HTMLElement {
         const element = box.element as RenderBand;
         const details = await getTranscriptDetails(element.id);
 
-        const info: {key: string, value: string}[] = [
+        const info: { key: string; value: string }[] = [
           { key: "ID", value: element.id },
           { key: "Range", value: `${element.start} - ${element.end}` },
           {
@@ -163,7 +163,7 @@ export class TracksManager extends HTMLElement {
           { key: "Refseq ID", value: details.refseq_id },
           { key: "Strand", value: details.strand },
           { key: "First feature", value: details.features[0].feature },
-        ]
+        ];
 
         return {
           header: `${element.label}`,
@@ -272,11 +272,26 @@ function getAnnotTrack(
       { key: "Track ID", value: details.track_id },
       { key: "Name", value: details.name },
       { key: "description", value: details.description },
-      { key: "First comment", value: details.comments[0].comment },
-      { key: "First reference title", value: details.references[0].title },
+      {
+        key: "First comment",
+        value:
+          details.comments.length > 0
+            ? details.comments[0].comment
+            : "No comment",
+      },
+      {
+        key: "First reference title",
+        value:
+          details.references.length > 0
+            ? details.references[0].title
+            : "No references",
+      },
       {
         key: `First metadata (${details.metadata[0].field_name})`,
-        value: details.metadata[0].value,
+        value:
+          details.metadata.length > 0
+            ? details.metadata[0].value
+            : "No metadata",
       },
     ];
 

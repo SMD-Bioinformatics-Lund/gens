@@ -204,7 +204,7 @@ def format_aed_entry(value: str, format: str) -> AedDatatypes:
             try:
                 return AnyHttpUrl(value)
             except ValueError:
-                LOG.warning("Unable to parse {value} to URI, returning as string")
+                LOG.warning(f"Unable to parse {value} to URI, returning as string")
                 return str(value)
         case "aed:DateTime":
             return datetime.fromisoformat(value)

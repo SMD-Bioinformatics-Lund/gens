@@ -11,7 +11,7 @@ template.innerHTML = String.raw`
       background: ${style.backgroundColor};
       border: ${style.borderWidth}px solid ${style.borderColor};
       padding: ${style.padding}px;
-      zIndex: 1000;
+      zIndex: 10000;
       font-family: ${style.font};
       max-width: 320px;
       border-radius: ${style.borderRadius}px;
