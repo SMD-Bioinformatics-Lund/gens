@@ -32,7 +32,7 @@ export function createPopup(
     contextElement: canvas,
   };
 
-  const style = STYLE.popup;
+  const style = STYLE.menu;
 
   const update = () => {
     computePosition(virtualReference, popup, {

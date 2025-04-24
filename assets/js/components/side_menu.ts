@@ -1,9 +1,9 @@
 import { STYLE } from "../constants";
 import { removeChildren } from "../util/utils";
-import { getEntry } from "./util/popup";
+import { getEntry } from "./util/menu_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 
-const style = STYLE.popup;
+const style = STYLE.menu;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -31,7 +31,6 @@ template.innerHTML = String.raw`
       display: flex;
       flex-direction: row;
       align-items: flex-start;
-      justify-content: space-between;
       padding: 8px;
     }
     :host([drawer-open]) #settings-drawer {
@@ -54,9 +53,19 @@ template.innerHTML = String.raw`
       font-weight: ${style.breadFontWeight};
       font-size: 12px;
     }
-    #header {
+    #content {
+      display: flex;
+      flex-direction: column;
+      /* FIXME: Read up on this one */
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    #header-row {
       display: flex;
       flex-direction: row;
+      justify-content: space-between;
+    }
+    #header {
       font-weight: ${style.headerFontWeight};
       font-size: ${style.headerSize}px;
       color: ${style.textColor};
@@ -65,14 +74,16 @@ template.innerHTML = String.raw`
   </style>
   <div id="settings-drawer">
     <div id="content">
-      <div id="header">Placeholder header</div>
+      <div id="header-row">
+        <div id="header">Placeholder header</div>
+        <button id="close-drawer">&times;</button>
+      </div>
       <div id="entries">
         <div>Placeholder</div>
         <div>Placeholder</div>
         <div>Placeholder</div>
       </div>
     </div>
-    <button id="close-drawer">&times;</button>
   </div>
 `;
 
@@ -99,8 +110,6 @@ export class SideMenu extends ShadowBaseElement {
     this.closeButton.addEventListener("click", () => {
       this.removeAttribute("drawer-open");
     });
-
-    // document.addEventListener("click", this.onDocumentClick);
   }
 
   open() {
@@ -119,23 +128,31 @@ export class SideMenu extends ShadowBaseElement {
     }
   }
 
-  showContent(content: PopupContent) {
+  showContent(header: string, content: HTMLDivElement[]) {
     console.log("Showing content from settings", content);
     this.open();
 
-    this.header.textContent = content.header;
-    const infoEntries = content.info;
-    if (infoEntries != undefined) {
+    removeChildren(this.entries);
 
-      removeChildren(this.entries);
-
-      for (const infoEntry of infoEntries) {
-        const node = getEntry(infoEntry);
-        this.entries.appendChild(node);
-      }
+    this.header.textContent = header;
+    
+    for (const element of content) {
+      this.entries.appendChild(element);
     }
 
-    console.log("At the end with nbr entries:", this.entries.children.length);
+
+    // const infoEntries = content.info;
+    // if (infoEntries != undefined) {
+
+    //   removeChildren(this.entries);
+
+    //   for (const infoEntry of infoEntries) {
+    //     const node = getEntry(infoEntry);
+    //     this.entries.appendChild(node);
+    //   }
+    // }
+
+    // console.log("At the end with nbr entries:", this.entries.children.length);
   }
 
   disconnectedCallback() {

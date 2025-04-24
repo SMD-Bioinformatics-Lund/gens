@@ -9,9 +9,10 @@ import { MultiTracks } from "./tracks/multi_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
-import { CHROMOSOMES, STYLE } from "../constants";
+import { STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/canvas_track";
 import { prefixNts } from "../util/utils";
+import { getEntry, getSection } from "./util/menu_utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -75,7 +76,7 @@ export class TracksManager extends HTMLElement {
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
     getTranscriptDetails: (id: string) => Promise<ApiTranscriptDetails>,
-    openContextMenu: OpenContextMenu
+    openContextMenu: (header: string, content: HTMLDivElement[]) => void,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
@@ -116,26 +117,34 @@ export class TracksManager extends HTMLElement {
           bands: await dataSource.getVariantData(),
         };
       },
-      async (box) => {
-        // FIXME: Refactor out these to stand-alone functions
-        // FIXME: Variant details as well?
-        const element = box.element as RenderBand;
-        const url = getVariantURL(element.id);
-        return {
-          header: `${element.label}`,
-          info: [
-            // FIXME: Only during development
-            { key: "ID", value: element.id },
-            { key: "Range", value: `${element.start} - ${element.end}` },
-            {
-              key: "Length",
-              value: prefixNts(element.end - element.start + 1),
-            },
-            { key: "URL", value: "Scout", url },
-          ],
-        };
-      },
-      openContextMenu,
+      async (id: string) => {
+
+        const div = document.createElement("div");
+        div.innerHTML = "Hello world from variants, id: " + id;
+        openContextMenu("Variants", [div]);
+      }
+      // async (id: string) => {
+
+      //   // Hmm. Set up API to get variant by ID as well.
+
+      //   // FIXME: Refactor out these to stand-alone functions
+      //   // FIXME: Variant details as well?
+      //   // const element = box.element as RenderBand;
+      //   const url = getVariantURL(id);
+      //   return {
+      //     header: `${element.label}`,
+      //     info: [
+      //       // FIXME: Only during development
+      //       { key: "ID", value: element.id },
+      //       { key: "Range", value: `${element.start} - ${element.end}` },
+      //       {
+      //         key: "Length",
+      //         value: prefixNts(element.end - element.start + 1),
+      //       },
+      //       { key: "URL", value: "Scout", url },
+      //     ],
+      //   };
+      // },
     );
     const transcriptTrack = new BandTrack(
       "transcript",
@@ -147,16 +156,16 @@ export class TracksManager extends HTMLElement {
           bands: await dataSource.getTranscriptData(),
         };
       },
-      async (box) => {
-        const element = box.element as RenderBand;
-        const details = await getTranscriptDetails(element.id);
+      async (id) => {
+        // const element = box.element as RenderBand;
+        const details = await getTranscriptDetails(id);
 
         const info: { key: string; value: string }[] = [
-          { key: "ID", value: element.id },
-          { key: "Range", value: `${element.start} - ${element.end}` },
+          { key: "ID", value: id },
+          { key: "Range", value: `${details.start} - ${details.end}` },
           {
             key: "Length",
-            value: prefixNts(element.end - element.start + 1),
+            value: prefixNts(details.end - details.start + 1),
           },
           { key: "Transcript ID", value: details.transcript_id },
           { key: "Biotype", value: details.transcript_biotype },
@@ -168,12 +177,17 @@ export class TracksManager extends HTMLElement {
           { key: "First feature", value: details.features[0].feature },
         ];
 
-        return {
-          header: `${element.label}`,
-          info,
-        };
+        // const container = document.createElement("div");
+        const entries = info.map((i) => getEntry(i));
+
+        // return container;
+        openContextMenu("Transcripts", entries);
+
+        // return {
+        //   header: `${element.label}`,
+        //   info,
+        // };
       },
-      openContextMenu,
     );
     const ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -197,7 +211,11 @@ export class TracksManager extends HTMLElement {
           getXRange,
           dataSource.getAnnotation,
           getAnnotationDetails,
-          openContextMenu,
+          (id: string) => {
+            const container = document.createElement("div");
+            container.innerHTML = id;
+            openContextMenu("Annotations", [container]);
+          },
         );
       },
     );
@@ -265,46 +283,66 @@ function getAnnotTrack(
   getXRange: () => Rng,
   getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
-  openContextMenu: OpenContextMenu,
+  openContextMenu: (id: string) => void,
 ): BandTrack {
-  const getPopupInfo = async (box) => {
-    const element = box.element as RenderBand;
+  const getPopupInfo = async (element: RenderBand) => {
+    // const element = box.element as RenderBand;
     const details = await getAnnotationDetails(element.id);
+
+    const content = document.createElement("div");
 
     const info: { key: string; value: string }[] = [
       { key: "ID", value: element.id },
       { key: "Range", value: `${element.start} - ${element.end}` },
       { key: "Length", value: prefixNts(element.end - element.start + 1) },
-      { key: "Track ID", value: details.track_id },
       { key: "Name", value: details.name },
-      { key: "description", value: details.description },
-      {
-        key: "First comment",
-        value:
-          details.comments.length > 0
-            ? details.comments[0].comment
-            : "No comment",
-      },
-      {
-        key: "First reference title",
-        value:
-          details.references.length > 0
-            ? details.references[0].title
-            : "No references",
-      },
-      {
-        key: `First metadata (${details.metadata[0].field_name})`,
-        value:
-          details.metadata.length > 0
-            ? details.metadata[0].value
-            : "No metadata",
-      },
+      { key: "Description", value: details.description },
     ];
 
-    return {
-      header: `${element.label}`,
-      info,
-    };
+    info.map((i) => getEntry(i)).forEach((div) => content.append(div));
+
+    const commentSection = getSection(
+      "Comments",
+      details.comments.map((c) => c.comment),
+    );
+
+    content.append(commentSection);
+
+    return content;
+
+    // if (details.comments.length > 0) {
+
+    //   for (const comment of details.comments) {
+    //     info.push({key: comment.created_at, value: comment.comment});
+    //   }
+    // }
+    // {
+    //   key: "First comment",
+    //   value:
+    //     details.comments.length > 0
+    //       ? details.comments[0].comment
+    //       : "No comment",
+    // },
+    // {
+    //   key: "First reference title",
+    //   value:
+    //     details.references.length > 0
+    //       ? details.references[0].title
+    //       : "No references",
+    // },
+    // {
+    //   key: `First metadata (${details.metadata[0].field_name})`,
+    //   value:
+    //     details.metadata.length > 0
+    //       ? details.metadata[0].value
+    //       : "No metadata",
+    // },
+    // ];
+
+    // return {
+    //   header: `${element.label}`,
+    //   info,
+    // };
   };
 
   const track = new BandTrack(
@@ -312,7 +350,6 @@ function getAnnotTrack(
     label,
     trackHeight,
     () => getAnnotTrackData(sourceId, getXRange, getAnnotation),
-    getPopupInfo,
     openContextMenu,
   );
   return track;

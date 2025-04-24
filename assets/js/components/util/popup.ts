@@ -1,7 +1,8 @@
 import { STYLE } from "../../constants";
+import { getEntry } from "./menu_utils";
 import { ShadowBaseElement } from "./shadowbaseelement";
 
-const style = STYLE.popup;
+const style = STYLE.menu;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -30,25 +31,7 @@ template.innerHTML = String.raw`
       flex-direction: column;
       gap: ${style.entryGap}px;
     }
-    .entry {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: ${style.margin}px;
-      color: ${style.textColor};
-    }
-    .entry-key {
-      font-weight: ${style.breadFontWeight};
-      color: ${style.textColor};
-    }
-    .entry-value {
-      flex-shrink: 1;
-      min-width: 0;
-      white-space: normal;
-      word-break: break-word;
-      text-align: right;
-      text-decoration: none;
-    }
+
     #container {
       display: flex;
       justify-content: space-between;
@@ -168,29 +151,28 @@ function setupDrag(host: HTMLElement, dragArea: HTMLElement, cleanup: () => void
   });
 }
 
-export function getEntry(infoEntry: { key: string; url?: string; value: string }) {
-  const { key, url, value } = infoEntry;
 
-  const row = document.createElement("row");
-  row.classList.add("entry");
 
-  const label = document.createElement("div");
-  label.classList.add("entry-key");
-  label.textContent = key ?? "Info";
+// .entry {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   gap: ${style.margin}px;
+//   color: ${style.textColor};
+// }
+// .entry-key {
+//   font-weight: ${style.breadFontWeight};
+//   color: ${style.textColor};
+// }
+// .entry-value {
+//   flex-shrink: 1;
+//   min-width: 0;
+//   white-space: normal;
+//   word-break: break-word;
+//   text-align: right;
+//   text-decoration: none;
+// }
 
-  let valueEl = document.createElement(url ? "a" : "div");
-  valueEl.classList.add("entry-value");
-  if (url) {
-    valueEl = valueEl as HTMLAnchorElement;
-    valueEl.href = url;
-    valueEl.target = "_blank";
-    valueEl.rel = "noopener noreferrer";
-  }
-  valueEl.textContent = value;
 
-  row.appendChild(label);
-  row.appendChild(valueEl);
-  return row;
-}
 
 customElements.define("gens-popup", GensPopup);

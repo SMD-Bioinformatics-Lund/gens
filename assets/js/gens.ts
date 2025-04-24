@@ -9,7 +9,7 @@ import { TracksManager } from "./components/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES } from "./constants";
-import { Settings as GensSettings } from "./components/gens_settings";
+import { SideMenu } from "./components/side_menu";
 
 export async function initCanvases({
   sampleId,
@@ -31,13 +31,14 @@ export async function initCanvases({
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
-  const sideMenu = document.getElementById("side-menu") as GensSettings;
+  const sideMenu = document.getElementById("side-menu") as SideMenu;
 
   const settingsButton = document.getElementById("settings-button") as HTMLDivElement;
   settingsButton.addEventListener("click", () => {
     console.log("Clicked!");
-    const content = {header: "Settings"}
-    sideMenu.showContent(content)
+    const content = document.createElement("div");
+    content.innerHTML = "Settings content";
+    sideMenu.showContent("Settings", [content])
   });
 
   const inputControls = document.getElementById(
@@ -74,8 +75,8 @@ export async function initCanvases({
     return url;
   }
 
-  const openContextMenu = (content: PopupContent) => {
-    sideMenu.showContent(content);
+  const openContextMenu = (header: string, content: HTMLDivElement[]) => {
+    sideMenu.showContent(header, content);
   }
 
   initialize(
@@ -102,7 +103,7 @@ async function initialize(
   getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
   renderDataSource: RenderDataSource,
   getVariantURL: (variantId: string) => string,
-  openContextMenu: OpenContextMenu,
+  openContextMenu: (header: string, content: HTMLDivElement[]) => void,
 ) {
 
   const annotSources = await api.getAnnotationSources();

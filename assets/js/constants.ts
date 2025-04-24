@@ -29,7 +29,7 @@ const font = "12px sans-serif";
 // FIXME: First step is to gather all constants here
 // FIXME: Then, the content below should be homogenized
 export const STYLE = {
-  popup: {
+  menu: {
     backgroundColor: colors.white,
     borderColor: colors.lightGray,
     textColor: colors.black,
