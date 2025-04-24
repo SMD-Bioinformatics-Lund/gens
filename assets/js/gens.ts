@@ -2,7 +2,7 @@ import "./components/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
 import "./components/util/shadowbaseelement";
-import "./components/gens_settings";
+import "./components/side_menu";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";
@@ -31,7 +31,14 @@ export async function initCanvases({
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
-  const settings = document.getElementById("settings") as GensSettings;
+  const sideMenu = document.getElementById("side-menu") as GensSettings;
+
+  const settingsButton = document.getElementById("settings-button") as HTMLDivElement;
+  settingsButton.addEventListener("click", () => {
+    console.log("Clicked!");
+    const content = {header: "Settings"}
+    sideMenu.showContent(content)
+  });
 
   const inputControls = document.getElementById(
     "input-controls",
@@ -68,7 +75,7 @@ export async function initCanvases({
   }
 
   const openContextMenu = (content: PopupContent) => {
-    settings.showContent(content);
+    sideMenu.showContent(content);
   }
 
   initialize(

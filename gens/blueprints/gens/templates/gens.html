@@ -37,6 +37,7 @@
 <!-- {{ loading() }} -->
 <div id='main-container'>
 
+  <side-menu id="side-menu"></side-menu>
   <div class="header">
       <div id="logo-container">
         <span class='logo'></span>
@@ -45,11 +46,12 @@
       <!-- <div class="settings button">
         <i class="fas fa-cog"></i>
       </div> -->
-      <gens-settings id="settings"></gens-settings>
+      <div id="settings-button" class="settings button">
+        <i class="fas fa-cog"></i>
+      </div>
   </div>
 
   <gens-tracks id="gens-tracks" style="display: block; width: 100%;"></gens-tracks>
-
 
     <!-- <div id='left-group'>
         <a id="home-link" href="{{ url_for('home.home') }}">
