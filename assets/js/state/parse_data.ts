@@ -2,7 +2,7 @@ import { STYLE } from "../constants";
 import { transformMap } from "../util/utils";
 import { API } from "./api";
 
-function calculateZoom (xRange: Rng) {
+function calculateZoom(xRange: Rng) {
   const xRangeSize = xRange[1] - xRange[0];
   let returnVal;
   if (xRangeSize > 100 * 10 ** 6) {
@@ -11,13 +11,13 @@ function calculateZoom (xRange: Rng) {
     returnVal = "a";
   } else if (xRangeSize > 10 * 10 ** 6) {
     returnVal = "b";
-  } else if (xRangeSize > 500 * 10 ** 3 ) {
+  } else if (xRangeSize > 500 * 10 ** 3) {
     returnVal = "c";
   } else {
     returnVal = "d";
   }
   return returnVal;
-};
+}
 
 export function getRenderDataSource(
   gensAPI: API,
@@ -29,12 +29,11 @@ export function getRenderDataSource(
   };
 
   const getAnnotation = async (recordId: string) => {
-    const annotData = await gensAPI.getAnnotations(recordId, getChrom());
-    return parseAnnotations(annotData);
+    const annotData = await gensAPI.getAnnotations(recordId);
+    return parseAnnotations(annotData, getChrom());
   };
 
   const getCovData = async () => {
-
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
@@ -43,7 +42,6 @@ export function getRenderDataSource(
   };
 
   const getBafData = async () => {
-
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
@@ -93,19 +91,21 @@ export function getRenderDataSource(
 
 export function parseAnnotations(
   annotations: ApiSimplifiedAnnotation[],
+  chromosome: string,
 ): RenderBand[] {
-  const results = annotations.map((annot) => {
-    const label = annot.name;
-    // const colorStr = annot.color != null ? rgbArrayToString(annot.color) : "black";
-    return {
-      id: `${annot.start}_${annot.end}_${annot.color}_${label}`,
-      start: annot.start,
-      end: annot.end,
-      color: annot.color,
-      label,
-      hoverInfo: `${annot.name} (${annot.start}-${annot.end})`,
-    };
-  });
+  const results = annotations
+    .filter((annot) => (annot.chrom == chromosome))
+    .map((annot) => {
+      const label = annot.name;
+      return {
+        id: `${annot.start}_${annot.end}_${annot.color}_${label}`,
+        start: annot.start,
+        end: annot.end,
+        color: annot.color,
+        label,
+        hoverInfo: `${annot.name} (${annot.start}-${annot.end})`,
+      };
+    });
   return results;
 }
 
@@ -128,20 +128,21 @@ function parseExons(
 export function parseTranscripts(
   transcripts: ApiSimplifiedTranscript[],
 ): RenderBand[] {
-  const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
-    const exons = parseExons(transcript.record_id, transcript.features);
-    const renderBand: RenderBand = {
-      id: transcript.record_id,
-      start: transcript.start,
-      end: transcript.end,
-      label: transcript.name,
-      color: STYLE.colors.lightGray,
-      hoverInfo: `${transcript.name} (${transcript.record_id})`,
-      direction: transcript.strand as "+" | "-",
-      subBands: exons,
-    };
-    return renderBand;
-  });
+  const transcriptsToRender: RenderBand[] = transcripts
+    .map((transcript) => {
+      const exons = parseExons(transcript.record_id, transcript.features);
+      const renderBand: RenderBand = {
+        id: transcript.record_id,
+        start: transcript.start,
+        end: transcript.end,
+        label: transcript.name,
+        color: STYLE.colors.lightGray,
+        hoverInfo: `${transcript.name} (${transcript.record_id})`,
+        direction: transcript.strand as "+" | "-",
+        subBands: exons,
+      };
+      return renderBand;
+    });
 
   // FIXME: This should be done on the backend
   const seenIds = new Set();

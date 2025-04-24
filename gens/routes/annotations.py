@@ -60,6 +60,7 @@ async def get_transcripts(
     db: GensDb,
     start: int | None = 1,
     end: int | None = None,
+    only_mane: bool = False,
 ) -> list[SimplifiedTranscriptInfo]:
     """Get all transcripts for a sample.
 
@@ -70,13 +71,15 @@ async def get_transcripts(
     if end is None:
         chrom_info = get_chromosome_info(db, chromosome, genome_build)
         if chrom_info is None:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"No information on chromoseom: {chromosome}")
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"No information on chromosome: {chromosome}")
         end = chrom_info.size
 
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
 
     # get transcript for the new region
     transcripts: list[SimplifiedTranscriptInfo] = crud_get_transcripts(region, genome_build, db)
+    if only_mane:
+        transcripts = [tr for tr in transcripts if tr.type == "MANE Select"]
     return transcripts
 
 

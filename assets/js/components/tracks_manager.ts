@@ -66,8 +66,8 @@ export class TracksManager extends HTMLElement {
   }
 
   async initialize(
-    getChromInfo: (string) => ChromosomeInfo,
-    chromClick: (string) => void,
+    chromSizes: Record<string, number>,
+    chromClick: (chrom: string) => void,
     dataSource: RenderDataSource,
     getChromosome: () => string,
     getXRange: () => Rng,
@@ -178,10 +178,6 @@ export class TracksManager extends HTMLElement {
       },
     );
 
-    const chromSizes = {};
-    for (const chromosome of CHROMOSOMES) {
-      chromSizes[chromosome] = getChromInfo(chromosome).size;
-    }
 
     const overviewTrackCov = new OverviewTrack(
       "overview_cov",

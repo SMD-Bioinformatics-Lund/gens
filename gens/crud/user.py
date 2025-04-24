@@ -15,6 +15,8 @@ def get_user(user_c: Collection[Any], email: str) -> User | None:
     """
     query = {"email": email}
     user_info: dict[str, str] | None = user_c.find_one(query)
+    if user_info is None:
+        return None
     return User.model_validate(user_info)
 
 

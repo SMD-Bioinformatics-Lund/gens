@@ -1,5 +1,6 @@
 scout_url = "http://localhost:8000"
 authentication = "disabled"
+gens_api_url = "http://localhost:8080/"
 
 [gens_db]
 connection = "mongodb://mongodb:27017/gens"

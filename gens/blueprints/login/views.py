@@ -26,7 +26,7 @@ def load_user(user_id: str) -> LoginUser | None:
     # get database instance
     db: Database[Any] = current_app.config["GENS_DB"]
     user_col = db.get_collection(USER_COLLECTION)
-    user_obj = get_user(user_col, user_id)  # type: ignore
+    user_obj = get_user(user_col, user_id)
     if user_obj is not None:
         return LoginUser(user_obj)
     return None

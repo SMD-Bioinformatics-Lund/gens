@@ -18,6 +18,7 @@ import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
+import { CHROMOSOMES } from "./constants";
 
 export async function initCanvases({
   sampleId,
@@ -57,8 +58,6 @@ export async function initCanvases({
     }
   );
 
-  const allChromData = await api.getAllChromData();
-
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);
     inputControls.updateChromosome(chrom, chromData.size);
@@ -66,8 +65,8 @@ export async function initCanvases({
     gensTracks.render(updateData);
   };
 
-  const getChromInfo = (chromosome: string) => {
-    return allChromData[chromosome];
+  const getChromInfo = async (chromosome: string): Promise<ChromosomeInfo> => {
+    return await api.getChromData(chromosome);
   };
 
   const getVariantURL = (variantId) => {
@@ -95,7 +94,7 @@ async function initialize(
   defaultAnnotation: string,
   api: API,
   onChromClick: (chrom: string) => void,
-  getChromInfo: (chrom: string) => ChromosomeInfo,
+  getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
   renderDataSource: RenderDataSource,
   getVariantURL: (variantId: string) => string,
 ) {
@@ -115,8 +114,14 @@ async function initialize(
     annotSources
   );
 
+  const chromSizes = {};
+  for (const chromosome of CHROMOSOMES) {
+    const chromInfo = await getChromInfo(chromosome);
+    chromSizes[chromosome] = chromInfo.size;
+  }
+
   await tracks.initialize(
-    getChromInfo,
+    chromSizes,
     onChromClick,
     renderDataSource,
     () => inputControls.getRegion().chrom,
