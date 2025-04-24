@@ -16,6 +16,9 @@ from pymongo.uri_parser import parse_uri
 
 # read default config and user defined config
 config_file = [Path(__file__).parent.joinpath("config.toml")]  # built in config file
+
+print(">>> ", config_file)
+
 CUSTOM_CONFIG_ENV_NAME = "CONFIG_FILE"
 custom_config = os.getenv(CUSTOM_CONFIG_ENV_NAME)
 if custom_config is not None:

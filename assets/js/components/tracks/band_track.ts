@@ -18,6 +18,7 @@ export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
+  openContextMenu: OpenContextMenu;
 
   constructor(
     id: string,
@@ -25,11 +26,13 @@ export class BandTrack extends CanvasTrack {
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
     getPopupInfo: (box: HoverBox) => Promise<PopupContent>,
+    openContextMenu: OpenContextMenu,
   ) {
     super(id, label, trackHeight);
 
     this.getRenderData = getRenderData;
     this.getPopupInfo = getPopupInfo;
+    this.openContextMenu = openContextMenu;
   }
 
   initialize() {
@@ -37,7 +40,11 @@ export class BandTrack extends CanvasTrack {
 
     const onElementClick = async (box: HoverBox) => {
       const content = await this.getPopupInfo(box);
-      createPopup(this.canvas, box, content);
+      // createPopup(this.canvas, box, content);
+
+      console.log("Popup info", content);
+
+      this.openContextMenu(content);
     };
 
     this.initializeInteractive(onElementClick);

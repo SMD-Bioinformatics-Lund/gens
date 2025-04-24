@@ -75,6 +75,7 @@ export class TracksManager extends HTMLElement {
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
     getTranscriptDetails: (id: string) => Promise<ApiTranscriptDetails>,
+    openContextMenu: OpenContextMenu
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
@@ -116,6 +117,7 @@ export class TracksManager extends HTMLElement {
         };
       },
       async (box) => {
+        // FIXME: Refactor out these to stand-alone functions
         // FIXME: Variant details as well?
         const element = box.element as RenderBand;
         const url = getVariantURL(element.id);
@@ -133,6 +135,7 @@ export class TracksManager extends HTMLElement {
           ],
         };
       },
+      openContextMenu,
     );
     const transcriptTrack = new BandTrack(
       "transcript",
@@ -170,6 +173,7 @@ export class TracksManager extends HTMLElement {
           info,
         };
       },
+      openContextMenu,
     );
     const ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -193,6 +197,7 @@ export class TracksManager extends HTMLElement {
           getXRange,
           dataSource.getAnnotation,
           getAnnotationDetails,
+          openContextMenu,
         );
       },
     );
@@ -260,6 +265,7 @@ function getAnnotTrack(
   getXRange: () => Rng,
   getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
+  openContextMenu: OpenContextMenu,
 ): BandTrack {
   const getPopupInfo = async (box) => {
     const element = box.element as RenderBand;
@@ -307,6 +313,7 @@ function getAnnotTrack(
     trackHeight,
     () => getAnnotTrackData(sourceId, getXRange, getAnnotation),
     getPopupInfo,
+    openContextMenu,
   );
   return track;
 }

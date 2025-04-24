@@ -7,6 +7,8 @@ interface ApiAnnotationTrack {
   genome_build: number
 }
 
+type OpenContextMenu = (content: PopupContent) => void
+
 interface ApiSimplifiedAnnotation {
   record_id: string,
   name: string,

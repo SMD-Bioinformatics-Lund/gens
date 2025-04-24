@@ -1,4 +1,6 @@
 import { STYLE } from "../constants";
+import { removeChildren } from "../util/utils";
+import { getEntry } from "./util/popup";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 
 const style = STYLE.popup;
@@ -111,6 +113,8 @@ export class Settings extends ShadowBaseElement {
   private settingsButton!: HTMLButtonElement;
   private drawer!: HTMLElement;
   private closeButton!: HTMLButtonElement;
+  private header!: HTMLDivElement;
+  private entries!: HTMLDivElement;
 
   constructor() {
     super(template);
@@ -127,21 +131,54 @@ export class Settings extends ShadowBaseElement {
       "#close-drawer",
     ) as HTMLButtonElement;
 
+    this.header = this.root.querySelector("#header") as HTMLDivElement;
+    this.entries = this.root.querySelector("#entries") as HTMLDivElement;
+
     this.settingsButton.addEventListener("click", () => {
       console.log("Open button");
-      const isOpen = this.hasAttribute("drawer-open");
-      if (isOpen) {
-        this.removeAttribute("drawer-open");
-      } else {
-        this.setAttribute("drawer-open", "");
-      }
+      this.toggle();
     });
     this.closeButton.addEventListener("click", () => {
       console.log("Close");
       this.removeAttribute("drawer-open");
     });
 
-    document.addEventListener("click", this.onDocumentClick);
+    // document.addEventListener("click", this.onDocumentClick);
+  }
+
+  open() {
+    const isOpen = this.hasAttribute("drawer-open");
+    if (!isOpen) {
+      this.setAttribute("drawer-open", "");
+    }    
+  }
+
+  toggle() {
+    const isOpen = this.hasAttribute("drawer-open");
+    if (isOpen) {
+      // this.removeAttribute("drawer-open");
+    } else {
+      this.setAttribute("drawer-open", "");
+    }
+  }
+
+  showContent(content: PopupContent) {
+    console.log("Showing content from settings", content);
+    this.open();
+
+    this.header.textContent = content.header;
+    const infoEntries = content.info;
+    if (infoEntries != undefined) {
+
+      removeChildren(this.entries);
+
+      for (const infoEntry of infoEntries) {
+        const node = getEntry(infoEntry);
+        this.entries.appendChild(node);
+      }
+    }
+
+    console.log("At the end with nbr entries:", this.entries.children.length);
   }
 
   disconnectedCallback() {
@@ -151,13 +188,13 @@ export class Settings extends ShadowBaseElement {
 
   // Close drawer if clicking outside the drawer area
   private onDocumentClick = (e: MouseEvent) => {
-    if (!this.hasAttribute("drawer-open")) {
-      return;
-    }
-    const path = e.composedPath();
-    if (!path.includes(this)) {
-      this.removeAttribute("drawer-open");
-    }
+    // if (!this.hasAttribute("drawer-open")) {
+    //   return;
+    // }
+    // const path = e.composedPath();
+    // if (!path.includes(this)) {
+    //   this.removeAttribute("drawer-open");
+    // }
   };
 }
 

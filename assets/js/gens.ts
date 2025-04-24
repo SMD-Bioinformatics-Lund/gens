@@ -2,13 +2,14 @@ import "./components/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
 import "./components/util/shadowbaseelement";
-import "./components/settings";
+import "./components/gens_settings";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES } from "./constants";
+import { Settings as GensSettings } from "./components/gens_settings";
 
 export async function initCanvases({
   sampleId,
@@ -29,6 +30,8 @@ export async function initCanvases({
   startRegion: Region;
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
+
+  const settings = document.getElementById("settings") as GensSettings;
 
   const inputControls = document.getElementById(
     "input-controls",
@@ -64,6 +67,10 @@ export async function initCanvases({
     return url;
   }
 
+  const openContextMenu = (content: PopupContent) => {
+    settings.showContent(content);
+  }
+
   initialize(
     inputControls,
     gensTracks,
@@ -74,6 +81,7 @@ export async function initCanvases({
     getChromInfo,
     renderDataSource,
     getVariantURL,
+    openContextMenu,
   );
 }
 
@@ -87,6 +95,7 @@ async function initialize(
   getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
   renderDataSource: RenderDataSource,
   getVariantURL: (variantId: string) => string,
+  openContextMenu: OpenContextMenu,
 ) {
 
   const annotSources = await api.getAnnotationSources();
@@ -120,6 +129,7 @@ async function initialize(
     getVariantURL,
     async (id: string) => await api.getAnnotationDetails(id),
     async (id: string) => await api.getTranscriptDetails(id),
+    openContextMenu,
   );
 
   tracks.render(true);

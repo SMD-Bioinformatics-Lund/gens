@@ -13,7 +13,8 @@ template.innerHTML = String.raw`
       padding: ${style.padding}px;
       zIndex: 10000;
       font-family: ${style.font};
-      max-width: 320px;
+      max-width: 500px;
+      max-height: 500px;
       border-radius: ${style.borderRadius}px;
     }
     #header {
@@ -41,7 +42,10 @@ template.innerHTML = String.raw`
       color: ${style.textColor};
     }
     .entry-value {
-      flex-shrink: 0;
+      flex-shrink: 1;
+      min-width: 0;
+      white-space: normal;
+      word-break: break-word;
       text-align: right;
       text-decoration: none;
     }
@@ -164,7 +168,7 @@ function setupDrag(host: HTMLElement, dragArea: HTMLElement, cleanup: () => void
   });
 }
 
-function getEntry(infoEntry: { key: string; url?: string; value: string }) {
+export function getEntry(infoEntry: { key: string; url?: string; value: string }) {
   const { key, url, value } = infoEntry;
 
   const row = document.createElement("row");
