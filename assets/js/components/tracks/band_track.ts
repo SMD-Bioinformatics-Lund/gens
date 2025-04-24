@@ -53,6 +53,7 @@ export class BandTrack extends CanvasTrack {
     }
 
     if (updateData || this.renderData == null) {
+      this.renderLoading();
       this.renderData = await this.getRenderData();
     }
 
@@ -112,7 +113,6 @@ export class BandTrack extends CanvasTrack {
       return bandHoverTargets;
     });
 
-    // getHoverTargets(renderBand, xScale, (band) => band.hoverInfo),
     this.setHoverTargets(hoverTargets);
     this.drawTrackLabel();
   }

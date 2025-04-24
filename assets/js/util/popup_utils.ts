@@ -1,4 +1,4 @@
-import { computePosition, autoUpdate } from "@floating-ui/dom";
+import { computePosition, autoUpdate, offset, flip, shift } from "@floating-ui/dom";
 import { GensPopup } from "../components/util/popup";
 
 export function createPopup(
@@ -8,6 +8,10 @@ export function createPopup(
 ) {
   const popup = document.createElement("gens-popup") as GensPopup;
   popup.setContent(content);
+
+  // popup.style.cursor = "move";
+  // popup.style.touchAction = "none";
+
   document.body.appendChild(popup);
 
   const virtualReference = {
@@ -34,7 +38,11 @@ export function createPopup(
   const update = () => {
     computePosition(virtualReference, popup, {
       placement: "top",
-      middleware: [],
+      middleware: [
+        offset(8),
+        flip({ fallbackPlacements: ["bottom", "right", "left"]}),
+        shift({ padding: 5 }),
+      ],
     }).then(({ x, y }) => {
       Object.assign(popup.style, {
         left: `${x}px`,
@@ -45,11 +53,12 @@ export function createPopup(
   };
 
   const cleanup = autoUpdate(virtualReference, popup, update);
+  update();
+
+  popup.activateDrag(cleanup);
 
   popup.addEventListener("close", () => {
     cleanup();
     popup.remove();
   });
-
-  update();
 }
