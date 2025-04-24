@@ -60,6 +60,7 @@ async def get_transcripts(
     db: GensDb,
     start: int | None = 1,
     end: int | None = None,
+    only_mane: bool = False,
 ) -> list[SimplifiedTranscriptInfo]:
     """Get all transcripts for a sample.
 
@@ -77,6 +78,8 @@ async def get_transcripts(
 
     # get transcript for the new region
     transcripts: list[SimplifiedTranscriptInfo] = crud_get_transcripts(region, genome_build, db)
+    if only_mane:
+        transcripts = [tr for tr in transcripts if tr.type == "MANE Select"]
     return transcripts
 
 
