@@ -52,7 +52,7 @@ export function getRenderDataSource(
   const getTranscriptData = async () => {
     const onlyMane = true;
     const transcriptsRaw = await gensAPI.getTranscripts(getChrom(), onlyMane);
-    return parseTranscripts(transcriptsRaw, false);
+    return parseTranscripts(transcriptsRaw);
   };
 
   const getVariantData = async () => {
@@ -97,7 +97,6 @@ export function parseAnnotations(
     .filter((annot) => (annot.chrom == chromosome))
     .map((annot) => {
       const label = annot.name;
-      // const colorStr = annot.color != null ? rgbArrayToString(annot.color) : "black";
       return {
         id: `${annot.start}_${annot.end}_${annot.color}_${label}`,
         start: annot.start,
@@ -128,10 +127,8 @@ function parseExons(
 
 export function parseTranscripts(
   transcripts: ApiSimplifiedTranscript[],
-  onlyMane: boolean
 ): RenderBand[] {
   const transcriptsToRender: RenderBand[] = transcripts
-    .filter((tr) => onlyMane ? tr.type == "MANE Select" : true)
     .map((transcript) => {
       const exons = parseExons(transcript.record_id, transcript.features);
       const renderBand: RenderBand = {

@@ -143,13 +143,7 @@ export class API {
         query,
       )) as Promise<ApiSimplifiedTranscript[]>;
 
-      // if (maneOnly) {
-      //   this.transcriptCache[chrom] = transcripts.filter(
-      //     (tr) => tr.type == "MANE Select",
-      //   );
-      // } else {
       this.transcriptCache[chrom] = transcripts;
-      // }
     }
     return this.transcriptCache[chrom];
   }
@@ -188,24 +182,6 @@ export class API {
     return this.chromCache[chrom];
   }
 
-  // // FIXME: This would be better as a single request I think
-  // async getAllChromData(): Promise<Record<string, ChromosomeInfo>> {
-  //   await Promise.all(
-  //     CHROMOSOMES.map(async (chrom) => {
-  //       if (this.chromCache[chrom] === undefined) {
-  //         const chromosomeInfo = (await get(
-  //           new URL(`tracks/chromosomes/${chrom}`, this.apiURI).href,
-  //           {
-  //             genome_build: this.genomeBuild,
-  //           },
-  //         )) as ChromosomeInfo;
-
-  //         this.chromCache[chrom] = chromosomeInfo;
-  //       }
-  //     }),
-  //   );
-  //   return this.chromCache;
-  // }
 
   private overviewCovCache: Promise<Record<string, ApiCoverageDot[]>> = null;
   getOverviewCovData(): Promise<Record<string, ApiCoverageDot[]>> {
