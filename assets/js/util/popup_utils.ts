@@ -1,5 +1,6 @@
 import { computePosition, autoUpdate, offset, flip, shift } from "@floating-ui/dom";
 import { GensPopup } from "../components/util/popup";
+import { STYLE } from "../constants";
 
 export function createPopup(
   canvas: HTMLCanvasElement,
@@ -8,10 +9,6 @@ export function createPopup(
 ) {
   const popup = document.createElement("gens-popup") as GensPopup;
   popup.setContent(content);
-
-  // popup.style.cursor = "move";
-  // popup.style.touchAction = "none";
-
   document.body.appendChild(popup);
 
   const virtualReference = {
@@ -35,13 +32,15 @@ export function createPopup(
     contextElement: canvas,
   };
 
+  const style = STYLE.popup;
+
   const update = () => {
     computePosition(virtualReference, popup, {
       placement: "top",
       middleware: [
-        offset(8),
+        offset(style.margin),
         flip({ fallbackPlacements: ["bottom", "right", "left"]}),
-        shift({ padding: 5 }),
+        shift({ padding: style.margin }),
       ],
     }).then(({ x, y }) => {
       Object.assign(popup.style, {
