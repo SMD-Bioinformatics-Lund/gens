@@ -1,4 +1,7 @@
+import { STYLE } from "../constants";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
+
+const style = STYLE.popup;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -7,11 +10,11 @@ template.innerHTML = String.raw`
     :host {
       position: relative;
       display: inline-block;
+      z-index: 1000;
     }
 
     #settings-button {
       border: 0px;
-      /* box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3); */
       padding: 4px 10px;
       cursor: pointer;
       background: #FAFBFC;
@@ -38,32 +41,51 @@ template.innerHTML = String.raw`
       }
     }
     #settings-drawer {
-      position: absolute;
-      top: 100%;
+      position: fixed;
+      top: 0;
       right: 0;
-      width: 250px;
-      max-height: 100vh;
+      width: 300px;
+      min-height: 100vh;
       background: white;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      transform: translateY(-10px) scaleY(0);
-      transform-origin: top right;
-      transition: transform 0.2s ease-in-out;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
       overflow: auto;
-      z-index: 1000;
+      z-index: 1001;
+      
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
       padding: 8px;
     }
     :host([drawer-open]) #settings-drawer {
-      transform: translateY(0) scaleY(1);
+      transform: translateX(0);
     }
     #close-drawer {
-      margin-top: 1em;
-      background: none;
-      border: 1px solid #ccc;
-      padding: 0.3em 0.6em;
+      background: transparent;
+      border: none;
+      font-size: ${style.headerSize}px;
+      line-height: 1;
       cursor: pointer;
-      align-self: flex-end;
+      color: ${style.closeColor};
+      padding: 0;
+      margin-left: ${style.padding}px;
+    }
+    #entries {
+      display: flex;
+      flex-direction: column;
+      gap: ${style.entryGap}px;
+      font-weight: ${style.breadFontWeight};
+      font-size: 12px;
+    }
+    #header {
+      display: flex;
+      flex-direction: row;
+      font-weight: ${style.headerFontWeight};
+      font-size: ${style.headerSize}px;
+      color: ${style.textColor};
+      margin-bottom: ${style.margin}px;
     }
   </style>
   <div>
@@ -72,9 +94,15 @@ template.innerHTML = String.raw`
     </div>
 
     <div id="settings-drawer">
-      <h3>Settings</h3>
-      <p>Text</p>
-      <button id="close-drawer">Close</button>
+      <div id="content">
+        <div id="header">Settings will come here</div>
+        <div id="entries">
+          <div>Example entry</div>
+          <div>Example entry</div>
+          <div>Example entry</div>
+        </div>
+      </div>
+      <button id="close-drawer">&times;</button>
     </div>
   </div>
 `;
