@@ -2,10 +2,11 @@ import { ShadowBaseElement } from "./util/shadowbaseelement";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :host {
-      /* position: relative;
-      display: inline-block; */
+      position: relative;
+      display: inline-block;
     }
 
     #settings-button {
@@ -13,8 +14,8 @@ template.innerHTML = String.raw`
       /* box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3); */
       padding: 4px 10px;
       cursor: pointer;
-      background: $button-white;
-      border: 1px solid $button-black;
+      background: #FAFBFC;
+      border: 1px solid rgba(27, 31, 35, 0.15);
       border-radius: 4px;
       transition: box-shadow 0.1s ease;
       display: inline-flex;
@@ -66,7 +67,6 @@ template.innerHTML = String.raw`
     }
   </style>
   <div>
-    <button>Settings</button>
     <div id="settings-button">
         <i class="fas fa-cog"></i>
     </div>
@@ -93,13 +93,25 @@ export class Settings extends ShadowBaseElement {
     this.settingsButton = this.root.querySelector(
       "#settings-button",
     ) as HTMLButtonElement;
+    console.log(this.settingsButton);
     this.drawer = this.root.querySelector("#settings-drawer") as HTMLElement;
     this.closeButton = this.root.querySelector(
       "#close-drawer",
     ) as HTMLButtonElement;
 
-    this.settingsButton.addEventListener("click", () => {});
-    this.closeButton.addEventListener("click", () => {});
+    this.settingsButton.addEventListener("click", () => {
+      console.log("Open button");
+      const isOpen = this.hasAttribute("drawer-open");
+      if (isOpen) {
+        this.removeAttribute("drawer-open");
+      } else {
+        this.setAttribute("drawer-open", "");
+      }
+    });
+    this.closeButton.addEventListener("click", () => {
+      console.log("Close");
+      this.removeAttribute("drawer-open");
+    });
 
     document.addEventListener("click", this.onDocumentClick);
   }
