@@ -14,6 +14,8 @@ from gens.db.collections import SAMPLES_COLLECTION
 from gens.genomic import parse_region_str
 from gens.models.genomic import GenomeBuild
 
+from gens.config import settings
+
 LOG = logging.getLogger(__name__)
 
 gens_bp = Blueprint(
@@ -90,4 +92,5 @@ def display_case(sample_name: str) -> str:
         selected_variant=selected_variant,
         todays_date=date.today(),
         version=version,
+        gens_api_url=settings.gens_api_url
     )

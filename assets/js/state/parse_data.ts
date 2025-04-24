@@ -50,9 +50,9 @@ export function getRenderDataSource(
   };
 
   const getTranscriptData = async () => {
-    const transcriptsRaw = await gensAPI.getTranscripts(getChrom());
     const onlyMane = true;
-    return parseTranscripts(transcriptsRaw, onlyMane);
+    const transcriptsRaw = await gensAPI.getTranscripts(getChrom(), onlyMane);
+    return parseTranscripts(transcriptsRaw, false);
   };
 
   const getVariantData = async () => {

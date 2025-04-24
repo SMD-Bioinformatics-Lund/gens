@@ -54,6 +54,7 @@ class Settings(BaseSettings):
     gens_db: MongoDbConfig
     scout_db: MongoDbConfig
     scout_url: HttpUrl = Field(..., description="Base URL to Scout.")
+    gens_api_url: HttpUrl = Field(..., description="Gens API URL")
 
     # Annotation
     default_annotation_track: str | None = None
@@ -75,6 +76,7 @@ class Settings(BaseSettings):
             "gens_db": self.gens_db.database,
             "scout_db": self.scout_db.database,
             "scout_url": self.scout_url,
+            "gens_api_url": self.gens_api_url,
             "default_annotation_track": self.default_annotation_track,
             "authentication": self.authentication.value,
             "oauth": self.oauth,

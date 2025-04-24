@@ -129,12 +129,14 @@ export class API {
   private transcriptCache: Record<string, Promise<ApiSimplifiedTranscript[]>> = {};
   getTranscripts(
     chrom: string,
+    onlyMane: boolean
   ): Promise<ApiSimplifiedTranscript[]> {
     const isCached = this.transcriptCache[chrom] !== undefined;
     if (!isCached) {
       const query = {
         chromosome: chrom,
         genome_build: 38,
+        only_mane: onlyMane
       };
       const transcripts = (get(
         new URL("tracks/transcripts", this.apiURI).href,

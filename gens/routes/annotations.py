@@ -71,7 +71,7 @@ async def get_transcripts(
     if end is None:
         chrom_info = get_chromosome_info(db, chromosome, genome_build)
         if chrom_info is None:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"No information on chromoseom: {chromosome}")
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"No information on chromosome: {chromosome}")
         end = chrom_info.size
 
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
