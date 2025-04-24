@@ -37,6 +37,7 @@ export class DotTrack extends CanvasTrack {
 
   async render(updateData: boolean) {
     if (updateData || this.renderData == null) {
+      this.renderLoading();
       this.renderData = await this.getRenderData();
     }
 

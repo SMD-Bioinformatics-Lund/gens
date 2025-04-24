@@ -136,6 +136,7 @@ export class CanvasTrack extends ShadowBaseElement {
   }
 
   initializeInteractive(onElementClick: (el: HoverBox) => void | null = null) {
+
     const tooltip = new Tooltip(document.body);
 
     this.canvas.addEventListener("click", (event) => {
@@ -153,11 +154,11 @@ export class CanvasTrack extends ShadowBaseElement {
     });
 
     this.canvas.addEventListener("mousemove", (event) => {
-      tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
 
       if (this.hoverTargets == null) {
         return;
       }
+      tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
 
       const hovered = this.hoverTargets.find((target) =>
         eventInBox(event, target.box),

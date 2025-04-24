@@ -7,7 +7,10 @@ export class API {
   caseId: string;
   genomeBuild: number;
   apiURI: string;
-  cachedZoomLevels = ["o", "a", "b", "c"];
+  // Data for these are loaded up front for the full chromosome
+  // Remaining zoom levels (up to "d") are loaded dynamically and
+  // only for the points currently in view
+  cachedZoomLevels = ["o", "a", "b"];
 
   constructor(
     sampleId: string,

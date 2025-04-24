@@ -1,5 +1,6 @@
-import { computePosition, autoUpdate } from "@floating-ui/dom";
+import { computePosition, autoUpdate, offset, flip, shift } from "@floating-ui/dom";
 import { GensPopup } from "../components/util/popup";
+import { STYLE } from "../constants";
 
 export function createPopup(
   canvas: HTMLCanvasElement,
@@ -31,10 +32,16 @@ export function createPopup(
     contextElement: canvas,
   };
 
+  const style = STYLE.popup;
+
   const update = () => {
     computePosition(virtualReference, popup, {
       placement: "top",
-      middleware: [],
+      middleware: [
+        offset(style.margin),
+        flip({ fallbackPlacements: ["bottom", "right", "left"]}),
+        shift({ padding: style.margin }),
+      ],
     }).then(({ x, y }) => {
       Object.assign(popup.style, {
         left: `${x}px`,
@@ -45,11 +52,12 @@ export function createPopup(
   };
 
   const cleanup = autoUpdate(virtualReference, popup, update);
+  update();
+
+  popup.activateDrag(cleanup);
 
   popup.addEventListener("close", () => {
     cleanup();
     popup.remove();
   });
-
-  update();
 }
