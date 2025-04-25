@@ -12,32 +12,32 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
-import { createPopup } from "../../util/popup_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
-  getPopupInfo: (box: HoverBox) => PopupContent;
+  getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
+  openContextMenu: (id: string) => void;
 
   constructor(
     id: string,
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
-    getPopupInfo: (box: HoverBox) => PopupContent,
+    openContextMenu: (id: string) => void,
   ) {
     super(id, label, trackHeight);
 
     this.getRenderData = getRenderData;
-    this.getPopupInfo = getPopupInfo;
+    this.openContextMenu = openContextMenu;
   }
 
   initialize() {
     super.initialize();
 
-    const onElementClick = (box: HoverBox) => {
-      const content = this.getPopupInfo(box);
-      createPopup(this.canvas, box, content);
+    const onElementClick = async (box: HoverBox) => {
+      const element = box.element as RenderBand;
+      this.openContextMenu(element.id);
     };
 
     this.initializeInteractive(onElementClick);

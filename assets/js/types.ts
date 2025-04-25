@@ -28,7 +28,62 @@ interface ApiSimplifiedTranscript {
   features: {start: number, end: number}[]
 }
 
-interface ApiVariant {
+interface ApiComment {
+  created_at: string,
+  username: string,
+  comment: string,
+  displayed: boolean
+}
+
+interface ApiReference {
+  title: string,
+  url: string,
+  pmid: string,
+  authors: string[],
+}
+
+interface ApiMetadata {
+  field_name: string,
+  value: string,
+  type: string,
+}
+
+interface ApiAnnotationDetails {
+  start: number,
+  end: number,
+  track_id: string,
+  name: string,
+  description?: string,
+  genome_build: number,
+  chrom: string,
+  comments: ApiComment[],
+  references: ApiReference[],
+  metadata: ApiMetadata[],
+}
+
+interface ApiTranscriptFeature {
+  feature: string,
+  start: number,
+  end: number,
+  exon_number: number,
+}
+
+interface ApiTranscriptDetails {
+  transcript_id: string,
+  transcript_biotype: string,
+  gene_name: string,
+  mane: string,
+  hgnc_id: string,
+  refseq_id: string,
+  features: ApiTranscriptFeature[],
+  chrom: string,
+  start: number,
+  end: number,
+  strand: string,
+  genome_build: number
+}
+
+interface ApiVariantDetails {
   alternative: string,
   cadd_score: string,
   case_id: string,
@@ -45,6 +100,7 @@ interface ApiVariant {
   hgnc_ids: string[],
   hgnc_symbols: string[],
   institute: string,
+  genes: string[],
   length: number,
   missing_data: boolean,
   panels: string[],

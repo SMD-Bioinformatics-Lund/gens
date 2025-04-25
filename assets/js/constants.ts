@@ -1,12 +1,20 @@
-// FIXME: Move all UI style variables here
-export const COLORS = {
-  lightgray: "#e5e5e5",
+// Prefer using the raw constants
+// Component specific info goes into the STYLE constant
+
+export const ZINDICES = {
+  sideMenu: 2000,
+}
+
+export const FONT_SIZE = {
+  small: 10,
+  medium: 12,
+  large: 16,
 };
 
-export const FONTSIZES = {
-  small: 10,
-  medium: 18,
-};
+export const FONT_WEIGHT = {
+  header: 600,
+  bold: 300,
+}
 
 const colors = {
   white: "#FFF",
@@ -21,28 +29,36 @@ const colors = {
   purple: "#5E4B8B",
   gold: "#D4AF37",
   transparentYellow: "#dcd16f44",
-
 };
+
+export const PAD = {
+  xxs: 2,
+  xs: 4,
+  s: 6,
+  m: 9,
+  l: 12,
+}
 
 const font = "12px sans-serif";
 
 // FIXME: First step is to gather all constants here
 // FIXME: Then, the content below should be homogenized
 export const STYLE = {
-  popup: {
+  menu: {
     backgroundColor: colors.white,
     borderColor: colors.lightGray,
     textColor: colors.black,
     closeColor: colors.darkGray,
     borderWidth: 1,
-    padding: 12,
+    padding: PAD.l,
     font,
     borderRadius: 6,
-    margin: 8,
-    headerSize: 16,
-    headerFontWeight: 600,
-    breadFontWeight: 300,
-    entryGap: 6,
+    margin: PAD.s,
+    headerSize: FONT_SIZE.large,
+    headerFontWeight: FONT_WEIGHT.header,
+    breadFontWeight: FONT_WEIGHT.bold,
+    shadowSize: 2,
+    transitionTime: "0.3s",
   },
   variantColors: {
     del: colors.orange,
@@ -52,18 +68,18 @@ export const STYLE = {
     default: "gray",
   },
   bandTrack: {
-    trackPadding: 15,
-    bandPadding: 2,
+    trackPadding: PAD.l,
+    bandPadding: PAD.xxs,
     trackHeight: {
       extraThin: 20,
-      thin: 50,
+      thin: 45,
       thick: 80,
     },
     edgeColor: colors.darkGray,
     minBandWidth: 2,
   },
   ideogramMarker: {
-    leftMargin: 5,
+    leftMargin: PAD.xs,
     borderWidth: 2,
   },
   bands: {
@@ -84,8 +100,8 @@ export const STYLE = {
     },
     font,
     textColor: colors.darkGray,
-    textPadding: 4,
-    textFramePadding: 2,
+    textPadding: PAD.xs,
+    textFramePadding: PAD.xxs,
     textLaneSize: 20,
     backgroundColor: colors.white,
     frameLineWidth: 2,
@@ -93,8 +109,8 @@ export const STYLE = {
   ideogramTrack: {
     endBevelProportion: 0.05,
     centromereIndentProportion: 0.3,
-    xPad: 10,
-    yPad: 4,
+    xPad: PAD.m,
+    yPad: PAD.xs,
     lineColor: colors.darkGray,
     lineWidth: 1,
     stainToColor: {

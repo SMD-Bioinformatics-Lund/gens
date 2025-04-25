@@ -1,5 +1,5 @@
 import { STYLE } from "../constants";
-import { transformMap } from "../util/utils";
+import { prefixNts, transformMap } from "../util/utils";
 import { API } from "./api";
 
 function calculateZoom(xRange: Rng) {
@@ -38,7 +38,7 @@ export function getRenderDataSource(
     const zoom = calculateZoom(xRange);
 
     const covRaw = await gensAPI.getCov(getChrom(), zoom, xRange);
-    return parseCoverageDot(covRaw, STYLE.colors.teal);
+    return parseCoverageDot(covRaw, STYLE.colors.darkGray);
   };
 
   const getBafData = async () => {
@@ -46,7 +46,7 @@ export function getRenderDataSource(
     const zoom = calculateZoom(xRange);
 
     const bafRaw = await gensAPI.getBaf(getChrom(), zoom, xRange);
-    return parseCoverageDot(bafRaw, STYLE.colors.orange);
+    return parseCoverageDot(bafRaw, STYLE.colors.darkGray);
   };
 
   const getTranscriptData = async () => {
@@ -98,12 +98,13 @@ export function parseAnnotations(
     .map((annot) => {
       const label = annot.name;
       return {
-        id: `${annot.start}_${annot.end}_${annot.color}_${label}`,
+        id: annot.record_id,
+        // id: `${annot.start}_${annot.end}_${annot.color}_${label}`,
         start: annot.start,
         end: annot.end,
         color: annot.color,
         label,
-        hoverInfo: `${annot.name} (${annot.start}-${annot.end})`,
+        hoverInfo: `${annot.name}`,
       };
     });
   return results;
@@ -137,7 +138,7 @@ export function parseTranscripts(
         end: transcript.end,
         label: transcript.name,
         color: STYLE.colors.lightGray,
-        hoverInfo: `${transcript.name} (${transcript.record_id})`,
+        hoverInfo: `${transcript.name}`,
         direction: transcript.strand as "+" | "-",
         subBands: exons,
       };
@@ -160,16 +161,16 @@ export function parseTranscripts(
 }
 
 export function parseVariants(
-  variants: ApiVariant[],
+  variants: ApiVariantDetails[],
   variantColorMap: VariantColors,
 ): RenderBand[] {
   return variants.map((variant) => {
-    const id = variant.document_id;
+    const id = variant.variant_id;
     return {
       id,
       start: variant.position,
       end: variant.end,
-      hoverInfo: `${variant.variant_type} ${variant.sub_category}; length ${variant.length}`,
+      hoverInfo: `${variant.sub_category} (${prefixNts(variant.length)})`,
       label: `${variant.variant_type} ${variant.sub_category}`,
       color:
         variantColorMap[variant.sub_category] != undefined

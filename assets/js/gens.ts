@@ -1,24 +1,15 @@
-export {
-  setupDrawEventManager,
-  previousChromosome,
-  nextChromosome,
-  panTracks,
-  zoomIn,
-  zoomOut,
-  parseRegionDesignation,
-  queryRegionOrGene,
-} from "./unused/_navigation";
-
 import "./components/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
-import "./components/util/shadowbase";
+import "./components/util/shadowbaseelement";
+import "./components/side_menu";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES } from "./constants";
+import { SideMenu } from "./components/side_menu";
 
 export async function initCanvases({
   sampleId,
@@ -40,6 +31,17 @@ export async function initCanvases({
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
+  const sideMenu = document.getElementById("side-menu") as SideMenu;
+
+  const settingsButton = document.getElementById(
+    "settings-button",
+  ) as HTMLDivElement;
+  settingsButton.addEventListener("click", () => {
+    const content = document.createElement("div");
+    content.innerHTML = "Settings content";
+    sideMenu.showContent("Settings", [content]);
+  });
+
   const inputControls = document.getElementById(
     "input-controls",
   ) as InputControls;
@@ -55,7 +57,7 @@ export async function initCanvases({
     () => {
       const region = inputControls.getRegion();
       return [region.start, region.end];
-    }
+    },
   );
 
   const onChromClick = async (chrom) => {
@@ -72,7 +74,44 @@ export async function initCanvases({
   const getVariantURL = (variantId) => {
     const url = `${scoutBaseURL}/document_id/${variantId}`;
     return url;
-  }
+  };
+
+  const openContextMenu = (header: string, content: HTMLDivElement[]) => {
+    sideMenu.showContent(header, content);
+  };
+
+  // Rebuild the keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      sideMenu.close();
+    } else if (e.key === "ArrowLeft") {
+      if (e.ctrlKey || e.metaKey) {
+        const currChrom = inputControls.getRegion().chrom;
+        const currIndex = CHROMOSOMES.indexOf(currChrom);
+        if (currIndex > 0) {
+          const newChrom = CHROMOSOMES[currIndex - 1];
+          onChromClick(newChrom);
+        }
+      } else {
+        inputControls.panLeft();
+      }
+    } else if (e.key === "ArrowRight") {
+      if (e.ctrlKey || e.metaKey) {
+        const currChrom = inputControls.getRegion().chrom;
+        const currIndex = CHROMOSOMES.indexOf(currChrom);
+        if (currIndex < CHROMOSOMES.length - 1) {
+          const newChrom = CHROMOSOMES[currIndex + 1];
+          onChromClick(newChrom);
+        }
+      } else {
+        inputControls.panRight();
+      }
+    } else if (e.key === "ArrowUp") {
+      inputControls.zoomIn();
+    } else if (e.key === "ArrowDown") {
+      inputControls.zoomOut();
+    }
+  });
 
   initialize(
     inputControls,
@@ -84,6 +123,7 @@ export async function initCanvases({
     getChromInfo,
     renderDataSource,
     getVariantURL,
+    openContextMenu,
   );
 }
 
@@ -97,9 +137,15 @@ async function initialize(
   getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
   renderDataSource: RenderDataSource,
   getVariantURL: (variantId: string) => string,
+  openContextMenu: (header: string, content: HTMLDivElement[]) => void,
 ) {
-
   const annotSources = await api.getAnnotationSources();
+
+  const chromSizes = {};
+  for (const chromosome of CHROMOSOMES) {
+    const chromInfo = await getChromInfo(chromosome);
+    chromSizes[chromosome] = chromInfo.size;
+  }
 
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
@@ -111,14 +157,8 @@ async function initialize(
     async (_newXRange) => {
       tracks.render(true);
     },
-    annotSources
+    annotSources,
   );
-
-  const chromSizes = {};
-  for (const chromosome of CHROMOSOMES) {
-    const chromInfo = await getChromInfo(chromosome);
-    chromSizes[chromosome] = chromInfo.size;
-  }
 
   await tracks.initialize(
     chromSizes,
@@ -128,6 +168,11 @@ async function initialize(
     () => inputControls.getRange(),
     () => inputControls.getAnnotSources(),
     getVariantURL,
+    async (id: string) => await api.getAnnotationDetails(id),
+    async (id: string) => await api.getTranscriptDetails(id),
+    async (id: string) =>
+      await api.getVariantDetails(id, inputControls.getRegion().chrom),
+    openContextMenu,
   );
 
   tracks.render(true);

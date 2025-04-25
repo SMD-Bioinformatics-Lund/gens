@@ -1,5 +1,5 @@
 import { removeChildren } from "../../util/utils";
-import { ShadowBaseElement as ShadowBaseElement } from "../util/shadowbase";
+import { ShadowBaseElement as ShadowBaseElement } from "../util/shadowbaseelement";
 import { BandTrack } from "./band_track";
 
 const template = document.createElement("template");
@@ -16,6 +16,7 @@ export class MultiTracks extends ShadowBaseElement {
 
   getSources: () => { label: string; id: string }[];
   getTrack: (id: string, label: string) => BandTrack;
+  getDetails: (id: string) => string;
   tracks: BandTrack[] = [];
 
   constructor(

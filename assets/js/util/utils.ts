@@ -214,3 +214,7 @@ export function prefixNts(nts: number): string {
     return `${Math.round(nts / 10 ** 6)} mb`;
   }
 }
+
+export function prettyRange(start: number, end: number): string {
+  return `${start.toLocaleString()} - ${end.toLocaleString()}`;
+}

@@ -1,11 +1,6 @@
 import Choices, { EventChoice, InputChoice } from "choices.js";
-import {
-  getPan,
-  parseRegionDesignation,
-  zoomInNew,
-  zoomOutNew,
-} from "../unused/_navigation";
 import "choices.js/public/assets/styles/choices.min.css";
+import { getPan, parseRegionDesignation, zoomIn, zoomOut } from "../util/navigation";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -56,6 +51,10 @@ class RegionController {
     this._end = range[1];
   }
 
+  getChrom(): string {
+    return this._chrom;
+  }
+
   getRange(): Rng {
     return [this._start, this._end];
   }
@@ -77,13 +76,16 @@ export class InputControls extends HTMLElement {
   private annotationSelectElement: HTMLSelectElement;
   private annotationSelectChoices: Choices;
 
-  private panLeft: HTMLButtonElement;
-  private panRight: HTMLButtonElement;
-  private zoomIn: HTMLButtonElement;
-  private zoomOut: HTMLButtonElement;
+  private panLeftButton: HTMLButtonElement;
+  private panRightButton: HTMLButtonElement;
+  private zoomInButton: HTMLButtonElement;
+  private zoomOutButton: HTMLButtonElement;
   private regionField: HTMLInputElement;
 
   private region: RegionController;
+  private currChromLength: number;
+
+  private onPositionChange: (newXRange: [number, number]) => void;
 
   connectedCallback() {
     this.appendChild(template.content.cloneNode(true));
@@ -98,10 +100,10 @@ export class InputControls extends HTMLElement {
       itemSelectText: "",
     });
 
-    this.panLeft = this.querySelector("#pan-left") as HTMLButtonElement;
-    this.panRight = this.querySelector("#pan-right") as HTMLButtonElement;
-    this.zoomIn = this.querySelector("#zoom-in") as HTMLButtonElement;
-    this.zoomOut = this.querySelector("#zoom-out") as HTMLButtonElement;
+    this.panLeftButton = this.querySelector("#pan-left") as HTMLButtonElement;
+    this.panRightButton = this.querySelector("#pan-right") as HTMLButtonElement;
+    this.zoomInButton = this.querySelector("#zoom-in") as HTMLButtonElement;
+    this.zoomOutButton = this.querySelector("#zoom-out") as HTMLButtonElement;
     this.regionField = this.querySelector("#region-field") as HTMLInputElement;
   }
 
@@ -132,6 +134,7 @@ export class InputControls extends HTMLElement {
   updateChromosome(chrom: string, chromLength: number) {
     this.region = new RegionController({chrom, start:1, end: chromLength});
     this.regionField.value = this.region.getString();
+    this.currChromLength = chromLength;
   }
 
   updatePosition(range: [number, number]) {
@@ -148,6 +151,8 @@ export class InputControls extends HTMLElement {
   ) {
     this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);
+    this.onPositionChange = onPositionChange;
+    this.currChromLength = fullRegion.end;
 
     // FIXME: Move this out from here
     const choices: InputChoice[] = [];
@@ -170,35 +175,51 @@ export class InputControls extends HTMLElement {
       onAnnotationChanged(region, selectedSources);
     });
 
-    this.panLeft.onclick = () => {
-      const newXRange = getPan(this.getRange(), "left");
-      this.updatePosition(newXRange);
-      onPositionChange(newXRange);
+    this.panLeftButton.onclick = () => {
+      this.panLeft();
     };
 
-    this.panRight.onclick = () => {
-      const newXRangeRaw = getPan(this.getRange(), "right");
-      const newMax = Math.min(newXRangeRaw[1], fullRegion.end);
-      const newXRange: Rng = [newXRangeRaw[0], newMax];
-      this.updatePosition(newXRange);
-      onPositionChange(newXRange);
+    this.panRightButton.onclick = () => {
+      this.panRight();
     };
 
-    this.zoomIn.onclick = () => {
-      const currXRange = this.getRange();
-      const newXRange = zoomInNew(currXRange);
-      this.updatePosition(newXRange);
-      onPositionChange(newXRange);
+    this.zoomInButton.onclick = () => {
+      this.zoomIn();
     };
 
-    this.zoomOut.onclick = () => {
-      const currXRange = this.getRange();
-      const newXRangeRaw = zoomOutNew(currXRange);
-      const newMax = Math.min(newXRangeRaw[1], fullRegion.end);
-      const newXRange: Rng = [newXRangeRaw[0], newMax];
-      this.updatePosition(newXRange);
-      onPositionChange(newXRange);
+    this.zoomOutButton.onclick = () => {
+      this.zoomOut();
     };
+  }
+
+  panLeft() {
+    const newXRange = getPan(this.getRange(), "left");
+    this.updatePosition(newXRange);
+    this.onPositionChange(newXRange);
+  }
+
+  panRight() {
+    const newXRangeRaw = getPan(this.getRange(), "right");
+    const newMax = Math.min(newXRangeRaw[1], this.currChromLength);
+    const newXRange: Rng = [newXRangeRaw[0], newMax];
+    this.updatePosition(newXRange);
+    this.onPositionChange(newXRange);
+  }
+
+  zoomIn() {
+    const currXRange = this.getRange();
+    const newXRange = zoomIn(currXRange);
+    this.updatePosition(newXRange);
+    this.onPositionChange(newXRange);
+  }
+
+  zoomOut() {
+    const currXRange = this.getRange();
+    const newXRangeRaw = zoomOut(currXRange);
+    const newMax = Math.min(newXRangeRaw[1], this.currChromLength);
+    const newXRange: Rng = [newXRangeRaw[0], newMax];
+    this.updatePosition(newXRange);
+    this.onPositionChange(newXRange);
   }
 }
 
