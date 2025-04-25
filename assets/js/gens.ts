@@ -3,6 +3,7 @@ import "./components/input_controls";
 import "./components/util/popup";
 import "./components/util/shadowbaseelement";
 import "./components/side_menu";
+import "./components/settings_page";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";
@@ -10,6 +11,7 @@ import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
+import { SettingsPage } from "./components/settings_page";
 
 export async function initCanvases({
   sampleId,
@@ -33,18 +35,20 @@ export async function initCanvases({
 
   const sideMenu = document.getElementById("side-menu") as SideMenu;
 
+  const inputControls = document.getElementById(
+    "input-controls",
+  ) as InputControls;
+
+  const settingsPage = new SettingsPage();
+
   const settingsButton = document.getElementById(
     "settings-button",
   ) as HTMLDivElement;
   settingsButton.addEventListener("click", () => {
-    const content = document.createElement("div");
-    content.innerHTML = "Settings content";
-    sideMenu.showContent("Settings", [content]);
+    // content.appendChild(inputControls)
+    // content.innerHTML = "Settings content";
+    sideMenu.showContent("Settings", [settingsPage]);
   });
-
-  const inputControls = document.getElementById(
-    "input-controls",
-  ) as InputControls;
 
   const api = new API(sampleId, caseId, genomeBuild, gensApiURL);
 
@@ -115,6 +119,7 @@ export async function initCanvases({
 
   initialize(
     inputControls,
+    settingsPage,
     gensTracks,
     startRegion,
     annotationFile,
@@ -129,6 +134,7 @@ export async function initCanvases({
 
 async function initialize(
   inputControls: InputControls,
+  settingsPage: SettingsPage,
   tracks: TracksManager,
   startRegion: Region,
   defaultAnnotation: string,
@@ -159,6 +165,10 @@ async function initialize(
     },
     annotSources,
   );
+
+  settingsPage.initialize(annotSources, [defaultAnnotation], (source) => {
+    console.log("Changed to source", source);
+  })
 
   await tracks.initialize(
     chromSizes,

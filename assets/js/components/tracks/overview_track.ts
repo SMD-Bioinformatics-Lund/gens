@@ -24,6 +24,10 @@ export class OverviewTrack extends CanvasTrack {
   renderData: OverviewTrackData | null;
   getRenderData: () => Promise<OverviewTrackData>;
 
+  // FIXME: Generalize this
+  private staticBuffer: HTMLCanvasElement;
+  private staticCtx: CanvasRenderingContext2D;
+
   constructor(
     id: string,
     label: string,
@@ -39,6 +43,9 @@ export class OverviewTrack extends CanvasTrack {
     this.yRange = yRange;
     this.getRenderData = getRenderData;
     this.onChromosomeClick = onChromosomeClick;
+
+    this.staticBuffer = document.createElement("canvas");
+    this.staticCtx = this.staticBuffer.getContext("2d");
   }
 
   initialize() {
@@ -59,12 +66,13 @@ export class OverviewTrack extends CanvasTrack {
   }
 
   async render(updateData: boolean) {
+    const pixelRatio = 2;
 
-    if (updateData || this.renderData == null) {
+    let newRender = false;
+    if (this.renderData == null || updateData) {
       this.renderData = await this.getRenderData();
+      newRender = true;
     }
-
-    super.syncDimensions();
 
     const { xRange, chromosome, dotsPerChrom } = this.renderData;
 
@@ -87,10 +95,19 @@ export class OverviewTrack extends CanvasTrack {
       xScale(end),
     ]);
 
-    if (!updateData || !this.isRendered) {
-      renderBackground(this.ctx, this.dimensions, STYLE.tracks.edgeColor);
+    if (newRender) {
+      super.syncDimensions();
+      this.renderLoading();
+
+      // Sync the static canvas sizes
+      this.staticBuffer.width = this.dimensions.width * pixelRatio;
+      this.staticBuffer.height = this.dimensions.height * pixelRatio;
+      this.staticCtx.resetTransform();
+      this.staticCtx.scale(pixelRatio, pixelRatio);
+
+      renderBackground(this.staticCtx, this.dimensions, STYLE.tracks.edgeColor);
       renderOverviewPlot(
-        this.ctx,
+        this.staticCtx,
         chromRanges,
         this.pxRanges,
         xScale,
@@ -98,8 +115,24 @@ export class OverviewTrack extends CanvasTrack {
         dotsPerChrom,
         this.chromSizes,
       );
+
       this.isRendered = true;
     }
+
+    // Render offscreen canvas to display canvas
+    super.syncDimensions();
+    this.ctx.clearRect(0, 0, this.dimensions.width, this.dimensions.height);
+    this.ctx.drawImage(
+      this.staticBuffer,
+      0,
+      0,
+      this.staticBuffer.width,
+      this.staticBuffer.height,
+      0,
+      0,
+      this.dimensions.width,
+      this.dimensions.height,
+    );
 
     const chromStartPos = chromRanges[chromosome][0];
     renderSelectedChromMarker(
