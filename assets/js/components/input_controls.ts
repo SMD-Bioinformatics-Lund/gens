@@ -94,11 +94,11 @@ export class InputControls extends HTMLElement {
       "#source-list",
     ) as HTMLSelectElement;
 
-    this.annotationSelectChoices = new Choices(this.annotationSelectElement, {
-      placeholderValue: "Enter annotation",
-      removeItemButton: true,
-      itemSelectText: "",
-    });
+    // this.annotationSelectChoices = new Choices(this.annotationSelectElement, {
+    //   placeholderValue: "Enter annotation",
+    //   removeItemButton: true,
+    //   itemSelectText: "",
+    // });
 
     this.panLeftButton = this.querySelector("#pan-left") as HTMLButtonElement;
     this.panRightButton = this.querySelector("#pan-right") as HTMLButtonElement;
