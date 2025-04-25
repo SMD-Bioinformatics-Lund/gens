@@ -1,3 +1,4 @@
+import { ChoiceSelect } from "./util/choice_select";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 import Choices, { EventChoice, InputChoice } from "choices.js";
 // import "choices.js/public/assets/styles/choices.min.css";
@@ -6,18 +7,32 @@ const template = document.createElement("template");
 template.innerHTML = String.raw`
   <p>Hello world</p>
   <div class="choices-container">
-    <select id="source-list2" multiple></select>
+    <choice-select id="choice-select"></choice-select>
+    <!-- <select id="source-list" multiple>
+      <option value="volvo">Volvo</option>
+      <option value="saab">Saab</option>
+      <option value="mercedes">Mercedes</option>
+      <option value="audi">Audi</option>
+    </select> -->
   </div>
 `;
 
-export class SettingsPage extends HTMLElement {
+export class SettingsPage extends ShadowBaseElement {
   private selectElement: HTMLSelectElement;
   private annotationSelectChoices: Choices;
   private choices: InputChoice[];
 
+  private choiceSelect: ChoiceSelect;
+
   private annotationSources: ApiAnnotationTrack[];
   private defaultAnnots: string[];
   private onAnnotationChanged: (sources: string[]) => void;
+
+  constructor() {
+    super(template);
+    // this.selectElement = this.root.querySelector("#source-list");
+    this.choiceSelect = this.root.querySelector("#choice-select");
+  }
 
   initialize(
     annotationSources: ApiAnnotationTrack[],
@@ -33,48 +48,44 @@ export class SettingsPage extends HTMLElement {
 
   connectedCallback() {
 
-    if (!this.hasSetup) {
-      this.appendChild(template.content.cloneNode(true));
+    // if (!this.hasSetup) {
+    //   // this.appendChild(template.content.cloneNode(true));
 
-      this.selectElement = this.querySelector(
-        "#source-list2",
-      ) as HTMLSelectElement;  
-      console.log(this.selectElement);
-      this.annotationSelectChoices = new Choices(this.selectElement, {
-        placeholderValue: "Choose annotation",
-        removeItemButton: true,
-        itemSelectText: "",
-      });  
-      this.hasSetup = true;
-    }
+    //   // this.annotationSelectChoices = new Choices(this.selectElement, {
+    //   //   placeholderValue: "Choose annotation",
+    //   //   removeItemButton: true,
+    //   //   itemSelectText: "",
+    //   // });  
+    //   this.hasSetup = true;
+    // }
 
-    if (this.annotationSources == null) {
-      throw Error("Must be initialized before being connected")
-    }
+    // if (this.annotationSources == null) {
+    //   throw Error("Must be initialized before being connected")
+    // }
 
-    console.log(this.selectElement);
+    // console.log(this.selectElement);
 
-    const choices: InputChoice[] = [];
-    for (const source of this.annotationSources) {
-      const choice = {
-        value: source.track_id,
-        label: source.name,
-        selected: this.defaultAnnots.includes(source.name),
-      };
-      choices.push(choice);
-    }
+    // const choices: InputChoice[] = [];
+    // for (const source of this.annotationSources) {
+    //   const choice = {
+    //     value: source.track_id,
+    //     label: source.name,
+    //     selected: this.defaultAnnots.includes(source.name),
+    //   };
+    //   choices.push(choice);
+    // }
     // this.choices = choices;
-    this.annotationSelectChoices.setChoices(choices);
+    // this.annotationSelectChoices.setChoices(choices);
 
     // this.annotationSelectChoices.setChoices(this.choices);
 
-    this.selectElement.addEventListener("change", async () => {
-      const selectedSources = this.annotationSelectChoices.getValue(
-        true,
-      ) as string[];
+    // this.selectElement.addEventListener("change", async () => {
+    //   const selectedSources = this.annotationSelectChoices.getValue(
+    //     true,
+    //   ) as string[];
 
-      // onAnnotationChanged(selectedSources);
-    });
+    //   // onAnnotationChanged(selectedSources);
+    // });
   }
 
   getAnnotSources(): { id: string; label: string }[] {

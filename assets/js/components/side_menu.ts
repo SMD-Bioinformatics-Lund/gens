@@ -118,21 +118,25 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-export class SideMenu extends HTMLElement {
+export class SideMenu extends ShadowBaseElement {
   private drawer!: HTMLElement;
   private closeButton!: HTMLButtonElement;
   private header!: HTMLDivElement;
   private entries!: HTMLDivElement;
 
+  constructor() {
+    super(template);
+  }
+
   connectedCallback() {
-    this.appendChild(template.content.cloneNode(true));
-    this.drawer = this.querySelector("#settings-drawer") as HTMLElement;
-    this.closeButton = this.querySelector(
+    super.connectedCallback();
+    this.drawer = this.root.querySelector("#settings-drawer") as HTMLElement;
+    this.closeButton = this.root.querySelector(
       "#close-drawer",
     ) as HTMLButtonElement;
 
-    this.header = this.querySelector("#header") as HTMLDivElement;
-    this.entries = this.querySelector("#entries") as HTMLDivElement;
+    this.header = this.root.querySelector("#header") as HTMLDivElement;
+    this.entries = this.root.querySelector("#entries") as HTMLDivElement;
 
     this.closeButton.addEventListener("click", () => {
       this.removeAttribute("drawer-open");

@@ -2,6 +2,7 @@ import "./components/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
 import "./components/util/shadowbaseelement";
+import "./components/util/choice_select";
 import "./components/side_menu";
 import "./components/settings_page";
 
@@ -48,6 +49,7 @@ export async function initCanvases({
     // content.appendChild(inputControls)
     // content.innerHTML = "Settings content";
     sideMenu.showContent("Settings", [settingsPage]);
+    // sideMenu.showContent("Settings", []);
   });
 
   const api = new API(sampleId, caseId, genomeBuild, gensApiURL);
