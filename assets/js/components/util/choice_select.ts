@@ -4,7 +4,11 @@ import { ShadowBaseElement } from "./shadowbaseelement";
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
-  <p>Header</p>
+  <style>
+    .choices__list--dropdown {
+      z-index: 3000;
+    }
+  </style>
   <select id="select" multiple>
     <option value="volvo">A</option>
     <option value="saab">B</option>
@@ -22,6 +26,11 @@ export class ChoiceSelect extends ShadowBaseElement {
       placeholderValue: "Choices",
       removeItemButton: true,
       itemSelectText: "",
+    });
+
+    // Test trying to prevent clicks to be captured elsewhere
+    this.selectElement.addEventListener("change", (e) => {
+      console.log("Changed");
     });
   }
 

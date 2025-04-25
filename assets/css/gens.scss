@@ -14,6 +14,10 @@ $header-background-blue: #bbcadc;
 $source-border-color: rgba(27, 31, 35, 0.15);
 $marker-gray-color: #7c7c7c;
 
+.choices__list--dropdown {
+  z-index: 3000;
+}
+
 .tooltip {
   background: $dark-gray-color;
   color: $white-color;
