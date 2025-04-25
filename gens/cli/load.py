@@ -149,9 +149,17 @@ def sample(
     "--tsv",
     "is_tsv",
     is_flag=True,
-    help="Force parsing as tsv regarless of suffix.",
+    help="Force parsing as tsv regardless of suffix.",
 )
-def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool) -> None:
+# FIXME: Make this more general to work with all file formats
+@click.option(
+    "-i",
+    "--ignore-errors",
+    "ignore_errors",
+    is_flag=True,
+    help="Proceed with parsing AED files even if some entries fail."
+)
+def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_errors: bool) -> None:
     """Load annotations from file into the database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
@@ -206,9 +214,17 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool) -> None:
                 )
                 raise click.Abort()
         elif file_format == "aed":
-            file_meta, aed_records = parse_aed_file(file)
-            records = [fmt_aed_to_annotation(rec, track_id, genome_build) for rec in aed_records]
-        # annotations = read_annotation_file(annot_file, has_header)
+            file_meta, aed_records = parse_aed_file(file, ignore_errors)
+            records = []
+            for rec in aed_records:
+                try:
+                    formatted_rec = fmt_aed_to_annotation(rec, track_id, genome_build)
+                except ValueError:
+                    LOG.warning("Failed to format rec to annotation: %s", rec)
+                    if not ignore_errors:
+                        raise
+                    continue
+                records.append(formatted_rec)
 
         if len(file_meta) > 0:
             # add metadata from file to the previously created track
