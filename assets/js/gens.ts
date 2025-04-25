@@ -37,7 +37,6 @@ export async function initCanvases({
     "settings-button",
   ) as HTMLDivElement;
   settingsButton.addEventListener("click", () => {
-    console.log("Clicked!");
     const content = document.createElement("div");
     content.innerHTML = "Settings content";
     sideMenu.showContent("Settings", [content]);

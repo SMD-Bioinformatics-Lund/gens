@@ -12,7 +12,12 @@ import { BandTrack } from "./tracks/band_track";
 import { STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/canvas_track";
 import { prefixNts, prettyRange } from "../util/utils";
-import { getEntry, getSection, makeRefDiv, getContainer } from "./util/menu_utils";
+import {
+  getEntry,
+  getSection,
+  makeRefDiv,
+  getContainer,
+} from "./util/menu_utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];

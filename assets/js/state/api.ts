@@ -45,7 +45,6 @@ export class API {
   async getVariantDetails(id: string, currChrom: string): Promise<ApiVariantDetails> {
     const variants = await this.getVariants(currChrom);
     const targets = variants.filter((v) => v.variant_id === id);
-    // const targets = variants.filter((var) => var.id === id);
     if (targets.length != 1) {
       console.error("Expected a single variant, found: ", targets);
       if (targets.length === 0) {

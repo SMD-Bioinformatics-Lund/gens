@@ -167,7 +167,6 @@ export class SideMenu extends ShadowBaseElement {
   }
 
   showContent(header: string, content: HTMLDivElement[]) {
-    console.log("Showing content from settings", content);
     this.open();
 
     removeChildren(this.entries);
