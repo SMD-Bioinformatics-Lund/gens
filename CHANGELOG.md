@@ -10,7 +10,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Tracks expand with wider window size.
  - Tracks retrieve data on demand and caches requests.
  - Multiple annotation tracks.
- - Popup context menu when clicking band tracks.
+ - Context menu when clicking band tracks.
 
 ### Changed
  - Resolution increased 2x for tracks.
