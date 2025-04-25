@@ -11,8 +11,8 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/canvas_track";
-import { prefixNts } from "../util/utils";
-import { getEntry, getSection } from "./util/menu_utils";
+import { prefixNts, prettyRange } from "../util/utils";
+import { getEntry, getSection, makeRefDiv, getContainer } from "./util/menu_utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -76,7 +76,8 @@ export class TracksManager extends HTMLElement {
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
     getTranscriptDetails: (id: string) => Promise<ApiTranscriptDetails>,
-    openContextMenu: (header: string, content: HTMLDivElement[]) => void,
+    getVariantDetails: (id: string) => Promise<ApiVariantDetails>,
+    openContextMenu: (header: string, content: HTMLElement[]) => void,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
@@ -108,8 +109,8 @@ export class TracksManager extends HTMLElement {
       },
     );
     const variantTrack = new BandTrack(
-      "variant",
-      "Variant",
+      "variants",
+      "Variants",
       trackHeight.thin,
       async () => {
         return {
@@ -118,37 +119,44 @@ export class TracksManager extends HTMLElement {
         };
       },
       async (id: string) => {
+        const details = await getVariantDetails(id);
+        const scoutUrl = getVariantURL(id);
+        const info: { key: string; value: string; url?: string }[] = [
+          { key: "ID", value: id },
+          { key: "Range", value: `${details.position} - ${details.end}` },
+          {
+            key: "Length",
+            value: prefixNts(details.length),
+          },
+          { key: "Scout URL", value: scoutUrl, url: scoutUrl },
+          { key: "CADD score", value: details.cadd_score },
+          {
+            key: "Category",
+            value: `${details.category} (${details.sub_category})`,
+          },
+          {
+            key: "Cytoband",
+            value: `${details.cytoband_start} - ${details.cytoband_end}`,
+          },
+          { key: "Rank score", value: details.rank_score.toString() },
+        ];
 
-        const div = document.createElement("div");
-        div.innerHTML = "Hello world from variants, id: " + id;
-        openContextMenu("Variants", [div]);
-      }
-      // async (id: string) => {
+        const entries: HTMLElement[] = info.map((i) => getEntry(i));
+        const rankScoreParts = getSection(
+          "Rank score parts",
+          details.rank_score_results.map((part) => {
+            return getContainer("row", `${part.category}: ${part.score}`);
+          }),
+        );
 
-      //   // Hmm. Set up API to get variant by ID as well.
+        entries.push(rankScoreParts);
 
-      //   // FIXME: Refactor out these to stand-alone functions
-      //   // FIXME: Variant details as well?
-      //   // const element = box.element as RenderBand;
-      //   const url = getVariantURL(id);
-      //   return {
-      //     header: `${element.label}`,
-      //     info: [
-      //       // FIXME: Only during development
-      //       { key: "ID", value: element.id },
-      //       { key: "Range", value: `${element.start} - ${element.end}` },
-      //       {
-      //         key: "Length",
-      //         value: prefixNts(element.end - element.start + 1),
-      //       },
-      //       { key: "URL", value: "Scout", url },
-      //     ],
-      //   };
-      // },
+        openContextMenu("Variant", entries);
+      },
     );
     const transcriptTrack = new BandTrack(
-      "transcript",
-      "Transcript",
+      "transcripts",
+      "Transcripts",
       trackHeight.thin,
       async () => {
         return {
@@ -157,11 +165,9 @@ export class TracksManager extends HTMLElement {
         };
       },
       async (id) => {
-        // const element = box.element as RenderBand;
         const details = await getTranscriptDetails(id);
 
         const info: { key: string; value: string }[] = [
-          { key: "ID", value: id },
           { key: "Range", value: `${details.start} - ${details.end}` },
           {
             key: "Length",
@@ -174,19 +180,11 @@ export class TracksManager extends HTMLElement {
           { key: "HGNC ID", value: details.hgnc_id },
           { key: "Refseq ID", value: details.refseq_id },
           { key: "Strand", value: details.strand },
-          { key: "First feature", value: details.features[0].feature },
+          { key: "BNF ID", value: id },
         ];
 
-        // const container = document.createElement("div");
         const entries = info.map((i) => getEntry(i));
-
-        // return container;
-        openContextMenu("Transcripts", entries);
-
-        // return {
-        //   header: `${element.label}`,
-        //   info,
-        // };
+        openContextMenu("Transcript", entries);
       },
     );
     const ideogramTrack = new IdeogramTrack(
@@ -210,11 +208,45 @@ export class TracksManager extends HTMLElement {
           trackHeight.thin,
           getXRange,
           dataSource.getAnnotation,
-          getAnnotationDetails,
-          (id: string) => {
-            const container = document.createElement("div");
-            container.innerHTML = id;
-            openContextMenu("Annotations", [container]);
+          async (id: string) => {
+            const details = await getAnnotationDetails(id);
+
+            const info: { key: string; value: string }[] = [
+              {
+                key: "Range",
+                value: prettyRange(details.start, details.end),
+              },
+              {
+                key: "Length",
+                value: prefixNts(details.end - details.start + 1),
+              },
+              { key: "Name", value: details.name },
+              { key: "Description", value: details.description || "-" },
+              { key: "BNF ID", value: id },
+            ];
+
+            const infoDivs = info.map((i) => getEntry(i));
+
+            const commentSection = getSection(
+              "Comments",
+              details.comments.flatMap((c) =>
+                c.comment
+                  .replace('"', "")
+                  .split("; ")
+                  .map((s) => getContainer("row", s)),
+              ),
+            );
+            infoDivs.push(commentSection);
+
+            const referenceSection = getSection(
+              "References",
+              details.references.map((ref) =>
+                makeRefDiv(ref.title, ref.pmid, ref.url),
+              ),
+            );
+            infoDivs.push(referenceSection);
+
+            openContextMenu("Annotations", infoDivs);
           },
         );
       },
@@ -282,69 +314,8 @@ function getAnnotTrack(
   trackHeight: number,
   getXRange: () => Rng,
   getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
-  getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
   openContextMenu: (id: string) => void,
 ): BandTrack {
-  const getPopupInfo = async (element: RenderBand) => {
-    // const element = box.element as RenderBand;
-    const details = await getAnnotationDetails(element.id);
-
-    const content = document.createElement("div");
-
-    const info: { key: string; value: string }[] = [
-      { key: "ID", value: element.id },
-      { key: "Range", value: `${element.start} - ${element.end}` },
-      { key: "Length", value: prefixNts(element.end - element.start + 1) },
-      { key: "Name", value: details.name },
-      { key: "Description", value: details.description },
-    ];
-
-    info.map((i) => getEntry(i)).forEach((div) => content.append(div));
-
-    const commentSection = getSection(
-      "Comments",
-      details.comments.map((c) => c.comment),
-    );
-
-    content.append(commentSection);
-
-    return content;
-
-    // if (details.comments.length > 0) {
-
-    //   for (const comment of details.comments) {
-    //     info.push({key: comment.created_at, value: comment.comment});
-    //   }
-    // }
-    // {
-    //   key: "First comment",
-    //   value:
-    //     details.comments.length > 0
-    //       ? details.comments[0].comment
-    //       : "No comment",
-    // },
-    // {
-    //   key: "First reference title",
-    //   value:
-    //     details.references.length > 0
-    //       ? details.references[0].title
-    //       : "No references",
-    // },
-    // {
-    //   key: `First metadata (${details.metadata[0].field_name})`,
-    //   value:
-    //     details.metadata.length > 0
-    //       ? details.metadata[0].value
-    //       : "No metadata",
-    // },
-    // ];
-
-    // return {
-    //   header: `${element.label}`,
-    //   info,
-    // };
-  };
-
   const track = new BandTrack(
     sourceId,
     label,

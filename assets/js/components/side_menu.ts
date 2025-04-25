@@ -1,6 +1,5 @@
-import { STYLE } from "../constants";
+import { FONT_SIZE, FONT_WEIGHT, PAD, STYLE, ZINDICES } from "../constants";
 import { removeChildren } from "../util/utils";
-import { getEntry } from "./util/menu_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 
 const style = STYLE.menu;
@@ -12,26 +11,56 @@ template.innerHTML = String.raw`
     :host {
       position: relative;
       display: inline-block;
-      z-index: 2000;
+      z-index: ${ZINDICES.sideMenu};
+    }
+
+    .menu-row {
+      align-items: center;
+      padding: ${PAD.xs}px ${PAD.xs}px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .menu-column {
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+
+    .menu-row-value {
+      flex-shrink: 1;
+      min-width: 0;
+      white-space: normal;
+      word-break: break-word;
+      text-align: right;
+      text-decoration: none;
+    }
+
+    .section-entry {
+      padding: ${PAD.xxs}px 0;
     }
 
     #settings-drawer {
       position: fixed;
       top: 0;
       right: 0;
-      width: 300px;
-      min-height: 100vh;
+      width: 350px;
+      height: 100vh;
       background: white;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 ${style.shadowSize}px ${style.shadowSize}px rgba(0, 0, 0, 0.2);
       transform: translateX(100%);
-      transition: transform 0.3s ease;
+      transition: transform ${style.transitionTime} ease;
       overflow: auto;
-      z-index: 2001;
+      z-index: ${ZINDICES.sideMenu + 1};
       
       display: flex;
-      flex-direction: row;
-      align-items: flex-start;
-      padding: 8px;
+      flex-direction: column;
+      align-items: stretch;
+      /* align-items: flex-start; */
+      padding: ${style.padding}px;
+      overflow: hidden;
     }
     :host([drawer-open]) #settings-drawer {
       transform: translateX(0);
@@ -49,30 +78,29 @@ template.innerHTML = String.raw`
     #entries {
       display: flex;
       flex-direction: column;
-      gap: ${style.entryGap}px;
-      font-weight: ${style.breadFontWeight};
-      font-size: 12px;
+      gap: ${PAD.l}px;
+      font-weight: ${FONT_WEIGHT.bold};
+      font-size: ${FONT_SIZE.medium}px;
     }
     #content {
       display: flex;
       flex-direction: column;
-      /* FIXME: Read up on this one */
-      /* flex: 1 1 auto; */
-      flex-grow: 1;
-      flex-shrink: 1;
-      flex-basis: auto;
+      flex: 1 1 auto;
       min-width: 0;
+      overflow-y: auto;
     }
     #header-row {
       display: flex;
       flex-direction: row;
       justify-content: space-between;
+      align-items: center;
+      margin-bottom: ${style.margin}px;
+      flex: 0 0 auto;
     }
     #header {
-      font-weight: ${style.headerFontWeight};
+      font-weight: ${FONT_WEIGHT.header};
       font-size: ${style.headerSize}px;
       color: ${style.textColor};
-      margin-bottom: ${style.margin}px;
     }
   </style>
   <div id="settings-drawer">
@@ -149,37 +177,7 @@ export class SideMenu extends ShadowBaseElement {
     for (const element of content) {
       this.entries.appendChild(element);
     }
-
-
-    // const infoEntries = content.info;
-    // if (infoEntries != undefined) {
-
-    //   removeChildren(this.entries);
-
-    //   for (const infoEntry of infoEntries) {
-    //     const node = getEntry(infoEntry);
-    //     this.entries.appendChild(node);
-    //   }
-    // }
-
-    // console.log("At the end with nbr entries:", this.entries.children.length);
   }
-
-  disconnectedCallback() {
-    // super.disconnectedCallback();
-    document.removeEventListener("click", this.onDocumentClick);
-  }
-
-  // Close drawer if clicking outside the drawer area
-  private onDocumentClick = (e: MouseEvent) => {
-    // if (!this.hasAttribute("drawer-open")) {
-    //   return;
-    // }
-    // const path = e.composedPath();
-    // if (!path.includes(this)) {
-    //   this.removeAttribute("drawer-open");
-    // }
-  };
 }
 
 customElements.define("side-menu", SideMenu);

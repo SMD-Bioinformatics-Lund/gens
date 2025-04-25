@@ -1,5 +1,5 @@
 // graph related objects
-import { COLORS, FONTSIZES } from "../constants";
+import { FONT_SIZE } from "../constants";
 import { drawLine } from "../draw/shapes";
 import { drawRect, drawRotatedText, drawText } from "./_shapes";
 
@@ -55,7 +55,7 @@ export function drawVerticalTicks({
     drawRotatedText({
       ctx,
       text: value,
-      textSize: FONTSIZES.small,
+      textSize: FONT_SIZE.small,
       posx: renderX + xStep + 8,
       posy: y - value.length - 3 * yMargin,
       rotDegrees: -Math.PI / 4,
@@ -111,7 +111,7 @@ export function drawGraphLines({
       y1: yPos,
       x2: x + width - 2 * lineThickness,
       y2: yPos},
-      {color: COLORS.lightgray},
+      {color: "black"},
     );
   }
 }

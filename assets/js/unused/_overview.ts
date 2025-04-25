@@ -11,7 +11,7 @@ import {
 } from "./_draw";
 
 import { drawTrackDeprecated } from "./_navigation";
-import { CHROMOSOMES, FONTSIZES } from "../constants";
+import { CHROMOSOMES, FONT_SIZE } from "../constants";
 
 export class OverviewCanvas extends BaseScatterTrack {
   fullPlotWidth: number;
@@ -216,7 +216,7 @@ export class OverviewCanvas extends BaseScatterTrack {
       drawRotatedText({
         ctx,
         text: "B Allele Freq",
-        textSize: FONTSIZES["medium"],
+        textSize: FONT_SIZE["large"],
         posx: chromCovData.x_pos - this.legendMargin,
         posy: chromCovData.y_pos + this.plotHeight / 2,
         rotDegrees: -Math.PI / 2,
@@ -225,7 +225,7 @@ export class OverviewCanvas extends BaseScatterTrack {
       drawRotatedText({
         ctx,
         text: "Log2 Ratio",
-        textSize: FONTSIZES["medium"],
+        textSize: FONT_SIZE["large"],
         posx: chromCovData.x_pos - this.legendMargin,
         posy: chromCovData.y_pos + 1.5 * this.plotHeight,
         rotDegrees: -Math.PI / 2,

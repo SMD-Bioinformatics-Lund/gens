@@ -159,9 +159,6 @@ async function initialize(
       tracks.render(true);
     },
     annotSources,
-    (chrom: string) => {
-      return chromSizes[chrom];
-    },
   );
 
   await tracks.initialize(
@@ -174,6 +171,8 @@ async function initialize(
     getVariantURL,
     async (id: string) => await api.getAnnotationDetails(id),
     async (id: string) => await api.getTranscriptDetails(id),
+    async (id: string) =>
+      await api.getVariantDetails(id, inputControls.getRegion().chrom),
     openContextMenu,
   );
 

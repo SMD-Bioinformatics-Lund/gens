@@ -12,7 +12,6 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
-import { createPopup } from "../../util/popup_utils";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
@@ -25,13 +24,11 @@ export class BandTrack extends CanvasTrack {
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
-    // getPopupInfo: (box: HoverBox) => Promise<PopupContent>,
     openContextMenu: (id: string) => void,
   ) {
     super(id, label, trackHeight);
 
     this.getRenderData = getRenderData;
-    // this.getPopupInfo = getPopupInfo;
     this.openContextMenu = openContextMenu;
   }
 
@@ -39,9 +36,7 @@ export class BandTrack extends CanvasTrack {
     super.initialize();
 
     const onElementClick = async (box: HoverBox) => {
-
       const element = box.element as RenderBand;
-      // console.log("Popup info", content);
       this.openContextMenu(element.id);
     };
 

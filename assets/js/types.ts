@@ -83,7 +83,7 @@ interface ApiTranscriptDetails {
   genome_build: number
 }
 
-interface ApiVariant {
+interface ApiVariantDetails {
   alternative: string,
   cadd_score: string,
   case_id: string,
@@ -100,6 +100,7 @@ interface ApiVariant {
   hgnc_ids: string[],
   hgnc_symbols: string[],
   institute: string,
+  genes: string[],
   length: number,
   missing_data: boolean,
   panels: string[],

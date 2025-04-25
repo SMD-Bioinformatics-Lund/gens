@@ -1,4 +1,4 @@
-import { STYLE } from "../../constants";
+import { PAD, STYLE } from "../../constants";
 import { getEntry } from "./menu_utils";
 import { ShadowBaseElement } from "./shadowbaseelement";
 
@@ -29,7 +29,7 @@ template.innerHTML = String.raw`
     #entries {
       display: flex;
       flex-direction: column;
-      gap: ${style.entryGap}px;
+      gap: ${PAD.l}px;
     }
 
     #container {
@@ -150,29 +150,6 @@ function setupDrag(host: HTMLElement, dragArea: HTMLElement, cleanup: () => void
     dragArea.classList.remove("dragging");
   });
 }
-
-
-
-// .entry {
-//   display: flex;
-//   justify-content: space-between;
-//   align-items: center;
-//   gap: ${style.margin}px;
-//   color: ${style.textColor};
-// }
-// .entry-key {
-//   font-weight: ${style.breadFontWeight};
-//   color: ${style.textColor};
-// }
-// .entry-value {
-//   flex-shrink: 1;
-//   min-width: 0;
-//   white-space: normal;
-//   word-break: break-word;
-//   text-align: right;
-//   text-decoration: none;
-// }
-
 
 
 customElements.define("gens-popup", GensPopup);

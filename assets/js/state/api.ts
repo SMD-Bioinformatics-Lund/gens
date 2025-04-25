@@ -40,6 +40,21 @@ export class API {
     return details;
   }
 
+  // FIXME: This is a temporary solution. Should really be a detail endpoint in the
+  // backend similarly to the transcripts and the annotations
+  async getVariantDetails(id: string, currChrom: string): Promise<ApiVariantDetails> {
+    const variants = await this.getVariants(currChrom);
+    const targets = variants.filter((v) => v.variant_id === id);
+    // const targets = variants.filter((var) => var.id === id);
+    if (targets.length != 1) {
+      console.error("Expected a single variant, found: ", targets);
+      if (targets.length === 0) {
+        throw Error("No variant found");
+      }
+    }
+    return targets[0];
+  }
+
   getAnnotationSources(): Promise<ApiAnnotationTrack[]> {
     const annotSources = get(new URL("tracks/annotations", this.apiURI).href, {
       genome_build: this.genomeBuild,
@@ -154,8 +169,8 @@ export class API {
     return this.transcriptCache[chrom];
   }
 
-  private variantsCache: Record<string, Promise<ApiVariant[]>> = {};
-  getVariants(chrom: string): Promise<ApiVariant[]> {
+  private variantsCache: Record<string, Promise<ApiVariantDetails[]>> = {};
+  getVariants(chrom: string): Promise<ApiVariantDetails[]> {
     const isCached = this.variantsCache[chrom] !== undefined;
     if (!isCached) {
       const query = {

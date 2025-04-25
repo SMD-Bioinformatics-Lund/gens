@@ -1,7 +1,6 @@
 import Choices, { EventChoice, InputChoice } from "choices.js";
 import "choices.js/public/assets/styles/choices.min.css";
 import { getPan, parseRegionDesignation, zoomIn, zoomOut } from "../util/navigation";
-import { CHROMOSOMES } from "../constants";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -87,7 +86,6 @@ export class InputControls extends HTMLElement {
   private currChromLength: number;
 
   private onPositionChange: (newXRange: [number, number]) => void;
-  private getChromLength: (chrom: string) => number;
 
   connectedCallback() {
     this.appendChild(template.content.cloneNode(true));
@@ -150,13 +148,11 @@ export class InputControls extends HTMLElement {
     onAnnotationChanged: (region: Region, sources: string[]) => void,
     onPositionChange: (newXRange: [number, number]) => void,
     annotationSources: ApiAnnotationTrack[],
-    getChromLength: (chrom: string) => number,
   ) {
     this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);
     this.onPositionChange = onPositionChange;
     this.currChromLength = fullRegion.end;
-    this.getChromLength = getChromLength;
 
     // FIXME: Move this out from here
     const choices: InputChoice[] = [];
@@ -225,26 +221,6 @@ export class InputControls extends HTMLElement {
     this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
   }
-
-  // jumpChromRight() {
-  //   const currChrom = this.region.getChrom();
-  //   const currIndex = CHROMOSOMES.indexOf(currChrom);
-  //   if (currIndex < CHROMOSOMES.length - 1) {
-  //     const newChrom = CHROMOSOMES[currIndex + 1];
-  //     const chromLength = this.getChromLength(newChrom);
-  //     this.updateChromosome(newChrom, chromLength);
-  //   }
-  // }
-
-  // jumpChromLeft() {
-  //   const currChrom = this.region.getChrom();
-  //   const currIndex = CHROMOSOMES.indexOf(currChrom);
-  //   if (currIndex > 0) {
-  //     const newChrom = CHROMOSOMES[currIndex - 1];
-  //     const chromLength = this.getChromLength(newChrom);
-  //     this.updateChromosome(newChrom, chromLength);
-  //   }
-  // }
 }
 
 customElements.define("input-controls", InputControls);
