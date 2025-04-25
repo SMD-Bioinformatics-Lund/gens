@@ -33,12 +33,14 @@ export async function initCanvases({
 
   const sideMenu = document.getElementById("side-menu") as SideMenu;
 
-  const settingsButton = document.getElementById("settings-button") as HTMLDivElement;
+  const settingsButton = document.getElementById(
+    "settings-button",
+  ) as HTMLDivElement;
   settingsButton.addEventListener("click", () => {
     console.log("Clicked!");
     const content = document.createElement("div");
     content.innerHTML = "Settings content";
-    sideMenu.showContent("Settings", [content])
+    sideMenu.showContent("Settings", [content]);
   });
 
   const inputControls = document.getElementById(
@@ -56,7 +58,7 @@ export async function initCanvases({
     () => {
       const region = inputControls.getRegion();
       return [region.start, region.end];
-    }
+    },
   );
 
   const onChromClick = async (chrom) => {
@@ -73,11 +75,44 @@ export async function initCanvases({
   const getVariantURL = (variantId) => {
     const url = `${scoutBaseURL}/document_id/${variantId}`;
     return url;
-  }
+  };
 
   const openContextMenu = (header: string, content: HTMLDivElement[]) => {
     sideMenu.showContent(header, content);
-  }
+  };
+
+  // Rebuild the keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      sideMenu.close();
+    } else if (e.key === "ArrowLeft") {
+      if (e.ctrlKey || e.metaKey) {
+        const currChrom = inputControls.getRegion().chrom;
+        const currIndex = CHROMOSOMES.indexOf(currChrom);
+        if (currIndex > 0) {
+          const newChrom = CHROMOSOMES[currIndex - 1];
+          onChromClick(newChrom);
+        }
+      } else {
+        inputControls.panLeft();
+      }
+    } else if (e.key === "ArrowRight") {
+      if (e.ctrlKey || e.metaKey) {
+        const currChrom = inputControls.getRegion().chrom;
+        const currIndex = CHROMOSOMES.indexOf(currChrom);
+        if (currIndex < CHROMOSOMES.length - 1) {
+          const newChrom = CHROMOSOMES[currIndex + 1];
+          onChromClick(newChrom);
+        }
+      } else {
+        inputControls.panRight();
+      }
+    } else if (e.key === "ArrowUp") {
+      inputControls.zoomIn();
+    } else if (e.key === "ArrowDown") {
+      inputControls.zoomOut();
+    }
+  });
 
   initialize(
     inputControls,
@@ -105,8 +140,13 @@ async function initialize(
   getVariantURL: (variantId: string) => string,
   openContextMenu: (header: string, content: HTMLDivElement[]) => void,
 ) {
-
   const annotSources = await api.getAnnotationSources();
+
+  const chromSizes = {};
+  for (const chromosome of CHROMOSOMES) {
+    const chromInfo = await getChromInfo(chromosome);
+    chromSizes[chromosome] = chromInfo.size;
+  }
 
   // FIXME: Look into how to parse this for predefined start URLs
   inputControls.initialize(
@@ -118,14 +158,11 @@ async function initialize(
     async (_newXRange) => {
       tracks.render(true);
     },
-    annotSources
+    annotSources,
+    (chrom: string) => {
+      return chromSizes[chrom];
+    },
   );
-
-  const chromSizes = {};
-  for (const chromosome of CHROMOSOMES) {
-    const chromInfo = await getChromInfo(chromosome);
-    chromSizes[chromosome] = chromInfo.size;
-  }
 
   await tracks.initialize(
     chromSizes,

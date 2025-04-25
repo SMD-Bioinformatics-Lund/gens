@@ -57,7 +57,10 @@ template.innerHTML = String.raw`
       display: flex;
       flex-direction: column;
       /* FIXME: Read up on this one */
-      flex: 1 1 auto;
+      /* flex: 1 1 auto; */
+      flex-grow: 1;
+      flex-shrink: 1;
+      flex-basis: auto;
       min-width: 0;
     }
     #header-row {
@@ -116,13 +119,20 @@ export class SideMenu extends ShadowBaseElement {
     const isOpen = this.hasAttribute("drawer-open");
     if (!isOpen) {
       this.setAttribute("drawer-open", "");
-    }    
+    }
+  }
+
+  close() {
+    const isOpen = this.hasAttribute("drawer-open");
+    if (isOpen) {
+      this.removeAttribute("drawer-open");
+    }
   }
 
   toggle() {
     const isOpen = this.hasAttribute("drawer-open");
     if (isOpen) {
-      // this.removeAttribute("drawer-open");
+      this.removeAttribute("drawer-open");
     } else {
       this.setAttribute("drawer-open", "");
     }
