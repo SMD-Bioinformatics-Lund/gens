@@ -33,6 +33,9 @@ export class DotTrack extends CanvasTrack {
     const startExpanded = true;
     this.initializeExpander(startExpanded);
     this.setExpandedHeight(this.defaultTrackHeight * 2);
+    this.initializeDragSelect((range: Rng) => {
+      console.log("Drag released with range:", range);
+    })
   }
 
   async render(updateData: boolean) {

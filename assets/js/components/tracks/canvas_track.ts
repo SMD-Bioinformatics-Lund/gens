@@ -117,7 +117,6 @@ export class CanvasTrack extends ShadowBaseElement {
     );
   }
 
-  // FIXME: Move to attribute component
   initializeExpander(expanded: boolean = false) {
     this.expander = new Expander(expanded);
     const height = this.defaultTrackHeight;
@@ -135,6 +134,30 @@ export class CanvasTrack extends ShadowBaseElement {
     });
   }
 
+  initializeDragSelect(onDragRelease: (selectRange: Rng) => void) {
+
+    // FIXME: Generalize
+    const keysDown: Set<string> = new Set();
+    window.addEventListener("keydown", (e) => {
+      keysDown.add(e.code);
+    })
+
+    window.addEventListener("keyup", (e) => {
+      keysDown.delete(e.code);
+    })
+
+    const isKeyDown = (keyCode: string): boolean => {
+      return keysDown.has(keyCode);
+    }
+
+    this.canvas.addEventListener("mousedown", (event) => {
+      if (isKeyDown("Shift")) {
+        console.log("Shift is down");
+      }
+    });
+  }
+
+  // FIXME: Split into hover and click ?
   initializeInteractive(onElementClick: (el: HoverBox) => void | null = null) {
 
     const tooltip = new Tooltip(document.body);
