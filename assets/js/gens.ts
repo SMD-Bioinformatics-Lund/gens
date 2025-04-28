@@ -2,7 +2,9 @@ import "./components/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
 import "./components/util/shadowbaseelement";
+import "./components/util/choice_select";
 import "./components/side_menu";
+import "./components/settings_page";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";
@@ -10,6 +12,7 @@ import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
+import { SettingsPage } from "./components/settings_page";
 
 export async function initCanvases({
   sampleId,
@@ -17,7 +20,7 @@ export async function initCanvases({
   genomeBuild,
   scoutBaseURL: scoutBaseURL,
   gensApiURL,
-  annotationFile,
+  annotationFile: defaultAnnotationName,
   startRegion,
 }: {
   sampleName: string;
@@ -32,15 +35,6 @@ export async function initCanvases({
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
   const sideMenu = document.getElementById("side-menu") as SideMenu;
-
-  const settingsButton = document.getElementById(
-    "settings-button",
-  ) as HTMLDivElement;
-  settingsButton.addEventListener("click", () => {
-    const content = document.createElement("div");
-    content.innerHTML = "Settings content";
-    sideMenu.showContent("Settings", [content]);
-  });
 
   const inputControls = document.getElementById(
     "input-controls",
@@ -113,11 +107,26 @@ export async function initCanvases({
     }
   });
 
+  const annotSources = await api.getAnnotationSources();
+  const defaultAnnot = annotSources
+    .filter((track) => track.name === defaultAnnotationName)
+    .map((track) => {
+      return {
+        id: track.track_id,
+        label: track.name,
+      };
+    });
+
+  const settingsPage = document.createElement("settings-page") as SettingsPage;
+  settingsPage.setSources(annotSources, defaultAnnot, (_newSources) => {
+    gensTracks.render(true);
+  });
+
   initialize(
     inputControls,
     gensTracks,
     startRegion,
-    annotationFile,
+    settingsPage,
     api,
     onChromClick,
     getChromInfo,
@@ -125,13 +134,24 @@ export async function initCanvases({
     getVariantURL,
     openContextMenu,
   );
+
+  const settingsButton = document.getElementById(
+    "settings-button",
+  ) as HTMLDivElement;
+  settingsButton.addEventListener("click", () => {
+    sideMenu.showContent("Settings", [settingsPage]);
+
+    if (!settingsPage.isInitialized) {
+      settingsPage.initialize();
+    }
+  });
 }
 
 async function initialize(
   inputControls: InputControls,
   tracks: TracksManager,
   startRegion: Region,
-  defaultAnnotation: string,
+  settingsPage: SettingsPage,
   api: API,
   onChromClick: (chrom: string) => void,
   getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
@@ -139,26 +159,15 @@ async function initialize(
   getVariantURL: (variantId: string) => string,
   openContextMenu: (header: string, content: HTMLDivElement[]) => void,
 ) {
-  const annotSources = await api.getAnnotationSources();
-
   const chromSizes = {};
   for (const chromosome of CHROMOSOMES) {
     const chromInfo = await getChromInfo(chromosome);
     chromSizes[chromosome] = chromInfo.size;
   }
 
-  // FIXME: Look into how to parse this for predefined start URLs
-  inputControls.initialize(
-    startRegion,
-    [defaultAnnotation],
-    async (_region, _source) => {
-      tracks.render(true);
-    },
-    async (_newXRange) => {
-      tracks.render(true);
-    },
-    annotSources,
-  );
+  inputControls.initialize(startRegion, async (_range) => {
+    tracks.render(true);
+  });
 
   await tracks.initialize(
     chromSizes,
@@ -166,7 +175,7 @@ async function initialize(
     renderDataSource,
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
-    () => inputControls.getAnnotSources(),
+    () => settingsPage.getAnnotSources(),
     getVariantURL,
     async (id: string) => await api.getAnnotationDetails(id),
     async (id: string) => await api.getTranscriptDetails(id),

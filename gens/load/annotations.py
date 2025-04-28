@@ -285,7 +285,7 @@ def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
             }
 
 
-def parse_aed_file(file: Path) -> tuple[AedFileMetadata, AedRecords]:
+def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata, AedRecords]:
     """Read aed file.
 
     Reference: https://assets.thermofisher.com/TFS-Assets/GSD/Handbooks/Chromosome_analysis_suite_v4.2_user-guide.pdf
@@ -299,7 +299,12 @@ def parse_aed_file(file: Path) -> tuple[AedFileMetadata, AedRecords]:
         for line in aed_fh:
             raw_cell_values = [cell.strip() for cell in line.split("\t")]
             if len(raw_cell_values) > len(column_definitions):
-                raise ValueError(f"The header contains fewer columns than the table for row: {raw_cell_values}")
+                message = f"The header contains fewer columns than the table for row: {raw_cell_values}"
+                if continue_on_error:
+                    LOG.error(message)
+                    continue
+                else:
+                    raise ValueError(message)
 
             # format cell values and store temporarily in dict
             fmt_values: dict[str, AedDatatypes | None] = {}
@@ -308,7 +313,14 @@ def parse_aed_file(file: Path) -> tuple[AedFileMetadata, AedRecords]:
                 if raw_value == "":
                     fmt_values[col_def.name] = None
                 else:
-                    fmt_values[col_def.name] = format_aed_entry(raw_value, col_def.type)
+                    try:
+                        result = format_aed_entry(raw_value, col_def.type)
+                    except ValueError:
+                        LOG.warning("Failed to format AED entry %s as format %s", raw_value, col_def.type)
+                        if not continue_on_error:
+                            raise
+                        continue
+                    fmt_values[col_def.name] = result
 
             records.append(fmt_values)
     return file_metadata, records
@@ -360,7 +372,7 @@ def fmt_aed_to_annotation(
                         )
                     except ValidationError as err:
                         LOG.warning(
-                            "Note could not be formatted as refeerence, '%s'; error: %s",
+                            "Note could not be formatted as reference, '%s'; error: %s",
                             note,
                             err,
                         )
@@ -375,7 +387,7 @@ def fmt_aed_to_annotation(
                         )
                     except ValidationError as err:
                         LOG.warning(
-                            "Note could not be formatted as refeerence, '%s'; error: %s",
+                            "Note could not be formatted as reference, '%s'; error: %s",
                             note,
                             err,
                         )

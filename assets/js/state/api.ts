@@ -73,7 +73,6 @@ export class API {
       this.annotsCache[trackId] = annotations;
     }
 
-    console.log("Returning from cache", this.annotsCache);
     return this.annotsCache[trackId];
   }
 
