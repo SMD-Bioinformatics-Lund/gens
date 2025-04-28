@@ -15,29 +15,8 @@ export function getAHref(label: string, href: string): HTMLAnchorElement {
 
 export function getURLRow(text: string) {
 
-  console.log("Generating row for text", text);
-
   const row = getContainer("row");
   const span = document.createElement("span");
-
-  // FIXME: Think a bit about how to generalize this
-  // const regStrs = [
-  //   "PMID: \s*(\d+)",
-  //   "https?:\/\/[^\s\)]+",
-  //   "www\.[^\s\)]+",
-  //   "OMIM #(\d+)",
-  //   "ORPHA: (\d+)"
-  // ];
-  // const regExps = regStrs.map((rs) => new RegExp(rs, "g"));
-
-  // const hits = regExps.map((regExp) => {
-  //   const hits = [...text.matchAll(regExp)];
-  //   return hits;
-  // }).filter((hits) => hits.length > 0);
-
-  // console.log(hits);
-
-  // const matches = text.matchAll(pmid_regexes[0])
 
   const pmid_regex = /(PMID: \s*(\d+))|(https?:\/\/[^\s\)]+)|(www\.[^\s\)]+)|(OMIM #(\d+))|(ORPHA:\s*(\d+))/g;
 
@@ -55,7 +34,6 @@ export function getURLRow(text: string) {
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = pmid_regex.exec(text)) != null) {
-    console.log("Match at index", match.index);
     if (match.index > lastIndex) {
       span.appendChild(
         document.createTextNode(text.slice(lastIndex, match.index)),
@@ -78,8 +56,6 @@ export function getURLRow(text: string) {
       if (match[groups.www]) {
         url = "http://" + url;
       }
-      // const a = getAHref(url, match[3] || match[4]);
-      // span.appendChild(a);
     } else if (match[groups.omim]) {
       const omimId = match[groups.omimId];
       prefix = "OMIM #";
@@ -105,7 +81,6 @@ export function getURLRow(text: string) {
     span.appendChild(document.createTextNode(text.slice(lastIndex)));
   }
 
-  // span.innerHTML = text;
   row.appendChild(span);
 
   return row;

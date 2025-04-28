@@ -39,7 +39,6 @@ template.innerHTML = String.raw`
 `;
 
 export class HeaderInfo extends ShadowBaseElement {
-
   private caseIdElem: HTMLDivElement;
   private sampleIdsElem: HTMLDivElement;
 
@@ -48,13 +47,13 @@ export class HeaderInfo extends ShadowBaseElement {
   }
 
   connectedCallback(): void {
-    console.log("Connected callhack");
     this.caseIdElem = this.root.querySelector("#case-id") as HTMLDivElement;
-    this.sampleIdsElem = this.root.querySelector("#sample-ids") as HTMLDivElement;
+    this.sampleIdsElem = this.root.querySelector(
+      "#sample-ids",
+    ) as HTMLDivElement;
   }
 
   initialize(caseId: string, sampleIds: string[]) {
-    console.log("Initialize");
     this.caseIdElem.innerHTML = caseId;
     this.sampleIdsElem.innerHTML = sampleIds.join(", ");
   }
