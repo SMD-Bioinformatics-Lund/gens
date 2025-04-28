@@ -20,7 +20,7 @@ export async function initCanvases({
   genomeBuild,
   scoutBaseURL: scoutBaseURL,
   gensApiURL,
-  annotationFile,
+  annotationFile: defaultAnnotation,
   startRegion,
 }: {
   sampleName: string;
@@ -39,18 +39,6 @@ export async function initCanvases({
   const inputControls = document.getElementById(
     "input-controls",
   ) as InputControls;
-
-  const settingsPage = new SettingsPage();
-
-  const settingsButton = document.getElementById(
-    "settings-button",
-  ) as HTMLDivElement;
-  settingsButton.addEventListener("click", () => {
-    // content.appendChild(inputControls)
-    // content.innerHTML = "Settings content";
-    sideMenu.showContent("Settings", [settingsPage]);
-    // sideMenu.showContent("Settings", []);
-  });
 
   const api = new API(sampleId, caseId, genomeBuild, gensApiURL);
 
@@ -119,12 +107,14 @@ export async function initCanvases({
     }
   });
 
+  const annotSources = await api.getAnnotationSources();
+
   initialize(
+    annotSources,
     inputControls,
-    settingsPage,
     gensTracks,
     startRegion,
-    annotationFile,
+    defaultAnnotation,
     api,
     onChromClick,
     getChromInfo,
@@ -132,11 +122,28 @@ export async function initCanvases({
     getVariantURL,
     openContextMenu,
   );
+
+  const settingsPage = new SettingsPage();
+
+  const settingsButton = document.getElementById(
+    "settings-button",
+  ) as HTMLDivElement;
+  settingsButton.addEventListener("click", () => {
+    // content.appendChild(inputControls)
+    // content.innerHTML = "Settings content";
+    sideMenu.showContent("Settings", [settingsPage]);
+
+    settingsPage.initialize(annotSources, [defaultAnnotation], (newSources) => {
+      console.log("New sources", newSources);
+    });
+    // sideMenu.showContent("Settings", []);
+  });
+
 }
 
 async function initialize(
+  annotSources: ApiAnnotationTrack[],
   inputControls: InputControls,
-  settingsPage: SettingsPage,
   tracks: TracksManager,
   startRegion: Region,
   defaultAnnotation: string,
@@ -147,7 +154,6 @@ async function initialize(
   getVariantURL: (variantId: string) => string,
   openContextMenu: (header: string, content: HTMLDivElement[]) => void,
 ) {
-  const annotSources = await api.getAnnotationSources();
 
   const chromSizes = {};
   for (const chromosome of CHROMOSOMES) {
@@ -167,10 +173,6 @@ async function initialize(
     },
     annotSources,
   );
-
-  settingsPage.initialize(annotSources, [defaultAnnotation], (source) => {
-    console.log("Changed to source", source);
-  })
 
   await tracks.initialize(
     chromSizes,

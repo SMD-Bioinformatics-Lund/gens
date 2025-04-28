@@ -5,38 +5,24 @@ import Choices, { EventChoice, InputChoice } from "choices.js";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-  <p>Hello world</p>
+  <div>Annotation sources</div>
   <div class="choices-container">
-    <!-- <select multiple>
-      <option>A</option>
-      <option>B</option>
-      <option>C</option>
-    </select> -->
-
     <choice-select id="choice-select"></choice-select>
-    <!-- <select id="source-list" multiple>
-      <option value="volvo">Volvo</option>
-      <option value="saab">Saab</option>
-      <option value="mercedes">Mercedes</option>
-      <option value="audi">Audi</option>
-    </select> -->
   </div>
 `;
 
 export class SettingsPage extends ShadowBaseElement {
-  private selectElement: HTMLSelectElement;
-  private annotationSelectChoices: Choices;
-  private choices: InputChoice[];
-
   private choiceSelect: ChoiceSelect;
-
   private annotationSources: ApiAnnotationTrack[];
   private defaultAnnots: string[];
   private onAnnotationChanged: (sources: string[]) => void;
 
   constructor() {
     super(template);
-    // this.selectElement = this.root.querySelector("#source-list");
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
     this.choiceSelect = this.root.querySelector("#choice-select");
   }
 
@@ -45,59 +31,19 @@ export class SettingsPage extends ShadowBaseElement {
     defaultAnnots: string[],
     onAnnotationChanged: (sources: string[]) => void,
   ) {
+    console.log("Initialized");
     this.annotationSources = annotationSources;
-    this.defaultAnnots = defaultAnnots;    
+    this.defaultAnnots = defaultAnnots;
     this.onAnnotationChanged = onAnnotationChanged;
-  }
 
-  hasSetup = false;
-
-  connectedCallback() {
-
-    // if (!this.hasSetup) {
-    //   // this.appendChild(template.content.cloneNode(true));
-
-    //   // this.annotationSelectChoices = new Choices(this.selectElement, {
-    //   //   placeholderValue: "Choose annotation",
-    //   //   removeItemButton: true,
-    //   //   itemSelectText: "",
-    //   // });  
-    //   this.hasSetup = true;
-    // }
-
-    // if (this.annotationSources == null) {
-    //   throw Error("Must be initialized before being connected")
-    // }
-
-    // console.log(this.selectElement);
-
-    // const choices: InputChoice[] = [];
-    // for (const source of this.annotationSources) {
-    //   const choice = {
-    //     value: source.track_id,
-    //     label: source.name,
-    //     selected: this.defaultAnnots.includes(source.name),
-    //   };
-    //   choices.push(choice);
-    // }
-    // this.choices = choices;
-    // this.annotationSelectChoices.setChoices(choices);
-
-    // this.annotationSelectChoices.setChoices(this.choices);
-
-    // this.selectElement.addEventListener("change", async () => {
-    //   const selectedSources = this.annotationSelectChoices.getValue(
-    //     true,
-    //   ) as string[];
-
-    //   // onAnnotationChanged(selectedSources);
-    // });
+    this.choiceSelect.setChoices(
+      getChoices(this.annotationSources, this.defaultAnnots),
+    );
   }
 
   getAnnotSources(): { id: string; label: string }[] {
-    const selectedObjs =
-      this.annotationSelectChoices.getValue() as EventChoice[];
-    const returnVals = selectedObjs.map((obj) => {
+    const choices = this.choiceSelect.getChoices();
+    const returnVals = choices.map((obj) => {
       return {
         id: obj.value,
         label: obj.label.toString(),
@@ -105,8 +51,22 @@ export class SettingsPage extends ShadowBaseElement {
     });
     return returnVals;
   }
+}
 
-
+function getChoices(
+  annotationSources: ApiAnnotationTrack[],
+  defaultAnnots: string[],
+): InputChoice[] {
+  const choices: InputChoice[] = [];
+  for (const source of annotationSources) {
+    const choice = {
+      value: source.track_id,
+      label: source.name,
+      selected: defaultAnnots.includes(source.name),
+    };
+    choices.push(choice);
+  }
+  return choices;
 }
 
 customElements.define("settings-page", SettingsPage);

@@ -50,10 +50,7 @@ template.innerHTML = String.raw`
       z-index: 3000;
     }
   </style>
-  <select id="select" multiple>
-    <option value="volvo">A</option>
-    <option value="saab">BC</option>
-  </select>
+  <select id="select" multiple></select>
 `;
 
 export class ChoiceSelect extends ShadowBaseElement {
@@ -68,6 +65,14 @@ export class ChoiceSelect extends ShadowBaseElement {
       removeItemButton: true,
       itemSelectText: "",
     });
+  }
+
+  setChoices(choices: InputChoice[]) {
+    this.choiceElement.setChoices(choices);
+  }
+
+  getChoices(): EventChoice[] {
+    return this.choiceElement.getValue() as EventChoice[];
   }
 
   initialize() {}
