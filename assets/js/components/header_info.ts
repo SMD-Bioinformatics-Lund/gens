@@ -1,4 +1,4 @@
-import { COLORS, FONT_SIZE, PAD } from "../constants";
+import { COLORS, FONT_SIZE, FONT_WEIGHT, PAD } from "../constants";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 
 const template = document.createElement("template");
@@ -15,19 +15,24 @@ template.innerHTML = String.raw`
     display: flex;
     flex-direction: row;
     padding-top: ${PAD.xs}px;
+    justify-content: space-between;
   }
   .text {
     font-size: ${FONT_SIZE.medium}px;
     color: ${COLORS.darkGray};
   }
+  .label {
+    font-weight: ${FONT_WEIGHT.header};
+    padding-right: ${PAD.xs}px;
+  }
 </style>
 <div id="container">
   <div class="row text">
-    <div>Case: </div>
+    <div class="label">Case </div>
     <div id="case-id">(value)</div>
   </div>
   <div class="row text">
-    <div>Sample: </div>
+    <div class="label">Sample </div>
     <div id="sample-ids">(value)</div>
   </div>
 </div>
@@ -35,21 +40,23 @@ template.innerHTML = String.raw`
 
 export class HeaderInfo extends ShadowBaseElement {
 
-  private caseId: HTMLDivElement;
-  private sampleIds: HTMLDivElement;
+  private caseIdElem: HTMLDivElement;
+  private sampleIdsElem: HTMLDivElement;
 
   constructor() {
     super(template);
   }
 
   connectedCallback(): void {
-    this.root.querySelector("case-id") as HTMLDivElement;
-    this.root.querySelector("sample-ids") as HTMLDivElement;
+    console.log("Connected callhack");
+    this.caseIdElem = this.root.querySelector("#case-id") as HTMLDivElement;
+    this.sampleIdsElem = this.root.querySelector("#sample-ids") as HTMLDivElement;
   }
 
   initialize(caseId: string, sampleIds: string[]) {
-    this.caseId.innerHTML = "Case initialized to " + caseId;
-    this.sampleIds.innerHTML = "Sample IDs initialized to " + sampleIds.join(", ");
+    console.log("Initialize");
+    this.caseIdElem.innerHTML = caseId;
+    this.sampleIdsElem.innerHTML = sampleIds.join(", ");
   }
 }
 

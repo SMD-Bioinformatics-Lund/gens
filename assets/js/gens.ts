@@ -14,6 +14,7 @@ import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
 import { SettingsPage } from "./components/settings_page";
+import { HeaderInfo } from "./components/header_info";
 
 export async function initCanvases({
   sampleId,
@@ -36,6 +37,9 @@ export async function initCanvases({
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
   const sideMenu = document.getElementById("side-menu") as SideMenu;
+
+  const headerInfo = document.getElementById("header-info") as HeaderInfo;
+  headerInfo.initialize(caseId, [sampleId]);
 
   const inputControls = document.getElementById(
     "input-controls",
