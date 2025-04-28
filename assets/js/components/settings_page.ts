@@ -14,8 +14,10 @@ template.innerHTML = String.raw`
 export class SettingsPage extends ShadowBaseElement {
   private choiceSelect: ChoiceSelect;
   private annotationSources: ApiAnnotationTrack[];
-  private defaultAnnots: string[];
+  private defaultAnnots: {id: string, label: string}[];
   private onAnnotationChanged: (sources: string[]) => void;
+
+  public isInitialized: boolean = false;
 
   constructor() {
     super(template);
@@ -26,23 +28,32 @@ export class SettingsPage extends ShadowBaseElement {
     this.choiceSelect = this.root.querySelector("#choice-select");
   }
 
-  initialize(
+  // Data 
+  setSources(
     annotationSources: ApiAnnotationTrack[],
-    defaultAnnots: string[],
+    defaultAnnots: {id: string, label: string}[],
     onAnnotationChanged: (sources: string[]) => void,
   ) {
-    console.log("Initialized");
     this.annotationSources = annotationSources;
     this.defaultAnnots = defaultAnnots;
     this.onAnnotationChanged = onAnnotationChanged;
-
-    this.choiceSelect.setChoices(
-      getChoices(this.annotationSources, this.defaultAnnots),
-    );
   }
 
-  getAnnotSources(): { id: string; label: string }[] {
+  initialize(
+  ) {
+    this.isInitialized = true;
+    this.choiceSelect.setChoices(
+      getChoices(this.annotationSources, this.defaultAnnots.map((a) => a.id)),
+    );
+    this.choiceSelect.initialize(this.onAnnotationChanged);
+  }
+
+  getAnnotSources(): {id: string, label: string}[] {
+    if (this.choiceSelect == null) {
+      return this.defaultAnnots;
+    }
     const choices = this.choiceSelect.getChoices();
+    // return choices.map((choice) => choice.value);
     const returnVals = choices.map((obj) => {
       return {
         id: obj.value,
@@ -55,14 +66,14 @@ export class SettingsPage extends ShadowBaseElement {
 
 function getChoices(
   annotationSources: ApiAnnotationTrack[],
-  defaultAnnots: string[],
+  defaultAnnotIds: string[],
 ): InputChoice[] {
   const choices: InputChoice[] = [];
   for (const source of annotationSources) {
     const choice = {
       value: source.track_id,
       label: source.name,
-      selected: defaultAnnots.includes(source.name),
+      selected: defaultAnnotIds.includes(source.track_id),
     };
     choices.push(choice);
   }

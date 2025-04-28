@@ -1,18 +1,7 @@
-import Choices, { EventChoice, InputChoice } from "choices.js";
-import "choices.js/public/assets/styles/choices.min.css";
 import { getPan, parseRegionDesignation, zoomIn, zoomOut } from "../util/navigation";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-  <style>
-    /* .choices__inner {
-      padding: 2px 6px;
-      min-height: auto;
-    } */
-    /* .choices-container {
-      max-width: 300px;
-    } */
-  </style>
   <div id="input-controls-container" style="display: flex; align-items: center; gap: 8px;">
       <button id="pan-left" class='button pan'>
         <i class="fas fa-arrow-left"></i>
@@ -30,10 +19,6 @@ template.innerHTML = String.raw`
       <button id="submit" class='button pan'>
         <i class="fas fa-search"></i>
       </button>
-      <choice-select id="choice-select"></choice-select>
-      <!-- <div class="choices-container">
-        <select id="source-list" multiple></select>
-      </div> -->
   </div>
 `;
 
@@ -74,8 +59,6 @@ class RegionController {
 }
 
 export class InputControls extends HTMLElement {
-  private annotationSelectElement: HTMLSelectElement;
-  private annotationSelectChoices: Choices;
 
   private panLeftButton: HTMLButtonElement;
   private panRightButton: HTMLButtonElement;
@@ -91,16 +74,6 @@ export class InputControls extends HTMLElement {
   connectedCallback() {
     this.appendChild(template.content.cloneNode(true));
 
-    this.annotationSelectElement = this.querySelector(
-      "#source-list",
-    ) as HTMLSelectElement;
-
-    // this.annotationSelectChoices = new Choices(this.annotationSelectElement, {
-    //   placeholderValue: "Enter annotation",
-    //   removeItemButton: true,
-    //   itemSelectText: "",
-    // });
-
     this.panLeftButton = this.querySelector("#pan-left") as HTMLButtonElement;
     this.panRightButton = this.querySelector("#pan-right") as HTMLButtonElement;
     this.zoomInButton = this.querySelector("#zoom-in") as HTMLButtonElement;
@@ -110,19 +83,6 @@ export class InputControls extends HTMLElement {
 
   getRegion(): Region {
     return this.region.getRegion();
-  }
-
-  getAnnotSources(): { id: string; label: string }[] {
-    // const selectedObjs =
-    //   this.annotationSelectChoices.getValue() as EventChoice[];
-    // const returnVals = selectedObjs.map((obj) => {
-    //   return {
-    //     id: obj.value,
-    //     label: obj.label.toString(),
-    //   };
-    // });
-    // return returnVals;
-    return [];
   }
 
   getRange(): [number, number] {
@@ -146,36 +106,12 @@ export class InputControls extends HTMLElement {
 
   initialize(
     fullRegion: Region,
-    defaultAnnots: string[],
-    onAnnotationChanged: (region: Region, sources: string[]) => void,
     onPositionChange: (newXRange: [number, number]) => void,
-    annotationSources: ApiAnnotationTrack[],
   ) {
     this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);
     this.onPositionChange = onPositionChange;
     this.currChromLength = fullRegion.end;
-
-    // // FIXME: Move this out from here
-    // const choices: InputChoice[] = [];
-    // for (const source of annotationSources) {
-    //   const choice = {
-    //     value: source.track_id,
-    //     label: source.name,
-    //     selected: defaultAnnots.includes(source.name),
-    //   };
-    //   choices.push(choice);
-    // }
-    // this.annotationSelectChoices.setChoices(choices);
-
-    // this.annotationSelectElement.addEventListener("change", async () => {
-    //   const selectedSources = this.annotationSelectChoices.getValue(
-    //     true,
-    //   ) as string[];
-    //   const region = parseRegionDesignation(this.regionField.value);
-
-    //   onAnnotationChanged(region, selectedSources);
-    // });
 
     this.panLeftButton.onclick = () => {
       this.panLeft();

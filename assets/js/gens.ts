@@ -20,7 +20,7 @@ export async function initCanvases({
   genomeBuild,
   scoutBaseURL: scoutBaseURL,
   gensApiURL,
-  annotationFile: defaultAnnotation,
+  annotationFile: defaultAnnotationName,
   startRegion,
 }: {
   sampleName: string;
@@ -108,13 +108,25 @@ export async function initCanvases({
   });
 
   const annotSources = await api.getAnnotationSources();
+  const defaultAnnot = annotSources
+    .filter((track) => track.name === defaultAnnotationName)
+    .map((track) => {
+      return {
+        id: track.track_id,
+        label: track.name,
+      };
+    });
+
+  const settingsPage = document.createElement("settings-page") as SettingsPage;
+  settingsPage.setSources(annotSources, defaultAnnot, (_newSources) => {
+    gensTracks.render(true);
+  });
 
   initialize(
-    annotSources,
     inputControls,
     gensTracks,
     startRegion,
-    defaultAnnotation,
+    settingsPage,
     api,
     onChromClick,
     getChromInfo,
@@ -122,8 +134,6 @@ export async function initCanvases({
     getVariantURL,
     openContextMenu,
   );
-
-  const settingsPage = new SettingsPage();
 
   const settingsButton = document.getElementById(
     "settings-button",
@@ -133,20 +143,17 @@ export async function initCanvases({
     // content.innerHTML = "Settings content";
     sideMenu.showContent("Settings", [settingsPage]);
 
-    settingsPage.initialize(annotSources, [defaultAnnotation], (newSources) => {
-      console.log("New sources", newSources);
-    });
-    // sideMenu.showContent("Settings", []);
+    if (!settingsPage.isInitialized) {
+      settingsPage.initialize();
+    }
   });
-
 }
 
 async function initialize(
-  annotSources: ApiAnnotationTrack[],
   inputControls: InputControls,
   tracks: TracksManager,
   startRegion: Region,
-  defaultAnnotation: string,
+  settingsPage: SettingsPage,
   api: API,
   onChromClick: (chrom: string) => void,
   getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
@@ -154,25 +161,15 @@ async function initialize(
   getVariantURL: (variantId: string) => string,
   openContextMenu: (header: string, content: HTMLDivElement[]) => void,
 ) {
-
   const chromSizes = {};
   for (const chromosome of CHROMOSOMES) {
     const chromInfo = await getChromInfo(chromosome);
     chromSizes[chromosome] = chromInfo.size;
   }
 
-  // FIXME: Look into how to parse this for predefined start URLs
-  inputControls.initialize(
-    startRegion,
-    [defaultAnnotation],
-    async (_region, _source) => {
-      tracks.render(true);
-    },
-    async (_newXRange) => {
-      tracks.render(true);
-    },
-    annotSources,
-  );
+  inputControls.initialize(startRegion, async (_range) => {
+    tracks.render(true);
+  });
 
   await tracks.initialize(
     chromSizes,
@@ -180,7 +177,7 @@ async function initialize(
     renderDataSource,
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
-    () => inputControls.getAnnotSources(),
+    () => settingsPage.getAnnotSources(),
     getVariantURL,
     async (id: string) => await api.getAnnotationDetails(id),
     async (id: string) => await api.getTranscriptDetails(id),

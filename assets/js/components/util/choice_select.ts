@@ -75,9 +75,12 @@ export class ChoiceSelect extends ShadowBaseElement {
     return this.choiceElement.getValue() as EventChoice[];
   }
 
-  initialize() {}
-
-  connectedCallback(): void {}
+  initialize(changeCallback: (choiceIds: string[]) => void) {
+    this.selectElement.addEventListener("change", () => {
+      const selectedIds = this.choiceElement.getValue(true) as string[];
+      changeCallback(selectedIds);
+    })
+  }
 }
 
 customElements.define("choice-select", ChoiceSelect);
