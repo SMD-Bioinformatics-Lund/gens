@@ -7,6 +7,12 @@ const template = document.createElement("template");
 template.innerHTML = String.raw`
   <p>Hello world</p>
   <div class="choices-container">
+    <!-- <select multiple>
+      <option>A</option>
+      <option>B</option>
+      <option>C</option>
+    </select> -->
+
     <choice-select id="choice-select"></choice-select>
     <!-- <select id="source-list" multiple>
       <option value="volvo">Volvo</option>

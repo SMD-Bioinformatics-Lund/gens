@@ -30,6 +30,7 @@ template.innerHTML = String.raw`
       <button id="submit" class='button pan'>
         <i class="fas fa-search"></i>
       </button>
+      <choice-select id="choice-select"></choice-select>
       <!-- <div class="choices-container">
         <select id="source-list" multiple></select>
       </div> -->
