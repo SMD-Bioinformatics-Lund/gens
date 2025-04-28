@@ -17,6 +17,7 @@ import {
   getSection,
   makeRefDiv,
   getContainer,
+  getURLRow,
 } from "./util/menu_utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
@@ -127,7 +128,6 @@ export class TracksManager extends HTMLElement {
         const details = await getVariantDetails(id);
         const scoutUrl = getVariantURL(id);
         const info: { key: string; value: string; url?: string }[] = [
-          { key: "ID", value: id },
           { key: "Range", value: `${details.position} - ${details.end}` },
           {
             key: "Length",
@@ -144,6 +144,7 @@ export class TracksManager extends HTMLElement {
             value: `${details.cytoband_start} - ${details.cytoband_end}`,
           },
           { key: "Rank score", value: details.rank_score.toString() },
+          { key: "BNF ID", value: id },
         ];
 
         const entries: HTMLElement[] = info.map((i) => getEntry(i));
@@ -238,18 +239,30 @@ export class TracksManager extends HTMLElement {
                 c.comment
                   .replace('"', "")
                   .split("; ")
-                  .map((s) => getContainer("row", s)),
+                  .map((s) => getURLRow(s)),
               ),
             );
             infoDivs.push(commentSection);
 
-            const referenceSection = getSection(
-              "References",
-              details.references.map((ref) =>
-                makeRefDiv(ref.title, ref.pmid, ref.url),
+            const metaSection = getSection(
+              "Meta data",
+              details.metadata.map((meta) => {
+                let url = null;
+                if (meta.field_name === "reference") {
+                  const value = meta.value as {url: string, title: string};
+                  url = value.url;
+                }
+                
+                const entry = getEntry({
+                  key: meta.field_name,
+                  url,
+                  value: url != null ? url : meta.value as string
+                })
+                return entry;
+              }
               ),
             );
-            infoDivs.push(referenceSection);
+            infoDivs.push(metaSection);
 
             openContextMenu("Annotations", infoDivs);
           },
