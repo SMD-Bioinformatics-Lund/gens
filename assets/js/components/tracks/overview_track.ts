@@ -10,6 +10,7 @@ import {
 
 const X_PAD = 5;
 const DOT_SIZE = 2;
+const PIXEL_RATIO = 2;
 
 export class OverviewTrack extends CanvasTrack {
   totalChromSize: number;
@@ -24,7 +25,8 @@ export class OverviewTrack extends CanvasTrack {
   renderData: OverviewTrackData | null;
   getRenderData: () => Promise<OverviewTrackData>;
 
-  // FIXME: Generalize this
+  // FIXME: Temporary solution to make sure the overview plots are rendered
+  // efficiently. This should likely be generalized and part of Canvas track.
   private staticBuffer: HTMLCanvasElement;
   private staticCtx: CanvasRenderingContext2D;
 
@@ -66,7 +68,6 @@ export class OverviewTrack extends CanvasTrack {
   }
 
   async render(updateData: boolean) {
-    const pixelRatio = 2;
 
     let newRender = false;
     if (this.renderData == null || updateData) {
@@ -100,10 +101,10 @@ export class OverviewTrack extends CanvasTrack {
       this.renderLoading();
 
       // Sync the static canvas sizes
-      this.staticBuffer.width = this.dimensions.width * pixelRatio;
-      this.staticBuffer.height = this.dimensions.height * pixelRatio;
+      this.staticBuffer.width = this.dimensions.width * PIXEL_RATIO;
+      this.staticBuffer.height = this.dimensions.height * PIXEL_RATIO;
       this.staticCtx.resetTransform();
-      this.staticCtx.scale(pixelRatio, pixelRatio);
+      this.staticCtx.scale(PIXEL_RATIO, PIXEL_RATIO);
 
       renderBackground(this.staticCtx, this.dimensions, STYLE.tracks.edgeColor);
       renderOverviewPlot(

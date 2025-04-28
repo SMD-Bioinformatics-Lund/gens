@@ -139,8 +139,6 @@ export async function initCanvases({
     "settings-button",
   ) as HTMLDivElement;
   settingsButton.addEventListener("click", () => {
-    // content.appendChild(inputControls)
-    // content.innerHTML = "Settings content";
     sideMenu.showContent("Settings", [settingsPage]);
 
     if (!settingsPage.isInitialized) {

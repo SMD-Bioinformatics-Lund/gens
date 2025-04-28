@@ -1,7 +1,6 @@
 import { ChoiceSelect } from "./util/choice_select";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
-import Choices, { EventChoice, InputChoice } from "choices.js";
-// import "choices.js/public/assets/styles/choices.min.css";
+import { InputChoice } from "choices.js";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -53,7 +52,6 @@ export class SettingsPage extends ShadowBaseElement {
       return this.defaultAnnots;
     }
     const choices = this.choiceSelect.getChoices();
-    // return choices.map((choice) => choice.value);
     const returnVals = choices.map((obj) => {
       return {
         id: obj.value,
