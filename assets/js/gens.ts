@@ -5,6 +5,7 @@ import "./components/util/shadowbaseelement";
 import "./components/util/choice_select";
 import "./components/side_menu";
 import "./components/settings_page";
+import "./components/header_info";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";

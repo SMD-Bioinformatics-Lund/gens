@@ -16,7 +16,7 @@ template.innerHTML = String.raw`
 
     .menu-row {
       align-items: center;
-      padding: ${PAD.xs}px ${PAD.xs}px;
+      padding: ${PAD.xs}px 0px;
       display: flex;
       flex-direction: row;
       align-items: center;

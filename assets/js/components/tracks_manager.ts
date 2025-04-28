@@ -245,7 +245,7 @@ export class TracksManager extends HTMLElement {
             infoDivs.push(commentSection);
 
             const metaSection = getSection(
-              "Meta data",
+              "Metadata",
               details.metadata.map((meta) => {
                 let url = null;
                 if (meta.field_name === "reference") {
