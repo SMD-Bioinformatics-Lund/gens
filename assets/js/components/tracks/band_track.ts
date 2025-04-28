@@ -5,7 +5,7 @@ import {
   rangeSurroundsRange,
 } from "../../util/utils";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track";
+import { CanvasTrack } from "./canvas_track/canvas_track";
 import {
   drawArrow,
   getLinearScale,

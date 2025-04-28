@@ -1,6 +1,6 @@
 import { drawChromosomeBands, getChromosomeShape } from "../../draw/ideogram";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track";
+import { CanvasTrack } from "./canvas_track/canvas_track";
 import "tippy.js/dist/tippy.css";
 import { getLinearScale } from "../../draw/render_utils";
 

@@ -1,6 +1,6 @@
 import { drawHorizontalLineInScale } from "../../draw/shapes";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track";
+import { CanvasTrack } from "./canvas_track/canvas_track";
 import {
   drawDotsScaled,
   drawYAxis,

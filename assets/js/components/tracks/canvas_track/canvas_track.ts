@@ -1,10 +1,12 @@
-import { STYLE } from "../../constants";
-import { renderBackground } from "../../draw/render_utils";
-import { drawLabel } from "../../draw/shapes";
-import { Tooltip } from "../../util/tooltip_utils";
+import { STYLE } from "../../../constants";
+import { renderBackground } from "../../../draw/render_utils";
+import { drawLabel } from "../../../draw/shapes";
+import { Tooltip } from "../../../util/tooltip_utils";
 
-import { ShadowBaseElement } from "../util/shadowbaseelement";
-import { eventInBox } from "../../util/utils";
+import { ShadowBaseElement } from "../../util/shadowbaseelement";
+import { eventInBox } from "../../../util/utils";
+import { keyLogger } from "../../util/keylogger";
+import { initializeDrag } from "./drag";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
@@ -134,32 +136,17 @@ export class CanvasTrack extends ShadowBaseElement {
     });
   }
 
+  // Next:
+  // Get correct positions inside canvas
+  // Get events firing
+  // Get the highlight
+  // Get the action linked together
   initializeDragSelect(onDragRelease: (selectRange: Rng) => void) {
-
-    // FIXME: Generalize
-    const keysDown: Set<string> = new Set();
-    window.addEventListener("keydown", (e) => {
-      keysDown.add(e.code);
-    })
-
-    window.addEventListener("keyup", (e) => {
-      keysDown.delete(e.code);
-    })
-
-    const isKeyDown = (keyCode: string): boolean => {
-      return keysDown.has(keyCode);
-    }
-
-    this.canvas.addEventListener("mousedown", (event) => {
-      if (isKeyDown("Shift")) {
-        console.log("Shift is down");
-      }
-    });
+    initializeDrag(this.canvas, onDragRelease);
   }
 
   // FIXME: Split into hover and click ?
   initializeInteractive(onElementClick: (el: HoverBox) => void | null = null) {
-
     const tooltip = new Tooltip(document.body);
 
     this.canvas.addEventListener("click", (event) => {
@@ -177,7 +164,6 @@ export class CanvasTrack extends ShadowBaseElement {
     });
 
     this.canvas.addEventListener("mousemove", (event) => {
-
       if (this.hoverTargets == null) {
         return;
       }

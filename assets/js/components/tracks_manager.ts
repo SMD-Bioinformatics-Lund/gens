@@ -1,4 +1,4 @@
-import "./tracks/canvas_track";
+import "./tracks/canvas_track/canvas_track";
 import "./tracks/band_track";
 import "./tracks/dot_track";
 import "./tracks/ideogram_track";
@@ -10,7 +10,7 @@ import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { STYLE } from "../constants";
-import { CanvasTrack } from "./tracks/canvas_track";
+import { CanvasTrack } from "./tracks/canvas_track/canvas_track";
 import { prefixNts, prettyRange } from "../util/utils";
 import {
   getEntry,
