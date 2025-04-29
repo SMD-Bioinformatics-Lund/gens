@@ -294,6 +294,7 @@ export class TracksManager extends HTMLElement {
           chromosome: getChromosome(),
         };
       },
+      true,
     );
     const overviewTrackBaf = new OverviewTrack(
       "overview_baf",
@@ -309,6 +310,7 @@ export class TracksManager extends HTMLElement {
           chromosome: getChromosome(),
         };
       },
+      false,
     );
 
     variantTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
