@@ -1,6 +1,6 @@
 import { drawChromosomeBands, getChromosomeShape } from "../../draw/ideogram";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track";
+import { CanvasTrack } from "./canvas_track/canvas_track";
 import "tippy.js/dist/tippy.css";
 import { getLinearScale } from "../../draw/render_utils";
 
@@ -26,7 +26,7 @@ export class IdeogramTrack extends CanvasTrack {
     this.trackContainer.appendChild(zoomMarkerElement);
     this.markerElement = zoomMarkerElement;
 
-    this.initializeInteractive();
+    this.initializeHoverTooltip();
   }
 
   async render(updateData: boolean) {

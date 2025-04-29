@@ -1,4 +1,9 @@
-import { getPan, parseRegionDesignation, zoomIn, zoomOut } from "../util/navigation";
+import {
+  getPan,
+  parseRegionDesignation,
+  zoomIn,
+  zoomOut,
+} from "../util/navigation";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -53,13 +58,12 @@ class RegionController {
     return {
       chrom: this._chrom,
       start: this._start,
-      end: this._end
-    }
+      end: this._end,
+    };
   }
 }
 
 export class InputControls extends HTMLElement {
-
   private panLeftButton: HTMLButtonElement;
   private panRightButton: HTMLButtonElement;
   private zoomInButton: HTMLButtonElement;
@@ -94,7 +98,7 @@ export class InputControls extends HTMLElement {
   }
 
   updateChromosome(chrom: string, chromLength: number) {
-    this.region = new RegionController({chrom, start:1, end: chromLength});
+    this.region = new RegionController({ chrom, start: 1, end: chromLength });
     this.regionField.value = this.region.getString();
     this.currChromLength = chromLength;
   }
@@ -155,7 +159,7 @@ export class InputControls extends HTMLElement {
     const currXRange = this.getRange();
     const newXRangeRaw = zoomOut(currXRange);
     const newMax = Math.min(newXRangeRaw[1], this.currChromLength);
-    const newXRange: Rng = [newXRangeRaw[0], newMax];
+    const newXRange: Rng = [Math.floor(newXRangeRaw[0]), Math.floor(newMax)];
     this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
   }

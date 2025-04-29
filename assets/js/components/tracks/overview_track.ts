@@ -1,12 +1,16 @@
 import { drawVerticalLineInScale } from "../../draw/shapes";
 import { transformMap, padRange, rangeSize } from "../../util/utils";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track";
+import { CanvasTrack } from "./canvas_track/canvas_track";
 import {
   drawDotsScaled,
   linearScale,
   renderBackground,
 } from "../../draw/render_utils";
+import {
+  createMarker,
+  renderMarkerRange,
+} from "./canvas_track/interactive_tools";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;
@@ -53,10 +57,7 @@ export class OverviewTrack extends CanvasTrack {
   initialize() {
     super.initialize();
 
-    const marker = createChromMarker(
-      this.dimensions.height,
-      STYLE.colors.transparentYellow,
-    );
+    const marker = createMarker(this.dimensions.height);
     this.trackContainer.appendChild(marker);
     this.marker = marker;
 
@@ -65,10 +66,11 @@ export class OverviewTrack extends CanvasTrack {
       const chrom = pixelToChrom(event.offsetX, this.pxRanges);
       this.onChromosomeClick(chrom);
     });
+
+    this.trackContainer.style.cursor = "pointer";
   }
 
   async render(updateData: boolean) {
-
     let newRender = false;
     if (this.renderData == null || updateData) {
       this.renderData = await this.getRenderData();
@@ -136,42 +138,16 @@ export class OverviewTrack extends CanvasTrack {
     );
 
     const chromStartPos = chromRanges[chromosome][0];
-    renderSelectedChromMarker(
+    const viewPxRange: Rng = [
+      xScale(xRange[0] + chromStartPos),
+      xScale(xRange[1] + chromStartPos),
+    ];
+    renderMarkerRange(
       this.marker,
-      xScale,
-      xRange,
-      chromStartPos,
+      viewPxRange,
       this.dimensions.height,
     );
   }
-}
-
-function createChromMarker(canvasHeight: number, color: string) {
-  const marker = document.createElement("div") as HTMLDivElement;
-  marker.style.height = `${canvasHeight}px`;
-  marker.style.width = "0px";
-  marker.style.backgroundColor = color;
-  marker.style.position = "absolute";
-  marker.style.top = "0px";
-  return marker;
-}
-
-function renderSelectedChromMarker(
-  marker: HTMLDivElement,
-  xScale: Scale,
-  xRange: Rng,
-  chromStartPos: number,
-  canvasHeight: number,
-) {
-  const viewPxRange: Rng = [
-    xScale(xRange[0] + chromStartPos),
-    xScale(xRange[1] + chromStartPos),
-  ];
-  const markerWidth = rangeSize(viewPxRange);
-
-  marker.style.height = `${canvasHeight}px`;
-  marker.style.width = `${markerWidth}px`;
-  marker.style.left = `${viewPxRange[0]}px`;
 }
 
 function renderOverviewPlot(

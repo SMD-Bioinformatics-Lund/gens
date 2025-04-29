@@ -5,7 +5,7 @@ import {
   rangeSurroundsRange,
 } from "../../util/utils";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track";
+import { CanvasTrack } from "./canvas_track/canvas_track";
 import {
   drawArrow,
   getLinearScale,
@@ -40,8 +40,10 @@ export class BandTrack extends CanvasTrack {
       this.openContextMenu(element.id);
     };
 
-    this.initializeInteractive(onElementClick);
-    this.initializeExpander();
+    this.initializeHoverTooltip();
+    this.initializeClick(onElementClick);
+    const startExpanded = false;
+    this.initializeExpander("contextmenu", startExpanded);
   }
 
   async render(updateData: boolean) {
@@ -60,6 +62,7 @@ export class BandTrack extends CanvasTrack {
     const { bands, xRange } = this.renderData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
+
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
     const bandsInView = bands.filter((band) => {

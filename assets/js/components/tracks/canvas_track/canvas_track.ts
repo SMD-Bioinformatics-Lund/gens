@@ -1,10 +1,10 @@
-import { STYLE } from "../../constants";
-import { renderBackground } from "../../draw/render_utils";
-import { drawLabel } from "../../draw/shapes";
-import { Tooltip } from "../../util/tooltip_utils";
+import { STYLE } from "../../../constants";
+import { renderBackground } from "../../../draw/render_utils";
+import { drawLabel } from "../../../draw/shapes";
+import { Tooltip } from "../../../util/tooltip_utils";
 
-import { ShadowBaseElement } from "../util/shadowbaseelement";
-import { eventInBox } from "../../util/utils";
+import { ShadowBaseElement } from "../../util/shadowbaseelement";
+import { eventInBox } from "../../../util/utils";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
@@ -117,16 +117,13 @@ export class CanvasTrack extends ShadowBaseElement {
     );
   }
 
-  // FIXME: Move to attribute component
-  initializeExpander(expanded: boolean = false) {
-    this.expander = new Expander(expanded);
+  initializeExpander(eventKey: string, startExpanded: boolean) {
+    this.expander = new Expander(startExpanded);
     const height = this.defaultTrackHeight;
 
-    this.trackContainer.addEventListener("contextmenu", (event) => {
+    this.trackContainer.addEventListener(eventKey, (event) => {
       event.preventDefault();
-
       this.expander.toggle();
-
       this.currentHeight = this.expander.isExpanded
         ? this.expander.expandedHeight
         : height;
@@ -135,10 +132,7 @@ export class CanvasTrack extends ShadowBaseElement {
     });
   }
 
-  initializeInteractive(onElementClick: (el: HoverBox) => void | null = null) {
-
-    const tooltip = new Tooltip(document.body);
-
+  initializeClick(onElementClick: (el: HoverBox) => void | null = null) {
     this.canvas.addEventListener("click", (event) => {
       if (!this.hoverTargets || !onElementClick) {
         return;
@@ -154,7 +148,22 @@ export class CanvasTrack extends ShadowBaseElement {
     });
 
     this.canvas.addEventListener("mousemove", (event) => {
+      if (!this.hoverTargets) {
+        return;
+      }
+      const hovered = this.hoverTargets.find((target) =>
+        eventInBox(event, target.box),
+      );
+      if (onElementClick) {
+        this.canvas.style.cursor = hovered ? "pointer" : "default";
+      }
+    })
+  }
 
+  initializeHoverTooltip() {
+    const tooltip = new Tooltip(document.body);
+
+    this.canvas.addEventListener("mousemove", (event) => {
       if (this.hoverTargets == null) {
         return;
       }
@@ -163,9 +172,6 @@ export class CanvasTrack extends ShadowBaseElement {
       const hovered = this.hoverTargets.find((target) =>
         eventInBox(event, target.box),
       );
-      if (onElementClick) {
-        this.canvas.style.cursor = hovered ? "pointer" : "default";
-      }
 
       if (hovered) {
         tooltip.tooltipEl.textContent = hovered.label;
