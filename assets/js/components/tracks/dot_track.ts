@@ -64,7 +64,6 @@ export class DotTrack extends CanvasTrack {
 
     this.trackContainer.addEventListener("click", () => {
       if (keyLogger.heldKeys.Control) {
-        console.log("Control clicked");
         this.onZoomOut();
       }
     })
