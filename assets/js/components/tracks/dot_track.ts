@@ -41,7 +41,7 @@ export class DotTrack extends CanvasTrack {
   initialize() {
     super.initialize();
     const startExpanded = true;
-    this.initializeExpander(startExpanded);
+    this.initializeExpander("contextmenu", startExpanded);
     this.setExpandedHeight(this.defaultTrackHeight * 2);
 
     initializeDragSelect(this.canvas, (pxRangeX: Rng, _pxRangeY: Rng) => {

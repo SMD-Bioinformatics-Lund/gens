@@ -117,11 +117,11 @@ export class CanvasTrack extends ShadowBaseElement {
     );
   }
 
-  initializeExpander(expanded: boolean) {
-    this.expander = new Expander(expanded);
+  initializeExpander(eventKey: string, startExpanded: boolean) {
+    this.expander = new Expander(startExpanded);
     const height = this.defaultTrackHeight;
 
-    this.trackContainer.addEventListener("contextmenu", (event) => {
+    this.trackContainer.addEventListener(eventKey, (event) => {
       event.preventDefault();
       this.expander.toggle();
       this.currentHeight = this.expander.isExpanded
@@ -132,10 +132,7 @@ export class CanvasTrack extends ShadowBaseElement {
     });
   }
 
-  // FIXME: Split into hover and click ?
-  initializeInteractive(onElementClick: (el: HoverBox) => void | null = null) {
-    const tooltip = new Tooltip(document.body);
-
+  initializeClick(onElementClick: (el: HoverBox) => void | null = null) {
     this.canvas.addEventListener("click", (event) => {
       if (!this.hoverTargets || !onElementClick) {
         return;
@@ -151,6 +148,22 @@ export class CanvasTrack extends ShadowBaseElement {
     });
 
     this.canvas.addEventListener("mousemove", (event) => {
+      if (!this.hoverTargets) {
+        return;
+      }
+      const hovered = this.hoverTargets.find((target) =>
+        eventInBox(event, target.box),
+      );
+      if (onElementClick) {
+        this.canvas.style.cursor = hovered ? "pointer" : "default";
+      }
+    })
+  }
+
+  initializeHoverTooltip() {
+    const tooltip = new Tooltip(document.body);
+
+    this.canvas.addEventListener("mousemove", (event) => {
       if (this.hoverTargets == null) {
         return;
       }
@@ -159,9 +172,6 @@ export class CanvasTrack extends ShadowBaseElement {
       const hovered = this.hoverTargets.find((target) =>
         eventInBox(event, target.box),
       );
-      if (onElementClick) {
-        this.canvas.style.cursor = hovered ? "pointer" : "default";
-      }
 
       if (hovered) {
         tooltip.tooltipEl.textContent = hovered.label;

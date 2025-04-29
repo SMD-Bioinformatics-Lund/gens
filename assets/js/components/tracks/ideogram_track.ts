@@ -26,7 +26,7 @@ export class IdeogramTrack extends CanvasTrack {
     this.trackContainer.appendChild(zoomMarkerElement);
     this.markerElement = zoomMarkerElement;
 
-    this.initializeInteractive();
+    this.initializeHoverTooltip();
   }
 
   async render(updateData: boolean) {
