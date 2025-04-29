@@ -59,6 +59,8 @@ export class TracksManager extends HTMLElement {
   // This one needs a dedicated component I think
   annotationTracks: BandTrack[] = [];
 
+  highlights: Rng[] = [[3000000, 60000000]];
+
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
     this._root.appendChild(template.content.cloneNode(true));
@@ -104,6 +106,7 @@ export class TracksManager extends HTMLElement {
       },
       setXRange,
       onZoomOut,
+      () => this.highlights,
     );
     const bafTrack = new DotTrack(
       "baf",
@@ -119,6 +122,7 @@ export class TracksManager extends HTMLElement {
       },
       setXRange,
       onZoomOut,
+      () => this.highlights,
     );
     const variantTrack = new BandTrack(
       "variants",

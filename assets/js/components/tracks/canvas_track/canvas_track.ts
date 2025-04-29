@@ -57,8 +57,6 @@ export class CanvasTrack extends ShadowBaseElement {
 
   onElementClick: (element: RenderBand | RenderDot) => void | null;
 
-  render(_updateData: boolean) {}
-
   isExpanded(): boolean {
     return this.expander.isExpanded;
   }
@@ -117,7 +115,10 @@ export class CanvasTrack extends ShadowBaseElement {
     );
   }
 
-  initializeExpander(eventKey: string, startExpanded: boolean) {
+  // Placeholder needed to generally render canvas tracks
+  async render(updateData: boolean) {}
+
+  initializeExpander(eventKey: string, startExpanded: boolean, onExpand: () => void) {
     this.expander = new Expander(startExpanded);
     const height = this.defaultTrackHeight;
 
@@ -128,7 +129,8 @@ export class CanvasTrack extends ShadowBaseElement {
         ? this.expander.expandedHeight
         : height;
       this.syncDimensions();
-      this.render(false);
+      // this.render(false);
+      onExpand();
     });
   }
 

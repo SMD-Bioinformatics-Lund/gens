@@ -11,7 +11,11 @@ export function initializeDragSelect(
   let marker = null;
 
   canvas.addEventListener("mousedown", (event) => {
-    if (!keyLogger.heldKeys.Shift) {
+    // FIXME: Conflicting with the zoom out. Need to think this through.
+    // Maybe regular right click to zoom out?
+
+    // FIXME: We also need an 'r' shortcut to reset the zoom
+    if (!keyLogger.heldKeys.Shift && !keyLogger.heldKeys.Control) {
       return;
     }
     isDragging = true;
@@ -20,7 +24,12 @@ export function initializeDragSelect(
 
     // How to get the relative pos inside the canvas?
     dragStart = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-    marker = createMarker(canvas.height);
+    marker = createMarker(
+      canvas.height,
+      keyLogger.heldKeys.Shift
+        ? COLORS.transparentYellow
+        : COLORS.transparentBlue,
+    );
     canvas.parentElement.appendChild(marker);
   });
 

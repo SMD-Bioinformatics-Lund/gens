@@ -43,7 +43,8 @@ export class BandTrack extends CanvasTrack {
     this.initializeHoverTooltip();
     this.initializeClick(onElementClick);
     const startExpanded = false;
-    this.initializeExpander("contextmenu", startExpanded);
+    const onExpand = () => this.render(false);
+    this.initializeExpander("contextmenu", startExpanded, onExpand);
   }
 
   async render(updateData: boolean) {

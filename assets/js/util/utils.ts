@@ -222,3 +222,10 @@ export function prettyRange(start: number, end: number): string {
 export function sortRange(range: Rng): Rng {
   return range.sort((a, b) => a - b) as Rng;
 }
+
+export function scaleRange(range: Rng, scale: Scale): Rng {
+  return [
+    scale(range[0]),
+    scale(range[1]),
+  ]
+}
