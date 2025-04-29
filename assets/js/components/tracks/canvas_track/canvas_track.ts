@@ -5,8 +5,6 @@ import { Tooltip } from "../../../util/tooltip_utils";
 
 import { ShadowBaseElement } from "../../util/shadowbaseelement";
 import { eventInBox } from "../../../util/utils";
-import { keyLogger } from "../../util/keylogger";
-import { initializeDragSelect } from "./interactive_tools";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;

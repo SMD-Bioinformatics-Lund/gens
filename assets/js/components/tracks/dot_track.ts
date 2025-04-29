@@ -9,7 +9,6 @@ import {
 } from "../../draw/render_utils";
 import { initializeDragSelect } from "./canvas_track/interactive_tools";
 import { keyLogger } from "../util/keylogger";
-import { zoomOut } from "../../util/navigation";
 
 export class DotTrack extends CanvasTrack {
   renderData: DotTrackData | null;
@@ -46,7 +45,6 @@ export class DotTrack extends CanvasTrack {
     this.setExpandedHeight(this.defaultTrackHeight * 2);
 
     initializeDragSelect(this.canvas, (pxRangeX: Rng, _pxRangeY: Rng) => {
-      console.log("Running with xrange", this.xRange);
 
       if (this.xRange == null) {
         console.error("No xRange set");
