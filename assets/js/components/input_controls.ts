@@ -152,10 +152,11 @@ export class InputControls extends HTMLElement {
   }
 
   zoomOut() {
+    console.log("Zooming out");
     const currXRange = this.getRange();
     const newXRangeRaw = zoomOut(currXRange);
     const newMax = Math.min(newXRangeRaw[1], this.currChromLength);
-    const newXRange: Rng = [newXRangeRaw[0], newMax];
+    const newXRange: Rng = [Math.floor(newXRangeRaw[0]), Math.floor(newMax)];
     this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
   }

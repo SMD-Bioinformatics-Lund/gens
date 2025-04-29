@@ -16,7 +16,8 @@ export class DotTrack extends CanvasTrack {
   xRange: Rng | null = null;
   xScale: Scale | null = null;
   yTicks: number[];
-  onZoom: (xRange: Rng) => void;
+  onZoomIn: (xRange: Rng) => void;
+  onZoomOut: () => void;
 
   constructor(
     id: string,
@@ -25,13 +26,15 @@ export class DotTrack extends CanvasTrack {
     yRange: Rng,
     yTicks: number[],
     getRenderData: () => Promise<DotTrackData>,
-    onZoom: (xRange: Rng) => void
+    onZoomIn: (xRange: Rng) => void,
+    onZoomOut: () => void,
   ) {
     super(id, label, trackHeight);
     this.getRenderData = getRenderData;
     this.yRange = yRange;
     this.yTicks = yTicks;
-    this.onZoom = onZoom;
+    this.onZoomIn = onZoomIn;
+    this.onZoomOut = onZoomOut;
   }
 
   initialize() {
@@ -39,6 +42,14 @@ export class DotTrack extends CanvasTrack {
     const startExpanded = true;
     this.initializeExpander(startExpanded);
     this.setExpandedHeight(this.defaultTrackHeight * 2);
+
+    this.trackContainer.addEventListener("contextmenu", (event) => {
+      console.log("Context menu triggered");
+      event.preventDefault();
+      event.stopPropagation();
+      this.onZoomOut();
+    })
+
     initializeDragSelect(
       this.canvas,
       (pxRangeX: Rng, _pxRangeY: Rng) => {
@@ -54,9 +65,8 @@ export class DotTrack extends CanvasTrack {
         );
         const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
         const posEnd = pixelToPos(pxRangeX[1]);
-        console.log("Position range:", posStart, posEnd);
 
-        this.onZoom([posStart, posEnd]);
+        this.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
       },
     );
   }

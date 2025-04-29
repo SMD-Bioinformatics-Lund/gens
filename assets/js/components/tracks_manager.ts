@@ -79,6 +79,7 @@ export class TracksManager extends HTMLElement {
     getChromosome: () => string,
     getXRange: () => Rng,
     setXRange: (range: Rng) => void,
+    onZoomOut: () => void,
     getAnnotSources: () => { id: string; label: string }[],
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
@@ -101,7 +102,8 @@ export class TracksManager extends HTMLElement {
           dots: data,
         };
       },
-      setXRange
+      setXRange,
+      onZoomOut,
     );
     const bafTrack = new DotTrack(
       "baf",
@@ -115,7 +117,8 @@ export class TracksManager extends HTMLElement {
           dots: await dataSource.getBafData(),
         };
       },
-      setXRange
+      setXRange,
+      onZoomOut,
     );
     const variantTrack = new BandTrack(
       "variants",

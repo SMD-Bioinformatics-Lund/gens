@@ -136,12 +136,6 @@ export class CanvasTrack extends ShadowBaseElement {
     });
   }
 
-  // initializeDragSelect(
-  //   onDragRelease: (selectRangePxX: Rng, selectRangePxY: Rng) => void,
-  // ) {
-  //   initializeDrag(this.canvas, onDragRelease);
-  // }
-
   // FIXME: Split into hover and click ?
   initializeInteractive(onElementClick: (el: HoverBox) => void | null = null) {
     const tooltip = new Tooltip(document.body);

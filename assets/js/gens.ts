@@ -184,6 +184,7 @@ async function initialize(
       inputControls.updatePosition(range) 
       tracks.render(true);
     },
+    () => inputControls.zoomOut(),
     () => settingsPage.getAnnotSources(),
     getVariantURL,
     async (id: string) => await api.getAnnotationDetails(id),
