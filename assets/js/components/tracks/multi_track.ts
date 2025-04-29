@@ -7,7 +7,7 @@ template.innerHTML = String.raw`
     <div id="container"></div>
 `;
 
-export class MultiTracks extends ShadowBaseElement {
+export class MultiBandTracks extends ShadowBaseElement {
   protected _root: ShadowRoot;
   public label: string = "Annotation tracks";
 
@@ -101,4 +101,4 @@ function checkTracksDiffer(
   return addedSources.length != 0 || removedSources.length != 0;
 }
 
-customElements.define("multi-tracks", MultiTracks);
+customElements.define("multi-tracks", MultiBandTracks);

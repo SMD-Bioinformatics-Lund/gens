@@ -5,7 +5,7 @@ import "./tracks/ideogram_track";
 import "./tracks/overview_track";
 import "./tracks/multi_track";
 import { IdeogramTrack } from "./tracks/ideogram_track";
-import { MultiTracks } from "./tracks/multi_track";
+import { MultiBandTracks } from "./tracks/multi_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
@@ -54,7 +54,7 @@ export class TracksManager extends HTMLElement {
   annotationsContainer: HTMLDivElement;
 
   // FIXME: Think about a shared interface
-  tracks: (CanvasTrack | MultiTracks)[] = [];
+  tracks: (CanvasTrack | MultiBandTracks)[] = [];
 
   // This one needs a dedicated component I think
   annotationTracks: BandTrack[] = [];
@@ -78,6 +78,7 @@ export class TracksManager extends HTMLElement {
     dataSource: RenderDataSource,
     getChromosome: () => string,
     getXRange: () => Rng,
+    setXRange: (range: Rng) => void,
     getAnnotSources: () => { id: string; label: string }[],
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
@@ -100,6 +101,7 @@ export class TracksManager extends HTMLElement {
           dots: data,
         };
       },
+      setXRange
     );
     const bafTrack = new DotTrack(
       "baf",
@@ -113,6 +115,7 @@ export class TracksManager extends HTMLElement {
           dots: await dataSource.getBafData(),
         };
       },
+      setXRange
     );
     const variantTrack = new BandTrack(
       "variants",
@@ -205,15 +208,16 @@ export class TracksManager extends HTMLElement {
       },
     );
 
-    const annotationTracks = new MultiTracks(
+    const annotationTracks = new MultiBandTracks(
       getAnnotSources,
       (sourceId: string, label: string) => {
-        return getAnnotTrack(
+        const track = getAnnotTrack(
           sourceId,
           label,
           trackHeight.thin,
           getXRange,
           dataSource.getAnnotation,
+          // FIXME: Refactor out from here
           async (id: string) => {
             const details = await getAnnotationDetails(id);
 
@@ -267,6 +271,9 @@ export class TracksManager extends HTMLElement {
             openContextMenu("Annotations", infoDivs);
           },
         );
+
+        track.style.paddingLeft = `${STYLE.yAxis.width}px`;
+        return track;
       },
     );
 
@@ -300,6 +307,9 @@ export class TracksManager extends HTMLElement {
         };
       },
     );
+
+    variantTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
+    transcriptTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
 
     this.tracks.push(
       ideogramTrack,

@@ -60,6 +60,7 @@ export class BandTrack extends CanvasTrack {
     const { bands, xRange } = this.renderData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
+
     const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
 
     const bandsInView = bands.filter((band) => {

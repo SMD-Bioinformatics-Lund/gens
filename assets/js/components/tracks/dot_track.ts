@@ -7,6 +7,7 @@ import {
   getLinearScale,
   renderBackground,
 } from "../../draw/render_utils";
+import { initializeDragSelect } from "./canvas_track/interactive_tools";
 
 export class DotTrack extends CanvasTrack {
   renderData: DotTrackData | null;
@@ -15,6 +16,7 @@ export class DotTrack extends CanvasTrack {
   xRange: Rng | null = null;
   xScale: Scale | null = null;
   yTicks: number[];
+  onZoom: (xRange: Rng) => void;
 
   constructor(
     id: string,
@@ -23,11 +25,13 @@ export class DotTrack extends CanvasTrack {
     yRange: Rng,
     yTicks: number[],
     getRenderData: () => Promise<DotTrackData>,
+    onZoom: (xRange: Rng) => void
   ) {
     super(id, label, trackHeight);
     this.getRenderData = getRenderData;
     this.yRange = yRange;
     this.yTicks = yTicks;
+    this.onZoom = onZoom;
   }
 
   initialize() {
@@ -35,24 +39,24 @@ export class DotTrack extends CanvasTrack {
     const startExpanded = true;
     this.initializeExpander(startExpanded);
     this.setExpandedHeight(this.defaultTrackHeight * 2);
-    this.initializeDragSelect(
-      () => this.xScale,
-      () => this.xRange,
-
-      (rangeX: Rng, rangeY: Rng) => {
-        // console.log("Drag released with range:", range);
-
+    initializeDragSelect(
+      this.canvas,
+      (pxRangeX: Rng, _pxRangeY: Rng) => {
         if (this.xRange == null) {
           console.error("No xRange set");
         }
 
+        const yAxisWidth = STYLE.yAxis.width;
+
         const pixelToPos = getLinearScale(
-          [0, this.dimensions.width],
+          [yAxisWidth, this.dimensions.width],
           this.xRange,
         );
-        const posStart = pixelToPos(rangeX[0]);
-        const posEnd = pixelToPos(rangeX[1]);
+        const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
+        const posEnd = pixelToPos(pxRangeX[1]);
         console.log("Position range:", posStart, posEnd);
+
+        this.onZoom([posStart, posEnd]);
       },
     );
   }
@@ -75,7 +79,8 @@ export class DotTrack extends CanvasTrack {
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
-    const xScale = getLinearScale(xRange, [0, dimensions.width]);
+    const yAxisWidth = STYLE.yAxis.width;
+    const xScale = getLinearScale(xRange, [yAxisWidth, dimensions.width]);
     this.xScale = xScale;
     const yScale = getLinearScale(yRange, [0, dimensions.height]);
 
@@ -88,8 +93,7 @@ export class DotTrack extends CanvasTrack {
 
     drawDotsScaled(this.ctx, dotsInRange, xScale, yScale);
     drawYAxis(this.ctx, this.yTicks, yScale, yRange);
-    const shiftRight = STYLE.yAxis.width;
-    this.drawTrackLabel(shiftRight);
+    this.drawTrackLabel(yAxisWidth);
   }
 }
 

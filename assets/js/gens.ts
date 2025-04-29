@@ -180,6 +180,10 @@ async function initialize(
     renderDataSource,
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
+    (range: Rng) => { 
+      inputControls.updatePosition(range) 
+      tracks.render(true);
+    },
     () => settingsPage.getAnnotSources(),
     getVariantURL,
     async (id: string) => await api.getAnnotationDetails(id),

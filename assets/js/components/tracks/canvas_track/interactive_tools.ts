@@ -2,17 +2,13 @@ import { COLORS } from "../../../constants";
 import { rangeSize, sortRange } from "../../../util/utils";
 import { keyLogger } from "../../util/keylogger";
 
-export function initializeDrag(
+export function initializeDragSelect(
   canvas: HTMLCanvasElement,
-  getXScale: () => Scale,
-  getXRange: () => Rng,
   onDragRelease: (rangeX: Rng, rangeY: Rng) => void,
 ) {
   let isDragging = false;
   let dragStart: { x: number; y: number };
   let marker = null;
-  console.log("Marker created", marker);
-  console.log("Marker height", canvas.height);
 
   canvas.addEventListener("mousedown", (event) => {
     if (!keyLogger.heldKeys.Shift) {
@@ -26,7 +22,6 @@ export function initializeDrag(
     dragStart = { x: event.clientX - rect.left, y: event.clientY - rect.top };
     marker = createMarker(canvas.height);
     canvas.parentElement.appendChild(marker);
-    console.log("Marker created");
   });
 
   canvas.addEventListener("mousemove", (event) => {
@@ -38,14 +33,11 @@ export function initializeDrag(
     const currX = event.clientX - rect.left;
     const xRange = sortRange([dragStart.x, currX]);
 
-    console.log("xRange", Math.round(xRange[0]), Math.round(xRange[1]));
-
     renderMarkerRange(marker, xRange, canvas.height);
   });
 
   document.addEventListener("mouseup", (event) => {
     if (isDragging) {
-      console.log("Mouse up", event.x, "scaled");
       onDragRelease(
         sortRange([dragStart.x, event.x]),
         sortRange([dragStart.y, event.y]),
