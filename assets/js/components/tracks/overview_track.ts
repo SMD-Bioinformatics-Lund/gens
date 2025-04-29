@@ -90,9 +90,7 @@ export class OverviewTrack extends CanvasTrack {
     const xScale = (pos: number) => {
       return linearScale(pos, [0, totalChromSize], [0, this.dimensions.width]);
     };
-
-    const yPadding = this.drawLabels ? 20 : 0;
-    // const yPadding = 0;
+    const yPadding = this.drawLabels ? STYLE.overviewTrack.titleSpace : 0;
 
     const yScale = (pos: number) => {
       return linearScale(pos, this.yRange, [yPadding, this.dimensions.height]);
@@ -173,16 +171,21 @@ function renderOverviewPlot(
   Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
     const pad = X_PAD;
     const pxRange = padRange(pxRanges[chrom], pad);
-    // console.log(chrom, "Original range", pxRanges[chrom], "pxRange", pxRange);
 
     const chromXScale = (pos: number) => {
       return linearScale(pos, [0, chromSizes[chrom]], pxRange);
     };
 
     if (drawLabels) {
-      drawLabel(ctx, chrom, (pxRange[0] + pxRange[1]) / 2, 5, {
-        textAlign: "center",
-      });
+      drawLabel(
+        ctx,
+        chrom,
+        (pxRange[0] + pxRange[1]) / 2,
+        STYLE.overviewTrack.labelPad,
+        {
+          textAlign: "center",
+        },
+      );
     }
 
     // FIXME: The coloring should probably be done here directly

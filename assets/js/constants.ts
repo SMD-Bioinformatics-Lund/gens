@@ -86,6 +86,10 @@ export const STYLE = {
     edgeColor: COLORS.darkGray,
     edgeWidth: 1,
   },
+  overviewTrack: {
+    titleSpace: 20,
+    labelPad: PAD.s
+  },
   tracks: {
     // edgeColor: colors.white,
     edgeColor: COLORS.extraLightGray,
