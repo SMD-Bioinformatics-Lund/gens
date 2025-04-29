@@ -16,7 +16,7 @@ export const FONT_WEIGHT = {
   bold: 300,
 }
 
-const colors = {
+export const COLORS = {
   white: "#FFF",
   black: "#222",
   darkGray: "#555",
@@ -45,10 +45,10 @@ const font = "12px sans-serif";
 // FIXME: Then, the content below should be homogenized
 export const STYLE = {
   menu: {
-    backgroundColor: colors.white,
-    borderColor: colors.lightGray,
-    textColor: colors.black,
-    closeColor: colors.darkGray,
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.lightGray,
+    textColor: COLORS.black,
+    closeColor: COLORS.darkGray,
     borderWidth: 1,
     padding: PAD.l,
     font,
@@ -61,10 +61,10 @@ export const STYLE = {
     transitionTime: "0.3s",
   },
   variantColors: {
-    del: colors.orange,
-    dup: colors.teal,
-    inv: colors.purple,
-    ins: colors.gold,
+    del: COLORS.orange,
+    dup: COLORS.teal,
+    inv: COLORS.purple,
+    ins: COLORS.gold,
     default: "gray",
   },
   bandTrack: {
@@ -75,7 +75,7 @@ export const STYLE = {
       thin: 45,
       thick: 80,
     },
-    edgeColor: colors.darkGray,
+    edgeColor: COLORS.darkGray,
     minBandWidth: 2,
   },
   ideogramMarker: {
@@ -83,14 +83,14 @@ export const STYLE = {
     borderWidth: 2,
   },
   bands: {
-    edgeColor: colors.darkGray,
+    edgeColor: COLORS.darkGray,
     edgeWidth: 1,
   },
   tracks: {
     // edgeColor: colors.white,
-    edgeColor: colors.extraLightGray,
-    gridColor: colors.extraLightGray,
-    textFrameColor: colors.lightGray,
+    edgeColor: COLORS.extraLightGray,
+    gridColor: COLORS.extraLightGray,
+    textFrameColor: COLORS.lightGray,
     dashLength: 4,
     dashGap: 8,
     gridLineWidth: 1,
@@ -99,11 +99,11 @@ export const STYLE = {
       showDetails: 5000,
     },
     font,
-    textColor: colors.darkGray,
+    textColor: COLORS.darkGray,
     textPadding: PAD.xs,
     textFramePadding: PAD.xxs,
     textLaneSize: 20,
-    backgroundColor: colors.white,
+    backgroundColor: COLORS.white,
     frameLineWidth: 2,
   },
   ideogramTrack: {
@@ -111,7 +111,7 @@ export const STYLE = {
     centromereIndentProportion: 0.3,
     xPad: PAD.m,
     yPad: PAD.xs,
-    lineColor: colors.darkGray,
+    lineColor: COLORS.darkGray,
     lineWidth: 1,
     stainToColor: {
       acen: "#673888",
@@ -126,9 +126,9 @@ export const STYLE = {
   yAxis: {
     width: 25,
     labelPos: 20,
-    backgroundColor: colors.white,
+    backgroundColor: COLORS.white,
   },
-  colors,
+  colors: COLORS,
 };
 
 export const CHROMOSOMES = [

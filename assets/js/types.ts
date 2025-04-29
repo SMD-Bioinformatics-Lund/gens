@@ -44,7 +44,7 @@ interface ApiReference {
 
 interface ApiMetadata {
   field_name: string,
-  value: string,
+  value: string | {url: string, title: string},
   type: string,
 }
 
