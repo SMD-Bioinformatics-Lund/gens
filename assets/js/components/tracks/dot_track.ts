@@ -12,6 +12,8 @@ export class DotTrack extends CanvasTrack {
   renderData: DotTrackData | null;
   getRenderData: () => Promise<DotTrackData>;
   yRange: Rng;
+  xRange: Rng | null = null;
+  xScale: Scale | null = null;
   yTicks: number[];
 
   constructor(
@@ -33,9 +35,26 @@ export class DotTrack extends CanvasTrack {
     const startExpanded = true;
     this.initializeExpander(startExpanded);
     this.setExpandedHeight(this.defaultTrackHeight * 2);
-    this.initializeDragSelect((range: Rng) => {
-      console.log("Drag released with range:", range);
-    })
+    this.initializeDragSelect(
+      () => this.xScale,
+      () => this.xRange,
+
+      (rangeX: Rng, rangeY: Rng) => {
+        // console.log("Drag released with range:", range);
+
+        if (this.xRange == null) {
+          console.error("No xRange set");
+        }
+
+        const pixelToPos = getLinearScale(
+          [0, this.dimensions.width],
+          this.xRange,
+        );
+        const posStart = pixelToPos(rangeX[0]);
+        const posEnd = pixelToPos(rangeX[1]);
+        console.log("Position range:", posStart, posEnd);
+      },
+    );
   }
 
   async render(updateData: boolean) {
@@ -45,6 +64,7 @@ export class DotTrack extends CanvasTrack {
     }
 
     const { xRange, dots } = this.renderData;
+    this.xRange = xRange;
     const yRange = this.yRange;
 
     const dotsInRange = dots.filter(
@@ -56,6 +76,7 @@ export class DotTrack extends CanvasTrack {
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
     const xScale = getLinearScale(xRange, [0, dimensions.width]);
+    this.xScale = xScale;
     const yScale = getLinearScale(yRange, [0, dimensions.height]);
 
     for (const yTick of this.yTicks) {

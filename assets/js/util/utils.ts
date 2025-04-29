@@ -218,3 +218,7 @@ export function prefixNts(nts: number): string {
 export function prettyRange(start: number, end: number): string {
   return `${start.toLocaleString()} - ${end.toLocaleString()}`;
 }
+
+export function sortRange(range: Rng): Rng {
+  return range.sort((a, b) => a - b) as Rng;
+}

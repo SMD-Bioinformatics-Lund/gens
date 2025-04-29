@@ -6,7 +6,7 @@ import { Tooltip } from "../../../util/tooltip_utils";
 import { ShadowBaseElement } from "../../util/shadowbaseelement";
 import { eventInBox } from "../../../util/utils";
 import { keyLogger } from "../../util/keylogger";
-import { initializeDrag } from "./drag";
+import { initializeDrag } from "./interactive_tools";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
@@ -141,8 +141,12 @@ export class CanvasTrack extends ShadowBaseElement {
   // Get events firing
   // Get the highlight
   // Get the action linked together
-  initializeDragSelect(onDragRelease: (selectRange: Rng) => void) {
-    initializeDrag(this.canvas, onDragRelease);
+  initializeDragSelect(
+    getXScale: () => Scale,
+    getXRange: () => Rng,
+    onDragRelease: (selectRangePxX: Rng, selectRangePxY: Rng) => void,
+  ) {
+    initializeDrag(this.canvas, getXScale, getXRange, onDragRelease);
   }
 
   // FIXME: Split into hover and click ?
@@ -252,5 +256,6 @@ class Expander {
     }
   }
 }
+
 
 customElements.define("canvas-track", CanvasTrack);
