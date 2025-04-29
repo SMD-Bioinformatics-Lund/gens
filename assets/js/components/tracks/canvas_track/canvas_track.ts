@@ -119,15 +119,13 @@ export class CanvasTrack extends ShadowBaseElement {
     );
   }
 
-  initializeExpander(expanded: boolean = false) {
+  initializeExpander(expanded: boolean) {
     this.expander = new Expander(expanded);
     const height = this.defaultTrackHeight;
 
     this.trackContainer.addEventListener("contextmenu", (event) => {
       event.preventDefault();
-
       this.expander.toggle();
-
       this.currentHeight = this.expander.isExpanded
         ? this.expander.expandedHeight
         : height;
@@ -243,6 +241,5 @@ class Expander {
     }
   }
 }
-
 
 customElements.define("canvas-track", CanvasTrack);

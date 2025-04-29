@@ -66,6 +66,8 @@ export class OverviewTrack extends CanvasTrack {
       const chrom = pixelToChrom(event.offsetX, this.pxRanges);
       this.onChromosomeClick(chrom);
     });
+
+    this.trackContainer.style.cursor = "pointer";
   }
 
   async render(updateData: boolean) {

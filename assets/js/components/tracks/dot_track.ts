@@ -8,6 +8,8 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { initializeDragSelect } from "./canvas_track/interactive_tools";
+import { keyLogger } from "../util/keylogger";
+import { zoomOut } from "../../util/navigation";
 
 export class DotTrack extends CanvasTrack {
   renderData: DotTrackData | null;
@@ -43,32 +45,31 @@ export class DotTrack extends CanvasTrack {
     this.initializeExpander(startExpanded);
     this.setExpandedHeight(this.defaultTrackHeight * 2);
 
-    this.trackContainer.addEventListener("contextmenu", (event) => {
-      console.log("Context menu triggered");
-      event.preventDefault();
-      event.stopPropagation();
-      this.onZoomOut();
+    initializeDragSelect(this.canvas, (pxRangeX: Rng, _pxRangeY: Rng) => {
+      console.log("Running with xrange", this.xRange);
+
+      if (this.xRange == null) {
+        console.error("No xRange set");
+      }
+
+      const yAxisWidth = STYLE.yAxis.width;
+
+      const pixelToPos = getLinearScale(
+        [yAxisWidth, this.dimensions.width],
+        this.xRange,
+      );
+      const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
+      const posEnd = pixelToPos(pxRangeX[1]);
+
+      this.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
+    });
+
+    this.trackContainer.addEventListener("click", () => {
+      if (keyLogger.heldKeys.Control) {
+        console.log("Control clicked");
+        this.onZoomOut();
+      }
     })
-
-    initializeDragSelect(
-      this.canvas,
-      (pxRangeX: Rng, _pxRangeY: Rng) => {
-        if (this.xRange == null) {
-          console.error("No xRange set");
-        }
-
-        const yAxisWidth = STYLE.yAxis.width;
-
-        const pixelToPos = getLinearScale(
-          [yAxisWidth, this.dimensions.width],
-          this.xRange,
-        );
-        const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
-        const posEnd = pixelToPos(pxRangeX[1]);
-
-        this.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
-      },
-    );
   }
 
   async render(updateData: boolean) {

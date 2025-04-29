@@ -41,7 +41,8 @@ export class BandTrack extends CanvasTrack {
     };
 
     this.initializeInteractive(onElementClick);
-    this.initializeExpander();
+    const startExpanded = false;
+    this.initializeExpander(startExpanded);
   }
 
   async render(updateData: boolean) {
