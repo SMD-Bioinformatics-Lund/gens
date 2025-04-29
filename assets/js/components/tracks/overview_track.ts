@@ -1,4 +1,4 @@
-import { drawVerticalLineInScale } from "../../draw/shapes";
+import { drawLabel, drawVerticalLineInScale } from "../../draw/shapes";
 import { transformMap, padRange, rangeSize } from "../../util/utils";
 import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track/canvas_track";
@@ -33,6 +33,7 @@ export class OverviewTrack extends CanvasTrack {
   // efficiently. This should likely be generalized and part of Canvas track.
   private staticBuffer: HTMLCanvasElement;
   private staticCtx: CanvasRenderingContext2D;
+  private drawLabels: boolean;
 
   constructor(
     id: string,
@@ -42,6 +43,7 @@ export class OverviewTrack extends CanvasTrack {
     onChromosomeClick: (chrom: string) => void,
     yRange: Rng,
     getRenderData: () => Promise<OverviewTrackData>,
+    drawLabels: boolean,
   ) {
     super(id, label, trackHeight);
 
@@ -49,6 +51,7 @@ export class OverviewTrack extends CanvasTrack {
     this.yRange = yRange;
     this.getRenderData = getRenderData;
     this.onChromosomeClick = onChromosomeClick;
+    this.drawLabels = drawLabels;
 
     this.staticBuffer = document.createElement("canvas");
     this.staticCtx = this.staticBuffer.getContext("2d");
@@ -87,9 +90,10 @@ export class OverviewTrack extends CanvasTrack {
     const xScale = (pos: number) => {
       return linearScale(pos, [0, totalChromSize], [0, this.dimensions.width]);
     };
+    const yPadding = this.drawLabels ? STYLE.overviewTrack.titleSpace : 0;
 
     const yScale = (pos: number) => {
-      return linearScale(pos, this.yRange, [0, this.dimensions.height]);
+      return linearScale(pos, this.yRange, [yPadding, this.dimensions.height]);
     };
 
     const chromRanges = getChromRanges(this.chromSizes);
@@ -117,6 +121,7 @@ export class OverviewTrack extends CanvasTrack {
         yScale,
         dotsPerChrom,
         this.chromSizes,
+        this.drawLabels,
       );
 
       this.isRendered = true;
@@ -142,11 +147,7 @@ export class OverviewTrack extends CanvasTrack {
       xScale(xRange[0] + chromStartPos),
       xScale(xRange[1] + chromStartPos),
     ];
-    renderMarkerRange(
-      this.marker,
-      viewPxRange,
-      this.dimensions.height,
-    );
+    renderMarkerRange(this.marker, viewPxRange, this.dimensions.height);
   }
 }
 
@@ -158,6 +159,7 @@ function renderOverviewPlot(
   yScale: Scale,
   dotsPerChrom: Record<string, RenderDot[]>,
   chromSizes: Record<string, number>,
+  drawLabels: boolean,
 ) {
   // Draw the initial lines
   Object.values(chromRanges).forEach(([_chromStart, chromEnd]) =>
@@ -173,6 +175,18 @@ function renderOverviewPlot(
     const chromXScale = (pos: number) => {
       return linearScale(pos, [0, chromSizes[chrom]], pxRange);
     };
+
+    if (drawLabels) {
+      drawLabel(
+        ctx,
+        chrom,
+        (pxRange[0] + pxRange[1]) / 2,
+        STYLE.overviewTrack.labelPad,
+        {
+          textAlign: "center",
+        },
+      );
+    }
 
     // FIXME: The coloring should probably be done here directly
     // Not in the data generation step
