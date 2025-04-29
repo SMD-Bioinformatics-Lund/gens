@@ -147,7 +147,7 @@ def fmt_bed_to_annotation(
 
 
 def _is_metadata_row(line: str) -> bool:
-    """Check if a ChaS header row contains metadata definition.
+    """Check if a ChAS header row contains metadata definition.
 
     The first three columns in a ChaS metadata row are empty.
     """
@@ -174,11 +174,11 @@ def _parse_aed_property(property_def: str) -> AedPropertyDefinition:
 
     E.g. aed:name(aed:String) -> {prefix: aed, name: name, type: str}
     """
-    match = re.search(r"(\w+):(\w+)\((.+)\)", property_def)
+    match = re.search(r"(?:(\w+):)?(\w+)\((.+)\)", property_def)
     if match is None:
         raise ValueError(f"Unknown AED property, {property_def}")
     prefix, name, type = match.groups()
-    return AedPropertyDefinition(prefix=prefix, name=name, type=type)
+    return AedPropertyDefinition(prefix=prefix or "no_prefix", name=name, type=type)
 
 
 AedDatatypes = str | int | bool | datetime | Color | AnyHttpUrl
