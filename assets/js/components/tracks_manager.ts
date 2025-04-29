@@ -166,9 +166,9 @@ export class TracksManager extends HTMLElement {
         openContextMenu("Variant", entries);
       },
     );
-    const transcriptTrack = new BandTrack(
-      "transcripts",
-      "Transcripts",
+    const genesTrack = new BandTrack(
+      "genes",
+      "Genes",
       trackHeight.thin,
       async () => {
         return {
@@ -314,7 +314,7 @@ export class TracksManager extends HTMLElement {
     );
 
     variantTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
-    transcriptTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
+    genesTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
 
     this.tracks.push(
       ideogramTrack,
@@ -322,7 +322,7 @@ export class TracksManager extends HTMLElement {
       bafTrack,
       annotationTracks,
       variantTrack,
-      transcriptTrack,
+      genesTrack,
       overviewTrackCov,
       overviewTrackBaf,
     );
