@@ -1,5 +1,5 @@
 import { STYLE } from "../../../constants";
-import { getLinearScale } from "../../../draw/render_utils";
+import { drawYAxis, getLinearScale } from "../../../draw/render_utils";
 import { drawHorizontalLineInScale } from "../../../draw/shapes";
 import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
@@ -108,7 +108,6 @@ export class DataTrack extends CanvasTrack {
   }
 
   renderYAxis(yAxis: Axis) {
-    console.log("Rendering y axis", yAxis);
     const yScale = getLinearScale(yAxis.range, [0, this.dimensions.height]);
 
     for (const yTick of yAxis.ticks) {
@@ -117,6 +116,8 @@ export class DataTrack extends CanvasTrack {
         dashed: true,
       });
     }
+
+    drawYAxis(this.ctx, yAxis.ticks, yScale, yAxis.range);
   }
 }
 
