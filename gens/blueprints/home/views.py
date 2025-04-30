@@ -10,7 +10,7 @@ from pymongo.database import Database
 from gens import version
 from gens.config import settings
 from gens.crud.annotations import get_data_update_timestamp
-from gens.crud.samples import get_samples
+from gens.crud.samples import get_samples_per_case
 from gens.db.collections import SAMPLES_COLLECTION
 
 LOG = logging.getLogger(__name__)
@@ -36,37 +36,38 @@ def home() -> str:
     # set pagination
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * SAMPLES_PER_PAGE
-    resp = get_samples(
+    samples_per_case = get_samples_per_case(
         db.get_collection(SAMPLES_COLLECTION), skip=start, limit=SAMPLES_PER_PAGE
     )
-    # calculate pagination
+    # FIXME: Temporary case solutions
+    # This will soon not be a Flask template but a regular HTML page, so this
+    # is a temporary solution
     pagination_info = {
         "from": start + 1,
         "to": start + SAMPLES_PER_PAGE,
         "current_page": page,
         "last_page": (
-            resp.records_total // SAMPLES_PER_PAGE
-            if resp.records_total % SAMPLES_PER_PAGE == 0
-            else (resp.records_total // SAMPLES_PER_PAGE) + 1
+            len(samples_per_case) // SAMPLES_PER_PAGE
+            if len(samples_per_case) % SAMPLES_PER_PAGE == 0
+            else (len(samples_per_case) // SAMPLES_PER_PAGE) + 1
         ),
     }
     parsed_samples = [
         {
-            "sample_id": smp.sample_id,
-            "case_id": smp.case_id,
-            "genome_build": smp.genome_build,
-            "has_overview_file": smp.overview_file is not None,
-            "files_present": os.path.isfile(smp.baf_file)
-            and os.path.isfile(smp.coverage_file),
-            "created_at": smp.created_at.strftime("%Y-%m-%d"),
+            "case_id": case_id,
+            "sample_ids": [s.sample_id for s in samples],
+            "genome_build": samples[0].genome_build,
+            "has_overview_file": len([s for s in samples if s.overview_file is None]) == 0,
+            "files_present": len([s for s in samples if s.overview_file is None or s.coverage_file is None]) == 0,
+            "created_at": samples[0].created_at.strftime("%Y-%m-%d"),
         }
-        for smp in resp.data
+        for (case_id, samples) in samples_per_case.items()
     ]
     return render_template(
         "home.html",
         pagination=pagination_info,
         samples=parsed_samples,
-        total_samples=resp.records_total,
+        total_samples=len(samples_per_case),
         scout_base_url=str(settings.scout_url),
         version=version,
     )

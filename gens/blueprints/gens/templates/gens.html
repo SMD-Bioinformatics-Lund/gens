@@ -80,10 +80,9 @@
     // Initiate variant, annotation and transcript canvases
     // and pass flask values to tracks
     gens.initCanvases({
-        sampleName: '{{ individual_id }}',
         caseId: '{{ case_id }}',
-        sampleId: '{{ individual_id }}',
-        genomeBuild: {{ genome_build }},
+        sampleIds: {{ sample_ids | safe }},
+        genomeBuild: {{ genome_build | safe }},
         uiColors: {{ ui_colors | tojson | safe }},
         scoutBaseURL: '{{ scout_base_url | safe }}',
         selectedVariant: '{{ selected_variant }}',

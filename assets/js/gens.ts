@@ -18,17 +18,16 @@ import { SettingsPage } from "./components/settings_page";
 import { HeaderInfo } from "./components/header_info";
 
 export async function initCanvases({
-  sampleId,
   caseId,
+  sampleIds,
   genomeBuild,
   scoutBaseURL: scoutBaseURL,
   gensApiURL,
   annotationFile: defaultAnnotationName,
   startRegion,
 }: {
-  sampleName: string;
-  sampleId: string;
   caseId: string;
+  sampleIds: string[];
   genomeBuild: number;
   scoutBaseURL: string;
   gensApiURL: string;
@@ -40,13 +39,13 @@ export async function initCanvases({
   const sideMenu = document.getElementById("side-menu") as SideMenu;
 
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
-  headerInfo.initialize(caseId, [sampleId]);
+  headerInfo.initialize(caseId, sampleIds);
 
   const inputControls = document.getElementById(
     "input-controls",
   ) as InputControls;
 
-  const api = new API(sampleId, caseId, genomeBuild, gensApiURL);
+  const api = new API(caseId, genomeBuild, gensApiURL);
 
   const renderDataSource = getRenderDataSource(
     api,
@@ -98,6 +97,7 @@ export async function initCanvases({
   });
 
   initialize(
+    sampleIds,
     inputControls,
     gensTracks,
     startRegion,
@@ -123,6 +123,7 @@ export async function initCanvases({
 }
 
 async function initialize(
+  sampleIds: string[],
   inputControls: InputControls,
   tracks: TracksManager,
   startRegion: Region,
@@ -175,6 +176,7 @@ async function initialize(
   );
 
   await tracks.initialize(
+    sampleIds,
     chromSizes,
     onChromClick,
     renderDataSource,
@@ -189,8 +191,8 @@ async function initialize(
     getVariantURL,
     async (id: string) => await api.getAnnotationDetails(id),
     async (id: string) => await api.getTranscriptDetails(id),
-    async (id: string) =>
-      await api.getVariantDetails(id, inputControls.getRegion().chrom),
+    async (sampleId: string, variantId: string) =>
+      await api.getVariantDetails(sampleId, variantId, inputControls.getRegion().chrom),
     openContextMenu,
     highlightCallbacks,
   );

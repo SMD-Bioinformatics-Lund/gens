@@ -61,12 +61,16 @@ export class CanvasTrack extends ShadowBaseElement {
     return this.expander.isExpanded;
   }
 
-  constructor(id: string, label: string, defaultTrackHeight: number) {
+  constructor(
+    id: string,
+    label: string,
+    defaultHeight: number,
+  ) {
     super(template);
 
     this.id = id;
     this.label = label;
-    this.defaultTrackHeight = defaultTrackHeight;
+    this.defaultTrackHeight = defaultHeight;
   }
 
   setExpandedHeight(height: number) {

@@ -9,11 +9,13 @@ import { DataTrack } from "./base_tracks/data_track";
 export class DotTrack extends DataTrack {
   renderData: DotTrackData | null;
   getRenderConfig: () => Promise<DotTrackData>;
+  startExpanded: boolean;
 
   constructor(
     id: string,
     label: string,
     trackHeight: number,
+    startExpanded: boolean,
     yAxis: Axis,
     getRenderData: () => Promise<DotTrackData>,
     dragCallbacks: DragCallbacks,
@@ -32,16 +34,16 @@ export class DotTrack extends DataTrack {
         return xScale;
       },
       dragCallbacks,
-      { defaultTrackHeight: trackHeight, dragSelect: true, yAxis },
+      { defaultHeight: trackHeight, dragSelect: true, yAxis },
     );
+    this.startExpanded = startExpanded;
     this.getRenderConfig = getRenderData;
   }
 
   initialize() {
     super.initialize();
-    const startExpanded = true;
     const onExpand = () => this.render(false);
-    this.initializeExpander("contextmenu", startExpanded, onExpand);
+    this.initializeExpander("contextmenu", this.startExpanded, onExpand);
     this.setExpandedHeight(this.defaultTrackHeight * 2);
   }
 

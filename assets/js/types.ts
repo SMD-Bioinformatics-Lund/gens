@@ -236,12 +236,12 @@ type BandYScale = (lane: number, expanded: boolean) => Rng
 interface RenderDataSource {
   getChromInfo: () => Promise<ChromosomeInfo>,
   getAnnotation: (id: string) => Promise<RenderBand[]>,
-  getCovData: () => Promise<RenderDot[]>,
-  getBafData: () => Promise<RenderDot[]>,
+  getCovData: (sampleId: string) => Promise<RenderDot[]>,
+  getBafData: (sampleId: string) => Promise<RenderDot[]>,
   getTranscriptData: () => Promise<RenderBand[]>,
-  getVariantData: () => Promise<RenderBand[]>,
-  getOverviewCovData: () => Promise<Record<string, RenderDot[]>>,
-  getOverviewBafData: () => Promise<Record<string, RenderDot[]>>,
+  getVariantData: (sampleId: string) => Promise<RenderBand[]>,
+  getOverviewCovData: (sampleId: string) => Promise<Record<string, RenderDot[]>>,
+  getOverviewBafData: (sampleId: string) => Promise<Record<string, RenderDot[]>>,
 }
 
 type Rng = [number, number];

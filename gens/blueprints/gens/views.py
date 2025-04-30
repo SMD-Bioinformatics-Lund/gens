@@ -27,18 +27,17 @@ gens_bp = Blueprint(
 )
 
 
-@gens_bp.route("/viewer/<path:sample_name>", methods=["GET"])
-def display_case(sample_name: str) -> str:
+@gens_bp.route("/viewer/<path:case_id>", methods=["GET"])
+def display_samples(case_id: str) -> str:
     """
     Renders the Gens template
     Expects sample_id as input to be able to load the sample data
     """
-    case_id = request.args.get("case_id")
-    if case_id is None:
-        raise ValueError("You must provide a case id when opening a sample.")
-    individual_id = request.args.get("individual_id", sample_name)
-    if not individual_id:
-        raise ValueError(f"Expected individual_id, found: {individual_id}")
+
+    sample_id_list = request.args.get("sample_ids")
+    if not sample_id_list:
+        raise ValueError(f"Expected sample_ids, found: {sample_id_list}")
+    sample_ids = sample_id_list.split(",")
 
     # get genome build and region
     region = request.args.get("region", None)
@@ -58,9 +57,6 @@ def display_case(sample_name: str) -> str:
     # verify that sample has been loaded
     db: Database = current_app.config["GENS_DB"]
 
-    # Check that BAF and Log2 file exists
-    # FIXME move checks to the API instead
-    _ = get_sample(db.get_collection(SAMPLES_COLLECTION), individual_id, case_id)
 
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
@@ -83,9 +79,8 @@ def display_case(sample_name: str) -> str:
         chrom=parsed_region.chromosome,
         start=parsed_region.start,
         end=parsed_region.end,
-        sample_name=sample_name,
-        individual_id=individual_id,
         case_id=case_id,
+        sample_ids=sample_ids,
         genome_build=genome_build.value,
         print_page=print_page,
         annotation=annotation,
