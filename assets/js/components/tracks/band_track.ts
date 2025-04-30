@@ -39,19 +39,28 @@ export class BandTrack extends DataTrack {
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
-    onZoomIn: (xRange: Rng) => void,
-    onZoomOut: () => void,
-    getHighlights: (() => Rng[]) | null,
-    addHighlight: (range: Rng) => void,
+    dragCallbacks: DragCallbacks,
   ) {
-    super(id, label, 
-      {
-        onZoomIn,
-        onZoomOut,
-        getHighlights,
-        addHighlight,
+    super(
+      id,
+      label,
+      () => this.renderData.xRange,
+      () => {
+        const xRange = this.renderData.xRange;
+        const yAxisWidth = STYLE.yAxis.width;
+        const xScale = getLinearScale(xRange, [
+          yAxisWidth,
+          this.dimensions.width,
+        ]);
+        return xScale;
       },
-      { defaultTrackHeight: trackHeight, dragSelect: true });
+      dragCallbacks,
+      {
+        defaultTrackHeight: trackHeight,
+        dragSelect: true,
+        yAxis: null,
+      },
+    );
 
     this.getRenderData = getRenderData;
     this.openContextMenu = openContextMenu;
@@ -74,39 +83,6 @@ export class BandTrack extends DataTrack {
     const startExpanded = false;
     const onExpand = () => this.render(false);
     this.initializeExpander("contextmenu", startExpanded, onExpand);
-
-    // initializeDragSelect(
-    //   this.canvas,
-    //   (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
-    //     if (this.xRange == null) {
-    //       console.error("No xRange set");
-    //     }
-
-    //     const yAxisWidth = STYLE.yAxis.width;
-
-    //     const pixelToPos = getLinearScale(
-    //       [yAxisWidth, this.dimensions.width],
-    //       this.xRange,
-    //     );
-    //     const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
-    //     const posEnd = pixelToPos(pxRangeX[1]);
-
-    //     if (shiftPress) {
-    //       this.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
-    //     } else {
-    //       console.log("Update the select here");
-    //       this.addHighlight([posStart, posEnd]);
-    //     }
-    //   },
-    // );
-
-    // this.trackContainer.addEventListener("click", () => {
-    //   console.log("Click registered");
-    //   if (keyLogger.heldKeys.Control) {
-    //     console.log("Attempting to zoom out");
-    //     this.onZoomOut();
-    //   }
-    // });
   }
 
   async render(updateData: boolean) {
@@ -125,7 +101,6 @@ export class BandTrack extends DataTrack {
     const { bands, xRange } = this.renderData;
     // this.xRange = xRange;
 
-
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
@@ -133,7 +108,6 @@ export class BandTrack extends DataTrack {
       STYLE.yAxis.width,
       this.dimensions.width,
     ]);
-
 
     const bandsInView = bands.filter((band) => {
       const inRange = rangeInRange([band.start, band.end], xRange);
@@ -187,24 +161,8 @@ export class BandTrack extends DataTrack {
     });
 
     this.setHoverTargets(hoverTargets);
-    // drawYAxis(this.ctx, [], () => , yRange);
     this.drawTrackLabel();
-
-    this.renderConfig = {
-      xRange,
-      xScale
-    }
     super.render(updateData);
-
-
-    // if (this.getHighlights != null) {
-    //   renderHighlights(
-    //     this.trackContainer,
-    //     this.dimensions.height,
-    //     this.getHighlights(),
-    //     xScale,
-    //   );
-    // }
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {

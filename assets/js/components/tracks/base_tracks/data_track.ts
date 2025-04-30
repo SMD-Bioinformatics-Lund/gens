@@ -1,55 +1,70 @@
 import { STYLE } from "../../../constants";
 import { getLinearScale } from "../../../draw/render_utils";
+import { drawHorizontalLineInScale } from "../../../draw/shapes";
 import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
 import { initializeDragSelect, renderHighlights } from "./interactive_tools";
 
-interface TrackSettings {
+// This is assigned at setup time
+interface SetupConfig {
   defaultTrackHeight: number;
   dragSelect: boolean;
+  yAxis: {
+    range: Rng;
+    ticks: number[];
+  } | null;
 }
 
-interface Callbacks {
-  onZoomIn: (xRange: Rng) => void;
-  onZoomOut: () => void;
-  getHighlights: () => Rng[];
-  addHighlight: (range: Rng) => void;
-}
-
-interface RenderConfig {
-  xScale: Scale,
-  xRange: Rng,
-}
+// These values are calculated and changes during run time
+// interface RuntimeConfig {
+//   xScale: Scale,
+//   xRange: Rng,
+// }
 
 export class DataTrack extends CanvasTrack {
   // xRange: Rng | null = null;
-
-
 
   // onZoomIn: (xRange: Rng) => void;
   // onZoomOut: () => void;
   // getHighlights: (() => Rng[]) | null;
   // addHighlight: (range: Rng) => void;
 
-  settings: TrackSettings;
-  callbacks: Callbacks;
-  renderConfig: RenderConfig | null = null;
+  setupConfig: SetupConfig;
+  getXRange: () => Rng;
+  getXScale: () => Scale;
+  getYRange: () => Rng;
+  getYScale: () => Scale;
+  dragCallbacks: DragCallbacks;
+  // runtimeConfig: RuntimeConfig | null = null;
 
   constructor(
     id: string,
     label: string,
-    callbacks: Callbacks,
-    settings: TrackSettings,
+    getXRange: () => Rng,
+    getXScale: () => Scale,
+    callbacks: DragCallbacks,
+    settings: SetupConfig,
   ) {
     super(id, label, settings.defaultTrackHeight);
-    this.callbacks = callbacks;
-    this.settings = settings;
+    this.dragCallbacks = callbacks;
+    this.setupConfig = settings;
+    this.getXRange = getXRange;
+    this.getXScale = getXScale;
+
+    this.getYRange = () => {
+      return settings.yAxis.range;
+    };
+    this.getYScale = () => {
+      const yRange = this.getYRange();
+      const yScale = getLinearScale(yRange, [0, this.dimensions.height]);
+      return yScale;
+    };
   }
 
   initialize() {
     super.initialize();
 
-    if (this.callbacks != null) {
+    if (this.dragCallbacks != null) {
       this.setupDrag();
     }
   }
@@ -58,50 +73,61 @@ export class DataTrack extends CanvasTrack {
     initializeDragSelect(
       this.canvas,
       (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
-
-        const renderConfig = this.renderConfig;
-        if (this.renderConfig == null) {
-          console.error("No render config set");
+        const xRange = this.getXRange();
+        // const renderConfig = this.runtimeConfig;
+        if (xRange == null) {
+          console.error("No xRange set");
         }
 
         const yAxisWidth = STYLE.yAxis.width;
 
         const pixelToPos = getLinearScale(
           [yAxisWidth, this.dimensions.width],
-          renderConfig.xRange,
+          xRange,
         );
         const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
         const posEnd = pixelToPos(pxRangeX[1]);
 
         if (shiftPress) {
-          this.callbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
+          this.dragCallbacks.onZoomIn([
+            Math.floor(posStart),
+            Math.floor(posEnd),
+          ]);
         } else {
           console.log("Update the select here");
-          this.callbacks.addHighlight([posStart, posEnd]);
+          this.dragCallbacks.addHighlight([posStart, posEnd]);
         }
       },
     );
 
     this.trackContainer.addEventListener("click", () => {
       if (keyLogger.heldKeys.Control) {
-        this.callbacks.onZoomOut();
+        this.dragCallbacks.onZoomOut();
       }
     });
   }
 
   async render(_updateData: boolean) {
-
-    const renderConfig = this.renderConfig;
-    if (renderConfig == null) {
-      throw Error("Cannot call render without renderConfig assigned");
-    }
-
     renderHighlights(
       this.trackContainer,
       this.dimensions.height,
-      this.callbacks.getHighlights(),
-      renderConfig.xScale,
+      this.dragCallbacks.getHighlights(),
+      this.getXScale(),
     );
+    if (this.setupConfig.yAxis != null) {
+      this.renderYAxis(this.setupConfig.yAxis);
+    }
+  }
+
+  renderYAxis(yAxis: Axis) {
+    const yScale = getLinearScale(yAxis.range, [0, this.dimensions.height]);
+
+    for (const yTick of yAxis.ticks) {
+      drawHorizontalLineInScale(this.ctx, yTick, yScale, {
+        color: STYLE.colors.lightGray,
+        dashed: true,
+      });
+    }
   }
 }
 

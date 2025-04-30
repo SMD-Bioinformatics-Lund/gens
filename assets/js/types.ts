@@ -450,3 +450,15 @@ type VariantColors = {
   inv: string,
   default: string,
 }
+
+interface DragCallbacks {
+  onZoomIn: (xRange: Rng) => void;
+  onZoomOut: () => void;
+  getHighlights: () => Rng[];
+  addHighlight: (range: Rng) => void;
+}
+
+interface Axis {
+  range: Rng;
+  ticks: number[];
+}

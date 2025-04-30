@@ -18,7 +18,11 @@ import {
   getContainer,
   getURLRow,
 } from "./util/menu_utils";
-import { getAnnotationContextMenuContent, getGenesContextMenuContent, getVariantContextMenuContent } from "./util/menu_content_utils";
+import {
+  getAnnotationContextMenuContent,
+  getGenesContextMenuContent,
+  getVariantContextMenuContent,
+} from "./util/menu_content_utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -80,7 +84,7 @@ export class TracksManager extends HTMLElement {
     dataSource: RenderDataSource,
     getChromosome: () => string,
     getXRange: () => Rng,
-    setXRange: (range: Rng) => void,
+    onZoomIn: (range: Rng) => void,
     onZoomOut: () => void,
     getAnnotSources: () => { id: string; label: string }[],
     getVariantURL: (id: string) => string,
@@ -91,12 +95,21 @@ export class TracksManager extends HTMLElement {
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
+    const dragCallbacks = {
+      onZoomIn,
+      onZoomOut,
+      getHighlights: () => this.highlights,
+      addHighlight: (range) => {
+        this.highlights.push(range);
+        this.render(false);
+      },
+    };
+
     const coverageTrack = new DotTrack(
       "log2_cov",
       "Log2 Ratio",
       trackHeight.thick,
-      COV_Y_RANGE,
-      COV_Y_TICKS,
+      { range: COV_Y_RANGE, ticks: COV_Y_TICKS },
       async () => {
         const data = await dataSource.getCovData();
         return {
@@ -104,33 +117,20 @@ export class TracksManager extends HTMLElement {
           dots: data,
         };
       },
-      setXRange,
-      onZoomOut,
-      () => this.highlights,
-      (range) => {
-        this.highlights.push(range);
-        this.render(false);
-      },
+      dragCallbacks,
     );
     const bafTrack = new DotTrack(
       "baf",
       "B Allele Freq",
       trackHeight.thick,
-      BAF_Y_RANGE,
-      BAF_Y_TICKS,
+      { range: BAF_Y_RANGE, ticks: BAF_Y_TICKS },
       async () => {
         return {
           xRange: getXRange(),
           dots: await dataSource.getBafData(),
         };
       },
-      setXRange,
-      onZoomOut,
-      () => this.highlights,
-      (range) => {
-        this.highlights.push(range);
-        this.render(false);
-      },
+      dragCallbacks,
     );
     const variantTrack = new BandTrack(
       "variants",
@@ -148,13 +148,7 @@ export class TracksManager extends HTMLElement {
         const entries = getVariantContextMenuContent(id, details, scoutUrl);
         openContextMenu("Variant", entries);
       },
-      setXRange,
-      onZoomOut,
-      () => this.highlights,
-      (range) => {
-        this.highlights.push(range);
-        this.render(false);
-      },
+      dragCallbacks,
     );
     const genesTrack = new BandTrack(
       "genes",
@@ -171,13 +165,7 @@ export class TracksManager extends HTMLElement {
         const entries = getGenesContextMenuContent(id, details);
         openContextMenu("Transcript", entries);
       },
-      setXRange,
-      onZoomOut,
-      () => this.highlights,
-      (range) => {
-        this.highlights.push(range);
-        this.render(false);
-      },
+      dragCallbacks,
     );
     const ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -194,27 +182,33 @@ export class TracksManager extends HTMLElement {
     const annotationTracks = new MultiBandTracks(
       getAnnotSources,
       (sourceId: string, label: string) => {
-        const track = getAnnotTrack(
+        async function getAnnotTrackData(
+          source: string,
+          getXRange: () => Rng,
+          getAnnotation: (source: string) => Promise<RenderBand[]>,
+        ): Promise<BandTrackData> {
+          const bands = await getAnnotation(source);
+          return {
+            xRange: getXRange(),
+            bands,
+          };
+        }
+
+        const openContextMenuId = async (id: string) => {
+          const details = await getAnnotationDetails(id);
+          const infoDivs = getAnnotationContextMenuContent(id, details);
+          openContextMenu("Annotations", infoDivs);
+        };
+
+        const track = new BandTrack(
           sourceId,
           label,
           trackHeight.thin,
-          getXRange,
-          dataSource.getAnnotation,
-          async (id: string) => {
-            const details = await getAnnotationDetails(id);
-            const infoDivs = getAnnotationContextMenuContent(id, details);
-            openContextMenu("Annotations", infoDivs);
-          },
-          setXRange,
-          onZoomOut,
-          () => this.highlights,
-          (range) => {
-            this.highlights.push(range);
-            this.render(false);
-          }
+          () =>
+            getAnnotTrackData(sourceId, getXRange, dataSource.getAnnotation),
+          openContextMenuId,
+          dragCallbacks,
         );
-
-        // track.style.paddingLeft = `${STYLE.yAxis.width}px`;
         return track;
       },
     );
@@ -287,10 +281,7 @@ function getAnnotTrack(
   getXRange: () => Rng,
   getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
   openContextMenu: (id: string) => void,
-  setXRange: (range: Rng) => void,
-  onZoomOut: () => void,
-  getHighlights: () => Rng[],
-  addHighlight: (range: Rng) => void,
+  dragCallbacks: DragCallbacks,
 ): BandTrack {
   async function getAnnotTrackData(
     source: string,
@@ -310,10 +301,7 @@ function getAnnotTrack(
     trackHeight,
     () => getAnnotTrackData(sourceId, getXRange, getAnnotation),
     openContextMenu,
-    setXRange,
-    onZoomOut,
-    getHighlights,
-    addHighlight,
+    dragCallbacks,
   );
   return track;
 }
