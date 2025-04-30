@@ -55,6 +55,11 @@ export class DotTrack extends DataTrack {
 
     const { dots } = this.renderData;
 
+    // FIXME: Move these to base?
+    super.syncDimensions();
+    const dimensions = this.dimensions;
+    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
+
     super.render(updateData);
 
     const xRange = this.getXRange();
@@ -64,10 +69,6 @@ export class DotTrack extends DataTrack {
     const dotsInRange = dots.filter(
       (dot) => dot.x >= xRange[0] && dot.y <= xRange[1],
     );
-
-    super.syncDimensions();
-    const dimensions = this.dimensions;
-    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
     const yAxisWidth = STYLE.yAxis.width;
 

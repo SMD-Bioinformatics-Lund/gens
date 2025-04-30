@@ -13,6 +13,8 @@ template.innerHTML = String.raw`
       top: 0;
       display: flex;
       justify-content: flex-end;
+      align-items: flex-start;
+      pointer-events: none;
     }
     #close {
       background: transparent;
@@ -24,6 +26,7 @@ template.innerHTML = String.raw`
       padding: 0;
       padding-top: ${style.padding}px;
       padding-right: ${style.padding}px;
+      pointer-events: auto;
     }
     #close:hover {
       color: ${style.textColor};

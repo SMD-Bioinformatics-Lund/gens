@@ -108,6 +108,7 @@ export class DataTrack extends CanvasTrack {
   }
 
   renderYAxis(yAxis: Axis) {
+    console.log("Rendering y axis", yAxis);
     const yScale = getLinearScale(yAxis.range, [0, this.dimensions.height]);
 
     for (const yTick of yAxis.ticks) {
