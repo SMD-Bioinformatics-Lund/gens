@@ -12,6 +12,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Multiple annotation tracks.
  - Context menu when clicking band tracks.
  - Highlight regions and see these highlights across all the position tracks.
+ - View multiple coverage tracks for samples within a case.
 
 ### Changed
  - Resolution increased 2x for tracks.
