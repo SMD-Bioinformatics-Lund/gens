@@ -33,19 +33,19 @@ export function getRenderDataSource(
     return parseAnnotations(annotData, getChrom());
   };
 
-  const getCovData = async () => {
+  const getCovData = async (sampleId: string) => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    const covRaw = await gensAPI.getCov(getChrom(), zoom, xRange);
+    const covRaw = await gensAPI.getCov(sampleId, getChrom(), zoom, xRange);
     return parseCoverageDot(covRaw, STYLE.colors.darkGray);
   };
 
-  const getBafData = async () => {
+  const getBafData = async (sampleId: string) => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    const bafRaw = await gensAPI.getBaf(getChrom(), zoom, xRange);
+    const bafRaw = await gensAPI.getBaf(sampleId, getChrom(), zoom, xRange);
     return parseCoverageDot(bafRaw, STYLE.colors.darkGray);
   };
 
@@ -55,21 +55,21 @@ export function getRenderDataSource(
     return parseTranscripts(transcriptsRaw);
   };
 
-  const getVariantData = async () => {
-    const variantsRaw = await gensAPI.getVariants(getChrom());
+  const getVariantData = async (sampleId: string) => {
+    const variantsRaw = await gensAPI.getVariants(sampleId, getChrom());
     return parseVariants(variantsRaw, STYLE.variantColors);
   };
 
-  const getOverviewCovData = async () => {
-    const overviewCovRaw = await gensAPI.getOverviewCovData();
+  const getOverviewCovData = async (sampleId: string) => {
+    const overviewCovRaw = await gensAPI.getOverviewCovData(sampleId);
     const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
       parseCoverageDot(cov, STYLE.colors.darkGray),
     );
     return overviewCovRender;
   };
 
-  const getOverviewBafData = async () => {
-    const overviewBafRaw = await gensAPI.getOverviewBafData();
+  const getOverviewBafData = async (sampleId: string) => {
+    const overviewBafRaw = await gensAPI.getOverviewBafData(sampleId);
     const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
       parseCoverageDot(cov, STYLE.colors.darkGray),
     );

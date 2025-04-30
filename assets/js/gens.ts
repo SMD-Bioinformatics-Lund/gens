@@ -48,7 +48,7 @@ export async function initCanvases({
     "input-controls",
   ) as InputControls;
 
-  const api = new API(caseId, sampleIds, genomeBuild, gensApiURL);
+  const api = new API(caseId, genomeBuild, gensApiURL);
 
   const renderDataSource = getRenderDataSource(
     api,
@@ -100,6 +100,7 @@ export async function initCanvases({
   });
 
   initialize(
+    sampleIds,
     inputControls,
     gensTracks,
     startRegion,
@@ -125,6 +126,7 @@ export async function initCanvases({
 }
 
 async function initialize(
+  sampleIds: string[],
   inputControls: InputControls,
   tracks: TracksManager,
   startRegion: Region,
@@ -177,6 +179,7 @@ async function initialize(
   );
 
   await tracks.initialize(
+    sampleIds,
     chromSizes,
     onChromClick,
     renderDataSource,
@@ -191,8 +194,8 @@ async function initialize(
     getVariantURL,
     async (id: string) => await api.getAnnotationDetails(id),
     async (id: string) => await api.getTranscriptDetails(id),
-    async (id: string) =>
-      await api.getVariantDetails(id, inputControls.getRegion().chrom),
+    async (sampleId: string, variantId: string) =>
+      await api.getVariantDetails(sampleId, variantId, inputControls.getRegion().chrom),
     openContextMenu,
     highlightCallbacks,
   );

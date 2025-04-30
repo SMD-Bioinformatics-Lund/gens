@@ -7,7 +7,7 @@ import { CanvasTrack } from "./canvas_track";
 import { initializeDragSelect, renderHighlights } from "./interactive_tools";
 
 interface Settings {
-  defaultTrackHeight: number;
+  defaultHeight: number,
   dragSelect: boolean;
   yAxis: {
     range: Rng;
@@ -32,7 +32,7 @@ export class DataTrack extends CanvasTrack {
     callbacks: DragCallbacks,
     settings: Settings,
   ) {
-    super(id, label, settings.defaultTrackHeight);
+    super(id, label, settings.defaultHeight);
     this.dragCallbacks = callbacks;
     this.setupConfig = settings;
     this.getXRange = getXRange;

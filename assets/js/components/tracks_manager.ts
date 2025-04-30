@@ -73,7 +73,9 @@ export class TracksManager extends ShadowBaseElement {
     ) as HTMLDivElement;
   }
 
+  // FIXME: Group the callbacks for better overview
   async initialize(
+    sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
     dataSource: RenderDataSource,
@@ -85,7 +87,7 @@ export class TracksManager extends ShadowBaseElement {
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
     getTranscriptDetails: (id: string) => Promise<ApiTranscriptDetails>,
-    getVariantDetails: (id: string) => Promise<ApiVariantDetails>,
+    getVariantDetails: (sampleId: string, variantId: string) => Promise<ApiVariantDetails>,
     openContextMenu: (header: string, content: HTMLElement[]) => void,
     highlightCallbacks: HighlightCallbacks,
   ) {
@@ -99,60 +101,75 @@ export class TracksManager extends ShadowBaseElement {
       removeHighlight: highlightCallbacks.removeHighlight,
     };
 
-    const coverageTrack = new DotTrack(
-      "log2_cov",
-      "Log2 Ratio",
-      trackHeight.thick,
-      { range: COV_Y_RANGE, ticks: COV_Y_TICKS },
-      async () => {
-        const data = await dataSource.getCovData();
-        return {
-          xRange: getXRange(),
-          dots: data,
-        };
-      },
-      dragCallbacks,
-    );
-    const bafTrack = new DotTrack(
-      "baf",
-      "B Allele Freq",
-      trackHeight.thick,
-      { range: BAF_Y_RANGE, ticks: BAF_Y_TICKS },
-      async () => {
-        return {
-          xRange: getXRange(),
-          dots: await dataSource.getBafData(),
-        };
-      },
-      dragCallbacks,
-    );
-    const variantTrack = new BandTrack(
-      "variants",
-      "Variants",
-      trackHeight.thin,
-      async () => {
-        return {
-          xRange: getXRange(),
-          bands: await dataSource.getVariantData(),
-        };
-      },
-      async (id: string) => {
-        const details = await getVariantDetails(id);
-        const scoutUrl = getVariantURL(id);
+    const covTracks = [];
+    const variantTracks = [];
 
-        const button = getButton("Set highlight", () => {
-          const id = generateID();
-          highlightCallbacks.addHighlight(id, [details.position, details.end]);
-        });
+    for (const sampleId of sampleIds) {
 
-        const entries = getVariantContextMenuContent(id, details, scoutUrl);
-        const content = [button];
-        content.push(...entries);
+      const startExpanded = sampleIds.length == 1 ? true : false;
 
-        openContextMenu("Variant", content);
-      },
-      dragCallbacks,
-    );
+      const coverageTrack = new DotTrack(
+        `${sampleId}_log2_cov`,
+        `${sampleId} cov`,
+        trackHeight.thick,
+        startExpanded,
+        { range: COV_Y_RANGE, ticks: COV_Y_TICKS },
+        async () => {
+          const data = await dataSource.getCovData(sampleId);
+          return {
+            xRange: getXRange(),
+            dots: data,
+          };
+        },
+        dragCallbacks,
+      );
+      const bafTrack = new DotTrack(
+        `${sampleId}_baf`,
+        `${sampleId} BAF`,
+        trackHeight.thick,
+        startExpanded,
+        { range: BAF_Y_RANGE, ticks: BAF_Y_TICKS },
+        async () => {
+          return {
+            xRange: getXRange(),
+            dots: await dataSource.getBafData(sampleId),
+          };
+        },
+        dragCallbacks,
+      );
+      const variantTrack = new BandTrack(
+        `${sampleId}_variants`,
+        `${sampleId} Variants`,
+        trackHeight.thin,
+        async () => {
+          return {
+            xRange: getXRange(),
+            bands: await dataSource.getVariantData(sampleId),
+          };
+        },
+        async (variantId: string) => {
+          const details = await getVariantDetails(sampleId, variantId);
+          const scoutUrl = getVariantURL(variantId);
+  
+          const button = getButton("Set highlight", () => {
+            const id = generateID();
+            highlightCallbacks.addHighlight(id, [details.position, details.end]);
+          });
+  
+          const entries = getVariantContextMenuContent(variantId, details, scoutUrl);
+          const content = [button];
+          content.push(...entries);
+  
+          openContextMenu("Variant", content);
+        },
+        dragCallbacks,
+      );
+
+      covTracks.push(coverageTrack, bafTrack);
+      variantTracks.push(variantTrack);
+    }
+
+
     const genesTrack = new BandTrack(
       "genes",
       "Genes",
@@ -237,7 +254,7 @@ export class TracksManager extends ShadowBaseElement {
       COV_Y_RANGE,
       async () => {
         return {
-          dotsPerChrom: await dataSource.getOverviewCovData(),
+          dotsPerChrom: await dataSource.getOverviewCovData(sampleIds[0]),
           xRange: getXRange(),
           chromosome: getChromosome(),
         };
@@ -253,7 +270,7 @@ export class TracksManager extends ShadowBaseElement {
       BAF_Y_RANGE,
       async () => {
         return {
-          dotsPerChrom: await dataSource.getOverviewBafData(),
+          dotsPerChrom: await dataSource.getOverviewBafData(sampleIds[0]),
           xRange: getXRange(),
           chromosome: getChromosome(),
         };
@@ -261,12 +278,12 @@ export class TracksManager extends ShadowBaseElement {
       false,
     );
 
+
     this.tracks.push(
       ideogramTrack,
-      coverageTrack,
-      bafTrack,
+      ...covTracks,
+      ...variantTracks,
       annotationTracks,
-      variantTrack,
       genesTrack,
       overviewTrackCov,
       overviewTrackBaf,

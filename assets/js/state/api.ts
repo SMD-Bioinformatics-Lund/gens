@@ -2,27 +2,18 @@ import { get } from "../util/fetch";
 import { CHROMOSOMES } from "../constants";
 import { zip } from "../util/utils";
 
+const CACHED_ZOOM_LEVELS = ["o", "a", "b"];
+
 export class API {
   caseId: string;
-  sampleId: string;
-  sampleIds: string[];
   genomeBuild: number;
   apiURI: string;
   // Data for these are loaded up front for the full chromosome
   // Remaining zoom levels (up to "d") are loaded dynamically and
   // only for the points currently in view
-  cachedZoomLevels = ["o", "a", "b"];
 
-  constructor(
-    caseId: string,
-    sampleIds: string[],
-    genomeBuild: number,
-    gensApiURL: string,
-  ) {
+  constructor(caseId: string, genomeBuild: number, gensApiURL: string) {
     this.caseId = caseId;
-    this.sampleIds = sampleIds;
-    // FIXME: Temporary for testing
-    this.sampleId = this.sampleIds[0];
     this.genomeBuild = genomeBuild;
     this.apiURI = gensApiURL;
   }
@@ -45,9 +36,13 @@ export class API {
 
   // FIXME: This is a temporary solution. Should really be a detail endpoint in the
   // backend similarly to the transcripts and the annotations
-  async getVariantDetails(id: string, currChrom: string): Promise<ApiVariantDetails> {
-    const variants = await this.getVariants(currChrom);
-    const targets = variants.filter((v) => v.variant_id === id);
+  async getVariantDetails(
+    sampleId: string,
+    variantId: string,
+    currChrom: string,
+  ): Promise<ApiVariantDetails> {
+    const variants = await this.getVariants(sampleId, currChrom);
+    const targets = variants.filter((v) => v.variant_id === variantId);
     if (targets.length != 1) {
       console.error("Expected a single variant, found: ", targets);
       if (targets.length === 0) {
@@ -79,35 +74,45 @@ export class API {
     return this.annotsCache[trackId];
   }
 
+  // FIXME: Dedicated class for this kind of caching is clearly needed
   /**
    * Calculate base zoom levels up front
    * Return detailed zoom levels only on demand
    */
-  private covChrZoomCache: Record<
+  private covSampleChrZoomCache: Record<string, Record<
     string,
     Record<string, Promise<ApiCoverageDot[]>>
-  > = {};
-  getCov(chrom: string, zoom: string, xRange: Rng): Promise<ApiCoverageDot[]> {
+  >> = {};
+  getCov(
+    sampleId: string,
+    chrom: string,
+    zoom: string,
+    xRange: Rng,
+  ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/coverage";
 
-    if (this.cachedZoomLevels.includes(zoom)) {
-      const chrIsCached = this.covChrZoomCache[chrom] !== undefined;
+    if (this.covSampleChrZoomCache[sampleId] == null) {
+      this.covSampleChrZoomCache[sampleId] = {};
+    }
+
+    if (CACHED_ZOOM_LEVELS.includes(zoom)) {
+      const chrIsCached = this.covSampleChrZoomCache[sampleId][chrom] !== undefined;
       if (!chrIsCached) {
-        this.covChrZoomCache[chrom] = getDataPerZoom(
+        this.covSampleChrZoomCache[sampleId][chrom] = getDataPerZoom(
           chrom,
-          this.cachedZoomLevels,
+          CACHED_ZOOM_LEVELS,
           endpoint,
-          this.sampleId,
+          sampleId,
           this.caseId,
           this.apiURI,
         );
       }
-      return this.covChrZoomCache[chrom][zoom];
+      return this.covSampleChrZoomCache[sampleId][chrom][zoom];
     } else {
       return getCovData(
         this.apiURI,
         endpoint,
-        this.sampleId,
+        sampleId,
         this.caseId,
         chrom,
         zoom,
@@ -116,29 +121,38 @@ export class API {
     }
   }
 
-  private bafCache: Record<string, Record<string, Promise<ApiCoverageDot[]>>> =
+  private bafSampleZoomChrCache: Record<string, Record<string, Record<string, Promise<ApiCoverageDot[]>>>> =
     {};
-  getBaf(chrom: string, zoom: string, xRange: Rng): Promise<ApiCoverageDot[]> {
+  getBaf(
+    sampleId: string,
+    chrom: string,
+    zoom: string,
+    xRange: Rng,
+  ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/baf";
 
-    if (this.cachedZoomLevels.includes(zoom)) {
-      const chrIsCached = this.bafCache[chrom] !== undefined;
+    if (this.bafSampleZoomChrCache[sampleId] == null) {
+      this.bafSampleZoomChrCache[sampleId] = {};
+    }
+
+    if (CACHED_ZOOM_LEVELS.includes(zoom)) {
+      const chrIsCached = this.bafSampleZoomChrCache[chrom] !== undefined;
       if (!chrIsCached) {
-        this.bafCache[chrom] = getDataPerZoom(
+        this.bafSampleZoomChrCache[sampleId][chrom] = getDataPerZoom(
           chrom,
-          this.cachedZoomLevels,
+          CACHED_ZOOM_LEVELS,
           endpoint,
-          this.sampleId,
+          sampleId,
           this.caseId,
           this.apiURI,
         );
       }
-      return this.bafCache[chrom][zoom];
+      return this.bafSampleZoomChrCache[sampleId][chrom][zoom];
     } else {
       return getCovData(
         this.apiURI,
         endpoint,
-        this.sampleId,
+        sampleId,
         this.caseId,
         chrom,
         zoom,
@@ -170,12 +184,17 @@ export class API {
     return this.transcriptCache[chrom];
   }
 
-  private variantsCache: Record<string, Promise<ApiVariantDetails[]>> = {};
-  getVariants(chrom: string): Promise<ApiVariantDetails[]> {
-    const isCached = this.variantsCache[chrom] !== undefined;
+  private variantsSampleChromCache: Record<string, Record<string, Promise<ApiVariantDetails[]>>> = {};
+  getVariants(sampleId: string, chrom: string): Promise<ApiVariantDetails[]> {
+
+    if (this.variantsSampleChromCache[sampleId] == null) {
+      this.variantsSampleChromCache[sampleId] = {};
+    }
+
+    const isCached = this.variantsSampleChromCache[chrom] !== undefined;
     if (!isCached) {
       const query = {
-        sample_id: this.sampleId,
+        sample_id: sampleId,
         case_id: this.caseId,
         chromosome: chrom,
         category: "sv",
@@ -183,9 +202,9 @@ export class API {
       };
       const url = new URL("tracks/variants", this.apiURI).href;
       const variants = get(url, query);
-      this.variantsCache[chrom] = variants;
+      this.variantsSampleChromCache[sampleId][chrom] = variants;
     }
-    return this.variantsCache[chrom];
+    return this.variantsSampleChromCache[sampleId][chrom];
   }
 
   private chromCache: Record<string, Promise<ChromosomeInfo>> = {};
@@ -204,30 +223,30 @@ export class API {
     return this.chromCache[chrom];
   }
 
-  private overviewCovCache: Promise<Record<string, ApiCoverageDot[]>> = null;
-  getOverviewCovData(): Promise<Record<string, ApiCoverageDot[]>> {
-    if (this.overviewCovCache === null) {
-      this.overviewCovCache = getOverviewData(
-        this.sampleId,
-        this.caseId,
-        "cov",
-        this.apiURI,
-      );
-    }
-    return this.overviewCovCache;
+  private overviewSampleCovCache: Record<string, Promise<Record<string, ApiCoverageDot[]>>> = {};
+  getOverviewCovData(
+    sampleId: string,
+  ): Promise<Record<string, ApiCoverageDot[]>> {
+
+    this.overviewSampleCovCache[sampleId] = getOverviewData(
+      sampleId,
+      this.caseId,
+      "cov",
+      this.apiURI,
+    );
+
+    return this.overviewSampleCovCache[sampleId];
   }
 
-  private overviewBafCache: Promise<Record<string, ApiCoverageDot[]>> = null;
-  getOverviewBafData(): Promise<Record<string, ApiCoverageDot[]>> {
-    if (this.overviewBafCache === null) {
-      this.overviewBafCache = getOverviewData(
-        this.sampleId,
-        this.caseId,
-        "baf",
-        this.apiURI,
-      );
-    }
-    return this.overviewBafCache;
+  private overviewBafCache: Record<string, Promise<Record<string, ApiCoverageDot[]>>> = {};
+  getOverviewBafData(sampleId): Promise<Record<string, ApiCoverageDot[]>> {
+    this.overviewBafCache[sampleId] = getOverviewData(
+      sampleId,
+      this.caseId,
+      "baf",
+      this.apiURI,
+    );
+    return this.overviewBafCache[sampleId];
   }
 }
 

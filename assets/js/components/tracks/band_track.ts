@@ -43,7 +43,7 @@ export class BandTrack extends DataTrack {
       },
       dragCallbacks,
       {
-        defaultTrackHeight: trackHeight,
+        defaultHeight: trackHeight,
         dragSelect: true,
         yAxis: null,
       },

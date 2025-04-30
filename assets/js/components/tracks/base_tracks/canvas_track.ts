@@ -47,6 +47,7 @@ export class CanvasTrack extends ShadowBaseElement {
   protected _scaleFactor: number;
   protected trackContainer: HTMLDivElement;
   protected defaultTrackHeight: number;
+  private startCollapsed: boolean;
   private currentHeight: number;
 
   private expander: Expander;
@@ -61,12 +62,17 @@ export class CanvasTrack extends ShadowBaseElement {
     return this.expander.isExpanded;
   }
 
-  constructor(id: string, label: string, defaultTrackHeight: number) {
+  constructor(
+    id: string,
+    label: string,
+    defaultHeight: number,
+  ) {
     super(template);
 
     this.id = id;
     this.label = label;
-    this.defaultTrackHeight = defaultTrackHeight;
+    this.defaultTrackHeight = defaultHeight;
+    this.startCollapsed = this.startCollapsed;
   }
 
   setExpandedHeight(height: number) {
@@ -134,6 +140,7 @@ export class CanvasTrack extends ShadowBaseElement {
         ? this.expander.expandedHeight
         : height;
       this.syncDimensions();
+      // this.render(false);
       onExpand();
     });
   }
@@ -160,7 +167,9 @@ export class CanvasTrack extends ShadowBaseElement {
       const hovered = this.hoverTargets.find((target) =>
         eventInBox(event, target.box),
       );
-      this.canvas.style.cursor = hovered ? "pointer" : "default";
+      if (onElementClick) {
+        this.canvas.style.cursor = hovered ? "pointer" : "default";
+      }
     });
   }
 
