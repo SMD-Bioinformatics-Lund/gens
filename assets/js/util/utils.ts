@@ -222,3 +222,18 @@ export function prettyRange(start: number, end: number): string {
 export function sortRange(range: Rng): Rng {
   return range.sort((a, b) => a - b) as Rng;
 }
+
+export function scaleRange(range: Rng, scale: Scale): Rng {
+  return [scale(range[0]), scale(range[1])];
+}
+
+export function generateID() {
+  const ts = Date.now().toString(36);
+  const randBuf = crypto.getRandomValues(new Uint32Array(2));
+  // build a 64-bit BigInt without any `n` literals
+  const shift32 = BigInt(32);
+  const high   = BigInt(randBuf[0]) << shift32;
+  const low    = BigInt(randBuf[1]);
+  const rand64 = (high | low).toString(36);
+  return `${ts}-${rand64}`;
+}

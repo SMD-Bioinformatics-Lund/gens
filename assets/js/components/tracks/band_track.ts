@@ -5,15 +5,16 @@ import {
   rangeSurroundsRange,
 } from "../../util/utils";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track/canvas_track";
 import {
   drawArrow,
+  drawYAxis,
   getLinearScale,
   renderBackground,
 } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
+import { DataTrack } from "./base_tracks/data_track";
 
-export class BandTrack extends CanvasTrack {
+export class BandTrack extends DataTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
@@ -25,8 +26,28 @@ export class BandTrack extends CanvasTrack {
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
+    dragCallbacks: DragCallbacks,
   ) {
-    super(id, label, trackHeight);
+    super(
+      id,
+      label,
+      () => this.renderData.xRange,
+      () => {
+        const xRange = this.renderData.xRange;
+        const yAxisWidth = STYLE.yAxis.width;
+        const xScale = getLinearScale(xRange, [
+          yAxisWidth,
+          this.dimensions.width,
+        ]);
+        return xScale;
+      },
+      dragCallbacks,
+      {
+        defaultTrackHeight: trackHeight,
+        dragSelect: true,
+        yAxis: null,
+      },
+    );
 
     this.getRenderData = getRenderData;
     this.openContextMenu = openContextMenu;
@@ -43,7 +64,8 @@ export class BandTrack extends CanvasTrack {
     this.initializeHoverTooltip();
     this.initializeClick(onElementClick);
     const startExpanded = false;
-    this.initializeExpander("contextmenu", startExpanded);
+    const onExpand = () => this.render(false);
+    this.initializeExpander("contextmenu", startExpanded, onExpand);
   }
 
   async render(updateData: boolean) {
@@ -63,7 +85,10 @@ export class BandTrack extends CanvasTrack {
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
-    const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
+    const xScale = getLinearScale(xRange, [
+      STYLE.yAxis.width,
+      this.dimensions.width,
+    ]);
 
     const bandsInView = bands.filter((band) => {
       const inRange = rangeInRange([band.start, band.end], xRange);
@@ -118,6 +143,7 @@ export class BandTrack extends CanvasTrack {
 
     this.setHoverTargets(hoverTargets);
     this.drawTrackLabel();
+    super.render(updateData);
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {

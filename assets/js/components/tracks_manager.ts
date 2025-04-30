@@ -1,4 +1,4 @@
-import "./tracks/canvas_track/canvas_track";
+import "./tracks/base_tracks/canvas_track";
 import "./tracks/band_track";
 import "./tracks/dot_track";
 import "./tracks/ideogram_track";
@@ -10,15 +10,15 @@ import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { STYLE } from "../constants";
-import { CanvasTrack } from "./tracks/canvas_track/canvas_track";
-import { prefixNts, prettyRange } from "../util/utils";
+import { CanvasTrack } from "./tracks/base_tracks/canvas_track";
 import {
-  getEntry,
-  getSection,
-  makeRefDiv,
-  getContainer,
-  getURLRow,
-} from "./util/menu_utils";
+  getAnnotationContextMenuContent,
+  getGenesContextMenuContent,
+  getVariantContextMenuContent,
+} from "./util/menu_content_utils";
+import { ShadowBaseElement } from "./util/shadowbaseelement";
+import { generateID } from "../util/utils";
+import { getContainer } from "./util/menu_utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -46,8 +46,7 @@ template.innerHTML = String.raw`
   <div id="container"></div>
 `;
 
-export class TracksManager extends HTMLElement {
-  protected _root: ShadowRoot;
+export class TracksManager extends ShadowBaseElement {
 
   parentContainer: HTMLDivElement;
   isInitialized = false;
@@ -59,15 +58,17 @@ export class TracksManager extends HTMLElement {
   // This one needs a dedicated component I think
   annotationTracks: BandTrack[] = [];
 
+  constructor() {
+    super(template);
+  }
+
   connectedCallback() {
-    this._root = this.attachShadow({ mode: "open" });
-    this._root.appendChild(template.content.cloneNode(true));
 
     window.addEventListener("resize", () => {
       this.render(false);
     });
 
-    this.parentContainer = this._root.getElementById(
+    this.parentContainer = this.root.getElementById(
       "container",
     ) as HTMLDivElement;
   }
@@ -78,7 +79,7 @@ export class TracksManager extends HTMLElement {
     dataSource: RenderDataSource,
     getChromosome: () => string,
     getXRange: () => Rng,
-    setXRange: (range: Rng) => void,
+    onZoomIn: (range: Rng) => void,
     onZoomOut: () => void,
     getAnnotSources: () => { id: string; label: string }[],
     getVariantURL: (id: string) => string,
@@ -86,15 +87,23 @@ export class TracksManager extends HTMLElement {
     getTranscriptDetails: (id: string) => Promise<ApiTranscriptDetails>,
     getVariantDetails: (id: string) => Promise<ApiVariantDetails>,
     openContextMenu: (header: string, content: HTMLElement[]) => void,
+    highlightCallbacks: HighlightCallbacks,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
+
+    const dragCallbacks = {
+      onZoomIn,
+      onZoomOut,
+      getHighlights: highlightCallbacks.getHighlights,
+      addHighlight: highlightCallbacks.addHighlight,
+      removeHighlight: highlightCallbacks.removeHighlight,
+    };
 
     const coverageTrack = new DotTrack(
       "log2_cov",
       "Log2 Ratio",
       trackHeight.thick,
-      COV_Y_RANGE,
-      COV_Y_TICKS,
+      { range: COV_Y_RANGE, ticks: COV_Y_TICKS },
       async () => {
         const data = await dataSource.getCovData();
         return {
@@ -102,23 +111,20 @@ export class TracksManager extends HTMLElement {
           dots: data,
         };
       },
-      setXRange,
-      onZoomOut,
+      dragCallbacks,
     );
     const bafTrack = new DotTrack(
       "baf",
       "B Allele Freq",
       trackHeight.thick,
-      BAF_Y_RANGE,
-      BAF_Y_TICKS,
+      { range: BAF_Y_RANGE, ticks: BAF_Y_TICKS },
       async () => {
         return {
           xRange: getXRange(),
           dots: await dataSource.getBafData(),
         };
       },
-      setXRange,
-      onZoomOut,
+      dragCallbacks,
     );
     const variantTrack = new BandTrack(
       "variants",
@@ -133,38 +139,19 @@ export class TracksManager extends HTMLElement {
       async (id: string) => {
         const details = await getVariantDetails(id);
         const scoutUrl = getVariantURL(id);
-        const info: { key: string; value: string; url?: string }[] = [
-          { key: "Range", value: `${details.position} - ${details.end}` },
-          {
-            key: "Length",
-            value: prefixNts(details.length),
-          },
-          { key: "Scout URL", value: scoutUrl, url: scoutUrl },
-          { key: "CADD score", value: details.cadd_score },
-          {
-            key: "Category",
-            value: `${details.category} (${details.sub_category})`,
-          },
-          {
-            key: "Cytoband",
-            value: `${details.cytoband_start} - ${details.cytoband_end}`,
-          },
-          { key: "Rank score", value: details.rank_score.toString() },
-          { key: "BNF ID", value: id },
-        ];
 
-        const entries: HTMLElement[] = info.map((i) => getEntry(i));
-        const rankScoreParts = getSection(
-          "Rank score parts",
-          details.rank_score_results.map((part) => {
-            return getContainer("row", `${part.category}: ${part.score}`);
-          }),
-        );
+        const button = getButton("Set highlight", () => {
+          const id = generateID();
+          highlightCallbacks.addHighlight(id, [details.position, details.end]);
+        });
 
-        entries.push(rankScoreParts);
+        const entries = getVariantContextMenuContent(id, details, scoutUrl);
+        const content = [button];
+        content.push(...entries);
 
-        openContextMenu("Variant", entries);
+        openContextMenu("Variant", content);
       },
+      dragCallbacks,
     );
     const genesTrack = new BandTrack(
       "genes",
@@ -178,26 +165,16 @@ export class TracksManager extends HTMLElement {
       },
       async (id) => {
         const details = await getTranscriptDetails(id);
-
-        const info: { key: string; value: string }[] = [
-          { key: "Range", value: `${details.start} - ${details.end}` },
-          {
-            key: "Length",
-            value: prefixNts(details.end - details.start + 1),
-          },
-          { key: "Transcript ID", value: details.transcript_id },
-          { key: "Biotype", value: details.transcript_biotype },
-          { key: "Gene name", value: details.gene_name },
-          { key: "MANE", value: details.mane },
-          { key: "HGNC ID", value: details.hgnc_id },
-          { key: "Refseq ID", value: details.refseq_id },
-          { key: "Strand", value: details.strand },
-          { key: "BNF ID", value: id },
-        ];
-
-        const entries = info.map((i) => getEntry(i));
-        openContextMenu("Transcript", entries);
+        const button = getButton("Set highlight", () => {
+          const id = generateID();
+          highlightCallbacks.addHighlight(id, [details.start, details.end]);
+        });
+        const entries = getGenesContextMenuContent(id, details);
+        const content = [button];
+        content.push(...entries);
+        openContextMenu("Transcript", content);
       },
+      dragCallbacks,
     );
     const ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -214,68 +191,39 @@ export class TracksManager extends HTMLElement {
     const annotationTracks = new MultiBandTracks(
       getAnnotSources,
       (sourceId: string, label: string) => {
-        const track = getAnnotTrack(
+        async function getAnnotTrackData(
+          source: string,
+          getXRange: () => Rng,
+          getAnnotation: (source: string) => Promise<RenderBand[]>,
+        ): Promise<BandTrackData> {
+          const bands = await getAnnotation(source);
+          return {
+            xRange: getXRange(),
+            bands,
+          };
+        }
+
+        const openContextMenuId = async (id: string) => {
+          const details = await getAnnotationDetails(id);
+          const button = getButton("Set highlight", () => {
+            const id = generateID();
+            highlightCallbacks.addHighlight(id, [details.start, details.end]);
+          });
+          const entries = getAnnotationContextMenuContent(id, details);
+          const content = [button];
+          content.push(...entries);
+          openContextMenu("Annotations", content);
+        };
+
+        const track = new BandTrack(
           sourceId,
           label,
           trackHeight.thin,
-          getXRange,
-          dataSource.getAnnotation,
-          // FIXME: Refactor out from here
-          async (id: string) => {
-            const details = await getAnnotationDetails(id);
-
-            const info: { key: string; value: string }[] = [
-              {
-                key: "Range",
-                value: prettyRange(details.start, details.end),
-              },
-              {
-                key: "Length",
-                value: prefixNts(details.end - details.start + 1),
-              },
-              { key: "Name", value: details.name },
-              { key: "Description", value: details.description || "-" },
-              { key: "BNF ID", value: id },
-            ];
-
-            const infoDivs = info.map((i) => getEntry(i));
-
-            const commentSection = getSection(
-              "Comments",
-              details.comments.flatMap((c) =>
-                c.comment
-                  .replace('"', "")
-                  .split("; ")
-                  .map((s) => getURLRow(s)),
-              ),
-            );
-            infoDivs.push(commentSection);
-
-            const metaSection = getSection(
-              "Metadata",
-              details.metadata.map((meta) => {
-                let url = null;
-                if (meta.field_name === "reference") {
-                  const value = meta.value as {url: string, title: string};
-                  url = value.url;
-                }
-                
-                const entry = getEntry({
-                  key: meta.field_name,
-                  url,
-                  value: url != null ? url : meta.value as string
-                })
-                return entry;
-              }
-              ),
-            );
-            infoDivs.push(metaSection);
-
-            openContextMenu("Annotations", infoDivs);
-          },
+          () =>
+            getAnnotTrackData(sourceId, getXRange, dataSource.getAnnotation),
+          openContextMenuId,
+          dragCallbacks,
         );
-
-        track.style.paddingLeft = `${STYLE.yAxis.width}px`;
         return track;
       },
     );
@@ -313,9 +261,6 @@ export class TracksManager extends HTMLElement {
       false,
     );
 
-    variantTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
-    genesTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
-
     this.tracks.push(
       ideogramTrack,
       coverageTrack,
@@ -341,34 +286,18 @@ export class TracksManager extends HTMLElement {
   }
 }
 
-function getAnnotTrack(
-  sourceId: string,
-  label: string,
-  trackHeight: number,
-  getXRange: () => Rng,
-  getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
-  openContextMenu: (id: string) => void,
-): BandTrack {
-  const track = new BandTrack(
-    sourceId,
-    label,
-    trackHeight,
-    () => getAnnotTrackData(sourceId, getXRange, getAnnotation),
-    openContextMenu,
-  );
-  return track;
+function getButton(text: string, onClick: () => void): HTMLDivElement {
+  const row = getContainer("row");
+  const button = document.createElement("div") as HTMLDivElement;
+  button.innerHTML = text;
+  button.style.cursor = "pointer";
+  button.style.border = "1px solid #ccc";
+  button.onclick = onClick;
+  button.style.padding = "4px 8px";
+  button.style.borderRadius = "4px";
+  row.appendChild(button);
+  return row;
 }
 
-const getAnnotTrackData = async (
-  source: string,
-  getXRange: () => Rng,
-  getAnnotation: (source: string) => Promise<RenderBand[]>,
-): Promise<BandTrackData> => {
-  const bands = await getAnnotation(source);
-  return {
-    xRange: getXRange(),
-    bands,
-  };
-};
 
 customElements.define("gens-tracks", TracksManager);

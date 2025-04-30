@@ -8,21 +8,24 @@ import {
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <div id="input-controls-container" style="display: flex; align-items: center; gap: 8px;">
-      <button id="pan-left" class='button pan'>
+      <button title="Pan left" id="pan-left" class='button pan'>
         <i class="fas fa-arrow-left"></i>
       </button>
-      <button id="zoom-in" class='button zoom'>
+      <button title="Zoom in" id="zoom-in" class='button zoom'>
         <i class="fas fa-search-plus"></i>
       </button>
-      <button id="zoom-out" class='button zoom'>
+      <button title="Zoom out" id="zoom-out" class='button zoom'>
         <i class="fas fa-search-minus"></i>
       </button>
-      <button id="pan-right" class='button pan'>
+      <button title="Pan right" id="pan-right" class='button pan'>
         <i class="fas fa-arrow-right"></i>
       </button>
       <input onFocus='this.select();' id='region-field' type='text' class="text-input">
-      <button id="submit" class='button pan'>
+      <button title="Run search" id="submit" class='button pan'>
         <i class="fas fa-search"></i>
+      </button>
+      <button title="Remove highlights" id="remove-highlights" class='button pan'>
+        <i class="fas fa-xmark"></i>
       </button>
   </div>
 `;
@@ -69,6 +72,7 @@ export class InputControls extends HTMLElement {
   private zoomInButton: HTMLButtonElement;
   private zoomOutButton: HTMLButtonElement;
   private regionField: HTMLInputElement;
+  private removeHighlights: HTMLInputElement;
 
   private region: RegionController;
   private currChromLength: number;
@@ -83,6 +87,7 @@ export class InputControls extends HTMLElement {
     this.zoomInButton = this.querySelector("#zoom-in") as HTMLButtonElement;
     this.zoomOutButton = this.querySelector("#zoom-out") as HTMLButtonElement;
     this.regionField = this.querySelector("#region-field") as HTMLInputElement;
+    this.removeHighlights = this.querySelector("#remove-highlights") as HTMLInputElement;
   }
 
   getRegion(): Region {
@@ -111,6 +116,7 @@ export class InputControls extends HTMLElement {
   initialize(
     fullRegion: Region,
     onPositionChange: (newXRange: [number, number]) => void,
+    onRemoveHighlights: () => void,
   ) {
     this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);
@@ -132,6 +138,8 @@ export class InputControls extends HTMLElement {
     this.zoomOutButton.onclick = () => {
       this.zoomOut();
     };
+
+    this.removeHighlights.onclick = onRemoveHighlights;
   }
 
   panLeft() {
@@ -162,6 +170,12 @@ export class InputControls extends HTMLElement {
     const newXRange: Rng = [Math.floor(newXRangeRaw[0]), Math.floor(newMax)];
     this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
+  }
+
+  resetZoom() {
+    const xRange = [1, this.currChromLength] as Rng;
+    this.updatePosition(xRange);
+    this.onPositionChange(xRange);
   }
 }
 

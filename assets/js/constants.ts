@@ -29,6 +29,7 @@ export const COLORS = {
   purple: "#5E4B8B",
   gold: "#D4AF37",
   transparentYellow: "#dcd16f44",
+  transparentBlue: "#55667744",
 };
 
 export const PAD = {

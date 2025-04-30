@@ -57,8 +57,6 @@ export class CanvasTrack extends ShadowBaseElement {
 
   onElementClick: (element: RenderBand | RenderDot) => void | null;
 
-  render(_updateData: boolean) {}
-
   isExpanded(): boolean {
     return this.expander.isExpanded;
   }
@@ -117,7 +115,15 @@ export class CanvasTrack extends ShadowBaseElement {
     );
   }
 
-  initializeExpander(eventKey: string, startExpanded: boolean) {
+  // Placeholder needed for Typescript to understand that an array of CanvasTracks
+  // can all be rendered as such: canvas.render(updateData);
+  async render(_updateData: boolean) {}
+
+  initializeExpander(
+    eventKey: string,
+    startExpanded: boolean,
+    onExpand: () => void,
+  ) {
     this.expander = new Expander(startExpanded);
     const height = this.defaultTrackHeight;
 
@@ -128,7 +134,7 @@ export class CanvasTrack extends ShadowBaseElement {
         ? this.expander.expandedHeight
         : height;
       this.syncDimensions();
-      this.render(false);
+      onExpand();
     });
   }
 
@@ -157,7 +163,7 @@ export class CanvasTrack extends ShadowBaseElement {
       if (onElementClick) {
         this.canvas.style.cursor = hovered ? "pointer" : "default";
       }
-    })
+    });
   }
 
   initializeHoverTooltip() {

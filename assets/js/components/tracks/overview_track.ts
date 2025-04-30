@@ -1,16 +1,13 @@
 import { drawLabel, drawVerticalLineInScale } from "../../draw/shapes";
-import { transformMap, padRange, rangeSize } from "../../util/utils";
-import { STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track/canvas_track";
+import { transformMap, padRange, rangeSize, generateID } from "../../util/utils";
+import { COLORS, STYLE } from "../../constants";
+import { CanvasTrack } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,
   linearScale,
   renderBackground,
 } from "../../draw/render_utils";
-import {
-  createMarker,
-  renderMarkerRange,
-} from "./canvas_track/interactive_tools";
+import { GensMarker } from "../util/marker";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;
@@ -19,7 +16,7 @@ const PIXEL_RATIO = 2;
 export class OverviewTrack extends CanvasTrack {
   totalChromSize: number;
   chromSizes: Record<string, number>;
-  marker: HTMLDivElement;
+  marker: GensMarker;
   onChromosomeClick: (chrom: string) => void;
   yRange: Rng;
 
@@ -60,9 +57,10 @@ export class OverviewTrack extends CanvasTrack {
   initialize() {
     super.initialize();
 
-    const marker = createMarker(this.dimensions.height);
-    this.trackContainer.appendChild(marker);
-    this.marker = marker;
+    this.marker = document.createElement("gens-marker") as GensMarker;
+    this.trackContainer.appendChild(this.marker);
+    const id = generateID();
+    this.marker.initialize(id, this.dimensions.height, COLORS.transparentYellow, null);
 
     this.canvas.addEventListener("mousedown", (event) => {
       event.stopPropagation();
@@ -147,7 +145,7 @@ export class OverviewTrack extends CanvasTrack {
       xScale(xRange[0] + chromStartPos),
       xScale(xRange[1] + chromStartPos),
     ];
-    renderMarkerRange(this.marker, viewPxRange, this.dimensions.height);
+    this.marker.render(viewPxRange);
   }
 }
 

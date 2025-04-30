@@ -6,6 +6,7 @@ import "./components/util/choice_select";
 import "./components/side_menu";
 import "./components/settings_page";
 import "./components/header_info";
+import "./components/util/marker";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";
@@ -79,38 +80,7 @@ export async function initCanvases({
     sideMenu.showContent(header, content);
   };
 
-  // Rebuild the keyboard shortcuts
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      sideMenu.close();
-    } else if (e.key === "ArrowLeft") {
-      if (e.ctrlKey || e.metaKey) {
-        const currChrom = inputControls.getRegion().chrom;
-        const currIndex = CHROMOSOMES.indexOf(currChrom);
-        if (currIndex > 0) {
-          const newChrom = CHROMOSOMES[currIndex - 1];
-          onChromClick(newChrom);
-        }
-      } else {
-        inputControls.panLeft();
-      }
-    } else if (e.key === "ArrowRight") {
-      if (e.ctrlKey || e.metaKey) {
-        const currChrom = inputControls.getRegion().chrom;
-        const currIndex = CHROMOSOMES.indexOf(currChrom);
-        if (currIndex < CHROMOSOMES.length - 1) {
-          const newChrom = CHROMOSOMES[currIndex + 1];
-          onChromClick(newChrom);
-        }
-      } else {
-        inputControls.panRight();
-      }
-    } else if (e.key === "ArrowUp") {
-      inputControls.zoomIn();
-    } else if (e.key === "ArrowDown") {
-      inputControls.zoomOut();
-    }
-  });
+  setupShortcuts(sideMenu, inputControls, onChromClick);
 
   const annotSources = await api.getAnnotationSources();
   const defaultAnnot = annotSources
@@ -170,9 +140,39 @@ async function initialize(
     chromSizes[chromosome] = chromInfo.size;
   }
 
-  inputControls.initialize(startRegion, async (_range) => {
-    tracks.render(true);
-  });
+  // FIXME: Move to settings class
+  let highlights: Record<string, Rng> = {};
+
+  const highlightCallbacks = {
+    getHighlights: () => {
+      return Object.entries(highlights).map(([id, range]) => {
+        return {
+          id,
+          range,
+        };
+      });
+    },
+    removeHighlights: () => {
+      highlights = {};
+      tracks.render(false);
+    },
+    addHighlight: (id: string, range: Rng) => {
+      highlights[id] = range;
+      tracks.render(false);
+    },
+    removeHighlight: (id: string) => {
+      delete highlights[id];
+      tracks.render(false);
+    },
+  };
+
+  inputControls.initialize(
+    startRegion,
+    async (_range) => {
+      tracks.render(true);
+    },
+    highlightCallbacks.removeHighlights,
+  );
 
   await tracks.initialize(
     chromSizes,
@@ -180,8 +180,8 @@ async function initialize(
     renderDataSource,
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
-    (range: Rng) => { 
-      inputControls.updatePosition(range) 
+    (range: Rng) => {
+      inputControls.updatePosition(range);
       tracks.render(true);
     },
     () => inputControls.zoomOut(),
@@ -192,7 +192,54 @@ async function initialize(
     async (id: string) =>
       await api.getVariantDetails(id, inputControls.getRegion().chrom),
     openContextMenu,
+    highlightCallbacks,
   );
 
   tracks.render(true);
+}
+
+function setupShortcuts(
+  sideMenu: SideMenu,
+  inputControls: InputControls,
+  onChromClick: (chrom: string) => void,
+) {
+  // Rebuild the keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      sideMenu.close();
+    }
+    if (e.key === "ArrowLeft") {
+      if (e.ctrlKey || e.metaKey) {
+        const currChrom = inputControls.getRegion().chrom;
+        const currIndex = CHROMOSOMES.indexOf(currChrom);
+        if (currIndex > 0) {
+          const newChrom = CHROMOSOMES[currIndex - 1];
+          onChromClick(newChrom);
+        }
+      } else {
+        inputControls.panLeft();
+      }
+    }
+    if (e.key === "ArrowRight") {
+      if (e.ctrlKey || e.metaKey) {
+        const currChrom = inputControls.getRegion().chrom;
+        const currIndex = CHROMOSOMES.indexOf(currChrom);
+        if (currIndex < CHROMOSOMES.length - 1) {
+          const newChrom = CHROMOSOMES[currIndex + 1];
+          onChromClick(newChrom);
+        }
+      } else {
+        inputControls.panRight();
+      }
+    }
+    if (e.key === "ArrowUp") {
+      inputControls.zoomIn();
+    }
+    if (e.key === "ArrowDown") {
+      inputControls.zoomOut();
+    }
+    if (e.key === "r") {
+      inputControls.resetZoom();
+    }
+  });
 }
