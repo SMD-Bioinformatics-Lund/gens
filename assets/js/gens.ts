@@ -79,38 +79,7 @@ export async function initCanvases({
     sideMenu.showContent(header, content);
   };
 
-  // Rebuild the keyboard shortcuts
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      sideMenu.close();
-    } else if (e.key === "ArrowLeft") {
-      if (e.ctrlKey || e.metaKey) {
-        const currChrom = inputControls.getRegion().chrom;
-        const currIndex = CHROMOSOMES.indexOf(currChrom);
-        if (currIndex > 0) {
-          const newChrom = CHROMOSOMES[currIndex - 1];
-          onChromClick(newChrom);
-        }
-      } else {
-        inputControls.panLeft();
-      }
-    } else if (e.key === "ArrowRight") {
-      if (e.ctrlKey || e.metaKey) {
-        const currChrom = inputControls.getRegion().chrom;
-        const currIndex = CHROMOSOMES.indexOf(currChrom);
-        if (currIndex < CHROMOSOMES.length - 1) {
-          const newChrom = CHROMOSOMES[currIndex + 1];
-          onChromClick(newChrom);
-        }
-      } else {
-        inputControls.panRight();
-      }
-    } else if (e.key === "ArrowUp") {
-      inputControls.zoomIn();
-    } else if (e.key === "ArrowDown") {
-      inputControls.zoomOut();
-    }
-  });
+  setupShortcuts(sideMenu, inputControls, onChromClick);
 
   const annotSources = await api.getAnnotationSources();
   const defaultAnnot = annotSources
@@ -180,8 +149,8 @@ async function initialize(
     renderDataSource,
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
-    (range: Rng) => { 
-      inputControls.updatePosition(range) 
+    (range: Rng) => {
+      inputControls.updatePosition(range);
       tracks.render(true);
     },
     () => inputControls.zoomOut(),
@@ -195,4 +164,50 @@ async function initialize(
   );
 
   tracks.render(true);
+}
+
+function setupShortcuts(
+  sideMenu: SideMenu,
+  inputControls: InputControls,
+  onChromClick: (chrom: string) => void,
+) {
+  // Rebuild the keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      sideMenu.close();
+    }
+    if (e.key === "ArrowLeft") {
+      if (e.ctrlKey || e.metaKey) {
+        const currChrom = inputControls.getRegion().chrom;
+        const currIndex = CHROMOSOMES.indexOf(currChrom);
+        if (currIndex > 0) {
+          const newChrom = CHROMOSOMES[currIndex - 1];
+          onChromClick(newChrom);
+        }
+      } else {
+        inputControls.panLeft();
+      }
+    }
+    if (e.key === "ArrowRight") {
+      if (e.ctrlKey || e.metaKey) {
+        const currChrom = inputControls.getRegion().chrom;
+        const currIndex = CHROMOSOMES.indexOf(currChrom);
+        if (currIndex < CHROMOSOMES.length - 1) {
+          const newChrom = CHROMOSOMES[currIndex + 1];
+          onChromClick(newChrom);
+        }
+      } else {
+        inputControls.panRight();
+      }
+    }
+    if (e.key === "ArrowUp") {
+      inputControls.zoomIn();
+    }
+    if (e.key === "ArrowDown") {
+      inputControls.zoomOut();
+    }
+    if (e.key === "r") {
+      inputControls.resetZoom();
+    }
+  });
 }

@@ -163,6 +163,12 @@ export class InputControls extends HTMLElement {
     this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
   }
+
+  resetZoom() {
+    const xRange = [1, this.currChromLength] as Rng;
+    this.updatePosition(xRange);
+    this.onPositionChange(xRange);
+  }
 }
 
 customElements.define("input-controls", InputControls);
