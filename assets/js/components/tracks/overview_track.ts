@@ -1,7 +1,7 @@
 import { drawLabel, drawVerticalLineInScale } from "../../draw/shapes";
 import { transformMap, padRange, rangeSize } from "../../util/utils";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track/canvas_track";
+import { CanvasTrack } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,
   linearScale,
@@ -10,7 +10,7 @@ import {
 import {
   createMarker,
   renderMarkerRange,
-} from "./canvas_track/interactive_tools";
+} from "./base_tracks/interactive_tools";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;

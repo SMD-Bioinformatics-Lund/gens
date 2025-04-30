@@ -1,6 +1,6 @@
 import { drawHorizontalLineInScale } from "../../draw/shapes";
 import { COLORS, STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track/canvas_track";
+import { CanvasTrack } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,
   drawYAxis,
@@ -12,7 +12,7 @@ import {
   initializeDragSelect,
   renderHighlights,
   renderMarkerRange,
-} from "./canvas_track/interactive_tools";
+} from "./base_tracks/interactive_tools";
 import { keyLogger } from "../util/keylogger";
 import { scaleRange } from "../../util/utils";
 
@@ -23,7 +23,7 @@ export class DotTrack extends CanvasTrack {
   xRange: Rng | null = null;
   xScale: Scale | null = null;
   yTicks: number[];
-  
+
   onZoomIn: (xRange: Rng) => void;
   onZoomOut: () => void;
   getHighlights: (() => Rng[]) | null;

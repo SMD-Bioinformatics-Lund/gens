@@ -1,4 +1,4 @@
-import "./tracks/canvas_track/canvas_track";
+import "./tracks/base_tracks/canvas_track";
 import "./tracks/band_track";
 import "./tracks/dot_track";
 import "./tracks/ideogram_track";
@@ -10,7 +10,7 @@ import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { STYLE } from "../constants";
-import { CanvasTrack } from "./tracks/canvas_track/canvas_track";
+import { CanvasTrack } from "./tracks/base_tracks/canvas_track";
 import { prefixNts, prettyRange } from "../util/utils";
 import {
   getEntry,
@@ -208,6 +208,10 @@ export class TracksManager extends HTMLElement {
           setXRange,
           onZoomOut,
           () => this.highlights,
+          (range) => {
+            this.highlights.push(range);
+            this.render(false);
+          }
         );
 
         // track.style.paddingLeft = `${STYLE.yAxis.width}px`;
@@ -286,6 +290,7 @@ function getAnnotTrack(
   setXRange: (range: Rng) => void,
   onZoomOut: () => void,
   getHighlights: () => Rng[],
+  addHighlight: (range: Rng) => void,
 ): BandTrack {
   async function getAnnotTrackData(
     source: string,
@@ -307,11 +312,8 @@ function getAnnotTrack(
     openContextMenu,
     setXRange,
     onZoomOut,
-    () => getHighlights(),
-    (range) => {
-      this.highlights.push(range);
-      this.render(false);
-    },
+    getHighlights,
+    addHighlight,
   );
   return track;
 }

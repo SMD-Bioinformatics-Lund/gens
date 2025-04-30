@@ -5,7 +5,7 @@ import {
   rangeSurroundsRange,
 } from "../../util/utils";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./canvas_track/canvas_track";
+import { CanvasTrack } from "./base_tracks/canvas_track";
 import {
   drawArrow,
   drawYAxis,
@@ -16,21 +16,22 @@ import { drawLabel } from "../../draw/shapes";
 import {
   initializeDragSelect,
   renderHighlights,
-} from "./canvas_track/interactive_tools";
+} from "./base_tracks/interactive_tools";
 import { keyLogger } from "../util/keylogger";
+import { DataTrack } from "./base_tracks/data_track";
 
-export class BandTrack extends CanvasTrack {
+export class BandTrack extends DataTrack {
   renderData: BandTrackData | null;
   getRenderData: () => Promise<BandTrackData>;
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
   openContextMenu: (id: string) => void;
 
   // FIXME: Should there be a shared position track super class?
-  xRange: Rng | null = null;
-  onZoomIn: (xRange: Rng) => void;
-  onZoomOut: () => void;
-  getHighlights: (() => Rng[]) | null;
-  addHighlight: (range: Rng) => void;
+  // xRange: Rng | null = null;
+  // onZoomIn: (xRange: Rng) => void;
+  // onZoomOut: () => void;
+  // getHighlights: (() => Rng[]) | null;
+  // addHighlight: (range: Rng) => void;
 
   constructor(
     id: string,
@@ -43,14 +44,21 @@ export class BandTrack extends CanvasTrack {
     getHighlights: (() => Rng[]) | null,
     addHighlight: (range: Rng) => void,
   ) {
-    super(id, label, trackHeight);
+    super(id, label, 
+      {
+        onZoomIn,
+        onZoomOut,
+        getHighlights,
+        addHighlight,
+      },
+      { defaultTrackHeight: trackHeight, dragSelect: true });
 
     this.getRenderData = getRenderData;
     this.openContextMenu = openContextMenu;
-    this.onZoomIn = onZoomIn;
-    this.onZoomOut = onZoomOut;
-    this.getHighlights = getHighlights;
-    this.addHighlight = addHighlight;
+    // this.onZoomIn = onZoomIn;
+    // this.onZoomOut = onZoomOut;
+    // this.getHighlights = getHighlights;
+    // this.addHighlight = addHighlight;
   }
 
   initialize() {
@@ -67,38 +75,38 @@ export class BandTrack extends CanvasTrack {
     const onExpand = () => this.render(false);
     this.initializeExpander("contextmenu", startExpanded, onExpand);
 
-    initializeDragSelect(
-      this.canvas,
-      (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
-        if (this.xRange == null) {
-          console.error("No xRange set");
-        }
+    // initializeDragSelect(
+    //   this.canvas,
+    //   (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+    //     if (this.xRange == null) {
+    //       console.error("No xRange set");
+    //     }
 
-        const yAxisWidth = STYLE.yAxis.width;
+    //     const yAxisWidth = STYLE.yAxis.width;
 
-        const pixelToPos = getLinearScale(
-          [yAxisWidth, this.dimensions.width],
-          this.xRange,
-        );
-        const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
-        const posEnd = pixelToPos(pxRangeX[1]);
+    //     const pixelToPos = getLinearScale(
+    //       [yAxisWidth, this.dimensions.width],
+    //       this.xRange,
+    //     );
+    //     const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
+    //     const posEnd = pixelToPos(pxRangeX[1]);
 
-        if (shiftPress) {
-          this.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
-        } else {
-          console.log("Update the select here");
-          this.addHighlight([posStart, posEnd]);
-        }
-      },
-    );
+    //     if (shiftPress) {
+    //       this.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
+    //     } else {
+    //       console.log("Update the select here");
+    //       this.addHighlight([posStart, posEnd]);
+    //     }
+    //   },
+    // );
 
-    this.trackContainer.addEventListener("click", () => {
-      console.log("Click registered");
-      if (keyLogger.heldKeys.Control) {
-        console.log("Attempting to zoom out");
-        this.onZoomOut();
-      }
-    });
+    // this.trackContainer.addEventListener("click", () => {
+    //   console.log("Click registered");
+    //   if (keyLogger.heldKeys.Control) {
+    //     console.log("Attempting to zoom out");
+    //     this.onZoomOut();
+    //   }
+    // });
   }
 
   async render(updateData: boolean) {
@@ -115,7 +123,9 @@ export class BandTrack extends CanvasTrack {
     }
 
     const { bands, xRange } = this.renderData;
-    this.xRange = xRange;
+    // this.xRange = xRange;
+
+
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
@@ -123,6 +133,7 @@ export class BandTrack extends CanvasTrack {
       STYLE.yAxis.width,
       this.dimensions.width,
     ]);
+
 
     const bandsInView = bands.filter((band) => {
       const inRange = rangeInRange([band.start, band.end], xRange);
@@ -179,14 +190,21 @@ export class BandTrack extends CanvasTrack {
     // drawYAxis(this.ctx, [], () => , yRange);
     this.drawTrackLabel();
 
-    if (this.getHighlights != null) {
-      renderHighlights(
-        this.trackContainer,
-        this.dimensions.height,
-        this.getHighlights(),
-        xScale,
-      );
+    this.renderConfig = {
+      xRange,
+      xScale
     }
+    super.render(updateData);
+
+
+    // if (this.getHighlights != null) {
+    //   renderHighlights(
+    //     this.trackContainer,
+    //     this.dimensions.height,
+    //     this.getHighlights(),
+    //     xScale,
+    //   );
+    // }
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
