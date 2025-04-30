@@ -47,7 +47,6 @@ export class CanvasTrack extends ShadowBaseElement {
   protected _scaleFactor: number;
   protected trackContainer: HTMLDivElement;
   protected defaultTrackHeight: number;
-  private startCollapsed: boolean;
   private currentHeight: number;
 
   private expander: Expander;
@@ -72,7 +71,6 @@ export class CanvasTrack extends ShadowBaseElement {
     this.id = id;
     this.label = label;
     this.defaultTrackHeight = defaultHeight;
-    this.startCollapsed = this.startCollapsed;
   }
 
   setExpandedHeight(height: number) {
@@ -140,7 +138,6 @@ export class CanvasTrack extends ShadowBaseElement {
         ? this.expander.expandedHeight
         : height;
       this.syncDimensions();
-      // this.render(false);
       onExpand();
     });
   }

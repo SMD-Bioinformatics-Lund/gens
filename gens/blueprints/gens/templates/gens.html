@@ -80,7 +80,7 @@
     // Initiate variant, annotation and transcript canvases
     // and pass flask values to tracks
     gens.initCanvases({
-        caseId: '{{ case_id | safe }}',
+        caseId: '{{ case_id }}',
         sampleIds: {{ sample_ids | safe }},
         genomeBuild: {{ genome_build | safe }},
         uiColors: {{ ui_colors | tojson | safe }},

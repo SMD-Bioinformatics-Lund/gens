@@ -28,15 +28,11 @@ gens_bp = Blueprint(
 
 
 @gens_bp.route("/viewer/<path:case_id>", methods=["GET"])
-def display_case(case_id: str) -> str:
+def display_samples(case_id: str) -> str:
     """
     Renders the Gens template
     Expects sample_id as input to be able to load the sample data
     """
-    # case_id = request.args.get("case_id")
-    # sample_name = request.args.get("sample_name")
-    # if case_id is None:
-    #     raise ValueError("You must provide a case id when opening a sample.")
 
     sample_id_list = request.args.get("sample_ids")
     if not sample_id_list:
@@ -61,9 +57,6 @@ def display_case(case_id: str) -> str:
     # verify that sample has been loaded
     db: Database = current_app.config["GENS_DB"]
 
-    # # Check that BAF and Log2 file exists
-    # # FIXME move checks to the API instead
-    # _ = get_sample(db.get_collection(SAMPLES_COLLECTION), sample_id, case_id)
 
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")

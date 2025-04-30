@@ -470,8 +470,3 @@ interface HighlightCallbacks {
   addHighlight: (id: string, range: Rng) => void;
   removeHighlight: (id: string) =>  void;
 }
-
-interface TrackHeightsConfig {
-  heights: number[],
-  defaultHeight: number,
-}

@@ -10,7 +10,6 @@ from pymongo.database import Database
 from gens import version
 from gens.config import settings
 from gens.crud.annotations import get_data_update_timestamp
-# from gens.crud.samples import get_samples
 from gens.crud.samples import get_samples_per_case
 from gens.db.collections import SAMPLES_COLLECTION
 
@@ -41,6 +40,8 @@ def home() -> str:
         db.get_collection(SAMPLES_COLLECTION), skip=start, limit=SAMPLES_PER_PAGE
     )
     # FIXME: Temporary case solutions
+    # This will soon not be a Flask template but a regular HTML page, so this
+    # is a temporary solution
     pagination_info = {
         "from": start + 1,
         "to": start + SAMPLES_PER_PAGE,

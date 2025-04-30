@@ -1,5 +1,4 @@
 import { get } from "../util/fetch";
-import { CHROMOSOMES } from "../constants";
 import { zip } from "../util/utils";
 
 const CACHED_ZOOM_LEVELS = ["o", "a", "b"];
@@ -74,7 +73,6 @@ export class API {
     return this.annotsCache[trackId];
   }
 
-  // FIXME: Dedicated class for this kind of caching is clearly needed
   /**
    * Calculate base zoom levels up front
    * Return detailed zoom levels only on demand

@@ -34,9 +34,6 @@ export async function initCanvases({
   annotationFile: string;
   startRegion: Region;
 }) {
-
-  console.log("Case:", caseId, "sample IDs:", sampleIds);
-
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
   const sideMenu = document.getElementById("side-menu") as SideMenu;
