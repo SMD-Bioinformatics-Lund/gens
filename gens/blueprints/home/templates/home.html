@@ -50,14 +50,13 @@
           <td id="case-cell">
             {% if case_id %}
               {% set sample_id_list = sample_ids | join(',') %}
-              <a href="{{ url_for('gens.display_case', case_id=case_id, sample_ids=sample_id_list, genome_build=genome_build) }}">{{ case_id }}</a>
-              <!-- {{ url_for('gens.display_case', sample_name=sample_id, individual_id=sample_id, case_id=case_id, genome_build=genome_build) }} -->
+              <a href="{{ url_for('gens.display_samples', case_id=case_id, sample_ids=sample_id_list, genome_build=genome_build) }}">{{ case_id }}</a>
               (<a href="{{ scout_base_url + "/case/case_id/" + case_id }}" target="_blank">Scout</a>)
             {% endif %}
           </td>
           <td>
             {% for sample_id in sample_ids %}            
-              <a href="{{ url_for('gens.display_case', case_id=case_id, sample_ids=sample_id, genome_build=genome_build) }}" target="_blank">{{ sample_id }}</a>
+              <a href="{{ url_for('gens.display_samples', case_id=case_id, sample_ids=sample_id, genome_build=genome_build) }}" target="_blank">{{ sample_id }}</a>
             {% endfor %}
           </td>
           <td id="build-cell" class="align-right">{{ genome_build }}</td>
