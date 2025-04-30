@@ -15,19 +15,7 @@ interface SetupConfig {
   } | null;
 }
 
-// These values are calculated and changes during run time
-// interface RuntimeConfig {
-//   xScale: Scale,
-//   xRange: Rng,
-// }
-
 export class DataTrack extends CanvasTrack {
-  // xRange: Rng | null = null;
-
-  // onZoomIn: (xRange: Rng) => void;
-  // onZoomOut: () => void;
-  // getHighlights: (() => Rng[]) | null;
-  // addHighlight: (range: Rng) => void;
 
   setupConfig: SetupConfig;
   getXRange: () => Rng;
@@ -35,7 +23,6 @@ export class DataTrack extends CanvasTrack {
   getYRange: () => Rng;
   getYScale: () => Scale;
   dragCallbacks: DragCallbacks;
-  // runtimeConfig: RuntimeConfig | null = null;
 
   constructor(
     id: string,
@@ -107,7 +94,8 @@ export class DataTrack extends CanvasTrack {
     });
   }
 
-  async render(_updateData: boolean) {
+  async render(updateData: boolean) {
+    super.render(updateData);
     renderHighlights(
       this.trackContainer,
       this.dimensions.height,

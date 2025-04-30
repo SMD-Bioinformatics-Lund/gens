@@ -6,6 +6,7 @@ import "./components/util/choice_select";
 import "./components/side_menu";
 import "./components/settings_page";
 import "./components/header_info";
+import "./components/util/marker";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";

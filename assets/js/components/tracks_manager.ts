@@ -23,6 +23,7 @@ import {
   getGenesContextMenuContent,
   getVariantContextMenuContent,
 } from "./util/menu_content_utils";
+import { ShadowBaseElement } from "./util/shadowbaseelement";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -50,8 +51,8 @@ template.innerHTML = String.raw`
   <div id="container"></div>
 `;
 
-export class TracksManager extends HTMLElement {
-  protected _root: ShadowRoot;
+export class TracksManager extends ShadowBaseElement {
+  // protected _root: ShadowRoot;
 
   parentContainer: HTMLDivElement;
   isInitialized = false;
@@ -65,15 +66,19 @@ export class TracksManager extends HTMLElement {
 
   highlights: Rng[] = [];
 
+  constructor() {
+    super(template);
+  }
+
   connectedCallback() {
-    this._root = this.attachShadow({ mode: "open" });
-    this._root.appendChild(template.content.cloneNode(true));
+    // this._root = this.attachShadow({ mode: "open" });
+    // this._root.appendChild(template.content.cloneNode(true));
 
     window.addEventListener("resize", () => {
       this.render(false);
     });
 
-    this.parentContainer = this._root.getElementById(
+    this.parentContainer = this.root.getElementById(
       "container",
     ) as HTMLDivElement;
   }
