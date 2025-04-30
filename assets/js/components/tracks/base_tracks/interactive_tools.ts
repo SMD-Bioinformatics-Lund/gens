@@ -1,13 +1,15 @@
 import { COLORS } from "../../../constants";
-import { rangeSize, scaleRange, sortRange } from "../../../util/utils";
+import { generateID, rangeSize, scaleRange, sortRange } from "../../../util/utils";
 import { keyLogger } from "../../util/keylogger";
 import { GensMarker } from "../../util/marker";
 
 export function initializeDragSelect(
   canvas: HTMLCanvasElement,
   onDragRelease: (rangeX: Rng, rangeY: Rng, shiftPress: boolean) => void,
+  onMarkerRemove: (id: string) => void,
 ) {
   let isDragging = false;
+  let isMoved = false;
   let dragStart: { x: number; y: number };
   let marker: GensMarker | null = null;
 
@@ -20,9 +22,8 @@ export function initializeDragSelect(
     //   return;
     // }
 
-    console.log("Mouse is down");
-
     isDragging = true;
+    isMoved = false;
 
     const rect = canvas.getBoundingClientRect();
 
@@ -34,7 +35,8 @@ export function initializeDragSelect(
       : COLORS.transparentBlue;
     marker = document.createElement("gens-marker") as GensMarker;
     canvas.parentElement.appendChild(marker);
-    marker.initialize(canvas.height, color, () => marker.remove());
+    const id = generateID();
+    marker.initialize(id, canvas.height, color, onMarkerRemove);
 
   });
 
@@ -43,6 +45,9 @@ export function initializeDragSelect(
     if (!isDragging || !marker) {
       return;
     }
+
+    isMoved = true;
+
     const rect = canvas.getBoundingClientRect();
     const currX = event.clientX - rect.left;
     const xRange = sortRange([dragStart.x, currX]);
@@ -53,7 +58,7 @@ export function initializeDragSelect(
   });
 
   document.addEventListener("mouseup", (event) => {
-    if (isDragging) {
+    if (isDragging && isMoved) {
       onDragRelease(
         sortRange([dragStart.x, event.x]),
         sortRange([dragStart.y, event.y]),
@@ -65,42 +70,16 @@ export function initializeDragSelect(
       marker = null;
     }
     isDragging = false;
+    isMoved = false;
   });
 }
-
-// export function createMarker(
-//   canvasHeight: number,
-//   color: string = COLORS.transparentYellow,
-// ): GensMarker {
-//   const marker = document.createElement("gens-marker") as GensMarker;
-//   marker.initialize(canvasHeight, color);
-//   // marker.className = "marker";
-//   // marker.style.height = `${canvasHeight}px`;
-//   // marker.style.width = "0px";
-//   // marker.style.backgroundColor = color;
-//   // marker.style.position = "absolute";
-//   // marker.style.top = "0px";
-//   // marker.style.pointerEvents = "none";
-//   return marker;
-// }
-
-// export function renderMarkerRange(
-//   marker: HTMLDivElement,
-//   viewPxRange: Rng,
-//   canvasHeight: number,
-// ) {
-//   const markerWidth = rangeSize(viewPxRange);
-
-//   marker.style.height = `${canvasHeight}px`;
-//   marker.style.width = `${markerWidth}px`;
-//   marker.style.left = `${viewPxRange[0]}px`;
-// }
 
 export function renderHighlights(
   container: HTMLDivElement,
   height: number,
-  highlights: Rng[],
+  highlights: {id: string, range: Rng}[],
   xScale: Scale,
+  onMarkerRemove: (markerId: string) => void,
 ) {
   const markerClass = "highlight-marker";
 
@@ -108,22 +87,22 @@ export function renderHighlights(
     .querySelectorAll(`.${markerClass}`)
     .forEach((old: Element) => old.remove());
 
-  for (const hl of highlights) {
+  for (const {id, range} of highlights) {
 
     const color = keyLogger.heldKeys.Shift
       ? COLORS.transparentYellow
       : COLORS.transparentBlue;
     const marker = document.createElement("gens-marker") as GensMarker;
     container.appendChild(marker);
-    marker.initialize(height, color, () => marker.remove());
+    marker.initialize(id, height, color, onMarkerRemove);
 
     // const marker = createMarker(height, COLORS.transparentBlue);
     marker.classList.add(markerClass);
     container.appendChild(marker);
 
-    const hlPx = scaleRange(hl, xScale);
+    const rangePx = scaleRange(range, xScale);
 
     // renderMarkerRange(marker, hlPx, height);
-    marker.render(hlPx);
+    marker.render(rangePx);
   }
 }

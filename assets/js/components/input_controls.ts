@@ -24,6 +24,9 @@ template.innerHTML = String.raw`
       <button id="submit" class='button pan'>
         <i class="fas fa-search"></i>
       </button>
+      <button id="remove-highlights" class='button pan'>
+        <i class="fas fa-xmark"></i>
+      </button>
   </div>
 `;
 
@@ -69,6 +72,7 @@ export class InputControls extends HTMLElement {
   private zoomInButton: HTMLButtonElement;
   private zoomOutButton: HTMLButtonElement;
   private regionField: HTMLInputElement;
+  private removeHighlights: HTMLInputElement;
 
   private region: RegionController;
   private currChromLength: number;
@@ -83,6 +87,7 @@ export class InputControls extends HTMLElement {
     this.zoomInButton = this.querySelector("#zoom-in") as HTMLButtonElement;
     this.zoomOutButton = this.querySelector("#zoom-out") as HTMLButtonElement;
     this.regionField = this.querySelector("#region-field") as HTMLInputElement;
+    this.removeHighlights = this.querySelector("#remove-highlights") as HTMLInputElement;
   }
 
   getRegion(): Region {
@@ -111,6 +116,7 @@ export class InputControls extends HTMLElement {
   initialize(
     fullRegion: Region,
     onPositionChange: (newXRange: [number, number]) => void,
+    onRemoveHighlights: () => void,
   ) {
     this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);
@@ -132,6 +138,8 @@ export class InputControls extends HTMLElement {
     this.zoomOutButton.onclick = () => {
       this.zoomOut();
     };
+
+    this.removeHighlights.onclick = onRemoveHighlights;
   }
 
   panLeft() {

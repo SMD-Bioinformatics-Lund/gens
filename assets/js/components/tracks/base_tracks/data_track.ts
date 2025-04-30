@@ -1,6 +1,7 @@
 import { STYLE } from "../../../constants";
 import { drawYAxis, getLinearScale } from "../../../draw/render_utils";
 import { drawHorizontalLineInScale } from "../../../draw/shapes";
+import { generateID } from "../../../util/utils";
 import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
 import { initializeDragSelect, renderHighlights } from "./interactive_tools";
@@ -57,34 +58,39 @@ export class DataTrack extends CanvasTrack {
   }
 
   setupDrag() {
+
+    const onDrag = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+      const xRange = this.getXRange();
+      // const renderConfig = this.runtimeConfig;
+      if (xRange == null) {
+        console.error("No xRange set");
+      }
+
+      const yAxisWidth = STYLE.yAxis.width;
+
+      const pixelToPos = getLinearScale(
+        [yAxisWidth, this.dimensions.width],
+        xRange,
+      );
+      const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
+      const posEnd = pixelToPos(pxRangeX[1]);
+
+      if (shiftPress) {
+        this.dragCallbacks.onZoomIn([
+          Math.floor(posStart),
+          Math.floor(posEnd),
+        ]);
+      } else {
+        console.log("Update the select here");
+        const id = generateID()
+        this.dragCallbacks.addHighlight(id, [posStart, posEnd]);
+      }
+    };
+
     initializeDragSelect(
       this.canvas,
-      (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
-        const xRange = this.getXRange();
-        // const renderConfig = this.runtimeConfig;
-        if (xRange == null) {
-          console.error("No xRange set");
-        }
-
-        const yAxisWidth = STYLE.yAxis.width;
-
-        const pixelToPos = getLinearScale(
-          [yAxisWidth, this.dimensions.width],
-          xRange,
-        );
-        const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
-        const posEnd = pixelToPos(pxRangeX[1]);
-
-        if (shiftPress) {
-          this.dragCallbacks.onZoomIn([
-            Math.floor(posStart),
-            Math.floor(posEnd),
-          ]);
-        } else {
-          console.log("Update the select here");
-          this.dragCallbacks.addHighlight([posStart, posEnd]);
-        }
-      },
+      onDrag,
+      this.dragCallbacks.removeHighlight
     );
 
     this.trackContainer.addEventListener("click", () => {
@@ -101,6 +107,7 @@ export class DataTrack extends CanvasTrack {
       this.dimensions.height,
       this.dragCallbacks.getHighlights(),
       this.getXScale(),
+      (id) => this.dragCallbacks.removeHighlight(id),
     );
     if (this.setupConfig.yAxis != null) {
       this.renderYAxis(this.setupConfig.yAxis);

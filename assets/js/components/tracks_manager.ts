@@ -11,19 +11,14 @@ import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
 import { STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/base_tracks/canvas_track";
-import { prefixNts, prettyRange } from "../util/utils";
-import {
-  getEntry,
-  getSection,
-  getContainer,
-  getURLRow,
-} from "./util/menu_utils";
 import {
   getAnnotationContextMenuContent,
   getGenesContextMenuContent,
   getVariantContextMenuContent,
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
+import { generateID } from "../util/utils";
+import { getContainer } from "./util/menu_utils";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -64,8 +59,6 @@ export class TracksManager extends ShadowBaseElement {
   // This one needs a dedicated component I think
   annotationTracks: BandTrack[] = [];
 
-  highlights: Rng[] = [];
-
   constructor() {
     super(template);
   }
@@ -97,17 +90,16 @@ export class TracksManager extends ShadowBaseElement {
     getTranscriptDetails: (id: string) => Promise<ApiTranscriptDetails>,
     getVariantDetails: (id: string) => Promise<ApiVariantDetails>,
     openContextMenu: (header: string, content: HTMLElement[]) => void,
+    highlightCallbacks: HighlightCallbacks,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
 
     const dragCallbacks = {
       onZoomIn,
       onZoomOut,
-      getHighlights: () => this.highlights,
-      addHighlight: (range) => {
-        this.highlights.push(range);
-        this.render(false);
-      },
+      getHighlights: highlightCallbacks.getHighlights,
+      addHighlight: highlightCallbacks.addHighlight,
+      removeHighlight: highlightCallbacks.removeHighlight,
     };
 
     const coverageTrack = new DotTrack(
@@ -150,8 +142,17 @@ export class TracksManager extends ShadowBaseElement {
       async (id: string) => {
         const details = await getVariantDetails(id);
         const scoutUrl = getVariantURL(id);
+
+        const button = getButton("Set highlight", () => {
+          const id = generateID();
+          highlightCallbacks.addHighlight(id, [details.position, details.end]);
+        });
+
         const entries = getVariantContextMenuContent(id, details, scoutUrl);
-        openContextMenu("Variant", entries);
+        const content = [button];
+        content.push(...entries);
+
+        openContextMenu("Variant", content);
       },
       dragCallbacks,
     );
@@ -167,8 +168,14 @@ export class TracksManager extends ShadowBaseElement {
       },
       async (id) => {
         const details = await getTranscriptDetails(id);
+        const button = getButton("Set highlight", () => {
+          const id = generateID();
+          highlightCallbacks.addHighlight(id, [details.start, details.end]);
+        });
         const entries = getGenesContextMenuContent(id, details);
-        openContextMenu("Transcript", entries);
+        const content = [button];
+        content.push(...entries);
+        openContextMenu("Transcript", content);
       },
       dragCallbacks,
     );
@@ -201,8 +208,14 @@ export class TracksManager extends ShadowBaseElement {
 
         const openContextMenuId = async (id: string) => {
           const details = await getAnnotationDetails(id);
-          const infoDivs = getAnnotationContextMenuContent(id, details);
-          openContextMenu("Annotations", infoDivs);
+          const button = getButton("Set highlight", () => {
+            const id = generateID();
+            highlightCallbacks.addHighlight(id, [details.start, details.end]);
+          });
+          const entries = getAnnotationContextMenuContent(id, details);
+          const content = [button];
+          content.push(...entries);
+          openContextMenu("Annotations", content);
         };
 
         const track = new BandTrack(
@@ -279,36 +292,49 @@ export class TracksManager extends ShadowBaseElement {
   }
 }
 
-function getAnnotTrack(
-  sourceId: string,
-  label: string,
-  trackHeight: number,
-  getXRange: () => Rng,
-  getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
-  openContextMenu: (id: string) => void,
-  dragCallbacks: DragCallbacks,
-): BandTrack {
-  async function getAnnotTrackData(
-    source: string,
-    getXRange: () => Rng,
-    getAnnotation: (source: string) => Promise<RenderBand[]>,
-  ): Promise<BandTrackData> {
-    const bands = await getAnnotation(source);
-    return {
-      xRange: getXRange(),
-      bands,
-    };
-  }
-
-  const track = new BandTrack(
-    sourceId,
-    label,
-    trackHeight,
-    () => getAnnotTrackData(sourceId, getXRange, getAnnotation),
-    openContextMenu,
-    dragCallbacks,
-  );
-  return track;
+function getButton(text: string, onClick: () => void): HTMLDivElement {
+  const row = getContainer("row");
+  const button = document.createElement("div") as HTMLDivElement;
+  button.innerHTML = text;
+  button.style.cursor = "pointer";
+  button.style.border = "1px solid #ccc";
+  button.onclick = onClick;
+  button.style.padding = "4px 8px";
+  button.style.borderRadius = "4px";
+  row.appendChild(button);
+  return row;
 }
+
+// function getAnnotTrack(
+//   sourceId: string,
+//   label: string,
+//   trackHeight: number,
+//   getXRange: () => Rng,
+//   getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
+//   openContextMenu: (id: string) => void,
+//   dragCallbacks: DragCallbacks,
+// ): BandTrack {
+//   async function getAnnotTrackData(
+//     source: string,
+//     getXRange: () => Rng,
+//     getAnnotation: (source: string) => Promise<RenderBand[]>,
+//   ): Promise<BandTrackData> {
+//     const bands = await getAnnotation(source);
+//     return {
+//       xRange: getXRange(),
+//       bands,
+//     };
+//   }
+
+//   const track = new BandTrack(
+//     sourceId,
+//     label,
+//     trackHeight,
+//     () => getAnnotTrackData(sourceId, getXRange, getAnnotation),
+//     openContextMenu,
+//     dragCallbacks,
+//   );
+//   return track;
+// }
 
 customElements.define("gens-tracks", TracksManager);

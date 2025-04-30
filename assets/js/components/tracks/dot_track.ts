@@ -9,16 +9,12 @@ import { DataTrack } from "./base_tracks/data_track";
 export class DotTrack extends DataTrack {
   renderData: DotTrackData | null;
   getRenderConfig: () => Promise<DotTrackData>;
-  // yRange: Rng;
-  // yTicks: number[];
 
   constructor(
     id: string,
     label: string,
     trackHeight: number,
     yAxis: Axis,
-    // yRange: Rng,
-    // yTicks: number[],
     getRenderData: () => Promise<DotTrackData>,
     dragCallbacks: DragCallbacks,
   ) {
@@ -50,7 +46,6 @@ export class DotTrack extends DataTrack {
     if (updateData || this.renderData == null) {
       this.renderLoading();
       this.renderData = await this.getRenderConfig();
-      // this.xRange = this.renderData.xRange;
     }
 
     const { dots } = this.renderData;

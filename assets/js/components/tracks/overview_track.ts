@@ -1,5 +1,5 @@
 import { drawLabel, drawVerticalLineInScale } from "../../draw/shapes";
-import { transformMap, padRange, rangeSize } from "../../util/utils";
+import { transformMap, padRange, rangeSize, generateID } from "../../util/utils";
 import { COLORS, STYLE } from "../../constants";
 import { CanvasTrack } from "./base_tracks/canvas_track";
 import {
@@ -64,7 +64,8 @@ export class OverviewTrack extends CanvasTrack {
     // const marker = createMarker(this.dimensions.height);
     this.marker = document.createElement("gens-marker") as GensMarker;
     this.trackContainer.appendChild(this.marker);
-    this.marker.initialize(this.dimensions.height, COLORS.transparentYellow, null);
+    const id = generateID();
+    this.marker.initialize(id, this.dimensions.height, COLORS.transparentYellow, null);
 
     this.canvas.addEventListener("mousedown", (event) => {
       event.stopPropagation();

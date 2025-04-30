@@ -16,6 +16,7 @@ import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
 import { SettingsPage } from "./components/settings_page";
 import { HeaderInfo } from "./components/header_info";
+import { ids } from "webpack";
 
 export async function initCanvases({
   sampleId,
@@ -140,9 +141,39 @@ async function initialize(
     chromSizes[chromosome] = chromInfo.size;
   }
 
-  inputControls.initialize(startRegion, async (_range) => {
-    tracks.render(true);
-  });
+  // FIXME: Move to configuration class
+  let highlights: Record<string, Rng> = {};
+
+  const highlightCallbacks = {
+    getHighlights: () => {
+      return Object.entries(highlights).map(([id, range]) => {
+        return {
+          id,
+          range,
+        };
+      });
+    },
+    removeHighlights: () => {
+      highlights = {};
+      tracks.render(false);
+    },
+    addHighlight: (id: string, range: Rng) => {
+      highlights[id] = range;
+      tracks.render(false);
+    },
+    removeHighlight: (id: string) => {
+      delete highlights[id];
+      tracks.render(false);
+    },
+  };
+
+  inputControls.initialize(
+    startRegion,
+    async (_range) => {
+      tracks.render(true);
+    },
+    highlightCallbacks.removeHighlights,
+  );
 
   await tracks.initialize(
     chromSizes,
@@ -162,6 +193,7 @@ async function initialize(
     async (id: string) =>
       await api.getVariantDetails(id, inputControls.getRegion().chrom),
     openContextMenu,
+    highlightCallbacks,
   );
 
   tracks.render(true);
