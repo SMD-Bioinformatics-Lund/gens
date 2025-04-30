@@ -1,7 +1,7 @@
 """CRUD operations for sample info."""
 
 import logging
-from typing import Any
+from typing import Any, Dict, List
 
 from pymongo import DESCENDING
 from pymongo.collection import Collection
@@ -87,6 +87,26 @@ def get_samples(
         recordsTotal=samples_c.count_documents({}),  # type: ignore
     )
     return result
+
+
+# FIXME: This needs to be more properly reworked to deal with cases
+def get_samples_per_case(
+    samples_c: Collection[dict[str, Any]], skip: int = 0, limit: int | None = None
+) -> Dict[str, List[SampleInfo]]:
+
+    cursor = samples_c.find().sort("created_at", DESCENDING).skip(skip)
+    if limit is not None:
+        cursor.limit(limit)
+
+    case_to_samples: dict[str, list[SampleInfo]] = {}
+    for sample in cursor:
+        sample_data = SampleInfo.model_validate(sample)
+        case_id = sample_data.case_id
+        if not case_to_samples.get(case_id):
+            case_to_samples[case_id] = []
+        case_to_samples[case_id].append(sample_data)
+
+    return case_to_samples
 
 
 def get_sample(

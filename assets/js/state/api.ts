@@ -3,8 +3,9 @@ import { CHROMOSOMES } from "../constants";
 import { zip } from "../util/utils";
 
 export class API {
-  sampleId: string;
   caseId: string;
+  sampleId: string;
+  sampleIds: string[];
   genomeBuild: number;
   apiURI: string;
   // Data for these are loaded up front for the full chromosome
@@ -13,13 +14,15 @@ export class API {
   cachedZoomLevels = ["o", "a", "b"];
 
   constructor(
-    sampleId: string,
     caseId: string,
+    sampleIds: string[],
     genomeBuild: number,
     gensApiURL: string,
   ) {
-    this.sampleId = sampleId;
     this.caseId = caseId;
+    this.sampleIds = sampleIds;
+    // FIXME: Temporary for testing
+    this.sampleId = this.sampleIds[0];
     this.genomeBuild = genomeBuild;
     this.apiURI = gensApiURL;
   }

@@ -18,35 +18,37 @@ import { SettingsPage } from "./components/settings_page";
 import { HeaderInfo } from "./components/header_info";
 
 export async function initCanvases({
-  sampleId,
   caseId,
+  sampleIds,
   genomeBuild,
   scoutBaseURL: scoutBaseURL,
   gensApiURL,
   annotationFile: defaultAnnotationName,
   startRegion,
 }: {
-  sampleName: string;
-  sampleId: string;
   caseId: string;
+  sampleIds: string[];
   genomeBuild: number;
   scoutBaseURL: string;
   gensApiURL: string;
   annotationFile: string;
   startRegion: Region;
 }) {
+
+  console.log("Case:", caseId, "sample IDs:", sampleIds);
+
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
   const sideMenu = document.getElementById("side-menu") as SideMenu;
 
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
-  headerInfo.initialize(caseId, [sampleId]);
+  headerInfo.initialize(caseId, sampleIds);
 
   const inputControls = document.getElementById(
     "input-controls",
   ) as InputControls;
 
-  const api = new API(sampleId, caseId, genomeBuild, gensApiURL);
+  const api = new API(caseId, sampleIds, genomeBuild, gensApiURL);
 
   const renderDataSource = getRenderDataSource(
     api,
