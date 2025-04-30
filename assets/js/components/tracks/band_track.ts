@@ -8,11 +8,15 @@ import { STYLE } from "../../constants";
 import { CanvasTrack } from "./canvas_track/canvas_track";
 import {
   drawArrow,
+  drawYAxis,
   getLinearScale,
   renderBackground,
 } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
-import { initializeDragSelect } from "./canvas_track/interactive_tools";
+import {
+  initializeDragSelect,
+  renderHighlights,
+} from "./canvas_track/interactive_tools";
 import { keyLogger } from "../util/keylogger";
 
 export class BandTrack extends CanvasTrack {
@@ -115,7 +119,10 @@ export class BandTrack extends CanvasTrack {
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
-    const xScale = getLinearScale(xRange, [0, this.dimensions.width]);
+    const xScale = getLinearScale(xRange, [
+      STYLE.yAxis.width,
+      this.dimensions.width,
+    ]);
 
     const bandsInView = bands.filter((band) => {
       const inRange = rangeInRange([band.start, band.end], xRange);
@@ -169,7 +176,17 @@ export class BandTrack extends CanvasTrack {
     });
 
     this.setHoverTargets(hoverTargets);
+    // drawYAxis(this.ctx, [], () => , yRange);
     this.drawTrackLabel();
+
+    if (this.getHighlights != null) {
+      renderHighlights(
+        this.trackContainer,
+        this.dimensions.height,
+        this.getHighlights(),
+        xScale,
+      );
+    }
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {

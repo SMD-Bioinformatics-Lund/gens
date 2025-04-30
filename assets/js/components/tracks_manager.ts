@@ -207,9 +207,10 @@ export class TracksManager extends HTMLElement {
           },
           setXRange,
           onZoomOut,
+          () => this.highlights,
         );
 
-        track.style.paddingLeft = `${STYLE.yAxis.width}px`;
+        // track.style.paddingLeft = `${STYLE.yAxis.width}px`;
         return track;
       },
     );
@@ -247,8 +248,8 @@ export class TracksManager extends HTMLElement {
       false,
     );
 
-    variantTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
-    genesTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
+    // variantTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
+    // genesTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
 
     this.tracks.push(
       ideogramTrack,
@@ -284,6 +285,7 @@ function getAnnotTrack(
   openContextMenu: (id: string) => void,
   setXRange: (range: Rng) => void,
   onZoomOut: () => void,
+  getHighlights: () => Rng[],
 ): BandTrack {
   async function getAnnotTrackData(
     source: string,
@@ -305,7 +307,7 @@ function getAnnotTrack(
     openContextMenu,
     setXRange,
     onZoomOut,
-    () => this.highlights,
+    () => getHighlights(),
     (range) => {
       this.highlights.push(range);
       this.render(false);
