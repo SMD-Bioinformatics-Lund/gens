@@ -12,6 +12,8 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
+import { initializeDragSelect } from "./canvas_track/interactive_tools";
+import { keyLogger } from "../util/keylogger";
 
 export class BandTrack extends CanvasTrack {
   renderData: BandTrackData | null;
@@ -19,17 +21,32 @@ export class BandTrack extends CanvasTrack {
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
   openContextMenu: (id: string) => void;
 
+  // FIXME: Should there be a shared position track super class?
+  xRange: Rng | null = null;
+  onZoomIn: (xRange: Rng) => void;
+  onZoomOut: () => void;
+  getHighlights: (() => Rng[]) | null;
+  addHighlight: (range: Rng) => void;
+
   constructor(
     id: string,
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
+    onZoomIn: (xRange: Rng) => void,
+    onZoomOut: () => void,
+    getHighlights: (() => Rng[]) | null,
+    addHighlight: (range: Rng) => void,
   ) {
     super(id, label, trackHeight);
 
     this.getRenderData = getRenderData;
     this.openContextMenu = openContextMenu;
+    this.onZoomIn = onZoomIn;
+    this.onZoomOut = onZoomOut;
+    this.getHighlights = getHighlights;
+    this.addHighlight = addHighlight;
   }
 
   initialize() {
@@ -45,6 +62,39 @@ export class BandTrack extends CanvasTrack {
     const startExpanded = false;
     const onExpand = () => this.render(false);
     this.initializeExpander("contextmenu", startExpanded, onExpand);
+
+    initializeDragSelect(
+      this.canvas,
+      (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+        if (this.xRange == null) {
+          console.error("No xRange set");
+        }
+
+        const yAxisWidth = STYLE.yAxis.width;
+
+        const pixelToPos = getLinearScale(
+          [yAxisWidth, this.dimensions.width],
+          this.xRange,
+        );
+        const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
+        const posEnd = pixelToPos(pxRangeX[1]);
+
+        if (shiftPress) {
+          this.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
+        } else {
+          console.log("Update the select here");
+          this.addHighlight([posStart, posEnd]);
+        }
+      },
+    );
+
+    this.trackContainer.addEventListener("click", () => {
+      console.log("Click registered");
+      if (keyLogger.heldKeys.Control) {
+        console.log("Attempting to zoom out");
+        this.onZoomOut();
+      }
+    });
   }
 
   async render(updateData: boolean) {
@@ -61,6 +111,7 @@ export class BandTrack extends CanvasTrack {
     }
 
     const { bands, xRange } = this.renderData;
+    this.xRange = xRange;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 

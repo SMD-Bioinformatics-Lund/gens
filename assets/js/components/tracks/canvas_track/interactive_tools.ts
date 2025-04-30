@@ -1,10 +1,10 @@
 import { COLORS } from "../../../constants";
-import { rangeSize, sortRange } from "../../../util/utils";
+import { rangeSize, scaleRange, sortRange } from "../../../util/utils";
 import { keyLogger } from "../../util/keylogger";
 
 export function initializeDragSelect(
   canvas: HTMLCanvasElement,
-  onDragRelease: (rangeX: Rng, rangeY: Rng) => void,
+  onDragRelease: (rangeX: Rng, rangeY: Rng, shiftPress: boolean) => void,
 ) {
   let isDragging = false;
   let dragStart: { x: number; y: number };
@@ -15,9 +15,9 @@ export function initializeDragSelect(
     // Maybe regular right click to zoom out?
 
     // FIXME: We also need an 'r' shortcut to reset the zoom
-    if (!keyLogger.heldKeys.Shift && !keyLogger.heldKeys.Control) {
-      return;
-    }
+    // if (!keyLogger.heldKeys.Shift && !keyLogger.heldKeys.Control) {
+    //   return;
+    // }
     isDragging = true;
 
     const rect = canvas.getBoundingClientRect();
@@ -50,6 +50,7 @@ export function initializeDragSelect(
       onDragRelease(
         sortRange([dragStart.x, event.x]),
         sortRange([dragStart.y, event.y]),
+        keyLogger.heldKeys.Shift,
       );
     }
     if (marker) {
@@ -85,4 +86,32 @@ export function renderMarkerRange(
   marker.style.height = `${canvasHeight}px`;
   marker.style.width = `${markerWidth}px`;
   marker.style.left = `${viewPxRange[0]}px`;
+}
+
+export function renderHighlights(
+  container: HTMLDivElement,
+  height: number,
+  highlights: Rng[],
+  xScale: Scale,
+) {
+  const markerClass = "highlight-marker";
+  // const markers = document.getElementsByClassName(markerClass);
+
+  container
+    .querySelectorAll(`.${markerClass}`)
+    .forEach((old: Element) => old.remove());
+
+  for (const hl of highlights) {
+    console.log("Action goes here");
+
+    const marker = createMarker(height, COLORS.transparentBlue);
+    marker.classList.add(markerClass);
+    container.appendChild(marker);
+
+    const hlPx = scaleRange(hl, xScale);
+
+    console.log("Range before", hl, "Range after scaling", hlPx);
+
+    renderMarkerRange(marker, hlPx, height);
+  }
 }

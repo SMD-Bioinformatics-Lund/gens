@@ -5,6 +5,7 @@ import { Tooltip } from "../../../util/tooltip_utils";
 
 import { ShadowBaseElement } from "../../util/shadowbaseelement";
 import { eventInBox } from "../../../util/utils";
+import { initializeDragSelect } from "./interactive_tools";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
@@ -116,9 +117,13 @@ export class CanvasTrack extends ShadowBaseElement {
   }
 
   // Placeholder needed to generally render canvas tracks
-  async render(updateData: boolean) {}
+  async render(_updateData: boolean) {}
 
-  initializeExpander(eventKey: string, startExpanded: boolean, onExpand: () => void) {
+  initializeExpander(
+    eventKey: string,
+    startExpanded: boolean,
+    onExpand: () => void,
+  ) {
     this.expander = new Expander(startExpanded);
     const height = this.defaultTrackHeight;
 
@@ -159,7 +164,7 @@ export class CanvasTrack extends ShadowBaseElement {
       if (onElementClick) {
         this.canvas.style.cursor = hovered ? "pointer" : "default";
       }
-    })
+    });
   }
 
   initializeHoverTooltip() {

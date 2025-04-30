@@ -15,7 +15,6 @@ import { prefixNts, prettyRange } from "../util/utils";
 import {
   getEntry,
   getSection,
-  makeRefDiv,
   getContainer,
   getURLRow,
 } from "./util/menu_utils";
@@ -59,7 +58,7 @@ export class TracksManager extends HTMLElement {
   // This one needs a dedicated component I think
   annotationTracks: BandTrack[] = [];
 
-  highlights: Rng[] = [[3000000, 60000000]];
+  highlights: Rng[] = [];
 
   connectedCallback() {
     this._root = this.attachShadow({ mode: "open" });
@@ -107,6 +106,10 @@ export class TracksManager extends HTMLElement {
       setXRange,
       onZoomOut,
       () => this.highlights,
+      (range) => {
+        this.highlights.push(range);
+        this.render(false);
+      }
     );
     const bafTrack = new DotTrack(
       "baf",
@@ -123,6 +126,10 @@ export class TracksManager extends HTMLElement {
       setXRange,
       onZoomOut,
       () => this.highlights,
+      (range) => {
+        this.highlights.push(range);
+        this.render(false);
+      }
     );
     const variantTrack = new BandTrack(
       "variants",
@@ -137,38 +144,16 @@ export class TracksManager extends HTMLElement {
       async (id: string) => {
         const details = await getVariantDetails(id);
         const scoutUrl = getVariantURL(id);
-        const info: { key: string; value: string; url?: string }[] = [
-          { key: "Range", value: `${details.position} - ${details.end}` },
-          {
-            key: "Length",
-            value: prefixNts(details.length),
-          },
-          { key: "Scout URL", value: scoutUrl, url: scoutUrl },
-          { key: "CADD score", value: details.cadd_score },
-          {
-            key: "Category",
-            value: `${details.category} (${details.sub_category})`,
-          },
-          {
-            key: "Cytoband",
-            value: `${details.cytoband_start} - ${details.cytoband_end}`,
-          },
-          { key: "Rank score", value: details.rank_score.toString() },
-          { key: "BNF ID", value: id },
-        ];
-
-        const entries: HTMLElement[] = info.map((i) => getEntry(i));
-        const rankScoreParts = getSection(
-          "Rank score parts",
-          details.rank_score_results.map((part) => {
-            return getContainer("row", `${part.category}: ${part.score}`);
-          }),
-        );
-
-        entries.push(rankScoreParts);
-
+        const entries = getVariantContextMenuContent(id, details, scoutUrl);
         openContextMenu("Variant", entries);
       },
+      setXRange,
+      onZoomOut,
+      () => this.highlights,
+      (range) => {
+        this.highlights.push(range);
+        this.render(false);
+      }
     );
     const genesTrack = new BandTrack(
       "genes",
@@ -182,26 +167,16 @@ export class TracksManager extends HTMLElement {
       },
       async (id) => {
         const details = await getTranscriptDetails(id);
-
-        const info: { key: string; value: string }[] = [
-          { key: "Range", value: `${details.start} - ${details.end}` },
-          {
-            key: "Length",
-            value: prefixNts(details.end - details.start + 1),
-          },
-          { key: "Transcript ID", value: details.transcript_id },
-          { key: "Biotype", value: details.transcript_biotype },
-          { key: "Gene name", value: details.gene_name },
-          { key: "MANE", value: details.mane },
-          { key: "HGNC ID", value: details.hgnc_id },
-          { key: "Refseq ID", value: details.refseq_id },
-          { key: "Strand", value: details.strand },
-          { key: "BNF ID", value: id },
-        ];
-
-        const entries = info.map((i) => getEntry(i));
+        const entries = getGenesContextMenuContent(id, details);
         openContextMenu("Transcript", entries);
       },
+      setXRange,
+      onZoomOut,
+      () => this.highlights,
+      (range) => {
+        this.highlights.push(range);
+        this.render(false);
+      }
     );
     const ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -224,64 +199,19 @@ export class TracksManager extends HTMLElement {
           trackHeight.thin,
           getXRange,
           dataSource.getAnnotation,
-          // FIXME: Refactor out from here
           async (id: string) => {
             const details = await getAnnotationDetails(id);
-
-            const info: { key: string; value: string }[] = [
-              {
-                key: "Range",
-                value: prettyRange(details.start, details.end),
-              },
-              {
-                key: "Length",
-                value: prefixNts(details.end - details.start + 1),
-              },
-              { key: "Name", value: details.name },
-              { key: "Description", value: details.description || "-" },
-              { key: "BNF ID", value: id },
-            ];
-
-            const infoDivs = info.map((i) => getEntry(i));
-
-            const commentSection = getSection(
-              "Comments",
-              details.comments.flatMap((c) =>
-                c.comment
-                  .replace('"', "")
-                  .split("; ")
-                  .map((s) => getURLRow(s)),
-              ),
-            );
-            infoDivs.push(commentSection);
-
-            const metaSection = getSection(
-              "Metadata",
-              details.metadata.map((meta) => {
-                let url = null;
-                if (meta.field_name === "reference") {
-                  const value = meta.value as {url: string, title: string};
-                  url = value.url;
-                }
-                
-                const entry = getEntry({
-                  key: meta.field_name,
-                  url,
-                  value: url != null ? url : meta.value as string
-                })
-                return entry;
-              }
-              ),
-            );
-            infoDivs.push(metaSection);
-
+            const infoDivs = getAnnotationContextMenuContent(id, details);
             openContextMenu("Annotations", infoDivs);
           },
+          setXRange,
+          onZoomOut,
         );
 
         track.style.paddingLeft = `${STYLE.yAxis.width}px`;
         return track;
       },
+
     );
 
     const overviewTrackCov = new OverviewTrack(
@@ -352,6 +282,8 @@ function getAnnotTrack(
   getXRange: () => Rng,
   getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
   openContextMenu: (id: string) => void,
+  setXRange: (range: Rng) => void,
+  onZoomOut: () => void,
 ): BandTrack {
   const track = new BandTrack(
     sourceId,
@@ -359,20 +291,131 @@ function getAnnotTrack(
     trackHeight,
     () => getAnnotTrackData(sourceId, getXRange, getAnnotation),
     openContextMenu,
+    setXRange,
+    onZoomOut,
+    () => this.highlights,
+    (range) => {
+      this.highlights.push(range);
+      this.render(false);
+    }
   );
   return track;
 }
 
-const getAnnotTrackData = async (
+async function getAnnotTrackData (
   source: string,
   getXRange: () => Rng,
   getAnnotation: (source: string) => Promise<RenderBand[]>,
-): Promise<BandTrackData> => {
+): Promise<BandTrackData> {
   const bands = await getAnnotation(source);
   return {
     xRange: getXRange(),
     bands,
   };
 };
+
+function getVariantContextMenuContent(id: string, details: ApiVariantDetails, variantUrl: string): HTMLDivElement[] {
+  const info: { key: string; value: string; url?: string }[] = [
+    { key: "Range", value: `${details.position} - ${details.end}` },
+    {
+      key: "Length",
+      value: prefixNts(details.length),
+    },
+    { key: "Variant URL", value: variantUrl, url: variantUrl },
+    { key: "CADD score", value: details.cadd_score },
+    {
+      key: "Category",
+      value: `${details.category} (${details.sub_category})`,
+    },
+    {
+      key: "Cytoband",
+      value: `${details.cytoband_start} - ${details.cytoband_end}`,
+    },
+    { key: "Rank score", value: details.rank_score.toString() },
+    { key: "BNF ID", value: id },
+  ];
+
+  const entries: HTMLDivElement[] = info.map((i) => getEntry(i));
+  const rankScoreParts = getSection(
+    "Rank score parts",
+    details.rank_score_results.map((part) => {
+      return getContainer("row", `${part.category}: ${part.score}`);
+    }),
+  );
+
+  entries.push(rankScoreParts);
+  return entries;
+}
+
+function getGenesContextMenuContent(id: string, details: ApiTranscriptDetails): HTMLDivElement[] {
+  const info: { key: string; value: string }[] = [
+    { key: "Range", value: `${details.start} - ${details.end}` },
+    {
+      key: "Length",
+      value: prefixNts(details.end - details.start + 1),
+    },
+    { key: "Transcript ID", value: details.transcript_id },
+    { key: "Biotype", value: details.transcript_biotype },
+    { key: "Gene name", value: details.gene_name },
+    { key: "MANE", value: details.mane },
+    { key: "HGNC ID", value: details.hgnc_id },
+    { key: "Refseq ID", value: details.refseq_id },
+    { key: "Strand", value: details.strand },
+    { key: "BNF ID", value: id },
+  ];
+
+  const entries = info.map((i) => getEntry(i));
+  return entries;
+}
+
+function getAnnotationContextMenuContent(id: string, details: ApiAnnotationDetails): HTMLDivElement[] {
+  const info: { key: string; value: string }[] = [
+    {
+      key: "Range",
+      value: prettyRange(details.start, details.end),
+    },
+    {
+      key: "Length",
+      value: prefixNts(details.end - details.start + 1),
+    },
+    { key: "Name", value: details.name },
+    { key: "Description", value: details.description || "-" },
+    { key: "BNF ID", value: id },
+  ];
+
+  const infoDivs = info.map((i) => getEntry(i));
+
+  const commentSection = getSection(
+    "Comments",
+    details.comments.flatMap((c) =>
+      c.comment
+        .replace('"', "")
+        .split("; ")
+        .map((s) => getURLRow(s)),
+    ),
+  );
+  infoDivs.push(commentSection);
+
+  const metaSection = getSection(
+    "Metadata",
+    details.metadata.map((meta) => {
+      let url = null;
+      if (meta.field_name === "reference") {
+        const value = meta.value as {url: string, title: string};
+        url = value.url;
+      }
+      
+      const entry = getEntry({
+        key: meta.field_name,
+        url,
+        value: url != null ? url : meta.value as string
+      })
+      return entry;
+    }
+    ),
+  );
+  infoDivs.push(metaSection);
+  return infoDivs;
+}
 
 customElements.define("gens-tracks", TracksManager);

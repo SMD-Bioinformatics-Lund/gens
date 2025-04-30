@@ -10,6 +10,7 @@ import {
 import {
   createMarker,
   initializeDragSelect,
+  renderHighlights,
   renderMarkerRange,
 } from "./canvas_track/interactive_tools";
 import { keyLogger } from "../util/keylogger";
@@ -22,11 +23,11 @@ export class DotTrack extends CanvasTrack {
   xRange: Rng | null = null;
   xScale: Scale | null = null;
   yTicks: number[];
+  
   onZoomIn: (xRange: Rng) => void;
   onZoomOut: () => void;
-
   getHighlights: (() => Rng[]) | null;
-  existingHighlights: Rng[] = [];
+  addHighlight: (range: Rng) => void;
 
   constructor(
     id: string,
@@ -38,6 +39,7 @@ export class DotTrack extends CanvasTrack {
     onZoomIn: (xRange: Rng) => void,
     onZoomOut: () => void,
     getHighlights: (() => Rng[]) | null,
+    addHighlight: (range: Rng) => void,
   ) {
     super(id, label, trackHeight);
     this.getRenderData = getRenderData;
@@ -46,6 +48,7 @@ export class DotTrack extends CanvasTrack {
     this.onZoomIn = onZoomIn;
     this.onZoomOut = onZoomOut;
     this.getHighlights = getHighlights;
+    this.addHighlight = addHighlight;
   }
 
   initialize() {
@@ -55,22 +58,30 @@ export class DotTrack extends CanvasTrack {
     this.initializeExpander("contextmenu", startExpanded, onExpand);
     this.setExpandedHeight(this.defaultTrackHeight * 2);
 
-    initializeDragSelect(this.canvas, (pxRangeX: Rng, _pxRangeY: Rng) => {
-      if (this.xRange == null) {
-        console.error("No xRange set");
-      }
+    initializeDragSelect(
+      this.canvas,
+      (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+        if (this.xRange == null) {
+          console.error("No xRange set");
+        }
 
-      const yAxisWidth = STYLE.yAxis.width;
+        const yAxisWidth = STYLE.yAxis.width;
 
-      const pixelToPos = getLinearScale(
-        [yAxisWidth, this.dimensions.width],
-        this.xRange,
-      );
-      const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
-      const posEnd = pixelToPos(pxRangeX[1]);
+        const pixelToPos = getLinearScale(
+          [yAxisWidth, this.dimensions.width],
+          this.xRange,
+        );
+        const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
+        const posEnd = pixelToPos(pxRangeX[1]);
 
-      this.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
-    });
+        if (shiftPress) {
+          this.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
+        } else {
+          console.log("Update the select here");
+          this.addHighlight([posStart, posEnd]);
+        }
+      },
+    );
 
     this.trackContainer.addEventListener("click", () => {
       console.log("Click registered");
@@ -82,6 +93,7 @@ export class DotTrack extends CanvasTrack {
   }
 
   async render(updateData: boolean) {
+    console.log("Rendering");
     if (updateData || this.renderData == null) {
       this.renderLoading();
       this.renderData = await this.getRenderData();
@@ -116,61 +128,14 @@ export class DotTrack extends CanvasTrack {
     this.drawTrackLabel(yAxisWidth);
 
     if (this.getHighlights != null) {
-      this.existingHighlights = renderHighlights(
+      renderHighlights(
         this.trackContainer,
         this.dimensions.height,
-        this.existingHighlights,
         this.getHighlights(),
         xScale,
       );
     }
   }
-}
-
-// FIXME: We need a highlight class
-// FIXME: We also need to simplify this
-function renderHighlights(
-  container: HTMLDivElement,
-  height: number,
-  existingHighlights: Rng[],
-  highlights: Rng[],
-  xScale: Scale,
-): Rng[] {
-  const newHighlights: Rng[] = [];
-
-  const existingFingerprints = new Set(
-    existingHighlights.map((hl) => `${hl[0]}_${hl[1]}`),
-  );
-
-  for (const highlight of highlights) {
-    const fp = `${highlight[0]}_${highlight[1]}`;
-    if (!existingFingerprints.has(fp)) {
-      newHighlights.push(highlight);
-    }
-  }
-
-  for (const hl of newHighlights) {
-    console.log("Action goes here");
-
-    const marker = createMarker(height, COLORS.transparentBlue);
-    container.appendChild(marker);
-
-    const hlPx = scaleRange(hl, xScale);
-
-    console.log("Range before", hl, "Range after scaling", hlPx);
-
-    renderMarkerRange(marker, hlPx, height);
-  }
-
-  const allHighlights = [];
-  for (const hl of existingHighlights) {
-    allHighlights.push(hl);
-  }
-  for (const hl of newHighlights) {
-    allHighlights.push(hl);
-  }
-
-  return allHighlights;
 }
 
 customElements.define("dot-track", DotTrack);
