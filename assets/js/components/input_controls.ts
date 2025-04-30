@@ -8,23 +8,23 @@ import {
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <div id="input-controls-container" style="display: flex; align-items: center; gap: 8px;">
-      <button id="pan-left" class='button pan'>
+      <button title="Pan left" id="pan-left" class='button pan'>
         <i class="fas fa-arrow-left"></i>
       </button>
-      <button id="zoom-in" class='button zoom'>
+      <button title="Zoom in" id="zoom-in" class='button zoom'>
         <i class="fas fa-search-plus"></i>
       </button>
-      <button id="zoom-out" class='button zoom'>
+      <button title="Zoom out" id="zoom-out" class='button zoom'>
         <i class="fas fa-search-minus"></i>
       </button>
-      <button id="pan-right" class='button pan'>
+      <button title="Pan right" id="pan-right" class='button pan'>
         <i class="fas fa-arrow-right"></i>
       </button>
       <input onFocus='this.select();' id='region-field' type='text' class="text-input">
-      <button id="submit" class='button pan'>
+      <button title="Run search" id="submit" class='button pan'>
         <i class="fas fa-search"></i>
       </button>
-      <button id="remove-highlights" class='button pan'>
+      <button title="Remove highlights" id="remove-highlights" class='button pan'>
         <i class="fas fa-xmark"></i>
       </button>
   </div>
