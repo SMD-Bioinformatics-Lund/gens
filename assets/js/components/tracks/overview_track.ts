@@ -8,10 +8,6 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { GensMarker } from "../util/marker";
-// import {
-//   createMarker,
-//   renderMarkerRange,
-// } from "./base_tracks/interactive_tools";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;
@@ -61,7 +57,6 @@ export class OverviewTrack extends CanvasTrack {
   initialize() {
     super.initialize();
 
-    // const marker = createMarker(this.dimensions.height);
     this.marker = document.createElement("gens-marker") as GensMarker;
     this.trackContainer.appendChild(this.marker);
     const id = generateID();
@@ -150,7 +145,6 @@ export class OverviewTrack extends CanvasTrack {
       xScale(xRange[0] + chromStartPos),
       xScale(xRange[1] + chromStartPos),
     ];
-    // renderMarkerRange(this.marker, viewPxRange, this.dimensions.height);
     this.marker.render(viewPxRange);
   }
 }

@@ -47,7 +47,6 @@ template.innerHTML = String.raw`
 `;
 
 export class TracksManager extends ShadowBaseElement {
-  // protected _root: ShadowRoot;
 
   parentContainer: HTMLDivElement;
   isInitialized = false;
@@ -64,8 +63,6 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   connectedCallback() {
-    // this._root = this.attachShadow({ mode: "open" });
-    // this._root.appendChild(template.content.cloneNode(true));
 
     window.addEventListener("resize", () => {
       this.render(false);
@@ -264,9 +261,6 @@ export class TracksManager extends ShadowBaseElement {
       false,
     );
 
-    // variantTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
-    // genesTrack.style.paddingLeft = `${STYLE.yAxis.width}px`;
-
     this.tracks.push(
       ideogramTrack,
       coverageTrack,
@@ -305,36 +299,5 @@ function getButton(text: string, onClick: () => void): HTMLDivElement {
   return row;
 }
 
-// function getAnnotTrack(
-//   sourceId: string,
-//   label: string,
-//   trackHeight: number,
-//   getXRange: () => Rng,
-//   getAnnotation: (sourceId: string) => Promise<RenderBand[]>,
-//   openContextMenu: (id: string) => void,
-//   dragCallbacks: DragCallbacks,
-// ): BandTrack {
-//   async function getAnnotTrackData(
-//     source: string,
-//     getXRange: () => Rng,
-//     getAnnotation: (source: string) => Promise<RenderBand[]>,
-//   ): Promise<BandTrackData> {
-//     const bands = await getAnnotation(source);
-//     return {
-//       xRange: getXRange(),
-//       bands,
-//     };
-//   }
-
-//   const track = new BandTrack(
-//     sourceId,
-//     label,
-//     trackHeight,
-//     () => getAnnotTrackData(sourceId, getXRange, getAnnotation),
-//     openContextMenu,
-//     dragCallbacks,
-//   );
-//   return track;
-// }
 
 customElements.define("gens-tracks", TracksManager);

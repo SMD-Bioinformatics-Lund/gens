@@ -16,7 +16,6 @@ import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
 import { SettingsPage } from "./components/settings_page";
 import { HeaderInfo } from "./components/header_info";
-import { ids } from "webpack";
 
 export async function initCanvases({
   sampleId,
@@ -141,7 +140,7 @@ async function initialize(
     chromSizes[chromosome] = chromInfo.size;
   }
 
-  // FIXME: Move to configuration class
+  // FIXME: Move to settings class
   let highlights: Record<string, Rng> = {};
 
   const highlightCallbacks = {

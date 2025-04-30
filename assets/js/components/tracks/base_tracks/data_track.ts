@@ -6,8 +6,7 @@ import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
 import { initializeDragSelect, renderHighlights } from "./interactive_tools";
 
-// This is assigned at setup time
-interface SetupConfig {
+interface Settings {
   defaultTrackHeight: number;
   dragSelect: boolean;
   yAxis: {
@@ -18,7 +17,7 @@ interface SetupConfig {
 
 export class DataTrack extends CanvasTrack {
 
-  setupConfig: SetupConfig;
+  setupConfig: Settings;
   getXRange: () => Rng;
   getXScale: () => Scale;
   getYRange: () => Rng;
@@ -31,7 +30,7 @@ export class DataTrack extends CanvasTrack {
     getXRange: () => Rng,
     getXScale: () => Scale,
     callbacks: DragCallbacks,
-    settings: SetupConfig,
+    settings: Settings,
   ) {
     super(id, label, settings.defaultTrackHeight);
     this.dragCallbacks = callbacks;
@@ -61,7 +60,6 @@ export class DataTrack extends CanvasTrack {
 
     const onDrag = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
       const xRange = this.getXRange();
-      // const renderConfig = this.runtimeConfig;
       if (xRange == null) {
         console.error("No xRange set");
       }
@@ -81,7 +79,6 @@ export class DataTrack extends CanvasTrack {
           Math.floor(posEnd),
         ]);
       } else {
-        console.log("Update the select here");
         const id = generateID()
         this.dragCallbacks.addHighlight(id, [posStart, posEnd]);
       }

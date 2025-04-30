@@ -5,7 +5,6 @@ import { Tooltip } from "../../../util/tooltip_utils";
 
 import { ShadowBaseElement } from "../../util/shadowbaseelement";
 import { eventInBox } from "../../../util/utils";
-import { initializeDragSelect } from "./interactive_tools";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
@@ -116,7 +115,8 @@ export class CanvasTrack extends ShadowBaseElement {
     );
   }
 
-  // Placeholder needed to generally render canvas tracks
+  // Placeholder needed for Typescript to understand that an array of CanvasTracks
+  // can all be rendered as such: canvas.render(updateData);
   async render(_updateData: boolean) {}
 
   initializeExpander(
@@ -134,7 +134,6 @@ export class CanvasTrack extends ShadowBaseElement {
         ? this.expander.expandedHeight
         : height;
       this.syncDimensions();
-      // this.render(false);
       onExpand();
     });
   }

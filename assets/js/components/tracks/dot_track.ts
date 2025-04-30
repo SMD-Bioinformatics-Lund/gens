@@ -25,7 +25,10 @@ export class DotTrack extends DataTrack {
       () => {
         const xRange = this.renderData.xRange;
         const yAxisWidth = STYLE.yAxis.width;
-        const xScale = getLinearScale(xRange, [yAxisWidth, this.dimensions.width]);
+        const xScale = getLinearScale(xRange, [
+          yAxisWidth,
+          this.dimensions.width,
+        ]);
         return xScale;
       },
       dragCallbacks,
@@ -50,7 +53,6 @@ export class DotTrack extends DataTrack {
 
     const { dots } = this.renderData;
 
-    // FIXME: Move these to base?
     super.syncDimensions();
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);

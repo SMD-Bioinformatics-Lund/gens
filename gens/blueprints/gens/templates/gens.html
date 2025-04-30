@@ -50,33 +50,12 @@
       <header-info id="header-info" style="padding-left: 4px"></header-info>
     </div>
     <input-controls id="input-controls"></input-controls>
-    <!-- <div class="settings button">
-      <i class="fas fa-cog"></i>
-    </div> -->
     <div title="Open settings menu" id="settings-button" class="settings button">
       <i class="fas fa-cog"></i>
     </div>
   </div>
 
   <gens-tracks id="gens-tracks" style="display: block; width: 100%;"></gens-tracks>
-
-    <!-- <div id='left-group'>
-        <a id="home-link" href="{{ url_for('home.home') }}">
-            <div id="logo-container">
-                <span class='logo'></span>
-            </div>
-        </a>
-        <span class='version'>v{{ version }}</span>
-        <span class='date'>{{todays_date}}</span>
-    </div>
-    <div id='center-group'>
-        <span class='bold' title='Sample ID'>{{sample_name}} | {{case_id}} | {{individual_id}}</span>
-        <span class='version'>(Genome build: {{genome_build}})</span>
-    </div> -->
-
-    <!-- <div style="margin-left: 2px; margin-right: 10px; width: 100%;">
-    </div> -->
-
 </div>
 <script>
     $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
@@ -87,8 +66,6 @@
     if ('{{print_page}}' == 'true') {
         printing = true;
         let mainContainer = document.querySelector('#main-container');
-        // mainContainer.style.width = '1122px';
-        // mainContainer.style.overflowY = 'hidden';
         let loading = document.querySelector('.loading-container');
         loading.querySelector("#loading").toggleAttribute("hidden")
         loading.querySelector("#printing").toggleAttribute("hidden")

@@ -5,7 +5,6 @@ import {
   rangeSurroundsRange,
 } from "../../util/utils";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./base_tracks/canvas_track";
 import {
   drawArrow,
   drawYAxis,
@@ -13,11 +12,6 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
-import {
-  initializeDragSelect,
-  renderHighlights,
-} from "./base_tracks/interactive_tools";
-import { keyLogger } from "../util/keylogger";
 import { DataTrack } from "./base_tracks/data_track";
 
 export class BandTrack extends DataTrack {
@@ -25,13 +19,6 @@ export class BandTrack extends DataTrack {
   getRenderData: () => Promise<BandTrackData>;
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
   openContextMenu: (id: string) => void;
-
-  // FIXME: Should there be a shared position track super class?
-  // xRange: Rng | null = null;
-  // onZoomIn: (xRange: Rng) => void;
-  // onZoomOut: () => void;
-  // getHighlights: (() => Rng[]) | null;
-  // addHighlight: (range: Rng) => void;
 
   constructor(
     id: string,
@@ -64,10 +51,6 @@ export class BandTrack extends DataTrack {
 
     this.getRenderData = getRenderData;
     this.openContextMenu = openContextMenu;
-    // this.onZoomIn = onZoomIn;
-    // this.onZoomOut = onZoomOut;
-    // this.getHighlights = getHighlights;
-    // this.addHighlight = addHighlight;
   }
 
   initialize() {
@@ -99,8 +82,6 @@ export class BandTrack extends DataTrack {
     }
 
     const { bands, xRange } = this.renderData;
-    // this.xRange = xRange;
-
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
