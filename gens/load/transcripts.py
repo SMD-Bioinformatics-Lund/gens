@@ -31,9 +31,7 @@ class TranscriptEntry(TypedDict):
     features: list
 
 
-def build_transcripts(
-    transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild
-):
+def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild):
     """Build transcript object from transcript and mane file."""
     mane_info = _parse_mane_transc(mane_file)
 
@@ -221,9 +219,7 @@ def _assign_height_order(transcripts: list[dict[str, Any]]) -> None:
             *[
                 tr
                 for tr in mane_transcript
-                if not any(
-                    [tr["mane"] == "MANE Plus Clinical", tr["mane"] == "MANE Select"]
-                )
+                if not any([tr["mane"] == "MANE Plus Clinical", tr["mane"] == "MANE Select"])
             ],
         ]
         for order, tr in enumerate(sorted_mane, 1):

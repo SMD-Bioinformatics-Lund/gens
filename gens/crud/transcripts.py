@@ -18,10 +18,7 @@ LOG = logging.getLogger(__name__)
 
 def _format_features(features: list[dict[str, Any]]) -> list[GenomePosition]:
     """Format a transcript features."""
-    return [
-        GenomePosition(start=int(feat["start"]), end=int(feat["end"]))
-        for feat in features
-    ]
+    return [GenomePosition(start=int(feat["start"]), end=int(feat["end"])) for feat in features]
 
 
 def get_transcripts(
@@ -50,9 +47,7 @@ def get_transcripts(
         "strand": True,
         "features": True,
     }
-    cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
-        query, projection, sort=sort_order
-    )
+    cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(query, projection, sort=sort_order)
     return [
         SimplifiedTranscriptInfo.model_validate(
             {
@@ -69,9 +64,7 @@ def get_transcripts(
     ]
 
 
-def get_transcript(
-    transcript_id: PydanticObjectId, db: Database[Any]
-) -> TranscriptRecord | None:
+def get_transcript(transcript_id: PydanticObjectId, db: Database[Any]) -> TranscriptRecord | None:
     """Get transcript with id."""
     resp = db.get_collection(TRANSCRIPTS_COLLECTION).find_one({"_id": transcript_id})
     if resp is not None:
@@ -83,7 +76,5 @@ def create_transcripts(transcripts: list[TranscriptRecord], db: Database[Any]):
     """Insert many transcripts in the database."""
 
     LOG.info("Add transcripts to database")
-    db.get_collection(TRANSCRIPTS_COLLECTION).insert_many(
-        [tr.model_dump() for tr in transcripts]
-    )
+    db.get_collection(TRANSCRIPTS_COLLECTION).insert_many([tr.model_dump() for tr in transcripts])
     register_data_update(db, TRANSCRIPTS_COLLECTION)
