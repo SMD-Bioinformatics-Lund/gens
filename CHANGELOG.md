@@ -13,6 +13,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Context menu when clicking band tracks.
  - Highlight regions and see these highlights across all the position tracks.
  - View multiple coverage tracks for samples within a case.
+ - Renderings are debounced and keep track of the last render such that they not double-render
 
 ### Changed
  - Resolution increased 2x for tracks.
