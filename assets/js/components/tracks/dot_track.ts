@@ -6,14 +6,11 @@ import {
 } from "../../draw/render_utils";
 import { DataTrack } from "./base_tracks/data_track";
 
-import debounce from "lodash.debounce";
 
 export class DotTrack extends DataTrack {
-  renderData: DotTrackData | null;
-  getRenderConfig: () => Promise<DotTrackData>;
+  // renderData: DotTrackData | null;
+  // getRenderData: () => Promise<DotTrackData>;
   startExpanded: boolean;
-
-  private _renderSeq = 0;
 
   constructor(
     id: string,
@@ -41,7 +38,7 @@ export class DotTrack extends DataTrack {
       { defaultHeight: trackHeight, dragSelect: true, yAxis },
     );
     this.startExpanded = startExpanded;
-    this.getRenderConfig = getRenderData;
+    this.getRenderData = getRenderData;
   }
 
   initialize() {
@@ -51,33 +48,30 @@ export class DotTrack extends DataTrack {
     this.setExpandedHeight(this.defaultTrackHeight * 2);
   }
 
-  private _fetchData = debounce(
-    async () => {
-      this._renderSeq = this._renderSeq + 1;
-      const mySeq = this._renderSeq;
+  // private _fetchData = debounce(
+  //   async () => {
+  //     this._renderSeq = this._renderSeq + 1;
+  //     const mySeq = this._renderSeq;
+  //     this.renderData = await this.getRenderData();
+  //     if (mySeq !== this._renderSeq) {
+  //       return;
+  //     }
+  //     this.draw();
+  //   },
+  //   500,
+  //   { leading: false, trailing: true },
+  // );
 
-      console.log(this.label, "Get the render config");
-      this.renderData = await this.getRenderConfig();
+  // async render(updateData: boolean) {
+  //   if (updateData || this.renderData == null) {
+  //     this.renderLoading();
+  //     this._fetchData();
+  //   } else {
+  //     this.draw();
+  //   }
+  // }
 
-      if (mySeq !== this._renderSeq) {
-        return;
-      }
-      this.draw();
-    },
-    500,
-    { leading: false, trailing: true },
-  );
-
-  async render(updateData: boolean) {
-    this.renderLoading();
-    if (updateData || this.renderData == null) {
-      this._fetchData();
-    } else {
-      this.draw();
-    }
-  }
-
-  private draw() {
+  draw() {
 
     // console.log(this.label, "Rendering dot track", updateData);
 
@@ -87,14 +81,14 @@ export class DotTrack extends DataTrack {
 
     console.log(this.label, "Drawing");
 
-    const { dots } = this.renderData;
+    const { dots } = this.renderData as DotTrackData;
 
     super.syncDimensions();
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
-    const placeholder = true;
-    super.render(placeholder);
+    // const placeholder = true;
+    // super.render(placeholder);
 
     const xRange = this.getXRange();
     const xScale = this.getXScale();

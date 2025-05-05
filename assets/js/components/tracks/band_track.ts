@@ -7,16 +7,17 @@ import {
 import { STYLE } from "../../constants";
 import {
   drawArrow,
-  drawYAxis,
   getLinearScale,
   renderBackground,
 } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
 import { DataTrack } from "./base_tracks/data_track";
 
+import debounce from "lodash.debounce";
+
 export class BandTrack extends DataTrack {
-  renderData: BandTrackData | null;
-  getRenderData: () => Promise<BandTrackData>;
+  // renderData: BandTrackData | null;
+  // getRenderData: () => Promise<BandTrackData>;
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
   openContextMenu: (id: string) => void;
 
@@ -68,20 +69,41 @@ export class BandTrack extends DataTrack {
     this.initializeExpander("contextmenu", startExpanded, onExpand);
   }
 
-  async render(updateData: boolean) {
-    if (this.getRenderData == undefined) {
-      throw Error(`No getRenderData set up for track, must initialize first`);
-    }
-    if (!this.isInitialized) {
-      throw Error("Track is not initialized yet");
-    }
+  // private _fetchData = debounce(
+  //   async () => {
+  //     this._renderSeq = this._renderSeq + 1;
+  //     const mySeq = this._renderSeq;
+  //     this.renderData = await this.getRenderData();
+  //     if (mySeq !== this._renderSeq) {
+  //       return;
+  //     }
+  //     this.draw();
+  //   },
+  //   500,
+  //   { leading: false, trailing: true },
+  // )
 
-    if (updateData || this.renderData == null) {
-      this.renderLoading();
-      this.renderData = await this.getRenderData();
-    }
+  // async render(updateData: boolean) {
 
-    const { bands, xRange } = this.renderData;
+
+  //   if (this.getRenderData == undefined) {
+  //     throw Error(`No getRenderData set up for track, must initialize first`);
+  //   }
+  //   if (!this.isInitialized) {
+  //     throw Error("Track is not initialized yet");
+  //   }
+
+  //   if (updateData || this.renderData == null) {
+  //     this.renderLoading();
+  //     this._fetchData();
+  //     // this.renderData = await this.getRenderData();
+  //   } else {
+  //     this.draw();
+  //   }
+  // }
+
+  draw() {
+    const { bands, xRange } = this.renderData as BandTrackData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
@@ -143,7 +165,8 @@ export class BandTrack extends DataTrack {
 
     this.setHoverTargets(hoverTargets);
     this.drawTrackLabel();
-    super.render(updateData);
+    // const placeholder = false;
+    // super.render(placeholder);
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {

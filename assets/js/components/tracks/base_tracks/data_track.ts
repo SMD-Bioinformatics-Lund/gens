@@ -6,6 +6,8 @@ import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
 import { initializeDragSelect, renderHighlights } from "./interactive_tools";
 
+import debounce from "lodash.debounce";
+
 interface Settings {
   defaultHeight: number,
   dragSelect: boolean;
@@ -23,6 +25,11 @@ export class DataTrack extends CanvasTrack {
   getYRange: () => Rng;
   getYScale: () => Scale;
   dragCallbacks: DragCallbacks;
+
+  renderData: BandTrackData|DotTrackData | null;
+  getRenderData: () => Promise<BandTrackData|DotTrackData>;
+
+  private _renderSeq = 0;
 
   constructor(
     id: string,
@@ -47,6 +54,22 @@ export class DataTrack extends CanvasTrack {
       return yScale;
     };
   }
+
+  private _fetchData = debounce(
+    async () => {
+      this._renderSeq = this._renderSeq + 1;
+      const mySeq = this._renderSeq;
+      this.renderData = await this.getRenderData();
+      if (mySeq !== this._renderSeq) {
+        return;
+      }
+      this.draw();
+    },
+    500,
+    { leading: false, trailing: true },
+  )
+
+
 
   initialize() {
     super.initialize();
@@ -98,7 +121,16 @@ export class DataTrack extends CanvasTrack {
   }
 
   async render(updateData: boolean) {
-    super.render(updateData);
+    if (updateData || this.renderData == null) {
+      this.renderLoading();
+      this._fetchData();
+      // this.renderData = await this.getRenderData();
+    } else {
+      this.draw();
+    }
+  }
+
+  draw() {
     renderHighlights(
       this.trackContainer,
       this.dimensions.height,
@@ -109,7 +141,17 @@ export class DataTrack extends CanvasTrack {
     if (this.setupConfig.yAxis != null) {
       this.renderYAxis(this.setupConfig.yAxis);
     }
+
+    if (this.getRenderData == undefined) {
+      throw Error(`No getRenderData set up for track, must initialize first`);
+    }
+    if (!this.isInitialized) {
+      throw Error("Track is not initialized yet");
+    }
+
+
   }
+
 
   renderYAxis(yAxis: Axis) {
     const yScale = getLinearScale(yAxis.range, [0, this.dimensions.height]);
