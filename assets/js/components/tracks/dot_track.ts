@@ -6,6 +6,8 @@ import {
 } from "../../draw/render_utils";
 import { DataTrack } from "./base_tracks/data_track";
 
+import debounce from "lodash.debounce";
+
 export class DotTrack extends DataTrack {
   renderData: DotTrackData | null;
   getRenderConfig: () => Promise<DotTrackData>;
@@ -49,25 +51,41 @@ export class DotTrack extends DataTrack {
     this.setExpandedHeight(this.defaultTrackHeight * 2);
   }
 
-  async render(updateData: boolean) {
+  private _fetchData = debounce(
+    async () => {
+      this._renderSeq = this._renderSeq + 1;
+      const mySeq = this._renderSeq;
 
-    this._renderSeq = this._renderSeq + 1;
-    const mySeq = this._renderSeq;
-
-    console.log(this.label, "Rendering dot track", updateData);
-
-    if (updateData || this.renderData == null) {
-      this.renderLoading();
-
-      const data = await this.getRenderConfig();
+      console.log(this.label, "Get the render config");
+      this.renderData = await this.getRenderConfig();
 
       if (mySeq !== this._renderSeq) {
-        console.log(this.label, "Returning different seq numbers", mySeq, this._renderSeq);
         return;
       }
-      console.log(this.label, "Rendering", mySeq);
-      this.renderData = data;
+      this.draw();
+    },
+    500,
+    { leading: false, trailing: true },
+  );
+
+  async render(updateData: boolean) {
+    this.renderLoading();
+    if (updateData || this.renderData == null) {
+      this._fetchData();
+    } else {
+      this.draw();
     }
+  }
+
+  private draw() {
+
+    // console.log(this.label, "Rendering dot track", updateData);
+
+    // const data = await this.getRenderConfig();
+
+    // this.renderData = data;
+
+    console.log(this.label, "Drawing");
 
     const { dots } = this.renderData;
 
@@ -75,7 +93,8 @@ export class DotTrack extends DataTrack {
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
-    super.render(updateData);
+    const placeholder = true;
+    super.render(placeholder);
 
     const xRange = this.getXRange();
     const xScale = this.getXScale();
