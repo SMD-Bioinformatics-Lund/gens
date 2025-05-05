@@ -90,7 +90,6 @@ export class BandTrack extends DataTrack {
       this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
-    // super.syncDimensions();
 
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,

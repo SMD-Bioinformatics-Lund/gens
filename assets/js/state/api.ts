@@ -129,8 +129,6 @@ export class API {
   ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/baf";
 
-    console.log("Getting baf");
-
     if (this.bafSampleZoomChrCache[sampleId] == null) {
       this.bafSampleZoomChrCache[sampleId] = {};
     }
@@ -138,7 +136,6 @@ export class API {
     if (CACHED_ZOOM_LEVELS.includes(zoom)) {
       const chrIsCached = this.bafSampleZoomChrCache[sampleId][chrom] !== undefined;
       if (!chrIsCached) {
-        console.log("Getting fresh data");
         this.bafSampleZoomChrCache[sampleId][chrom] = getDataPerZoom(
           chrom,
           CACHED_ZOOM_LEVELS,
@@ -229,24 +226,28 @@ export class API {
     sampleId: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
 
-    this.overviewSampleCovCache[sampleId] = getOverviewData(
-      sampleId,
-      this.caseId,
-      "cov",
-      this.apiURI,
-    );
+    if (this.overviewSampleCovCache[sampleId] == null) {
+      this.overviewSampleCovCache[sampleId] = getOverviewData(
+        sampleId,
+        this.caseId,
+        "cov",
+        this.apiURI,
+      );
+    }
 
     return this.overviewSampleCovCache[sampleId];
   }
 
   private overviewBafCache: Record<string, Promise<Record<string, ApiCoverageDot[]>>> = {};
   getOverviewBafData(sampleId): Promise<Record<string, ApiCoverageDot[]>> {
-    this.overviewBafCache[sampleId] = getOverviewData(
-      sampleId,
-      this.caseId,
-      "baf",
-      this.apiURI,
-    );
+    if (this.overviewBafCache[sampleId] == null) {
+      this.overviewBafCache[sampleId] = getOverviewData(
+        sampleId,
+        this.caseId,
+        "baf",
+        this.apiURI,
+      );
+    }
     return this.overviewBafCache[sampleId];
   }
 }
