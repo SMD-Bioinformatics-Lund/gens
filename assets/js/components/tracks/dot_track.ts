@@ -1,11 +1,6 @@
 import { STYLE } from "../../constants";
-import {
-  drawDotsScaled,
-  getLinearScale,
-  renderBackground,
-} from "../../draw/render_utils";
+import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
 import { DataTrack } from "./base_tracks/data_track";
-
 
 export class DotTrack extends DataTrack {
   startExpanded: boolean;
@@ -50,7 +45,6 @@ export class DotTrack extends DataTrack {
     super.draw();
 
     const { dots } = this.renderData as DotTrackData;
-
 
     const xRange = this.getXRange();
     const xScale = this.getXScale();

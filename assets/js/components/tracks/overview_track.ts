@@ -71,13 +71,7 @@ export class OverviewTrack extends CanvasTrack {
     this.trackContainer.style.cursor = "pointer";
   }
 
-  myprint(message: string) {
-    console.log(this.label, message);
-  }
-
   async render(_updateData: boolean) {
-
-    this.myprint("Starting render");
 
     // FIXME: This one is a bit tricky isn't it
     // We want it to render not on new data, but on resize

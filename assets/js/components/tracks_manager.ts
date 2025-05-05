@@ -297,7 +297,6 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   public render(updateData: boolean) {
-    console.log("Tracks render, updateData:", updateData);
     for (const track of this.tracks) {
       track.render(updateData);
     }

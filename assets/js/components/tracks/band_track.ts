@@ -5,11 +5,7 @@ import {
   rangeSurroundsRange,
 } from "../../util/utils";
 import { STYLE } from "../../constants";
-import {
-  drawArrow,
-  getLinearScale,
-  renderBackground,
-} from "../../draw/render_utils";
+import { drawArrow, getLinearScale } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
 import { DataTrack } from "./base_tracks/data_track";
 
@@ -113,8 +109,6 @@ export class BandTrack extends DataTrack {
 
       return renderBand;
     });
-
-    // renderBackground(this.ctx, this.dimensions);
 
     const hoverTargets = renderBand.flatMap((band) => {
       const bandHoverTargets = drawBand(
