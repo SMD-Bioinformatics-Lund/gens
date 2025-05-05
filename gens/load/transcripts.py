@@ -8,6 +8,7 @@ from typing import Any, Generator, Iterable, Optional, TextIO, TypedDict
 
 import click
 
+from gens.constants import MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
@@ -213,14 +214,12 @@ def _assign_height_order(transcripts: list[dict[str, Any]]) -> None:
     if len(mane_transcript) == 1:
         mane_transcript[0]["height_order"] = 1
     elif len(mane_transcript) > 1:
+        # FIXME: I don't think the height order is used anymore
+        # This could / should probably be removed
         sorted_mane = [
-            *[tr for tr in mane_transcript if tr["mane"] == "MANE Select"],
-            *[tr for tr in mane_transcript if tr["mane"] == "MANE Plus Clinical"],
-            *[
-                tr
-                for tr in mane_transcript
-                if not any([tr["mane"] == "MANE Plus Clinical", tr["mane"] == "MANE Select"])
-            ],
+            *[tr for tr in mane_transcript if tr["mane"] == MANE_SELECT],
+            *[tr for tr in mane_transcript if tr["mane"] == MANE_PLUS_CLINICAL],
+            *[tr for tr in mane_transcript if not tr["mane"] in {MANE_SELECT, MANE_PLUS_CLINICAL}],
         ]
         for order, tr in enumerate(sorted_mane, 1):
             tr["height_order"] = order
