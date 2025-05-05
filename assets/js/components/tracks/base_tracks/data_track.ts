@@ -1,5 +1,5 @@
 import { STYLE } from "../../../constants";
-import { drawYAxis, getLinearScale } from "../../../draw/render_utils";
+import { drawYAxis, getLinearScale, renderBackground } from "../../../draw/render_utils";
 import { drawHorizontalLineInScale } from "../../../draw/shapes";
 import { generateID } from "../../../util/utils";
 import { keyLogger } from "../../util/keylogger";
@@ -131,6 +131,11 @@ export class DataTrack extends CanvasTrack {
   }
 
   draw() {
+
+    super.syncDimensions();
+    const dimensions = this.dimensions;
+    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
+
     renderHighlights(
       this.trackContainer,
       this.dimensions.height,
@@ -148,8 +153,6 @@ export class DataTrack extends CanvasTrack {
     if (!this.isInitialized) {
       throw Error("Track is not initialized yet");
     }
-
-
   }
 
 

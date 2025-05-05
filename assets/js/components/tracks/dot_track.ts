@@ -8,8 +8,6 @@ import { DataTrack } from "./base_tracks/data_track";
 
 
 export class DotTrack extends DataTrack {
-  // renderData: DotTrackData | null;
-  // getRenderData: () => Promise<DotTrackData>;
   startExpanded: boolean;
 
   constructor(
@@ -48,47 +46,11 @@ export class DotTrack extends DataTrack {
     this.setExpandedHeight(this.defaultTrackHeight * 2);
   }
 
-  // private _fetchData = debounce(
-  //   async () => {
-  //     this._renderSeq = this._renderSeq + 1;
-  //     const mySeq = this._renderSeq;
-  //     this.renderData = await this.getRenderData();
-  //     if (mySeq !== this._renderSeq) {
-  //       return;
-  //     }
-  //     this.draw();
-  //   },
-  //   500,
-  //   { leading: false, trailing: true },
-  // );
-
-  // async render(updateData: boolean) {
-  //   if (updateData || this.renderData == null) {
-  //     this.renderLoading();
-  //     this._fetchData();
-  //   } else {
-  //     this.draw();
-  //   }
-  // }
-
   draw() {
-
-    // console.log(this.label, "Rendering dot track", updateData);
-
-    // const data = await this.getRenderConfig();
-
-    // this.renderData = data;
-
-    console.log(this.label, "Drawing");
+    super.draw();
 
     const { dots } = this.renderData as DotTrackData;
 
-    super.syncDimensions();
-    const dimensions = this.dimensions;
-    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
-
-    // const placeholder = true;
-    // super.render(placeholder);
 
     const xRange = this.getXRange();
     const xScale = this.getXScale();

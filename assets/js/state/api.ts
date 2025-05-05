@@ -129,13 +129,16 @@ export class API {
   ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/baf";
 
+    console.log("Getting baf");
+
     if (this.bafSampleZoomChrCache[sampleId] == null) {
       this.bafSampleZoomChrCache[sampleId] = {};
     }
 
     if (CACHED_ZOOM_LEVELS.includes(zoom)) {
-      const chrIsCached = this.bafSampleZoomChrCache[chrom] !== undefined;
+      const chrIsCached = this.bafSampleZoomChrCache[sampleId][chrom] !== undefined;
       if (!chrIsCached) {
+        console.log("Getting fresh data");
         this.bafSampleZoomChrCache[sampleId][chrom] = getDataPerZoom(
           chrom,
           CACHED_ZOOM_LEVELS,
