@@ -1,14 +1,8 @@
 import { STYLE } from "../../constants";
-import {
-  drawDotsScaled,
-  getLinearScale,
-  renderBackground,
-} from "../../draw/render_utils";
+import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
 import { DataTrack } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {
-  renderData: DotTrackData | null;
-  getRenderConfig: () => Promise<DotTrackData>;
   startExpanded: boolean;
 
   constructor(
@@ -37,7 +31,7 @@ export class DotTrack extends DataTrack {
       { defaultHeight: trackHeight, dragSelect: true, yAxis },
     );
     this.startExpanded = startExpanded;
-    this.getRenderConfig = getRenderData;
+    this.getRenderData = getRenderData;
   }
 
   initialize() {
@@ -47,19 +41,10 @@ export class DotTrack extends DataTrack {
     this.setExpandedHeight(this.defaultTrackHeight * 2);
   }
 
-  async render(updateData: boolean) {
-    if (updateData || this.renderData == null) {
-      this.renderLoading();
-      this.renderData = await this.getRenderConfig();
-    }
+  draw() {
+    super.draw();
 
-    const { dots } = this.renderData;
-
-    super.syncDimensions();
-    const dimensions = this.dimensions;
-    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
-
-    super.render(updateData);
+    const { dots } = this.renderData as DotTrackData;
 
     const xRange = this.getXRange();
     const xScale = this.getXScale();

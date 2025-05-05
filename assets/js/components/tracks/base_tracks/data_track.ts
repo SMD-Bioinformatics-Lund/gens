@@ -1,13 +1,19 @@
 import { STYLE } from "../../../constants";
-import { drawYAxis, getLinearScale } from "../../../draw/render_utils";
+import {
+  drawYAxis,
+  getLinearScale,
+  renderBackground,
+} from "../../../draw/render_utils";
 import { drawHorizontalLineInScale } from "../../../draw/shapes";
 import { generateID } from "../../../util/utils";
 import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
 import { initializeDragSelect, renderHighlights } from "./interactive_tools";
 
+import debounce from "lodash.debounce";
+
 interface Settings {
-  defaultHeight: number,
+  defaultHeight: number;
   dragSelect: boolean;
   yAxis: {
     range: Rng;
@@ -15,14 +21,20 @@ interface Settings {
   } | null;
 }
 
-export class DataTrack extends CanvasTrack {
+const DEBOUNCE_DELAY = 500;
 
+export class DataTrack extends CanvasTrack {
   setupConfig: Settings;
   getXRange: () => Rng;
   getXScale: () => Scale;
   getYRange: () => Rng;
   getYScale: () => Scale;
   dragCallbacks: DragCallbacks;
+
+  renderData: BandTrackData | DotTrackData | null;
+  getRenderData: () => Promise<BandTrackData | DotTrackData>;
+
+  private _renderSeq = 0;
 
   constructor(
     id: string,
@@ -48,6 +60,23 @@ export class DataTrack extends CanvasTrack {
     };
   }
 
+  // The intent with the debounce keeping track of the rendering number (_renderSeq)
+  // is to prevent repeated API requests when rapidly zooming/panning
+  // Only the last request is of interest
+  private _fetchData = debounce(
+    async () => {
+      this._renderSeq = this._renderSeq + 1;
+      const mySeq = this._renderSeq;
+      this.renderData = await this.getRenderData();
+      if (mySeq !== this._renderSeq) {
+        return;
+      }
+      this.draw();
+    },
+    DEBOUNCE_DELAY,
+    { leading: false, trailing: true },
+  );
+
   initialize() {
     super.initialize();
 
@@ -57,7 +86,6 @@ export class DataTrack extends CanvasTrack {
   }
 
   setupDrag() {
-
     const onDrag = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
       const xRange = this.getXRange();
       if (xRange == null) {
@@ -74,12 +102,9 @@ export class DataTrack extends CanvasTrack {
       const posEnd = pixelToPos(pxRangeX[1]);
 
       if (shiftPress) {
-        this.dragCallbacks.onZoomIn([
-          Math.floor(posStart),
-          Math.floor(posEnd),
-        ]);
+        this.dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
       } else {
-        const id = generateID()
+        const id = generateID();
         this.dragCallbacks.addHighlight(id, [posStart, posEnd]);
       }
     };
@@ -87,7 +112,7 @@ export class DataTrack extends CanvasTrack {
     initializeDragSelect(
       this.canvas,
       onDrag,
-      this.dragCallbacks.removeHighlight
+      this.dragCallbacks.removeHighlight,
     );
 
     this.trackContainer.addEventListener("click", () => {
@@ -98,7 +123,19 @@ export class DataTrack extends CanvasTrack {
   }
 
   async render(updateData: boolean) {
-    super.render(updateData);
+    if (updateData || this.renderData == null) {
+      this.renderLoading();
+      this._fetchData();
+    } else {
+      this.draw();
+    }
+  }
+
+  draw() {
+    super.syncDimensions();
+    const dimensions = this.dimensions;
+    renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
+
     renderHighlights(
       this.trackContainer,
       this.dimensions.height,
@@ -108,6 +145,13 @@ export class DataTrack extends CanvasTrack {
     );
     if (this.setupConfig.yAxis != null) {
       this.renderYAxis(this.setupConfig.yAxis);
+    }
+
+    if (this.getRenderData == undefined) {
+      throw Error(`No getRenderData set up for track, must initialize first`);
+    }
+    if (!this.isInitialized) {
+      throw Error("Track is not initialized yet");
     }
   }
 

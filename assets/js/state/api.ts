@@ -77,10 +77,10 @@ export class API {
    * Calculate base zoom levels up front
    * Return detailed zoom levels only on demand
    */
-  private covSampleChrZoomCache: Record<string, Record<
+  private covSampleChrZoomCache: Record<
     string,
-    Record<string, Promise<ApiCoverageDot[]>>
-  >> = {};
+    Record<string, Record<string, Promise<ApiCoverageDot[]>>>
+  > = {};
   getCov(
     sampleId: string,
     chrom: string,
@@ -94,7 +94,8 @@ export class API {
     }
 
     if (CACHED_ZOOM_LEVELS.includes(zoom)) {
-      const chrIsCached = this.covSampleChrZoomCache[sampleId][chrom] !== undefined;
+      const chrIsCached =
+        this.covSampleChrZoomCache[sampleId][chrom] !== undefined;
       if (!chrIsCached) {
         this.covSampleChrZoomCache[sampleId][chrom] = getDataPerZoom(
           chrom,
@@ -119,8 +120,10 @@ export class API {
     }
   }
 
-  private bafSampleZoomChrCache: Record<string, Record<string, Record<string, Promise<ApiCoverageDot[]>>>> =
-    {};
+  private bafSampleZoomChrCache: Record<
+    string,
+    Record<string, Record<string, Promise<ApiCoverageDot[]>>>
+  > = {};
   getBaf(
     sampleId: string,
     chrom: string,
@@ -134,7 +137,8 @@ export class API {
     }
 
     if (CACHED_ZOOM_LEVELS.includes(zoom)) {
-      const chrIsCached = this.bafSampleZoomChrCache[chrom] !== undefined;
+      const chrIsCached =
+        this.bafSampleZoomChrCache[sampleId][chrom] !== undefined;
       if (!chrIsCached) {
         this.bafSampleZoomChrCache[sampleId][chrom] = getDataPerZoom(
           chrom,
@@ -182,9 +186,11 @@ export class API {
     return this.transcriptCache[chrom];
   }
 
-  private variantsSampleChromCache: Record<string, Record<string, Promise<ApiVariantDetails[]>>> = {};
+  private variantsSampleChromCache: Record<
+    string,
+    Record<string, Promise<ApiVariantDetails[]>>
+  > = {};
   getVariants(sampleId: string, chrom: string): Promise<ApiVariantDetails[]> {
-
     if (this.variantsSampleChromCache[sampleId] == null) {
       this.variantsSampleChromCache[sampleId] = {};
     }
@@ -221,29 +227,38 @@ export class API {
     return this.chromCache[chrom];
   }
 
-  private overviewSampleCovCache: Record<string, Promise<Record<string, ApiCoverageDot[]>>> = {};
+  private overviewSampleCovCache: Record<
+    string,
+    Promise<Record<string, ApiCoverageDot[]>>
+  > = {};
   getOverviewCovData(
     sampleId: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
-
-    this.overviewSampleCovCache[sampleId] = getOverviewData(
-      sampleId,
-      this.caseId,
-      "cov",
-      this.apiURI,
-    );
+    if (this.overviewSampleCovCache[sampleId] == null) {
+      this.overviewSampleCovCache[sampleId] = getOverviewData(
+        sampleId,
+        this.caseId,
+        "cov",
+        this.apiURI,
+      );
+    }
 
     return this.overviewSampleCovCache[sampleId];
   }
 
-  private overviewBafCache: Record<string, Promise<Record<string, ApiCoverageDot[]>>> = {};
+  private overviewBafCache: Record<
+    string,
+    Promise<Record<string, ApiCoverageDot[]>>
+  > = {};
   getOverviewBafData(sampleId): Promise<Record<string, ApiCoverageDot[]>> {
-    this.overviewBafCache[sampleId] = getOverviewData(
-      sampleId,
-      this.caseId,
-      "baf",
-      this.apiURI,
-    );
+    if (this.overviewBafCache[sampleId] == null) {
+      this.overviewBafCache[sampleId] = getOverviewData(
+        sampleId,
+        this.caseId,
+        "baf",
+        this.apiURI,
+      );
+    }
     return this.overviewBafCache[sampleId];
   }
 }

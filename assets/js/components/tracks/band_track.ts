@@ -5,18 +5,11 @@ import {
   rangeSurroundsRange,
 } from "../../util/utils";
 import { STYLE } from "../../constants";
-import {
-  drawArrow,
-  drawYAxis,
-  getLinearScale,
-  renderBackground,
-} from "../../draw/render_utils";
+import { drawArrow, getLinearScale } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
 import { DataTrack } from "./base_tracks/data_track";
 
 export class BandTrack extends DataTrack {
-  renderData: BandTrackData | null;
-  getRenderData: () => Promise<BandTrackData>;
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
   openContextMenu: (id: string) => void;
 
@@ -68,20 +61,10 @@ export class BandTrack extends DataTrack {
     this.initializeExpander("contextmenu", startExpanded, onExpand);
   }
 
-  async render(updateData: boolean) {
-    if (this.getRenderData == undefined) {
-      throw Error(`No getRenderData set up for track, must initialize first`);
-    }
-    if (!this.isInitialized) {
-      throw Error("Track is not initialized yet");
-    }
+  draw() {
+    super.draw();
 
-    if (updateData || this.renderData == null) {
-      this.renderLoading();
-      this.renderData = await this.getRenderData();
-    }
-
-    const { bands, xRange } = this.renderData;
+    const { bands, xRange } = this.renderData as BandTrackData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
@@ -103,7 +86,6 @@ export class BandTrack extends DataTrack {
       this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
-    super.syncDimensions();
 
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,
@@ -128,8 +110,6 @@ export class BandTrack extends DataTrack {
       return renderBand;
     });
 
-    renderBackground(this.ctx, this.dimensions);
-
     const hoverTargets = renderBand.flatMap((band) => {
       const bandHoverTargets = drawBand(
         this.ctx,
@@ -143,7 +123,6 @@ export class BandTrack extends DataTrack {
 
     this.setHoverTargets(hoverTargets);
     this.drawTrackLabel();
-    super.render(updateData);
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
