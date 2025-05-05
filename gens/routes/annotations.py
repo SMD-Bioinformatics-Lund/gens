@@ -8,6 +8,7 @@ from http import HTTPStatus
 from typing import Any
 from fastapi import APIRouter, HTTPException
 
+from gens.constants import MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import get_annotation, get_annotation_tracks, get_annotations_for_track
 from gens.models.annotation import (
     AnnotationRecord,
@@ -16,7 +17,14 @@ from gens.models.annotation import (
     SimplifiedTranscriptInfo,
     TranscriptRecord,
 )
-from gens.models.genomic import ChromInfo, GenomeBuild, Chromosome, GenomicRegion, ReducedChromInfo, VariantCategory
+from gens.models.genomic import (
+    ChromInfo,
+    GenomeBuild,
+    Chromosome,
+    GenomicRegion,
+    ReducedChromInfo,
+    VariantCategory,
+)
 from gens.models.base import PydanticObjectId
 from gens.crud.genomic import get_chromosome_info, get_chromosomes
 from gens.crud.transcripts import get_transcript, get_transcripts as crud_get_transcripts
@@ -28,24 +36,22 @@ router = APIRouter(prefix="/tracks")
 
 
 @router.get("/annotations", tags=[ApiTags.ANNOT], response_model_by_alias=False)
-async def get_annotations_tracks(genome_build: GenomeBuild | None, db: GensDb) -> list[AnnotationTrackInDb]:
+async def get_annotations_tracks(
+    genome_build: GenomeBuild | None, db: GensDb
+) -> list[AnnotationTrackInDb]:
     """Get all avaliable annotation tracks."""
     tracks = get_annotation_tracks(db=db, genome_build=genome_build)
     return tracks
 
 
 @router.get("/annotations/{track_id}", tags=[ApiTags.ANNOT])
-async def get_annotation_track(
-    track_id: PydanticObjectId, db: GensDb
-) -> list[SimplifiedTrackInfo]:
+async def get_annotation_track(track_id: PydanticObjectId, db: GensDb) -> list[SimplifiedTrackInfo]:
     """Get annotations for a region."""
     return get_annotations_for_track(track_id=track_id, db=db)
 
 
 @router.get("/annotations/annotation/{record_id}", tags=[ApiTags.ANNOT])
-async def get_annotation_with_id(
-    record_id: PydanticObjectId, db: GensDb
-) -> AnnotationRecord:
+async def get_annotation_with_id(record_id: PydanticObjectId, db: GensDb) -> AnnotationRecord:
     """Get annotations for a region."""
     result = get_annotation(record_id, db)
     if result is None:
@@ -71,7 +77,10 @@ async def get_transcripts(
     if end is None:
         chrom_info = get_chromosome_info(db, chromosome, genome_build)
         if chrom_info is None:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"No information on chromosome: {chromosome}")
+            raise HTTPException(
+                status_code=HTTPStatus.NOT_FOUND,
+                detail=f"No information on chromosome: {chromosome}",
+            )
         end = chrom_info.size
 
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
@@ -79,14 +88,12 @@ async def get_transcripts(
     # get transcript for the new region
     transcripts: list[SimplifiedTranscriptInfo] = crud_get_transcripts(region, genome_build, db)
     if only_mane:
-        transcripts = [tr for tr in transcripts if tr.type == "MANE Select"]
+        transcripts = [tr for tr in transcripts if tr.type in {MANE_SELECT, MANE_PLUS_CLINICAL}]
     return transcripts
 
 
 @router.get("/transcripts/transcript/{transcript_id}", tags=[ApiTags.TRANSC])
-async def get_transcript_with_id(
-    transcript_id: PydanticObjectId, db: GensDb
-) -> TranscriptRecord:
+async def get_transcript_with_id(transcript_id: PydanticObjectId, db: GensDb) -> TranscriptRecord:
     """Query the database for a transcript and return the full info."""
     result = get_transcript(transcript_id, db)
     if result is None:
@@ -95,7 +102,9 @@ async def get_transcript_with_id(
 
 
 @router.get("/chromosomes/", tags=[ApiTags.CHROM])
-async def get_chromosomes_with_build(genome_build: GenomeBuild, db: GensDb) -> list[ReducedChromInfo]:
+async def get_chromosomes_with_build(
+    genome_build: GenomeBuild, db: GensDb
+) -> list[ReducedChromInfo]:
     """Query the database for all chromosomes with a given genome build."""
     chroms = get_chromosomes(db, genome_build)
     return chroms
@@ -114,8 +123,17 @@ async def get_chromosome_with_build(
 
 @router.get("/variants", tags=[ApiTags.VAR])
 async def get_variants(
-    sample_id: str , case_id: str, chromosome: Chromosome, category: VariantCategory, db: ScoutDb, start: int = 1, end: int | None = None) -> list[Any]:
+    sample_id: str,
+    case_id: str,
+    chromosome: Chromosome,
+    category: VariantCategory,
+    db: ScoutDb,
+    start: int = 1,
+    end: int | None = None,
+) -> list[Any]:
     """Get variants from the Scout database."""
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
-    variants = get_variants_from_scout(sample_name=sample_id, case_id=case_id, region=region, variant_category=category, db=db)
+    variants = get_variants_from_scout(
+        sample_name=sample_id, case_id=case_id, region=region, variant_category=category, db=db
+    )
     return variants
