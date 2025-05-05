@@ -33,6 +33,8 @@ export class DataTrack extends CanvasTrack {
   dragCallbacks: DragCallbacks;
   openTrackContextMenu: (track: DataTrack) => void;
 
+  isHidden: boolean = false;
+
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
 

@@ -18,7 +18,7 @@ import {
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 import { generateID } from "../util/utils";
-import { getContainer } from "./util/menu_utils";
+import { getSimpleButton, getContainer } from "./util/menu_utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
@@ -107,15 +107,15 @@ export class TracksManager extends ShadowBaseElement {
       const buttonRow = getContainer("row")
       buttonRow.style.justifyContent = "left";
 
-      buttonRow.appendChild(getButton("Show", () => {
+      buttonRow.appendChild(getSimpleButton("Show", () => {
         this.showTrack(track.id);
       }));
 
-      buttonRow.appendChild(getButton("Hide", () => {
+      buttonRow.appendChild(getSimpleButton("Hide", () => {
         this.hideTrack(track.id);
       }));
-      buttonRow.appendChild(getButton("Move up", () => {}));
-      buttonRow.appendChild(getButton("Move down", () => {}));
+      buttonRow.appendChild(getSimpleButton("Move up", () => {}));
+      buttonRow.appendChild(getSimpleButton("Move down", () => {}));
 
       openContextMenu(track.label, [
         buttonRow,
@@ -174,7 +174,7 @@ export class TracksManager extends ShadowBaseElement {
           const details = await getVariantDetails(sampleId, variantId);
           const scoutUrl = getVariantURL(variantId);
 
-          const button = getButton("Set highlight", () => {
+          const button = getSimpleButton("Set highlight", () => {
             const id = generateID();
             highlightCallbacks.addHighlight(id, [
               details.position,
@@ -213,7 +213,7 @@ export class TracksManager extends ShadowBaseElement {
       },
       async (id) => {
         const details = await getTranscriptDetails(id);
-        const button = getButton("Set highlight", () => {
+        const button = getSimpleButton("Set highlight", () => {
           const id = generateID();
           highlightCallbacks.addHighlight(id, [details.start, details.end]);
         });
@@ -254,7 +254,7 @@ export class TracksManager extends ShadowBaseElement {
 
         const openContextMenuId = async (id: string) => {
           const details = await getAnnotationDetails(id);
-          const button = getButton("Set highlight", () => {
+          const button = getSimpleButton("Set highlight", () => {
             const id = generateID();
             highlightCallbacks.addHighlight(id, [details.start, details.end]);
           });
@@ -360,17 +360,6 @@ export class TracksManager extends ShadowBaseElement {
       track.render(updateData);
     }
   }
-}
-
-export function getButton(text: string, onClick: () => void): HTMLDivElement {
-  const button = document.createElement("div") as HTMLDivElement;
-  button.innerHTML = text;
-  button.style.cursor = "pointer";
-  button.style.border = "1px solid #ccc";
-  button.onclick = onClick;
-  button.style.padding = "4px 8px";
-  button.style.borderRadius = "4px";
-  return button;
 }
 
 customElements.define("gens-tracks", TracksManager);

@@ -1,12 +1,17 @@
+import { removeChildren } from "../util/utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
-import { getButton } from "./tracks_manager";
 import { ChoiceSelect } from "./util/choice_select";
-import { getContainer } from "./util/menu_utils";
+import {
+  getContainer,
+  getIconButton,
+  getSimpleButton,
+} from "./util/menu_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 import { InputChoice } from "choices.js";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <div>Annotation sources</div>
   <div class="choices-container">
     <choice-select id="choice-select"></choice-select>
@@ -16,9 +21,10 @@ template.innerHTML = String.raw`
 `;
 
 export class SettingsPage extends ShadowBaseElement {
+  private onChange: () => void;
   private choiceSelect: ChoiceSelect;
   private annotationSources: ApiAnnotationTrack[];
-  private defaultAnnots: {id: string, label: string}[];
+  private defaultAnnots: { id: string; label: string }[];
   private onAnnotationChanged: (sources: string[]) => void;
   private getDataTracks: () => DataTrack[];
   private tracksOverview: HTMLDivElement;
@@ -31,46 +37,55 @@ export class SettingsPage extends ShadowBaseElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.choiceSelect = this.root.querySelector("#choice-select") as ChoiceSelect;
-    this.tracksOverview = this.root.querySelector("#tracks-overview") as HTMLDivElement;
+    this.choiceSelect = this.root.querySelector(
+      "#choice-select",
+    ) as ChoiceSelect;
+    this.tracksOverview = this.root.querySelector(
+      "#tracks-overview",
+    ) as HTMLDivElement;
   }
 
-  initialize(
-  ) {
+  initialize() {
     this.isInitialized = true;
     this.choiceSelect.setChoices(
-      getChoices(this.annotationSources, this.defaultAnnots.map((a) => a.id)),
+      getChoices(
+        this.annotationSources,
+        this.defaultAnnots.map((a) => a.id),
+      ),
     );
     this.choiceSelect.initialize(this.onAnnotationChanged);
 
-    const tracks = this.getDataTracks();
-    for (const track of tracks) {
-      const trackDiv = getContainer("row");
-      trackDiv.style.display = "flex";
-      trackDiv.style.flexDirection = "row";
-      trackDiv.style.alignItems = "center";
-      trackDiv.appendChild(document.createTextNode(track.label));
-      trackDiv.appendChild(getButton("Show", () => {}))
-      trackDiv.appendChild(getButton("Hide", () => {}))
-      trackDiv.appendChild(getButton("Up", () => {}))
-      trackDiv.appendChild(getButton("Down", () => {}))
-      this.tracksOverview.appendChild(trackDiv);
+    this.render();
+  }
+
+  render() {
+    if (this.tracksOverview == null) {
+      return;
     }
+    removeChildren(this.tracksOverview);
+    const tracks = this.getDataTracks();
+    const tracksSection = getTracksSection(tracks, (track: DataTrack) => {
+      track.isHidden = !track.isHidden;
+      this.onChange();
+    });
+    this.tracksOverview.appendChild(tracksSection);
   }
 
   setSources(
+    onChange: () => void,
     annotationSources: ApiAnnotationTrack[],
-    defaultAnnots: {id: string, label: string}[],
+    defaultAnnots: { id: string; label: string }[],
     onAnnotationChanged: (sources: string[]) => void,
-    getDataTracks: () => DataTrack[]
+    getDataTracks: () => DataTrack[],
   ) {
+    this.onChange = onChange;
     this.annotationSources = annotationSources;
     this.defaultAnnots = defaultAnnots;
     this.onAnnotationChanged = onAnnotationChanged;
     this.getDataTracks = getDataTracks;
   }
 
-  getAnnotSources(): {id: string, label: string}[] {
+  getAnnotSources(): { id: string; label: string }[] {
     if (this.choiceSelect == null) {
       return this.defaultAnnots;
     }
@@ -99,6 +114,43 @@ function getChoices(
     choices.push(choice);
   }
   return choices;
+}
+
+function getTracksSection(
+  tracks: DataTrack[],
+  onChange: (track: DataTrack) => void,
+): HTMLDivElement {
+  const tracksSection = document.createElement("div");
+
+  for (const track of tracks) {
+    const rowDiv = document.createElement("div");
+    rowDiv.style.display = "flex";
+    rowDiv.style.flexDirection = "row";
+    rowDiv.style.alignItems = "center";
+    rowDiv.style.justifyContent = "space-between";
+
+    rowDiv.appendChild(document.createTextNode(track.label));
+
+    const buttonsDiv = document.createElement("div");
+
+    buttonsDiv.style.display = "flex";
+    buttonsDiv.style.flexDirection = "row";
+    buttonsDiv.style.flexWrap = "nowrap";
+    buttonsDiv.style.gap = "0.5rem";
+
+    buttonsDiv.appendChild(
+      getIconButton(track.isHidden ? "fa-eye-slash" : "fa-eye", "Show", () =>
+        onChange(track),
+      ),
+    );
+    buttonsDiv.appendChild(getIconButton("fa-arrow-up", "Up", () => {}));
+    buttonsDiv.appendChild(getIconButton("fa-arrow-down", "Down", () => {}));
+
+    rowDiv.appendChild(buttonsDiv);
+
+    tracksSection.appendChild(rowDiv);
+  }
+  return tracksSection;
 }
 
 customElements.define("settings-page", SettingsPage);

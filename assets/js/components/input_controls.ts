@@ -9,7 +9,7 @@ const template = document.createElement("template");
 template.innerHTML = String.raw`
   <div id="input-controls-container" style="display: flex; align-items: center; gap: 8px;">
       <button title="Pan left" id="pan-left" class='button pan'>
-        <i class="fas fa-arrow-left"></i>
+        <span class="fas fa-arrow-left"></span>
       </button>
       <button title="Zoom in" id="zoom-in" class='button zoom'>
         <i class="fas fa-search-plus"></i>

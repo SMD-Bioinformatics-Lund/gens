@@ -11,7 +11,29 @@ export function getAHref(label: string, href: string): HTMLAnchorElement {
   return a;
 }
 
+export function getSimpleButton(text: string, onClick: () => void): HTMLDivElement {
+  const button = document.createElement("div") as HTMLDivElement;
 
+  button.innerHTML = text;
+  button.style.cursor = "pointer";
+  button.style.border = "1px solid #ccc";
+  button.onclick = onClick;
+  button.style.padding = "4px 8px";
+  button.style.borderRadius = "4px";
+  return button;
+}
+
+export function getIconButton(icon: string, title: string, onClick: () => void): HTMLDivElement {
+  // const button = document.createElement("div") as HTMLDivElement;
+  const button = getSimpleButton("", onClick);
+  button.title = title;
+
+  const iconElem = document.createElement("span") as HTMLSpanElement;
+  iconElem.classList = `fas ${icon}`
+  button.appendChild(iconElem);
+  
+  return button;
+}
 
 export function getURLRow(text: string) {
 
