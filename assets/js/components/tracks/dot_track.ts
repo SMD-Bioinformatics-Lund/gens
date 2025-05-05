@@ -13,6 +13,7 @@ export class DotTrack extends DataTrack {
     yAxis: Axis,
     getRenderData: () => Promise<DotTrackData>,
     dragCallbacks: DragCallbacks,
+    openTrackContextMenu: (track: DataTrack) => void,
   ) {
     super(
       id,
@@ -28,6 +29,7 @@ export class DotTrack extends DataTrack {
         return xScale;
       },
       dragCallbacks,
+      openTrackContextMenu,
       { defaultHeight: trackHeight, dragSelect: true, yAxis },
     );
     this.startExpanded = startExpanded;
@@ -42,7 +44,10 @@ export class DotTrack extends DataTrack {
   }
 
   draw() {
-    super.draw();
+
+    console.log("Child draw");
+
+    super.drawStart();
 
     const { dots } = this.renderData as DotTrackData;
 
@@ -54,10 +59,11 @@ export class DotTrack extends DataTrack {
       (dot) => dot.x >= xRange[0] && dot.y <= xRange[1],
     );
 
-    const yAxisWidth = STYLE.yAxis.width;
+    console.log(dotsInRange);
 
     drawDotsScaled(this.ctx, dotsInRange, xScale, yScale);
-    this.drawTrackLabel(yAxisWidth);
+
+    super.drawEnd();
   }
 }
 

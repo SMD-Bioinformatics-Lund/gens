@@ -4,8 +4,9 @@ import {
   getLinearScale,
   renderBackground,
 } from "../../../draw/render_utils";
-import { drawHorizontalLineInScale } from "../../../draw/shapes";
+import { drawHorizontalLineInScale, drawLabel } from "../../../draw/shapes";
 import { generateID } from "../../../util/utils";
+import { getCanvasClick, getCanvasHover } from "../../util/canvas_interaction";
 import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
 import { initializeDragSelect, renderHighlights } from "./interactive_tools";
@@ -24,12 +25,13 @@ interface Settings {
 const DEBOUNCE_DELAY = 500;
 
 export class DataTrack extends CanvasTrack {
-  setupConfig: Settings;
+  settings: Settings;
   getXRange: () => Rng;
   getXScale: () => Scale;
   getYRange: () => Rng;
   getYScale: () => Scale;
   dragCallbacks: DragCallbacks;
+  openTrackContextMenu: (track: DataTrack) => void;
 
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
@@ -42,11 +44,12 @@ export class DataTrack extends CanvasTrack {
     getXRange: () => Rng,
     getXScale: () => Scale,
     callbacks: DragCallbacks,
+    openTrackContextMenu: (track: DataTrack) => void,
     settings: Settings,
   ) {
     super(id, label, settings.defaultHeight);
     this.dragCallbacks = callbacks;
-    this.setupConfig = settings;
+    this.settings = settings;
     this.getXRange = getXRange;
     this.getXScale = getXScale;
 
@@ -58,24 +61,9 @@ export class DataTrack extends CanvasTrack {
       const yScale = getLinearScale(yRange, [0, this.dimensions.height]);
       return yScale;
     };
-  }
 
-  // The intent with the debounce keeping track of the rendering number (_renderSeq)
-  // is to prevent repeated API requests when rapidly zooming/panning
-  // Only the last request is of interest
-  private _fetchData = debounce(
-    async () => {
-      this._renderSeq = this._renderSeq + 1;
-      const mySeq = this._renderSeq;
-      this.renderData = await this.getRenderData();
-      if (mySeq !== this._renderSeq) {
-        return;
-      }
-      this.draw();
-    },
-    DEBOUNCE_DELAY,
-    { leading: false, trailing: true },
-  );
+    this.openTrackContextMenu = openTrackContextMenu;
+  }
 
   initialize() {
     super.initialize();
@@ -123,15 +111,38 @@ export class DataTrack extends CanvasTrack {
   }
 
   async render(updateData: boolean) {
+    // The intent with the debounce keeping track of the rendering number (_renderSeq)
+    // is to prevent repeated API requests when rapidly zooming/panning
+    // Only the last request is of interest
+    const _fetchData = debounce(
+      async () => {
+        this._renderSeq = this._renderSeq + 1;
+        const mySeq = this._renderSeq;
+        this.renderData = await this.getRenderData();
+        if (mySeq !== this._renderSeq) {
+          return;
+        }
+        this.draw();
+      },
+      DEBOUNCE_DELAY,
+      { leading: false, trailing: true },
+    );
+
     if (updateData || this.renderData == null) {
       this.renderLoading();
-      this._fetchData();
+      _fetchData();
     } else {
       this.draw();
     }
   }
 
   draw() {
+    console.error(
+      "Should be implemented by children. Call drawStart and drawEnd in parent",
+    );
+  }
+
+  drawStart() {
     super.syncDimensions();
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
@@ -143,16 +154,25 @@ export class DataTrack extends CanvasTrack {
       this.getXScale(),
       (id) => this.dragCallbacks.removeHighlight(id),
     );
-    if (this.setupConfig.yAxis != null) {
-      this.renderYAxis(this.setupConfig.yAxis);
-    }
 
-    if (this.getRenderData == undefined) {
-      throw Error(`No getRenderData set up for track, must initialize first`);
+    if (this.settings.yAxis != null) {
+      this.renderYAxis(this.settings.yAxis);
     }
-    if (!this.isInitialized) {
-      throw Error("Track is not initialized yet");
-    }
+  }
+
+  drawEnd() {
+    this.setupLabel(() => this.openTrackContextMenu(this));
+  }
+
+  setupLabel(onClick: () => void) {
+    const yAxisWidth = this.settings.yAxis != null ? STYLE.yAxis.width : 0;
+    const box = this.drawTrackLabel(yAxisWidth);
+    const hoverBox = {
+      label: this.label,
+      box,
+    };
+    getCanvasHover(this.canvas, () => [hoverBox], { showTooltip: true });
+    getCanvasClick(this.canvas, () => [hoverBox], onClick);
   }
 
   renderYAxis(yAxis: Axis) {
@@ -166,6 +186,17 @@ export class DataTrack extends CanvasTrack {
     }
 
     drawYAxis(this.ctx, yAxis.ticks, yScale, yAxis.range);
+  }
+
+  drawTrackLabel(shiftRight: number = 0): Box {
+    console.log("Drawing label", this.label);
+    return drawLabel(
+      this.ctx,
+      this.label,
+      STYLE.tracks.textPadding + shiftRight,
+      STYLE.tracks.textPadding,
+      { textBaseline: "top", boxStyle: {} },
+    );
   }
 }
 

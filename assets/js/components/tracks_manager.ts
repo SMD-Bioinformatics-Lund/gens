@@ -19,6 +19,7 @@ import {
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 import { generateID } from "../util/utils";
 import { getContainer } from "./util/menu_utils";
+import { DataTrack } from "./tracks/base_tracks/data_track";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -101,7 +102,14 @@ export class TracksManager extends ShadowBaseElement {
       removeHighlight: highlightCallbacks.removeHighlight,
     };
 
+    const openTrackContextMenu = (track: DataTrack) => {
+      const body = document.createElement("div");
+      body.innerHTML = "Some body is here";
+      openContextMenu(track.label, [body]);
+    }
+
     const covTracks = [];
+    const bafTracks = [];
     const variantTracks = [];
 
     for (const sampleId of sampleIds) {
@@ -122,6 +130,7 @@ export class TracksManager extends ShadowBaseElement {
           };
         },
         dragCallbacks,
+        openTrackContextMenu,
       );
       const bafTrack = new DotTrack(
         `${sampleId}_baf`,
@@ -136,6 +145,7 @@ export class TracksManager extends ShadowBaseElement {
           };
         },
         dragCallbacks,
+        openTrackContextMenu,
       );
       const variantTrack = new BandTrack(
         `${sampleId}_variants`,
@@ -163,9 +173,11 @@ export class TracksManager extends ShadowBaseElement {
           openContextMenu("Variant", content);
         },
         dragCallbacks,
+        openTrackContextMenu,
       );
 
-      covTracks.push(coverageTrack, bafTrack);
+      covTracks.push(coverageTrack);
+      bafTracks.push(bafTrack);
       variantTracks.push(variantTrack);
     }
 
@@ -192,6 +204,7 @@ export class TracksManager extends ShadowBaseElement {
         openContextMenu("Transcript", content);
       },
       dragCallbacks,
+      openTrackContextMenu,
     );
     const ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -240,6 +253,7 @@ export class TracksManager extends ShadowBaseElement {
             getAnnotTrackData(sourceId, getXRange, dataSource.getAnnotation),
           openContextMenuId,
           dragCallbacks,
+          openTrackContextMenu,
         );
         return track;
       },
@@ -282,6 +296,7 @@ export class TracksManager extends ShadowBaseElement {
     this.tracks.push(
       ideogramTrack,
       ...covTracks,
+      ...bafTracks,
       ...variantTracks,
       annotationTracks,
       genesTrack,
