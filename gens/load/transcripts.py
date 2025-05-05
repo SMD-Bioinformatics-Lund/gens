@@ -217,7 +217,8 @@ def _assign_height_order(transcripts: list[dict[str, Any]]) -> None:
         # FIXME: I don't think the height order is used anymore
         # This could / should probably be removed
         sorted_mane = [
-            *[tr for tr in mane_transcript if tr["mane"] in {MANE_SELECT, MANE_PLUS_CLINICAL}],
+            *[tr for tr in mane_transcript if tr["mane"] == MANE_SELECT],
+            *[tr for tr in mane_transcript if tr["mane"] == MANE_PLUS_CLINICAL],
             *[tr for tr in mane_transcript if not tr["mane"] in {MANE_SELECT, MANE_PLUS_CLINICAL}],
         ]
         for order, tr in enumerate(sorted_mane, 1):
