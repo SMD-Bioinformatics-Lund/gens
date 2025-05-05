@@ -48,7 +48,6 @@ template.innerHTML = String.raw`
 `;
 
 export class TracksManager extends ShadowBaseElement {
-
   parentContainer: HTMLDivElement;
   isInitialized = false;
   annotationsContainer: HTMLDivElement;
@@ -64,7 +63,6 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   connectedCallback() {
-
     window.addEventListener("resize", () => {
       this.render(false);
     });
@@ -88,7 +86,10 @@ export class TracksManager extends ShadowBaseElement {
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
     getTranscriptDetails: (id: string) => Promise<ApiTranscriptDetails>,
-    getVariantDetails: (sampleId: string, variantId: string) => Promise<ApiVariantDetails>,
+    getVariantDetails: (
+      sampleId: string,
+      variantId: string,
+    ) => Promise<ApiVariantDetails>,
     openContextMenu: (header: string, content: HTMLElement[]) => void,
     highlightCallbacks: HighlightCallbacks,
   ) {
@@ -103,17 +104,29 @@ export class TracksManager extends ShadowBaseElement {
     };
 
     const openTrackContextMenu = (track: DataTrack) => {
-      const body = document.createElement("div");
-      body.innerHTML = "Some body is here";
-      openContextMenu(track.label, [body]);
-    }
+      const buttonRow = getContainer("row")
+      buttonRow.style.justifyContent = "left";
+
+      buttonRow.appendChild(getButton("Show", () => {
+        this.showTrack(track.id);
+      }));
+
+      buttonRow.appendChild(getButton("Hide", () => {
+        this.hideTrack(track.id);
+      }));
+      buttonRow.appendChild(getButton("Move up", () => {}));
+      buttonRow.appendChild(getButton("Move down", () => {}));
+
+      openContextMenu(track.label, [
+        buttonRow,
+      ]);
+    };
 
     const covTracks = [];
     const bafTracks = [];
     const variantTracks = [];
 
     for (const sampleId of sampleIds) {
-
       const startExpanded = sampleIds.length == 1 ? true : false;
 
       const coverageTrack = new DotTrack(
@@ -160,16 +173,23 @@ export class TracksManager extends ShadowBaseElement {
         async (variantId: string) => {
           const details = await getVariantDetails(sampleId, variantId);
           const scoutUrl = getVariantURL(variantId);
-  
+
           const button = getButton("Set highlight", () => {
             const id = generateID();
-            highlightCallbacks.addHighlight(id, [details.position, details.end]);
+            highlightCallbacks.addHighlight(id, [
+              details.position,
+              details.end,
+            ]);
           });
-  
-          const entries = getVariantContextMenuContent(variantId, details, scoutUrl);
+
+          const entries = getVariantContextMenuContent(
+            variantId,
+            details,
+            scoutUrl,
+          );
           const content = [button];
           content.push(...entries);
-  
+
           openContextMenu("Variant", content);
         },
         dragCallbacks,
@@ -180,7 +200,6 @@ export class TracksManager extends ShadowBaseElement {
       bafTracks.push(bafTrack);
       variantTracks.push(variantTrack);
     }
-
 
     const genesTrack = new BandTrack(
       "genes",
@@ -292,7 +311,6 @@ export class TracksManager extends ShadowBaseElement {
       false,
     );
 
-
     this.tracks.push(
       ideogramTrack,
       ...covTracks,
@@ -311,7 +329,33 @@ export class TracksManager extends ShadowBaseElement {
     }
   }
 
-  public render(updateData: boolean) {
+  getDataTracks(): DataTrack[] {
+    return this.tracks.filter((track) => track instanceof DataTrack);
+  }
+
+  getTrackById(trackId: string): CanvasTrack | MultiBandTracks {
+    for (let i = 0; i < this.tracks.length; i++) {
+      if (this.tracks[i].id == trackId) {
+        return this.tracks[i];
+      }
+    }
+    console.error("Did not find any track with ID", trackId);
+  }
+
+  showTrack(trackId: string) {
+    const track = this.getTrackById(trackId);
+    this.parentContainer.appendChild(track)
+  }
+
+  hideTrack(trackId: string) {
+    const track = this.getTrackById(trackId);
+    this.parentContainer.removeChild(track)
+  }
+
+  render(updateData: boolean) {
+
+    // FIXME: React to whether tracks are not present
+
     for (const track of this.tracks) {
       track.render(updateData);
     }
@@ -330,6 +374,5 @@ function getButton(text: string, onClick: () => void): HTMLDivElement {
   row.appendChild(button);
   return row;
 }
-
 
 customElements.define("gens-tracks", TracksManager);

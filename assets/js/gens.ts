@@ -92,9 +92,14 @@ export async function initCanvases({
     });
 
   const settingsPage = document.createElement("settings-page") as SettingsPage;
-  settingsPage.setSources(annotSources, defaultAnnot, (_newSources) => {
-    gensTracks.render(true);
-  });
+  settingsPage.setSources(
+    annotSources,
+    defaultAnnot,
+    (_newSources) => {
+      gensTracks.render(true);
+    },
+    () => gensTracks.getDataTracks(),
+  );
 
   initialize(
     sampleIds,
@@ -192,7 +197,11 @@ async function initialize(
     async (id: string) => await api.getAnnotationDetails(id),
     async (id: string) => await api.getTranscriptDetails(id),
     async (sampleId: string, variantId: string) =>
-      await api.getVariantDetails(sampleId, variantId, inputControls.getRegion().chrom),
+      await api.getVariantDetails(
+        sampleId,
+        variantId,
+        inputControls.getRegion().chrom,
+      ),
     openContextMenu,
     highlightCallbacks,
   );

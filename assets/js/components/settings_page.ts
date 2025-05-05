@@ -1,3 +1,4 @@
+import { DataTrack } from "./tracks/base_tracks/data_track";
 import { ChoiceSelect } from "./util/choice_select";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 import { InputChoice } from "choices.js";
@@ -8,6 +9,8 @@ template.innerHTML = String.raw`
   <div class="choices-container">
     <choice-select id="choice-select"></choice-select>
   </div>
+  <div>Tracks</div>
+  <div id="tracks-overview"></div>
 `;
 
 export class SettingsPage extends ShadowBaseElement {
@@ -15,6 +18,8 @@ export class SettingsPage extends ShadowBaseElement {
   private annotationSources: ApiAnnotationTrack[];
   private defaultAnnots: {id: string, label: string}[];
   private onAnnotationChanged: (sources: string[]) => void;
+  private getDataTracks: () => DataTrack[];
+  private tracksOverview: HTMLDivElement;
 
   public isInitialized: boolean = false;
 
@@ -24,18 +29,8 @@ export class SettingsPage extends ShadowBaseElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.choiceSelect = this.root.querySelector("#choice-select");
-  }
-
-  // Data 
-  setSources(
-    annotationSources: ApiAnnotationTrack[],
-    defaultAnnots: {id: string, label: string}[],
-    onAnnotationChanged: (sources: string[]) => void,
-  ) {
-    this.annotationSources = annotationSources;
-    this.defaultAnnots = defaultAnnots;
-    this.onAnnotationChanged = onAnnotationChanged;
+    this.choiceSelect = this.root.querySelector("#choice-select") as ChoiceSelect;
+    this.tracksOverview = this.root.querySelector("#tracks-overview") as HTMLDivElement;
   }
 
   initialize(
@@ -45,6 +40,25 @@ export class SettingsPage extends ShadowBaseElement {
       getChoices(this.annotationSources, this.defaultAnnots.map((a) => a.id)),
     );
     this.choiceSelect.initialize(this.onAnnotationChanged);
+
+    const tracks = this.getDataTracks();
+    for (const track of tracks) {
+      const trackDiv = document.createElement("div");
+      trackDiv.innerHTML = track.label;
+      this.tracksOverview.appendChild(trackDiv);
+    }
+  }
+
+  setSources(
+    annotationSources: ApiAnnotationTrack[],
+    defaultAnnots: {id: string, label: string}[],
+    onAnnotationChanged: (sources: string[]) => void,
+    getDataTracks: () => DataTrack[]
+  ) {
+    this.annotationSources = annotationSources;
+    this.defaultAnnots = defaultAnnots;
+    this.onAnnotationChanged = onAnnotationChanged;
+    this.getDataTracks = getDataTracks;
   }
 
   getAnnotSources(): {id: string, label: string}[] {

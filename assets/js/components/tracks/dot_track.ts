@@ -45,8 +45,6 @@ export class DotTrack extends DataTrack {
 
   draw() {
 
-    console.log("Child draw");
-
     super.drawStart();
 
     const { dots } = this.renderData as DotTrackData;
@@ -58,8 +56,6 @@ export class DotTrack extends DataTrack {
     const dotsInRange = dots.filter(
       (dot) => dot.x >= xRange[0] && dot.y <= xRange[1],
     );
-
-    console.log(dotsInRange);
 
     drawDotsScaled(this.ctx, dotsInRange, xScale, yScale);
 

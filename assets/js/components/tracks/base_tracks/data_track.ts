@@ -171,7 +171,6 @@ export class DataTrack extends CanvasTrack {
       label: this.label,
       box,
     };
-    getCanvasHover(this.canvas, () => [hoverBox], { showTooltip: true });
     getCanvasClick(this.canvas, () => [hoverBox], onClick);
   }
 
@@ -189,7 +188,6 @@ export class DataTrack extends CanvasTrack {
   }
 
   drawTrackLabel(shiftRight: number = 0): Box {
-    console.log("Drawing label", this.label);
     return drawLabel(
       this.ctx,
       this.label,
