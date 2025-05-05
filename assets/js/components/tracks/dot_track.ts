@@ -11,6 +11,8 @@ export class DotTrack extends DataTrack {
   getRenderConfig: () => Promise<DotTrackData>;
   startExpanded: boolean;
 
+  private _renderSeq = 0;
+
   constructor(
     id: string,
     label: string,
@@ -48,9 +50,23 @@ export class DotTrack extends DataTrack {
   }
 
   async render(updateData: boolean) {
+
+    this._renderSeq = this._renderSeq + 1;
+    const mySeq = this._renderSeq;
+
+    console.log(this.label, "Rendering dot track", updateData);
+
     if (updateData || this.renderData == null) {
       this.renderLoading();
-      this.renderData = await this.getRenderConfig();
+
+      const data = await this.getRenderConfig();
+
+      if (mySeq !== this._renderSeq) {
+        console.log(this.label, "Returning different seq numbers", mySeq, this._renderSeq);
+        return;
+      }
+      console.log(this.label, "Rendering", mySeq);
+      this.renderData = data;
     }
 
     const { dots } = this.renderData;
