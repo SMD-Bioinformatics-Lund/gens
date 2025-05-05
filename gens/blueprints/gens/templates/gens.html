@@ -44,9 +44,11 @@
   <div class="header">
 
     <div style="display: flex; flex-direction: row;">
-      <div id="logo-container">
-        <span class='logo'></span>
-      </div>
+      <a href="{{ url_for('home.home') }}">
+        <div id="logo-container">
+          <span class='logo'></span>
+        </div>
+      </a>
       <header-info id="header-info" style="padding-left: 4px"></header-info>
     </div>
     <input-controls id="input-controls"></input-controls>
@@ -96,22 +98,6 @@
         gensApiURL: '{{ gens_api_url }}'
     })
     // draw statis content
-    const visualizationContainer = document.getElementById('visualization-container')
-    // gens.setupDrawEventManager({
-    //  target: visualizationContainer 
-    // })
-    // gens.setupGenericEventManager({
-    //   eventName: 'update-title',
-    //   ownerElement: visualizationContainer,
-    //   targetElementIds: ['interactive-content'],
-    // })
-
-    // Promise.all([ic.drawStaticContent(), oc.drawOverviewContent()]).then( () => {
-    //     // setup event managers and draw the tracks
-    //     gens.drawTrack({chrom: '{{ chrom }}', start: start, end: {{ end }} })
-    //     document.dispatchEvent(new CustomEvent('data-loaded'))
-    // })
-
-
+    const visualizationContainer = document.getElementById('visualization-container');
 </script>
 {% endblock body %}
