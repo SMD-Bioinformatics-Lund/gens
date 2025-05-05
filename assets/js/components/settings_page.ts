@@ -1,5 +1,7 @@
 import { DataTrack } from "./tracks/base_tracks/data_track";
+import { getButton } from "./tracks_manager";
 import { ChoiceSelect } from "./util/choice_select";
+import { getContainer } from "./util/menu_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 import { InputChoice } from "choices.js";
 
@@ -43,8 +45,15 @@ export class SettingsPage extends ShadowBaseElement {
 
     const tracks = this.getDataTracks();
     for (const track of tracks) {
-      const trackDiv = document.createElement("div");
-      trackDiv.innerHTML = track.label;
+      const trackDiv = getContainer("row");
+      trackDiv.style.display = "flex";
+      trackDiv.style.flexDirection = "row";
+      trackDiv.style.alignItems = "center";
+      trackDiv.appendChild(document.createTextNode(track.label));
+      trackDiv.appendChild(getButton("Show", () => {}))
+      trackDiv.appendChild(getButton("Hide", () => {}))
+      trackDiv.appendChild(getButton("Up", () => {}))
+      trackDiv.appendChild(getButton("Down", () => {}))
       this.tracksOverview.appendChild(trackDiv);
     }
   }

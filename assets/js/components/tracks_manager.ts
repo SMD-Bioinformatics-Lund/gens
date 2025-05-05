@@ -362,8 +362,7 @@ export class TracksManager extends ShadowBaseElement {
   }
 }
 
-function getButton(text: string, onClick: () => void): HTMLDivElement {
-  const row = getContainer("row");
+export function getButton(text: string, onClick: () => void): HTMLDivElement {
   const button = document.createElement("div") as HTMLDivElement;
   button.innerHTML = text;
   button.style.cursor = "pointer";
@@ -371,8 +370,7 @@ function getButton(text: string, onClick: () => void): HTMLDivElement {
   button.onclick = onClick;
   button.style.padding = "4px 8px";
   button.style.borderRadius = "4px";
-  row.appendChild(button);
-  return row;
+  return button;
 }
 
 customElements.define("gens-tracks", TracksManager);
