@@ -1,9 +1,17 @@
 import { STYLE } from "../../constants";
 import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
+import { pointInRange } from "../../util/utils";
 import { DataTrack } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {
   startExpanded: boolean;
+
+  private colorBands: RenderBand[] | null = null;
+
+  updateColors(colorBands: RenderBand[] | null) {
+    this.colorBands = colorBands;
+    this.render({});
+  }
 
   constructor(
     id: string,
@@ -44,7 +52,6 @@ export class DotTrack extends DataTrack {
   }
 
   draw() {
-
     super.drawStart();
 
     const { dots } = this.renderData as DotTrackData;
@@ -57,7 +64,22 @@ export class DotTrack extends DataTrack {
       (dot) => dot.x >= xRange[0] && dot.y <= xRange[1],
     );
 
-    drawDotsScaled(this.ctx, dotsInRange, xScale, yScale);
+    // FIXME: This might be slow
+    let coloredDots = [...dotsInRange];
+    if (this.colorBands != null) {
+      console.log("Looping the bands", coloredDots);
+      for (const band of this.colorBands) {
+        coloredDots
+          .filter((dot) => pointInRange(dot.x, [band.start, band.end]))
+          .forEach((dot) => {
+            if (band.color) {
+              dot.color = band.color;
+            }
+          });
+      }
+    }
+
+    drawDotsScaled(this.ctx, coloredDots, xScale, yScale);
 
     super.drawEnd();
   }

@@ -9,7 +9,7 @@ import { MultiBandTracks } from "./tracks/multi_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
-import { ICONS, SIZES, STYLE } from "../constants";
+import { COLORS, ICONS, SIZES, STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/base_tracks/canvas_track";
 import {
   getAnnotationContextMenuContent,
@@ -17,7 +17,7 @@ import {
   getVariantContextMenuContent,
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
-import { generateID } from "../util/utils";
+import { generateID, populateSelect } from "../util/utils";
 import {
   getSimpleButton,
   getContainer,
@@ -122,7 +122,7 @@ export class TracksManager extends ShadowBaseElement {
     getXRange: () => Rng,
     onZoomIn: (range: Rng) => void,
     onZoomOut: () => void,
-    getAnnotSources: () => { id: string; label: string }[],
+    getAnnotSources: GetAnnotSources,
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
     getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
@@ -197,48 +197,14 @@ export class TracksManager extends ShadowBaseElement {
         ),
       );
 
-      const returnElements = [buttonsDiv];
+      const isDotTrack = track instanceof DotTrack;
 
-      let axisRow = null;
-      const axis = track.getYAxis();
-      if (axis != null) {
-        axisRow = getContainer("row");
-        axisRow.style.gap = "8px";
-        const yAxisLabel = document.createTextNode(`Y-axis range:`);
-        axisRow.appendChild(yAxisLabel);
-
-        const startNode = document.createElement("input");
-        startNode.type = "number";
-        startNode.value = axis.range[0].toString();
-        startNode.step = "0.1";
-        startNode.style.flex = "1 1 0px";
-        startNode.style.minWidth = "0";
-        axisRow.appendChild(startNode);
-
-        const endNode = document.createElement("input");
-        endNode.type = "number";
-        endNode.value = axis.range[1].toString();
-        endNode.step = "0.1";
-        endNode.style.flex = "1 1 0px";
-        endNode.style.minWidth = "0";
-
-        const onRangeChange = () => {
-          const parsedRange: Rng = [
-            parseFloat(startNode.value),
-            parseFloat(endNode.value),
-          ];
-          track.updateYAxis(parsedRange);
-          this.render({});
-        };
-
-        startNode.addEventListener("change", onRangeChange);
-
-        endNode.addEventListener("change", onRangeChange);
-
-        axisRow.appendChild(endNode);
-
-        returnElements.push(axisRow);
-      }
+      const returnElements = getTrackContextMenuContent(
+        track,
+        isDotTrack,
+        getAnnotSources,
+        (id: string) => dataSource.getAnnotation(id),
+      );
 
       openContextMenu(track.label, returnElements);
     };
@@ -612,6 +578,130 @@ export class TracksManager extends ShadowBaseElement {
     );
     return overviewTrack;
   }
+}
+
+function getTrackContextMenuContent(
+  track: DataTrack,
+  isDotTrack: boolean,
+  getAnnotationSources: GetAnnotSources,
+  getBands: (id: string) => Promise<RenderBand[]>,
+): HTMLDivElement[] {
+  const buttonsDiv = document.createElement("div");
+  buttonsDiv.style.display = "flex";
+  buttonsDiv.style.flexDirection = "row";
+  buttonsDiv.style.flexWrap = "nowrap";
+  buttonsDiv.style.gap = `${SIZES.s}px`;
+
+  buttonsDiv.appendChild(
+    getIconButton(ICONS.up, "Up", () => this.moveTrack(track.id, "up")),
+  );
+  buttonsDiv.appendChild(
+    getIconButton(ICONS.down, "Down", () => this.moveTrack(track.id, "down")),
+  );
+  buttonsDiv.appendChild(
+    getIconButton(
+      track.getIsHidden() ? ICONS.hide : ICONS.show,
+      "Show / hide",
+      () => {
+        track.toggleHidden();
+        this.render({});
+      },
+    ),
+  );
+  buttonsDiv.appendChild(
+    getIconButton(
+      track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
+      "Collapse / expand",
+      () => {
+        track.toggleCollapsed();
+        this.render({});
+      },
+    ),
+  );
+
+  const returnElements = [buttonsDiv];
+
+  if (isDotTrack) {
+    const axisRow = getYAxisRow(track);
+    returnElements.push(axisRow);
+
+    const colorSelectRow = getColorSelectRow(
+      track as DotTrack,
+      getAnnotationSources,
+      getBands,
+    );
+    returnElements.push(colorSelectRow);
+  }
+  return returnElements;
+}
+
+function getYAxisRow(track: DataTrack): HTMLDivElement {
+  const axis = track.getYAxis();
+
+  const axisRow = getContainer("row");
+  axisRow.style.gap = "8px";
+  const yAxisLabel = document.createTextNode(`Y-axis range:`);
+  axisRow.appendChild(yAxisLabel);
+
+  const startNode = document.createElement("input");
+  startNode.type = "number";
+  startNode.value = axis.range[0].toString();
+  startNode.step = "0.1";
+  startNode.style.flex = "1 1 0px";
+  startNode.style.minWidth = "0";
+  axisRow.appendChild(startNode);
+
+  const endNode = document.createElement("input");
+  endNode.type = "number";
+  endNode.value = axis.range[1].toString();
+  endNode.step = "0.1";
+  endNode.style.flex = "1 1 0px";
+  endNode.style.minWidth = "0";
+
+  const onRangeChange = () => {
+    const parsedRange: Rng = [
+      parseFloat(startNode.value),
+      parseFloat(endNode.value),
+    ];
+    track.updateYAxis(parsedRange);
+    this.render({});
+  };
+
+  startNode.addEventListener("change", onRangeChange);
+  endNode.addEventListener("change", onRangeChange);
+  axisRow.appendChild(endNode);
+  return axisRow;
+}
+
+function getColorSelectRow(
+  track: DotTrack,
+  getAnnotationSources: GetAnnotSources,
+  getBands: (id: string) => Promise<RenderBand[]>,
+): HTMLDivElement {
+  const colorRow = getContainer("row");
+
+  const label = document.createTextNode("Color:");
+
+  const select = document.createElement("select") as HTMLSelectElement;
+  select.style.backgroundColor = COLORS.white;
+  const sources = getAnnotationSources();
+
+  populateSelect(select, sources, true);
+
+  select.addEventListener("change", async (_e) => {
+    const currentId = select.value;
+    if (currentId != "") {
+      const bands = await getBands(currentId);
+      track.updateColors(bands);
+    } else {
+      track.updateColors(null);
+    }
+  });
+
+  colorRow.appendChild(label);
+  colorRow.appendChild(select);
+
+  return colorRow;
 }
 
 customElements.define("gens-tracks", TracksManager);

@@ -233,6 +233,8 @@ type ColorScale = (level: string) => string
 
 type BandYScale = (lane: number, expanded: boolean) => Rng
 
+type GetAnnotSources = () => {id: string, label: string}[]
+
 interface RenderDataSource {
   getChromInfo: () => Promise<ChromosomeInfo>,
   getAnnotation: (id: string) => Promise<RenderBand[]>,
