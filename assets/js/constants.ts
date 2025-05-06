@@ -16,6 +16,15 @@ export const FONT_WEIGHT = {
   bold: 300,
 }
 
+export const ICONS = {
+  up: "fa-arrow-up",
+  down: "fa-arrow-down",
+  show: "fa-eye",
+  hide: "fa-eye-slash",
+  minimize: "fa-minimize",
+  maximize: "fa-maximize",
+}
+
 export const COLORS = {
   white: "#FFF",
   black: "#222",
@@ -32,7 +41,7 @@ export const COLORS = {
   transparentBlue: "#55667744",
 };
 
-export const PAD = {
+export const SIZES = {
   xxs: 2,
   xs: 4,
   s: 6,
@@ -51,10 +60,10 @@ export const STYLE = {
     textColor: COLORS.black,
     closeColor: COLORS.darkGray,
     borderWidth: 1,
-    padding: PAD.l,
+    padding: SIZES.l,
     font,
     borderRadius: 6,
-    margin: PAD.s,
+    margin: SIZES.s,
     headerSize: FONT_SIZE.large,
     headerFontWeight: FONT_WEIGHT.header,
     breadFontWeight: FONT_WEIGHT.bold,
@@ -69,18 +78,13 @@ export const STYLE = {
     default: "gray",
   },
   bandTrack: {
-    trackPadding: PAD.l,
-    bandPadding: PAD.xxs,
-    trackHeight: {
-      extraThin: 20,
-      thin: 45,
-      thick: 80,
-    },
+    trackPadding: SIZES.l,
+    bandPadding: SIZES.xxs,
     edgeColor: COLORS.darkGray,
     minBandWidth: 2,
   },
   ideogramMarker: {
-    leftMargin: PAD.xs,
+    leftMargin: SIZES.xs,
     borderWidth: 2,
   },
   bands: {
@@ -89,7 +93,7 @@ export const STYLE = {
   },
   overviewTrack: {
     titleSpace: 20,
-    labelPad: PAD.s
+    labelPad: SIZES.s
   },
   tracks: {
     // edgeColor: colors.white,
@@ -105,17 +109,22 @@ export const STYLE = {
     },
     font,
     textColor: COLORS.darkGray,
-    textPadding: PAD.xs,
-    textFramePadding: PAD.xxs,
+    textPadding: SIZES.xs,
+    textFramePadding: SIZES.xxs,
     textLaneSize: 20,
     backgroundColor: COLORS.white,
     frameLineWidth: 2,
+    trackHeight: {
+      extraThin: 20,
+      thin: 45,
+      thick: 80,
+    },
   },
   ideogramTrack: {
     endBevelProportion: 0.05,
     centromereIndentProportion: 0.3,
-    xPad: PAD.m,
-    yPad: PAD.xs,
+    xPad: SIZES.m,
+    yPad: SIZES.xs,
     lineColor: COLORS.darkGray,
     lineWidth: 1,
     stainToColor: {

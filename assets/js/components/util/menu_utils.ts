@@ -24,7 +24,6 @@ export function getSimpleButton(text: string, onClick: () => void): HTMLDivEleme
 }
 
 export function getIconButton(icon: string, title: string, onClick: () => void): HTMLDivElement {
-  // const button = document.createElement("div") as HTMLDivElement;
   const button = getSimpleButton("", onClick);
   button.title = title;
   button.className = "icon-button";

@@ -1,4 +1,4 @@
-import { FONT_SIZE, FONT_WEIGHT, PAD, STYLE, ZINDICES } from "../constants";
+import { FONT_SIZE, FONT_WEIGHT, SIZES, STYLE, ZINDICES } from "../constants";
 import { removeChildren } from "../util/utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 
@@ -16,7 +16,7 @@ template.innerHTML = String.raw`
 
     .menu-row {
       align-items: center;
-      padding: ${PAD.xs}px 0px;
+      padding: ${SIZES.xs}px 0px;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -39,7 +39,7 @@ template.innerHTML = String.raw`
     }
 
     .section-entry {
-      padding: ${PAD.xxs}px 0;
+      padding: ${SIZES.xxs}px 0;
     }
 
     #settings-drawer {
@@ -78,7 +78,7 @@ template.innerHTML = String.raw`
     #entries {
       display: flex;
       flex-direction: column;
-      gap: ${PAD.l}px;
+      gap: ${SIZES.l}px;
       font-weight: ${FONT_WEIGHT.bold};
       font-size: ${FONT_SIZE.medium}px;
     }

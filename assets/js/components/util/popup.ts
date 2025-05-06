@@ -1,4 +1,4 @@
-import { PAD, STYLE } from "../../constants";
+import { SIZES, STYLE } from "../../constants";
 import { getEntry } from "./menu_utils";
 import { ShadowBaseElement } from "./shadowbaseelement";
 
@@ -29,7 +29,7 @@ template.innerHTML = String.raw`
     #entries {
       display: flex;
       flex-direction: column;
-      gap: ${PAD.l}px;
+      gap: ${SIZES.l}px;
     }
 
     #container {

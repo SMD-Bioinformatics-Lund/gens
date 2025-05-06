@@ -12,21 +12,21 @@ template.innerHTML = String.raw`
         <span class="fas fa-arrow-left"></span>
       </button>
       <button title="Zoom in" id="zoom-in" class='button zoom'>
-        <i class="fas fa-search-plus"></i>
+        <span class="fas fa-search-plus"></span>
       </button>
       <button title="Zoom out" id="zoom-out" class='button zoom'>
-        <i class="fas fa-search-minus"></i>
+        <span class="fas fa-search-minus"></span>
       </button>
       <button title="Pan right" id="pan-right" class='button pan'>
-        <i class="fas fa-arrow-right"></i>
+        <span class="fas fa-arrow-right"></span>
       </button>
       <input onFocus='this.select();' id='region-field' type='text' class="text-input">
       <button title="Run search" id="submit" class='button pan'>
-        <i class="fas fa-search"></i>
+        <span class="fas fa-search"></span>
       </button>
-      <button title="Remove highlights" id="remove-highlights" class='button pan'>
-        <i class="fas fa-xmark"></i>
-      </button>
+      <!-- <button title="Remove highlights" id="remove-highlights" class='button pan'>
+        <span class="fas fa-xmark"></span>
+      </button> -->
   </div>
 `;
 

@@ -36,7 +36,6 @@ export class DataTrack extends CanvasTrack {
   private isHidden: boolean = false;
   private isCollapsed: boolean = false;
   private expander: Expander;
-  private labelBox: Box;
 
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
@@ -53,6 +52,7 @@ export class DataTrack extends CanvasTrack {
 
   toggleHidden() {
     this.isHidden = !this.isHidden;
+    // FIXME: Consider using a CSS class for this
     if (this.isHidden) {
       this.trackContainer.style.display = "none";
     } else {
@@ -280,6 +280,7 @@ export class DataTrack extends CanvasTrack {
   }
 }
 
+// FIXME: Consider what to do with this one. Remove? General height controller?
 class Expander {
   expandedHeight: number = null;
   isExpanded: boolean;

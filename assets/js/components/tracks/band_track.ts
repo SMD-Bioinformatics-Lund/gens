@@ -130,8 +130,9 @@ export class BandTrack extends DataTrack {
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
     const style = STYLE.bandTrack;
+    const height = STYLE.tracks.trackHeight.thin;
     const expandedHeight = getTrackHeight(
-      style.trackHeight.thin,
+      height,
       numberLanes,
       style.trackPadding,
       style.bandPadding,

@@ -1,11 +1,8 @@
-import { STYLE } from "../../../constants";
 import { renderBackground } from "../../../draw/render_utils";
 import { drawLabel } from "../../../draw/shapes";
-import { Tooltip } from "../../../util/tooltip_utils";
-
 import { ShadowBaseElement } from "../../util/shadowbaseelement";
-import { eventInBox } from "../../../util/utils";
 import { setupCanvasClick, getCanvasHover } from "../../util/canvas_interaction";
+import { STYLE } from "../../../constants";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
@@ -63,7 +60,7 @@ export class CanvasTrack extends ShadowBaseElement {
     this.id = id;
     this.label = label;
     this.defaultTrackHeight = defaultHeight;
-    this.collapsedTrackHeight = 20;
+    this.collapsedTrackHeight = STYLE.tracks.trackHeight.extraThin;
   }
 
 

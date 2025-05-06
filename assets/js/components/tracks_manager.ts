@@ -28,7 +28,7 @@ const BAF_Y_RANGE: [number, number] = [0, 1];
 const COV_Y_TICKS = [-3, -2, -1, 0, 1, 2, 3];
 const BAF_Y_TICKS = [0.2, 0.4, 0.6, 0.8];
 
-const trackHeight = STYLE.bandTrack.trackHeight;
+const trackHeight = STYLE.tracks.trackHeight;
 
 // FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
@@ -72,7 +72,7 @@ export class TracksManager extends ShadowBaseElement {
   overviewTracks: OverviewTrack[];
   dataTracks: DataTrack[] = [];
 
-  // Remove this one or?
+  // FIXME: Remove this one or?
   annotationTracks: DataTrack[] = [];
   getXRange: () => Rng;
 
@@ -83,7 +83,6 @@ export class TracksManager extends ShadowBaseElement {
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
   openContextMenu: (header: string, content: HTMLElement[]) => void;
   openTrackContextMenu: (track: DataTrack) => void;
-  // makeNewAnnotTrack: (id: string, label: string) => DataTrack;
 
   constructor() {
     super(template);

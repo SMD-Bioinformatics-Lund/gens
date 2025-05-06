@@ -1,4 +1,4 @@
-import { COLORS } from "../constants";
+import { COLORS, ICONS, SIZES } from "../constants";
 import { removeChildren } from "../util/utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { ChoiceSelect } from "./util/choice_select";
@@ -11,24 +11,24 @@ template.innerHTML = String.raw`
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     .header {
-      padding-top: 5px;
+      padding-top: ${SIZES.xs}px;
     }
     .row {
       display: flex;
       flex-direction: row;
-      padding-top: 2px;
+      padding-top: ${SIZES.xxs}px;
       align-items: center;
     }
     .icon-button {
-      height: 12px;
-      width: 12px;
+      height: ${SIZES.l}px;
+      width: ${SIZES.l}px;
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: center;
     }
     .icon-button:hover {
-      background: #E7EEF2;
+      background: ${COLORS.extraLightGray};
     }
     /* FIXME: Nicer button response colors */
     .icon-button:active {
@@ -90,7 +90,7 @@ export class SettingsPage extends ShadowBaseElement {
     const tracks = this.getDataTracks();
     const tracksSection = getTracksSection(
       tracks,
-      (track: DataTrack, direction: "up" | "down") => { 
+      (track: DataTrack, direction: "up" | "down") => {
         this.onTrackMove(track.id, direction);
         this.onChange();
       },
@@ -175,24 +175,24 @@ function getTracksSection(
     buttonsDiv.style.display = "flex";
     buttonsDiv.style.flexDirection = "row";
     buttonsDiv.style.flexWrap = "nowrap";
-    buttonsDiv.style.gap = "0.5rem";
+    buttonsDiv.style.gap = `${SIZES.s}rem`;
 
     buttonsDiv.appendChild(
-      getIconButton("fa-arrow-up", "Up", () => onMove(track, "up")),
+      getIconButton(ICONS.up, "Up", () => onMove(track, "up")),
     );
     buttonsDiv.appendChild(
-      getIconButton("fa-arrow-down", "Down", () => onMove(track, "down")),
+      getIconButton(ICONS.down, "Down", () => onMove(track, "down")),
     );
     buttonsDiv.appendChild(
       getIconButton(
-        track.getIsHidden() ? "fa-eye-slash" : "fa-eye",
+        track.getIsHidden() ? ICONS.hide : ICONS.show,
         "Show / hide",
         () => onToggleShow(track),
       ),
     );
     buttonsDiv.appendChild(
       getIconButton(
-        track.getIsCollapsed() ? "fa-maximize" : "fa-minimize",
+        track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
         "Collapse / expand",
         () => onToggleCollapse(track),
       ),
