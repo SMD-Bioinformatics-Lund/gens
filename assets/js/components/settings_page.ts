@@ -99,7 +99,7 @@ export class SettingsPage extends ShadowBaseElement {
         this.onChange();
       },
       (track: DataTrack) => {
-        track.isCollapsed = !track.isCollapsed;
+        track.toggleCollapsed();
         this.onChange();
       },
     );
@@ -192,7 +192,7 @@ function getTracksSection(
     );
     buttonsDiv.appendChild(
       getIconButton(
-        track.isCollapsed ? "fa-maximize" : "fa-minimize",
+        track.getIsCollapsed() ? "fa-maximize" : "fa-minimize",
         "Collapse / expand",
         () => onToggleCollapse(track),
       ),

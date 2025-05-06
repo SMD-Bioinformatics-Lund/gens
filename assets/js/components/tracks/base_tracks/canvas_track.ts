@@ -48,9 +48,8 @@ export class CanvasTrack extends ShadowBaseElement {
   protected _scaleFactor: number;
   protected trackContainer: HTMLDivElement;
   protected defaultTrackHeight: number;
-  private currentHeight: number;
-
-  private expander: Expander;
+  protected collapsedTrackHeight: number;
+  protected currentHeight: number;
 
   hoverTargets: HoverBox[];
   isInitialized: boolean = false;
@@ -58,25 +57,15 @@ export class CanvasTrack extends ShadowBaseElement {
 
   onElementClick: (element: RenderBand | RenderDot) => void | null;
 
-  isExpanded(): boolean {
-    return this.expander.isExpanded;
-  }
-
   constructor(id: string, label: string, defaultHeight: number) {
     super(template);
 
     this.id = id;
     this.label = label;
     this.defaultTrackHeight = defaultHeight;
+    this.collapsedTrackHeight = 20;
   }
 
-  setExpandedHeight(height: number) {
-    this.expander.expandedHeight = height;
-    if (this.expander.isExpanded) {
-      this.currentHeight = height;
-      this.syncDimensions();
-    }
-  }
 
   getNtsPerPixel(xRange: Rng) {
     const nNts = xRange[1] - xRange[0];
@@ -118,24 +107,6 @@ export class CanvasTrack extends ShadowBaseElement {
   // can all be rendered as such: canvas.render(updateData);
   async render(_updateData: boolean) {}
 
-  initializeExpander(
-    eventKey: string,
-    startExpanded: boolean,
-    onExpand: () => void,
-  ) {
-    this.expander = new Expander(startExpanded);
-    const height = this.defaultTrackHeight;
-
-    this.trackContainer.addEventListener(eventKey, (event) => {
-      event.preventDefault();
-      this.expander.toggle();
-      this.currentHeight = this.expander.isExpanded
-        ? this.expander.expandedHeight
-        : height;
-      this.syncDimensions();
-      onExpand();
-    });
-  }
 
   initializeClick(onElementClick: (el: HoverBox) => void | null = null) {
     getCanvasClick(this.canvas, () => this.hoverTargets, onElementClick);
@@ -203,22 +174,6 @@ export class CanvasTrack extends ShadowBaseElement {
       width: displayWidth,
       height: displayHeight,
     };
-  }
-}
-
-class Expander {
-  expandedHeight: number = null;
-  isExpanded: boolean;
-
-  constructor(isExpanded: boolean) {
-    this.isExpanded = isExpanded;
-  }
-
-  toggle() {
-    this.isExpanded = !this.isExpanded;
-    if (this.isExpanded && this.expandedHeight == null) {
-      console.error("Need to assign an expanded height");
-    }
   }
 }
 

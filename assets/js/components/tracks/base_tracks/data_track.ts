@@ -34,12 +34,52 @@ export class DataTrack extends CanvasTrack {
   openTrackContextMenu: (track: DataTrack) => void;
 
   isHidden: boolean = false;
-  isCollapsed: boolean = false;
+  private isCollapsed: boolean = false;
+  private expander: Expander;
 
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
 
   private _renderSeq = 0;
+
+  isExpanded(): boolean {
+    return this.expander.isExpanded;
+  }
+
+  getIsCollapsed(): boolean {
+    return this.isCollapsed;
+  }
+
+  toggleCollapsed() {
+    this.isCollapsed = !this.isCollapsed;
+    this.currentHeight = this.expander.isExpanded
+      ? this.expander.expandedHeight
+      : this.isCollapsed
+        ? this.collapsedTrackHeight
+        : this.defaultTrackHeight;
+  }
+
+  // FIXME: Simplify the height management
+  initializeExpander(
+    eventKey: string,
+    startExpanded: boolean,
+    onExpand: () => void,
+  ) {
+    this.expander = new Expander(startExpanded);
+    const height = this.isCollapsed
+      ? this.collapsedTrackHeight
+      : this.defaultTrackHeight;
+
+    this.trackContainer.addEventListener(eventKey, (event) => {
+      event.preventDefault();
+      this.expander.toggle();
+      this.currentHeight = this.expander.isExpanded
+        ? this.expander.expandedHeight
+        : height;
+      this.syncDimensions();
+      onExpand();
+    });
+  }
 
   constructor(
     id: string,
@@ -163,6 +203,14 @@ export class DataTrack extends CanvasTrack {
     }
   }
 
+  setExpandedHeight(height: number) {
+    this.expander.expandedHeight = height;
+    if (this.expander.isExpanded) {
+      this.currentHeight = height;
+      this.syncDimensions();
+    }
+  }
+
   drawEnd() {
     this.setupLabel(() => this.openTrackContextMenu(this));
   }
@@ -198,6 +246,22 @@ export class DataTrack extends CanvasTrack {
       STYLE.tracks.textPadding,
       { textBaseline: "top", boxStyle: {} },
     );
+  }
+}
+
+class Expander {
+  expandedHeight: number = null;
+  isExpanded: boolean;
+
+  constructor(isExpanded: boolean) {
+    this.isExpanded = isExpanded;
+  }
+
+  toggle() {
+    this.isExpanded = !this.isExpanded;
+    if (this.isExpanded && this.expandedHeight == null) {
+      console.error("Need to assign an expanded height");
+    }
   }
 }
 
