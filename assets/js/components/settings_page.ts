@@ -95,7 +95,7 @@ export class SettingsPage extends ShadowBaseElement {
         this.onChange();
       },
       (track: DataTrack) => {
-        track.isHidden = !track.isHidden;
+        track.toggleHidden();
         this.onChange();
       },
       (track: DataTrack) => {
@@ -185,7 +185,7 @@ function getTracksSection(
     );
     buttonsDiv.appendChild(
       getIconButton(
-        track.isHidden ? "fa-eye-slash" : "fa-eye",
+        track.getIsHidden() ? "fa-eye-slash" : "fa-eye",
         "Show / hide",
         () => onToggleShow(track),
       ),

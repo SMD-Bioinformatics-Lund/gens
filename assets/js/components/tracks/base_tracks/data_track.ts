@@ -33,7 +33,7 @@ export class DataTrack extends CanvasTrack {
   dragCallbacks: DragCallbacks;
   openTrackContextMenu: (track: DataTrack) => void;
 
-  isHidden: boolean = false;
+  private isHidden: boolean = false;
   private isCollapsed: boolean = false;
   private expander: Expander;
   private labelBox: Box;
@@ -49,6 +49,19 @@ export class DataTrack extends CanvasTrack {
 
   getIsCollapsed(): boolean {
     return this.isCollapsed;
+  }
+
+  toggleHidden() {
+    this.isHidden = !this.isHidden;
+    if (this.isHidden) {
+      this.trackContainer.style.display = "none";
+    } else {
+      this.trackContainer.style.display = "block";
+    }
+  }
+
+  getIsHidden() {
+    return this.isHidden;
   }
 
   toggleCollapsed() {
