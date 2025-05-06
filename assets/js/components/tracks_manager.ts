@@ -17,9 +17,10 @@ import {
   getVariantContextMenuContent,
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
-import { generateID, moveElement } from "../util/utils";
+import { generateID } from "../util/utils";
 import { getSimpleButton, getContainer } from "./util/menu_utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
+import { diff, moveElement } from "../util/collections";
 
 const COV_Y_RANGE: [number, number] = [-4, 4];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -54,15 +55,20 @@ export class TracksManager extends ShadowBaseElement {
   parentContainer: HTMLDivElement;
   bottomContainer: HTMLDivElement;
   isInitialized = false;
-  annotationsContainer: HTMLDivElement;
+  // annotationsContainer: HTMLDivElement;
 
   // FIXME: Think about a shared interface
   ideogramTrack: IdeogramTrack;
   overviewTracks: OverviewTrack[];
-  tracks: DataTrack[] = [];
+  dataTracks: DataTrack[] = [];
 
-  // This one needs a dedicated component I think
-  annotationTracks: BandTrack[] = [];
+  // Remove this one or?
+  annotationTracks: DataTrack[] = [];
+
+  getAnnotationSources: () => { id: string; label: string }[];
+  getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
+
+  makeNewAnnotTrack: (id: string, label: string) => DataTrack;
 
   constructor() {
     super(template);
@@ -106,6 +112,9 @@ export class TracksManager extends ShadowBaseElement {
     highlightCallbacks: HighlightCallbacks,
   ) {
     const trackHeight = STYLE.bandTrack.trackHeight;
+
+    this.getAnnotationSources = getAnnotSources;
+    this.getAnnotationDetails = getAnnotationDetails;
 
     const dragCallbacks = {
       onZoomIn,
@@ -255,46 +264,83 @@ export class TracksManager extends ShadowBaseElement {
       openTrackContextMenu,
     );
 
-    const annotationTracks = new MultiBandTracks(
-      getAnnotSources,
-      (sourceId: string, label: string) => {
-        async function getAnnotTrackData(
-          source: string,
-          getXRange: () => Rng,
-          getAnnotation: (source: string) => Promise<RenderBand[]>,
-        ): Promise<BandTrackData> {
-          const bands = await getAnnotation(source);
-          return {
-            xRange: getXRange(),
-            bands,
-          };
-        }
-
-        const openContextMenuId = async (id: string) => {
-          const details = await getAnnotationDetails(id);
-          const button = getSimpleButton("Set highlight", () => {
-            const id = generateID();
-            highlightCallbacks.addHighlight(id, [details.start, details.end]);
-          });
-          const entries = getAnnotationContextMenuContent(id, details);
-          const content = [button];
-          content.push(...entries);
-          openContextMenu("Annotations", content);
+    this.makeNewAnnotTrack = (sourceId: string, label: string) => {
+      async function getAnnotTrackData(
+        source: string,
+        getXRange: () => Rng,
+        getAnnotation: (source: string) => Promise<RenderBand[]>,
+      ): Promise<BandTrackData> {
+        const bands = await getAnnotation(source);
+        return {
+          xRange: getXRange(),
+          bands,
         };
+      }
 
-        const track = new BandTrack(
-          sourceId,
-          label,
-          trackHeight.thin,
-          () =>
-            getAnnotTrackData(sourceId, getXRange, dataSource.getAnnotation),
-          openContextMenuId,
-          dragCallbacks,
-          openTrackContextMenu,
-        );
-        return track;
-      },
-    );
+      const openContextMenuId = async (id: string) => {
+        const details = await getAnnotationDetails(id);
+        const button = getSimpleButton("Set highlight", () => {
+          const id = generateID();
+          highlightCallbacks.addHighlight(id, [details.start, details.end]);
+        });
+        const entries = getAnnotationContextMenuContent(id, details);
+        const content = [button];
+        content.push(...entries);
+        openContextMenu("Annotations", content);
+      };
+
+      const track = new BandTrack(
+        sourceId,
+        label,
+        trackHeight.thin,
+        () => getAnnotTrackData(sourceId, getXRange, dataSource.getAnnotation),
+        openContextMenuId,
+        dragCallbacks,
+        openTrackContextMenu,
+      );
+      return track;
+    };
+
+    // const annotationTracks = new MultiBandTracks(
+    //   getAnnotSources,
+    //   (sourceId: string, label: string) => {
+    //     async function getAnnotTrackData(
+    //       source: string,
+    //       getXRange: () => Rng,
+    //       getAnnotation: (source: string) => Promise<RenderBand[]>,
+    //     ): Promise<BandTrackData> {
+    //       const bands = await getAnnotation(source);
+    //       return {
+    //         xRange: getXRange(),
+    //         bands,
+    //       };
+    //     }
+
+    //     const openContextMenuId = async (id: string) => {
+    //       const details = await getAnnotationDetails(id);
+    //       const button = getSimpleButton("Set highlight", () => {
+    //         const id = generateID();
+    //         highlightCallbacks.addHighlight(id, [details.start, details.end]);
+    //       });
+    //       const entries = getAnnotationContextMenuContent(id, details);
+    //       const content = [button];
+    //       content.push(...entries);
+    //       openContextMenu("Annotations", content);
+    //     };
+
+    //     const track = new BandTrack(
+    //       sourceId,
+    //       label,
+    //       trackHeight.thin,
+    //       () =>
+    //         getAnnotTrackData(sourceId, getXRange, dataSource.getAnnotation),
+    //       openContextMenuId,
+    //       dragCallbacks,
+    //       openTrackContextMenu,
+    //     );
+    //     return track;
+    //   },
+    // );
 
     const overviewTrackCov = new OverviewTrack(
       "overview_cov",
@@ -334,11 +380,11 @@ export class TracksManager extends ShadowBaseElement {
     // this.bottomContainer.appendChild(overviewTrackCov);
     // this.bottomContainer.appendChild(overviewTrackBaf);
 
-    this.tracks.push(
+    this.dataTracks.push(
       ...covTracks,
       ...bafTracks,
       ...variantTracks,
-      // annotationTracks,
+      // ...annotationTracks,
       genesTrack,
     );
 
@@ -346,7 +392,7 @@ export class TracksManager extends ShadowBaseElement {
     this.ideogramTrack.initialize();
     this.ideogramTrack.renderLoading();
 
-    this.tracks.forEach((track) => {
+    this.dataTracks.forEach((track) => {
       this.parentContainer.appendChild(track);
       track.initialize();
       track.renderLoading();
@@ -356,17 +402,17 @@ export class TracksManager extends ShadowBaseElement {
       this.bottomContainer.appendChild(track);
       track.initialize();
       track.renderLoading();
-    })
+    });
   }
 
   getDataTracks(): DataTrack[] {
-    return this.tracks.filter((track) => track instanceof DataTrack);
+    return this.dataTracks.filter((track) => track instanceof DataTrack);
   }
 
   getTrackById(trackId: string): DataTrack {
-    for (let i = 0; i < this.tracks.length; i++) {
-      if (this.tracks[i].id == trackId) {
-        return this.tracks[i];
+    for (let i = 0; i < this.dataTracks.length; i++) {
+      if (this.dataTracks[i].id == trackId) {
+        return this.dataTracks[i];
       }
     }
     console.error("Did not find any track with ID", trackId);
@@ -374,17 +420,20 @@ export class TracksManager extends ShadowBaseElement {
 
   moveTrack(trackId: string, direction: "up" | "down") {
     const track = this.getTrackById(trackId);
-    const trackIndex = this.tracks.indexOf(track);
+    const trackIndex = this.dataTracks.indexOf(track);
     const shift = direction == "up" ? -1 : 1;
 
     const container = track.parentNode;
     if (direction == "up") {
-      container.insertBefore(track, this.tracks[trackIndex - 1]);
+      container.insertBefore(track, this.dataTracks[trackIndex - 1]);
     } else {
-      container.insertBefore(track, this.tracks[trackIndex + 1].nextSibling);
+      container.insertBefore(
+        track,
+        this.dataTracks[trackIndex + 1].nextSibling,
+      );
     }
 
-    moveElement(this.tracks, trackIndex, shift, true);
+    moveElement(this.dataTracks, trackIndex, shift, true);
   }
 
   showTrack(trackId: string) {
@@ -397,14 +446,49 @@ export class TracksManager extends ShadowBaseElement {
     this.parentContainer.removeChild(track);
   }
 
+  updateAnnotationTracks() {
+    const sources = this.getAnnotationSources();
+    // const sourcesIds = sources.map((source) => source.id);
+
+    const currAnnotTracks = this.annotationTracks;
+    // const currAnnotTrackIds = currAnnotTracks.map((track) => track.id);
+
+    const newSources = diff(sources, currAnnotTracks, (source) => source.id);
+    const removedSources = diff(
+      currAnnotTracks,
+      sources,
+      (source) => source.id,
+    );
+
+    newSources.forEach((source) => {
+      const newTrack = this.makeNewAnnotTrack(source.id, source.label);
+      this.dataTracks.push(newTrack);
+      this.annotationTracks.push(newTrack);
+      this.parentContainer.appendChild(newTrack);
+      newTrack.initialize();
+    });
+
+    removedSources.forEach((source) => {
+      // Remove track
+      const track = this.getTrackById(source.id);
+      const index = this.dataTracks.indexOf(track);
+      this.dataTracks.splice(index, 0);
+      this.parentContainer.removeChild(track);
+    })
+  }
+
   render(updateData: boolean) {
     // FIXME: React to whether tracks are not present
 
+    this.updateAnnotationTracks();
+
     this.ideogramTrack.render(updateData);
 
-    for (const track of this.tracks) {
+    for (const track of this.dataTracks) {
       track.render(updateData);
     }
+
+    this.overviewTracks.forEach((track) => track.render(updateData));
   }
 }
 

@@ -238,21 +238,3 @@ export function generateID() {
   return `${ts}-${rand64}`;
 }
 
-export function moveElement<T>(
-  orig: T[],
-  pos: number,
-  shift: number,
-  inPlace: boolean,
-): T[] {
-  let target;
-  if (inPlace) {
-    target = orig;
-  } else {
-    target = [...orig];
-  }
-  const el = target.splice(pos, 1)[0];
-  const newPos = pos + shift;
-  target.splice(newPos, 0, el);
-
-  return target;
-}

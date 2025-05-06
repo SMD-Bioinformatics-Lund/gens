@@ -93,6 +93,9 @@ export class CanvasTrack extends ShadowBaseElement {
   }
 
   renderLoading() {
+    if (this.ctx == null) {
+      throw Error(`${this.label}: Track cannot be rendered before initialized`)
+    }
     renderBackground(this.ctx, this.dimensions);
     drawLabel(
       this.ctx,
