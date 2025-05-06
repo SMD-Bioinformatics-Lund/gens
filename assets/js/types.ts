@@ -68,7 +68,7 @@ interface ApiTranscriptFeature {
   exon_number: number,
 }
 
-interface ApiTranscriptDetails {
+interface ApiGeneDetails {
   transcript_id: string,
   transcript_biotype: string,
   gene_name: string,
@@ -461,7 +461,6 @@ interface DragCallbacks {
 
 interface Axis {
   range: Rng;
-  ticks: number[];
 }
 
 interface HighlightCallbacks {

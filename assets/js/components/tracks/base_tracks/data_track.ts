@@ -1,12 +1,15 @@
-import { STYLE } from "../../../constants";
+import { SIZES, STYLE } from "../../../constants";
 import {
   drawYAxis,
   getLinearScale,
   renderBackground,
 } from "../../../draw/render_utils";
 import { drawHorizontalLineInScale, drawLabel } from "../../../draw/shapes";
-import { generateID } from "../../../util/utils";
-import { setupCanvasClick, getCanvasHover, setCanvasPointerCursor } from "../../util/canvas_interaction";
+import { generateID, generateTicks, getTickSize, rangeSize } from "../../../util/utils";
+import {
+  setupCanvasClick,
+  setCanvasPointerCursor,
+} from "../../util/canvas_interaction";
 import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
 import { initializeDragSelect, renderHighlights } from "./interactive_tools";
@@ -18,11 +21,12 @@ interface Settings {
   dragSelect: boolean;
   yAxis: {
     range: Rng;
-    ticks: number[];
   } | null;
 }
 
 const DEBOUNCE_DELAY = 500;
+
+const Y_PAD = SIZES.s;
 
 export class DataTrack extends CanvasTrack {
   settings: Settings;
@@ -40,7 +44,19 @@ export class DataTrack extends CanvasTrack {
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
 
-  private _renderSeq = 0;
+  private renderSeq = 0;
+
+  getYDim(): Rng {
+    return [Y_PAD, this.dimensions.height - Y_PAD];
+  }
+
+  getYAxis(): Axis | null {
+    return this.settings.yAxis;
+  }
+
+  updateYAxis(range: Rng) {
+    this.settings.yAxis.range = range;
+  }
 
   isExpanded(): boolean {
     return this.expander.isExpanded;
@@ -115,7 +131,7 @@ export class DataTrack extends CanvasTrack {
     };
     this.getYScale = () => {
       const yRange = this.getYRange();
-      const yScale = getLinearScale(yRange, [0, this.dimensions.height]);
+      const yScale = getLinearScale(yRange, this.getYDim());
       return yScale;
     };
 
@@ -175,10 +191,10 @@ export class DataTrack extends CanvasTrack {
     // Only the last request is of interest
     const _fetchData = debounce(
       async () => {
-        this._renderSeq = this._renderSeq + 1;
-        const mySeq = this._renderSeq;
+        this.renderSeq = this.renderSeq + 1;
+        const mySeq = this.renderSeq;
         this.renderData = await this.getRenderData();
-        if (mySeq !== this._renderSeq) {
+        if (mySeq !== this.renderSeq) {
           return;
         }
         this.draw();
@@ -232,7 +248,7 @@ export class DataTrack extends CanvasTrack {
     setCanvasPointerCursor(this.canvas, () => {
       const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
       return hoverTargets.concat([labelBox]);
-    })
+    });
   }
 
   setupLabel(onClick: () => void): HoverBox {
@@ -247,16 +263,18 @@ export class DataTrack extends CanvasTrack {
   }
 
   renderYAxis(yAxis: Axis) {
-    const yScale = getLinearScale(yAxis.range, [0, this.dimensions.height]);
+    const yScale = getLinearScale(yAxis.range, this.getYDim());
+    const tickSize = getTickSize(yAxis.range);
+    const ticks = generateTicks(yAxis.range, tickSize);
 
-    for (const yTick of yAxis.ticks) {
+    for (const yTick of ticks) {
       drawHorizontalLineInScale(this.ctx, yTick, yScale, {
         color: STYLE.colors.lightGray,
         dashed: true,
       });
     }
 
-    drawYAxis(this.ctx, yAxis.ticks, yScale, yAxis.range);
+    drawYAxis(this.ctx, ticks, yScale, yAxis.range);
   }
 
   drawTrackLabel(shiftRight: number = 0): Box {

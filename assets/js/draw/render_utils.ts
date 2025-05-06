@@ -1,6 +1,10 @@
 import { rangeSize } from "../util/utils";
-import { STYLE } from "../constants";
-import { drawBox, drawLabel } from "./shapes";
+import { COLORS, STYLE } from "../constants";
+import {
+  drawBox,
+  drawLabel,
+  drawLine,
+} from "./shapes";
 
 export function drawYAxis(
   ctx: CanvasRenderingContext2D,
@@ -9,8 +13,25 @@ export function drawYAxis(
   yRange: Rng,
 ) {
   const style = STYLE.yAxis;
-  const box = { x1: 0, x2: style.width, y1: yScale(yRange[0]), y2: yScale(yRange[1]) };
-  drawBox(ctx, box, { fillColor: style.backgroundColor });
+  const box = {
+    x1: 0,
+    x2: style.width,
+    y1: yScale(yRange[0]),
+    // If not +1, the final tick line is drawn
+    y2: yScale(yRange[1]) + 1,
+  };
+  drawBox(ctx, box, { fillColor: style.backgroundColor, borderColor: COLORS.white });
+  drawLine(
+    ctx,
+    {
+      x1: style.width,
+      x2: style.width,
+      y1: yScale(yRange[0]),
+      y2: yScale(yRange[1]),
+    },
+    { color: style.backgroundColor },
+  );
+  // drawBox(ctx, box, { fillColor: style.backgroundColor });
 
   for (const y of ys) {
     drawLabel(ctx, y.toString(), style.labelPos, yScale(y), {
@@ -21,11 +42,10 @@ export function drawYAxis(
   }
 }
 
-
 export function renderBackground(
   ctx: CanvasRenderingContext2D,
   canvasDim: { height: number; width: number },
-  color: string = STYLE.tracks.edgeColor
+  color: string = STYLE.tracks.edgeColor,
 ) {
   const style = STYLE.tracks;
   ctx.fillStyle = style.backgroundColor;
@@ -40,7 +60,6 @@ export function renderBand(
   band: RenderBand,
   xScale: Scale,
 ) {
-
   const style = STYLE.bands;
 
   ctx.fillStyle = band.color;
@@ -166,7 +185,6 @@ export function rgbArrayToString(rgbArray: number[]): string {
   return `rgb(${rgbArray[0]},${rgbArray[1]},${rgbArray[2]})`;
 }
 
-
 /**
  * Builds a function used to map from domain (i.e. nucleotides)
  * to range (i.e. pixels)
@@ -222,5 +240,3 @@ export function drawArrow(
   ctx.closePath();
   ctx.fill();
 }
-
-

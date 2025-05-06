@@ -25,11 +25,11 @@ export class API {
     return details;
   }
 
-  getTranscriptDetails(id: string): Promise<ApiTranscriptDetails> {
+  getTranscriptDetails(id: string): Promise<ApiGeneDetails> {
     const details = get(
       new URL(`tracks/transcripts/transcript/${id}`, this.apiURI).href,
       {},
-    ) as Promise<ApiTranscriptDetails>;
+    ) as Promise<ApiGeneDetails>;
     return details;
   }
 
