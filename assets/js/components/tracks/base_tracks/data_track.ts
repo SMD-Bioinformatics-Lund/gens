@@ -6,7 +6,7 @@ import {
 } from "../../../draw/render_utils";
 import { drawHorizontalLineInScale, drawLabel } from "../../../draw/shapes";
 import { generateID } from "../../../util/utils";
-import { getCanvasClick, getCanvasHover } from "../../util/canvas_interaction";
+import { setupCanvasClick, getCanvasHover, setCanvasPointerCursor } from "../../util/canvas_interaction";
 import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
 import { initializeDragSelect, renderHighlights } from "./interactive_tools";
@@ -36,6 +36,7 @@ export class DataTrack extends CanvasTrack {
   isHidden: boolean = false;
   private isCollapsed: boolean = false;
   private expander: Expander;
+  private labelBox: Box;
 
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
@@ -113,7 +114,7 @@ export class DataTrack extends CanvasTrack {
 
     if (this.dragCallbacks != null) {
       // FIXME: Look over this, how to make the dragging "feel" neat
-      // this.setupDrag();
+      this.setupDrag();
     }
   }
 
@@ -141,11 +142,12 @@ export class DataTrack extends CanvasTrack {
       }
     };
 
-    initializeDragSelect(
-      this.canvas,
-      onDrag,
-      this.dragCallbacks.removeHighlight,
-    );
+    // FIXME: Temporarily paused, refine and bring it back
+    // initializeDragSelect(
+    //   this.canvas,
+    //   onDrag,
+    //   this.dragCallbacks.removeHighlight,
+    // );
 
     this.trackContainer.addEventListener("click", () => {
       if (keyLogger.heldKeys.Control) {
@@ -213,17 +215,22 @@ export class DataTrack extends CanvasTrack {
   }
 
   drawEnd() {
-    this.setupLabel(() => this.openTrackContextMenu(this));
+    const labelBox = this.setupLabel(() => this.openTrackContextMenu(this));
+    setCanvasPointerCursor(this.canvas, () => {
+      const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
+      return hoverTargets.concat([labelBox]);
+    })
   }
 
-  setupLabel(onClick: () => void) {
+  setupLabel(onClick: () => void): HoverBox {
     const yAxisWidth = this.settings.yAxis != null ? STYLE.yAxis.width : 0;
-    const box = this.drawTrackLabel(yAxisWidth);
+    const labelBox = this.drawTrackLabel(yAxisWidth);
     const hoverBox = {
       label: this.label,
-      box,
+      box: labelBox,
     };
-    getCanvasClick(this.canvas, () => [hoverBox], onClick);
+    setupCanvasClick(this.canvas, () => [hoverBox], onClick);
+    return hoverBox;
   }
 
   renderYAxis(yAxis: Axis) {
@@ -240,13 +247,23 @@ export class DataTrack extends CanvasTrack {
   }
 
   drawTrackLabel(shiftRight: number = 0): Box {
-    return drawLabel(
-      this.ctx,
-      this.label,
-      STYLE.tracks.textPadding + shiftRight,
-      STYLE.tracks.textPadding,
-      { textBaseline: "top", boxStyle: {} },
-    );
+    if (!this.isCollapsed) {
+      return drawLabel(
+        this.ctx,
+        this.label,
+        STYLE.tracks.textPadding + shiftRight,
+        STYLE.tracks.textPadding,
+        { textBaseline: "top", boxStyle: {} },
+      );
+    } else {
+      // FIXME: Display something on hover
+      return {
+        x1: 0,
+        x2: STYLE.yAxis.width,
+        y1: 0,
+        y2: this.dimensions.height,
+      };
+    }
   }
 }
 

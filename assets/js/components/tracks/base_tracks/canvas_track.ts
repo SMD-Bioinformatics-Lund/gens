@@ -5,7 +5,7 @@ import { Tooltip } from "../../../util/tooltip_utils";
 
 import { ShadowBaseElement } from "../../util/shadowbaseelement";
 import { eventInBox } from "../../../util/utils";
-import { getCanvasClick, getCanvasHover } from "../../util/canvas_interaction";
+import { setupCanvasClick, getCanvasHover } from "../../util/canvas_interaction";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
@@ -112,33 +112,11 @@ export class CanvasTrack extends ShadowBaseElement {
 
 
   initializeClick(onElementClick: (el: HoverBox) => void | null = null) {
-    getCanvasClick(this.canvas, () => this.hoverTargets, onElementClick);
+    setupCanvasClick(this.canvas, () => this.hoverTargets, onElementClick);
   }
 
   initializeHoverTooltip() {
     getCanvasHover(this.canvas, () => this.hoverTargets, { showTooltip: true });
-
-    // const tooltip = new Tooltip(document.body);
-    // this.canvas.addEventListener("mousemove", (event) => {
-    //   if (this.hoverTargets == null) {
-    //     return;
-    //   }
-    //   tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
-
-    //   const hovered = this.hoverTargets.find((target) =>
-    //     eventInBox(event, target.box),
-    //   );
-
-    //   if (hovered) {
-    //     tooltip.tooltipEl.textContent = hovered.label;
-    //     tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
-    //   } else {
-    //     tooltip.onMouseLeave();
-    //   }
-    // });
-    // this.canvas.addEventListener("mouseleave", () => {
-    //   tooltip.onMouseLeave();
-    // });
   }
 
   setHoverTargets(hoverTargets: HoverBox[]) {

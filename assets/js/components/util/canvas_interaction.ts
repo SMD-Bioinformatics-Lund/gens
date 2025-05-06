@@ -5,13 +5,12 @@ interface HoverSettings {
   showTooltip: boolean;
 }
 
-export function getCanvasClick(
+export function setupCanvasClick(
   canvas: HTMLCanvasElement,
   getHoverTargets: () => HoverBox[],
   onElementClick: (el: HoverBox) => void | null = null,
 ) {
   canvas.addEventListener("click", (event) => {
-
     const hoverTargets = getHoverTargets();
 
     if (!hoverTargets || !onElementClick) {
@@ -26,20 +25,22 @@ export function getCanvasClick(
       onElementClick(hoveredTarget);
     }
   });
+}
 
+export function setCanvasPointerCursor(
+  canvas: HTMLCanvasElement,
+  getHoverTargets: () => HoverBox[],
+) {
   canvas.addEventListener("mousemove", (event) => {
-
     const hoverTargets = getHoverTargets();
 
     if (!hoverTargets) {
       return;
     }
-    const hovered = hoverTargets.find((target) =>
+    const hovered = hoverTargets.some((target) =>
       eventInBox(event, target.box),
     );
-    if (onElementClick) {
-      canvas.style.cursor = hovered ? "pointer" : "default";
-    }
+    canvas.style.cursor = hovered ? "pointer" : "auto";
   });
 }
 
@@ -51,7 +52,6 @@ export function getCanvasHover(
   const tooltip = settings.showTooltip ? new Tooltip(document.body) : null;
 
   canvas.addEventListener("mousemove", (event) => {
-
     const hoverTargets = getHoverTargets();
 
     if (hoverTargets == null) {
