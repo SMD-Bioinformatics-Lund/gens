@@ -139,10 +139,10 @@ export class TracksManager extends ShadowBaseElement {
     this.openContextMenu = openContextMenu;
     this.getXRange = getXRange;
 
+    const animMs = 150;
     Sortable.create(this.parentContainer, {
-      animation: 150,
+      animation: animMs,
       onEnd: (evt: SortableEvent) => {
-        console.log("On end");
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
