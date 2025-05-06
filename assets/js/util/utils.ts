@@ -232,8 +232,9 @@ export function generateID() {
   const randBuf = crypto.getRandomValues(new Uint32Array(2));
   // build a 64-bit BigInt without any `n` literals
   const shift32 = BigInt(32);
-  const high   = BigInt(randBuf[0]) << shift32;
-  const low    = BigInt(randBuf[1]);
+  const high = BigInt(randBuf[0]) << shift32;
+  const low = BigInt(randBuf[1]);
   const rand64 = (high | low).toString(36);
   return `${ts}-${rand64}`;
 }
+

@@ -1,10 +1,8 @@
-import { STYLE } from "../../../constants";
 import { renderBackground } from "../../../draw/render_utils";
 import { drawLabel } from "../../../draw/shapes";
-import { Tooltip } from "../../../util/tooltip_utils";
-
 import { ShadowBaseElement } from "../../util/shadowbaseelement";
-import { eventInBox } from "../../../util/utils";
+import { setupCanvasClick, getCanvasHover } from "../../util/canvas_interaction";
+import { STYLE } from "../../../constants";
 
 // FIXME: Move somewhere
 const PADDING_SIDES = 0;
@@ -47,9 +45,8 @@ export class CanvasTrack extends ShadowBaseElement {
   protected _scaleFactor: number;
   protected trackContainer: HTMLDivElement;
   protected defaultTrackHeight: number;
-  private currentHeight: number;
-
-  private expander: Expander;
+  protected collapsedTrackHeight: number;
+  protected currentHeight: number;
 
   hoverTargets: HoverBox[];
   isInitialized: boolean = false;
@@ -57,29 +54,15 @@ export class CanvasTrack extends ShadowBaseElement {
 
   onElementClick: (element: RenderBand | RenderDot) => void | null;
 
-  isExpanded(): boolean {
-    return this.expander.isExpanded;
-  }
-
-  constructor(
-    id: string,
-    label: string,
-    defaultHeight: number,
-  ) {
+  constructor(id: string, label: string, defaultHeight: number) {
     super(template);
 
     this.id = id;
     this.label = label;
     this.defaultTrackHeight = defaultHeight;
+    this.collapsedTrackHeight = STYLE.tracks.trackHeight.extraThin;
   }
 
-  setExpandedHeight(height: number) {
-    this.expander.expandedHeight = height;
-    if (this.expander.isExpanded) {
-      this.currentHeight = height;
-      this.syncDimensions();
-    }
-  }
 
   getNtsPerPixel(xRange: Rng) {
     const nNts = xRange[1] - xRange[0];
@@ -95,7 +78,6 @@ export class CanvasTrack extends ShadowBaseElement {
     }
 
     this.canvas = this.root.getElementById("canvas") as HTMLCanvasElement;
-
     this.currentHeight = this.defaultTrackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
@@ -104,11 +86,13 @@ export class CanvasTrack extends ShadowBaseElement {
     ) as HTMLDivElement;
 
     this.syncDimensions();
-
     this.isInitialized = true;
   }
 
   renderLoading() {
+    if (this.ctx == null) {
+      throw Error(`${this.label}: Track cannot be rendered before initialized`)
+    }
     renderBackground(this.ctx, this.dimensions);
     drawLabel(
       this.ctx,
@@ -123,90 +107,17 @@ export class CanvasTrack extends ShadowBaseElement {
   // can all be rendered as such: canvas.render(updateData);
   async render(_updateData: boolean) {}
 
-  initializeExpander(
-    eventKey: string,
-    startExpanded: boolean,
-    onExpand: () => void,
-  ) {
-    this.expander = new Expander(startExpanded);
-    const height = this.defaultTrackHeight;
-
-    this.trackContainer.addEventListener(eventKey, (event) => {
-      event.preventDefault();
-      this.expander.toggle();
-      this.currentHeight = this.expander.isExpanded
-        ? this.expander.expandedHeight
-        : height;
-      this.syncDimensions();
-      onExpand();
-    });
-  }
 
   initializeClick(onElementClick: (el: HoverBox) => void | null = null) {
-    this.canvas.addEventListener("click", (event) => {
-      if (!this.hoverTargets || !onElementClick) {
-        return;
-      }
-
-      const hoveredTarget = this.hoverTargets.find((target) =>
-        eventInBox(event, target.box),
-      );
-
-      if (hoveredTarget && onElementClick) {
-        onElementClick(hoveredTarget);
-      }
-    });
-
-    this.canvas.addEventListener("mousemove", (event) => {
-      if (!this.hoverTargets) {
-        return;
-      }
-      const hovered = this.hoverTargets.find((target) =>
-        eventInBox(event, target.box),
-      );
-      if (onElementClick) {
-        this.canvas.style.cursor = hovered ? "pointer" : "default";
-      }
-    });
+    setupCanvasClick(this.canvas, () => this.hoverTargets, onElementClick);
   }
 
   initializeHoverTooltip() {
-    const tooltip = new Tooltip(document.body);
-
-    this.canvas.addEventListener("mousemove", (event) => {
-      if (this.hoverTargets == null) {
-        return;
-      }
-      tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
-
-      const hovered = this.hoverTargets.find((target) =>
-        eventInBox(event, target.box),
-      );
-
-      if (hovered) {
-        tooltip.tooltipEl.textContent = hovered.label;
-        tooltip.onMouseMove(this.canvas, event.offsetX, event.offsetY);
-      } else {
-        tooltip.onMouseLeave();
-      }
-    });
-    this.canvas.addEventListener("mouseleave", () => {
-      tooltip.onMouseLeave();
-    });
+    getCanvasHover(this.canvas, () => this.hoverTargets, { showTooltip: true });
   }
 
   setHoverTargets(hoverTargets: HoverBox[]) {
     this.hoverTargets = hoverTargets;
-  }
-
-  drawTrackLabel(shiftRight: number = 0) {
-    drawLabel(
-      this.ctx,
-      this.label,
-      STYLE.tracks.textPadding + shiftRight,
-      STYLE.tracks.textPadding,
-      { textBaseline: "top", boxStyle: {} },
-    );
   }
 
   syncDimensions() {
@@ -241,22 +152,6 @@ export class CanvasTrack extends ShadowBaseElement {
       width: displayWidth,
       height: displayHeight,
     };
-  }
-}
-
-class Expander {
-  expandedHeight: number = null;
-  isExpanded: boolean;
-
-  constructor(isExpanded: boolean) {
-    this.isExpanded = isExpanded;
-  }
-
-  toggle() {
-    this.isExpanded = !this.isExpanded;
-    if (this.isExpanded && this.expandedHeight == null) {
-      console.error("Need to assign an expanded height");
-    }
   }
 }
 

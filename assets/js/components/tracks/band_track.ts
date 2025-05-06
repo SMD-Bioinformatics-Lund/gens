@@ -20,6 +20,7 @@ export class BandTrack extends DataTrack {
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
     dragCallbacks: DragCallbacks,
+    openTrackContextMenu: (track: DataTrack) => void,
   ) {
     super(
       id,
@@ -35,6 +36,7 @@ export class BandTrack extends DataTrack {
         return xScale;
       },
       dragCallbacks,
+      openTrackContextMenu,
       {
         defaultHeight: trackHeight,
         dragSelect: true,
@@ -62,7 +64,7 @@ export class BandTrack extends DataTrack {
   }
 
   draw() {
-    super.draw();
+    super.drawStart();
 
     const { bands, xRange } = this.renderData as BandTrackData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
@@ -122,13 +124,15 @@ export class BandTrack extends DataTrack {
     });
 
     this.setHoverTargets(hoverTargets);
-    this.drawTrackLabel();
+
+    this.drawEnd();
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
     const style = STYLE.bandTrack;
+    const height = STYLE.tracks.trackHeight.thin;
     const expandedHeight = getTrackHeight(
-      style.trackHeight.thin,
+      height,
       numberLanes,
       style.trackPadding,
       style.bandPadding,

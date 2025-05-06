@@ -125,9 +125,8 @@ export function drawLabel(
   leftX: number,
   topY: number,
   style: LabelStyle = {},
-) {
+): Box {
   const {
-    withFrame = true,
     textBaseline = "top",
     padding = STYLE.tracks.textFramePadding,
     font = STYLE.tracks.font,
@@ -139,32 +138,32 @@ export function drawLabel(
   ctx.font = font;
 
   const metrics = ctx.measureText(label);
-  const textWidth = metrics.width;
+  const textWidth: number = metrics.width;
   const textHeight =
     metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
 
-  if (withFrame) {
-    const x1 = leftX - padding;
-    const frameWidth = textWidth + 2 * padding;
-    const y1 = topY - padding;
-    const frameHeight = textHeight + 2 * padding;
+  const x1 = leftX - padding;
+  const frameWidth = textWidth + 2 * padding;
+  const y1 = topY - padding;
+  const frameHeight = textHeight + 2 * padding;
 
-    const box = {
-      x1,
-      x2: x1 + frameWidth,
-      y1,
-      y2: y1 + frameHeight,
-    };
+  const box: Box = {
+    x1,
+    x2: x1 + frameWidth,
+    y1,
+    y2: y1 + frameHeight,
+  };
 
-    if (boxStyle != undefined) {
-      drawBox(ctx, box, boxStyle);
-    }
+  if (boxStyle != undefined) {
+    drawBox(ctx, box, boxStyle);
   }
 
   ctx.fillStyle = textColor;
   ctx.textAlign = textAlign;
   ctx.textBaseline = textBaseline;
   ctx.fillText(label, leftX, topY);
+
+  return box;
 }
 
 export function drawBox(

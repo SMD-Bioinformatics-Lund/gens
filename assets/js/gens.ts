@@ -16,6 +16,7 @@ import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
 import { SettingsPage } from "./components/settings_page";
 import { HeaderInfo } from "./components/header_info";
+import { DataTrack } from "./components/tracks/base_tracks/data_track";
 
 export async function initCanvases({
   caseId,
@@ -37,6 +38,7 @@ export async function initCanvases({
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
   const sideMenu = document.getElementById("side-menu") as SideMenu;
+  const settingsPage = document.createElement("settings-page") as SettingsPage;
 
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
   headerInfo.initialize(caseId, sampleIds);
@@ -59,11 +61,16 @@ export async function initCanvases({
     },
   );
 
+  const render = (updatedData: boolean) => {
+    gensTracks.render(updatedData);
+    settingsPage.render();
+  };
+
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);
     inputControls.updateChromosome(chrom, chromData.size);
     const updateData = true;
-    gensTracks.render(updateData);
+    render(updateData);
   };
 
   const getChromInfo = async (chromosome: string): Promise<ChromosomeInfo> => {
@@ -91,12 +98,20 @@ export async function initCanvases({
       };
     });
 
-  const settingsPage = document.createElement("settings-page") as SettingsPage;
-  settingsPage.setSources(annotSources, defaultAnnot, (_newSources) => {
-    gensTracks.render(true);
-  });
+  settingsPage.setSources(
+    () => render(false),
+    annotSources,
+    defaultAnnot,
+    (_newSources) => {
+      render(true);
+    },
+    () => gensTracks.getDataTracks(),
+    (trackId: string, direction: "up" | "down") =>
+      gensTracks.moveTrack(trackId, direction),
+  );
 
   initialize(
+    render,
     sampleIds,
     inputControls,
     gensTracks,
@@ -123,6 +138,7 @@ export async function initCanvases({
 }
 
 async function initialize(
+  render: (updatedData: boolean) => void,
   sampleIds: string[],
   inputControls: InputControls,
   tracks: TracksManager,
@@ -155,22 +171,22 @@ async function initialize(
     },
     removeHighlights: () => {
       highlights = {};
-      tracks.render(false);
+      render(false);
     },
     addHighlight: (id: string, range: Rng) => {
       highlights[id] = range;
-      tracks.render(false);
+      render(false);
     },
     removeHighlight: (id: string) => {
       delete highlights[id];
-      tracks.render(false);
+      render(false);
     },
   };
 
   inputControls.initialize(
     startRegion,
     async (_range) => {
-      tracks.render(true);
+      render(true);
     },
     highlightCallbacks.removeHighlights,
   );
@@ -184,7 +200,7 @@ async function initialize(
     () => inputControls.getRange(),
     (range: Rng) => {
       inputControls.updatePosition(range);
-      tracks.render(true);
+      render(true);
     },
     () => inputControls.zoomOut(),
     () => settingsPage.getAnnotSources(),
@@ -192,12 +208,16 @@ async function initialize(
     async (id: string) => await api.getAnnotationDetails(id),
     async (id: string) => await api.getTranscriptDetails(id),
     async (sampleId: string, variantId: string) =>
-      await api.getVariantDetails(sampleId, variantId, inputControls.getRegion().chrom),
+      await api.getVariantDetails(
+        sampleId,
+        variantId,
+        inputControls.getRegion().chrom,
+      ),
     openContextMenu,
     highlightCallbacks,
   );
 
-  tracks.render(true);
+  render(true);
 }
 
 function setupShortcuts(

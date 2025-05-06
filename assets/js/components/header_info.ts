@@ -1,4 +1,4 @@
-import { COLORS, FONT_SIZE, FONT_WEIGHT, PAD } from "../constants";
+import { COLORS, FONT_SIZE, FONT_WEIGHT, SIZES } from "../constants";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 
 const template = document.createElement("template");
@@ -9,12 +9,12 @@ template.innerHTML = String.raw`
     flex-direction: column;
     justify-content: center;
     height: 100%;
-    padding-left: ${PAD.s}px;
+    padding-left: ${SIZES.s}px;
   }
   .row {
     display: flex;
     flex-direction: row;
-    padding-top: ${PAD.xs}px;
+    padding-top: ${SIZES.xs}px;
     justify-content: space-between;
   }
   .text {
@@ -23,7 +23,7 @@ template.innerHTML = String.raw`
   }
   .label {
     font-weight: ${FONT_WEIGHT.header};
-    padding-right: ${PAD.xs}px;
+    padding-right: ${SIZES.xs}px;
   }
 </style>
 <div id="container">

@@ -8,7 +8,7 @@ $gens-blue: #567;
 // FIXME: Merge with other colors
 $button-white: #FAFBFC;
 $button-black: rgba(27, 31, 35, 0.15);
-$button-gray: #888;
+$button-gray: #444;
 $button-hover-white: #E7EEF2;
 $header-background-blue: #bbcadc;
 $source-border-color: rgba(27, 31, 35, 0.15);
@@ -82,7 +82,7 @@ $marker-gray-color: #7c7c7c;
   align-items: center;
   justify-content: center;
 
-  i {
+  .fas {
     font-size: 20px;
     line-height: 1;
     color: $button-gray;

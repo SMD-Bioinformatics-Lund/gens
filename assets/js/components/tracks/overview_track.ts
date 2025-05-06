@@ -71,16 +71,16 @@ export class OverviewTrack extends CanvasTrack {
     this.trackContainer.style.cursor = "pointer";
   }
 
-  async render(_updateData: boolean) {
+  async render(updateData: boolean) {
 
     // FIXME: This one is a bit tricky isn't it
     // We want it to render not on new data, but on resize
     // Do I have all info I need here?
     // Should the renderData be more granular?
     let newRender = false;
-    if (this.renderData == null) {
+    if (this.renderData == null || updateData) {
+      newRender = this.renderData == null;
       this.renderData = await this.getRenderData();
-      newRender = true;
     }
 
     const { xRange, chromosome, dotsPerChrom } = this.renderData;

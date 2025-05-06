@@ -4,8 +4,9 @@ import {
   getLinearScale,
   renderBackground,
 } from "../../../draw/render_utils";
-import { drawHorizontalLineInScale } from "../../../draw/shapes";
+import { drawHorizontalLineInScale, drawLabel } from "../../../draw/shapes";
 import { generateID } from "../../../util/utils";
+import { setupCanvasClick, getCanvasHover, setCanvasPointerCursor } from "../../util/canvas_interaction";
 import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
 import { initializeDragSelect, renderHighlights } from "./interactive_tools";
@@ -24,17 +25,75 @@ interface Settings {
 const DEBOUNCE_DELAY = 500;
 
 export class DataTrack extends CanvasTrack {
-  setupConfig: Settings;
+  settings: Settings;
   getXRange: () => Rng;
   getXScale: () => Scale;
   getYRange: () => Rng;
   getYScale: () => Scale;
   dragCallbacks: DragCallbacks;
+  openTrackContextMenu: (track: DataTrack) => void;
+
+  private isHidden: boolean = false;
+  private isCollapsed: boolean = false;
+  private expander: Expander;
 
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
 
   private _renderSeq = 0;
+
+  isExpanded(): boolean {
+    return this.expander.isExpanded;
+  }
+
+  getIsCollapsed(): boolean {
+    return this.isCollapsed;
+  }
+
+  toggleHidden() {
+    this.isHidden = !this.isHidden;
+    // FIXME: Consider using a CSS class for this
+    if (this.isHidden) {
+      this.trackContainer.style.display = "none";
+    } else {
+      this.trackContainer.style.display = "block";
+    }
+  }
+
+  getIsHidden() {
+    return this.isHidden;
+  }
+
+  toggleCollapsed() {
+    this.isCollapsed = !this.isCollapsed;
+    this.currentHeight = this.expander.isExpanded
+      ? this.expander.expandedHeight
+      : this.isCollapsed
+        ? this.collapsedTrackHeight
+        : this.defaultTrackHeight;
+  }
+
+  // FIXME: Simplify the height management
+  initializeExpander(
+    eventKey: string,
+    startExpanded: boolean,
+    onExpand: () => void,
+  ) {
+    this.expander = new Expander(startExpanded);
+    const height = this.isCollapsed
+      ? this.collapsedTrackHeight
+      : this.defaultTrackHeight;
+
+    this.trackContainer.addEventListener(eventKey, (event) => {
+      event.preventDefault();
+      this.expander.toggle();
+      this.currentHeight = this.expander.isExpanded
+        ? this.expander.expandedHeight
+        : height;
+      this.syncDimensions();
+      onExpand();
+    });
+  }
 
   constructor(
     id: string,
@@ -42,11 +101,12 @@ export class DataTrack extends CanvasTrack {
     getXRange: () => Rng,
     getXScale: () => Scale,
     callbacks: DragCallbacks,
+    openTrackContextMenu: (track: DataTrack) => void,
     settings: Settings,
   ) {
     super(id, label, settings.defaultHeight);
     this.dragCallbacks = callbacks;
-    this.setupConfig = settings;
+    this.settings = settings;
     this.getXRange = getXRange;
     this.getXScale = getXScale;
 
@@ -58,29 +118,15 @@ export class DataTrack extends CanvasTrack {
       const yScale = getLinearScale(yRange, [0, this.dimensions.height]);
       return yScale;
     };
-  }
 
-  // The intent with the debounce keeping track of the rendering number (_renderSeq)
-  // is to prevent repeated API requests when rapidly zooming/panning
-  // Only the last request is of interest
-  private _fetchData = debounce(
-    async () => {
-      this._renderSeq = this._renderSeq + 1;
-      const mySeq = this._renderSeq;
-      this.renderData = await this.getRenderData();
-      if (mySeq !== this._renderSeq) {
-        return;
-      }
-      this.draw();
-    },
-    DEBOUNCE_DELAY,
-    { leading: false, trailing: true },
-  );
+    this.openTrackContextMenu = openTrackContextMenu;
+  }
 
   initialize() {
     super.initialize();
 
     if (this.dragCallbacks != null) {
+      // FIXME: Look over this, how to make the dragging "feel" neat
       this.setupDrag();
     }
   }
@@ -109,11 +155,12 @@ export class DataTrack extends CanvasTrack {
       }
     };
 
-    initializeDragSelect(
-      this.canvas,
-      onDrag,
-      this.dragCallbacks.removeHighlight,
-    );
+    // FIXME: Temporarily paused, refine and bring it back
+    // initializeDragSelect(
+    //   this.canvas,
+    //   onDrag,
+    //   this.dragCallbacks.removeHighlight,
+    // );
 
     this.trackContainer.addEventListener("click", () => {
       if (keyLogger.heldKeys.Control) {
@@ -123,15 +170,38 @@ export class DataTrack extends CanvasTrack {
   }
 
   async render(updateData: boolean) {
+    // The intent with the debounce keeping track of the rendering number (_renderSeq)
+    // is to prevent repeated API requests when rapidly zooming/panning
+    // Only the last request is of interest
+    const _fetchData = debounce(
+      async () => {
+        this._renderSeq = this._renderSeq + 1;
+        const mySeq = this._renderSeq;
+        this.renderData = await this.getRenderData();
+        if (mySeq !== this._renderSeq) {
+          return;
+        }
+        this.draw();
+      },
+      DEBOUNCE_DELAY,
+      { leading: false, trailing: true },
+    );
+
     if (updateData || this.renderData == null) {
       this.renderLoading();
-      this._fetchData();
+      _fetchData();
     } else {
       this.draw();
     }
   }
 
   draw() {
+    console.error(
+      "Should be implemented by children. Call drawStart and drawEnd in parent",
+    );
+  }
+
+  drawStart() {
     super.syncDimensions();
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
@@ -143,16 +213,37 @@ export class DataTrack extends CanvasTrack {
       this.getXScale(),
       (id) => this.dragCallbacks.removeHighlight(id),
     );
-    if (this.setupConfig.yAxis != null) {
-      this.renderYAxis(this.setupConfig.yAxis);
-    }
 
-    if (this.getRenderData == undefined) {
-      throw Error(`No getRenderData set up for track, must initialize first`);
+    if (this.settings.yAxis != null) {
+      this.renderYAxis(this.settings.yAxis);
     }
-    if (!this.isInitialized) {
-      throw Error("Track is not initialized yet");
+  }
+
+  setExpandedHeight(height: number) {
+    this.expander.expandedHeight = height;
+    if (this.expander.isExpanded) {
+      this.currentHeight = height;
+      this.syncDimensions();
     }
+  }
+
+  drawEnd() {
+    const labelBox = this.setupLabel(() => this.openTrackContextMenu(this));
+    setCanvasPointerCursor(this.canvas, () => {
+      const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
+      return hoverTargets.concat([labelBox]);
+    })
+  }
+
+  setupLabel(onClick: () => void): HoverBox {
+    const yAxisWidth = this.settings.yAxis != null ? STYLE.yAxis.width : 0;
+    const labelBox = this.drawTrackLabel(yAxisWidth);
+    const hoverBox = {
+      label: this.label,
+      box: labelBox,
+    };
+    setupCanvasClick(this.canvas, () => [hoverBox], onClick);
+    return hoverBox;
   }
 
   renderYAxis(yAxis: Axis) {
@@ -166,6 +257,43 @@ export class DataTrack extends CanvasTrack {
     }
 
     drawYAxis(this.ctx, yAxis.ticks, yScale, yAxis.range);
+  }
+
+  drawTrackLabel(shiftRight: number = 0): Box {
+    if (!this.isCollapsed) {
+      return drawLabel(
+        this.ctx,
+        this.label,
+        STYLE.tracks.textPadding + shiftRight,
+        STYLE.tracks.textPadding,
+        { textBaseline: "top", boxStyle: {} },
+      );
+    } else {
+      // FIXME: Display something on hover
+      return {
+        x1: 0,
+        x2: STYLE.yAxis.width,
+        y1: 0,
+        y2: this.dimensions.height,
+      };
+    }
+  }
+}
+
+// FIXME: Consider what to do with this one. Remove? General height controller?
+class Expander {
+  expandedHeight: number = null;
+  isExpanded: boolean;
+
+  constructor(isExpanded: boolean) {
+    this.isExpanded = isExpanded;
+  }
+
+  toggle() {
+    this.isExpanded = !this.isExpanded;
+    if (this.isExpanded && this.expandedHeight == null) {
+      console.error("Need to assign an expanded height");
+    }
   }
 }
 

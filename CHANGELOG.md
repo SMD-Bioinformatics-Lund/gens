@@ -14,6 +14,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Highlight regions and see these highlights across all the position tracks.
  - View multiple coverage tracks for samples within a case.
  - Renderings are debounced and keep track of the last render such that they not double-render
+ - Tracks can be shown / hidden, collapsed and moved
 
 ### Changed
  - Resolution increased 2x for tracks.
