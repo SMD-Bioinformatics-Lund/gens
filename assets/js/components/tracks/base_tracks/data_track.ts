@@ -46,6 +46,10 @@ export class DataTrack extends CanvasTrack {
     return this.settings.yAxis;
   }
 
+  updateYAxis(range: Rng) {
+    this.settings.yAxis.range = range;
+  }
+
   isExpanded(): boolean {
     return this.expander.isExpanded;
   }

@@ -193,25 +193,33 @@ export class TracksManager extends ShadowBaseElement {
         const startNode = document.createElement("input");
         startNode.type = "number";
         startNode.value = axis.range[0].toString();
-        startNode.step = "0.1"
+        startNode.step = "0.1";
         startNode.style.flex = "1 1 0px";
         startNode.style.minWidth = "0";
         axisRow.appendChild(startNode);
 
-        startNode.addEventListener("change", () => {
-          console.log("New value:", startNode.value);
-        });
 
         const endNode = document.createElement("input");
         endNode.type = "number";
         endNode.value = axis.range[1].toString();
-        endNode.step = "0.1"
+        endNode.step = "0.1";
         endNode.style.flex = "1 1 0px";
         endNode.style.minWidth = "0";
 
-        endNode.addEventListener("change", () => {
-          console.log("New value:", endNode.value);
-        });
+
+        const onRangeChange = () => {
+          const parsedRange: Rng = [
+            parseFloat(startNode.value),
+            parseFloat(endNode.value),
+          ];  
+          track.updateYAxis(parsedRange);
+          this.render(false);
+        }
+
+        startNode.addEventListener("change", onRangeChange);
+
+
+        endNode.addEventListener("change", onRangeChange);
 
         axisRow.appendChild(endNode);
 
