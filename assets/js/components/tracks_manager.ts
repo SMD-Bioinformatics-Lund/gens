@@ -17,7 +17,7 @@ import {
   getVariantContextMenuContent,
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
-import { generateID } from "../util/utils";
+import { generateID, moveElement } from "../util/utils";
 import { getSimpleButton, getContainer } from "./util/menu_utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
 
@@ -104,22 +104,24 @@ export class TracksManager extends ShadowBaseElement {
     };
 
     const openTrackContextMenu = (track: DataTrack) => {
-      const buttonRow = getContainer("row")
+      const buttonRow = getContainer("row");
       buttonRow.style.justifyContent = "left";
 
-      buttonRow.appendChild(getSimpleButton("Show", () => {
-        this.showTrack(track.id);
-      }));
+      buttonRow.appendChild(
+        getSimpleButton("Show", () => {
+          this.showTrack(track.id);
+        }),
+      );
 
-      buttonRow.appendChild(getSimpleButton("Hide", () => {
-        this.hideTrack(track.id);
-      }));
+      buttonRow.appendChild(
+        getSimpleButton("Hide", () => {
+          this.hideTrack(track.id);
+        }),
+      );
       buttonRow.appendChild(getSimpleButton("Move up", () => {}));
       buttonRow.appendChild(getSimpleButton("Move down", () => {}));
 
-      openContextMenu(track.label, [
-        buttonRow,
-      ]);
+      openContextMenu(track.label, [buttonRow]);
     };
 
     const covTracks = [];
@@ -342,18 +344,32 @@ export class TracksManager extends ShadowBaseElement {
     console.error("Did not find any track with ID", trackId);
   }
 
+  moveTrack(trackId: string, direction: "up" | "down") {
+    const track = this.getTrackById(trackId);
+    const trackIndex = this.tracks.indexOf(track);
+    const shift = direction == "up" ? -1 : 1;
+
+    const container = track.parentNode;
+    if (direction == "up") {
+      container.insertBefore(track, this.tracks[trackIndex-1]);
+    } else {
+      container.insertBefore(track, this.tracks[trackIndex + 1].nextSibling)
+    }
+
+    moveElement(this.tracks, trackIndex, shift, true);
+  }
+
   showTrack(trackId: string) {
     const track = this.getTrackById(trackId);
-    this.parentContainer.appendChild(track)
+    this.parentContainer.appendChild(track);
   }
 
   hideTrack(trackId: string) {
     const track = this.getTrackById(trackId);
-    this.parentContainer.removeChild(track)
+    this.parentContainer.removeChild(track);
   }
 
   render(updateData: boolean) {
-
     // FIXME: React to whether tracks are not present
 
     for (const track of this.tracks) {

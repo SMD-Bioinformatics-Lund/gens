@@ -232,8 +232,29 @@ export function generateID() {
   const randBuf = crypto.getRandomValues(new Uint32Array(2));
   // build a 64-bit BigInt without any `n` literals
   const shift32 = BigInt(32);
-  const high   = BigInt(randBuf[0]) << shift32;
-  const low    = BigInt(randBuf[1]);
+  const high = BigInt(randBuf[0]) << shift32;
+  const low = BigInt(randBuf[1]);
   const rand64 = (high | low).toString(36);
   return `${ts}-${rand64}`;
+}
+
+export function moveElement<T>(
+  orig: T[],
+  pos: number,
+  shift: number,
+  inPlace: boolean,
+): T[] {
+  console.log("Moving", orig);
+  let target;
+  if (inPlace) {
+    target = orig;
+  } else {
+    target = [...orig];
+  }
+  const el = target.splice(pos, 1)[0];
+  const newPos = pos + shift;
+  target.splice(newPos, 0, el);
+
+  console.log("Results", target);
+  return target;
 }

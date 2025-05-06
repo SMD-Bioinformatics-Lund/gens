@@ -34,6 +34,7 @@ export class DataTrack extends CanvasTrack {
   openTrackContextMenu: (track: DataTrack) => void;
 
   isHidden: boolean = false;
+  isCollapsed: boolean = false;
 
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;

@@ -27,6 +27,7 @@ export function getIconButton(icon: string, title: string, onClick: () => void):
   // const button = document.createElement("div") as HTMLDivElement;
   const button = getSimpleButton("", onClick);
   button.title = title;
+  button.className = "icon-button";
 
   const iconElem = document.createElement("span") as HTMLSpanElement;
   iconElem.classList = `fas ${icon}`

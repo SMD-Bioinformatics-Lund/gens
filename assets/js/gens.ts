@@ -16,6 +16,7 @@ import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
 import { SettingsPage } from "./components/settings_page";
 import { HeaderInfo } from "./components/header_info";
+import { DataTrack } from "./components/tracks/base_tracks/data_track";
 
 export async function initCanvases({
   caseId,
@@ -48,7 +49,6 @@ export async function initCanvases({
 
   const api = new API(caseId, genomeBuild, gensApiURL);
 
-
   const renderDataSource = getRenderDataSource(
     api,
     () => {
@@ -64,7 +64,7 @@ export async function initCanvases({
   const render = (updatedData: boolean) => {
     gensTracks.render(updatedData);
     settingsPage.render();
-  }
+  };
 
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);
@@ -98,8 +98,6 @@ export async function initCanvases({
       };
     });
 
-  
-
   settingsPage.setSources(
     () => render(false),
     annotSources,
@@ -108,9 +106,9 @@ export async function initCanvases({
       render(true);
     },
     () => gensTracks.getDataTracks(),
+    (trackId: string, direction: "up" | "down") =>
+      gensTracks.moveTrack(trackId, direction),
   );
-
-
 
   initialize(
     render,

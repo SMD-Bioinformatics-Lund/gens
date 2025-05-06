@@ -1,22 +1,45 @@
+import { COLORS } from "../constants";
 import { removeChildren } from "../util/utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { ChoiceSelect } from "./util/choice_select";
-import {
-  getContainer,
-  getIconButton,
-  getSimpleButton,
-} from "./util/menu_utils";
+import { getIconButton } from "./util/menu_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 import { InputChoice } from "choices.js";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <div>Annotation sources</div>
+  <style>
+    .header {
+      padding-top: 5px;
+    }
+    .row {
+      display: flex;
+      flex-direction: row;
+      padding-top: 2px;
+      align-items: center;
+    }
+    .icon-button {
+      height: 12px;
+      width: 12px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+    }
+    .icon-button:hover {
+      background: #E7EEF2;
+    }
+    /* FIXME: Nicer button response colors */
+    .icon-button:active {
+      background: ${COLORS.lightGray};
+    }
+  </style>
+  <div class="header">Annotation sources</div>
   <div class="choices-container">
     <choice-select id="choice-select"></choice-select>
   </div>
-  <div>Tracks</div>
+  <div class="header">Tracks</div>
   <div id="tracks-overview"></div>
 `;
 
@@ -27,6 +50,7 @@ export class SettingsPage extends ShadowBaseElement {
   private defaultAnnots: { id: string; label: string }[];
   private onAnnotationChanged: (sources: string[]) => void;
   private getDataTracks: () => DataTrack[];
+  private onTrackMove: (trackId: string, direction: "up" | "down") => void;
   private tracksOverview: HTMLDivElement;
 
   public isInitialized: boolean = false;
@@ -64,10 +88,21 @@ export class SettingsPage extends ShadowBaseElement {
     }
     removeChildren(this.tracksOverview);
     const tracks = this.getDataTracks();
-    const tracksSection = getTracksSection(tracks, (track: DataTrack) => {
-      track.isHidden = !track.isHidden;
-      this.onChange();
-    });
+    const tracksSection = getTracksSection(
+      tracks,
+      (track: DataTrack, direction: "up" | "down") => { 
+        this.onTrackMove(track.id, direction);
+        this.onChange();
+      },
+      (track: DataTrack) => {
+        track.isHidden = !track.isHidden;
+        this.onChange();
+      },
+      (track: DataTrack) => {
+        track.isCollapsed = !track.isCollapsed;
+        this.onChange();
+      },
+    );
     this.tracksOverview.appendChild(tracksSection);
   }
 
@@ -77,12 +112,14 @@ export class SettingsPage extends ShadowBaseElement {
     defaultAnnots: { id: string; label: string }[],
     onAnnotationChanged: (sources: string[]) => void,
     getDataTracks: () => DataTrack[],
+    onTrackMove: (trackId: string, direction: "up" | "down") => void,
   ) {
     this.onChange = onChange;
     this.annotationSources = annotationSources;
     this.defaultAnnots = defaultAnnots;
     this.onAnnotationChanged = onAnnotationChanged;
     this.getDataTracks = getDataTracks;
+    this.onTrackMove = onTrackMove;
   }
 
   getAnnotSources(): { id: string; label: string }[] {
@@ -118,12 +155,15 @@ function getChoices(
 
 function getTracksSection(
   tracks: DataTrack[],
-  onChange: (track: DataTrack) => void,
+  onMove: (track: DataTrack, direction: "up" | "down") => void,
+  onToggleShow: (track: DataTrack) => void,
+  onToggleCollapse: (track: DataTrack) => void,
 ): HTMLDivElement {
   const tracksSection = document.createElement("div");
 
   for (const track of tracks) {
     const rowDiv = document.createElement("div");
+    rowDiv.className = "row";
     rowDiv.style.display = "flex";
     rowDiv.style.flexDirection = "row";
     rowDiv.style.alignItems = "center";
@@ -132,19 +172,31 @@ function getTracksSection(
     rowDiv.appendChild(document.createTextNode(track.label));
 
     const buttonsDiv = document.createElement("div");
-
     buttonsDiv.style.display = "flex";
     buttonsDiv.style.flexDirection = "row";
     buttonsDiv.style.flexWrap = "nowrap";
     buttonsDiv.style.gap = "0.5rem";
 
     buttonsDiv.appendChild(
-      getIconButton(track.isHidden ? "fa-eye-slash" : "fa-eye", "Show", () =>
-        onChange(track),
+      getIconButton("fa-arrow-up", "Up", () => onMove(track, "up")),
+    );
+    buttonsDiv.appendChild(
+      getIconButton("fa-arrow-down", "Down", () => onMove(track, "down")),
+    );
+    buttonsDiv.appendChild(
+      getIconButton(
+        track.isHidden ? "fa-eye-slash" : "fa-eye",
+        "Show / hide",
+        () => onToggleShow(track),
       ),
     );
-    buttonsDiv.appendChild(getIconButton("fa-arrow-up", "Up", () => {}));
-    buttonsDiv.appendChild(getIconButton("fa-arrow-down", "Down", () => {}));
+    buttonsDiv.appendChild(
+      getIconButton(
+        track.isCollapsed ? "fa-maximize" : "fa-minimize",
+        "Collapse / expand",
+        () => onToggleCollapse(track),
+      ),
+    );
 
     rowDiv.appendChild(buttonsDiv);
 
