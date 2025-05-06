@@ -304,7 +304,7 @@ export class TracksManager extends ShadowBaseElement {
       () => dataSource.getOverviewCovData(sampleIds[0]),
       COV_Y_RANGE,
       chromSizes,
-      chromClick
+      chromClick,
     );
 
     const overviewTrackBaf = this.getOverviewTrack(
@@ -313,7 +313,7 @@ export class TracksManager extends ShadowBaseElement {
       () => dataSource.getOverviewCovData(sampleIds[0]),
       BAF_Y_RANGE,
       chromSizes,
-      chromClick
+      chromClick,
     );
 
     this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
@@ -606,7 +606,7 @@ export class TracksManager extends ShadowBaseElement {
           chrom,
           start: xRange[0],
           end: xRange[1],
-        }
+        };
       },
       true,
     );

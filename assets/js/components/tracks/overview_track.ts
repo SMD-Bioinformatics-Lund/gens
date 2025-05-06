@@ -2,7 +2,6 @@ import { drawLabel, drawVerticalLineInScale } from "../../draw/shapes";
 import {
   transformMap,
   padRange,
-  rangeSize,
   generateID,
 } from "../../util/utils";
 import { COLORS, STYLE } from "../../constants";
@@ -85,7 +84,6 @@ export class OverviewTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-    console.log("Rendering with settings:", settings);
 
     // FIXME: This one is a bit tricky isn't it
     // We want it to render not on new data, but on resize
@@ -164,16 +162,10 @@ export class OverviewTrack extends CanvasTrack {
     );
 
     const chromStartPos = chromRanges[chromosome][0];
-
-    console.log("chromStartPos", chromStartPos);
-    console.log("All ranges", chromRanges);
-
     const viewPxRange: Rng = [
       xScale(xRange[0] + chromStartPos),
       xScale(xRange[1] + chromStartPos),
     ];
-
-    console.log("Rendering marker for range", viewPxRange);
     this.marker.render(viewPxRange);
   }
 }
