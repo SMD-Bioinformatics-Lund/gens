@@ -105,7 +105,7 @@ export class CanvasTrack extends ShadowBaseElement {
 
   // Placeholder needed for Typescript to understand that an array of CanvasTracks
   // can all be rendered as such: canvas.render(updateData);
-  async render(_updateData: boolean) {}
+  async render(_updateData: RenderSettings) {}
 
 
   initializeClick(onElementClick: (el: HoverBox) => void | null = null) {

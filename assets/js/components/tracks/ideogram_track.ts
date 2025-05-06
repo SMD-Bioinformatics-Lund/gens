@@ -29,8 +29,8 @@ export class IdeogramTrack extends CanvasTrack {
     this.initializeHoverTooltip();
   }
 
-  async render(updateData: boolean) {
-    if (updateData || this.renderData == null) {
+  async render(settings: RenderSettings) {
+    if (settings.dataUpdated || this.renderData == null) {
       this.renderData = await this.getRenderData();
     }
 

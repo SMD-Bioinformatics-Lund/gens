@@ -1,3 +1,4 @@
+// FIXME: Not used anymore? Remove?
 import { removeChildren } from "../../util/utils";
 import { ShadowBaseElement as ShadowBaseElement } from "../util/shadowbaseelement";
 import { BandTrack } from "./band_track";
@@ -72,7 +73,7 @@ export class MultiBandTracks extends ShadowBaseElement {
     this.tracks = tracks;
   }
 
-  async render(updateData: boolean) {
+  async render(settings: RenderSettings) {
     const selectedSources = this.getSources();
     const trackSources = this.tracks.map((track) => track.id);
     const tracksDiffer = checkTracksDiffer(
@@ -84,7 +85,9 @@ export class MultiBandTracks extends ShadowBaseElement {
       const initialize = true;
       await this.updateTracks(selectedSources, initialize);
     }
-    this.tracks.forEach((track) => track.render(updateData || tracksDiffer));
+    this.tracks.forEach((track) =>
+      track.render({ dataUpdated: settings.dataUpdated || tracksDiffer }),
+    );
   }
 }
 
