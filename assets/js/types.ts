@@ -461,7 +461,6 @@ interface DragCallbacks {
 
 interface Axis {
   range: Rng;
-  ticks: number[];
 }
 
 interface HighlightCallbacks {

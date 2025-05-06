@@ -56,7 +56,7 @@ export function drawLineInScale(
 export function drawLine(
   ctx: CanvasRenderingContext2D,
   coords: Box,
-  style: LineStyle = {},
+  style: LineStyle = { },
 ) {
   const {
     lineWidth = 1,

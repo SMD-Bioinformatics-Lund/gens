@@ -26,7 +26,7 @@ import {
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
 
-const COV_Y_RANGE: [number, number] = [-4, 4];
+const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
 const COV_Y_TICKS = [-3, -2, -1, 0, 1, 2, 3];
@@ -253,14 +253,14 @@ export class TracksManager extends ShadowBaseElement {
         `${sampleId} cov`,
         sampleId,
         (sampleId: string) => this.dataSource.getCovData(sampleId),
-        { startExpanded, yAxis: { range: COV_Y_RANGE, ticks: COV_Y_TICKS } },
+        { startExpanded, yAxis: { range: COV_Y_RANGE } },
       );
       const bafTrack = this.getDotTrack(
         `${sampleId}_log2_baf`,
         `${sampleId} baf`,
         sampleId,
         (sampleId: string) => this.dataSource.getBafData(sampleId),
-        { startExpanded, yAxis: { range: BAF_Y_RANGE, ticks: BAF_Y_TICKS } },
+        { startExpanded, yAxis: { range: BAF_Y_RANGE } },
       );
 
       const variantTrack = this.getVariantTrack(

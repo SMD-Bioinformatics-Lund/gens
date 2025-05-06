@@ -238,3 +238,13 @@ export function generateID() {
   return `${ts}-${rand64}`;
 }
 
+export function generateTicks(range: Rng, step: number) {
+  const factor = 1000;
+  const first = Math.ceil(range[0] * 1000 / (step * 1000)) * step;
+
+  const ticks = [];
+  for (let v = first; v <= range[1]; v += step) {
+    ticks.push(Math.round(v * 10) / 10);
+  }
+  return ticks;
+}
