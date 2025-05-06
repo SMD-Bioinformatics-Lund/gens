@@ -5,6 +5,7 @@ import {
   renderBackground,
 } from "../../../draw/render_utils";
 import { drawHorizontalLineInScale, drawLabel } from "../../../draw/shapes";
+import { setupDragAndDrop } from "../../../util/drag_and_drop";
 import { generateID, generateTicks, getTickSize, rangeSize } from "../../../util/utils";
 import {
   setupCanvasClick,
@@ -145,6 +146,8 @@ export class DataTrack extends CanvasTrack {
       // FIXME: Look over this, how to make the dragging "feel" neat
       this.setupDrag();
     }
+
+    // setupDragAndDrop(this.trackContainer.parentElement, this);
   }
 
   setupDrag() {
