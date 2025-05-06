@@ -28,6 +28,8 @@ const BAF_Y_RANGE: [number, number] = [0, 1];
 const COV_Y_TICKS = [-3, -2, -1, 0, 1, 2, 3];
 const BAF_Y_TICKS = [0.2, 0.4, 0.6, 0.8];
 
+const trackHeight = STYLE.bandTrack.trackHeight;
+
 // FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -50,6 +52,14 @@ template.innerHTML = String.raw`
   <div id="bottom-container"></div>
 `;
 
+interface DragCallbacks {
+  onZoomIn: (range: Rng) => void;
+  onZoomOut: () => void;
+  getHighlights: () => { id: string; range: Rng }[];
+  addHighlight: (id: string, range: Rng) => void;
+  removeHighlight: (id: string) => void;
+}
+
 export class TracksManager extends ShadowBaseElement {
   topContainer: HTMLDivElement;
   parentContainer: HTMLDivElement;
@@ -64,11 +74,16 @@ export class TracksManager extends ShadowBaseElement {
 
   // Remove this one or?
   annotationTracks: DataTrack[] = [];
+  getXRange: () => Rng;
+
+  dragCallbacks: DragCallbacks;
+  dataSource: RenderDataSource;
 
   getAnnotationSources: () => { id: string; label: string }[];
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
-
-  makeNewAnnotTrack: (id: string, label: string) => DataTrack;
+  openContextMenu: (header: string, content: HTMLElement[]) => void;
+  openTrackContextMenu: (track: DataTrack) => void;
+  // makeNewAnnotTrack: (id: string, label: string) => DataTrack;
 
   constructor() {
     super(template);
@@ -111,12 +126,14 @@ export class TracksManager extends ShadowBaseElement {
     openContextMenu: (header: string, content: HTMLElement[]) => void,
     highlightCallbacks: HighlightCallbacks,
   ) {
-    const trackHeight = STYLE.bandTrack.trackHeight;
-
+    this.dataSource = dataSource;
     this.getAnnotationSources = getAnnotSources;
     this.getAnnotationDetails = getAnnotationDetails;
 
-    const dragCallbacks = {
+    this.openContextMenu = openContextMenu;
+    this.getXRange = getXRange;
+
+    this.dragCallbacks = {
       onZoomIn,
       onZoomOut,
       getHighlights: highlightCallbacks.getHighlights,
@@ -124,7 +141,7 @@ export class TracksManager extends ShadowBaseElement {
       removeHighlight: highlightCallbacks.removeHighlight,
     };
 
-    const openTrackContextMenu = (track: DataTrack) => {
+    this.openTrackContextMenu = (track: DataTrack) => {
       const buttonRow = getContainer("row");
       buttonRow.style.justifyContent = "left";
 
@@ -160,79 +177,33 @@ export class TracksManager extends ShadowBaseElement {
         };
       },
     );
-    // const hello = document.createTextNode("Hello");
-    // // this.topContainer.appendChild(hello);
-    // this.topContainer.appendChild(ideogramTrack);
 
     for (const sampleId of sampleIds) {
       const startExpanded = sampleIds.length == 1 ? true : false;
 
-      const coverageTrack = new DotTrack(
+      const coverageTrack = this.getDotTrack(
         `${sampleId}_log2_cov`,
         `${sampleId} cov`,
-        trackHeight.thick,
-        startExpanded,
-        { range: COV_Y_RANGE, ticks: COV_Y_TICKS },
-        async () => {
-          const data = await dataSource.getCovData(sampleId);
-          return {
-            xRange: getXRange(),
-            dots: data,
-          };
-        },
-        dragCallbacks,
-        openTrackContextMenu,
+        sampleId,
+        (sampleId: string) => this.dataSource.getCovData(sampleId),
+        { startExpanded, yAxis: { range: COV_Y_RANGE, ticks: COV_Y_TICKS } },
       );
-      const bafTrack = new DotTrack(
-        `${sampleId}_baf`,
-        `${sampleId} BAF`,
-        trackHeight.thick,
-        startExpanded,
-        { range: BAF_Y_RANGE, ticks: BAF_Y_TICKS },
-        async () => {
-          return {
-            xRange: getXRange(),
-            dots: await dataSource.getBafData(sampleId),
-          };
-        },
-        dragCallbacks,
-        openTrackContextMenu,
+      const bafTrack = this.getDotTrack(
+        `${sampleId}_log2_baf`,
+        `${sampleId} baf`,
+        sampleId,
+        (sampleId: string) => this.dataSource.getBafData(sampleId),
+        { startExpanded, yAxis: { range: BAF_Y_RANGE, ticks: BAF_Y_TICKS } },
       );
-      const variantTrack = new BandTrack(
+
+      const variantTrack = this.getVariantTrack(
         `${sampleId}_variants`,
         `${sampleId} Variants`,
-        trackHeight.thin,
-        async () => {
-          return {
-            xRange: getXRange(),
-            bands: await dataSource.getVariantData(sampleId),
-          };
-        },
-        async (variantId: string) => {
-          const details = await getVariantDetails(sampleId, variantId);
-          const scoutUrl = getVariantURL(variantId);
-
-          const button = getSimpleButton("Set highlight", () => {
-            const id = generateID();
-            highlightCallbacks.addHighlight(id, [
-              details.position,
-              details.end,
-            ]);
-          });
-
-          const entries = getVariantContextMenuContent(
-            variantId,
-            details,
-            scoutUrl,
-          );
-          const content = [button];
-          content.push(...entries);
-
-          openContextMenu("Variant", content);
-        },
-        dragCallbacks,
-        openTrackContextMenu,
-      );
+        sampleId,
+        (sampleId: string) => this.dataSource.getVariantData(sampleId),
+        getVariantDetails,
+        getVariantURL,
+      )
 
       covTracks.push(coverageTrack);
       bafTracks.push(bafTrack);
@@ -260,87 +231,9 @@ export class TracksManager extends ShadowBaseElement {
         content.push(...entries);
         openContextMenu("Transcript", content);
       },
-      dragCallbacks,
-      openTrackContextMenu,
+      this.dragCallbacks,
+      this.openTrackContextMenu,
     );
-
-    this.makeNewAnnotTrack = (sourceId: string, label: string) => {
-      async function getAnnotTrackData(
-        source: string,
-        getXRange: () => Rng,
-        getAnnotation: (source: string) => Promise<RenderBand[]>,
-      ): Promise<BandTrackData> {
-        const bands = await getAnnotation(source);
-        return {
-          xRange: getXRange(),
-          bands,
-        };
-      }
-
-      const openContextMenuId = async (id: string) => {
-        const details = await getAnnotationDetails(id);
-        const button = getSimpleButton("Set highlight", () => {
-          const id = generateID();
-          highlightCallbacks.addHighlight(id, [details.start, details.end]);
-        });
-        const entries = getAnnotationContextMenuContent(id, details);
-        const content = [button];
-        content.push(...entries);
-        openContextMenu("Annotations", content);
-      };
-
-      const track = new BandTrack(
-        sourceId,
-        label,
-        trackHeight.thin,
-        () => getAnnotTrackData(sourceId, getXRange, dataSource.getAnnotation),
-        openContextMenuId,
-        dragCallbacks,
-        openTrackContextMenu,
-      );
-      return track;
-    };
-
-    // const annotationTracks = new MultiBandTracks(
-    //   getAnnotSources,
-    //   (sourceId: string, label: string) => {
-    //     async function getAnnotTrackData(
-    //       source: string,
-    //       getXRange: () => Rng,
-    //       getAnnotation: (source: string) => Promise<RenderBand[]>,
-    //     ): Promise<BandTrackData> {
-    //       const bands = await getAnnotation(source);
-    //       return {
-    //         xRange: getXRange(),
-    //         bands,
-    //       };
-    //     }
-
-    //     const openContextMenuId = async (id: string) => {
-    //       const details = await getAnnotationDetails(id);
-    //       const button = getSimpleButton("Set highlight", () => {
-    //         const id = generateID();
-    //         highlightCallbacks.addHighlight(id, [details.start, details.end]);
-    //       });
-    //       const entries = getAnnotationContextMenuContent(id, details);
-    //       const content = [button];
-    //       content.push(...entries);
-    //       openContextMenu("Annotations", content);
-    //     };
-
-    //     const track = new BandTrack(
-    //       sourceId,
-    //       label,
-    //       trackHeight.thin,
-    //       () =>
-    //         getAnnotTrackData(sourceId, getXRange, dataSource.getAnnotation),
-    //       openContextMenuId,
-    //       dragCallbacks,
-    //       openTrackContextMenu,
-    //     );
-    //     return track;
-    //   },
-    // );
 
     const overviewTrackCov = new OverviewTrack(
       "overview_cov",
@@ -376,9 +269,6 @@ export class TracksManager extends ShadowBaseElement {
     );
 
     this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
-
-    // this.bottomContainer.appendChild(overviewTrackCov);
-    // this.bottomContainer.appendChild(overviewTrackBaf);
 
     this.dataTracks.push(
       ...covTracks,
@@ -461,7 +351,7 @@ export class TracksManager extends ShadowBaseElement {
     );
 
     newSources.forEach((source) => {
-      const newTrack = this.makeNewAnnotTrack(source.id, source.label);
+      const newTrack = this.getAnnotTrack(source.id, source.label);
       this.dataTracks.push(newTrack);
       this.annotationTracks.push(newTrack);
       this.parentContainer.appendChild(newTrack);
@@ -474,7 +364,7 @@ export class TracksManager extends ShadowBaseElement {
       const index = this.dataTracks.indexOf(track);
       this.dataTracks.splice(index, 0);
       this.parentContainer.removeChild(track);
-    })
+    });
   }
 
   render(updateData: boolean) {
@@ -489,6 +379,118 @@ export class TracksManager extends ShadowBaseElement {
     }
 
     this.overviewTracks.forEach((track) => track.render(updateData));
+  }
+
+  getAnnotTrack(sourceId: string, label: string) {
+    async function getAnnotTrackData(
+      source: string,
+      getXRange: () => Rng,
+      getAnnotation: (source: string) => Promise<RenderBand[]>,
+    ): Promise<BandTrackData> {
+      const bands = await getAnnotation(source);
+      return {
+        xRange: getXRange(),
+        bands,
+      };
+    }
+
+    const openContextMenuId = async (id: string) => {
+      const details = await this.getAnnotationDetails(id);
+      const button = getSimpleButton("Set highlight", () => {
+        const id = generateID();
+        this.dragCallbacks.addHighlight(id, [details.start, details.end]);
+      });
+      const entries = getAnnotationContextMenuContent(id, details);
+      const content = [button];
+      content.push(...entries);
+      this.openContextMenu("Annotations", content);
+    };
+
+    const track = new BandTrack(
+      sourceId,
+      label,
+      trackHeight.thin,
+      () =>
+        getAnnotTrackData(
+          sourceId,
+          this.getXRange,
+          this.dataSource.getAnnotation,
+        ),
+      openContextMenuId,
+      this.dragCallbacks,
+      this.openTrackContextMenu,
+    );
+    return track;
+  }
+
+  getDotTrack(
+    id: string,
+    label: string,
+    sampleId: string,
+    dataFn: (sampleId: string) => Promise<RenderDot[]>,
+    settings: { startExpanded: boolean; yAxis: Axis },
+  ): DotTrack {
+    const dotTrack = new DotTrack(
+      id,
+      label,
+      trackHeight.thick,
+      settings.startExpanded,
+      settings.yAxis,
+      async () => {
+        const data = await dataFn(sampleId);
+        // const data = await this.dataSource.getCovData(sampleId);
+        return {
+          xRange: this.getXRange(),
+          dots: data,
+        };
+      },
+      this.dragCallbacks,
+      this.openTrackContextMenu,
+    );
+    return dotTrack;
+  }
+
+  getVariantTrack(
+    id: string,
+    label: string,
+    sampleId: string,
+    dataFn: (sampleId: string) => Promise<RenderBand[]>,
+    getVariantDetails: (sampleId: string, variantId: string) => Promise<ApiVariantDetails>,
+    getVariantURL: (variantId: string) => string,
+  ) {
+    const variantTrack = new BandTrack(
+      id,
+      label,
+      trackHeight.thin,
+      async () => {
+        return {
+          xRange: this.getXRange(),
+          bands: await dataFn(sampleId),
+        };
+      },
+      async (variantId: string) => {
+        const details = await getVariantDetails(sampleId, variantId);
+        const scoutUrl = getVariantURL(variantId);
+
+        const button = getSimpleButton("Set highlight", () => {
+          const id = generateID();
+          this.dragCallbacks.addHighlight(id, [details.position, details.end]);
+        });
+
+        const entries = getVariantContextMenuContent(
+          variantId,
+          details,
+          scoutUrl,
+        );
+        const content = [button];
+        content.push(...entries);
+
+        this.openContextMenu("Variant", content);
+      },
+      this.dragCallbacks,
+      this.openTrackContextMenu,
+    );
+    return variantTrack;
   }
 }
 
