@@ -9,7 +9,7 @@ import { MultiBandTracks } from "./tracks/multi_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
-import { STYLE } from "../constants";
+import { ICONS, SIZES, STYLE } from "../constants";
 import { CanvasTrack } from "./tracks/base_tracks/canvas_track";
 import {
   getAnnotationContextMenuContent,
@@ -18,7 +18,11 @@ import {
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 import { generateID } from "../util/utils";
-import { getSimpleButton, getContainer } from "./util/menu_utils";
+import {
+  getSimpleButton,
+  getContainer,
+  getIconButton,
+} from "./util/menu_utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
 
@@ -117,7 +121,7 @@ export class TracksManager extends ShadowBaseElement {
     getAnnotSources: () => { id: string; label: string }[],
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
-    getTranscriptDetails: (id: string) => Promise<ApiTranscriptDetails>,
+    getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
     getVariantDetails: (
       sampleId: string,
       variantId: string,
@@ -141,24 +145,80 @@ export class TracksManager extends ShadowBaseElement {
     };
 
     this.openTrackContextMenu = (track: DataTrack) => {
-      const buttonRow = getContainer("row");
-      buttonRow.style.justifyContent = "left";
+      const buttonsDiv = document.createElement("div");
+      buttonsDiv.style.display = "flex";
+      buttonsDiv.style.flexDirection = "row";
+      buttonsDiv.style.flexWrap = "nowrap";
+      buttonsDiv.style.gap = `${SIZES.s}px`;
 
-      buttonRow.appendChild(
-        getSimpleButton("Show", () => {
-          this.showTrack(track.id);
-        }),
+      buttonsDiv.appendChild(
+        getIconButton(ICONS.up, "Up", () => this.moveTrack(track.id, "up")),
+      );
+      buttonsDiv.appendChild(
+        getIconButton(ICONS.down, "Down", () =>
+          this.moveTrack(track.id, "down"),
+        ),
+      );
+      buttonsDiv.appendChild(
+        getIconButton(
+          track.getIsHidden() ? ICONS.hide : ICONS.show,
+          "Show / hide",
+          () => {
+            track.toggleHidden();
+            this.render(false);
+          },
+        ),
+      );
+      buttonsDiv.appendChild(
+        getIconButton(
+          track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
+          "Collapse / expand",
+          () => {
+            track.toggleCollapsed();
+            this.render(false);
+          },
+        ),
       );
 
-      buttonRow.appendChild(
-        getSimpleButton("Hide", () => {
-          this.hideTrack(track.id);
-        }),
-      );
-      buttonRow.appendChild(getSimpleButton("Move up", () => {}));
-      buttonRow.appendChild(getSimpleButton("Move down", () => {}));
+      const returnElements = [buttonsDiv];
 
-      openContextMenu(track.label, [buttonRow]);
+      let axisRow = null;
+      const axis = track.getYAxis();
+      if (axis != null) {
+        axisRow = getContainer("row");
+        axisRow.style.gap = "8px";
+        const yAxisLabel = document.createTextNode(`Y-axis range:`);
+        axisRow.appendChild(yAxisLabel);
+
+        const startNode = document.createElement("input");
+        startNode.type = "number";
+        startNode.value = axis.range[0].toString();
+        startNode.step = "0.1"
+        startNode.style.flex = "1 1 0px";
+        startNode.style.minWidth = "0";
+        axisRow.appendChild(startNode);
+
+        startNode.addEventListener("change", () => {
+          console.log("New value:", startNode.value);
+        });
+
+        const endNode = document.createElement("input");
+        endNode.type = "number";
+        endNode.value = axis.range[1].toString();
+        endNode.step = "0.1"
+        endNode.style.flex = "1 1 0px";
+        endNode.style.minWidth = "0";
+
+        endNode.addEventListener("change", () => {
+          console.log("New value:", endNode.value);
+        });
+
+        axisRow.appendChild(endNode);
+
+        returnElements.push(axisRow);
+      }
+
+      openContextMenu(track.label, returnElements);
     };
 
     const covTracks = [];
@@ -202,36 +262,18 @@ export class TracksManager extends ShadowBaseElement {
         (sampleId: string) => this.dataSource.getVariantData(sampleId),
         getVariantDetails,
         getVariantURL,
-      )
+      );
 
       covTracks.push(coverageTrack);
       bafTracks.push(bafTrack);
       variantTracks.push(variantTrack);
     }
 
-    const genesTrack = new BandTrack(
+    const genesTrack = this.getGenesTrack(
       "genes",
       "Genes",
-      trackHeight.thin,
-      async () => {
-        return {
-          xRange: getXRange(),
-          bands: await dataSource.getTranscriptData(),
-        };
-      },
-      async (id) => {
-        const details = await getTranscriptDetails(id);
-        const button = getSimpleButton("Set highlight", () => {
-          const id = generateID();
-          highlightCallbacks.addHighlight(id, [details.start, details.end]);
-        });
-        const entries = getGenesContextMenuContent(id, details);
-        const content = [button];
-        content.push(...entries);
-        openContextMenu("Transcript", content);
-      },
-      this.dragCallbacks,
-      this.openTrackContextMenu,
+      () => dataSource.getTranscriptData(),
+      (id: string) => getTranscriptDetails(id),
     );
 
     const overviewTrackCov = new OverviewTrack(
@@ -454,7 +496,10 @@ export class TracksManager extends ShadowBaseElement {
     label: string,
     sampleId: string,
     dataFn: (sampleId: string) => Promise<RenderBand[]>,
-    getVariantDetails: (sampleId: string, variantId: string) => Promise<ApiVariantDetails>,
+    getVariantDetails: (
+      sampleId: string,
+      variantId: string,
+    ) => Promise<ApiVariantDetails>,
     getVariantURL: (variantId: string) => string,
   ) {
     const variantTrack = new BandTrack(
@@ -490,6 +535,39 @@ export class TracksManager extends ShadowBaseElement {
       this.openTrackContextMenu,
     );
     return variantTrack;
+  }
+
+  getGenesTrack(
+    id: string,
+    label: string,
+    getBands: () => Promise<RenderBand[]>,
+    getDetails: (id: string) => Promise<ApiGeneDetails>,
+  ) {
+    const genesTrack = new BandTrack(
+      id,
+      label,
+      trackHeight.thin,
+      async () => {
+        return {
+          xRange: this.getXRange(),
+          bands: await getBands(),
+        };
+      },
+      async (id) => {
+        const details = await getDetails(id);
+        const button = getSimpleButton("Set highlight", () => {
+          const id = generateID();
+          this.dragCallbacks.addHighlight(id, [details.start, details.end]);
+        });
+        const entries = getGenesContextMenuContent(id, details);
+        const content = [button];
+        content.push(...entries);
+        this.openContextMenu("Transcript", content);
+      },
+      this.dragCallbacks,
+      this.openTrackContextMenu,
+    );
+    return genesTrack;
   }
 }
 

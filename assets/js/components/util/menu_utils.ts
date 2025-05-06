@@ -108,9 +108,13 @@ export function getURLRow(text: string) {
   return row;
 }
 
-export function getContainer(type: "row" | "column", text?: string) {
+export function getContainer(direction: "row" | "column", text?: string) {
   const row = document.createElement("div");
-  row.className = `menu-${type}`;
+  row.className = `menu-${direction}`;
+  row.style.display = "flex";
+  row.style.flexDirection = direction;
+  row.style.flexWrap = "nowrap";
+  row.style.whiteSpace = "nowrap";
   if (text != null) {
     row.appendChild(getDiv(text));
   }

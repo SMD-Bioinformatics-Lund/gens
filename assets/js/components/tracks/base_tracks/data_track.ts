@@ -40,7 +40,11 @@ export class DataTrack extends CanvasTrack {
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
 
-  private _renderSeq = 0;
+  private renderSeq = 0;
+
+  getYAxis(): Axis | null {
+    return this.settings.yAxis;
+  }
 
   isExpanded(): boolean {
     return this.expander.isExpanded;
@@ -175,10 +179,10 @@ export class DataTrack extends CanvasTrack {
     // Only the last request is of interest
     const _fetchData = debounce(
       async () => {
-        this._renderSeq = this._renderSeq + 1;
-        const mySeq = this._renderSeq;
+        this.renderSeq = this.renderSeq + 1;
+        const mySeq = this.renderSeq;
         this.renderData = await this.getRenderData();
-        if (mySeq !== this._renderSeq) {
+        if (mySeq !== this.renderSeq) {
           return;
         }
         this.draw();

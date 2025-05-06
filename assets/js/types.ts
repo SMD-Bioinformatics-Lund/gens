@@ -68,7 +68,7 @@ interface ApiTranscriptFeature {
   exon_number: number,
 }
 
-interface ApiTranscriptDetails {
+interface ApiGeneDetails {
   transcript_id: string,
   transcript_biotype: string,
   gene_name: string,

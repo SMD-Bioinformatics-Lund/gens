@@ -40,7 +40,7 @@ export function getVariantContextMenuContent(
 
 export function getGenesContextMenuContent(
   id: string,
-  details: ApiTranscriptDetails,
+  details: ApiGeneDetails,
 ): HTMLDivElement[] {
   const info: { key: string; value: string }[] = [
     { key: "Range", value: `${details.start} - ${details.end}` },
