@@ -1,14 +1,13 @@
-import { STYLE } from "../../../constants";
+import { SIZES, STYLE } from "../../../constants";
 import {
   drawYAxis,
   getLinearScale,
   renderBackground,
 } from "../../../draw/render_utils";
 import { drawHorizontalLineInScale, drawLabel } from "../../../draw/shapes";
-import { generateID, generateTicks, rangeSize } from "../../../util/utils";
+import { generateID, generateTicks, getTickSize, rangeSize } from "../../../util/utils";
 import {
   setupCanvasClick,
-  getCanvasHover,
   setCanvasPointerCursor,
 } from "../../util/canvas_interaction";
 import { keyLogger } from "../../util/keylogger";
@@ -27,7 +26,7 @@ interface Settings {
 
 const DEBOUNCE_DELAY = 500;
 
-const Y_PAD = 6;
+const Y_PAD = SIZES.s;
 
 export class DataTrack extends CanvasTrack {
   settings: Settings;
@@ -265,17 +264,7 @@ export class DataTrack extends CanvasTrack {
 
   renderYAxis(yAxis: Axis) {
     const yScale = getLinearScale(yAxis.range, this.getYDim());
-
-    // FIXME: Util function
-    const tickSize =
-      rangeSize(yAxis.range) > 3
-        ? 1
-        : rangeSize(yAxis.range) > 1.5
-          ? 0.5
-          : rangeSize(yAxis.range) > 0.8
-            ? 0.2
-            : 0.1;
-
+    const tickSize = getTickSize(yAxis.range);
     const ticks = generateTicks(yAxis.range, tickSize);
 
     for (const yTick of ticks) {

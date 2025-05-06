@@ -144,6 +144,7 @@ export class TracksManager extends ShadowBaseElement {
       removeHighlight: highlightCallbacks.removeHighlight,
     };
 
+    // FIXME: Move to util function
     this.openTrackContextMenu = (track: DataTrack) => {
       const buttonsDiv = document.createElement("div");
       buttonsDiv.style.display = "flex";

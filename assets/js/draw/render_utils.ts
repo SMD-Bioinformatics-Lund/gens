@@ -4,7 +4,6 @@ import {
   drawBox,
   drawLabel,
   drawLine,
-  drawVerticalLineInScale,
 } from "./shapes";
 
 export function drawYAxis(

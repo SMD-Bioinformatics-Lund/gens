@@ -240,11 +240,32 @@ export function generateID() {
 
 export function generateTicks(range: Rng, step: number) {
   const factor = 1000;
-  const first = Math.ceil(range[0] * 1000 / (step * 1000)) * step;
+  // Factor needed as ceil works with integers
+  const first = Math.ceil((range[0] * factor) / (step * factor)) * step;
 
   const ticks = [];
   for (let v = first; v <= range[1]; v += step) {
     ticks.push(Math.round(v * 10) / 10);
   }
   return ticks;
+}
+
+/**
+ * Tick size calculations for y-axis
+ * Values are selected manually at the moment
+ * If this grows, it might have to be automated
+ */
+export function getTickSize(range: Rng): number {
+  const size = rangeSize(range);
+
+  if (size > 3) {
+    return 1;
+  }
+  if (size > 1.5) {
+    return 0.5;
+  }
+  if (size > 0.75) {
+    return 0.2;
+  }
+  return 0.1;
 }
