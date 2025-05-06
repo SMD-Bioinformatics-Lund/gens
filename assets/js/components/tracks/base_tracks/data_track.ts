@@ -5,14 +5,14 @@ import {
   renderBackground,
 } from "../../../draw/render_utils";
 import { drawHorizontalLineInScale, drawLabel } from "../../../draw/shapes";
-import { generateID, generateTicks, getTickSize, rangeSize } from "../../../util/utils";
+import { generateID, generateTicks, getTickSize } from "../../../util/utils";
 import {
   setupCanvasClick,
   setCanvasPointerCursor,
 } from "../../util/canvas_interaction";
 import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
-import { initializeDragSelect, renderHighlights } from "./interactive_tools";
+import { renderHighlights } from "./interactive_tools";
 
 import debounce from "lodash.debounce";
 
@@ -185,7 +185,7 @@ export class DataTrack extends CanvasTrack {
     });
   }
 
-  async render(updateData: boolean) {
+  async render(settings: RenderSettings) {
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
     // is to prevent repeated API requests when rapidly zooming/panning
     // Only the last request is of interest
@@ -203,7 +203,7 @@ export class DataTrack extends CanvasTrack {
       { leading: false, trailing: true },
     );
 
-    if (updateData || this.renderData == null) {
+    if (settings.dataUpdated || this.renderData == null) {
       this.renderLoading();
       _fetchData();
     } else {

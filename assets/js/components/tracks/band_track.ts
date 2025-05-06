@@ -59,7 +59,7 @@ export class BandTrack extends DataTrack {
     this.initializeHoverTooltip();
     this.initializeClick(onElementClick);
     const startExpanded = false;
-    const onExpand = () => this.render(false);
+    const onExpand = () => this.render({});
     this.initializeExpander("contextmenu", startExpanded, onExpand);
   }
 

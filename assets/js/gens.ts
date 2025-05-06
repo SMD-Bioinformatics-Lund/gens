@@ -16,7 +16,6 @@ import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
 import { SettingsPage } from "./components/settings_page";
 import { HeaderInfo } from "./components/header_info";
-import { DataTrack } from "./components/tracks/base_tracks/data_track";
 
 export async function initCanvases({
   caseId,
@@ -61,16 +60,15 @@ export async function initCanvases({
     },
   );
 
-  const render = (updatedData: boolean) => {
-    gensTracks.render(updatedData);
+  const render = (settings: RenderSettings) => {
+    gensTracks.render(settings);
     settingsPage.render();
   };
 
   const onChromClick = async (chrom) => {
     const chromData = await api.getChromData(chrom);
     inputControls.updateChromosome(chrom, chromData.size);
-    const updateData = true;
-    render(updateData);
+    render({ dataUpdated: true });
   };
 
   const getChromInfo = async (chromosome: string): Promise<ChromosomeInfo> => {
@@ -99,11 +97,11 @@ export async function initCanvases({
     });
 
   settingsPage.setSources(
-    () => render(false),
+    () => render({}),
     annotSources,
     defaultAnnot,
     (_newSources) => {
-      render(true);
+      render({ dataUpdated: false });
     },
     () => gensTracks.getDataTracks(),
     (trackId: string, direction: "up" | "down") =>
@@ -138,7 +136,7 @@ export async function initCanvases({
 }
 
 async function initialize(
-  render: (updatedData: boolean) => void,
+  render: (settings: RenderSettings) => void,
   sampleIds: string[],
   inputControls: InputControls,
   tracks: TracksManager,
@@ -171,22 +169,22 @@ async function initialize(
     },
     removeHighlights: () => {
       highlights = {};
-      render(false);
+      render({});
     },
     addHighlight: (id: string, range: Rng) => {
       highlights[id] = range;
-      render(false);
+      render({});
     },
     removeHighlight: (id: string) => {
       delete highlights[id];
-      render(false);
+      render({});
     },
   };
 
   inputControls.initialize(
     startRegion,
     async (_range) => {
-      render(true);
+      render({ dataUpdated: true });
     },
     highlightCallbacks.removeHighlights,
   );
@@ -201,7 +199,7 @@ async function initialize(
     () => inputControls.getRange(),
     (range: Rng) => {
       inputControls.updatePosition(range);
-      render(true);
+      render({ dataUpdated: true });
     },
     () => inputControls.zoomOut(),
     () => settingsPage.getAnnotSources(),
@@ -218,7 +216,7 @@ async function initialize(
     highlightCallbacks,
   );
 
-  render(true);
+  render({ dataUpdated: true, resized: true });
 }
 
 function setupShortcuts(

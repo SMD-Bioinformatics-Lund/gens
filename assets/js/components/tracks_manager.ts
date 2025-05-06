@@ -26,7 +26,7 @@ import {
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
 
-import Sortable, { SortableEvent } from 'sortablejs';
+import Sortable, { SortableEvent } from "sortablejs";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -81,6 +81,7 @@ export class TracksManager extends ShadowBaseElement {
   // FIXME: Remove this one or?
   annotationTracks: DataTrack[] = [];
   getXRange: () => Rng;
+  getChromosome: () => string;
 
   dragCallbacks: DragCallbacks;
   dataSource: RenderDataSource;
@@ -96,7 +97,7 @@ export class TracksManager extends ShadowBaseElement {
 
   connectedCallback() {
     window.addEventListener("resize", () => {
-      this.render(false);
+      this.render({ resized: true });
     });
 
     this.topContainer = this.root.querySelector(
@@ -112,7 +113,7 @@ export class TracksManager extends ShadowBaseElement {
 
   // FIXME: Group the callbacks for better overview
   async initialize(
-    render: (updateData: boolean) => void,
+    render: (settings: RenderSettings) => void,
     sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
@@ -138,6 +139,7 @@ export class TracksManager extends ShadowBaseElement {
 
     this.openContextMenu = openContextMenu;
     this.getXRange = getXRange;
+    this.getChromosome = getChromosome;
 
     const animMs = 150;
     Sortable.create(this.parentContainer, {
@@ -146,8 +148,8 @@ export class TracksManager extends ShadowBaseElement {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
-        render(false);
-      }
+        render({});
+      },
     });
 
     this.dragCallbacks = {
@@ -180,7 +182,7 @@ export class TracksManager extends ShadowBaseElement {
           "Show / hide",
           () => {
             track.toggleHidden();
-            this.render(false);
+            this.render({});
           },
         ),
       );
@@ -190,7 +192,7 @@ export class TracksManager extends ShadowBaseElement {
           "Collapse / expand",
           () => {
             track.toggleCollapsed();
-            this.render(false);
+            this.render({});
           },
         ),
       );
@@ -213,7 +215,6 @@ export class TracksManager extends ShadowBaseElement {
         startNode.style.minWidth = "0";
         axisRow.appendChild(startNode);
 
-
         const endNode = document.createElement("input");
         endNode.type = "number";
         endNode.value = axis.range[1].toString();
@@ -221,18 +222,16 @@ export class TracksManager extends ShadowBaseElement {
         endNode.style.flex = "1 1 0px";
         endNode.style.minWidth = "0";
 
-
         const onRangeChange = () => {
           const parsedRange: Rng = [
             parseFloat(startNode.value),
             parseFloat(endNode.value),
-          ];  
+          ];
           track.updateYAxis(parsedRange);
-          this.render(false);
-        }
+          this.render({});
+        };
 
         startNode.addEventListener("change", onRangeChange);
-
 
         endNode.addEventListener("change", onRangeChange);
 
@@ -299,37 +298,22 @@ export class TracksManager extends ShadowBaseElement {
       (id: string) => getTranscriptDetails(id),
     );
 
-    const overviewTrackCov = new OverviewTrack(
+    const overviewTrackCov = this.getOverviewTrack(
       "overview_cov",
       "Overview (cov)",
-      trackHeight.thick,
-      chromSizes,
-      chromClick,
+      () => dataSource.getOverviewCovData(sampleIds[0]),
       COV_Y_RANGE,
-      async () => {
-        return {
-          dotsPerChrom: await dataSource.getOverviewCovData(sampleIds[0]),
-          xRange: getXRange(),
-          chromosome: getChromosome(),
-        };
-      },
-      true,
+      chromSizes,
+      chromClick
     );
-    const overviewTrackBaf = new OverviewTrack(
+
+    const overviewTrackBaf = this.getOverviewTrack(
       "overview_baf",
       "Overview (baf)",
-      trackHeight.thick,
-      chromSizes,
-      chromClick,
+      () => dataSource.getOverviewCovData(sampleIds[0]),
       BAF_Y_RANGE,
-      async () => {
-        return {
-          dotsPerChrom: await dataSource.getOverviewBafData(sampleIds[0]),
-          xRange: getXRange(),
-          chromosome: getChromosome(),
-        };
-      },
-      false,
+      chromSizes,
+      chromClick
     );
 
     this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
@@ -431,21 +415,21 @@ export class TracksManager extends ShadowBaseElement {
     });
   }
 
-  render(updateData: boolean) {
+  render(settings: RenderSettings) {
     // FIXME: React to whether tracks are not present
 
     this.updateAnnotationTracks();
 
-    this.ideogramTrack.render(updateData);
+    this.ideogramTrack.render(settings);
 
     for (const track of this.dataTracks) {
-      track.render(updateData);
+      track.render(settings);
     }
 
-    this.overviewTracks.forEach((track) => track.render(updateData));
+    this.overviewTracks.forEach((track) => track.render(settings));
   }
 
-  getAnnotTrack(sourceId: string, label: string) {
+  getAnnotTrack(sourceId: string, label: string): BandTrack {
     async function getAnnotTrackData(
       source: string,
       getXRange: () => Rng,
@@ -524,7 +508,7 @@ export class TracksManager extends ShadowBaseElement {
       variantId: string,
     ) => Promise<ApiVariantDetails>,
     getVariantURL: (variantId: string) => string,
-  ) {
+  ): BandTrack {
     const variantTrack = new BandTrack(
       id,
       label,
@@ -565,7 +549,7 @@ export class TracksManager extends ShadowBaseElement {
     label: string,
     getBands: () => Promise<RenderBand[]>,
     getDetails: (id: string) => Promise<ApiGeneDetails>,
-  ) {
+  ): BandTrack {
     const genesTrack = new BandTrack(
       id,
       label,
@@ -591,6 +575,42 @@ export class TracksManager extends ShadowBaseElement {
       this.openTrackContextMenu,
     );
     return genesTrack;
+  }
+
+  getOverviewTrack(
+    id: string,
+    label: string,
+    getData: () => Promise<Record<string, RenderDot[]>>,
+    yRange: Rng,
+    chromSizes: Record<string, number>,
+    chromClick: (chrom: string) => void,
+  ): OverviewTrack {
+    const overviewTrack = new OverviewTrack(
+      id,
+      label,
+      trackHeight.thick,
+      chromSizes,
+      chromClick,
+      yRange,
+      async () => {
+        return {
+          dotsPerChrom: await getData(),
+          xRange: this.getXRange(),
+          chromosome: this.getChromosome(),
+        };
+      },
+      () => {
+        const xRange = this.getXRange();
+        const chrom = this.getChromosome();
+        return {
+          chrom,
+          start: xRange[0],
+          end: xRange[1],
+        }
+      },
+      true,
+    );
+    return overviewTrack;
   }
 }
 

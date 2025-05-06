@@ -469,3 +469,8 @@ interface HighlightCallbacks {
   addHighlight: (id: string, range: Rng) => void;
   removeHighlight: (id: string) =>  void;
 }
+
+interface RenderSettings {
+  dataUpdated?: boolean,
+  resized?: boolean,
+}

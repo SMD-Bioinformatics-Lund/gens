@@ -1,5 +1,10 @@
 import { drawLabel, drawVerticalLineInScale } from "../../draw/shapes";
-import { transformMap, padRange, rangeSize, generateID } from "../../util/utils";
+import {
+  transformMap,
+  padRange,
+  rangeSize,
+  generateID,
+} from "../../util/utils";
 import { COLORS, STYLE } from "../../constants";
 import { CanvasTrack } from "./base_tracks/canvas_track";
 import {
@@ -25,6 +30,7 @@ export class OverviewTrack extends CanvasTrack {
 
   renderData: OverviewTrackData | null;
   getRenderData: () => Promise<OverviewTrackData>;
+  getRegion: () => Region;
 
   // FIXME: Temporary solution to make sure the overview plots are rendered
   // efficiently. This should likely be generalized and part of Canvas track.
@@ -40,6 +46,7 @@ export class OverviewTrack extends CanvasTrack {
     onChromosomeClick: (chrom: string) => void,
     yRange: Rng,
     getRenderData: () => Promise<OverviewTrackData>,
+    getRegion: () => Region,
     drawLabels: boolean,
   ) {
     super(id, label, trackHeight);
@@ -47,6 +54,7 @@ export class OverviewTrack extends CanvasTrack {
     this.chromSizes = chromSizes;
     this.yRange = yRange;
     this.getRenderData = getRenderData;
+    this.getRegion = getRegion;
     this.onChromosomeClick = onChromosomeClick;
     this.drawLabels = drawLabels;
 
@@ -60,7 +68,12 @@ export class OverviewTrack extends CanvasTrack {
     this.marker = document.createElement("gens-marker") as GensMarker;
     this.trackContainer.appendChild(this.marker);
     const id = generateID();
-    this.marker.initialize(id, this.dimensions.height, COLORS.transparentYellow, null);
+    this.marker.initialize(
+      id,
+      this.dimensions.height,
+      COLORS.transparentYellow,
+      null,
+    );
 
     this.canvas.addEventListener("mousedown", (event) => {
       event.stopPropagation();
@@ -71,19 +84,24 @@ export class OverviewTrack extends CanvasTrack {
     this.trackContainer.style.cursor = "pointer";
   }
 
-  async render(updateData: boolean) {
+  async render(settings: RenderSettings) {
+    console.log("Rendering with settings:", settings);
 
     // FIXME: This one is a bit tricky isn't it
     // We want it to render not on new data, but on resize
     // Do I have all info I need here?
     // Should the renderData be more granular?
     let newRender = false;
-    if (this.renderData == null || updateData) {
+    if (this.renderData == null || settings.resized) {
       newRender = this.renderData == null;
       this.renderData = await this.getRenderData();
     }
 
-    const { xRange, chromosome, dotsPerChrom } = this.renderData;
+    const { dotsPerChrom } = this.renderData;
+    // Too slow to rerender all dots, but we still want to
+    // rerender the highlight
+    const { chrom: chromosome, start, end } = this.getRegion();
+    const xRange = [start, end];
 
     const totalChromSize = Object.values(this.chromSizes).reduce(
       (tot, size) => tot + size,
@@ -146,10 +164,16 @@ export class OverviewTrack extends CanvasTrack {
     );
 
     const chromStartPos = chromRanges[chromosome][0];
+
+    console.log("chromStartPos", chromStartPos);
+    console.log("All ranges", chromRanges);
+
     const viewPxRange: Rng = [
       xScale(xRange[0] + chromStartPos),
       xScale(xRange[1] + chromStartPos),
     ];
+
+    console.log("Rendering marker for range", viewPxRange);
     this.marker.render(viewPxRange);
   }
 }
