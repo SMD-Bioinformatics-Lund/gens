@@ -175,7 +175,7 @@ function getTracksSection(
     buttonsDiv.style.display = "flex";
     buttonsDiv.style.flexDirection = "row";
     buttonsDiv.style.flexWrap = "nowrap";
-    buttonsDiv.style.gap = `${SIZES.s}rem`;
+    buttonsDiv.style.gap = `${SIZES.s}px`;
 
     buttonsDiv.appendChild(
       getIconButton(ICONS.up, "Up", () => onMove(track, "up")),

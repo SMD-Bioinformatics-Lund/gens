@@ -72,7 +72,7 @@ export class InputControls extends HTMLElement {
   private zoomInButton: HTMLButtonElement;
   private zoomOutButton: HTMLButtonElement;
   private regionField: HTMLInputElement;
-  private removeHighlights: HTMLInputElement;
+  // private removeHighlights: HTMLInputElement;
 
   private region: RegionController;
   private currChromLength: number;
@@ -87,7 +87,7 @@ export class InputControls extends HTMLElement {
     this.zoomInButton = this.querySelector("#zoom-in") as HTMLButtonElement;
     this.zoomOutButton = this.querySelector("#zoom-out") as HTMLButtonElement;
     this.regionField = this.querySelector("#region-field") as HTMLInputElement;
-    this.removeHighlights = this.querySelector("#remove-highlights") as HTMLInputElement;
+    // this.removeHighlights = this.querySelector("#remove-highlights") as HTMLInputElement;
   }
 
   getRegion(): Region {
@@ -139,7 +139,7 @@ export class InputControls extends HTMLElement {
       this.zoomOut();
     };
 
-    this.removeHighlights.onclick = onRemoveHighlights;
+    // this.removeHighlights.onclick = onRemoveHighlights;
   }
 
   panLeft() {
