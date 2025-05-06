@@ -112,7 +112,8 @@ export class DataTrack extends CanvasTrack {
     super.initialize();
 
     if (this.dragCallbacks != null) {
-      this.setupDrag();
+      // FIXME: Look over this, how to make the dragging "feel" neat
+      // this.setupDrag();
     }
   }
 

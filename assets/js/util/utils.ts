@@ -244,7 +244,6 @@ export function moveElement<T>(
   shift: number,
   inPlace: boolean,
 ): T[] {
-  console.log("Moving", orig);
   let target;
   if (inPlace) {
     target = orig;
@@ -255,6 +254,5 @@ export function moveElement<T>(
   const newPos = pos + shift;
   target.splice(newPos, 0, el);
 
-  console.log("Results", target);
   return target;
 }

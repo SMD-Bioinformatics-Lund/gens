@@ -35,7 +35,7 @@ template.innerHTML = String.raw`
       display: block;
       width: 100%;
     }
-    #container {
+    #tracks-container {
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
@@ -44,16 +44,22 @@ template.innerHTML = String.raw`
       padding-right: 10px;
     }
   </style>
-  <div id="container"></div>
+  <div id="top-container"></div>
+  <div id="tracks-container"></div>
+  <div id="bottom-container"></div>
 `;
 
 export class TracksManager extends ShadowBaseElement {
+  topContainer: HTMLDivElement;
   parentContainer: HTMLDivElement;
+  bottomContainer: HTMLDivElement;
   isInitialized = false;
   annotationsContainer: HTMLDivElement;
 
   // FIXME: Think about a shared interface
-  tracks: (CanvasTrack | MultiBandTracks)[] = [];
+  ideogramTrack: IdeogramTrack;
+  overviewTracks: OverviewTrack[];
+  tracks: DataTrack[] = [];
 
   // This one needs a dedicated component I think
   annotationTracks: BandTrack[] = [];
@@ -67,8 +73,14 @@ export class TracksManager extends ShadowBaseElement {
       this.render(false);
     });
 
-    this.parentContainer = this.root.getElementById(
-      "container",
+    this.topContainer = this.root.querySelector(
+      "#top-container",
+    ) as HTMLDivElement;
+    this.parentContainer = this.root.querySelector(
+      "#tracks-container",
+    ) as HTMLDivElement;
+    this.bottomContainer = this.root.querySelector(
+      "#bottom-container",
     ) as HTMLDivElement;
   }
 
@@ -127,6 +139,21 @@ export class TracksManager extends ShadowBaseElement {
     const covTracks = [];
     const bafTracks = [];
     const variantTracks = [];
+
+    this.ideogramTrack = new IdeogramTrack(
+      "ideogram",
+      "Ideogram",
+      trackHeight.extraThin,
+      async () => {
+        return {
+          xRange: getXRange(),
+          chromInfo: await dataSource.getChromInfo(),
+        };
+      },
+    );
+    // const hello = document.createTextNode("Hello");
+    // // this.topContainer.appendChild(hello);
+    // this.topContainer.appendChild(ideogramTrack);
 
     for (const sampleId of sampleIds) {
       const startExpanded = sampleIds.length == 1 ? true : false;
@@ -227,17 +254,6 @@ export class TracksManager extends ShadowBaseElement {
       dragCallbacks,
       openTrackContextMenu,
     );
-    const ideogramTrack = new IdeogramTrack(
-      "ideogram",
-      "Ideogram",
-      trackHeight.extraThin,
-      async () => {
-        return {
-          xRange: getXRange(),
-          chromInfo: await dataSource.getChromInfo(),
-        };
-      },
-    );
 
     const annotationTracks = new MultiBandTracks(
       getAnnotSources,
@@ -313,29 +329,41 @@ export class TracksManager extends ShadowBaseElement {
       false,
     );
 
+    this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
+
+    // this.bottomContainer.appendChild(overviewTrackCov);
+    // this.bottomContainer.appendChild(overviewTrackBaf);
+
     this.tracks.push(
-      ideogramTrack,
       ...covTracks,
       ...bafTracks,
       ...variantTracks,
-      annotationTracks,
+      // annotationTracks,
       genesTrack,
-      overviewTrackCov,
-      overviewTrackBaf,
     );
 
-    for (const track of this.tracks) {
+    this.topContainer.appendChild(this.ideogramTrack);
+    this.ideogramTrack.initialize();
+    this.ideogramTrack.renderLoading();
+
+    this.tracks.forEach((track) => {
       this.parentContainer.appendChild(track);
       track.initialize();
       track.renderLoading();
-    }
+    });
+
+    this.overviewTracks.forEach((track) => {
+      this.bottomContainer.appendChild(track);
+      track.initialize();
+      track.renderLoading();
+    })
   }
 
   getDataTracks(): DataTrack[] {
     return this.tracks.filter((track) => track instanceof DataTrack);
   }
 
-  getTrackById(trackId: string): CanvasTrack | MultiBandTracks {
+  getTrackById(trackId: string): DataTrack {
     for (let i = 0; i < this.tracks.length; i++) {
       if (this.tracks[i].id == trackId) {
         return this.tracks[i];
@@ -351,9 +379,9 @@ export class TracksManager extends ShadowBaseElement {
 
     const container = track.parentNode;
     if (direction == "up") {
-      container.insertBefore(track, this.tracks[trackIndex-1]);
+      container.insertBefore(track, this.tracks[trackIndex - 1]);
     } else {
-      container.insertBefore(track, this.tracks[trackIndex + 1].nextSibling)
+      container.insertBefore(track, this.tracks[trackIndex + 1].nextSibling);
     }
 
     moveElement(this.tracks, trackIndex, shift, true);
@@ -371,6 +399,8 @@ export class TracksManager extends ShadowBaseElement {
 
   render(updateData: boolean) {
     // FIXME: React to whether tracks are not present
+
+    this.ideogramTrack.render(updateData);
 
     for (const track of this.tracks) {
       track.render(updateData);
