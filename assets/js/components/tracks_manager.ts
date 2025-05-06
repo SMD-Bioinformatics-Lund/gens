@@ -147,7 +147,6 @@ export class TracksManager extends ShadowBaseElement {
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
         render(false);
-        // this.render(false);
       }
     });
 
@@ -361,7 +360,6 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   getDataTracks(): DataTrack[] {
-
     return this.dataTracks.filter((track) => track instanceof DataTrack);
   }
 
