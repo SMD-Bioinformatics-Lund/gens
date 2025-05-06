@@ -192,6 +192,7 @@ async function initialize(
   );
 
   await tracks.initialize(
+    render,
     sampleIds,
     chromSizes,
     onChromClick,

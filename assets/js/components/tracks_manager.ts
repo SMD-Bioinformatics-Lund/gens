@@ -26,6 +26,8 @@ import {
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
 
+import Sortable, { SortableEvent } from 'sortablejs';
+
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
@@ -110,6 +112,7 @@ export class TracksManager extends ShadowBaseElement {
 
   // FIXME: Group the callbacks for better overview
   async initialize(
+    render: (updateData: boolean) => void,
     sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
@@ -135,6 +138,17 @@ export class TracksManager extends ShadowBaseElement {
 
     this.openContextMenu = openContextMenu;
     this.getXRange = getXRange;
+
+    const animMs = 150;
+    Sortable.create(this.parentContainer, {
+      animation: animMs,
+      onEnd: (evt: SortableEvent) => {
+        const { oldIndex, newIndex } = evt;
+        const [moved] = this.dataTracks.splice(oldIndex, 1);
+        this.dataTracks.splice(newIndex, 0, moved);
+        render(false);
+      }
+    });
 
     this.dragCallbacks = {
       onZoomIn,
