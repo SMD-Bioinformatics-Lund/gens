@@ -98,7 +98,6 @@ export class TracksManager extends ShadowBaseElement {
 
   getAnnotationSources: () => { id: string; label: string }[];
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
-  openContextMenu: (header: string, content: HTMLElement[]) => void;
   openTrackContextMenu: (track: DataTrack) => void;
   session: GensSession;
 
@@ -151,7 +150,6 @@ export class TracksManager extends ShadowBaseElement {
     this.getChromosome = getChromosome;
     this.session = session;
 
-    // FIXME: Disable on marker mode active
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
       handle: ".track-handle",
@@ -459,7 +457,7 @@ export class TracksManager extends ShadowBaseElement {
       const entries = getAnnotationContextMenuContent(id, details);
       const content = [button];
       content.push(...entries);
-      this.openContextMenu("Annotations", content);
+      () => this.session.openContextMenu("Annotations", content);
     };
 
     const track = new BandTrack(
@@ -548,7 +546,7 @@ export class TracksManager extends ShadowBaseElement {
         const content = [button];
         content.push(...entries);
 
-        this.openContextMenu("Variant", content);
+        this.session.openContextMenu("Variant", content);
       },
       this.openTrackContextMenu,
       this.session,
@@ -585,7 +583,7 @@ export class TracksManager extends ShadowBaseElement {
         const entries = getGenesContextMenuContent(id, details);
         const content = [button];
         content.push(...entries);
-        this.openContextMenu("Transcript", content);
+        this.session.openContextMenu("Transcript", content);
       },
       this.openTrackContextMenu,
       this.session,

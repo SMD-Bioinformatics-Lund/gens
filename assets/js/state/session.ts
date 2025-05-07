@@ -36,8 +36,6 @@ export class GensSession {
     this.render = render;
     this.sideMenu = sideMenu;
     this.highlights = {};
-
-    console.log("Constructed with highlights", this.highlights);
   }
 
   openContextMenu(header: string, content: HTMLDivElement[]) {
