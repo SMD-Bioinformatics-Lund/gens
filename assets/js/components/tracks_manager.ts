@@ -71,7 +71,7 @@ template.innerHTML = String.raw`
 interface DragCallbacks {
   onZoomIn: (range: Rng) => void;
   onZoomOut: () => void;
-  getHighlights: () => RangeHighlight[];
+  getHighlights: (chrom: string) => RangeHighlight[];
   addHighlight: (highlight: RangeHighlight) => void;
   removeHighlight: (id: string) => void;
 }
@@ -95,6 +95,7 @@ export class TracksManager extends ShadowBaseElement {
 
   dragCallbacks: DragCallbacks;
   dataSource: RenderDataSource;
+  renderAll: (settings: RenderSettings) => void;
 
   getAnnotationSources: () => { id: string; label: string }[];
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
@@ -107,7 +108,7 @@ export class TracksManager extends ShadowBaseElement {
 
   connectedCallback() {
     window.addEventListener("resize", () => {
-      this.render({ resized: true });
+      this.renderAll({ resized: true });
     });
 
     this.topContainer = this.root.querySelector(
@@ -123,7 +124,7 @@ export class TracksManager extends ShadowBaseElement {
 
   // FIXME: Group the callbacks for better overview
   async initialize(
-    render: (settings: RenderSettings) => void,
+    renderAll: (settings: RenderSettings) => void,
     sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
@@ -149,6 +150,7 @@ export class TracksManager extends ShadowBaseElement {
     this.getXRange = getXRange;
     this.getChromosome = getChromosome;
     this.session = session;
+    this.renderAll = renderAll;
 
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
@@ -157,7 +159,7 @@ export class TracksManager extends ShadowBaseElement {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
-        render({});
+        renderAll({});
       },
     });
 
@@ -169,16 +171,17 @@ export class TracksManager extends ShadowBaseElement {
       removeHighlight: session.removeHighlight.bind(session),
     };
 
-    // FIXME: Move to util function
     this.openTrackContextMenu = (track: DataTrack) => {
 
       const isDotTrack = track instanceof DotTrack;
 
       const returnElements = getTrackContextMenuContent(
+        renderAll,
         track,
         isDotTrack,
         getAnnotSources,
         (id: string) => dataSource.getAnnotation(id),
+        this.moveTrack,
       );
 
       this.session.openContextMenu(track.label, returnElements);
@@ -314,6 +317,7 @@ export class TracksManager extends ShadowBaseElement {
         const id = generateID();
         this.dragCallbacks.addHighlight({
           id,
+          chromosome: this.getChromosome(),
           range: [posStart, posEnd],
           color: COLORS.transparentBlue,
         });
@@ -415,7 +419,7 @@ export class TracksManager extends ShadowBaseElement {
 
     renderHighlights(
       this.tracksContainer,
-      this.dragCallbacks.getHighlights(),
+      this.dragCallbacks.getHighlights(this.getChromosome()),
       this.getXScale(),
       (id) => this.dragCallbacks.removeHighlight(id),
     );
@@ -450,6 +454,7 @@ export class TracksManager extends ShadowBaseElement {
         const id = generateID();
         this.dragCallbacks.addHighlight({
           id,
+          chromosome: this.getChromosome(),
           range: [details.start, details.end],
           color: COLORS.transparentBlue,
         });
@@ -533,6 +538,7 @@ export class TracksManager extends ShadowBaseElement {
           const id = generateID();
           this.dragCallbacks.addHighlight({
             id,
+            chromosome: this.getChromosome(),
             range: [details.position, details.end],
             color: COLORS.transparentBlue,
           });
@@ -576,6 +582,7 @@ export class TracksManager extends ShadowBaseElement {
           const id = generateID();
           this.dragCallbacks.addHighlight({
             id,
+            chromosome: this.getChromosome(),
             range: [details.start, details.end],
             color: COLORS.transparentBlue,
           });
@@ -648,10 +655,12 @@ function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
 
 // FIXME: Where should this util go?
 function getTrackContextMenuContent(
+  render: (settings: RenderSettings) => void,
   track: DataTrack,
   isDotTrack: boolean,
   getAnnotationSources: GetAnnotSources,
   getBands: (id: string) => Promise<RenderBand[]>,
+  moveTrack: (id: string, direction: "up" | "down") => void,
 ): HTMLDivElement[] {
   const buttonsDiv = document.createElement("div");
   buttonsDiv.style.display = "flex";
@@ -660,10 +669,10 @@ function getTrackContextMenuContent(
   buttonsDiv.style.gap = `${SIZES.s}px`;
 
   buttonsDiv.appendChild(
-    getIconButton(ICONS.up, "Up", () => this.moveTrack(track.id, "up")),
+    getIconButton(ICONS.up, "Up", () => moveTrack(track.id, "up")),
   );
   buttonsDiv.appendChild(
-    getIconButton(ICONS.down, "Down", () => this.moveTrack(track.id, "down")),
+    getIconButton(ICONS.down, "Down", () => moveTrack(track.id, "down")),
   );
   buttonsDiv.appendChild(
     getIconButton(
@@ -671,7 +680,7 @@ function getTrackContextMenuContent(
       "Show / hide",
       () => {
         track.toggleHidden();
-        this.render({});
+        render({});
       },
     ),
   );
@@ -681,7 +690,7 @@ function getTrackContextMenuContent(
       "Collapse / expand",
       () => {
         track.toggleCollapsed();
-        this.render({});
+        render({});
       },
     ),
   );
@@ -689,7 +698,7 @@ function getTrackContextMenuContent(
   const returnElements = [buttonsDiv];
 
   if (isDotTrack) {
-    const axisRow = getYAxisRow(track);
+    const axisRow = getYAxisRow(render, track);
     returnElements.push(axisRow);
 
     const colorSelectRow = getColorSelectRow(
@@ -702,7 +711,7 @@ function getTrackContextMenuContent(
   return returnElements;
 }
 
-function getYAxisRow(track: DataTrack): HTMLDivElement {
+function getYAxisRow(render: (settings: RenderSettings) => void, track: DataTrack): HTMLDivElement {
   const axis = track.getYAxis();
 
   const axisRow = getContainer("row");
@@ -731,7 +740,7 @@ function getYAxisRow(track: DataTrack): HTMLDivElement {
       parseFloat(endNode.value),
     ];
     track.updateYAxis(parsedRange);
-    this.render({});
+    render({});
   };
 
   startNode.addEventListener("change", onRangeChange);
