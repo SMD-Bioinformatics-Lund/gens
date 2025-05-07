@@ -153,9 +153,11 @@ export class TracksManager extends ShadowBaseElement {
     this.session = session;
     // this.getSessionInfo = getSessionInfo;
 
+    // FIXME: Disable on marker mode active
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
       handle: ".track-handle",
+      // disabled: this.session.getMarkerMode(),
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);

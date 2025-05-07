@@ -26,6 +26,7 @@ export class GensSession {
 
   toggleMarkerMode() {
     this.markerModeOn = !this.markerModeOn;
+    this.render({});
   }
 
   private render: (settings: RenderSettings) => void;
