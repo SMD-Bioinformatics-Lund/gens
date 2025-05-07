@@ -35,16 +35,19 @@ export class DataTrack extends CanvasTrack {
   getXScale: () => Scale;
   getYRange: () => Rng;
   getYScale: () => Scale;
-  dragCallbacks: DragCallbacks;
+  // dragCallbacks: DragCallbacks;
   openTrackContextMenu: (track: DataTrack) => void;
 
+  // FIXME: All of this state should live elsewhere I think
+  // Controlled by the tracks_manager
   private isHidden: boolean = false;
   private isCollapsed: boolean = false;
   private expander: Expander;
+  session: GensSession;
+  // 
 
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
-  session: GensSession;
 
   private renderSeq = 0;
 
@@ -124,7 +127,7 @@ export class DataTrack extends CanvasTrack {
     session: GensSession,
   ) {
     super(id, label, settings.defaultHeight);
-    this.dragCallbacks = callbacks;
+    // this.dragCallbacks = callbacks;
     this.settings = settings;
     this.getXRange = getXRange;
     this.getXScale = getXScale;
@@ -145,49 +148,49 @@ export class DataTrack extends CanvasTrack {
   initialize() {
     super.initialize();
 
-    if (this.dragCallbacks != null) {
-      // FIXME: Look over this, how to make the dragging "feel" neat
-      this.setupDrag();
-    }
+    // if (this.dragCallbacks != null) {
+    //   // FIXME: Look over this, how to make the dragging "feel" neat
+    //   this.setupDrag();
+    // }
   }
 
-  setupDrag() {
-    const onDrag = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
-      const xRange = this.getXRange();
-      if (xRange == null) {
-        console.error("No xRange set");
-      }
+  // setupDrag() {
+  //   // const onDrag = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+  //   //   const xRange = this.getXRange();
+  //   //   if (xRange == null) {
+  //   //     console.error("No xRange set");
+  //   //   }
 
-      const yAxisWidth = STYLE.yAxis.width;
+  //   //   const yAxisWidth = STYLE.yAxis.width;
 
-      const pixelToPos = getLinearScale(
-        [yAxisWidth, this.dimensions.width],
-        xRange,
-      );
-      const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
-      const posEnd = pixelToPos(pxRangeX[1]);
+  //   //   const pixelToPos = getLinearScale(
+  //   //     [yAxisWidth, this.dimensions.width],
+  //   //     xRange,
+  //   //   );
+  //   //   const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
+  //   //   const posEnd = pixelToPos(pxRangeX[1]);
 
-      if (shiftPress) {
-        this.dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
-      } else {
-        const id = generateID();
-        this.dragCallbacks.addHighlight(id, [posStart, posEnd]);
-      }
-    };
+  //   //   if (shiftPress) {
+  //   //     this.dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
+  //   //   } else {
+  //   //     const id = generateID();
+  //   //     this.dragCallbacks.addHighlight(id, [posStart, posEnd]);
+  //   //   }
+  //   // };
 
-    initializeDragSelect(
-      this.canvas,
-      onDrag,
-      this.dragCallbacks.removeHighlight,
-      () => this.session.getMarkerMode(),
-    );
+  //   // initializeDragSelect(
+  //   //   this.canvas,
+  //   //   onDrag,
+  //   //   this.dragCallbacks.removeHighlight,
+  //   //   () => this.session.getMarkerMode(),
+  //   // );
 
-    this.trackContainer.addEventListener("click", () => {
-      if (keyLogger.heldKeys.Control) {
-        this.dragCallbacks.onZoomOut();
-      }
-    });
-  }
+  //   this.trackContainer.addEventListener("click", () => {
+  //     if (keyLogger.heldKeys.Control) {
+  //       this.dragCallbacks.onZoomOut();
+  //     }
+  //   });
+  // }
 
   async render(settings: RenderSettings) {
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
@@ -226,13 +229,13 @@ export class DataTrack extends CanvasTrack {
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
-    renderHighlights(
-      this.trackContainer,
-      this.dimensions.height,
-      this.dragCallbacks.getHighlights(),
-      this.getXScale(),
-      (id) => this.dragCallbacks.removeHighlight(id),
-    );
+    // renderHighlights(
+    //   this.trackContainer,
+    //   this.dimensions.height,
+    //   this.dragCallbacks.getHighlights(),
+    //   this.getXScale(),
+    //   (id) => this.dragCallbacks.removeHighlight(id),
+    // );
 
     if (this.settings.yAxis != null) {
       this.renderYAxis(this.settings.yAxis);
@@ -248,7 +251,6 @@ export class DataTrack extends CanvasTrack {
   }
 
   drawEnd() {
-    console.log("Update 1");
     const labelBox = this.setupLabel(() => this.openTrackContextMenu(this));
     setCanvasPointerCursor(
       this.canvas,
@@ -309,6 +311,8 @@ export class DataTrack extends CanvasTrack {
 }
 
 // FIXME: Consider what to do with this one. Remove? General height controller?
+// This should live in the tracks manager. They only need to know their final
+// height.
 class Expander {
   expandedHeight: number = null;
   isExpanded: boolean;

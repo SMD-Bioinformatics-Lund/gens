@@ -28,6 +28,7 @@ export class BandTrack extends DataTrack {
       id,
       label,
       () => this.renderData.xRange,
+      // FIXME: Supply xScale directly?
       () => {
         const xRange = this.renderData.xRange;
         const yAxisWidth = STYLE.yAxis.width;

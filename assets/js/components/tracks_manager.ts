@@ -26,6 +26,9 @@ import { diff, moveElement } from "../util/collections";
 
 import Sortable, { SortableEvent } from "sortablejs";
 import { GensSession } from "../state/session";
+import { initializeDragSelect, renderHighlights } from "./tracks/base_tracks/interactive_tools";
+import { getLinearScale } from "../draw/render_utils";
+import { keyLogger } from "./util/keylogger";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -71,7 +74,7 @@ interface DragCallbacks {
 
 export class TracksManager extends ShadowBaseElement {
   topContainer: HTMLDivElement;
-  parentContainer: HTMLDivElement;
+  tracksContainer: HTMLDivElement;
   bottomContainer: HTMLDivElement;
   isInitialized = false;
   // annotationsContainer: HTMLDivElement;
@@ -107,7 +110,7 @@ export class TracksManager extends ShadowBaseElement {
     this.topContainer = this.root.querySelector(
       "#top-container",
     ) as HTMLDivElement;
-    this.parentContainer = this.root.querySelector(
+    this.tracksContainer = this.root.querySelector(
       "#tracks-container",
     ) as HTMLDivElement;
     this.bottomContainer = this.root.querySelector(
@@ -149,9 +152,9 @@ export class TracksManager extends ShadowBaseElement {
     this.session = session;
     // this.getSessionInfo = getSessionInfo;
 
-    Sortable.create(this.parentContainer, {
+    Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
-      handle: '.track-handle',
+      handle: ".track-handle",
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
@@ -306,7 +309,7 @@ export class TracksManager extends ShadowBaseElement {
 
     this.dataTracks.forEach((track) => {
       // this.parentContainer.appendChild(track);
-      appendDataTrack(this.parentContainer, track);
+      appendDataTrack(this.tracksContainer, track);
       track.initialize();
       track.renderLoading();
     });
@@ -315,6 +318,44 @@ export class TracksManager extends ShadowBaseElement {
       this.bottomContainer.appendChild(track);
       track.initialize();
       track.renderLoading();
+    });
+
+    const onDrag = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+      const xRange = this.getXRange();
+      if (xRange == null) {
+        console.error("No xRange set");
+      }
+
+      const yAxisWidth = STYLE.yAxis.width;
+
+      const pixelToPos = getLinearScale(
+        [yAxisWidth, this.tracksContainer.offsetWidth],
+        // [yAxisWidth, this.dimensions.width],
+        xRange,
+      );
+      const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
+      const posEnd = pixelToPos(pxRangeX[1]);
+
+      if (shiftPress) {
+        this.dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
+      } else {
+        const id = generateID();
+        this.dragCallbacks.addHighlight(id, [posStart, posEnd]);
+      }
+    };
+
+    // Can I initialize the drag select here?
+    initializeDragSelect(
+      this.tracksContainer,
+      onDrag,
+      this.dragCallbacks.removeHighlight,
+      () => this.session.getMarkerMode(),
+    );
+
+    this.tracksContainer.addEventListener("click", () => {
+      if (keyLogger.heldKeys.Control) {
+        this.dragCallbacks.onZoomOut();
+      }
     });
   }
 
@@ -352,12 +393,12 @@ export class TracksManager extends ShadowBaseElement {
   showTrack(trackId: string) {
     const track = this.getTrackById(trackId);
     // this.parentContainer.appendChild(track);
-    appendDataTrack(this.parentContainer, track);
+    appendDataTrack(this.tracksContainer, track);
   }
 
   hideTrack(trackId: string) {
     const track = this.getTrackById(trackId);
-    this.parentContainer.removeChild(track);
+    this.tracksContainer.removeChild(track);
   }
 
   updateAnnotationTracks() {
@@ -379,7 +420,7 @@ export class TracksManager extends ShadowBaseElement {
       this.dataTracks.push(newTrack);
       this.annotationTracks.push(newTrack);
       // this.parentContainer.appendChild(newTrack);
-      appendDataTrack(this.parentContainer, newTrack);
+      appendDataTrack(this.tracksContainer, newTrack);
       newTrack.initialize();
     });
 
@@ -388,12 +429,30 @@ export class TracksManager extends ShadowBaseElement {
       const track = this.getTrackById(source.id);
       const index = this.dataTracks.indexOf(track);
       this.dataTracks.splice(index, 0);
-      this.parentContainer.removeChild(track);
+      this.tracksContainer.removeChild(track);
     });
+  }
+
+  getXScale() {
+    const xRange = this.getXRange();
+    const yAxisWidth = STYLE.yAxis.width;
+    const xScale = getLinearScale(xRange, [
+      yAxisWidth,
+      this.tracksContainer.offsetWidth,
+    ]);
+    return xScale;
   }
 
   render(settings: RenderSettings) {
     // FIXME: React to whether tracks are not present
+
+    renderHighlights(
+      this.tracksContainer,
+      this.tracksContainer.offsetHeight,
+      this.dragCallbacks.getHighlights(),
+      this.getXScale(),
+      (id) => this.dragCallbacks.removeHighlight(id),
+    );
 
     this.updateAnnotationTracks();
 
@@ -596,7 +655,6 @@ export class TracksManager extends ShadowBaseElement {
 }
 
 function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
-
   const wrapper = document.createElement("div");
   wrapper.classList.add("track-wrapper");
   wrapper.style.position = "relative";

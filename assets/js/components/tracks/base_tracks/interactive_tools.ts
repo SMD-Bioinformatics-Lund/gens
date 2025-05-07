@@ -9,7 +9,7 @@ import { keyLogger } from "../../util/keylogger";
 import { GensMarker } from "../../util/marker";
 
 export function initializeDragSelect(
-  canvas: HTMLCanvasElement,
+  element: HTMLElement,
   onDragRelease: (rangeX: Rng, rangeY: Rng, shiftPress: boolean) => void,
   onMarkerRemove: (id: string) => void,
   getMarkerMode: () => boolean,
@@ -19,11 +19,11 @@ export function initializeDragSelect(
   let dragStart: { x: number; y: number };
   let marker: GensMarker | null = null;
 
-  canvas.addEventListener("mousedown", (event) => {
+  element.addEventListener("mousedown", (event) => {
     isDragging = true;
     isMoved = false;
 
-    const rect = canvas.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
 
     dragStart = { x: event.clientX - rect.left, y: event.clientY - rect.top };
 
@@ -32,11 +32,12 @@ export function initializeDragSelect(
         ? COLORS.transparentYellow
         : COLORS.transparentBlue;
       marker = document.createElement("gens-marker") as GensMarker;
-      canvas.parentElement.appendChild(marker);
+      element.appendChild(marker);
+      // element.parentElement.appendChild(marker);
       const id = generateID();
       marker.initialize(
         id,
-        canvas.height,
+        element.offsetHeight,
         color,
         getMarkerMode() ? onMarkerRemove : null,
       );
@@ -45,13 +46,13 @@ export function initializeDragSelect(
     }
   });
 
-  canvas.addEventListener("mousemove", (event) => {
+  element.addEventListener("mousemove", (event) => {
     if (!isDragging || !marker) {
       return;
     }
 
     isMoved = true;
-    const rect = canvas.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
     const currX = event.clientX - rect.left;
     const xRange = sortRange([dragStart.x, currX]);
     marker.render(xRange);
