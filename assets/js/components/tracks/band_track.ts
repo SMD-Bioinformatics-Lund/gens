@@ -38,7 +38,6 @@ export class BandTrack extends DataTrack {
         ]);
         return xScale;
       },
-      dragCallbacks,
       openTrackContextMenu,
       {
         defaultHeight: trackHeight,

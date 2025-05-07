@@ -182,6 +182,8 @@ export function drawBox(
     borderWidth = STYLE.tracks.gridLineWidth,
   } = style;
 
+  console.log(fill);
+
   ctx.fillStyle = fill;
   ctx.fillRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 

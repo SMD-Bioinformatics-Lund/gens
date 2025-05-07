@@ -238,7 +238,7 @@ export function generateID() {
   return `${ts}-${rand64}`;
 }
 
-export function generateTicks(range: Rng, step: number) {
+export function generateTicks(range: Rng, step: number): number[] {
   const factor = 1000;
   // Factor needed as ceil works with integers
   const first = Math.ceil((range[0] * factor) / (step * factor)) * step;

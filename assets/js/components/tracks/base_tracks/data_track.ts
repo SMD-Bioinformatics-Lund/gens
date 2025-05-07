@@ -1,19 +1,22 @@
-import { SIZES, STYLE } from "../../../constants";
+import { COLORS, SIZES, STYLE } from "../../../constants";
 import {
   drawYAxis,
   getLinearScale,
   renderBackground,
 } from "../../../draw/render_utils";
-import { drawHorizontalLineInScale, drawLabel } from "../../../draw/shapes";
+import {
+  drawBox,
+  drawHorizontalLineInScale,
+  drawLabel,
+  drawLine,
+} from "../../../draw/shapes";
 import { GensSession } from "../../../state/session";
-import { generateID, generateTicks, getTickSize } from "../../../util/utils";
+import { generateTicks, getTickSize } from "../../../util/utils";
 import {
   setupCanvasClick,
   setCanvasPointerCursor,
 } from "../../util/canvas_interaction";
-import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
-import { initializeDragSelect, renderHighlights } from "./interactive_tools";
 
 import debounce from "lodash.debounce";
 
@@ -35,7 +38,6 @@ export class DataTrack extends CanvasTrack {
   getXScale: () => Scale;
   getYRange: () => Rng;
   getYScale: () => Scale;
-  // dragCallbacks: DragCallbacks;
   openTrackContextMenu: (track: DataTrack) => void;
 
   // FIXME: All of this state should live elsewhere I think
@@ -44,7 +46,7 @@ export class DataTrack extends CanvasTrack {
   private isCollapsed: boolean = false;
   private expander: Expander;
   session: GensSession;
-  // 
+  //
 
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
@@ -95,6 +97,8 @@ export class DataTrack extends CanvasTrack {
   }
 
   // FIXME: Simplify the height management
+  // The track manager can keep track of the expansion state
+  // White the track only knows its height
   initializeExpander(
     eventKey: string,
     startExpanded: boolean,
@@ -121,7 +125,6 @@ export class DataTrack extends CanvasTrack {
     label: string,
     getXRange: () => Rng,
     getXScale: () => Scale,
-    callbacks: DragCallbacks,
     openTrackContextMenu: (track: DataTrack) => void,
     settings: Settings,
     session: GensSession,
@@ -144,53 +147,6 @@ export class DataTrack extends CanvasTrack {
 
     this.openTrackContextMenu = openTrackContextMenu;
   }
-
-  initialize() {
-    super.initialize();
-
-    // if (this.dragCallbacks != null) {
-    //   // FIXME: Look over this, how to make the dragging "feel" neat
-    //   this.setupDrag();
-    // }
-  }
-
-  // setupDrag() {
-  //   // const onDrag = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
-  //   //   const xRange = this.getXRange();
-  //   //   if (xRange == null) {
-  //   //     console.error("No xRange set");
-  //   //   }
-
-  //   //   const yAxisWidth = STYLE.yAxis.width;
-
-  //   //   const pixelToPos = getLinearScale(
-  //   //     [yAxisWidth, this.dimensions.width],
-  //   //     xRange,
-  //   //   );
-  //   //   const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
-  //   //   const posEnd = pixelToPos(pxRangeX[1]);
-
-  //   //   if (shiftPress) {
-  //   //     this.dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
-  //   //   } else {
-  //   //     const id = generateID();
-  //   //     this.dragCallbacks.addHighlight(id, [posStart, posEnd]);
-  //   //   }
-  //   // };
-
-  //   // initializeDragSelect(
-  //   //   this.canvas,
-  //   //   onDrag,
-  //   //   this.dragCallbacks.removeHighlight,
-  //   //   () => this.session.getMarkerMode(),
-  //   // );
-
-  //   this.trackContainer.addEventListener("click", () => {
-  //     if (keyLogger.heldKeys.Control) {
-  //       this.dragCallbacks.onZoomOut();
-  //     }
-  //   });
-  // }
 
   async render(settings: RenderSettings) {
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
@@ -229,13 +185,12 @@ export class DataTrack extends CanvasTrack {
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
-    // renderHighlights(
-    //   this.trackContainer,
-    //   this.dimensions.height,
-    //   this.dragCallbacks.getHighlights(),
-    //   this.getXScale(),
-    //   (id) => this.dragCallbacks.removeHighlight(id),
-    // );
+    // Color fill Y axis area
+    drawBox(
+      this.ctx,
+      { x1: 0, x2: STYLE.yAxis.width, y1: 0, y2: this.dimensions.height },
+      { fillColor: COLORS.extraLightGray },
+    );
 
     if (this.settings.yAxis != null) {
       this.renderYAxis(this.settings.yAxis);
@@ -259,7 +214,7 @@ export class DataTrack extends CanvasTrack {
         return hoverTargets.concat([labelBox]);
       },
       () => this.session.getMarkerMode(),
-      [0, STYLE.yAxis.width]
+      [0, STYLE.yAxis.width],
     );
   }
 
@@ -280,10 +235,28 @@ export class DataTrack extends CanvasTrack {
     const ticks = generateTicks(yAxis.range, tickSize);
 
     for (const yTick of ticks) {
-      drawHorizontalLineInScale(this.ctx, yTick, yScale, {
-        color: STYLE.colors.lightGray,
-        dashed: true,
-      });
+
+      const yPx = yScale(yTick);
+
+      const lineDims = {
+        x1: STYLE.yAxis.width,
+        x2: this.dimensions.width,
+        y1: yPx,
+        y2: yPx,
+      }
+
+      console.log(lineDims);
+
+      drawLine(
+        this.ctx,
+        lineDims,
+        { color: STYLE.colors.lightGray, dashed: true },
+      );
+
+      // drawLine(this.ctx, yTick, yScale, {
+      //   color: STYLE.colors.lightGray,
+      //   dashed: true,
+      // });
     }
 
     drawYAxis(this.ctx, ticks, yScale, yAxis.range);

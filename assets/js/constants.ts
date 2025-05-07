@@ -41,7 +41,7 @@ export const COLORS = {
   black: "#222",
   darkGray: "#555",
   lightGray: "#ccc",
-  extraLightGray: "#eee",
+  extraLightGray: "#fafafa",
   yellow: "#dcd16f",
   red: "#f00",
   teal: "#008080",

@@ -13,14 +13,14 @@ export function drawYAxis(
   yRange: Rng,
 ) {
   const style = STYLE.yAxis;
-  const box = {
-    x1: 0,
-    x2: style.width,
-    y1: yScale(yRange[0]),
-    // If not +1, the final tick line is drawn
-    y2: yScale(yRange[1]) + 1,
-  };
-  drawBox(ctx, box, { fillColor: style.backgroundColor, borderColor: COLORS.white });
+  // const box = {
+  //   x1: 0,
+  //   x2: style.width,
+  //   y1: yScale(yRange[0]),
+  //   // If not +1, the final tick line is drawn
+  //   y2: yScale(yRange[1]) + 1,
+  // };
+  // drawBox(ctx, box, { fillColor: style.backgroundColor, borderColor: COLORS.white });
   drawLine(
     ctx,
     {

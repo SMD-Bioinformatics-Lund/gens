@@ -38,7 +38,6 @@ export class DotTrack extends DataTrack {
         ]);
         return xScale;
       },
-      dragCallbacks,
       openTrackContextMenu,
       { defaultHeight: trackHeight, dragSelect: true, yAxis },
       session,
@@ -67,22 +66,22 @@ export class DotTrack extends DataTrack {
       (dot) => dot.x >= xRange[0] && dot.y <= xRange[1],
     );
 
-    // FIXME: This might be slow
-    let coloredDots = [...dotsInRange];
-    if (this.colorBands != null) {
-      console.log("Looping the bands", coloredDots);
-      for (const band of this.colorBands) {
-        coloredDots
-          .filter((dot) => pointInRange(dot.x, [band.start, band.end]))
-          .forEach((dot) => {
-            if (band.color) {
-              dot.color = band.color;
-            }
-          });
-      }
-    }
+    // FIXME: Try adding Canvas bands instead
+    // let coloredDots = [...dotsInRange];
+    // if (this.colorBands != null) {
+    //   console.log("Looping the bands", coloredDots);
+    //   for (const band of this.colorBands) {
+    //     coloredDots
+    //       .filter((dot) => pointInRange(dot.x, [band.start, band.end]))
+    //       .forEach((dot) => {
+    //         if (band.color) {
+    //           dot.color = band.color;
+    //         }
+    //       });
+    //   }
+    // }
 
-    drawDotsScaled(this.ctx, coloredDots, xScale, yScale);
+    drawDotsScaled(this.ctx, dotsInRange, xScale, yScale);
 
     super.drawEnd();
   }
