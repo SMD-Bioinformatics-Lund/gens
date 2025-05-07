@@ -473,6 +473,7 @@ interface RenderSettings {
 
 interface RangeHighlight {
   id: string,
+  chromosome: string,
   range: Rng,
   color: string,
 }

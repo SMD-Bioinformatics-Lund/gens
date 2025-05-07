@@ -42,8 +42,8 @@ export class GensSession {
     this.sideMenu.showContent(header, content);
   }
 
-  getHighlights(): RangeHighlight[] {
-    return Object.values(this.highlights);
+  getHighlights(chrom: string): RangeHighlight[] {
+    return Object.values(this.highlights).filter((h) => h.chromosome === chrom);
   }
   removeHighlights() {
     this.highlights = {};
