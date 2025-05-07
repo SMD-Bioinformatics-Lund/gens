@@ -476,3 +476,7 @@ interface RenderSettings {
   dataUpdated?: boolean,
   resized?: boolean,
 }
+
+interface Session {
+  markerModeOn: boolean;
+}

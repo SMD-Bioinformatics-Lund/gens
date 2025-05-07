@@ -34,6 +34,11 @@ export async function initCanvases({
   annotationFile: string;
   startRegion: Region;
 }) {
+
+  const session: Session = {
+    markerModeOn: false,
+  }; 
+
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
   const sideMenu = document.getElementById("side-menu") as SideMenu;
@@ -85,7 +90,14 @@ export async function initCanvases({
     sideMenu.showContent(header, content);
   };
 
-  setupShortcuts(sideMenu, inputControls, onChromClick);
+  // FIXME: We need a session state class
+
+  setupShortcuts(
+    session,
+    sideMenu,
+    inputControls,
+    onChromClick,
+  );
 
   const annotSources = await api.getAnnotationSources();
   const defaultAnnot = annotSources
@@ -110,6 +122,7 @@ export async function initCanvases({
   );
 
   initialize(
+    session,
     render,
     sampleIds,
     inputControls,
@@ -137,6 +150,7 @@ export async function initCanvases({
 }
 
 async function initialize(
+  session: Session,
   render: (settings: RenderSettings) => void,
   sampleIds: string[],
   inputControls: InputControls,
@@ -182,18 +196,15 @@ async function initialize(
     },
   };
 
-  // FIXME: We need a session state class
-  let markerModeOn = false;
-
   inputControls.initialize(
     startRegion,
     async (_range) => {
       render({ dataUpdated: true });
     },
     highlightCallbacks.removeHighlights,
-    () => markerModeOn,
+    () => session.markerModeOn,
     () => {
-      markerModeOn = !markerModeOn;
+      session.markerModeOn = !session.markerModeOn;
       render({});
     },
   );
@@ -229,6 +240,7 @@ async function initialize(
 }
 
 function setupShortcuts(
+  session: Session,
   sideMenu: SideMenu,
   inputControls: InputControls,
   onChromClick: (chrom: string) => void,
@@ -236,6 +248,10 @@ function setupShortcuts(
   // Rebuild the keyboard shortcuts
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      if (session.markerModeOn) {
+        inputControls.toggleMarkerMode();
+        return;
+      }
       sideMenu.close();
     }
     if (e.key === "ArrowLeft") {
