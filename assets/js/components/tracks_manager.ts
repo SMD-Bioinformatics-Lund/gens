@@ -25,6 +25,7 @@ import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
 
 import Sortable, { SortableEvent } from "sortablejs";
+import { GensSession } from "../state/session";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -92,6 +93,7 @@ export class TracksManager extends ShadowBaseElement {
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
   openContextMenu: (header: string, content: HTMLElement[]) => void;
   openTrackContextMenu: (track: DataTrack) => void;
+  session: GensSession;
 
   constructor() {
     super(template);
@@ -132,16 +134,20 @@ export class TracksManager extends ShadowBaseElement {
       sampleId: string,
       variantId: string,
     ) => Promise<ApiVariantDetails>,
-    openContextMenu: (header: string, content: HTMLElement[]) => void,
-    highlightCallbacks: HighlightCallbacks,
+    // openContextMenu: (header: string, content: HTMLElement[]) => void,
+    session: GensSession,
+    // highlightCallbacks: HighlightCallbacks,
+    // getSessionInfo: () => GensSession,
   ) {
     this.dataSource = dataSource;
     this.getAnnotationSources = getAnnotSources;
     this.getAnnotationDetails = getAnnotationDetails;
 
-    this.openContextMenu = openContextMenu;
+    // this.openContextMenu = openContextMenu;
     this.getXRange = getXRange;
     this.getChromosome = getChromosome;
+    this.session = session;
+    // this.getSessionInfo = getSessionInfo;
 
     Sortable.create(this.parentContainer, {
       animation: ANIM_TIME.medium,
@@ -157,9 +163,9 @@ export class TracksManager extends ShadowBaseElement {
     this.dragCallbacks = {
       onZoomIn,
       onZoomOut,
-      getHighlights: highlightCallbacks.getHighlights,
-      addHighlight: highlightCallbacks.addHighlight,
-      removeHighlight: highlightCallbacks.removeHighlight,
+      getHighlights: session.getHighlights.bind(session),
+      addHighlight: session.addHighlight.bind(session),
+      removeHighlight: session.removeHighlight.bind(session),
     };
 
     // FIXME: Move to util function
@@ -208,7 +214,7 @@ export class TracksManager extends ShadowBaseElement {
         (id: string) => dataSource.getAnnotation(id),
       );
 
-      openContextMenu(track.label, returnElements);
+      this.session.openContextMenu(track.label, returnElements);
     };
 
     const covTracks = [];
@@ -438,6 +444,7 @@ export class TracksManager extends ShadowBaseElement {
       openContextMenuId,
       this.dragCallbacks,
       this.openTrackContextMenu,
+      this.session,
     );
     return track;
   }
@@ -465,6 +472,7 @@ export class TracksManager extends ShadowBaseElement {
       },
       this.dragCallbacks,
       this.openTrackContextMenu,
+      this.session,
     );
     return dotTrack;
   }
@@ -511,6 +519,7 @@ export class TracksManager extends ShadowBaseElement {
       },
       this.dragCallbacks,
       this.openTrackContextMenu,
+      this.session,
     );
     return variantTrack;
   }
@@ -544,6 +553,7 @@ export class TracksManager extends ShadowBaseElement {
       },
       this.dragCallbacks,
       this.openTrackContextMenu,
+      this.session,
     );
     return genesTrack;
   }
@@ -599,8 +609,6 @@ function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
   handle.style.left = "0";
   handle.style.width = `${STYLE.yAxis.width}px`;
   handle.style.height = "100%";
-  // handle.style.backgroundColor = "blue";
-  // handle.style.height = "100%";
   wrapper.appendChild(handle);
 
   parentContainer.appendChild(wrapper);

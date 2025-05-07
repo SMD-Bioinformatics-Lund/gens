@@ -16,6 +16,7 @@ import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
 import { SettingsPage } from "./components/settings_page";
 import { HeaderInfo } from "./components/header_info";
+import { GensSession } from "./state/session";
 
 export async function initCanvases({
   caseId,
@@ -35,9 +36,6 @@ export async function initCanvases({
   startRegion: Region;
 }) {
 
-  const session: Session = {
-    markerModeOn: false,
-  }; 
 
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
@@ -86,11 +84,13 @@ export async function initCanvases({
     return url;
   };
 
-  const openContextMenu = (header: string, content: HTMLDivElement[]) => {
-    sideMenu.showContent(header, content);
-  };
+  // const openContextMenu = (header: string, content: HTMLDivElement[]) => {
+  //   sideMenu.showContent(header, content);
+  // };
 
   // FIXME: We need a session state class
+
+  const session = new GensSession(render, sideMenu);
 
   setupShortcuts(
     session,
@@ -134,7 +134,6 @@ export async function initCanvases({
     getChromInfo,
     renderDataSource,
     getVariantURL,
-    openContextMenu,
   );
 
   const settingsButton = document.getElementById(
@@ -150,7 +149,7 @@ export async function initCanvases({
 }
 
 async function initialize(
-  session: Session,
+  session: GensSession,
   render: (settings: RenderSettings) => void,
   sampleIds: string[],
   inputControls: InputControls,
@@ -162,7 +161,6 @@ async function initialize(
   getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
   renderDataSource: RenderDataSource,
   getVariantURL: (variantId: string) => string,
-  openContextMenu: (header: string, content: HTMLDivElement[]) => void,
 ) {
   const chromSizes = {};
   for (const chromosome of CHROMOSOMES) {
@@ -173,35 +171,35 @@ async function initialize(
   // FIXME: Move to settings class
   let highlights: Record<string, Rng> = {};
 
-  const highlightCallbacks = {
-    getHighlights: () => {
-      return Object.entries(highlights).map(([id, range]) => {
-        return {
-          id,
-          range,
-        };
-      });
-    },
-    removeHighlights: () => {
-      highlights = {};
-      render({});
-    },
-    addHighlight: (id: string, range: Rng) => {
-      highlights[id] = range;
-      render({});
-    },
-    removeHighlight: (id: string) => {
-      delete highlights[id];
-      render({});
-    },
-  };
+  // const highlightCallbacks = {
+  //   getHighlights: () => {
+  //     return Object.entries(highlights).map(([id, range]) => {
+  //       return {
+  //         id,
+  //         range,
+  //       };
+  //     });
+  //   },
+  //   removeHighlights: () => {
+  //     highlights = {};
+  //     render({});
+  //   },
+  //   addHighlight: (id: string, range: Rng) => {
+  //     highlights[id] = range;
+  //     render({});
+  //   },
+  //   removeHighlight: (id: string) => {
+  //     delete highlights[id];
+  //     render({});
+  //   },
+  // };
 
   inputControls.initialize(
     startRegion,
     async (_range) => {
       render({ dataUpdated: true });
     },
-    highlightCallbacks.removeHighlights,
+    session.removeHighlights,
     () => session.markerModeOn,
     () => {
       session.markerModeOn = !session.markerModeOn;
@@ -232,15 +230,16 @@ async function initialize(
         variantId,
         inputControls.getRegion().chrom,
       ),
-    openContextMenu,
-    highlightCallbacks,
+    // session.openContextMenu,
+    session,
+    // () => session,
   );
 
   render({ dataUpdated: true, resized: true });
 }
 
 function setupShortcuts(
-  session: Session,
+  session: GensSession,
   sideMenu: SideMenu,
   inputControls: InputControls,
   onChromClick: (chrom: string) => void,

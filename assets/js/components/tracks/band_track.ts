@@ -8,6 +8,7 @@ import { STYLE } from "../../constants";
 import { drawArrow, getLinearScale } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
 import { DataTrack } from "./base_tracks/data_track";
+import { GensSession } from "../../state/session";
 
 export class BandTrack extends DataTrack {
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
@@ -21,6 +22,7 @@ export class BandTrack extends DataTrack {
     openContextMenu: (id: string) => void,
     dragCallbacks: DragCallbacks,
     openTrackContextMenu: (track: DataTrack) => void,
+    session: GensSession,
   ) {
     super(
       id,
@@ -42,6 +44,7 @@ export class BandTrack extends DataTrack {
         dragSelect: true,
         yAxis: null,
       },
+      session,
     );
 
     this.getRenderData = getRenderData;

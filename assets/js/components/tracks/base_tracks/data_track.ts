@@ -5,6 +5,7 @@ import {
   renderBackground,
 } from "../../../draw/render_utils";
 import { drawHorizontalLineInScale, drawLabel } from "../../../draw/shapes";
+import { GensSession } from "../../../state/session";
 import { generateID, generateTicks, getTickSize } from "../../../util/utils";
 import {
   setupCanvasClick,
@@ -43,6 +44,7 @@ export class DataTrack extends CanvasTrack {
 
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
+  session: GensSession;
 
   private renderSeq = 0;
 
@@ -119,12 +121,14 @@ export class DataTrack extends CanvasTrack {
     callbacks: DragCallbacks,
     openTrackContextMenu: (track: DataTrack) => void,
     settings: Settings,
+    session: GensSession,
   ) {
     super(id, label, settings.defaultHeight);
     this.dragCallbacks = callbacks;
     this.settings = settings;
     this.getXRange = getXRange;
     this.getXScale = getXScale;
+    this.session = session;
 
     this.getYRange = () => {
       return settings.yAxis.range;
@@ -145,6 +149,15 @@ export class DataTrack extends CanvasTrack {
       // FIXME: Look over this, how to make the dragging "feel" neat
       this.setupDrag();
     }
+
+    // Marker mode
+    this.canvas.addEventListener("mousemove", (e) => {
+      if (this.session.markerModeOn && e.offsetX > STYLE.yAxis.width) {
+        this.canvas.style.cursor = "crosshair";
+      } else {
+        this.canvas.style.cursor = "";
+      }
+    })
   }
 
   setupDrag() {

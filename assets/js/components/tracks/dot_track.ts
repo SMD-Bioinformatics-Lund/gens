@@ -1,5 +1,6 @@
 import { STYLE } from "../../constants";
 import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
+import { GensSession } from "../../state/session";
 import { pointInRange } from "../../util/utils";
 import { DataTrack } from "./base_tracks/data_track";
 
@@ -22,6 +23,7 @@ export class DotTrack extends DataTrack {
     getRenderData: () => Promise<DotTrackData>,
     dragCallbacks: DragCallbacks,
     openTrackContextMenu: (track: DataTrack) => void,
+    session: GensSession,
   ) {
     super(
       id,
@@ -39,6 +41,7 @@ export class DotTrack extends DataTrack {
       dragCallbacks,
       openTrackContextMenu,
       { defaultHeight: trackHeight, dragSelect: true, yAxis },
+      session,
     );
     this.startExpanded = startExpanded;
     this.getRenderData = getRenderData;
