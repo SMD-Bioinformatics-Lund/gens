@@ -5,12 +5,10 @@ import "./tracks/ideogram_track";
 import "./tracks/overview_track";
 import "./tracks/multi_track";
 import { IdeogramTrack } from "./tracks/ideogram_track";
-import { MultiBandTracks } from "./tracks/multi_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
-import { COLORS, ICONS, SIZES, STYLE } from "../constants";
-import { CanvasTrack } from "./tracks/base_tracks/canvas_track";
+import { ANIM_TIME, COLORS, ICONS, SIZES, STYLE } from "../constants";
 import {
   getAnnotationContextMenuContent,
   getGenesContextMenuContent,
@@ -31,9 +29,6 @@ import Sortable, { SortableEvent } from "sortablejs";
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
-const COV_Y_TICKS = [-3, -2, -1, 0, 1, 2, 3];
-const BAF_Y_TICKS = [0.2, 0.4, 0.6, 0.8];
-
 const trackHeight = STYLE.tracks.trackHeight;
 
 // FIXME: This will need to be generalized such that tracks aren't hard-coded
@@ -43,6 +38,13 @@ template.innerHTML = String.raw`
     :host {
       display: block;
       width: 100%;
+    }
+    .track-handle {
+      cursor: grab;
+    }
+    .track-handle:active,
+    .track.dragging .track-handle {
+      cursor: grabbing;
     }
     #tracks-container {
       width: 100%;
@@ -141,9 +143,9 @@ export class TracksManager extends ShadowBaseElement {
     this.getXRange = getXRange;
     this.getChromosome = getChromosome;
 
-    const animMs = 150;
     Sortable.create(this.parentContainer, {
-      animation: animMs,
+      animation: ANIM_TIME.medium,
+      handle: '.track-handle',
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
@@ -297,7 +299,8 @@ export class TracksManager extends ShadowBaseElement {
     this.ideogramTrack.renderLoading();
 
     this.dataTracks.forEach((track) => {
-      this.parentContainer.appendChild(track);
+      // this.parentContainer.appendChild(track);
+      appendDataTrack(this.parentContainer, track);
       track.initialize();
       track.renderLoading();
     });
@@ -342,7 +345,8 @@ export class TracksManager extends ShadowBaseElement {
 
   showTrack(trackId: string) {
     const track = this.getTrackById(trackId);
-    this.parentContainer.appendChild(track);
+    // this.parentContainer.appendChild(track);
+    appendDataTrack(this.parentContainer, track);
   }
 
   hideTrack(trackId: string) {
@@ -368,7 +372,8 @@ export class TracksManager extends ShadowBaseElement {
       const newTrack = this.getAnnotTrack(source.id, source.label);
       this.dataTracks.push(newTrack);
       this.annotationTracks.push(newTrack);
-      this.parentContainer.appendChild(newTrack);
+      // this.parentContainer.appendChild(newTrack);
+      appendDataTrack(this.parentContainer, newTrack);
       newTrack.initialize();
     });
 
@@ -578,6 +583,27 @@ export class TracksManager extends ShadowBaseElement {
     );
     return overviewTrack;
   }
+}
+
+function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
+
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("track-wrapper");
+  wrapper.style.position = "relative";
+  wrapper.appendChild(track);
+
+  const handle = document.createElement("div");
+  handle.className = "track-handle";
+  handle.style.position = "absolute";
+  handle.style.top = "0";
+  handle.style.left = "0";
+  handle.style.width = `${STYLE.yAxis.width}px`;
+  handle.style.height = "100%";
+  // handle.style.backgroundColor = "blue";
+  // handle.style.height = "100%";
+  wrapper.appendChild(handle);
+
+  parentContainer.appendChild(wrapper);
 }
 
 function getTrackContextMenuContent(

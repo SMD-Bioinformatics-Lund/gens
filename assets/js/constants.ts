@@ -16,6 +16,10 @@ export const FONT_WEIGHT = {
   bold: 300,
 }
 
+export const ANIM_TIME = {
+  medium: 150,
+}
+
 export const ICONS = {
   up: "fa-arrow-up",
   down: "fa-arrow-down",
