@@ -150,14 +150,17 @@ export class DataTrack extends CanvasTrack {
       this.setupDrag();
     }
 
-    // Marker mode
-    this.canvas.addEventListener("mousemove", (e) => {
-      if (this.session.markerModeOn && e.offsetX > STYLE.yAxis.width) {
-        this.canvas.style.cursor = "crosshair";
-      } else {
-        this.canvas.style.cursor = "";
-      }
-    })
+    // // Marker mode
+    // this.canvas.addEventListener("mousemove", (e) => {
+    //   console.log(this.label, "Moving", e.offsetX);
+    //   if (this.session.markerModeOn && e.offsetX > STYLE.yAxis.width) {
+    //     console.log(this.label, "Inside!")
+    //     this.canvas.style.cursor = "pointer";
+    //   } else {
+    //     console.log(this.label, "Outside!")
+    //     this.canvas.style.cursor = "";
+    //   }
+    // })
   }
 
   setupDrag() {
@@ -258,10 +261,15 @@ export class DataTrack extends CanvasTrack {
 
   drawEnd() {
     const labelBox = this.setupLabel(() => this.openTrackContextMenu(this));
-    setCanvasPointerCursor(this.canvas, () => {
-      const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
-      return hoverTargets.concat([labelBox]);
-    });
+    setCanvasPointerCursor(
+      this.canvas,
+      () => {
+        const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
+        return hoverTargets.concat([labelBox]);
+      },
+      () => this.session.getMarkerMode(),
+      [0, STYLE.yAxis.width]
+    );
   }
 
   setupLabel(onClick: () => void): HoverBox {

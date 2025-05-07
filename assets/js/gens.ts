@@ -200,9 +200,9 @@ async function initialize(
       render({ dataUpdated: true });
     },
     session.removeHighlights,
-    () => session.markerModeOn,
+    () => session.getMarkerMode(),
     () => {
-      session.markerModeOn = !session.markerModeOn;
+      session.toggleMarkerMode();
       render({});
     },
   );
@@ -247,7 +247,7 @@ function setupShortcuts(
   // Rebuild the keyboard shortcuts
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-      if (session.markerModeOn) {
+      if (session.getMarkerMode()) {
         inputControls.toggleMarkerMode();
         return;
       }
