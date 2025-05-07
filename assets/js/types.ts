@@ -465,12 +465,6 @@ interface Axis {
   range: Rng;
 }
 
-// interface HighlightCallbacks {
-//   getHighlights: () => Highlight[];
-//   removeHighlights: () => void;
-//   addHighlight: (highlight: Highlight) => void;
-//   removeHighlight: (id: string) =>  void;
-// }
 
 interface RenderSettings {
   dataUpdated?: boolean,

@@ -1,8 +1,4 @@
-import {
-  drawLabel,
-  drawLine,
-  drawVerticalLineInScale,
-} from "../../draw/shapes";
+import { drawLabel, drawLine } from "../../draw/shapes";
 import { transformMap, padRange, generateID } from "../../util/utils";
 import { COLORS, STYLE } from "../../constants";
 import { CanvasTrack } from "./base_tracks/canvas_track";
@@ -133,9 +129,7 @@ export class OverviewTrack extends CanvasTrack {
       renderBackground(this.staticCtx, this.dimensions, STYLE.tracks.edgeColor);
       renderOverviewPlot(
         this.staticCtx,
-        // chromRanges,
         this.pxRanges,
-        xScale,
         yScale,
         dotsPerChrom,
         this.chromSizes,
@@ -172,9 +166,7 @@ export class OverviewTrack extends CanvasTrack {
 
 function renderOverviewPlot(
   ctx: CanvasRenderingContext2D,
-  // chromRanges: Record<string, Rng>,
   pxRanges: Record<string, Rng>,
-  xScale: Scale,
   yScale: Scale,
   dotsPerChrom: Record<string, RenderDot[]>,
   chromSizes: Record<string, number>,
@@ -182,16 +174,7 @@ function renderOverviewPlot(
   height: number,
 ) {
   // Draw the initial lines
-  // Object.values(chromRanges).forEach(([_chromStart, chromEnd]) => {
-  //   console.log("Drawing line at:", xScale(chromEnd));
-  //   drawVerticalLineInScale(ctx, chromEnd, xScale, {
-  //     color: STYLE.tracks.edgeColor,
-  //   });
-  // });
   Object.values(pxRanges).forEach(([_chromPxStart, chromPxEnd]) => {
-    // drawVerticalLineInScale(ctx, chromPxEnd, xScale, {
-    //   color: STYLE.tracks.edgeColor,
-    // });
     drawLine(
       ctx,
       { x1: chromPxEnd, x2: chromPxEnd, y1: 0, y2: height },
@@ -202,18 +185,13 @@ function renderOverviewPlot(
   Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
     const pad = X_PAD;
     const chromRangePx = pxRanges[chrom];
-    // const chromRange = chromRanges[chrom];
-    // const pxRangeRaw: Rng = [chromRangePx[0], chromRangePx[1]];
-    // const pxRangeRaw: Rng = [xScale(chromRange[0]), xScale(chromRange[1])];
     const pxRange = padRange(chromRangePx, pad);
-    // const pxRange = padRange(pxRanges[chrom], pad);
 
     const chromXScale = (pos: number) => {
       return linearScale(pos, [1, chromSizes[chrom]], pxRange);
     };
 
     if (drawLabels) {
-      const xPos = (pxRange[0] + pxRange[1]) / 2;
 
       // FIXME: Something really strange is going on here for the "Y" letter.
       // If exchanged for a different letter, this label is rendered, so is Y.

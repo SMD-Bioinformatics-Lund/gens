@@ -1,7 +1,6 @@
 import { COLORS, STYLE } from "../../../constants";
 import {
   generateID,
-  rangeSize,
   scaleRange,
   sortRange,
 } from "../../../util/utils";
@@ -25,6 +24,7 @@ export function initializeDragSelect(
 
     dragStart = { x: event.offsetX, y: event.offsetY };
 
+    // FIXME: Deal with the yAxis width in a more robust way
     if (event.offsetX < STYLE.yAxis.width) {
       return;
     }
@@ -35,7 +35,6 @@ export function initializeDragSelect(
         : COLORS.transparentBlue;
       marker = document.createElement("gens-marker") as GensMarker;
       element.appendChild(marker);
-      // element.parentElement.appendChild(marker);
       const id = generateID();
       marker.initialize(
         id,
@@ -67,7 +66,6 @@ export function initializeDragSelect(
 
   document.addEventListener("mouseup", (event) => {
     if (isDragging && isMoved) {
-
       // FIXME: How to avoid the hard-coding here?
       const sortedX = sortRange([
         Math.max(dragStart.x, STYLE.yAxis.width),
@@ -91,7 +89,7 @@ export function initializeDragSelect(
 
 export function renderHighlights(
   container: HTMLDivElement,
-  highlights: { id: string; range: Rng, color: string }[],
+  highlights: { id: string; range: Rng; color: string }[],
   xScale: Scale,
   onMarkerRemove: (markerId: string) => void,
 ) {

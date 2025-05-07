@@ -130,9 +130,6 @@ export class InputControls extends HTMLElement {
     fullRegion: Region,
     onPositionChange: (newXRange: [number, number]) => void,
     session: GensSession,
-    // onRemoveHighlights: () => void,
-    // getMarkerOn: () => boolean,
-    // onToggleMarker: () => void,
   ) {
     this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);

@@ -1,16 +1,16 @@
 import { STYLE } from "../../constants";
 import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
 import { GensSession } from "../../state/session";
-import { pointInRange } from "../../util/utils";
 import { DataTrack } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {
   startExpanded: boolean;
 
-  private colorBands: RenderBand[] | null = null;
+  // FIXME: Look into color bands next
+  private _colorBands: RenderBand[] | null = null;
 
   updateColors(colorBands: RenderBand[] | null) {
-    this.colorBands = colorBands;
+    this._colorBands = colorBands;
     this.render({});
   }
 
@@ -21,7 +21,6 @@ export class DotTrack extends DataTrack {
     startExpanded: boolean,
     yAxis: Axis,
     getRenderData: () => Promise<DotTrackData>,
-    dragCallbacks: DragCallbacks,
     openTrackContextMenu: (track: DataTrack) => void,
     session: GensSession,
   ) {

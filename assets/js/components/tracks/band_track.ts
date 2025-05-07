@@ -20,7 +20,6 @@ export class BandTrack extends DataTrack {
     trackHeight: number,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
-    dragCallbacks: DragCallbacks,
     openTrackContextMenu: (track: DataTrack) => void,
     session: GensSession,
   ) {

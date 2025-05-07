@@ -4,7 +4,6 @@ import { ShadowBaseElement } from "../../util/shadowbaseelement";
 import { setupCanvasClick, getCanvasHover } from "../../util/canvas_interaction";
 import { STYLE } from "../../../constants";
 
-const PADDING_SIDES = 0;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -17,9 +16,6 @@ template.innerHTML = String.raw`
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
-      /* overflow: hidden; */
-      padding-left: ${PADDING_SIDES}px;
-      padding-right: ${PADDING_SIDES}px;
     }
     canvas {
       display: block;

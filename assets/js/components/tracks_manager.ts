@@ -61,9 +61,6 @@ template.innerHTML = String.raw`
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
-      /* overflow-x: hidden; */
-      /* padding-left: 10px; */
-      /* padding-right: 10px; */
     }
   </style>
   <div id="top-container"></div>
@@ -144,26 +141,20 @@ export class TracksManager extends ShadowBaseElement {
       sampleId: string,
       variantId: string,
     ) => Promise<ApiVariantDetails>,
-    // openContextMenu: (header: string, content: HTMLElement[]) => void,
     session: GensSession,
-    // highlightCallbacks: HighlightCallbacks,
-    // getSessionInfo: () => GensSession,
   ) {
     this.dataSource = dataSource;
     this.getAnnotationSources = getAnnotSources;
     this.getAnnotationDetails = getAnnotationDetails;
 
-    // this.openContextMenu = openContextMenu;
     this.getXRange = getXRange;
     this.getChromosome = getChromosome;
     this.session = session;
-    // this.getSessionInfo = getSessionInfo;
 
     // FIXME: Disable on marker mode active
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
       handle: ".track-handle",
-      // disabled: this.session.getMarkerMode(),
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
@@ -182,40 +173,6 @@ export class TracksManager extends ShadowBaseElement {
 
     // FIXME: Move to util function
     this.openTrackContextMenu = (track: DataTrack) => {
-      // const buttonsDiv = document.createElement("div");
-      // buttonsDiv.style.display = "flex";
-      // buttonsDiv.style.flexDirection = "row";
-      // buttonsDiv.style.flexWrap = "nowrap";
-      // buttonsDiv.style.gap = `${SIZES.s}px`;
-
-      // buttonsDiv.appendChild(
-      //   getIconButton(ICONS.up, "Up", () => this.moveTrack(track.id, "up")),
-      // );
-      // buttonsDiv.appendChild(
-      //   getIconButton(ICONS.down, "Down", () =>
-      //     this.moveTrack(track.id, "down"),
-      //   ),
-      // );
-      // buttonsDiv.appendChild(
-      //   getIconButton(
-      //     track.getIsHidden() ? ICONS.hide : ICONS.show,
-      //     "Show / hide",
-      //     () => {
-      //       track.toggleHidden();
-      //       this.render({});
-      //     },
-      //   ),
-      // );
-      // buttonsDiv.appendChild(
-      //   getIconButton(
-      //     track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
-      //     "Collapse / expand",
-      //     () => {
-      //       track.toggleCollapsed();
-      //       this.render({});
-      //     },
-      //   ),
-      // );
 
       const isDotTrack = track instanceof DotTrack;
 
@@ -317,7 +274,6 @@ export class TracksManager extends ShadowBaseElement {
     this.ideogramTrack.renderLoading();
 
     this.dataTracks.forEach((track) => {
-      // this.parentContainer.appendChild(track);
       appendDataTrack(this.tracksContainer, track);
       track.initialize();
       track.renderLoading();
@@ -349,7 +305,6 @@ export class TracksManager extends ShadowBaseElement {
 
       const pixelToPos = getLinearScale(
         [yAxisWidth, this.tracksContainer.offsetWidth],
-        // [yAxisWidth, this.dimensions.width],
         xRange,
       );
       const posStart = pixelToPos(Math.max(yAxisWidth, pxRangeX[0]));
@@ -367,7 +322,6 @@ export class TracksManager extends ShadowBaseElement {
       }
     };
 
-    // Can I initialize the drag select here?
     initializeDragSelect(
       this.tracksContainer,
       onDragEnd,
@@ -409,7 +363,6 @@ export class TracksManager extends ShadowBaseElement {
 
   showTrack(trackId: string) {
     const track = this.getTrackById(trackId);
-    // this.parentContainer.appendChild(track);
     appendDataTrack(this.tracksContainer, track);
   }
 
@@ -436,7 +389,6 @@ export class TracksManager extends ShadowBaseElement {
       const newTrack = this.getAnnotTrack(source.id, source.label);
       this.dataTracks.push(newTrack);
       this.annotationTracks.push(newTrack);
-      // this.parentContainer.appendChild(newTrack);
       appendDataTrack(this.tracksContainer, newTrack);
       newTrack.initialize();
     });
@@ -521,7 +473,6 @@ export class TracksManager extends ShadowBaseElement {
           this.dataSource.getAnnotation,
         ),
       openContextMenuId,
-      this.dragCallbacks,
       this.openTrackContextMenu,
       this.session,
     );
@@ -549,7 +500,6 @@ export class TracksManager extends ShadowBaseElement {
           dots: data,
         };
       },
-      this.dragCallbacks,
       this.openTrackContextMenu,
       this.session,
     );
@@ -600,7 +550,6 @@ export class TracksManager extends ShadowBaseElement {
 
         this.openContextMenu("Variant", content);
       },
-      this.dragCallbacks,
       this.openTrackContextMenu,
       this.session,
     );
@@ -638,7 +587,6 @@ export class TracksManager extends ShadowBaseElement {
         content.push(...entries);
         this.openContextMenu("Transcript", content);
       },
-      this.dragCallbacks,
       this.openTrackContextMenu,
       this.session,
     );
@@ -700,6 +648,7 @@ function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
   parentContainer.appendChild(wrapper);
 }
 
+// FIXME: Where should this util go?
 function getTrackContextMenuContent(
   track: DataTrack,
   isDotTrack: boolean,

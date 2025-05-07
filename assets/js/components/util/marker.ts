@@ -54,7 +54,6 @@ export class GensMarker extends ShadowBaseElement {
   }
 
   connectedCallback(): void {
-    // this.marker = this.root.querySelector("#marker");
     this.close = this.root.querySelector("#close");
 
     document.addEventListener("mousemove", this.onMouseMove);
@@ -70,7 +69,8 @@ export class GensMarker extends ShadowBaseElement {
     color: string,
     closeCallback: ((id: string) => void) | null,
   ) {
-    // FIXME: I would like to remove this entirely and only use CSS properties
+    // Normally it would be preferable to deal with the mouse hover though CSS only
+    // Here is tricky though, as we want pointer: none to let it click elements below
     if (closeCallback != null) {
       this.onMouseMove = this.handleMouseMove.bind(this);
     }
@@ -78,7 +78,6 @@ export class GensMarker extends ShadowBaseElement {
     this.style.height = `${height}px`;
     this.style.width = "0px";
     this.style.backgroundColor = color;
-    // this.classList.add("has-close");
     this.classList.toggle("has-close", closeCallback != null);
 
     if (closeCallback != null) {

@@ -161,12 +161,7 @@ export function drawLabel(
   ctx.fillStyle = textColor;
   ctx.textAlign = textAlign;
   ctx.textBaseline = textBaseline;
-  if (label == "Y") {
-    console.log("ctx.fillText", label, 1880, 20);
-    ctx.fillText(label, 1880, 20);
-  } else {
-    ctx.fillText(label, leftX, topY);
-  }
+  ctx.fillText(label, leftX, topY);
 
   return box;
 }

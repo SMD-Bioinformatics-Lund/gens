@@ -35,8 +35,6 @@ export async function initCanvases({
   annotationFile: string;
   startRegion: Region;
 }) {
-
-
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
   const sideMenu = document.getElementById("side-menu") as SideMenu;
@@ -83,12 +81,6 @@ export async function initCanvases({
     const url = `${scoutBaseURL}/document_id/${variantId}`;
     return url;
   };
-
-  // const openContextMenu = (header: string, content: HTMLDivElement[]) => {
-  //   sideMenu.showContent(header, content);
-  // };
-
-  // FIXME: We need a session state class
 
   const session = new GensSession(render, sideMenu);
 
@@ -174,12 +166,6 @@ async function initialize(
       render({ dataUpdated: true });
     },
     session,
-    // session.removeHighlights,
-    // () => session.getMarkerMode(),
-    // () => {
-    //   session.toggleMarkerMode();
-    //   render({});
-    // },
   );
 
   await tracks.initialize(
@@ -205,9 +191,7 @@ async function initialize(
         variantId,
         inputControls.getRegion().chrom,
       ),
-    // session.openContextMenu,
     session,
-    // () => session,
   );
 
   render({ dataUpdated: true, resized: true });

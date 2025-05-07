@@ -4,12 +4,7 @@ import {
   getLinearScale,
   renderBackground,
 } from "../../../draw/render_utils";
-import {
-  drawBox,
-  drawHorizontalLineInScale,
-  drawLabel,
-  drawLine,
-} from "../../../draw/shapes";
+import { drawBox, drawLabel, drawLine } from "../../../draw/shapes";
 import { GensSession } from "../../../state/session";
 import { generateTicks, getTickSize } from "../../../util/utils";
 import {
@@ -41,7 +36,7 @@ export class DataTrack extends CanvasTrack {
   openTrackContextMenu: (track: DataTrack) => void;
 
   // FIXME: All of this state should live elsewhere I think
-  // Controlled by the tracks_manager
+  // Controlled by the tracks_manager perhaps
   private isHidden: boolean = false;
   private isCollapsed: boolean = false;
   private expander: Expander;
@@ -98,7 +93,7 @@ export class DataTrack extends CanvasTrack {
 
   // FIXME: Simplify the height management
   // The track manager can keep track of the expansion state
-  // White the track only knows its height
+  // While the track only knows its height
   initializeExpander(
     eventKey: string,
     startExpanded: boolean,
@@ -130,7 +125,6 @@ export class DataTrack extends CanvasTrack {
     session: GensSession,
   ) {
     super(id, label, settings.defaultHeight);
-    // this.dragCallbacks = callbacks;
     this.settings = settings;
     this.getXRange = getXRange;
     this.getXScale = getXScale;
@@ -235,7 +229,6 @@ export class DataTrack extends CanvasTrack {
     const ticks = generateTicks(yAxis.range, tickSize);
 
     for (const yTick of ticks) {
-
       const yPx = yScale(yTick);
 
       const lineDims = {
@@ -243,13 +236,12 @@ export class DataTrack extends CanvasTrack {
         x2: this.dimensions.width,
         y1: yPx,
         y2: yPx,
-      }
+      };
 
-      drawLine(
-        this.ctx,
-        lineDims,
-        { color: STYLE.colors.lightGray, dashed: true },
-      );
+      drawLine(this.ctx, lineDims, {
+        color: STYLE.colors.lightGray,
+        dashed: true,
+      });
     }
 
     drawYAxis(this.ctx, ticks, yScale, yAxis.range);
