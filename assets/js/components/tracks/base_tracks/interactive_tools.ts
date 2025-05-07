@@ -1,4 +1,4 @@
-import { COLORS } from "../../../constants";
+import { COLORS, STYLE } from "../../../constants";
 import {
   generateID,
   rangeSize,
@@ -23,9 +23,11 @@ export function initializeDragSelect(
     isDragging = true;
     isMoved = false;
 
-    const rect = element.getBoundingClientRect();
+    dragStart = { x: event.offsetX, y: event.offsetY };
 
-    dragStart = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    if (event.offsetX < STYLE.yAxis.width) {
+      return;
+    }
 
     if (getMarkerMode() || keyLogger.heldKeys.Shift) {
       const color = keyLogger.heldKeys.Shift
@@ -52,16 +54,32 @@ export function initializeDragSelect(
     }
 
     isMoved = true;
-    const rect = element.getBoundingClientRect();
-    const currX = event.clientX - rect.left;
+    let currX = event.offsetX;
+
+    console.log("Curr X", currX);
+
+    if (currX < STYLE.yAxis.width) {
+      currX = STYLE.yAxis.width;
+    }
+
     const xRange = sortRange([dragStart.x, currX]);
+
     marker.render(xRange);
   });
 
   document.addEventListener("mouseup", (event) => {
     if (isDragging && isMoved) {
+
+      // FIXME: How to avoid the hard-coding here?
+      const sortedX = sortRange([
+        Math.max(dragStart.x, STYLE.yAxis.width),
+        Math.max(event.offsetX, STYLE.yAxis.width),
+      ]);
+
+      console.log("Release", sortedX);
+
       onDragRelease(
-        sortRange([dragStart.x, event.x]),
+        sortedX,
         sortRange([dragStart.y, event.y]),
         keyLogger.heldKeys.Shift,
       );
@@ -77,8 +95,7 @@ export function initializeDragSelect(
 
 export function renderHighlights(
   container: HTMLDivElement,
-  height: number,
-  highlights: { id: string; range: Rng }[],
+  highlights: { id: string; range: Rng, color: string }[],
   xScale: Scale,
   onMarkerRemove: (markerId: string) => void,
 ) {
@@ -88,13 +105,10 @@ export function renderHighlights(
     .querySelectorAll(`.${markerClass}`)
     .forEach((old: Element) => old.remove());
 
-  for (const { id, range } of highlights) {
-    const color = keyLogger.heldKeys.Shift
-      ? COLORS.transparentYellow
-      : COLORS.transparentBlue;
+  for (const { id, range, color } of highlights) {
     const marker = document.createElement("gens-marker") as GensMarker;
     container.appendChild(marker);
-    marker.initialize(id, height, color, onMarkerRemove);
+    marker.initialize(id, container.offsetHeight, color, onMarkerRemove);
 
     marker.classList.add(markerClass);
     container.appendChild(marker);

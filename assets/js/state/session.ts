@@ -18,7 +18,7 @@ export class GensSession {
   // start: number;
   // end: number;
   private markerModeOn: boolean = false;
-  private highlights: Record<string, Rng>;
+  private highlights: Record<string, RangeHighlight>;
 
   getMarkerMode(): boolean {
     return this.markerModeOn;
@@ -44,20 +44,15 @@ export class GensSession {
     this.sideMenu.showContent(header, content);
   }
 
-  getHighlights(): {id: string, range: Rng}[] {
-    return Object.entries(this.highlights).map(([id, range]) => {
-      return {
-        id,
-        range,
-      };
-    });
+  getHighlights(): RangeHighlight[] {
+    return Object.values(this.highlights);
   }
   removeHighlights() {
     this.highlights = {};
     this.render({});
   }
-  addHighlight(id: string, range: Rng) {
-    this.highlights[id] = range;
+  addHighlight(highlight: RangeHighlight) {
+    this.highlights[highlight.id] = highlight;
     this.render({});
   }
   removeHighlight(id: string) {

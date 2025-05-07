@@ -149,9 +149,9 @@ export const STYLE = {
     },
   },
   yAxis: {
-    width: 25,
+    width: 40,
     labelPos: 20,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.extraLightGray,
   },
   colors: COLORS,
 };

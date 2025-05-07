@@ -26,7 +26,10 @@ import { diff, moveElement } from "../util/collections";
 
 import Sortable, { SortableEvent } from "sortablejs";
 import { GensSession } from "../state/session";
-import { initializeDragSelect, renderHighlights } from "./tracks/base_tracks/interactive_tools";
+import {
+  initializeDragSelect,
+  renderHighlights,
+} from "./tracks/base_tracks/interactive_tools";
 import { getLinearScale } from "../draw/render_utils";
 import { keyLogger } from "./util/keylogger";
 
@@ -68,8 +71,8 @@ template.innerHTML = String.raw`
 interface DragCallbacks {
   onZoomIn: (range: Rng) => void;
   onZoomOut: () => void;
-  getHighlights: () => { id: string; range: Rng }[];
-  addHighlight: (id: string, range: Rng) => void;
+  getHighlights: () => RangeHighlight[];
+  addHighlight: (highlight: RangeHighlight) => void;
   removeHighlight: (id: string) => void;
 }
 
@@ -176,40 +179,40 @@ export class TracksManager extends ShadowBaseElement {
 
     // FIXME: Move to util function
     this.openTrackContextMenu = (track: DataTrack) => {
-      const buttonsDiv = document.createElement("div");
-      buttonsDiv.style.display = "flex";
-      buttonsDiv.style.flexDirection = "row";
-      buttonsDiv.style.flexWrap = "nowrap";
-      buttonsDiv.style.gap = `${SIZES.s}px`;
+      // const buttonsDiv = document.createElement("div");
+      // buttonsDiv.style.display = "flex";
+      // buttonsDiv.style.flexDirection = "row";
+      // buttonsDiv.style.flexWrap = "nowrap";
+      // buttonsDiv.style.gap = `${SIZES.s}px`;
 
-      buttonsDiv.appendChild(
-        getIconButton(ICONS.up, "Up", () => this.moveTrack(track.id, "up")),
-      );
-      buttonsDiv.appendChild(
-        getIconButton(ICONS.down, "Down", () =>
-          this.moveTrack(track.id, "down"),
-        ),
-      );
-      buttonsDiv.appendChild(
-        getIconButton(
-          track.getIsHidden() ? ICONS.hide : ICONS.show,
-          "Show / hide",
-          () => {
-            track.toggleHidden();
-            this.render({});
-          },
-        ),
-      );
-      buttonsDiv.appendChild(
-        getIconButton(
-          track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
-          "Collapse / expand",
-          () => {
-            track.toggleCollapsed();
-            this.render({});
-          },
-        ),
-      );
+      // buttonsDiv.appendChild(
+      //   getIconButton(ICONS.up, "Up", () => this.moveTrack(track.id, "up")),
+      // );
+      // buttonsDiv.appendChild(
+      //   getIconButton(ICONS.down, "Down", () =>
+      //     this.moveTrack(track.id, "down"),
+      //   ),
+      // );
+      // buttonsDiv.appendChild(
+      //   getIconButton(
+      //     track.getIsHidden() ? ICONS.hide : ICONS.show,
+      //     "Show / hide",
+      //     () => {
+      //       track.toggleHidden();
+      //       this.render({});
+      //     },
+      //   ),
+      // );
+      // buttonsDiv.appendChild(
+      //   getIconButton(
+      //     track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
+      //     "Collapse / expand",
+      //     () => {
+      //       track.toggleCollapsed();
+      //       this.render({});
+      //     },
+      //   ),
+      // );
 
       const isDotTrack = track instanceof DotTrack;
 
@@ -323,7 +326,17 @@ export class TracksManager extends ShadowBaseElement {
       track.renderLoading();
     });
 
-    const onDrag = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+    this.setupDrag();
+
+    this.tracksContainer.addEventListener("click", () => {
+      if (keyLogger.heldKeys.Control) {
+        this.dragCallbacks.onZoomOut();
+      }
+    });
+  }
+
+  setupDrag() {
+    const onDragEnd = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
       const xRange = this.getXRange();
       if (xRange == null) {
         console.error("No xRange set");
@@ -336,30 +349,28 @@ export class TracksManager extends ShadowBaseElement {
         // [yAxisWidth, this.dimensions.width],
         xRange,
       );
-      const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
-      const posEnd = pixelToPos(pxRangeX[1]);
+      const posStart = pixelToPos(Math.max(yAxisWidth, pxRangeX[0]));
+      const posEnd = pixelToPos(Math.max(yAxisWidth, pxRangeX[1]));
 
       if (shiftPress) {
         this.dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
       } else {
         const id = generateID();
-        this.dragCallbacks.addHighlight(id, [posStart, posEnd]);
+        this.dragCallbacks.addHighlight({
+          id,
+          range: [posStart, posEnd],
+          color: COLORS.transparentBlue,
+        });
       }
     };
 
     // Can I initialize the drag select here?
     initializeDragSelect(
       this.tracksContainer,
-      onDrag,
+      onDragEnd,
       this.dragCallbacks.removeHighlight,
       () => this.session.getMarkerMode(),
     );
-
-    this.tracksContainer.addEventListener("click", () => {
-      if (keyLogger.heldKeys.Control) {
-        this.dragCallbacks.onZoomOut();
-      }
-    });
   }
 
   getDataTracks(): DataTrack[] {
@@ -451,7 +462,6 @@ export class TracksManager extends ShadowBaseElement {
 
     renderHighlights(
       this.tracksContainer,
-      this.tracksContainer.offsetHeight,
       this.dragCallbacks.getHighlights(),
       this.getXScale(),
       (id) => this.dragCallbacks.removeHighlight(id),
@@ -485,7 +495,11 @@ export class TracksManager extends ShadowBaseElement {
       const details = await this.getAnnotationDetails(id);
       const button = getSimpleButton("Set highlight", () => {
         const id = generateID();
-        this.dragCallbacks.addHighlight(id, [details.start, details.end]);
+        this.dragCallbacks.addHighlight({
+          id,
+          range: [details.start, details.end],
+          color: COLORS.transparentBlue,
+        });
       });
       const entries = getAnnotationContextMenuContent(id, details);
       const content = [button];
@@ -566,7 +580,11 @@ export class TracksManager extends ShadowBaseElement {
 
         const button = getSimpleButton("Set highlight", () => {
           const id = generateID();
-          this.dragCallbacks.addHighlight(id, [details.position, details.end]);
+          this.dragCallbacks.addHighlight({
+            id,
+            range: [details.position, details.end],
+            color: COLORS.transparentBlue,
+          });
         });
 
         const entries = getVariantContextMenuContent(
@@ -606,7 +624,11 @@ export class TracksManager extends ShadowBaseElement {
         const details = await getDetails(id);
         const button = getSimpleButton("Set highlight", () => {
           const id = generateID();
-          this.dragCallbacks.addHighlight(id, [details.start, details.end]);
+          this.dragCallbacks.addHighlight({
+            id,
+            range: [details.start, details.end],
+            color: COLORS.transparentBlue,
+          });
         });
         const entries = getGenesContextMenuContent(id, details);
         const content = [button];
