@@ -1,5 +1,5 @@
-import { STYLE } from "../../constants";
-import { rangeSize, sortRange } from "../../util/utils";
+import { SIZES, STYLE } from "../../constants";
+import { padRange, rangeSize, sortRange } from "../../util/utils";
 import { ShadowBaseElement } from "./shadowbaseelement";
 
 const style = STYLE.menu;
@@ -12,18 +12,12 @@ template.innerHTML = String.raw`
       left: 0;
       top: 0;
       display: flex;
-      /* justify-content: flex-end; */
-      /* align-items: flex-start; */
-      /* pointer-events: auto; */
       pointer-events: none;
     }
-    /* :host > canvas {
-      pointer-events: none;
-    } */
     #close {
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: ${SIZES.m}px;
+      right: ${SIZES.m}px;
       display: none;
       background: transparent;
       border: none;

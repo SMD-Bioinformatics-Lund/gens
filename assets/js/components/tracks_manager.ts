@@ -45,6 +45,9 @@ template.innerHTML = String.raw`
     :host {
       display: block;
       width: 100%;
+      padding-left: ${SIZES.m}px;
+      padding-right: ${SIZES.m}px;
+      padding-bottom: ${SIZES.m}px;
     }
     .track-handle {
       cursor: grab;
@@ -59,8 +62,8 @@ template.innerHTML = String.raw`
       max-width: 100%;
       box-sizing: border-box;
       /* overflow-x: hidden; */
-      padding-left: 10px;
-      padding-right: 10px;
+      /* padding-left: 10px; */
+      /* padding-right: 10px; */
     }
   </style>
   <div id="top-container"></div>
