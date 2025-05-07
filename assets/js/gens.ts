@@ -62,7 +62,8 @@ export async function initCanvases({
 
   const render = (settings: RenderSettings) => {
     gensTracks.render(settings);
-    settingsPage.render();
+    settingsPage.render(settings);
+    inputControls.render(settings);
   };
 
   const onChromClick = async (chrom) => {
@@ -130,7 +131,7 @@ export async function initCanvases({
     sideMenu.showContent("Settings", [settingsPage]);
 
     if (!settingsPage.isInitialized) {
-      settingsPage.initialize();
+      settingsPage.initialize(render);
     }
   });
 }
@@ -181,12 +182,20 @@ async function initialize(
     },
   };
 
+  // FIXME: We need a session state class
+  let markerModeOn = false;
+
   inputControls.initialize(
     startRegion,
     async (_range) => {
       render({ dataUpdated: true });
     },
     highlightCallbacks.removeHighlights,
+    () => markerModeOn,
+    () => {
+      markerModeOn = !markerModeOn;
+      render({});
+    },
   );
 
   await tracks.initialize(

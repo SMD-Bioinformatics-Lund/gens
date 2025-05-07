@@ -28,7 +28,7 @@ template.innerHTML = String.raw`
       <button title="Remove highlights" id="remove-highlights" class='button pan'>
         <span class="fas ${ICONS.xmark}"></span>
       </button>
-      <button title="Remove highlights" id="remove-highlights" class='button pan'>
+      <button title="Toggle marker mode" id="toggle-marker" class='button pan'>
         <span class="fas ${ICONS.marker}"></span>
       </button>
   </div>
@@ -76,12 +76,14 @@ export class InputControls extends HTMLElement {
   private zoomInButton: HTMLButtonElement;
   private zoomOutButton: HTMLButtonElement;
   private regionField: HTMLInputElement;
-  private removeHighlights: HTMLInputElement;
+  private removeHighlights: HTMLButtonElement;
+  private toggleMarkerButton: HTMLButtonElement;
 
   private region: RegionController;
   private currChromLength: number;
 
   private onPositionChange: (newXRange: [number, number]) => void;
+  private getMarkerOn: () => boolean;
 
   connectedCallback() {
     this.appendChild(template.content.cloneNode(true));
@@ -91,7 +93,12 @@ export class InputControls extends HTMLElement {
     this.zoomInButton = this.querySelector("#zoom-in") as HTMLButtonElement;
     this.zoomOutButton = this.querySelector("#zoom-out") as HTMLButtonElement;
     this.regionField = this.querySelector("#region-field") as HTMLInputElement;
-    this.removeHighlights = this.querySelector("#remove-highlights") as HTMLInputElement;
+    this.removeHighlights = this.querySelector(
+      "#remove-highlights",
+    ) as HTMLButtonElement;
+    this.toggleMarkerButton = this.querySelector(
+      "#toggle-marker",
+    ) as HTMLButtonElement;
   }
 
   getRegion(): Region {
@@ -121,11 +128,14 @@ export class InputControls extends HTMLElement {
     fullRegion: Region,
     onPositionChange: (newXRange: [number, number]) => void,
     onRemoveHighlights: () => void,
+    getMarkerOn: () => boolean,
+    toggleMarker: () => void,
   ) {
     this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);
     this.onPositionChange = onPositionChange;
     this.currChromLength = fullRegion.end;
+    this.getMarkerOn = getMarkerOn;
 
     this.panLeftButton.onclick = () => {
       this.panLeft();
@@ -144,6 +154,13 @@ export class InputControls extends HTMLElement {
     };
 
     this.removeHighlights.onclick = onRemoveHighlights;
+    this.toggleMarkerButton.onclick = toggleMarker;
+  }
+
+  render(_settings: RenderSettings) {
+    this.toggleMarkerButton.style.backgroundColor = this.getMarkerOn()
+      ? "green"
+      : "blue";
   }
 
   panLeft() {

@@ -192,7 +192,6 @@ function renderOverviewPlot(
     // drawVerticalLineInScale(ctx, chromPxEnd, xScale, {
     //   color: STYLE.tracks.edgeColor,
     // });
-    console.log("Drawing line at", chromPxEnd);
     drawLine(
       ctx,
       { x1: chromPxEnd, x2: chromPxEnd, y1: 0, y2: height },
