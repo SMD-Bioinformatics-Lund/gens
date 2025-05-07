@@ -12,11 +12,18 @@ template.innerHTML = String.raw`
       left: 0;
       top: 0;
       display: flex;
-      justify-content: flex-end;
-      align-items: flex-start;
+      /* justify-content: flex-end; */
+      /* align-items: flex-start; */
+      /* pointer-events: auto; */
       pointer-events: none;
     }
+    /* :host > canvas {
+      pointer-events: none;
+    } */
     #close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
       display: none;
       background: transparent;
       border: none;
@@ -66,18 +73,16 @@ export class GensMarker extends ShadowBaseElement {
     color: string,
     closeCallback: ((id: string) => void) | null,
   ) {
-
     // FIXME: I would like to remove this entirely and only use CSS properties
     if (closeCallback != null) {
       this.onMouseMove = this.handleMouseMove.bind(this);
     }
 
-
     this.style.height = `${height}px`;
     this.style.width = "0px";
     this.style.backgroundColor = color;
     // this.classList.add("has-close");
-    // this.classList.toggle("has-close", closeCallback != null);
+    this.classList.toggle("has-close", closeCallback != null);
 
     if (closeCallback != null) {
       this.close.addEventListener("click", () => {
@@ -95,15 +100,13 @@ export class GensMarker extends ShadowBaseElement {
 
   private handleMouseMove(e: MouseEvent) {
     const r = this.getBoundingClientRect();
-      const over = (
-        e.clientX >= r.left &&
-        e.clientX <= r.right &&
-        e.clientY >= r.top &&
-        e.clientY <= r.bottom
-      );
-      this.close.style.display = over ? "block" : "none";
+    const over =
+      e.clientX >= r.left &&
+      e.clientX <= r.right &&
+      e.clientY >= r.top &&
+      e.clientY <= r.bottom;
+    this.close.style.display = over ? "block" : "none";
   }
 }
-
 
 customElements.define("gens-marker", GensMarker);

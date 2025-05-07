@@ -51,6 +51,7 @@ template.innerHTML = String.raw`
       cursor: grabbing;
     }
     #tracks-container {
+      position: relative;
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;

@@ -168,43 +168,18 @@ async function initialize(
     chromSizes[chromosome] = chromInfo.size;
   }
 
-  // FIXME: Move to settings class
-  let highlights: Record<string, Rng> = {};
-
-  // const highlightCallbacks = {
-  //   getHighlights: () => {
-  //     return Object.entries(highlights).map(([id, range]) => {
-  //       return {
-  //         id,
-  //         range,
-  //       };
-  //     });
-  //   },
-  //   removeHighlights: () => {
-  //     highlights = {};
-  //     render({});
-  //   },
-  //   addHighlight: (id: string, range: Rng) => {
-  //     highlights[id] = range;
-  //     render({});
-  //   },
-  //   removeHighlight: (id: string) => {
-  //     delete highlights[id];
-  //     render({});
-  //   },
-  // };
-
   inputControls.initialize(
     startRegion,
     async (_range) => {
       render({ dataUpdated: true });
     },
-    session.removeHighlights,
-    () => session.getMarkerMode(),
-    () => {
-      session.toggleMarkerMode();
-      render({});
-    },
+    session,
+    // session.removeHighlights,
+    // () => session.getMarkerMode(),
+    // () => {
+    //   session.toggleMarkerMode();
+    //   render({});
+    // },
   );
 
   await tracks.initialize(

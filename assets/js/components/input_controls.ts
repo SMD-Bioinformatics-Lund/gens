@@ -1,4 +1,5 @@
 import { COLORS, ICONS } from "../constants";
+import { GensSession } from "../state/session";
 import {
   getPan,
   parseRegionDesignation,
@@ -128,16 +129,17 @@ export class InputControls extends HTMLElement {
   initialize(
     fullRegion: Region,
     onPositionChange: (newXRange: [number, number]) => void,
-    onRemoveHighlights: () => void,
-    getMarkerOn: () => boolean,
-    onToggleMarker: () => void,
+    session: GensSession,
+    // onRemoveHighlights: () => void,
+    // getMarkerOn: () => boolean,
+    // onToggleMarker: () => void,
   ) {
     this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);
     this.onPositionChange = onPositionChange;
     this.currChromLength = fullRegion.end;
-    this.getMarkerOn = getMarkerOn;
-    this.onToggleMarker = onToggleMarker;
+    this.getMarkerOn = () => session.getMarkerMode();
+    this.onToggleMarker = () => session.toggleMarkerMode();
 
     this.panLeftButton.onclick = () => {
       this.panLeft();
@@ -155,8 +157,8 @@ export class InputControls extends HTMLElement {
       this.zoomOut();
     };
 
-    this.removeHighlights.onclick = onRemoveHighlights;
-    this.toggleMarkerButton.onclick = onToggleMarker;
+    this.removeHighlights.onclick = () => session.removeHighlights();
+    this.toggleMarkerButton.onclick = () => session.toggleMarkerMode();
   }
 
   render(_settings: RenderSettings) {
