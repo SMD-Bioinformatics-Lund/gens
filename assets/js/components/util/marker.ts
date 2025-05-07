@@ -1,5 +1,5 @@
 import { SIZES, STYLE } from "../../constants";
-import { padRange, rangeSize, sortRange } from "../../util/utils";
+import { rangeSize, sortRange } from "../../util/utils";
 import { ShadowBaseElement } from "./shadowbaseelement";
 
 const style = STYLE.menu;
@@ -15,17 +15,20 @@ template.innerHTML = String.raw`
       pointer-events: none;
     }
     #close {
+      display: none;
       position: absolute;
       top: ${SIZES.m}px;
       right: ${SIZES.m}px;
-      display: none;
-      background: transparent;
-      border: none;
+
+      width: 1.5em;
+      height: 1.5em;
+      background: rgba(0, 0, 0, 0.4);
+      text-align: center;
+      color: white;
+
       font-size: ${style.headerSize}px;
-      line-height: 1;
+      line-height: 1.5em;
       cursor: pointer;
-      color: ${style.closeColor};
-      padding: 0 ${style.padding}px 0 0;
       pointer-events: auto;
     }
     :host(.has-close):hover #close {

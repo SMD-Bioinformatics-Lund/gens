@@ -56,8 +56,6 @@ export function initializeDragSelect(
     isMoved = true;
     let currX = event.offsetX;
 
-    console.log("Curr X", currX);
-
     if (currX < STYLE.yAxis.width) {
       currX = STYLE.yAxis.width;
     }
@@ -75,8 +73,6 @@ export function initializeDragSelect(
         Math.max(dragStart.x, STYLE.yAxis.width),
         Math.max(event.offsetX, STYLE.yAxis.width),
       ]);
-
-      console.log("Release", sortedX);
 
       onDragRelease(
         sortedX,
