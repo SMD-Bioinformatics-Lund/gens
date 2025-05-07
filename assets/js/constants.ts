@@ -19,6 +19,13 @@ export const FONT_WEIGHT = {
 export const ICONS = {
   up: "fa-arrow-up",
   down: "fa-arrow-down",
+  right: "fa-arrow-right",
+  left: "fa-arrow-left",
+  zoomin: "fa-search-plus",
+  zoomout: "fa-search-minus",
+  search: "fa-search",
+  xmark: "fa-xmark",
+  marker: "fa-marker",
   show: "fa-eye",
   hide: "fa-eye-slash",
   minimize: "fa-minimize",

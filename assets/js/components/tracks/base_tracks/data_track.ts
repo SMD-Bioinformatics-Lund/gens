@@ -12,7 +12,7 @@ import {
 } from "../../util/canvas_interaction";
 import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
-import { renderHighlights } from "./interactive_tools";
+import { initializeDragSelect, renderHighlights } from "./interactive_tools";
 
 import debounce from "lodash.debounce";
 
@@ -172,11 +172,11 @@ export class DataTrack extends CanvasTrack {
     };
 
     // FIXME: Temporarily paused, refine and bring it back
-    // initializeDragSelect(
-    //   this.canvas,
-    //   onDrag,
-    //   this.dragCallbacks.removeHighlight,
-    // );
+    initializeDragSelect(
+      this.canvas,
+      onDrag,
+      this.dragCallbacks.removeHighlight,
+    );
 
     this.trackContainer.addEventListener("click", () => {
       if (keyLogger.heldKeys.Control) {
