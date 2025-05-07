@@ -245,18 +245,11 @@ export class DataTrack extends CanvasTrack {
         y2: yPx,
       }
 
-      console.log(lineDims);
-
       drawLine(
         this.ctx,
         lineDims,
         { color: STYLE.colors.lightGray, dashed: true },
       );
-
-      // drawLine(this.ctx, yTick, yScale, {
-      //   color: STYLE.colors.lightGray,
-      //   dashed: true,
-      // });
     }
 
     drawYAxis(this.ctx, ticks, yScale, yAxis.range);

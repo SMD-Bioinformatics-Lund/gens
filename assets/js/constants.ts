@@ -150,7 +150,7 @@ export const STYLE = {
   },
   yAxis: {
     width: 40,
-    labelPos: 20,
+    textPad: SIZES.s,
     backgroundColor: COLORS.extraLightGray,
   },
   colors: COLORS,
