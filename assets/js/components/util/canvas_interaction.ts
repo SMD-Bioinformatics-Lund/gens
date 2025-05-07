@@ -1,5 +1,6 @@
 import { Tooltip } from "../../util/tooltip_utils";
 import { eventInBox } from "../../util/utils";
+import { keyLogger } from "./keylogger";
 
 interface HoverSettings {
   showTooltip: boolean;
@@ -35,8 +36,6 @@ export function setCanvasPointerCursor(
 ) {
   canvas.addEventListener("mousemove", (event) => {
 
-    console.log("Mouse is moving with marker", markerModeOn());
-
     if (markerModeOn()) {
       if (event.offsetX < markerArea[0] || event.offsetX > markerArea[1]) {
         // FIXME: CSS based instead here
@@ -44,7 +43,10 @@ export function setCanvasPointerCursor(
       } else {
         canvas.style.cursor = "";
       }
-    } else {
+    } else if (keyLogger.heldKeys.Shift) {
+      canvas.style.cursor = "zoom-in";
+    } 
+    else {
       const hoverTargets = getHoverTargets();
 
       if (!hoverTargets) {

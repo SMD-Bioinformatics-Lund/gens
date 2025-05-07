@@ -149,18 +149,6 @@ export class DataTrack extends CanvasTrack {
       // FIXME: Look over this, how to make the dragging "feel" neat
       this.setupDrag();
     }
-
-    // // Marker mode
-    // this.canvas.addEventListener("mousemove", (e) => {
-    //   console.log(this.label, "Moving", e.offsetX);
-    //   if (this.session.markerModeOn && e.offsetX > STYLE.yAxis.width) {
-    //     console.log(this.label, "Inside!")
-    //     this.canvas.style.cursor = "pointer";
-    //   } else {
-    //     console.log(this.label, "Outside!")
-    //     this.canvas.style.cursor = "";
-    //   }
-    // })
   }
 
   setupDrag() {
@@ -187,11 +175,11 @@ export class DataTrack extends CanvasTrack {
       }
     };
 
-    // FIXME: Temporarily paused, refine and bring it back
     initializeDragSelect(
       this.canvas,
       onDrag,
       this.dragCallbacks.removeHighlight,
+      () => this.session.getMarkerMode(),
     );
 
     this.trackContainer.addEventListener("click", () => {
@@ -260,6 +248,7 @@ export class DataTrack extends CanvasTrack {
   }
 
   drawEnd() {
+    console.log("Update 1");
     const labelBox = this.setupLabel(() => this.openTrackContextMenu(this));
     setCanvasPointerCursor(
       this.canvas,

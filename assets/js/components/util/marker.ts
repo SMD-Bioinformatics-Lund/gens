@@ -7,7 +7,7 @@ const style = STYLE.menu;
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>
-    #marker{
+    :host {
       position: absolute;
       left: 0;
       top: 0;
@@ -24,25 +24,20 @@ template.innerHTML = String.raw`
       line-height: 1;
       cursor: pointer;
       color: ${style.closeColor};
-      padding: 0;
-      padding-top: ${style.padding}px;
-      padding-right: ${style.padding}px;
+      padding: 0 ${style.padding}px 0 0;
       pointer-events: auto;
     }
-    :host(:hover) #close {
+    :host(.has-close):hover #close {
       display: block;
     }
     #close:hover {
       color: ${style.textColor};
     }
   </style>
-  <div id="marker">
-    <div id="close">x</div>
-  </div>
+  <div id="close">x</div>
 `;
 
 export class GensMarker extends ShadowBaseElement {
-  private marker: HTMLDivElement;
   private close: HTMLDivElement;
 
   // This is to detect hover over the highlight while still allowing
@@ -52,11 +47,10 @@ export class GensMarker extends ShadowBaseElement {
 
   constructor() {
     super(template);
-    this.onMouseMove = this.handleMouseMove.bind(this);
   }
 
   connectedCallback(): void {
-    this.marker = this.root.querySelector("#marker");
+    // this.marker = this.root.querySelector("#marker");
     this.close = this.root.querySelector("#close");
 
     document.addEventListener("mousemove", this.onMouseMove);
@@ -72,28 +66,35 @@ export class GensMarker extends ShadowBaseElement {
     color: string,
     closeCallback: ((id: string) => void) | null,
   ) {
-    this.marker.style.height = `${height}px`;
-    this.marker.style.width = "0px";
-    this.marker.style.backgroundColor = color;
+
+    // FIXME: I would like to remove this entirely and only use CSS properties
+    if (closeCallback != null) {
+      this.onMouseMove = this.handleMouseMove.bind(this);
+    }
+
+
+    this.style.height = `${height}px`;
+    this.style.width = "0px";
+    this.style.backgroundColor = color;
+    // this.classList.add("has-close");
+    // this.classList.toggle("has-close", closeCallback != null);
 
     if (closeCallback != null) {
       this.close.addEventListener("click", () => {
         closeCallback(markerId);
       });
-    } else {
-      this.close.style.display = "none";
     }
   }
 
   render(pxRange: Rng) {
     const sortedRange = sortRange(pxRange);
     const width = rangeSize(sortedRange);
-    this.marker.style.left = `${sortedRange[0]}px`;
-    this.marker.style.width = `${width}px`;
+    this.style.left = `${sortedRange[0]}px`;
+    this.style.width = `${width}px`;
   }
 
   private handleMouseMove(e: MouseEvent) {
-    const r = this.marker.getBoundingClientRect();
+    const r = this.getBoundingClientRect();
       const over = (
         e.clientX >= r.left &&
         e.clientX <= r.right &&

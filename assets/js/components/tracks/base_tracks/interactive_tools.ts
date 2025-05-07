@@ -12,6 +12,7 @@ export function initializeDragSelect(
   canvas: HTMLCanvasElement,
   onDragRelease: (rangeX: Rng, rangeY: Rng, shiftPress: boolean) => void,
   onMarkerRemove: (id: string) => void,
+  getMarkerMode: () => boolean,
 ) {
   let isDragging = false;
   let isMoved = false;
@@ -26,13 +27,22 @@ export function initializeDragSelect(
 
     dragStart = { x: event.clientX - rect.left, y: event.clientY - rect.top };
 
-    const color = keyLogger.heldKeys.Shift
-      ? COLORS.transparentYellow
-      : COLORS.transparentBlue;
-    marker = document.createElement("gens-marker") as GensMarker;
-    canvas.parentElement.appendChild(marker);
-    const id = generateID();
-    marker.initialize(id, canvas.height, color, onMarkerRemove);
+    if (getMarkerMode() || keyLogger.heldKeys.Shift) {
+      const color = keyLogger.heldKeys.Shift
+        ? COLORS.transparentYellow
+        : COLORS.transparentBlue;
+      marker = document.createElement("gens-marker") as GensMarker;
+      canvas.parentElement.appendChild(marker);
+      const id = generateID();
+      marker.initialize(
+        id,
+        canvas.height,
+        color,
+        getMarkerMode() ? onMarkerRemove : null,
+      );
+    } else {
+      // FIXME: Drag to pan here
+    }
   });
 
   canvas.addEventListener("mousemove", (event) => {
