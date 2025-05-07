@@ -5,19 +5,17 @@ import "./tracks/ideogram_track";
 import "./tracks/overview_track";
 import "./tracks/multi_track";
 import { IdeogramTrack } from "./tracks/ideogram_track";
-import { MultiBandTracks } from "./tracks/multi_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
-import { ICONS, SIZES, STYLE } from "../constants";
-import { CanvasTrack } from "./tracks/base_tracks/canvas_track";
+import { ANIM_TIME, COLORS, ICONS, SIZES, STYLE } from "../constants";
 import {
   getAnnotationContextMenuContent,
   getGenesContextMenuContent,
   getVariantContextMenuContent,
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
-import { generateID } from "../util/utils";
+import { generateID, populateSelect } from "../util/utils";
 import {
   getSimpleButton,
   getContainer,
@@ -27,12 +25,16 @@ import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
 
 import Sortable, { SortableEvent } from "sortablejs";
+import { GensSession } from "../state/session";
+import {
+  initializeDragSelect,
+  renderHighlights,
+} from "./tracks/base_tracks/interactive_tools";
+import { getLinearScale } from "../draw/render_utils";
+import { keyLogger } from "./util/keylogger";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
-
-const COV_Y_TICKS = [-3, -2, -1, 0, 1, 2, 3];
-const BAF_Y_TICKS = [0.2, 0.4, 0.6, 0.8];
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -43,14 +45,22 @@ template.innerHTML = String.raw`
     :host {
       display: block;
       width: 100%;
+      padding-left: ${SIZES.m}px;
+      padding-right: ${SIZES.m}px;
+      padding-bottom: ${SIZES.m}px;
+    }
+    .track-handle {
+      cursor: grab;
+    }
+    .track-handle:active,
+    .track.dragging .track-handle {
+      cursor: grabbing;
     }
     #tracks-container {
+      position: relative;
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
-      /* overflow-x: hidden; */
-      padding-left: 10px;
-      padding-right: 10px;
     }
   </style>
   <div id="top-container"></div>
@@ -61,14 +71,14 @@ template.innerHTML = String.raw`
 interface DragCallbacks {
   onZoomIn: (range: Rng) => void;
   onZoomOut: () => void;
-  getHighlights: () => { id: string; range: Rng }[];
-  addHighlight: (id: string, range: Rng) => void;
+  getHighlights: () => RangeHighlight[];
+  addHighlight: (highlight: RangeHighlight) => void;
   removeHighlight: (id: string) => void;
 }
 
 export class TracksManager extends ShadowBaseElement {
   topContainer: HTMLDivElement;
-  parentContainer: HTMLDivElement;
+  tracksContainer: HTMLDivElement;
   bottomContainer: HTMLDivElement;
   isInitialized = false;
   // annotationsContainer: HTMLDivElement;
@@ -88,8 +98,8 @@ export class TracksManager extends ShadowBaseElement {
 
   getAnnotationSources: () => { id: string; label: string }[];
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
-  openContextMenu: (header: string, content: HTMLElement[]) => void;
   openTrackContextMenu: (track: DataTrack) => void;
+  session: GensSession;
 
   constructor() {
     super(template);
@@ -103,7 +113,7 @@ export class TracksManager extends ShadowBaseElement {
     this.topContainer = this.root.querySelector(
       "#top-container",
     ) as HTMLDivElement;
-    this.parentContainer = this.root.querySelector(
+    this.tracksContainer = this.root.querySelector(
       "#tracks-container",
     ) as HTMLDivElement;
     this.bottomContainer = this.root.querySelector(
@@ -122,7 +132,7 @@ export class TracksManager extends ShadowBaseElement {
     getXRange: () => Rng,
     onZoomIn: (range: Rng) => void,
     onZoomOut: () => void,
-    getAnnotSources: () => { id: string; label: string }[],
+    getAnnotSources: GetAnnotSources,
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
     getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
@@ -130,20 +140,19 @@ export class TracksManager extends ShadowBaseElement {
       sampleId: string,
       variantId: string,
     ) => Promise<ApiVariantDetails>,
-    openContextMenu: (header: string, content: HTMLElement[]) => void,
-    highlightCallbacks: HighlightCallbacks,
+    session: GensSession,
   ) {
     this.dataSource = dataSource;
     this.getAnnotationSources = getAnnotSources;
     this.getAnnotationDetails = getAnnotationDetails;
 
-    this.openContextMenu = openContextMenu;
     this.getXRange = getXRange;
     this.getChromosome = getChromosome;
+    this.session = session;
 
-    const animMs = 150;
-    Sortable.create(this.parentContainer, {
-      animation: animMs,
+    Sortable.create(this.tracksContainer, {
+      animation: ANIM_TIME.medium,
+      handle: ".track-handle",
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
@@ -155,92 +164,24 @@ export class TracksManager extends ShadowBaseElement {
     this.dragCallbacks = {
       onZoomIn,
       onZoomOut,
-      getHighlights: highlightCallbacks.getHighlights,
-      addHighlight: highlightCallbacks.addHighlight,
-      removeHighlight: highlightCallbacks.removeHighlight,
+      getHighlights: session.getHighlights.bind(session),
+      addHighlight: session.addHighlight.bind(session),
+      removeHighlight: session.removeHighlight.bind(session),
     };
 
     // FIXME: Move to util function
     this.openTrackContextMenu = (track: DataTrack) => {
-      const buttonsDiv = document.createElement("div");
-      buttonsDiv.style.display = "flex";
-      buttonsDiv.style.flexDirection = "row";
-      buttonsDiv.style.flexWrap = "nowrap";
-      buttonsDiv.style.gap = `${SIZES.s}px`;
 
-      buttonsDiv.appendChild(
-        getIconButton(ICONS.up, "Up", () => this.moveTrack(track.id, "up")),
-      );
-      buttonsDiv.appendChild(
-        getIconButton(ICONS.down, "Down", () =>
-          this.moveTrack(track.id, "down"),
-        ),
-      );
-      buttonsDiv.appendChild(
-        getIconButton(
-          track.getIsHidden() ? ICONS.hide : ICONS.show,
-          "Show / hide",
-          () => {
-            track.toggleHidden();
-            this.render({});
-          },
-        ),
-      );
-      buttonsDiv.appendChild(
-        getIconButton(
-          track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
-          "Collapse / expand",
-          () => {
-            track.toggleCollapsed();
-            this.render({});
-          },
-        ),
+      const isDotTrack = track instanceof DotTrack;
+
+      const returnElements = getTrackContextMenuContent(
+        track,
+        isDotTrack,
+        getAnnotSources,
+        (id: string) => dataSource.getAnnotation(id),
       );
 
-      const returnElements = [buttonsDiv];
-
-      let axisRow = null;
-      const axis = track.getYAxis();
-      if (axis != null) {
-        axisRow = getContainer("row");
-        axisRow.style.gap = "8px";
-        const yAxisLabel = document.createTextNode(`Y-axis range:`);
-        axisRow.appendChild(yAxisLabel);
-
-        const startNode = document.createElement("input");
-        startNode.type = "number";
-        startNode.value = axis.range[0].toString();
-        startNode.step = "0.1";
-        startNode.style.flex = "1 1 0px";
-        startNode.style.minWidth = "0";
-        axisRow.appendChild(startNode);
-
-        const endNode = document.createElement("input");
-        endNode.type = "number";
-        endNode.value = axis.range[1].toString();
-        endNode.step = "0.1";
-        endNode.style.flex = "1 1 0px";
-        endNode.style.minWidth = "0";
-
-        const onRangeChange = () => {
-          const parsedRange: Rng = [
-            parseFloat(startNode.value),
-            parseFloat(endNode.value),
-          ];
-          track.updateYAxis(parsedRange);
-          this.render({});
-        };
-
-        startNode.addEventListener("change", onRangeChange);
-
-        endNode.addEventListener("change", onRangeChange);
-
-        axisRow.appendChild(endNode);
-
-        returnElements.push(axisRow);
-      }
-
-      openContextMenu(track.label, returnElements);
+      this.session.openContextMenu(track.label, returnElements);
     };
 
     const covTracks = [];
@@ -331,7 +272,7 @@ export class TracksManager extends ShadowBaseElement {
     this.ideogramTrack.renderLoading();
 
     this.dataTracks.forEach((track) => {
-      this.parentContainer.appendChild(track);
+      appendDataTrack(this.tracksContainer, track);
       track.initialize();
       track.renderLoading();
     });
@@ -341,6 +282,50 @@ export class TracksManager extends ShadowBaseElement {
       track.initialize();
       track.renderLoading();
     });
+
+    this.setupDrag();
+
+    this.tracksContainer.addEventListener("click", () => {
+      if (keyLogger.heldKeys.Control) {
+        this.dragCallbacks.onZoomOut();
+      }
+    });
+  }
+
+  setupDrag() {
+    const onDragEnd = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+      const xRange = this.getXRange();
+      if (xRange == null) {
+        console.error("No xRange set");
+      }
+
+      const yAxisWidth = STYLE.yAxis.width;
+
+      const pixelToPos = getLinearScale(
+        [yAxisWidth, this.tracksContainer.offsetWidth],
+        xRange,
+      );
+      const posStart = pixelToPos(Math.max(yAxisWidth, pxRangeX[0]));
+      const posEnd = pixelToPos(Math.max(yAxisWidth, pxRangeX[1]));
+
+      if (shiftPress) {
+        this.dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
+      } else {
+        const id = generateID();
+        this.dragCallbacks.addHighlight({
+          id,
+          range: [posStart, posEnd],
+          color: COLORS.transparentBlue,
+        });
+      }
+    };
+
+    initializeDragSelect(
+      this.tracksContainer,
+      onDragEnd,
+      this.dragCallbacks.removeHighlight,
+      () => this.session.getMarkerMode(),
+    );
   }
 
   getDataTracks(): DataTrack[] {
@@ -376,12 +361,12 @@ export class TracksManager extends ShadowBaseElement {
 
   showTrack(trackId: string) {
     const track = this.getTrackById(trackId);
-    this.parentContainer.appendChild(track);
+    appendDataTrack(this.tracksContainer, track);
   }
 
   hideTrack(trackId: string) {
     const track = this.getTrackById(trackId);
-    this.parentContainer.removeChild(track);
+    this.tracksContainer.removeChild(track);
   }
 
   updateAnnotationTracks() {
@@ -402,7 +387,7 @@ export class TracksManager extends ShadowBaseElement {
       const newTrack = this.getAnnotTrack(source.id, source.label);
       this.dataTracks.push(newTrack);
       this.annotationTracks.push(newTrack);
-      this.parentContainer.appendChild(newTrack);
+      appendDataTrack(this.tracksContainer, newTrack);
       newTrack.initialize();
     });
 
@@ -411,12 +396,29 @@ export class TracksManager extends ShadowBaseElement {
       const track = this.getTrackById(source.id);
       const index = this.dataTracks.indexOf(track);
       this.dataTracks.splice(index, 0);
-      this.parentContainer.removeChild(track);
+      this.tracksContainer.removeChild(track);
     });
+  }
+
+  getXScale() {
+    const xRange = this.getXRange();
+    const yAxisWidth = STYLE.yAxis.width;
+    const xScale = getLinearScale(xRange, [
+      yAxisWidth,
+      this.tracksContainer.offsetWidth,
+    ]);
+    return xScale;
   }
 
   render(settings: RenderSettings) {
     // FIXME: React to whether tracks are not present
+
+    renderHighlights(
+      this.tracksContainer,
+      this.dragCallbacks.getHighlights(),
+      this.getXScale(),
+      (id) => this.dragCallbacks.removeHighlight(id),
+    );
 
     this.updateAnnotationTracks();
 
@@ -446,12 +448,16 @@ export class TracksManager extends ShadowBaseElement {
       const details = await this.getAnnotationDetails(id);
       const button = getSimpleButton("Set highlight", () => {
         const id = generateID();
-        this.dragCallbacks.addHighlight(id, [details.start, details.end]);
+        this.dragCallbacks.addHighlight({
+          id,
+          range: [details.start, details.end],
+          color: COLORS.transparentBlue,
+        });
       });
       const entries = getAnnotationContextMenuContent(id, details);
       const content = [button];
       content.push(...entries);
-      this.openContextMenu("Annotations", content);
+      () => this.session.openContextMenu("Annotations", content);
     };
 
     const track = new BandTrack(
@@ -465,8 +471,8 @@ export class TracksManager extends ShadowBaseElement {
           this.dataSource.getAnnotation,
         ),
       openContextMenuId,
-      this.dragCallbacks,
       this.openTrackContextMenu,
+      this.session,
     );
     return track;
   }
@@ -492,8 +498,8 @@ export class TracksManager extends ShadowBaseElement {
           dots: data,
         };
       },
-      this.dragCallbacks,
       this.openTrackContextMenu,
+      this.session,
     );
     return dotTrack;
   }
@@ -525,7 +531,11 @@ export class TracksManager extends ShadowBaseElement {
 
         const button = getSimpleButton("Set highlight", () => {
           const id = generateID();
-          this.dragCallbacks.addHighlight(id, [details.position, details.end]);
+          this.dragCallbacks.addHighlight({
+            id,
+            range: [details.position, details.end],
+            color: COLORS.transparentBlue,
+          });
         });
 
         const entries = getVariantContextMenuContent(
@@ -536,10 +546,10 @@ export class TracksManager extends ShadowBaseElement {
         const content = [button];
         content.push(...entries);
 
-        this.openContextMenu("Variant", content);
+        this.session.openContextMenu("Variant", content);
       },
-      this.dragCallbacks,
       this.openTrackContextMenu,
+      this.session,
     );
     return variantTrack;
   }
@@ -564,15 +574,19 @@ export class TracksManager extends ShadowBaseElement {
         const details = await getDetails(id);
         const button = getSimpleButton("Set highlight", () => {
           const id = generateID();
-          this.dragCallbacks.addHighlight(id, [details.start, details.end]);
+          this.dragCallbacks.addHighlight({
+            id,
+            range: [details.start, details.end],
+            color: COLORS.transparentBlue,
+          });
         });
         const entries = getGenesContextMenuContent(id, details);
         const content = [button];
         content.push(...entries);
-        this.openContextMenu("Transcript", content);
+        this.session.openContextMenu("Transcript", content);
       },
-      this.dragCallbacks,
       this.openTrackContextMenu,
+      this.session,
     );
     return genesTrack;
   }
@@ -612,6 +626,149 @@ export class TracksManager extends ShadowBaseElement {
     );
     return overviewTrack;
   }
+}
+
+function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("track-wrapper");
+  wrapper.style.position = "relative";
+  wrapper.appendChild(track);
+
+  const handle = document.createElement("div");
+  handle.className = "track-handle";
+  handle.style.position = "absolute";
+  handle.style.top = "0";
+  handle.style.left = "0";
+  handle.style.width = `${STYLE.yAxis.width}px`;
+  handle.style.height = "100%";
+  wrapper.appendChild(handle);
+
+  parentContainer.appendChild(wrapper);
+}
+
+// FIXME: Where should this util go?
+function getTrackContextMenuContent(
+  track: DataTrack,
+  isDotTrack: boolean,
+  getAnnotationSources: GetAnnotSources,
+  getBands: (id: string) => Promise<RenderBand[]>,
+): HTMLDivElement[] {
+  const buttonsDiv = document.createElement("div");
+  buttonsDiv.style.display = "flex";
+  buttonsDiv.style.flexDirection = "row";
+  buttonsDiv.style.flexWrap = "nowrap";
+  buttonsDiv.style.gap = `${SIZES.s}px`;
+
+  buttonsDiv.appendChild(
+    getIconButton(ICONS.up, "Up", () => this.moveTrack(track.id, "up")),
+  );
+  buttonsDiv.appendChild(
+    getIconButton(ICONS.down, "Down", () => this.moveTrack(track.id, "down")),
+  );
+  buttonsDiv.appendChild(
+    getIconButton(
+      track.getIsHidden() ? ICONS.hide : ICONS.show,
+      "Show / hide",
+      () => {
+        track.toggleHidden();
+        this.render({});
+      },
+    ),
+  );
+  buttonsDiv.appendChild(
+    getIconButton(
+      track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
+      "Collapse / expand",
+      () => {
+        track.toggleCollapsed();
+        this.render({});
+      },
+    ),
+  );
+
+  const returnElements = [buttonsDiv];
+
+  if (isDotTrack) {
+    const axisRow = getYAxisRow(track);
+    returnElements.push(axisRow);
+
+    const colorSelectRow = getColorSelectRow(
+      track as DotTrack,
+      getAnnotationSources,
+      getBands,
+    );
+    returnElements.push(colorSelectRow);
+  }
+  return returnElements;
+}
+
+function getYAxisRow(track: DataTrack): HTMLDivElement {
+  const axis = track.getYAxis();
+
+  const axisRow = getContainer("row");
+  axisRow.style.gap = "8px";
+  const yAxisLabel = document.createTextNode(`Y-axis range:`);
+  axisRow.appendChild(yAxisLabel);
+
+  const startNode = document.createElement("input");
+  startNode.type = "number";
+  startNode.value = axis.range[0].toString();
+  startNode.step = "0.1";
+  startNode.style.flex = "1 1 0px";
+  startNode.style.minWidth = "0";
+  axisRow.appendChild(startNode);
+
+  const endNode = document.createElement("input");
+  endNode.type = "number";
+  endNode.value = axis.range[1].toString();
+  endNode.step = "0.1";
+  endNode.style.flex = "1 1 0px";
+  endNode.style.minWidth = "0";
+
+  const onRangeChange = () => {
+    const parsedRange: Rng = [
+      parseFloat(startNode.value),
+      parseFloat(endNode.value),
+    ];
+    track.updateYAxis(parsedRange);
+    this.render({});
+  };
+
+  startNode.addEventListener("change", onRangeChange);
+  endNode.addEventListener("change", onRangeChange);
+  axisRow.appendChild(endNode);
+  return axisRow;
+}
+
+function getColorSelectRow(
+  track: DotTrack,
+  getAnnotationSources: GetAnnotSources,
+  getBands: (id: string) => Promise<RenderBand[]>,
+): HTMLDivElement {
+  const colorRow = getContainer("row");
+
+  const label = document.createTextNode("Color:");
+
+  const select = document.createElement("select") as HTMLSelectElement;
+  select.style.backgroundColor = COLORS.white;
+  const sources = getAnnotationSources();
+
+  populateSelect(select, sources, true);
+
+  select.addEventListener("change", async (_e) => {
+    const currentId = select.value;
+    if (currentId != "") {
+      const bands = await getBands(currentId);
+      track.updateColors(bands);
+    } else {
+      track.updateColors(null);
+    }
+  });
+
+  colorRow.appendChild(label);
+  colorRow.appendChild(select);
+
+  return colorRow;
 }
 
 customElements.define("gens-tracks", TracksManager);

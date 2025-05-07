@@ -16,9 +16,20 @@ export const FONT_WEIGHT = {
   bold: 300,
 }
 
+export const ANIM_TIME = {
+  medium: 150,
+}
+
 export const ICONS = {
   up: "fa-arrow-up",
   down: "fa-arrow-down",
+  right: "fa-arrow-right",
+  left: "fa-arrow-left",
+  zoomin: "fa-search-plus",
+  zoomout: "fa-search-minus",
+  search: "fa-search",
+  xmark: "fa-xmark",
+  marker: "fa-marker",
   show: "fa-eye",
   hide: "fa-eye-slash",
   minimize: "fa-minimize",
@@ -30,7 +41,7 @@ export const COLORS = {
   black: "#222",
   darkGray: "#555",
   lightGray: "#ccc",
-  extraLightGray: "#eee",
+  extraLightGray: "#fafafa",
   yellow: "#dcd16f",
   red: "#f00",
   teal: "#008080",
@@ -138,9 +149,9 @@ export const STYLE = {
     },
   },
   yAxis: {
-    width: 25,
-    labelPos: 20,
-    backgroundColor: COLORS.white,
+    width: 40,
+    textPad: SIZES.s,
+    backgroundColor: COLORS.extraLightGray,
   },
   colors: COLORS,
 };

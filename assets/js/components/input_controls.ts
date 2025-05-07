@@ -1,3 +1,5 @@
+import { COLORS, ICONS } from "../constants";
+import { GensSession } from "../state/session";
 import {
   getPan,
   parseRegionDesignation,
@@ -9,24 +11,27 @@ const template = document.createElement("template");
 template.innerHTML = String.raw`
   <div id="input-controls-container" style="display: flex; align-items: center; gap: 8px;">
       <button title="Pan left" id="pan-left" class='button pan'>
-        <span class="fas fa-arrow-left"></span>
+        <span class="fas ${ICONS.left}"></span>
       </button>
       <button title="Zoom in" id="zoom-in" class='button zoom'>
-        <span class="fas fa-search-plus"></span>
+        <span class="fas ${ICONS.zoomin}"></span>
       </button>
       <button title="Zoom out" id="zoom-out" class='button zoom'>
-        <span class="fas fa-search-minus"></span>
+        <span class="fas ${ICONS.zoomout}"></span>
       </button>
       <button title="Pan right" id="pan-right" class='button pan'>
-        <span class="fas fa-arrow-right"></span>
+        <span class="fas ${ICONS.right}"></span>
       </button>
       <input onFocus='this.select();' id='region-field' type='text' class="text-input">
       <button title="Run search" id="submit" class='button pan'>
-        <span class="fas fa-search"></span>
+        <span class="fas ${ICONS.search}"></span>
       </button>
-      <!-- <button title="Remove highlights" id="remove-highlights" class='button pan'>
-        <span class="fas fa-xmark"></span>
-      </button> -->
+      <button title="Remove highlights" id="remove-highlights" class='button pan'>
+        <span class="fas ${ICONS.xmark}"></span>
+      </button>
+      <button title="Toggle marker mode" id="toggle-marker" class='button pan'>
+        <span class="fas ${ICONS.marker}"></span>
+      </button>
   </div>
 `;
 
@@ -72,12 +77,15 @@ export class InputControls extends HTMLElement {
   private zoomInButton: HTMLButtonElement;
   private zoomOutButton: HTMLButtonElement;
   private regionField: HTMLInputElement;
-  // private removeHighlights: HTMLInputElement;
+  private removeHighlights: HTMLButtonElement;
+  private toggleMarkerButton: HTMLButtonElement;
 
   private region: RegionController;
   private currChromLength: number;
 
   private onPositionChange: (newXRange: [number, number]) => void;
+  private getMarkerOn: () => boolean;
+  private onToggleMarker: () => void;
 
   connectedCallback() {
     this.appendChild(template.content.cloneNode(true));
@@ -87,7 +95,12 @@ export class InputControls extends HTMLElement {
     this.zoomInButton = this.querySelector("#zoom-in") as HTMLButtonElement;
     this.zoomOutButton = this.querySelector("#zoom-out") as HTMLButtonElement;
     this.regionField = this.querySelector("#region-field") as HTMLInputElement;
-    // this.removeHighlights = this.querySelector("#remove-highlights") as HTMLInputElement;
+    this.removeHighlights = this.querySelector(
+      "#remove-highlights",
+    ) as HTMLButtonElement;
+    this.toggleMarkerButton = this.querySelector(
+      "#toggle-marker",
+    ) as HTMLButtonElement;
   }
 
   getRegion(): Region {
@@ -116,12 +129,14 @@ export class InputControls extends HTMLElement {
   initialize(
     fullRegion: Region,
     onPositionChange: (newXRange: [number, number]) => void,
-    onRemoveHighlights: () => void,
+    session: GensSession,
   ) {
     this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);
     this.onPositionChange = onPositionChange;
     this.currChromLength = fullRegion.end;
+    this.getMarkerOn = () => session.getMarkerMode();
+    this.onToggleMarker = () => session.toggleMarkerMode();
 
     this.panLeftButton.onclick = () => {
       this.panLeft();
@@ -139,7 +154,14 @@ export class InputControls extends HTMLElement {
       this.zoomOut();
     };
 
-    // this.removeHighlights.onclick = onRemoveHighlights;
+    this.removeHighlights.onclick = () => session.removeHighlights();
+    this.toggleMarkerButton.onclick = () => session.toggleMarkerMode();
+  }
+
+  render(_settings: RenderSettings) {
+    this.toggleMarkerButton.style.backgroundColor = this.getMarkerOn()
+      ? COLORS.lightGray
+      : "";
   }
 
   panLeft() {
@@ -176,6 +198,10 @@ export class InputControls extends HTMLElement {
     const xRange = [1, this.currChromLength] as Rng;
     this.updatePosition(xRange);
     this.onPositionChange(xRange);
+  }
+
+  toggleMarkerMode() {
+    this.onToggleMarker();
   }
 }
 

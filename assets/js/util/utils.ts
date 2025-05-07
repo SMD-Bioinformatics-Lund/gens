@@ -238,7 +238,7 @@ export function generateID() {
   return `${ts}-${rand64}`;
 }
 
-export function generateTicks(range: Rng, step: number) {
+export function generateTicks(range: Rng, step: number): number[] {
   const factor = 1000;
   // Factor needed as ceil works with integers
   const first = Math.ceil((range[0] * factor) / (step * factor)) * step;
@@ -268,4 +268,26 @@ export function getTickSize(range: Rng): number {
     return 0.2;
   }
   return 0.1;
+}
+
+export function populateSelect(
+  select: HTMLSelectElement,
+  options: { id: string; label: string }[],
+  includeNoSelect: boolean,
+) {
+  removeChildren(select);
+
+  const getOption = (id: string, label: string) => {
+    const opt = document.createElement("option") as HTMLOptionElement;
+    opt.value = id;
+    opt.innerHTML = label;
+    return opt;
+  }
+
+  if (includeNoSelect) {
+    select.appendChild(getOption("", "---"));    
+  }
+  for (const option of options) {
+    select.appendChild(getOption(option.id, option.label));
+  }
 }

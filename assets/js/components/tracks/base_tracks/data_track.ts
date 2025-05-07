@@ -1,18 +1,17 @@
-import { SIZES, STYLE } from "../../../constants";
+import { COLORS, SIZES, STYLE } from "../../../constants";
 import {
   drawYAxis,
   getLinearScale,
   renderBackground,
 } from "../../../draw/render_utils";
-import { drawHorizontalLineInScale, drawLabel } from "../../../draw/shapes";
-import { generateID, generateTicks, getTickSize } from "../../../util/utils";
+import { drawBox, drawLabel, drawLine } from "../../../draw/shapes";
+import { GensSession } from "../../../state/session";
+import { generateTicks, getTickSize } from "../../../util/utils";
 import {
   setupCanvasClick,
   setCanvasPointerCursor,
 } from "../../util/canvas_interaction";
-import { keyLogger } from "../../util/keylogger";
 import { CanvasTrack } from "./canvas_track";
-import { renderHighlights } from "./interactive_tools";
 
 import debounce from "lodash.debounce";
 
@@ -34,12 +33,15 @@ export class DataTrack extends CanvasTrack {
   getXScale: () => Scale;
   getYRange: () => Rng;
   getYScale: () => Scale;
-  dragCallbacks: DragCallbacks;
   openTrackContextMenu: (track: DataTrack) => void;
 
+  // FIXME: All of this state should live elsewhere I think
+  // Controlled by the tracks_manager perhaps
   private isHidden: boolean = false;
   private isCollapsed: boolean = false;
   private expander: Expander;
+  session: GensSession;
+  //
 
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
@@ -90,6 +92,8 @@ export class DataTrack extends CanvasTrack {
   }
 
   // FIXME: Simplify the height management
+  // The track manager can keep track of the expansion state
+  // While the track only knows its height
   initializeExpander(
     eventKey: string,
     startExpanded: boolean,
@@ -116,15 +120,15 @@ export class DataTrack extends CanvasTrack {
     label: string,
     getXRange: () => Rng,
     getXScale: () => Scale,
-    callbacks: DragCallbacks,
     openTrackContextMenu: (track: DataTrack) => void,
     settings: Settings,
+    session: GensSession,
   ) {
     super(id, label, settings.defaultHeight);
-    this.dragCallbacks = callbacks;
     this.settings = settings;
     this.getXRange = getXRange;
     this.getXScale = getXScale;
+    this.session = session;
 
     this.getYRange = () => {
       return settings.yAxis.range;
@@ -136,53 +140,6 @@ export class DataTrack extends CanvasTrack {
     };
 
     this.openTrackContextMenu = openTrackContextMenu;
-  }
-
-  initialize() {
-    super.initialize();
-
-    if (this.dragCallbacks != null) {
-      // FIXME: Look over this, how to make the dragging "feel" neat
-      this.setupDrag();
-    }
-  }
-
-  setupDrag() {
-    const onDrag = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
-      const xRange = this.getXRange();
-      if (xRange == null) {
-        console.error("No xRange set");
-      }
-
-      const yAxisWidth = STYLE.yAxis.width;
-
-      const pixelToPos = getLinearScale(
-        [yAxisWidth, this.dimensions.width],
-        xRange,
-      );
-      const posStart = Math.max(0, pixelToPos(pxRangeX[0]));
-      const posEnd = pixelToPos(pxRangeX[1]);
-
-      if (shiftPress) {
-        this.dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
-      } else {
-        const id = generateID();
-        this.dragCallbacks.addHighlight(id, [posStart, posEnd]);
-      }
-    };
-
-    // FIXME: Temporarily paused, refine and bring it back
-    // initializeDragSelect(
-    //   this.canvas,
-    //   onDrag,
-    //   this.dragCallbacks.removeHighlight,
-    // );
-
-    this.trackContainer.addEventListener("click", () => {
-      if (keyLogger.heldKeys.Control) {
-        this.dragCallbacks.onZoomOut();
-      }
-    });
   }
 
   async render(settings: RenderSettings) {
@@ -222,12 +179,11 @@ export class DataTrack extends CanvasTrack {
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
-    renderHighlights(
-      this.trackContainer,
-      this.dimensions.height,
-      this.dragCallbacks.getHighlights(),
-      this.getXScale(),
-      (id) => this.dragCallbacks.removeHighlight(id),
+    // Color fill Y axis area
+    drawBox(
+      this.ctx,
+      { x1: 0, x2: STYLE.yAxis.width, y1: 0, y2: this.dimensions.height },
+      { fillColor: COLORS.extraLightGray },
     );
 
     if (this.settings.yAxis != null) {
@@ -245,10 +201,15 @@ export class DataTrack extends CanvasTrack {
 
   drawEnd() {
     const labelBox = this.setupLabel(() => this.openTrackContextMenu(this));
-    setCanvasPointerCursor(this.canvas, () => {
-      const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
-      return hoverTargets.concat([labelBox]);
-    });
+    setCanvasPointerCursor(
+      this.canvas,
+      () => {
+        const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
+        return hoverTargets.concat([labelBox]);
+      },
+      () => this.session.getMarkerMode(),
+      [0, STYLE.yAxis.width],
+    );
   }
 
   setupLabel(onClick: () => void): HoverBox {
@@ -268,7 +229,16 @@ export class DataTrack extends CanvasTrack {
     const ticks = generateTicks(yAxis.range, tickSize);
 
     for (const yTick of ticks) {
-      drawHorizontalLineInScale(this.ctx, yTick, yScale, {
+      const yPx = yScale(yTick);
+
+      const lineDims = {
+        x1: STYLE.yAxis.width,
+        x2: this.dimensions.width,
+        y1: yPx,
+        y2: yPx,
+      };
+
+      drawLine(this.ctx, lineDims, {
         color: STYLE.colors.lightGray,
         dashed: true,
       });
@@ -299,6 +269,8 @@ export class DataTrack extends CanvasTrack {
 }
 
 // FIXME: Consider what to do with this one. Remove? General height controller?
+// This should live in the tracks manager. They only need to know their final
+// height.
 class Expander {
   expandedHeight: number = null;
   isExpanded: boolean;

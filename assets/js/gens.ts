@@ -16,6 +16,7 @@ import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
 import { SettingsPage } from "./components/settings_page";
 import { HeaderInfo } from "./components/header_info";
+import { GensSession } from "./state/session";
 
 export async function initCanvases({
   caseId,
@@ -62,7 +63,8 @@ export async function initCanvases({
 
   const render = (settings: RenderSettings) => {
     gensTracks.render(settings);
-    settingsPage.render();
+    settingsPage.render(settings);
+    inputControls.render(settings);
   };
 
   const onChromClick = async (chrom) => {
@@ -80,11 +82,14 @@ export async function initCanvases({
     return url;
   };
 
-  const openContextMenu = (header: string, content: HTMLDivElement[]) => {
-    sideMenu.showContent(header, content);
-  };
+  const session = new GensSession(render, sideMenu);
 
-  setupShortcuts(sideMenu, inputControls, onChromClick);
+  setupShortcuts(
+    session,
+    sideMenu,
+    inputControls,
+    onChromClick,
+  );
 
   const annotSources = await api.getAnnotationSources();
   const defaultAnnot = annotSources
@@ -109,6 +114,7 @@ export async function initCanvases({
   );
 
   initialize(
+    session,
     render,
     sampleIds,
     inputControls,
@@ -120,7 +126,6 @@ export async function initCanvases({
     getChromInfo,
     renderDataSource,
     getVariantURL,
-    openContextMenu,
   );
 
   const settingsButton = document.getElementById(
@@ -130,12 +135,13 @@ export async function initCanvases({
     sideMenu.showContent("Settings", [settingsPage]);
 
     if (!settingsPage.isInitialized) {
-      settingsPage.initialize();
+      settingsPage.initialize(render);
     }
   });
 }
 
 async function initialize(
+  session: GensSession,
   render: (settings: RenderSettings) => void,
   sampleIds: string[],
   inputControls: InputControls,
@@ -147,7 +153,6 @@ async function initialize(
   getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
   renderDataSource: RenderDataSource,
   getVariantURL: (variantId: string) => string,
-  openContextMenu: (header: string, content: HTMLDivElement[]) => void,
 ) {
   const chromSizes = {};
   for (const chromosome of CHROMOSOMES) {
@@ -155,38 +160,12 @@ async function initialize(
     chromSizes[chromosome] = chromInfo.size;
   }
 
-  // FIXME: Move to settings class
-  let highlights: Record<string, Rng> = {};
-
-  const highlightCallbacks = {
-    getHighlights: () => {
-      return Object.entries(highlights).map(([id, range]) => {
-        return {
-          id,
-          range,
-        };
-      });
-    },
-    removeHighlights: () => {
-      highlights = {};
-      render({});
-    },
-    addHighlight: (id: string, range: Rng) => {
-      highlights[id] = range;
-      render({});
-    },
-    removeHighlight: (id: string) => {
-      delete highlights[id];
-      render({});
-    },
-  };
-
   inputControls.initialize(
     startRegion,
     async (_range) => {
       render({ dataUpdated: true });
     },
-    highlightCallbacks.removeHighlights,
+    session,
   );
 
   await tracks.initialize(
@@ -212,14 +191,14 @@ async function initialize(
         variantId,
         inputControls.getRegion().chrom,
       ),
-    openContextMenu,
-    highlightCallbacks,
+    session,
   );
 
   render({ dataUpdated: true, resized: true });
 }
 
 function setupShortcuts(
+  session: GensSession,
   sideMenu: SideMenu,
   inputControls: InputControls,
   onChromClick: (chrom: string) => void,
@@ -227,6 +206,10 @@ function setupShortcuts(
   // Rebuild the keyboard shortcuts
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      if (session.getMarkerMode()) {
+        inputControls.toggleMarkerMode();
+        return;
+      }
       sideMenu.close();
     }
     if (e.key === "ArrowLeft") {
@@ -261,6 +244,9 @@ function setupShortcuts(
     }
     if (e.key === "r") {
       inputControls.resetZoom();
+    }
+    if (e.key === "m") {
+      inputControls.toggleMarkerMode();
     }
   });
 }

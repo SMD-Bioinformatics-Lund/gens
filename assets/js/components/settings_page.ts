@@ -69,7 +69,7 @@ export class SettingsPage extends ShadowBaseElement {
     ) as HTMLDivElement;
   }
 
-  initialize() {
+  initialize(renderCallback: (settings: RenderSettings) => void) {
     this.isInitialized = true;
     this.choiceSelect.setChoices(
       getChoices(
@@ -79,10 +79,10 @@ export class SettingsPage extends ShadowBaseElement {
     );
     this.choiceSelect.initialize(this.onAnnotationChanged);
 
-    this.render();
+    renderCallback({});
   }
 
-  render() {
+  render(_settings: RenderSettings) {
     if (this.tracksOverview == null) {
       return;
     }

@@ -1,5 +1,6 @@
 import { Tooltip } from "../../util/tooltip_utils";
 import { eventInBox } from "../../util/utils";
+import { keyLogger } from "./keylogger";
 
 interface HoverSettings {
   showTooltip: boolean;
@@ -30,17 +31,32 @@ export function setupCanvasClick(
 export function setCanvasPointerCursor(
   canvas: HTMLCanvasElement,
   getHoverTargets: () => HoverBox[],
+  markerModeOn: () => boolean,
+  markerArea: Rng,
 ) {
   canvas.addEventListener("mousemove", (event) => {
-    const hoverTargets = getHoverTargets();
 
-    if (!hoverTargets) {
-      return;
+    if (markerModeOn()) {
+      if (event.offsetX < markerArea[0] || event.offsetX > markerArea[1]) {
+        // FIXME: CSS based instead here
+        canvas.style.cursor = "crosshair";
+      } else {
+        canvas.style.cursor = "";
+      }
+    } else if (keyLogger.heldKeys.Shift) {
+      canvas.style.cursor = "zoom-in";
+    } 
+    else {
+      const hoverTargets = getHoverTargets();
+
+      if (!hoverTargets) {
+        return;
+      }
+      const hovered = hoverTargets.some((target) =>
+        eventInBox(event, target.box),
+      );
+      canvas.style.cursor = hovered ? "pointer" : "";
     }
-    const hovered = hoverTargets.some((target) =>
-      eventInBox(event, target.box),
-    );
-    canvas.style.cursor = hovered ? "pointer" : "auto";
   });
 }
 

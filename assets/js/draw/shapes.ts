@@ -1,6 +1,6 @@
 // draw basic objects and shapes
 
-import { STYLE } from "../constants";
+import { COLORS, STYLE } from "../constants";
 
 export function drawHorizontalLineInScale(
   ctx: CanvasRenderingContext2D,
@@ -60,7 +60,7 @@ export function drawLine(
 ) {
   const {
     lineWidth = 1,
-    color = "black",
+    color = COLORS.black,
     dashed = false,
     transpose_05 = true,
   } = style;

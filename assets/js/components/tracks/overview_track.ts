@@ -1,9 +1,5 @@
-import { drawLabel, drawVerticalLineInScale } from "../../draw/shapes";
-import {
-  transformMap,
-  padRange,
-  generateID,
-} from "../../util/utils";
+import { drawLabel, drawLine } from "../../draw/shapes";
+import { transformMap, padRange, generateID } from "../../util/utils";
 import { COLORS, STYLE } from "../../constants";
 import { CanvasTrack } from "./base_tracks/canvas_track";
 import {
@@ -84,7 +80,6 @@ export class OverviewTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-
     // FIXME: This one is a bit tricky isn't it
     // We want it to render not on new data, but on resize
     // Do I have all info I need here?
@@ -134,13 +129,12 @@ export class OverviewTrack extends CanvasTrack {
       renderBackground(this.staticCtx, this.dimensions, STYLE.tracks.edgeColor);
       renderOverviewPlot(
         this.staticCtx,
-        chromRanges,
         this.pxRanges,
-        xScale,
         yScale,
         dotsPerChrom,
         this.chromSizes,
         this.drawLabels,
+        this.dimensions.height,
       );
 
       this.isRendered = true;
@@ -172,33 +166,44 @@ export class OverviewTrack extends CanvasTrack {
 
 function renderOverviewPlot(
   ctx: CanvasRenderingContext2D,
-  chromRanges: Record<string, Rng>,
   pxRanges: Record<string, Rng>,
-  xScale: Scale,
   yScale: Scale,
   dotsPerChrom: Record<string, RenderDot[]>,
   chromSizes: Record<string, number>,
   drawLabels: boolean,
+  height: number,
 ) {
   // Draw the initial lines
-  Object.values(chromRanges).forEach(([_chromStart, chromEnd]) =>
-    drawVerticalLineInScale(ctx, chromEnd, xScale, {
-      color: STYLE.tracks.edgeColor,
-    }),
-  );
+  Object.values(pxRanges).forEach(([_chromPxStart, chromPxEnd]) => {
+    drawLine(
+      ctx,
+      { x1: chromPxEnd, x2: chromPxEnd, y1: 0, y2: height },
+      { color: COLORS.lightGray },
+    );
+  });
 
   Object.entries(dotsPerChrom).forEach(([chrom, dotData]) => {
     const pad = X_PAD;
-    const pxRange = padRange(pxRanges[chrom], pad);
+    const chromRangePx = pxRanges[chrom];
+    const pxRange = padRange(chromRangePx, pad);
 
     const chromXScale = (pos: number) => {
-      return linearScale(pos, [0, chromSizes[chrom]], pxRange);
+      return linearScale(pos, [1, chromSizes[chrom]], pxRange);
     };
 
     if (drawLabels) {
+
+      // FIXME: Something really strange is going on here for the "Y" letter.
+      // If exchanged for a different letter, this label is rendered, so is Y.
+      // If keeping the "Y", nothing is rendered specifically for the Y label
+      // More digging is needed here to understand this
+      let renderChrom = chrom;
+      if (chrom == "Y") {
+        renderChrom = "Y.";
+      }
       drawLabel(
         ctx,
-        chrom,
+        renderChrom,
         (pxRange[0] + pxRange[1]) / 2,
         STYLE.overviewTrack.labelPad,
         {
