@@ -1,6 +1,6 @@
 // draw basic objects and shapes
 
-import { STYLE } from "../constants";
+import { COLORS, STYLE } from "../constants";
 
 export function drawHorizontalLineInScale(
   ctx: CanvasRenderingContext2D,
@@ -60,7 +60,7 @@ export function drawLine(
 ) {
   const {
     lineWidth = 1,
-    color = "black",
+    color = COLORS.black,
     dashed = false,
     transpose_05 = true,
   } = style;
@@ -161,7 +161,12 @@ export function drawLabel(
   ctx.fillStyle = textColor;
   ctx.textAlign = textAlign;
   ctx.textBaseline = textBaseline;
-  ctx.fillText(label, leftX, topY);
+  if (label == "Y") {
+    console.log("ctx.fillText", label, 1880, 20);
+    ctx.fillText(label, 1880, 20);
+  } else {
+    ctx.fillText(label, leftX, topY);
+  }
 
   return box;
 }
