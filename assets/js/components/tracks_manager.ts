@@ -32,6 +32,7 @@ import {
 } from "./tracks/base_tracks/interactive_tools";
 import { getLinearScale } from "../draw/render_utils";
 import { keyLogger } from "./util/keylogger";
+import { TrackPage } from "./side_menu/track_page";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -174,16 +175,18 @@ export class TracksManager extends ShadowBaseElement {
     this.openTrackContextMenu = (track: DataTrack) => {
       const isDotTrack = track instanceof DotTrack;
 
-      const returnElements = getTrackContextMenuContent(
-        renderAll,
-        track,
-        isDotTrack,
-        getAnnotSources,
-        (id: string) => dataSource.getAnnotation(id),
-        this.moveTrack,
-      );
+      const trackPage = new TrackPage();
 
-      this.session.openContextMenu(track.label, returnElements);
+      // const returnElements = getTrackContextMenuContent(
+      //   renderAll,
+      //   track,
+      //   isDotTrack,
+      //   getAnnotSources,
+      //   (id: string) => dataSource.getAnnotation(id),
+      //   this.moveTrack,
+      // );
+
+      this.session.showContent(track.label, [trackPage]);
     };
 
     const covTracks = [];
@@ -425,7 +428,7 @@ export class TracksManager extends ShadowBaseElement {
       const entries = getAnnotationContextMenuContent(id, details);
       const content = [button];
       content.push(...entries);
-      () => this.session.openContextMenu("Annotations", content);
+      () => this.session.showContent("Annotations", content);
     };
 
     const track = new BandTrack(
@@ -515,7 +518,7 @@ export class TracksManager extends ShadowBaseElement {
         const content = [button];
         content.push(...entries);
 
-        this.session.openContextMenu("Variant", content);
+        this.session.showContent("Variant", content);
       },
       this.openTrackContextMenu,
       this.session,
@@ -553,7 +556,7 @@ export class TracksManager extends ShadowBaseElement {
         const entries = getGenesContextMenuContent(id, details);
         const content = [button];
         content.push(...entries);
-        this.session.openContextMenu("Transcript", content);
+        this.session.showContent("Transcript", content);
       },
       this.openTrackContextMenu,
       this.session,
@@ -616,64 +619,7 @@ function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
   parentContainer.appendChild(wrapper);
 }
 
-// FIXME: Where should this util go?
-// Into its own web component
-function getTrackContextMenuContent(
-  render: (settings: RenderSettings) => void,
-  track: DataTrack,
-  isDotTrack: boolean,
-  getAnnotationSources: GetAnnotSources,
-  getBands: (id: string) => Promise<RenderBand[]>,
-  moveTrack: (id: string, direction: "up" | "down") => void,
-): HTMLDivElement[] {
-  const buttonsDiv = document.createElement("div");
-  buttonsDiv.style.display = "flex";
-  buttonsDiv.style.flexDirection = "row";
-  buttonsDiv.style.flexWrap = "nowrap";
-  buttonsDiv.style.gap = `${SIZES.s}px`;
 
-  buttonsDiv.appendChild(
-    getIconButton(ICONS.up, "Up", () => moveTrack(track.id, "up")),
-  );
-  buttonsDiv.appendChild(
-    getIconButton(ICONS.down, "Down", () => moveTrack(track.id, "down")),
-  );
-  buttonsDiv.appendChild(
-    getIconButton(
-      track.getIsHidden() ? ICONS.hide : ICONS.show,
-      "Show / hide",
-      () => {
-        track.toggleHidden();
-        render({});
-      },
-    ),
-  );
-  buttonsDiv.appendChild(
-    getIconButton(
-      track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
-      "Collapse / expand",
-      () => {
-        track.toggleCollapsed();
-        render({});
-      },
-    ),
-  );
-
-  const returnElements = [buttonsDiv];
-
-  if (isDotTrack) {
-    const axisRow = getYAxisRow(render, track);
-    returnElements.push(axisRow);
-
-    const colorSelectRow = getColorSelectRow(
-      track as DotTrack,
-      getAnnotationSources,
-      getBands,
-    );
-    returnElements.push(colorSelectRow);
-  }
-  return returnElements;
-}
 
 function setupDrag(
   tracksContainer: HTMLElement,
@@ -718,76 +664,6 @@ function setupDrag(
   );
 }
 
-function getYAxisRow(
-  render: (settings: RenderSettings) => void,
-  track: DataTrack,
-): HTMLDivElement {
-  const axis = track.getYAxis();
 
-  const axisRow = getContainer("row");
-  axisRow.style.gap = "8px";
-  const yAxisLabel = document.createTextNode(`Y-axis range:`);
-  axisRow.appendChild(yAxisLabel);
-
-  const startNode = document.createElement("input");
-  startNode.type = "number";
-  startNode.value = axis.range[0].toString();
-  startNode.step = "0.1";
-  startNode.style.flex = "1 1 0px";
-  startNode.style.minWidth = "0";
-  axisRow.appendChild(startNode);
-
-  const endNode = document.createElement("input");
-  endNode.type = "number";
-  endNode.value = axis.range[1].toString();
-  endNode.step = "0.1";
-  endNode.style.flex = "1 1 0px";
-  endNode.style.minWidth = "0";
-
-  const onRangeChange = () => {
-    const parsedRange: Rng = [
-      parseFloat(startNode.value),
-      parseFloat(endNode.value),
-    ];
-    track.updateYAxis(parsedRange);
-    render({});
-  };
-
-  startNode.addEventListener("change", onRangeChange);
-  endNode.addEventListener("change", onRangeChange);
-  axisRow.appendChild(endNode);
-  return axisRow;
-}
-
-function getColorSelectRow(
-  track: DotTrack,
-  getAnnotationSources: GetAnnotSources,
-  getBands: (id: string) => Promise<RenderBand[]>,
-): HTMLDivElement {
-  const colorRow = getContainer("row");
-
-  const label = document.createTextNode("Color:");
-
-  const select = document.createElement("select") as HTMLSelectElement;
-  select.style.backgroundColor = COLORS.white;
-  const sources = getAnnotationSources();
-
-  populateSelect(select, sources, true);
-
-  select.addEventListener("change", async (_e) => {
-    const currentId = select.value;
-    if (currentId != "") {
-      const bands = await getBands(currentId);
-      track.updateColors(bands);
-    } else {
-      track.updateColors(null);
-    }
-  });
-
-  colorRow.appendChild(label);
-  colorRow.appendChild(select);
-
-  return colorRow;
-}
 
 customElements.define("gens-tracks", TracksManager);

@@ -1,6 +1,6 @@
-import { FONT_SIZE, FONT_WEIGHT, SIZES, STYLE, ZINDICES } from "../constants";
-import { removeChildren } from "../util/utils";
-import { ShadowBaseElement } from "./util/shadowbaseelement";
+import { FONT_SIZE, FONT_WEIGHT, SIZES, STYLE, ZINDICES } from "../../constants";
+import { removeChildren } from "../../util/utils";
+import { ShadowBaseElement } from "../util/shadowbaseelement";
 
 const style = STYLE.menu;
 

@@ -1,4 +1,4 @@
-import { SideMenu } from "../components/side_menu";
+import { SideMenu } from "../components/side_menu/side_menu";
 
 /**
  * The purpose of this class is to keep track of the web session,
@@ -38,7 +38,7 @@ export class GensSession {
     this.highlights = {};
   }
 
-  openContextMenu(header: string, content: HTMLDivElement[]) {
+  showContent(header: string, content: HTMLElement[]) {
     this.sideMenu.showContent(header, content);
   }
 
