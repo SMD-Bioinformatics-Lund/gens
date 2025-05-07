@@ -271,5 +271,8 @@ function setupShortcuts(
     if (e.key === "r") {
       inputControls.resetZoom();
     }
+    if (e.key === "m") {
+      inputControls.toggleMarkerMode();
+    }
   });
 }

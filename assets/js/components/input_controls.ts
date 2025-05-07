@@ -1,4 +1,4 @@
-import { ICONS } from "../constants";
+import { COLORS, ICONS } from "../constants";
 import {
   getPan,
   parseRegionDesignation,
@@ -84,6 +84,7 @@ export class InputControls extends HTMLElement {
 
   private onPositionChange: (newXRange: [number, number]) => void;
   private getMarkerOn: () => boolean;
+  private onToggleMarker: () => void;
 
   connectedCallback() {
     this.appendChild(template.content.cloneNode(true));
@@ -129,13 +130,14 @@ export class InputControls extends HTMLElement {
     onPositionChange: (newXRange: [number, number]) => void,
     onRemoveHighlights: () => void,
     getMarkerOn: () => boolean,
-    toggleMarker: () => void,
+    onToggleMarker: () => void,
   ) {
     this.region = new RegionController(fullRegion);
     this.updatePosition([fullRegion.start, fullRegion.end]);
     this.onPositionChange = onPositionChange;
     this.currChromLength = fullRegion.end;
     this.getMarkerOn = getMarkerOn;
+    this.onToggleMarker = onToggleMarker;
 
     this.panLeftButton.onclick = () => {
       this.panLeft();
@@ -154,13 +156,13 @@ export class InputControls extends HTMLElement {
     };
 
     this.removeHighlights.onclick = onRemoveHighlights;
-    this.toggleMarkerButton.onclick = toggleMarker;
+    this.toggleMarkerButton.onclick = onToggleMarker;
   }
 
   render(_settings: RenderSettings) {
     this.toggleMarkerButton.style.backgroundColor = this.getMarkerOn()
-      ? "green"
-      : "blue";
+      ? COLORS.lightGray
+      : "";
   }
 
   panLeft() {
@@ -197,6 +199,10 @@ export class InputControls extends HTMLElement {
     const xRange = [1, this.currChromLength] as Rng;
     this.updatePosition(xRange);
     this.onPositionChange(xRange);
+  }
+
+  toggleMarkerMode() {
+    this.onToggleMarker();
   }
 }
 
