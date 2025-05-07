@@ -172,7 +172,6 @@ export class TracksManager extends ShadowBaseElement {
     };
 
     this.openTrackContextMenu = (track: DataTrack) => {
-
       const isDotTrack = track instanceof DotTrack;
 
       const returnElements = getTrackContextMenuContent(
@@ -286,50 +285,14 @@ export class TracksManager extends ShadowBaseElement {
       track.renderLoading();
     });
 
-    this.setupDrag();
+    // this.setupDrag();
+    setupDrag(this.tracksContainer, session, getXRange, getChromosome, this.dragCallbacks);
 
     this.tracksContainer.addEventListener("click", () => {
       if (keyLogger.heldKeys.Control) {
         this.dragCallbacks.onZoomOut();
       }
     });
-  }
-
-  setupDrag() {
-    const onDragEnd = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
-      const xRange = this.getXRange();
-      if (xRange == null) {
-        console.error("No xRange set");
-      }
-
-      const yAxisWidth = STYLE.yAxis.width;
-
-      const pixelToPos = getLinearScale(
-        [yAxisWidth, this.tracksContainer.offsetWidth],
-        xRange,
-      );
-      const posStart = pixelToPos(Math.max(yAxisWidth, pxRangeX[0]));
-      const posEnd = pixelToPos(Math.max(yAxisWidth, pxRangeX[1]));
-
-      if (shiftPress) {
-        this.dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
-      } else {
-        const id = generateID();
-        this.dragCallbacks.addHighlight({
-          id,
-          chromosome: this.getChromosome(),
-          range: [posStart, posEnd],
-          color: COLORS.transparentBlue,
-        });
-      }
-    };
-
-    initializeDragSelect(
-      this.tracksContainer,
-      onDragEnd,
-      this.dragCallbacks.removeHighlight,
-      () => this.session.getMarkerMode(),
-    );
   }
 
   getDataTracks(): DataTrack[] {
@@ -654,6 +617,7 @@ function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
 }
 
 // FIXME: Where should this util go?
+// Into its own web component
 function getTrackContextMenuContent(
   render: (settings: RenderSettings) => void,
   track: DataTrack,
@@ -711,7 +675,53 @@ function getTrackContextMenuContent(
   return returnElements;
 }
 
-function getYAxisRow(render: (settings: RenderSettings) => void, track: DataTrack): HTMLDivElement {
+function setupDrag(
+  tracksContainer: HTMLElement,
+  session: GensSession,
+  getXRange: () => Rng,
+  getChromosome: () => string,
+  dragCallbacks: DragCallbacks,
+) {
+  const onDragEnd = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+    const xRange = getXRange();
+    if (xRange == null) {
+      console.error("No xRange set");
+    }
+
+    const yAxisWidth = STYLE.yAxis.width;
+
+    const pixelToPos = getLinearScale(
+      [yAxisWidth, tracksContainer.offsetWidth],
+      xRange,
+    );
+    const posStart = pixelToPos(Math.max(yAxisWidth, pxRangeX[0]));
+    const posEnd = pixelToPos(Math.max(yAxisWidth, pxRangeX[1]));
+
+    if (shiftPress) {
+      dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
+    } else {
+      const id = generateID();
+      dragCallbacks.addHighlight({
+        id,
+        chromosome: getChromosome(),
+        range: [posStart, posEnd],
+        color: COLORS.transparentBlue,
+      });
+    }
+  };
+
+  initializeDragSelect(
+    tracksContainer,
+    onDragEnd,
+    dragCallbacks.removeHighlight,
+    () => session.getMarkerMode(),
+  );
+}
+
+function getYAxisRow(
+  render: (settings: RenderSettings) => void,
+  track: DataTrack,
+): HTMLDivElement {
   const axis = track.getYAxis();
 
   const axisRow = getContainer("row");

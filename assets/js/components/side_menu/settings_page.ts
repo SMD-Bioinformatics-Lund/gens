@@ -1,9 +1,9 @@
-import { COLORS, ICONS, SIZES } from "../constants";
-import { removeChildren } from "../util/utils";
-import { DataTrack } from "./tracks/base_tracks/data_track";
-import { ChoiceSelect } from "./util/choice_select";
-import { getIconButton } from "./util/menu_utils";
-import { ShadowBaseElement } from "./util/shadowbaseelement";
+import { COLORS, ICONS, SIZES } from "../../constants";
+import { removeChildren } from "../../util/utils";
+import { DataTrack } from "../tracks/base_tracks/data_track";
+import { ChoiceSelect } from "../util/choice_select";
+import { getIconButton } from "../util/menu_utils";
+import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
 
 const template = document.createElement("template");
@@ -69,7 +69,7 @@ export class SettingsPage extends ShadowBaseElement {
     ) as HTMLDivElement;
   }
 
-  initialize(renderCallback: (settings: RenderSettings) => void) {
+  initialize() {
     this.isInitialized = true;
     this.choiceSelect.setChoices(
       getChoices(
@@ -79,7 +79,7 @@ export class SettingsPage extends ShadowBaseElement {
     );
     this.choiceSelect.initialize(this.onAnnotationChanged);
 
-    renderCallback({});
+    this.onChange();
   }
 
   render(_settings: RenderSettings) {

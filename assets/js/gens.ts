@@ -4,7 +4,7 @@ import "./components/util/popup";
 import "./components/util/shadowbaseelement";
 import "./components/util/choice_select";
 import "./components/side_menu";
-import "./components/settings_page";
+import "./components/side_menu/settings_page";
 import "./components/header_info";
 import "./components/util/marker";
 
@@ -14,7 +14,7 @@ import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu";
-import { SettingsPage } from "./components/settings_page";
+import { SettingsPage } from "./components/side_menu/settings_page";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/session";
 

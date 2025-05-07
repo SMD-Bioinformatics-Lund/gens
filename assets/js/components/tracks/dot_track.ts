@@ -1,16 +1,17 @@
 import { STYLE } from "../../constants";
 import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
 import { GensSession } from "../../state/session";
+import { pointInRange } from "../../util/utils";
 import { DataTrack } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {
   startExpanded: boolean;
 
   // FIXME: Look into color bands next
-  private _colorBands: RenderBand[] | null = null;
+  private colorBands: RenderBand[] | null = null;
 
   updateColors(colorBands: RenderBand[] | null) {
-    this._colorBands = colorBands;
+    this.colorBands = colorBands;
     this.render({});
   }
 
@@ -66,21 +67,21 @@ export class DotTrack extends DataTrack {
     );
 
     // FIXME: Try adding Canvas bands instead
-    // let coloredDots = [...dotsInRange];
-    // if (this.colorBands != null) {
-    //   console.log("Looping the bands", coloredDots);
-    //   for (const band of this.colorBands) {
-    //     coloredDots
-    //       .filter((dot) => pointInRange(dot.x, [band.start, band.end]))
-    //       .forEach((dot) => {
-    //         if (band.color) {
-    //           dot.color = band.color;
-    //         }
-    //       });
-    //   }
-    // }
+    let coloredDots = [...dotsInRange];
+    if (this.colorBands != null) {
+      console.log("Looping the bands", coloredDots);
+      for (const band of this.colorBands) {
+        coloredDots
+          .filter((dot) => pointInRange(dot.x, [band.start, band.end]))
+          .forEach((dot) => {
+            if (band.color) {
+              dot.color = band.color;
+            }
+          });
+      }
+    }
 
-    drawDotsScaled(this.ctx, dotsInRange, xScale, yScale);
+    drawDotsScaled(this.ctx, coloredDots, xScale, yScale);
 
     super.drawEnd();
   }
