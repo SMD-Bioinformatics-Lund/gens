@@ -126,10 +126,7 @@ export class SettingsPage extends ShadowBaseElement {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
 
-    console.log("Getting sources", settings);
-
     if (!settings.selectedOnly) {
-      console.log("Returning", this.annotationSources);
       return this.annotationSources.map((source) => {
         return {
           id: source.track_id,
@@ -139,7 +136,6 @@ export class SettingsPage extends ShadowBaseElement {
     }
 
     if (this.choiceSelect == null) {
-      console.log("Returning default");
       return this.defaultAnnots;
     }
 
@@ -209,7 +205,7 @@ function getTracksSection(
     );
     buttonsDiv.appendChild(
       getIconButton(
-        track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
+        track.getIsCollapsed() ? ICONS.expand : ICONS.collapse,
         "Collapse / expand",
         () => onToggleCollapse(track),
       ),

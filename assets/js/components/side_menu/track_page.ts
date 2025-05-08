@@ -48,10 +48,10 @@ template.innerHTML = String.raw`
     }
   </style>
   <div id="actions" class="row">
-    <div label="Move up" class="button fas ${ICONS.up}"></div>
-    <div label="Move down" class="button fas ${ICONS.down}"></div>
-    <div label="Show / hide" class="button fas ${ICONS.show}"></div>
-    <div label="Collapse / expand" class="button fas ${ICONS.maximize}"></div>
+    <div id="move-up" label="Move up" class="button fas ${ICONS.up}"></div>
+    <div id="move-down" label="Move down" class="button fas ${ICONS.down}"></div>
+    <div id="toggle-hide" label="Show / hide" class="button fas ${ICONS.show}"></div>
+    <div id="toggle-collapse" label="Collapse / expand" class="button fas ${ICONS.expand}"></div>
   </div>
   <div id="y-axis" class="row">
     <div>Y-axis: </div>
@@ -72,9 +72,12 @@ interface TrackPageSettings {
 export class TrackPage extends ShadowBaseElement {
   isInitialized: boolean = false;
 
-  private onChange: () => void;
+  private trackId: string;
   private settings: TrackPageSettings;
   private getAnnotationSources: GetAnnotSources;
+
+  private getIsHidden: () => boolean;
+  private getIsCollapsed: () => boolean;
 
   private actions: HTMLDivElement;
   private yAxis: HTMLDivElement;
@@ -83,20 +86,19 @@ export class TrackPage extends ShadowBaseElement {
   private yAxisEnd: HTMLSelectElement;
   private colorSelect: HTMLSelectElement;
 
+  private moveUp: HTMLDivElement;
+  private moveDown: HTMLDivElement;
+  private toggleHide: HTMLDivElement;
+  private toggleCollapse: HTMLDivElement;
+
   constructor() {
     super(template);
   }
 
   // Before being connected to the DOM
-  configure(
-    onChange: () => void,
-    settings: TrackPageSettings,
-    // FIXME: Part of a more abstract object?
-    getAnnotationSources: GetAnnotSources,
-  ) {
-    this.onChange = onChange;
+  configure(trackId: string, settings: TrackPageSettings) {
+    this.trackId = trackId;
     this.settings = settings;
-    this.getAnnotationSources = getAnnotationSources;
   }
 
   connectedCallback(): void {
@@ -108,19 +110,57 @@ export class TrackPage extends ShadowBaseElement {
     this.yAxisEnd = this.root.querySelector("#y-axis-end");
     this.colorSelect = this.root.querySelector("#color-select");
 
+    this.moveUp = this.root.querySelector("#move-up");
+    this.moveDown = this.root.querySelector("#move-down");
+    this.toggleHide = this.root.querySelector("#toggle-hide");
+    this.toggleCollapse = this.root.querySelector("#toggle-collapse");
+
     this.yAxis.hidden = !this.settings.showYAxis;
     this.colors.hidden = !this.settings.showColor;
-
-    if (this.settings.showColor) {
-      const annotSources = this.getAnnotationSources({ selectedOnly: false });
-      populateSelect(this.colorSelect, annotSources, true);
-    }
   }
 
   // After being connected to the DOM
-  initialize() {
+  initialize(
+    getAnnotationSources: GetAnnotSources,
+    moveTrack: (direction: "up" | "down") => void,
+    toggleHidden: () => void,
+    toggleCollapsed: () => void,
+    getIsHidden: () => boolean,
+    getIsCollapsed: () => boolean,
+  ) {
     this.isInitialized = true;
-    this.onChange();
+    this.getIsHidden = getIsHidden;
+    this.getIsCollapsed = getIsCollapsed;
+    // this.onChange();
+
+    if (this.settings.showColor) {
+      const annotSources = getAnnotationSources({ selectedOnly: false });
+      populateSelect(this.colorSelect, annotSources, true);
+    }
+
+    this.moveUp.addEventListener("click", () => {
+      moveTrack("up");
+    });
+    this.moveDown.addEventListener("click", () => {
+      moveTrack("down");
+    });
+    this.toggleHide.addEventListener("click", () => {
+      toggleHidden();
+    });
+    this.toggleCollapse.addEventListener("click", () => {
+      toggleCollapsed();
+    });
+  }
+
+  render(_settings: RenderSettings) {
+
+    console.log("Render triggered");
+
+    const hideIcon = this.getIsHidden() ? ICONS.hide : ICONS.show
+    this.toggleHide.classList = `button fas ${hideIcon}`
+
+    const collapseIcon = this.getIsCollapsed() ? ICONS.collapse : ICONS.expand
+    this.toggleCollapse.classList = `button fas ${collapseIcon}`
   }
 }
 
@@ -158,7 +198,7 @@ function getTrackContextMenuContent(
   );
   buttonsDiv.appendChild(
     getIconButton(
-      track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
+      track.getIsCollapsed() ? ICONS.expand : ICONS.collapse,
       "Collapse / expand",
       () => {
         track.toggleCollapsed();

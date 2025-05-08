@@ -103,6 +103,8 @@ export class TracksManager extends ShadowBaseElement {
   openTrackContextMenu: (track: DataTrack) => void;
   session: GensSession;
 
+  trackPages: Record<string, TrackPage> = {};
+
   constructor() {
     super(template);
   }
@@ -175,25 +177,34 @@ export class TracksManager extends ShadowBaseElement {
     this.openTrackContextMenu = (track: DataTrack) => {
       const isDotTrack = track instanceof DotTrack;
 
-      const trackPage = new TrackPage();
+      if (this.trackPages[track.id] == null) {
+        const trackPage = new TrackPage();
 
-      const trackSettings = {
-        showYAxis: isDotTrack,
-        showColor: isDotTrack,
-      };
+        const trackSettings = {
+          showYAxis: isDotTrack,
+          showColor: isDotTrack,
+        };
 
-      trackPage.configure(() => renderAll({}), trackSettings, getAnnotSources);
+        trackPage.configure(track.id, trackSettings);
+        this.trackPages[track.id] = trackPage;
+      }
 
-      // const returnElements = getTrackContextMenuContent(
-      //   renderAll,
-      //   track,
-      //   isDotTrack,
-      //   getAnnotSources,
-      //   (id: string) => dataSource.getAnnotation(id),
-      //   this.moveTrack,
-      // );
+      const trackPage = this.trackPages[track.id];
 
       this.session.showContent(track.label, [trackPage]);
+
+      trackPage.initialize(
+        getAnnotSources,
+        (direction: "up" | "down") => this.moveTrack(track.id, direction),
+        () => {
+          track.toggleHidden(), renderAll({});
+        },
+        () => {
+          track.toggleCollapsed(), renderAll({});
+        },
+        () => track.getIsHidden(),
+        () => track.getIsCollapsed(),
+      );
     };
 
     const covTracks = [];
@@ -318,24 +329,32 @@ export class TracksManager extends ShadowBaseElement {
   getTrackById(trackId: string): DataTrack {
     for (let i = 0; i < this.dataTracks.length; i++) {
       if (this.dataTracks[i].id == trackId) {
-        return this.dataTracks[i];
+        const track = this.dataTracks[i];
+        return track;
       }
     }
     console.error("Did not find any track with ID", trackId);
   }
 
+  // FIXME: Hmm, messy with the tracks containers, think about how to simplify this
   moveTrack(trackId: string, direction: "up" | "down") {
     const track = this.getTrackById(trackId);
     const trackIndex = this.dataTracks.indexOf(track);
     const shift = direction == "up" ? -1 : 1;
 
-    const container = track.parentNode;
+    const trackContainer = track.parentElement;
+
+    // const singleTrackContainer = track.parentNode;
+    const trackSContainer = trackContainer.parentNode;
     if (direction == "up") {
-      container.insertBefore(track, this.dataTracks[trackIndex - 1]);
+      trackSContainer.insertBefore(
+        trackContainer,
+        this.dataTracks[trackIndex - 1].parentNode,
+      );
     } else {
-      container.insertBefore(
-        track,
-        this.dataTracks[trackIndex + 1].nextSibling,
+      trackSContainer.insertBefore(
+        trackContainer,
+        this.dataTracks[trackIndex + 1].parentNode.nextSibling,
       );
     }
 
@@ -406,6 +425,12 @@ export class TracksManager extends ShadowBaseElement {
     );
 
     this.updateAnnotationTracks();
+
+    console.log("Rendering", Object.values(this.trackPages));
+
+    for (const trackPage of Object.values(this.trackPages)) {
+      trackPage.render(settings);
+    }
 
     this.ideogramTrack.render(settings);
 
