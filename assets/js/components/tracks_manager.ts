@@ -60,6 +60,12 @@ template.innerHTML = String.raw`
       max-width: 100%;
       box-sizing: border-box;
     }
+    #tracks-container.grabbable {
+      cursor: grab;
+    }
+    #tracks-container.grabbing {
+      cursor: grabbing;
+    }
   </style>
   <div id="top-container"></div>
   <div id="tracks-container"></div>
@@ -170,10 +176,12 @@ export class TracksManager extends ShadowBaseElement {
     let dragEndX: number | null = null;
 
     let isSpaceDown = false;
+    let isMouseDown = false;
     window.addEventListener("keydown", (event) => {
       if (event.code === "Space") {
         isSpaceDown = true;
-        document.body.style.cursor = "grab";
+        this.tracksContainer.classList.add("grabbable");
+        // document.body.style.cursor = "grab";
         event.preventDefault();
       }
     });
@@ -181,44 +189,52 @@ export class TracksManager extends ShadowBaseElement {
     window.addEventListener("keyup", (event) => {
       if (event.code === "Space") {
         isSpaceDown = false;
-        document.body.style.cursor = "";
+        this.tracksContainer.classList.remove("grabbable");
+        this.tracksContainer.classList.remove("grabbing");
       }
     });
 
-    this.tracksContainer.addEventListener("mousedown", (event) => {
+    this.tracksContainer.addEventListener("pointerdown", (event) => {
+
+      isMouseDown = true;
+
       if (isSpaceDown) {
-        dragStartX = event.offsetX;
+        dragStartX = event.offsetX; 
+        this.tracksContainer.setPointerCapture(event.pointerId);
+        this.tracksContainer.classList.add("grabbing");
       }
     });
+  
+    this.tracksContainer.addEventListener("pointerup", (event) => {
 
-    this.tracksContainer.addEventListener("mousemove", (event) => {
-      if (!isSpaceDown) {
-        return;
+      isMouseDown = false;
+
+      if (event.button === 0) { 
+
+        const dragEndX = event.offsetX;
+
+        this.tracksContainer.releasePointerCapture(event.pointerId);
+        this.tracksContainer.classList.remove("grabbing");
+        
+        const inverted = true;
+        const invertedXScale = this.getXScale(inverted);
+  
+        const scaledStart = invertedXScale(dragStartX);
+        const scaledEnd = invertedXScale(dragEndX);
+  
+        document.body.style.cursor = "";
+  
+        console.log(
+          "Dragged from",
+          dragStartX,
+          "to",
+          dragEndX,
+          `(${scaledStart} - ${scaledEnd}), ${scaledEnd - scaledStart}`,
+        );
+  
+        onPan(scaledEnd - scaledStart)
       }
 
-      dragEndX = event.offsetX;
-      // this.panContent(this.dragEnd.x - this.dragStart.x);
-      // dragStartX = dragEndX;
-    });
-
-    this.tracksContainer.addEventListener("mouseup", (_event) => {
-      const dragDistance = Math.abs(dragEndX - dragStartX);
-      const inverted = true;
-      const invertedXScale = this.getXScale(inverted);
-      const scaledDistance = invertedXScale(dragDistance);
-
-      const scaledStart = invertedXScale(dragStartX);
-      const scaledEnd = invertedXScale(dragEndX);
-
-      console.log(
-        "Dragged from",
-        dragStartX,
-        "to",
-        dragEndX,
-        `(${scaledStart} - ${scaledEnd}), ${scaledEnd - scaledStart}`,
-      );
-
-      onPan(scaledEnd - scaledStart)
 
       dragStartX = null;
       dragEndX = null;

@@ -165,8 +165,6 @@ export abstract class DataTrack extends CanvasTrack {
       { leading: false, trailing: true },
     );
 
-    console.log("Rendering with settings", settings);
-
     if (settings.dataUpdated || this.renderData == null) {
       if (!settings.positionOnly) {
         this.renderLoading();
