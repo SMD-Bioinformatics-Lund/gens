@@ -177,6 +177,13 @@ export class TracksManager extends ShadowBaseElement {
 
       const trackPage = new TrackPage();
 
+      const trackSettings = {
+        showYAxis: isDotTrack,
+        showColor: isDotTrack,
+      };
+
+      trackPage.configure(() => renderAll({}), trackSettings);
+
       // const returnElements = getTrackContextMenuContent(
       //   renderAll,
       //   track,
@@ -256,7 +263,7 @@ export class TracksManager extends ShadowBaseElement {
     const overviewTrackBaf = this.getOverviewTrack(
       "overview_baf",
       "Overview (baf)",
-      () => dataSource.getOverviewCovData(sampleIds[0]),
+      () => dataSource.getOverviewBafData(sampleIds[0]),
       BAF_Y_RANGE,
       chromSizes,
       chromClick,
@@ -289,7 +296,13 @@ export class TracksManager extends ShadowBaseElement {
     });
 
     // this.setupDrag();
-    setupDrag(this.tracksContainer, session, getXRange, getChromosome, this.dragCallbacks);
+    setupDrag(
+      this.tracksContainer,
+      session,
+      getXRange,
+      getChromosome,
+      this.dragCallbacks,
+    );
 
     this.tracksContainer.addEventListener("click", () => {
       if (keyLogger.heldKeys.Control) {
@@ -619,8 +632,6 @@ function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
   parentContainer.appendChild(wrapper);
 }
 
-
-
 function setupDrag(
   tracksContainer: HTMLElement,
   session: GensSession,
@@ -663,7 +674,5 @@ function setupDrag(
     () => session.getMarkerMode(),
   );
 }
-
-
 
 customElements.define("gens-tracks", TracksManager);

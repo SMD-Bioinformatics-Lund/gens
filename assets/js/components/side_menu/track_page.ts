@@ -9,24 +9,35 @@ const template = document.createElement("template");
 template.innerHTML = String.raw`
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* FIXME: How to refactor here */
+    /* Insist to hide even if display: flex if "hidden" is set */
+    :host [hidden] {
+      display: none !important;
+    }
     .row {
       display: flex;
       flex-direction: row;
+      align-items: center;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      padding-top: ${SIZES.s}px;
+      gap: 2px;
     }
-    #button-row {
+    #buttons {
       flex-wrap: nowrap;
       gap: ${SIZES.s}px;
     }
-    #y-axis-row {
+    #y-axis {
 
     }
-    #y-axis-row input {
+    #y-axis input {
       flex: 1 1 0px;
       min-width: 0;
     }
-    #color-row {
-
+    #colors {
+      justify-content: space-between;
+    }
+    #color-select {
+      background-color: ${COLORS.white};
     }
     .button {
       cursor: pointer;
@@ -36,37 +47,71 @@ template.innerHTML = String.raw`
       borderRadius: 4px;
     }
   </style>
-  <div id="button-row" class="row">
+  <div id="actions" class="row">
     <div label="Move up" class="button fas ${ICONS.up}"></div>
     <div label="Move down" class="button fas ${ICONS.down}"></div>
     <div label="Show / hide" class="button fas ${ICONS.show}"></div>
     <div label="Collapse / expand" class="button fas ${ICONS.maximize}"></div>
   </div>
-  <div id="y-axis-row" class="row">
-    <input type="number" step="0.1">
-    <input type="number" step="0.1">
+  <div id="y-axis" class="row">
+    <div>Y-axis: </div>
+    <input id="y-axis-start" type="number" step="0.1">
+    <input id="y-axis-end" type="number" step="0.1">
   </div>
-  <div id="color-row" class="row"></div>
+  <div id="colors" class="row">
+    <div>Color by:</div>
+    <select id="color-select">
+  </div>
 `;
+
+interface TrackPageSettings {
+  showYAxis: boolean,
+  showColor: boolean,
+}
 
 export class TrackPage extends ShadowBaseElement {
   isInitialized: boolean = false;
-  onChange: () => void;
+
+  private onChange: () => void;
+  private settings: TrackPageSettings;
+
+  private actions: HTMLDivElement;
+  private yAxis: HTMLDivElement;
+  private colors: HTMLDivElement;
+  private yAxisStart: HTMLSelectElement;
+  private yAxisEnd: HTMLSelectElement;
+  private colorSelect: HTMLSelectElement;
 
   constructor() {
     super(template);
   }
 
-  connectedCallback(): void {}
+  // Before being connected to the DOM
+  configure(onChange: () => void, settings: TrackPageSettings) {
+    this.onChange = onChange;
+    this.settings = settings;
+  }
 
+  connectedCallback(): void {
+    this.actions = this.root.querySelector("#actions");
+    this.yAxis = this.root.querySelector("#y-axis");
+    this.colors = this.root.querySelector("#colors");
+
+    this.yAxisStart = this.root.querySelector("#y-axis-start");
+    this.yAxisEnd = this.root.querySelector("#y-axis-end");
+    this.colorSelect = this.root.querySelector("#color-select");
+
+    console.log(this.settings);
+
+    this.yAxis.hidden = !this.settings.showYAxis;
+    this.colors.hidden = !this.settings.showColor;
+  }
+
+  // After being connected to the DOM
   initialize() {
     this.isInitialized = true;
 
     this.onChange();
-  }
-
-  setSources(onChange: () => void) {
-    this.onChange = onChange;
   }
 }
 

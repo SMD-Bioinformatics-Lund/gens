@@ -213,7 +213,8 @@ export class DataTrack extends CanvasTrack {
   }
 
   setupLabel(onClick: () => void): HoverBox {
-    const yAxisWidth = this.settings.yAxis != null ? STYLE.yAxis.width : 0;
+    const yAxisWidth = STYLE.yAxis.width;
+    // const yAxisWidth = this.settings.yAxis != null ? STYLE.yAxis.width : 0;
     const labelBox = this.drawTrackLabel(yAxisWidth);
     const hoverBox = {
       label: this.label,
