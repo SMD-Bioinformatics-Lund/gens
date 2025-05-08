@@ -204,7 +204,7 @@ export class TracksManager extends ShadowBaseElement {
         },
         () => track.getIsHidden(),
         () => track.getIsCollapsed(),
-        () => track.getYAxis().range,
+        isDotTrack ? () => track.getYAxis().range : null,
         (newY: Rng) => {
           track.updateYAxis(newY);
           render({});

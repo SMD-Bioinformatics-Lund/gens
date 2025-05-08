@@ -119,29 +119,30 @@ export class TrackPage extends ShadowBaseElement {
 
   // After being connected to the DOM
   initialize(
-    getAnnotationSources: GetAnnotSources,
+    getBandTracks: GetAnnotSources,
     moveTrack: (direction: "up" | "down") => void,
     toggleHidden: () => void,
     toggleCollapsed: () => void,
     getIsHidden: () => boolean,
     getIsCollapsed: () => boolean,
-    getYAxis: () => Rng,
+    getYAxis: (() => Rng) | null,
     setYAxis: (newAxis: Rng) => void,
-    onColorSelected: (annotId: string) => void
+    onColorSelected: (annotId: string) => void,
   ) {
     this.isInitialized = true;
     this.getIsHidden = getIsHidden;
     this.getIsCollapsed = getIsCollapsed;
-    // this.onChange();
 
     if (this.settings.showColor) {
-      const annotSources = getAnnotationSources({ selectedOnly: false });
+      const annotSources = getBandTracks({ selectedOnly: false });
       populateSelect(this.colorSelect, annotSources, true);
     }
 
-    const currY = getYAxis();
-    this.yAxisStart.value = currY[0].toString();
-    this.yAxisEnd.value = currY[1].toString();
+    if (this.settings.showYAxis) {
+      const currY = getYAxis();
+      this.yAxisStart.value = currY[0].toString();
+      this.yAxisEnd.value = currY[1].toString();
+    }
 
     this.moveUp.addEventListener("click", () => {
       moveTrack("up");
@@ -156,33 +157,36 @@ export class TrackPage extends ShadowBaseElement {
       toggleCollapsed();
     });
 
-    const getCurrRange = (): Rng => {
-      return [
-        parseFloat(this.yAxisStart.value),
-        parseFloat(this.yAxisEnd.value)
-      ]
+    if (this.settings.showYAxis) {
+      const getCurrRange = (): Rng => {
+        return [
+          parseFloat(this.yAxisStart.value),
+          parseFloat(this.yAxisEnd.value),
+        ];
+      };
+
+      this.yAxisStart.addEventListener("change", () => {
+        setYAxis(getCurrRange());
+      });
+      this.yAxisEnd.addEventListener("change", () => {
+        setYAxis(getCurrRange());
+      });
     }
 
-    this.yAxisStart.addEventListener("change", () => {
-      setYAxis(getCurrRange());
-    })
-    this.yAxisEnd.addEventListener("change", () => {
-      setYAxis(getCurrRange());
-    })
-
-    this.colorSelect.addEventListener("change", () => {
-      const id = this.colorSelect.value || null;
-      onColorSelected(id);
-    })
+    if (this.settings.showColor) {
+      this.colorSelect.addEventListener("change", () => {
+        const id = this.colorSelect.value || null;
+        onColorSelected(id);
+      });
+    }
   }
 
   render(_settings: RenderSettings) {
+    const hideIcon = this.getIsHidden() ? ICONS.hide : ICONS.show;
+    this.toggleHide.classList = `button fas ${hideIcon}`;
 
-    const hideIcon = this.getIsHidden() ? ICONS.hide : ICONS.show
-    this.toggleHide.classList = `button fas ${hideIcon}`
-
-    const collapseIcon = this.getIsCollapsed() ? ICONS.collapse : ICONS.expand
-    this.toggleCollapse.classList = `button fas ${collapseIcon}`
+    const collapseIcon = this.getIsCollapsed() ? ICONS.collapse : ICONS.expand;
+    this.toggleCollapse.classList = `button fas ${collapseIcon}`;
   }
 }
 
