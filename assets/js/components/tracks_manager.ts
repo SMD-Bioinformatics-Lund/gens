@@ -3,7 +3,6 @@ import "./tracks/band_track";
 import "./tracks/dot_track";
 import "./tracks/ideogram_track";
 import "./tracks/overview_track";
-import "./tracks/multi_track";
 import { IdeogramTrack } from "./tracks/ideogram_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
@@ -109,7 +108,9 @@ export class TracksManager extends ShadowBaseElement {
 
   connectedCallback() {
     window.addEventListener("resize", () => {
-      this.renderAll({ resized: true });
+      if (this.renderAll != null) {
+        this.renderAll({ resized: true });
+      }
     });
 
     this.topContainer = this.root.querySelector(
@@ -134,6 +135,7 @@ export class TracksManager extends ShadowBaseElement {
     getXRange: () => Rng,
     onZoomIn: (range: Rng) => void,
     onZoomOut: () => void,
+    onPan: (panX: number) => void,
     getAnnotSources: GetAnnotSources,
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
@@ -162,6 +164,64 @@ export class TracksManager extends ShadowBaseElement {
         this.dataTracks.splice(newIndex, 0, moved);
         render({});
       },
+    });
+
+    let dragStartX: number | null = null;
+    let dragEndX: number | null = null;
+
+    let isSpaceDown = false;
+    window.addEventListener("keydown", (event) => {
+      if (event.code === "Space") {
+        isSpaceDown = true;
+        document.body.style.cursor = "grab";
+        event.preventDefault();
+      }
+    });
+
+    window.addEventListener("keyup", (event) => {
+      if (event.code === "Space") {
+        isSpaceDown = false;
+        document.body.style.cursor = "";
+      }
+    });
+
+    this.tracksContainer.addEventListener("mousedown", (event) => {
+      if (isSpaceDown) {
+        dragStartX = event.offsetX;
+      }
+    });
+
+    this.tracksContainer.addEventListener("mousemove", (event) => {
+      if (!isSpaceDown) {
+        return;
+      }
+
+      dragEndX = event.offsetX;
+      // this.panContent(this.dragEnd.x - this.dragStart.x);
+      // dragStartX = dragEndX;
+    });
+
+    this.tracksContainer.addEventListener("mouseup", (_event) => {
+      const dragDistance = Math.abs(dragEndX - dragStartX);
+      const inverted = true;
+      const invertedXScale = this.getXScale(inverted);
+      const scaledDistance = invertedXScale(dragDistance);
+
+      const scaledStart = invertedXScale(dragStartX);
+      const scaledEnd = invertedXScale(dragEndX);
+
+      console.log(
+        "Dragged from",
+        dragStartX,
+        "to",
+        dragEndX,
+        `(${scaledStart} - ${scaledEnd}), ${scaledEnd - scaledStart}`,
+      );
+
+      onPan(scaledEnd - scaledStart)
+
+      dragStartX = null;
+      dragEndX = null;
     });
 
     this.dragCallbacks = {
@@ -413,13 +473,15 @@ export class TracksManager extends ShadowBaseElement {
     });
   }
 
-  getXScale() {
+  getXScale(inverted: boolean = false): Scale {
     const xRange = this.getXRange();
     const yAxisWidth = STYLE.yAxis.width;
-    const xScale = getLinearScale(xRange, [
-      yAxisWidth,
-      this.tracksContainer.offsetWidth,
-    ]);
+
+    const xDomain: Rng = [yAxisWidth, this.tracksContainer.offsetWidth];
+
+    const xScale = !inverted
+      ? getLinearScale(xRange, xDomain)
+      : getLinearScale(xDomain, xRange);
     return xScale;
   }
 
@@ -483,6 +545,7 @@ export class TracksManager extends ShadowBaseElement {
       sourceId,
       label,
       trackHeight.thin,
+      this.getXRange,
       () =>
         getAnnotTrackData(
           sourceId,
@@ -509,6 +572,7 @@ export class TracksManager extends ShadowBaseElement {
       trackHeight.thick,
       settings.startExpanded,
       settings.yAxis,
+      this.getXRange,
       async () => {
         const data = await dataFn(sampleId);
         // const data = await this.dataSource.getCovData(sampleId);
@@ -538,6 +602,7 @@ export class TracksManager extends ShadowBaseElement {
       id,
       label,
       trackHeight.thin,
+      this.getXRange,
       async () => {
         return {
           xRange: this.getXRange(),
@@ -584,6 +649,7 @@ export class TracksManager extends ShadowBaseElement {
       id,
       label,
       trackHeight.thin,
+      this.getXRange,
       async () => {
         return {
           xRange: this.getXRange(),

@@ -70,7 +70,7 @@ export abstract class CanvasTrack extends ShadowBaseElement {
       throw Error(
         `Component must be attached to DOM before being initialized (label: ${this.label})`,
       );
-    } 
+    }
 
     this.canvas = this.root.getElementById("canvas") as HTMLCanvasElement;
     this.currentHeight = this.defaultTrackHeight;

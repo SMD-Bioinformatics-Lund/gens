@@ -18,6 +18,7 @@ export class BandTrack extends DataTrack {
     id: string,
     label: string,
     trackHeight: number,
+    getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
     openTrackContextMenu: (track: DataTrack) => void,
@@ -26,7 +27,7 @@ export class BandTrack extends DataTrack {
     super(
       id,
       label,
-      () => this.renderData.xRange,
+      getXRange,
       // FIXME: Supply xScale directly?
       () => {
         const xRange = this.renderData.xRange;
@@ -65,7 +66,7 @@ export class BandTrack extends DataTrack {
     this.initializeExpander("contextmenu", startExpanded, onExpand);
   }
 
-  draw() {
+  override draw() {
     super.drawStart();
 
     const { bands, xRange } = this.renderData as BandTrackData;

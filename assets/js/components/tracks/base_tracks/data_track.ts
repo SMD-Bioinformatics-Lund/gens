@@ -179,7 +179,7 @@ export abstract class DataTrack extends CanvasTrack {
 
   abstract draw(): void;
 
-  drawStart() {
+  protected drawStart() {
     super.syncDimensions();
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
@@ -220,7 +220,7 @@ export abstract class DataTrack extends CanvasTrack {
     }
   }
 
-  drawEnd() {
+  protected drawEnd() {
     const labelBox = this.setupLabel(() => this.openTrackContextMenu(this));
     setCanvasPointerCursor(
       this.canvas,
