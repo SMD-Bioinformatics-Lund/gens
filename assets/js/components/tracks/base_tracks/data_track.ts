@@ -23,7 +23,7 @@ interface Settings {
   } | null;
 }
 
-const DEBOUNCE_DELAY = 500;
+const DEBOUNCE_DELAY = 50;
 
 const Y_PAD = SIZES.s;
 
