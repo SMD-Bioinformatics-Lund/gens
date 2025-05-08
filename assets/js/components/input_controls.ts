@@ -26,11 +26,11 @@ template.innerHTML = String.raw`
       <button title="Run search" id="submit" class='button pan'>
         <span class="fas ${ICONS.search}"></span>
       </button>
-      <button title="Remove highlights" id="remove-highlights" class='button pan'>
-        <span class="fas ${ICONS.xmark}"></span>
-      </button>
       <button title="Toggle marker mode" id="toggle-marker" class='button pan'>
         <span class="fas ${ICONS.marker}"></span>
+      </button>
+      <button title="Remove highlights" id="remove-highlights" class='button pan'>
+        <span class="fas ${ICONS.xmark}"></span>
       </button>
   </div>
 `;

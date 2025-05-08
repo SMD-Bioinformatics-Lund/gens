@@ -32,8 +32,8 @@ export const ICONS = {
   marker: "fa-marker",
   show: "fa-eye",
   hide: "fa-eye-slash",
-  minimize: "fa-minimize",
-  maximize: "fa-maximize",
+  collapse: "fa-minimize",
+  expand: "fa-maximize",
 }
 
 export const COLORS = {

@@ -35,6 +35,11 @@ export class DataTrack extends CanvasTrack {
   getYScale: () => Scale;
   openTrackContextMenu: (track: DataTrack) => void;
 
+  private colorBands: RenderBand[] = [];
+  setColorBands(colorBands: RenderBand[]) {
+    this.colorBands = colorBands;
+  }
+
   // FIXME: All of this state should live elsewhere I think
   // Controlled by the tracks_manager perhaps
   private isHidden: boolean = false;
@@ -179,6 +184,22 @@ export class DataTrack extends CanvasTrack {
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
+    const xScale = this.getXScale();
+
+    for (const band of this.colorBands) {
+      const box = {
+        x1: xScale(band.start),
+        x2: xScale(band.end),
+        y1: 0,
+        y2: this.dimensions.height,
+      }
+      drawBox(
+        this.ctx,
+        box,
+        { fillColor: band.color, alpha: 0.3 },
+      );
+    }
+
     // Color fill Y axis area
     drawBox(
       this.ctx,
@@ -213,7 +234,7 @@ export class DataTrack extends CanvasTrack {
   }
 
   setupLabel(onClick: () => void): HoverBox {
-    const yAxisWidth = this.settings.yAxis != null ? STYLE.yAxis.width : 0;
+    const yAxisWidth = STYLE.yAxis.width;
     const labelBox = this.drawTrackLabel(yAxisWidth);
     const hoverBox = {
       label: this.label,

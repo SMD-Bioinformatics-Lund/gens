@@ -17,6 +17,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Tracks can be shown / hidden, collapsed and moved
  - Tracks menu and customize Y-axis
  - Drag and drop of tracks
+ - Color backgrounds in any data track by any annotation track
 
 ### Changed
  - Resolution increased 2x for tracks.

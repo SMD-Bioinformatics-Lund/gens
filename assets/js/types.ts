@@ -1,213 +1,213 @@
 interface ApiAnnotationTrack {
-  track_id: string,
-  name: string,
-  description: string,
-  maintainer: string,
-  metadata: {key: string, value: string}[],
-  genome_build: number
+  track_id: string;
+  name: string;
+  description: string;
+  maintainer: string;
+  metadata: { key: string; value: string }[];
+  genome_build: number;
 }
 
 interface ApiSimplifiedAnnotation {
-  record_id: string,
-  name: string,
-  type: string,
-  start: number,
-  end: number,
-  chrom: string,
-  color: string | null
+  record_id: string;
+  name: string;
+  type: string;
+  start: number;
+  end: number;
+  chrom: string;
+  color: string | null;
 }
 
 interface ApiSimplifiedTranscript {
-  record_id: string,
-  name: string,
-  type: string,
-  start: number,
-  end: number,
-  strand: string,
-  color: number[] | null
-  features: {start: number, end: number}[]
+  record_id: string;
+  name: string;
+  type: string;
+  start: number;
+  end: number;
+  strand: string;
+  color: number[] | null;
+  features: { start: number; end: number }[];
 }
 
 interface ApiComment {
-  created_at: string,
-  username: string,
-  comment: string,
-  displayed: boolean
+  created_at: string;
+  username: string;
+  comment: string;
+  displayed: boolean;
 }
 
 interface ApiReference {
-  title: string,
-  url: string,
-  pmid: string,
-  authors: string[],
+  title: string;
+  url: string;
+  pmid: string;
+  authors: string[];
 }
 
 interface ApiMetadata {
-  field_name: string,
-  value: string | {url: string, title: string},
-  type: string,
+  field_name: string;
+  value: string | { url: string; title: string };
+  type: string;
 }
 
 interface ApiAnnotationDetails {
-  start: number,
-  end: number,
-  track_id: string,
-  name: string,
-  description?: string,
-  genome_build: number,
-  chrom: string,
-  comments: ApiComment[],
-  references: ApiReference[],
-  metadata: ApiMetadata[],
+  start: number;
+  end: number;
+  track_id: string;
+  name: string;
+  description?: string;
+  genome_build: number;
+  chrom: string;
+  comments: ApiComment[];
+  references: ApiReference[];
+  metadata: ApiMetadata[];
 }
 
 interface ApiTranscriptFeature {
-  feature: string,
-  start: number,
-  end: number,
-  exon_number: number,
+  feature: string;
+  start: number;
+  end: number;
+  exon_number: number;
 }
 
 interface ApiGeneDetails {
-  transcript_id: string,
-  transcript_biotype: string,
-  gene_name: string,
-  mane: string,
-  hgnc_id: string,
-  refseq_id: string,
-  features: ApiTranscriptFeature[],
-  chrom: string,
-  start: number,
-  end: number,
-  strand: string,
-  genome_build: number
+  transcript_id: string;
+  transcript_biotype: string;
+  gene_name: string;
+  mane: string;
+  hgnc_id: string;
+  refseq_id: string;
+  features: ApiTranscriptFeature[];
+  chrom: string;
+  start: number;
+  end: number;
+  strand: string;
+  genome_build: number;
 }
 
 interface ApiVariantDetails {
-  alternative: string,
-  cadd_score: string,
-  case_id: string,
-  category: string,
-  chromosome: string,
-  cytoband_start: string,
-  cytoband_end: string,
-  display_name: string,
-  document_id: string,
-  end: number,
-  end_chrom: string,
-  filters: string[],
-  gatk: string,
-  hgnc_ids: string[],
-  hgnc_symbols: string[],
-  institute: string,
-  genes: string[],
-  length: number,
-  missing_data: boolean,
-  panels: string[],
-  phast_conservation: string[],
-  phylop_conservation: string[],
-  position: number,
-  quality: number,
-  rank_score: number,
-  rank_score_results: {category: string, score: number}[],
-  reference: string,
-  simple_id: string,
-  sub_category: string,
-  variant_id: string,
-  variant_rank: number,
-  variant_type: string
+  alternative: string;
+  cadd_score: string;
+  case_id: string;
+  category: string;
+  chromosome: string;
+  cytoband_start: string;
+  cytoband_end: string;
+  display_name: string;
+  document_id: string;
+  end: number;
+  end_chrom: string;
+  filters: string[];
+  gatk: string;
+  hgnc_ids: string[];
+  hgnc_symbols: string[];
+  institute: string;
+  genes: string[];
+  length: number;
+  missing_data: boolean;
+  panels: string[];
+  phast_conservation: string[];
+  phylop_conservation: string[];
+  position: number;
+  quality: number;
+  rank_score: number;
+  rank_score_results: { category: string; score: number }[];
+  reference: string;
+  simple_id: string;
+  sub_category: string;
+  variant_id: string;
+  variant_rank: number;
+  variant_type: string;
 }
 
 interface ApiCoverageDot {
-  pos: number,
-  value: number,
+  pos: number;
+  value: number;
 }
 
 interface ApiCoverageBin {
-  start: number,
-  end: number,
-  value: number,
-  zoom: string,
+  start: number;
+  end: number;
+  value: number;
+  zoom: string;
 }
 
 interface PopupContent {
-  header: string,
-  info?: {key: string, value: string, url?: string}[]
+  header: string;
+  info?: { key: string; value: string; url?: string }[];
 }
 
 type RenderElement = RenderBand | RenderDot;
 
-
 interface SimpleRenderBand {
-  start: number,
-  end: number,
+  start: number;
+  end: number;
 }
 
 // FIXME: This should be looked over
 interface RenderBand {
-  id: string,
-  start: number,
-  end: number,
-  color?: string,
-  edgeColor?: string,
-  edgeWidth?: number
-  label?: string,
-  hoverInfo?: string,
-  direction?: "+" | "-",
-  y1?: number,
-  y2?: number,
-  subBands?: SimpleRenderBand[],
+  id: string;
+  start: number;
+  end: number;
+  color?: string;
+  edgeColor?: string;
+  edgeWidth?: number;
+  label?: string;
+  hoverInfo?: string;
+  direction?: "+" | "-";
+  y1?: number;
+  y2?: number;
+  subBands?: SimpleRenderBand[];
 }
 
 interface RenderDot {
-    x: number,
-    y: number,
-    color: string,
+  x: number;
+  y: number;
+  color: string;
 }
 
 interface DotTrackData {
-  xRange: Rng,
-  dots: RenderDot[]
+  xRange: Rng;
+  dots: RenderDot[];
 }
 
 interface AnnotationTrackData {
-  xRange: Rng,
-  annotation: {source: string, bands: RenderBand[]},
+  xRange: Rng;
+  annotation: { source: string; bands: RenderBand[] };
 }
 
 interface BandTrackData {
-  xRange: Rng,
-  bands: RenderBand[],
+  xRange: Rng;
+  bands: RenderBand[];
 }
 
 interface IdeogramTrackData {
-  chromInfo: ChromosomeInfo,
-  xRange: Rng
+  chromInfo: ChromosomeInfo;
+  xRange: Rng;
 }
 
 interface OverviewTrackData {
-  dotsPerChrom: Record<string, RenderDot[]>,
-  chromosome: string,
-  xRange: Rng,
+  dotsPerChrom: Record<string, RenderDot[]>;
+  chromosome: string;
+  xRange: Rng;
 }
 
 interface Box {
-  x1: number,
-  x2: number,
-  y1: number,
-  y2: number,
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
 }
 
 interface HoverBox {
   label: string;
   box: Box;
-  element?: RenderBand|RenderDot;
+  element?: RenderBand | RenderDot;
 }
 
 interface BoxStyle {
-  fillColor?: string,
-  borderColor?: string,
-  borderWidth?: number
+  fillColor?: string;
+  borderColor?: string;
+  borderWidth?: number;
+  alpha?: number;
 }
 
 interface LabelStyle {
@@ -221,37 +221,43 @@ interface LabelStyle {
 }
 
 interface LineStyle {
-  lineWidth?: number,
-  color?: string,
-  dashed?: boolean,
-  transpose_05?: boolean,
+  lineWidth?: number;
+  color?: string;
+  dashed?: boolean;
+  transpose_05?: boolean;
 }
 
-type Scale = (value: number) => number
+type Scale = (value: number) => number;
 
-type ColorScale = (level: string) => string
+type ColorScale = (level: string) => string;
 
-type BandYScale = (lane: number, expanded: boolean) => Rng
+type BandYScale = (lane: number, expanded: boolean) => Rng;
 
-type GetAnnotSources = () => {id: string, label: string}[]
+type GetAnnotSources = (settings: {
+  selectedOnly: boolean;
+}) => { id: string; label: string }[];
 
 interface RenderDataSource {
-  getChromInfo: () => Promise<ChromosomeInfo>,
-  getAnnotation: (id: string) => Promise<RenderBand[]>,
-  getCovData: (sampleId: string) => Promise<RenderDot[]>,
-  getBafData: (sampleId: string) => Promise<RenderDot[]>,
-  getTranscriptData: () => Promise<RenderBand[]>,
-  getVariantData: (sampleId: string) => Promise<RenderBand[]>,
-  getOverviewCovData: (sampleId: string) => Promise<Record<string, RenderDot[]>>,
-  getOverviewBafData: (sampleId: string) => Promise<Record<string, RenderDot[]>>,
+  getChromInfo: () => Promise<ChromosomeInfo>;
+  getAnnotation: (id: string) => Promise<RenderBand[]>;
+  getCovData: (sampleId: string) => Promise<RenderDot[]>;
+  getBafData: (sampleId: string) => Promise<RenderDot[]>;
+  getTranscriptData: () => Promise<RenderBand[]>;
+  getVariantData: (sampleId: string) => Promise<RenderBand[]>;
+  getOverviewCovData: (
+    sampleId: string,
+  ) => Promise<Record<string, RenderDot[]>>;
+  getOverviewBafData: (
+    sampleId: string,
+  ) => Promise<Record<string, RenderDot[]>>;
 }
 
 type Rng = [number, number];
 
 interface Region {
-  chrom: string,
-  start: number,
-  end: number,
+  chrom: string;
+  start: number;
+  end: number;
 }
 
 interface _RegionDetail {
@@ -313,18 +319,18 @@ interface _VirtualDOMElement {
 }
 
 interface ChromosomeBand {
-  start: number,
-  end: number,
-  stain: string,
-  id: string,
-  strand: string
+  start: number;
+  end: number;
+  stain: string;
+  id: string;
+  strand: string;
 }
 
 interface ChromosomeInfo {
-  chrom: string,
-  centromere: {start: number, end: number},
-  size: number,
-  bands: ChromosomeBand[]
+  chrom: string;
+  centromere: { start: number; end: number };
+  size: number;
+  bands: ChromosomeBand[];
 }
 
 interface _DrawChromosome {
@@ -339,8 +345,8 @@ interface _DrawChromosome {
 }
 
 interface Dimensions {
-  width: number,
-  height: number
+  width: number;
+  height: number;
 }
 
 interface _BandPath {
@@ -393,7 +399,7 @@ interface _VariantLabel {
 }
 
 type _DisplayElement = {
-  id: string|number;
+  id: string | number;
   name: string;
   x1?: number;
   x2?: number;
@@ -447,11 +453,11 @@ type _InteractiveFeature = {
 };
 
 type VariantColors = {
-  del: string,
-  dup: string,
-  inv: string,
-  default: string,
-}
+  del: string;
+  dup: string;
+  inv: string;
+  default: string;
+};
 
 interface DragCallbacks {
   onZoomIn: (xRange: Rng) => void;
@@ -465,15 +471,14 @@ interface Axis {
   range: Rng;
 }
 
-
 interface RenderSettings {
-  dataUpdated?: boolean,
-  resized?: boolean,
+  dataUpdated?: boolean;
+  resized?: boolean;
 }
 
 interface RangeHighlight {
-  id: string,
-  chromosome: string,
-  range: Rng,
-  color: string,
+  id: string;
+  chromosome: string;
+  range: Rng;
+  color: string;
 }

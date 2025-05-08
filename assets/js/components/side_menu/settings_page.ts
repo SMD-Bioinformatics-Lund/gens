@@ -1,9 +1,9 @@
-import { COLORS, ICONS, SIZES } from "../constants";
-import { removeChildren } from "../util/utils";
-import { DataTrack } from "./tracks/base_tracks/data_track";
-import { ChoiceSelect } from "./util/choice_select";
-import { getIconButton } from "./util/menu_utils";
-import { ShadowBaseElement } from "./util/shadowbaseelement";
+import { COLORS, ICONS, SIZES } from "../../constants";
+import { removeChildren } from "../../util/utils";
+import { DataTrack } from "../tracks/base_tracks/data_track";
+import { ChoiceSelect } from "../util/choice_select";
+import { getIconButton } from "../util/menu_utils";
+import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
 
 const template = document.createElement("template");
@@ -69,7 +69,7 @@ export class SettingsPage extends ShadowBaseElement {
     ) as HTMLDivElement;
   }
 
-  initialize(renderCallback: (settings: RenderSettings) => void) {
+  initialize() {
     this.isInitialized = true;
     this.choiceSelect.setChoices(
       getChoices(
@@ -79,7 +79,7 @@ export class SettingsPage extends ShadowBaseElement {
     );
     this.choiceSelect.initialize(this.onAnnotationChanged);
 
-    renderCallback({});
+    this.onChange();
   }
 
   render(_settings: RenderSettings) {
@@ -122,10 +122,23 @@ export class SettingsPage extends ShadowBaseElement {
     this.onTrackMove = onTrackMove;
   }
 
-  getAnnotSources(): { id: string; label: string }[] {
+  getAnnotSources(settings: {
+    selectedOnly: boolean;
+  }): { id: string; label: string }[] {
+
+    if (!settings.selectedOnly) {
+      return this.annotationSources.map((source) => {
+        return {
+          id: source.track_id,
+          label: source.name,
+        };
+      });
+    }
+
     if (this.choiceSelect == null) {
       return this.defaultAnnots;
     }
+
     const choices = this.choiceSelect.getChoices();
     const returnVals = choices.map((obj) => {
       return {
@@ -192,7 +205,7 @@ function getTracksSection(
     );
     buttonsDiv.appendChild(
       getIconButton(
-        track.getIsCollapsed() ? ICONS.maximize : ICONS.minimize,
+        track.getIsCollapsed() ? ICONS.expand : ICONS.collapse,
         "Collapse / expand",
         () => onToggleCollapse(track),
       ),
