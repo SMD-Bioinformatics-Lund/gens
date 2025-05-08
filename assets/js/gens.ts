@@ -184,7 +184,7 @@ async function initialize(
         Math.floor(startRange[1] + pan)
             ]
       inputControls.updatePosition(endRange);
-      render({panTracks: true});
+      render({positionUpdated: true});
     },
     (settings: { selectedOnly: boolean }) =>
       settingsPage.getAnnotSources(settings),

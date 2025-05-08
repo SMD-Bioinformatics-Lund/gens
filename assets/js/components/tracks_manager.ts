@@ -353,9 +353,8 @@ export class TracksManager extends ShadowBaseElement {
     this.dataTracks.push(
       ...covTracks,
       ...bafTracks,
-      ...variantTracks,
-      // ...annotationTracks,
-      genesTrack,
+      // ...variantTracks,
+      // genesTrack,
     );
 
     this.topContainer.appendChild(this.ideogramTrack);

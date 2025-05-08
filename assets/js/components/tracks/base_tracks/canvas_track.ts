@@ -58,6 +58,9 @@ export class CanvasTrack extends ShadowBaseElement {
     this.collapsedTrackHeight = STYLE.tracks.trackHeight.extraThin;
   }
 
+  log(...message: any[]) {
+    console.log(this.label, ...message);
+  }
 
   getNtsPerPixel(xRange: Rng) {
     const nNts = xRange[1] - xRange[0];

@@ -474,7 +474,7 @@ interface Axis {
 interface RenderSettings {
   dataUpdated?: boolean;
   resized?: boolean;
-  panTracks?: boolean;
+  positionUpdated?: boolean;
 }
 
 interface RangeHighlight {

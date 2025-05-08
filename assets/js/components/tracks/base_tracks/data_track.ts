@@ -30,15 +30,15 @@ const Y_PAD = SIZES.s;
 export class DataTrack extends CanvasTrack {
   settings: Settings;
   getXRange: () => Rng;
-  setXRange: (range: Rng) => void;
+  // setXRange: (range: Rng) => void;
   getXScale: () => Scale;
   getYRange: () => Rng;
   getYScale: () => Scale;
   openTrackContextMenu: (track: DataTrack) => void;
 
-  protected bufferCanvas: HTMLCanvasElement;
-  protected bufferCtx: CanvasRenderingContext2D;
-  protected bufferDataRange: Rng;
+  // protected bufferCanvas: HTMLCanvasElement;
+  // protected bufferCtx: CanvasRenderingContext2D;
+  // protected bufferDataRange: Rng;
 
   private colorBands: RenderBand[] = [];
   setColorBands(colorBands: RenderBand[]) {
@@ -57,20 +57,6 @@ export class DataTrack extends CanvasTrack {
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
 
   private renderSeq = 0;
-
-  protected canBlit(viewRange: Rng): boolean {
-    const [bufMin, bufMax] = this.bufferDataRange;
-    const [viewMin, viewMax] = viewRange;
-    return viewMin >= bufMin && viewMax <= bufMax;
-  }
-
-  pan(newRange: Rng) {
-    if (this.canBlit(newRange)) {
-      this.blit();
-    } else {
-      this.resetBuffer();
-    }
-  }
 
   getYDim(): Rng {
     return [Y_PAD, this.dimensions.height - Y_PAD];
@@ -166,51 +152,76 @@ export class DataTrack extends CanvasTrack {
     this.openTrackContextMenu = openTrackContextMenu;
   }
 
-  initialize() {
-    super.initialize();
-    this.bufferCanvas = document.createElement("canvas");
-    this.bufferCanvas.width = this.dimensions.width * 2;
-    this.bufferCanvas.height = this.dimensions.height;
-    this.bufferCtx = this.bufferCanvas.getContext("2d");
+  // FIXME: Can this be modularized
 
-    this.resetBuffer();
-  }
-
-  private resetBuffer() {
-    const [viewMin, viewMax] = this.getXRange();
-    const widthData = viewMax - viewMin;
-    const bufferMin = viewMax - widthData / 2;
-    const bufferMax = viewMax + widthData / 2;
-    this.bufferDataRange = [bufferMin, bufferMax];
-
-    this.draw();
-    this.blit();
-  }
-
-  private blit() {
-    const [viewMin, viewMax] = this.getXRange();
-    const widthData = viewMax - viewMin;
-    const bufferMin = this.bufferDataRange[0];
-    const bufferWidth = this.bufferCanvas.width;
-    const viewPx = this.dimensions.width;
-
-    const startPct =
-      (viewMin - bufferMin) / (this.bufferDataRange[1] - bufferMin);
-    const sx = startPct * bufferWidth;
-
-    this.ctx.clearRect(0, 0, viewPx, this.dimensions.height);
-    this.ctx.drawImage(
-      this.bufferCanvas,
-      sx,
-      0,
-      viewPx,
-      this.dimensions.height,
-      0,
-      0,
-      viewPx,
-      this.dimensions.height,
+  protected canBlit(viewRange: Rng, bufferDataRange: Rng): boolean {
+    const [bufMin, bufMax] = bufferDataRange;
+    const [viewMin, viewMax] = viewRange;
+    const isInside = viewMin >= bufMin && viewMax <= bufMax;
+    this.log(
+      "Comparing viewRange",
+      viewRange,
+      "with buffer range",
+      bufferDataRange,
+      "inside?",
+      isInside,
     );
+    return isInside;
   }
+
+  // pan(newRange: Rng) {
+  //   if (this.canBlit(newRange)) {
+  //     this.blit();
+  //   } else {
+  //     this.resetBuffer();
+  //   }
+  // }
+
+  // initialize() {
+  //   super.initialize();
+  //   this.bufferCanvas = document.createElement("canvas");
+  //   this.bufferCanvas.width = this.dimensions.width * 2;
+  //   this.bufferCanvas.height = this.dimensions.height;
+  //   this.bufferCtx = this.bufferCanvas.getContext("2d");
+
+  //   this.resetBuffer();
+  // }
+
+  // private resetBuffer() {
+  //   const [viewMin, viewMax] = this.getXRange();
+  //   const widthData = viewMax - viewMin;
+  //   const bufferMin = viewMax - widthData / 2;
+  //   const bufferMax = viewMax + widthData / 2;
+  //   this.bufferDataRange = [bufferMin, bufferMax];
+
+  //   this.draw();
+  //   this.blit();
+  // }
+
+  // private blit() {
+  //   const [viewMin, viewMax] = this.getXRange();
+  //   const widthData = viewMax - viewMin;
+  //   const bufferMin = this.bufferDataRange[0];
+  //   const bufferWidth = this.bufferCanvas.width;
+  //   const viewPx = this.dimensions.width;
+
+  //   const startPct =
+  //     (viewMin - bufferMin) / (this.bufferDataRange[1] - bufferMin);
+  //   const sx = startPct * bufferWidth;
+
+  //   this.ctx.clearRect(0, 0, viewPx, this.dimensions.height);
+  //   this.ctx.drawImage(
+  //     this.bufferCanvas,
+  //     sx,
+  //     0,
+  //     viewPx,
+  //     this.dimensions.height,
+  //     0,
+  //     0,
+  //     viewPx,
+  //     this.dimensions.height,
+  //   );
+  // }
 
   // private drawBuffer(ctx: CanvasRenderingContext2D, dataRange: Rng) {
   //   const scaleX = getLinearScale(dataRange, [0, this.bufferCanvas.width]);
@@ -240,10 +251,39 @@ export class DataTrack extends CanvasTrack {
       { leading: false, trailing: true },
     );
 
+    // Should the x range go in here?
+    // This is a slightly larger project, isn't it?
+    // if (settings.panTracks) {
+    //   const this.canBlit();
+    // }
+    // else
+
     if (settings.dataUpdated || this.renderData == null) {
+      this.log("Render: Data updated");
       this.renderLoading();
       _fetchData();
+    } else if (settings.positionUpdated) {
+      this.log("Render: Panning");
+
+      const [viewMin, viewMax] = this.getXRange();
+      const widthData = viewMax - viewMin;
+      const bufferMin = viewMax - widthData * 1;
+      const bufferMax = viewMax + widthData * 1;
+      const bufferDataRange: Rng = [bufferMin, bufferMax];
+
+      const xRange = this.getXRange();
+
+      if (this.canBlit(xRange, bufferDataRange)) {
+        this.log("Blitting");
+        this.renderLoading();
+        _fetchData();
+      } else {
+        this.log("Cannot blit, normal render");
+        this.renderLoading();
+        _fetchData();
+      }
     } else {
+      this.log("Render: No data change");
       this.draw();
     }
   }
