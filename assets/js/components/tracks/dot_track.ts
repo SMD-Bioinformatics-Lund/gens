@@ -47,9 +47,12 @@ export class DotTrack extends DataTrack {
   draw() {
     super.drawStart();
 
+    // FIXME: How to consider the panning here
+
     const { dots } = this.renderData as DotTrackData;
 
-    const xRange = this.getXRange();
+    const xRange = this.bufferDataRange;
+    // const xRange = this.getXRange();
     const xScale = this.getXScale();
     const yScale = this.getYScale();
 

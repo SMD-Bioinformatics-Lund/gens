@@ -30,10 +30,15 @@ const Y_PAD = SIZES.s;
 export class DataTrack extends CanvasTrack {
   settings: Settings;
   getXRange: () => Rng;
+  setXRange: (range: Rng) => void;
   getXScale: () => Scale;
   getYRange: () => Rng;
   getYScale: () => Scale;
   openTrackContextMenu: (track: DataTrack) => void;
+
+  protected bufferCanvas: HTMLCanvasElement;
+  protected bufferCtx: CanvasRenderingContext2D;
+  protected bufferDataRange: Rng;
 
   private colorBands: RenderBand[] = [];
   setColorBands(colorBands: RenderBand[]) {
@@ -52,6 +57,20 @@ export class DataTrack extends CanvasTrack {
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
 
   private renderSeq = 0;
+
+  protected canBlit(viewRange: Rng): boolean {
+    const [bufMin, bufMax] = this.bufferDataRange;
+    const [viewMin, viewMax] = viewRange;
+    return viewMin >= bufMin && viewMax <= bufMax;
+  }
+
+  pan(newRange: Rng) {
+    if (this.canBlit(newRange)) {
+      this.blit();
+    } else {
+      this.resetBuffer();
+    }
+  }
 
   getYDim(): Rng {
     return [Y_PAD, this.dimensions.height - Y_PAD];
@@ -147,6 +166,62 @@ export class DataTrack extends CanvasTrack {
     this.openTrackContextMenu = openTrackContextMenu;
   }
 
+  initialize() {
+    super.initialize();
+    this.bufferCanvas = document.createElement("canvas");
+    this.bufferCanvas.width = this.dimensions.width * 2;
+    this.bufferCanvas.height = this.dimensions.height;
+    this.bufferCtx = this.bufferCanvas.getContext("2d");
+
+    this.resetBuffer();
+  }
+
+  private resetBuffer() {
+    const [viewMin, viewMax] = this.getXRange();
+    const widthData = viewMax - viewMin;
+    const bufferMin = viewMax - widthData / 2;
+    const bufferMax = viewMax + widthData / 2;
+    this.bufferDataRange = [bufferMin, bufferMax];
+
+    this.draw();
+    this.blit();
+  }
+
+  private blit() {
+    const [viewMin, viewMax] = this.getXRange();
+    const widthData = viewMax - viewMin;
+    const bufferMin = this.bufferDataRange[0];
+    const bufferWidth = this.bufferCanvas.width;
+    const viewPx = this.dimensions.width;
+
+    const startPct =
+      (viewMin - bufferMin) / (this.bufferDataRange[1] - bufferMin);
+    const sx = startPct * bufferWidth;
+
+    this.ctx.clearRect(0, 0, viewPx, this.dimensions.height);
+    this.ctx.drawImage(
+      this.bufferCanvas,
+      sx,
+      0,
+      viewPx,
+      this.dimensions.height,
+      0,
+      0,
+      viewPx,
+      this.dimensions.height,
+    );
+  }
+
+  // private drawBuffer(ctx: CanvasRenderingContext2D, dataRange: Rng) {
+  //   const scaleX = getLinearScale(dataRange, [0, this.bufferCanvas.width]);
+  //   ctx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
+  //   renderBackground(
+  //     ctx,
+  //     { width: this.bufferCanvas.width, height: this.bufferCanvas.height },
+  //     STYLE.tracks.edgeColor,
+  //   );
+  // }
+
   async render(settings: RenderSettings) {
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
     // is to prevent repeated API requests when rapidly zooming/panning
@@ -192,12 +267,8 @@ export class DataTrack extends CanvasTrack {
         x2: xScale(band.end),
         y1: 0,
         y2: this.dimensions.height,
-      }
-      drawBox(
-        this.ctx,
-        box,
-        { fillColor: band.color, alpha: 0.3 },
-      );
+      };
+      drawBox(this.ctx, box, { fillColor: band.color, alpha: 0.3 });
     }
 
     // Color fill Y axis area

@@ -178,15 +178,13 @@ async function initialize(
     },
     () => inputControls.zoomOut(),
     (pan: number) => {
-      console.log("Panning", pan);
       const startRange = inputControls.getRange();
       const endRange: Rng = [
         Math.floor(startRange[0] + pan),
         Math.floor(startRange[1] + pan)
-      ]
-      console.log("Start range", startRange, "End range", endRange);
+            ]
       inputControls.updatePosition(endRange);
-      render({dataUpdated: true});
+      render({panTracks: true});
     },
     (settings: { selectedOnly: boolean }) =>
       settingsPage.getAnnotSources(settings),
