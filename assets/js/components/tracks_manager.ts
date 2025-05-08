@@ -14,10 +14,8 @@ import {
   getVariantContextMenuContent,
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
-import { generateID } from "../util/utils";
-import {
-  getSimpleButton,
-} from "./util/menu_utils";
+import { generateID, rangeSize } from "../util/utils";
+import { getSimpleButton } from "./util/menu_utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
 
@@ -30,6 +28,7 @@ import {
 import { getLinearScale } from "../draw/render_utils";
 import { keyLogger } from "./util/keylogger";
 import { TrackPage } from "./side_menu/track_page";
+import { setupDragging } from "./util/dragging";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -172,73 +171,16 @@ export class TracksManager extends ShadowBaseElement {
       },
     });
 
-    let dragStartX: number | null = null;
-    let dragEndX: number | null = null;
+    setupDragging(this.tracksContainer, (dragRange: Rng) => {
+      const inverted = true;
+      const invertedXScale = this.getXScale(inverted);
 
-    let isSpaceDown = false;
-    let isMouseDown = false;
-    window.addEventListener("keydown", (event) => {
-      if (event.code === "Space") {
-        isSpaceDown = true;
-        this.tracksContainer.classList.add("grabbable");
-        // document.body.style.cursor = "grab";
-        event.preventDefault();
-      }
+      const scaledStart = invertedXScale(dragRange[0]);
+      const scaledEnd = invertedXScale(dragRange[1]);
+
+      onPan(scaledEnd - scaledStart);
     });
 
-    window.addEventListener("keyup", (event) => {
-      if (event.code === "Space") {
-        isSpaceDown = false;
-        this.tracksContainer.classList.remove("grabbable");
-        this.tracksContainer.classList.remove("grabbing");
-      }
-    });
-
-    this.tracksContainer.addEventListener("pointerdown", (event) => {
-
-      isMouseDown = true;
-
-      if (isSpaceDown) {
-        dragStartX = event.offsetX; 
-        this.tracksContainer.setPointerCapture(event.pointerId);
-        this.tracksContainer.classList.add("grabbing");
-      }
-    });
-  
-    this.tracksContainer.addEventListener("pointerup", (event) => {
-
-      isMouseDown = false;
-
-      if (event.button === 0) { 
-
-        const dragEndX = event.offsetX;
-
-        this.tracksContainer.releasePointerCapture(event.pointerId);
-        this.tracksContainer.classList.remove("grabbing");
-        
-        const inverted = true;
-        const invertedXScale = this.getXScale(inverted);
-  
-        const scaledStart = invertedXScale(dragStartX);
-        const scaledEnd = invertedXScale(dragEndX);
-  
-        document.body.style.cursor = "";
-  
-        console.log(
-          "Dragged from",
-          dragStartX,
-          "to",
-          dragEndX,
-          `(${scaledStart} - ${scaledEnd}), ${scaledEnd - scaledStart}`,
-        );
-  
-        onPan(scaledEnd - scaledStart)
-      }
-
-
-      dragStartX = null;
-      dragEndX = null;
-    });
 
     this.dragCallbacks = {
       onZoomIn,
