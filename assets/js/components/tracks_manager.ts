@@ -28,7 +28,7 @@ import {
 import { getLinearScale } from "../draw/render_utils";
 import { keyLogger } from "./util/keylogger";
 import { TrackPage } from "./side_menu/track_page";
-import { setupDragging } from "./util/dragging";
+import { setupDragging } from "../movements/dragging";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -180,7 +180,6 @@ export class TracksManager extends ShadowBaseElement {
 
       onPan(scaledEnd - scaledStart);
     });
-
 
     this.dragCallbacks = {
       onZoomIn,
