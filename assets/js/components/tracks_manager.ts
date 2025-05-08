@@ -98,7 +98,7 @@ export class TracksManager extends ShadowBaseElement {
   dataSource: RenderDataSource;
   renderAll: (settings: RenderSettings) => void;
 
-  getAnnotationSources: () => { id: string; label: string }[];
+  getAnnotationSources: GetAnnotSources;
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
   openTrackContextMenu: (track: DataTrack) => void;
   session: GensSession;
@@ -182,7 +182,7 @@ export class TracksManager extends ShadowBaseElement {
         showColor: isDotTrack,
       };
 
-      trackPage.configure(() => renderAll({}), trackSettings);
+      trackPage.configure(() => renderAll({}), trackSettings, getAnnotSources);
 
       // const returnElements = getTrackContextMenuContent(
       //   renderAll,
@@ -353,8 +353,10 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   updateAnnotationTracks() {
-    const sources = this.getAnnotationSources();
+    const sources = this.getAnnotationSources({ selectedOnly: true });
     // const sourcesIds = sources.map((source) => source.id);
+
+    console.log("Sources", sources);
 
     const currAnnotTracks = this.annotationTracks;
     // const currAnnotTrackIds = currAnnotTracks.map((track) => track.id);

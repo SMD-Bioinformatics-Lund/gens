@@ -65,8 +65,8 @@ template.innerHTML = String.raw`
 `;
 
 interface TrackPageSettings {
-  showYAxis: boolean,
-  showColor: boolean,
+  showYAxis: boolean;
+  showColor: boolean;
 }
 
 export class TrackPage extends ShadowBaseElement {
@@ -74,6 +74,7 @@ export class TrackPage extends ShadowBaseElement {
 
   private onChange: () => void;
   private settings: TrackPageSettings;
+  private getAnnotationSources: GetAnnotSources;
 
   private actions: HTMLDivElement;
   private yAxis: HTMLDivElement;
@@ -87,9 +88,15 @@ export class TrackPage extends ShadowBaseElement {
   }
 
   // Before being connected to the DOM
-  configure(onChange: () => void, settings: TrackPageSettings) {
+  configure(
+    onChange: () => void,
+    settings: TrackPageSettings,
+    // FIXME: Part of a more abstract object?
+    getAnnotationSources: GetAnnotSources,
+  ) {
     this.onChange = onChange;
     this.settings = settings;
+    this.getAnnotationSources = getAnnotationSources;
   }
 
   connectedCallback(): void {
@@ -101,16 +108,18 @@ export class TrackPage extends ShadowBaseElement {
     this.yAxisEnd = this.root.querySelector("#y-axis-end");
     this.colorSelect = this.root.querySelector("#color-select");
 
-    console.log(this.settings);
-
     this.yAxis.hidden = !this.settings.showYAxis;
     this.colors.hidden = !this.settings.showColor;
+
+    if (this.settings.showColor) {
+      const annotSources = this.getAnnotationSources({ selectedOnly: false });
+      populateSelect(this.colorSelect, annotSources, true);
+    }
   }
 
   // After being connected to the DOM
   initialize() {
     this.isInitialized = true;
-
     this.onChange();
   }
 }
@@ -226,7 +235,7 @@ function getColorSelectRow(
 
   const select = document.createElement("select") as HTMLSelectElement;
   select.style.backgroundColor = COLORS.white;
-  const sources = getAnnotationSources();
+  const sources = getAnnotationSources({ selectedOnly: false });
 
   populateSelect(select, sources, true);
 

@@ -122,10 +122,27 @@ export class SettingsPage extends ShadowBaseElement {
     this.onTrackMove = onTrackMove;
   }
 
-  getAnnotSources(): { id: string; label: string }[] {
+  getAnnotSources(settings: {
+    selectedOnly: boolean;
+  }): { id: string; label: string }[] {
+
+    console.log("Getting sources", settings);
+
+    if (!settings.selectedOnly) {
+      console.log("Returning", this.annotationSources);
+      return this.annotationSources.map((source) => {
+        return {
+          id: source.track_id,
+          label: source.name,
+        };
+      });
+    }
+
     if (this.choiceSelect == null) {
+      console.log("Returning default");
       return this.defaultAnnots;
     }
+
     const choices = this.choiceSelect.getChoices();
     const returnVals = choices.map((obj) => {
       return {

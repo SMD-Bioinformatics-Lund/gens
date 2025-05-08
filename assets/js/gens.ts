@@ -7,7 +7,7 @@ import "./components/side_menu/settings_page";
 import "./components/side_menu/side_menu";
 import "./components/header_info";
 import "./components/util/marker";
-import "./components/side_menu/track_page"
+import "./components/side_menu/track_page";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager";
@@ -85,12 +85,7 @@ export async function initCanvases({
 
   const session = new GensSession(render, sideMenu);
 
-  setupShortcuts(
-    session,
-    sideMenu,
-    inputControls,
-    onChromClick,
-  );
+  setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
   const annotSources = await api.getAnnotationSources();
   const defaultAnnot = annotSources
@@ -182,7 +177,8 @@ async function initialize(
       render({ dataUpdated: true });
     },
     () => inputControls.zoomOut(),
-    () => settingsPage.getAnnotSources(),
+    (settings: { selectedOnly: boolean }) =>
+      settingsPage.getAnnotSources(settings),
     getVariantURL,
     async (id: string) => await api.getAnnotationDetails(id),
     async (id: string) => await api.getTranscriptDetails(id),
