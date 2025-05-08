@@ -16,9 +16,7 @@ import {
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 import { generateID } from "../util/utils";
-import {
-  getSimpleButton,
-} from "./util/menu_utils";
+import { getSimpleButton } from "./util/menu_utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
 
@@ -134,6 +132,7 @@ export class TracksManager extends ShadowBaseElement {
     getXRange: () => Rng,
     onZoomIn: (range: Rng) => void,
     onZoomOut: () => void,
+    onPan: (panX: number) => void,
     getAnnotSources: GetAnnotSources,
     getVariantURL: (id: string) => string,
     getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
@@ -167,19 +166,60 @@ export class TracksManager extends ShadowBaseElement {
     let dragStartX: number | null = null;
     let dragEndX: number | null = null;
 
+    let isSpaceDown = false;
+    window.addEventListener("keydown", (event) => {
+      if (event.code === "Space") {
+        isSpaceDown = true;
+        document.body.style.cursor = "grab";
+        event.preventDefault();
+      }
+    });
+
+    window.addEventListener("keyup", (event) => {
+      if (event.code === "Space") {
+        isSpaceDown = false;
+        document.body.style.cursor = "";
+      }
+    });
+
     this.tracksContainer.addEventListener("mousedown", (event) => {
-      dragStartX = event.x;
-    })
+      if (isSpaceDown) {
+        dragStartX = event.offsetX;
+      }
+    });
 
     this.tracksContainer.addEventListener("mousemove", (event) => {
-      dragEndX = event.x;
-    })
+      if (!isSpaceDown) {
+        return;
+      }
 
-    this.tracksContainer.addEventListener("mouseup", (event) => {
-      console.log("Dragged from", dragStartX, "to", dragEndX);
+      dragEndX = event.offsetX;
+      // this.panContent(this.dragEnd.x - this.dragStart.x);
+      // dragStartX = dragEndX;
+    });
+
+    this.tracksContainer.addEventListener("mouseup", (_event) => {
+      const dragDistance = Math.abs(dragEndX - dragStartX);
+      const inverted = true;
+      const invertedXScale = this.getXScale(inverted);
+      const scaledDistance = invertedXScale(dragDistance);
+
+      const scaledStart = invertedXScale(dragStartX);
+      const scaledEnd = invertedXScale(dragEndX);
+
+      console.log(
+        "Dragged from",
+        dragStartX,
+        "to",
+        dragEndX,
+        `(${scaledStart} - ${scaledEnd}), ${scaledEnd - scaledStart}`,
+      );
+
+      onPan(scaledEnd - scaledStart)
+
       dragStartX = null;
       dragEndX = null;
-    })
+    });
 
     this.dragCallbacks = {
       onZoomIn,
@@ -430,13 +470,15 @@ export class TracksManager extends ShadowBaseElement {
     });
   }
 
-  getXScale() {
+  getXScale(inverted: boolean = false): Scale {
     const xRange = this.getXRange();
     const yAxisWidth = STYLE.yAxis.width;
-    const xScale = getLinearScale(xRange, [
-      yAxisWidth,
-      this.tracksContainer.offsetWidth,
-    ]);
+
+    const xDomain: Rng = [yAxisWidth, this.tracksContainer.offsetWidth];
+
+    const xScale = !inverted
+      ? getLinearScale(xRange, xDomain)
+      : getLinearScale(xDomain, xRange);
     return xScale;
   }
 
