@@ -164,6 +164,23 @@ export class TracksManager extends ShadowBaseElement {
       },
     });
 
+    let dragStartX: number | null = null;
+    let dragEndX: number | null = null;
+
+    this.tracksContainer.addEventListener("mousedown", (event) => {
+      dragStartX = event.x;
+    })
+
+    this.tracksContainer.addEventListener("mousemove", (event) => {
+      dragEndX = event.x;
+    })
+
+    this.tracksContainer.addEventListener("mouseup", (event) => {
+      console.log("Dragged from", dragStartX, "to", dragEndX);
+      dragStartX = null;
+      dragEndX = null;
+    })
+
     this.dragCallbacks = {
       onZoomIn,
       onZoomOut,
