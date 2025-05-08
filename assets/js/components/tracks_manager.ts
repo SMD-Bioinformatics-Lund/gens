@@ -8,18 +8,16 @@ import { IdeogramTrack } from "./tracks/ideogram_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
-import { ANIM_TIME, COLORS, ICONS, SIZES, STYLE } from "../constants";
+import { ANIM_TIME, COLORS, SIZES, STYLE } from "../constants";
 import {
   getAnnotationContextMenuContent,
   getGenesContextMenuContent,
   getVariantContextMenuContent,
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
-import { generateID, populateSelect } from "../util/utils";
+import { generateID } from "../util/utils";
 import {
   getSimpleButton,
-  getContainer,
-  getIconButton,
 } from "./util/menu_utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";

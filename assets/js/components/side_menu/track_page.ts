@@ -1,8 +1,5 @@
 import { COLORS, ICONS, SIZES } from "../../constants";
 import { populateSelect } from "../../util/utils";
-import { DataTrack } from "../tracks/base_tracks/data_track";
-import { DotTrack } from "../tracks/dot_track";
-import { getContainer, getIconButton } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
 const template = document.createElement("template");

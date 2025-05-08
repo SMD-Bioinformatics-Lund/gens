@@ -1,4 +1,10 @@
-import { FONT_SIZE, FONT_WEIGHT, SIZES, STYLE, ZINDICES } from "../../constants";
+import {
+  FONT_SIZE,
+  FONT_WEIGHT,
+  SIZES,
+  STYLE,
+  ZINDICES,
+} from "../../constants";
 import { removeChildren } from "../../util/utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
@@ -172,7 +178,7 @@ export class SideMenu extends ShadowBaseElement {
     removeChildren(this.entries);
 
     this.header.textContent = header;
-    
+
     for (const element of content) {
       this.entries.appendChild(element);
     }
