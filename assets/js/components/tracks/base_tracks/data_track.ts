@@ -148,7 +148,6 @@ export class DataTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
     // is to prevent repeated API requests when rapidly zooming/panning
     // Only the last request is of interest
@@ -185,7 +184,21 @@ export class DataTrack extends CanvasTrack {
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
-    console.log("Has color bands", this.colorBands);
+    const xScale = this.getXScale();
+
+    for (const band of this.colorBands) {
+      const box = {
+        x1: xScale(band.start),
+        x2: xScale(band.end),
+        y1: 0,
+        y2: this.dimensions.height,
+      }
+      drawBox(
+        this.ctx,
+        box,
+        { fillColor: band.color, alpha: 0.3 },
+      );
+    }
 
     // Color fill Y axis area
     drawBox(

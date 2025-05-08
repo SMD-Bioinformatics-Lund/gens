@@ -207,6 +207,7 @@ interface BoxStyle {
   fillColor?: string;
   borderColor?: string;
   borderWidth?: number;
+  alpha?: number;
 }
 
 interface LabelStyle {

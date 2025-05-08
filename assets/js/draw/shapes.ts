@@ -172,15 +172,21 @@ export function drawBox(
   style: BoxStyle = {},
 ) {
   const {
-    fillColor: fill = STYLE.tracks.backgroundColor,
-    borderColor: border = STYLE.tracks.textFrameColor,
+    fillColor = STYLE.tracks.backgroundColor,
+    borderColor = STYLE.tracks.textFrameColor,
     borderWidth = STYLE.tracks.gridLineWidth,
+    alpha = 1
   } = style;
 
-  ctx.fillStyle = fill;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  ctx.fillStyle = fillColor;
   ctx.fillRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
-  ctx.strokeStyle = border;
+  ctx.strokeStyle = borderColor;
   ctx.lineWidth = borderWidth;
   ctx.strokeRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+
+  ctx.restore();
 }

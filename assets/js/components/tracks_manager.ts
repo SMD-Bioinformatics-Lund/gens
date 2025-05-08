@@ -182,7 +182,7 @@ export class TracksManager extends ShadowBaseElement {
 
         const trackSettings = {
           showYAxis: isDotTrack,
-          showColor: isDotTrack,
+          showColor: true,
         };
 
         trackPage.configure(track.id, trackSettings);
@@ -464,6 +464,7 @@ export class TracksManager extends ShadowBaseElement {
     }
 
     const openContextMenuId = async (id: string) => {
+      console.log("opening context menu");
       const details = await this.getAnnotationDetails(id);
       const button = getSimpleButton("Set highlight", () => {
         const id = generateID();
@@ -477,7 +478,7 @@ export class TracksManager extends ShadowBaseElement {
       const entries = getAnnotationContextMenuContent(id, details);
       const content = [button];
       content.push(...entries);
-      () => this.session.showContent("Annotations", content);
+      this.session.showContent("Annotations", content);
     };
 
     const track = new BandTrack(
