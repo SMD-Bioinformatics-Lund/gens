@@ -27,7 +27,7 @@ const DEBOUNCE_DELAY = 500;
 
 const Y_PAD = SIZES.s;
 
-export class DataTrack extends CanvasTrack {
+export abstract class DataTrack extends CanvasTrack {
   settings: Settings;
   getXRange: () => Rng;
   getXScale: () => Scale;
@@ -151,7 +151,7 @@ export class DataTrack extends CanvasTrack {
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
     // is to prevent repeated API requests when rapidly zooming/panning
     // Only the last request is of interest
-    const _fetchData = debounce(
+    const fetchData = debounce(
       async () => {
         this.renderSeq = this.renderSeq + 1;
         const mySeq = this.renderSeq;
@@ -165,19 +165,19 @@ export class DataTrack extends CanvasTrack {
       { leading: false, trailing: true },
     );
 
+    console.log("Rendering with settings", settings);
+
     if (settings.dataUpdated || this.renderData == null) {
-      this.renderLoading();
-      _fetchData();
+      if (!settings.positionOnly) {
+        this.renderLoading();
+      }
+      fetchData();
     } else {
       this.draw();
     }
   }
 
-  draw() {
-    console.error(
-      "Should be implemented by children. Call drawStart and drawEnd in parent",
-    );
-  }
+  abstract draw(): void;
 
   drawStart() {
     super.syncDimensions();
@@ -307,5 +307,3 @@ class Expander {
     }
   }
 }
-
-customElements.define("data-track", DataTrack);

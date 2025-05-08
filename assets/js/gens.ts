@@ -159,7 +159,7 @@ async function initialize(
   inputControls.initialize(
     startRegion,
     async (_range) => {
-      render({ dataUpdated: true });
+      render({ dataUpdated: true, positionOnly: true });
     },
     session,
   );
@@ -174,7 +174,7 @@ async function initialize(
     () => inputControls.getRange(),
     (range: Rng) => {
       inputControls.updatePosition(range);
-      render({ dataUpdated: true });
+      render({ dataUpdated: true, positionOnly: true });
     },
     () => inputControls.zoomOut(),
     (settings: { selectedOnly: boolean }) =>
