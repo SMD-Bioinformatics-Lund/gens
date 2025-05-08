@@ -30,7 +30,7 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-export class CanvasTrack extends ShadowBaseElement {
+export abstract class CanvasTrack extends ShadowBaseElement {
   public id: string;
   public label: string;
 
@@ -149,5 +149,3 @@ export class CanvasTrack extends ShadowBaseElement {
     };
   }
 }
-
-customElements.define("canvas-track", CanvasTrack);

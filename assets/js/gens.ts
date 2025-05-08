@@ -159,7 +159,7 @@ async function initialize(
   inputControls.initialize(
     startRegion,
     async (_range) => {
-      render({ dataUpdated: true });
+      render({ dataUpdated: true, positionOnly: true });
     },
     session,
   );
@@ -174,9 +174,19 @@ async function initialize(
     () => inputControls.getRange(),
     (range: Rng) => {
       inputControls.updatePosition(range);
-      render({ dataUpdated: true });
+      render({ dataUpdated: true, positionOnly: true });
     },
     () => inputControls.zoomOut(),
+    (pan: number) => {
+      const startRange = inputControls.getRange();
+      const currChromLength = chromSizes[inputControls.getRegion().chrom];
+      const endRange: Rng = [
+        Math.max(0, Math.floor(startRange[0] - pan)),
+        Math.min(Math.floor(startRange[1] - pan), currChromLength),
+      ];
+      inputControls.updatePosition(endRange);
+      render({ dataUpdated: true, positionOnly: true });
+    },
     (settings: { selectedOnly: boolean }) =>
       settingsPage.getAnnotSources(settings),
     getVariantURL,

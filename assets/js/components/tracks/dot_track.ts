@@ -12,6 +12,7 @@ export class DotTrack extends DataTrack {
     trackHeight: number,
     startExpanded: boolean,
     yAxis: Axis,
+    getXRange: () => Rng,
     getRenderData: () => Promise<DotTrackData>,
     openTrackContextMenu: (track: DataTrack) => void,
     session: GensSession,
@@ -19,9 +20,10 @@ export class DotTrack extends DataTrack {
     super(
       id,
       label,
-      () => this.renderData.xRange,
+      getXRange,
       () => {
-        const xRange = this.renderData.xRange;
+        // const xRange = this.renderData.xRange;
+        const xRange = getXRange();
         const yAxisWidth = STYLE.yAxis.width;
         const xScale = getLinearScale(xRange, [
           yAxisWidth,
@@ -44,7 +46,7 @@ export class DotTrack extends DataTrack {
     this.setExpandedHeight(this.defaultTrackHeight * 2);
   }
 
-  draw() {
+  override draw() {
     super.drawStart();
 
     const { dots } = this.renderData as DotTrackData;
