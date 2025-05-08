@@ -127,7 +127,7 @@ export class TracksManager extends ShadowBaseElement {
 
   // FIXME: Group the callbacks for better overview
   async initialize(
-    renderAll: (settings: RenderSettings) => void,
+    render: (settings: RenderSettings) => void,
     sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
@@ -153,7 +153,7 @@ export class TracksManager extends ShadowBaseElement {
     this.getXRange = getXRange;
     this.getChromosome = getChromosome;
     this.session = session;
-    this.renderAll = renderAll;
+    this.renderAll = render;
 
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
@@ -162,7 +162,7 @@ export class TracksManager extends ShadowBaseElement {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
-        renderAll({});
+        render({});
       },
     });
 
@@ -197,13 +197,26 @@ export class TracksManager extends ShadowBaseElement {
         getAnnotSources,
         (direction: "up" | "down") => this.moveTrack(track.id, direction),
         () => {
-          track.toggleHidden(), renderAll({});
+          track.toggleHidden(), render({});
         },
         () => {
-          track.toggleCollapsed(), renderAll({});
+          track.toggleCollapsed(), render({});
         },
         () => track.getIsHidden(),
         () => track.getIsCollapsed(),
+        () => track.getYAxis().range,
+        (newY: Rng) => {
+          track.updateYAxis(newY);
+          render({});
+        },
+        async (annotId: string | null) => {
+          let colorBands = [];
+          if (annotId != null) {
+            colorBands = await dataSource.getAnnotation(annotId);
+          }
+          track.setColorBands(colorBands);
+          render({});
+        },
       );
     };
 
@@ -375,8 +388,6 @@ export class TracksManager extends ShadowBaseElement {
     const sources = this.getAnnotationSources({ selectedOnly: true });
     // const sourcesIds = sources.map((source) => source.id);
 
-    console.log("Sources", sources);
-
     const currAnnotTracks = this.annotationTracks;
     // const currAnnotTrackIds = currAnnotTracks.map((track) => track.id);
 
@@ -425,8 +436,6 @@ export class TracksManager extends ShadowBaseElement {
     );
 
     this.updateAnnotationTracks();
-
-    console.log("Rendering", Object.values(this.trackPages));
 
     for (const trackPage of Object.values(this.trackPages)) {
       trackPage.render(settings);

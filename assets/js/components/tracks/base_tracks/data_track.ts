@@ -35,6 +35,11 @@ export class DataTrack extends CanvasTrack {
   getYScale: () => Scale;
   openTrackContextMenu: (track: DataTrack) => void;
 
+  private colorBands: RenderBand[] = [];
+  setColorBands(colorBands: RenderBand[]) {
+    this.colorBands = colorBands;
+  }
+
   // FIXME: All of this state should live elsewhere I think
   // Controlled by the tracks_manager perhaps
   private isHidden: boolean = false;
@@ -143,6 +148,7 @@ export class DataTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
+
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
     // is to prevent repeated API requests when rapidly zooming/panning
     // Only the last request is of interest
@@ -178,6 +184,8 @@ export class DataTrack extends CanvasTrack {
     super.syncDimensions();
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
+
+    console.log("Has color bands", this.colorBands);
 
     // Color fill Y axis area
     drawBox(

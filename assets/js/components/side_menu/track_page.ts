@@ -79,7 +79,6 @@ export class TrackPage extends ShadowBaseElement {
   private getIsHidden: () => boolean;
   private getIsCollapsed: () => boolean;
 
-  private actions: HTMLDivElement;
   private yAxis: HTMLDivElement;
   private colors: HTMLDivElement;
   private yAxisStart: HTMLSelectElement;
@@ -102,7 +101,6 @@ export class TrackPage extends ShadowBaseElement {
   }
 
   connectedCallback(): void {
-    this.actions = this.root.querySelector("#actions");
     this.yAxis = this.root.querySelector("#y-axis");
     this.colors = this.root.querySelector("#colors");
 
@@ -127,6 +125,9 @@ export class TrackPage extends ShadowBaseElement {
     toggleCollapsed: () => void,
     getIsHidden: () => boolean,
     getIsCollapsed: () => boolean,
+    getYAxis: () => Rng,
+    setYAxis: (newAxis: Rng) => void,
+    onColorSelected: (annotId: string) => void
   ) {
     this.isInitialized = true;
     this.getIsHidden = getIsHidden;
@@ -137,6 +138,10 @@ export class TrackPage extends ShadowBaseElement {
       const annotSources = getAnnotationSources({ selectedOnly: false });
       populateSelect(this.colorSelect, annotSources, true);
     }
+
+    const currY = getYAxis();
+    this.yAxisStart.value = currY[0].toString();
+    this.yAxisEnd.value = currY[1].toString();
 
     this.moveUp.addEventListener("click", () => {
       moveTrack("up");
@@ -150,11 +155,28 @@ export class TrackPage extends ShadowBaseElement {
     this.toggleCollapse.addEventListener("click", () => {
       toggleCollapsed();
     });
+
+    const getCurrRange = (): Rng => {
+      return [
+        parseFloat(this.yAxisStart.value),
+        parseFloat(this.yAxisEnd.value)
+      ]
+    }
+
+    this.yAxisStart.addEventListener("change", () => {
+      setYAxis(getCurrRange());
+    })
+    this.yAxisEnd.addEventListener("change", () => {
+      setYAxis(getCurrRange());
+    })
+
+    this.colorSelect.addEventListener("change", () => {
+      const id = this.colorSelect.value || null;
+      onColorSelected(id);
+    })
   }
 
   render(_settings: RenderSettings) {
-
-    console.log("Render triggered");
 
     const hideIcon = this.getIsHidden() ? ICONS.hide : ICONS.show
     this.toggleHide.classList = `button fas ${hideIcon}`
@@ -164,135 +186,135 @@ export class TrackPage extends ShadowBaseElement {
   }
 }
 
-// FIXME: Where should this util go?
-// Into its own web component
-function getTrackContextMenuContent(
-  render: (settings: RenderSettings) => void,
-  track: DataTrack,
-  isDotTrack: boolean,
-  getAnnotationSources: GetAnnotSources,
-  getBands: (id: string) => Promise<RenderBand[]>,
-  moveTrack: (id: string, direction: "up" | "down") => void,
-): HTMLDivElement[] {
-  const buttonsDiv = document.createElement("div");
-  buttonsDiv.style.display = "flex";
-  buttonsDiv.style.flexDirection = "row";
-  buttonsDiv.style.flexWrap = "nowrap";
-  buttonsDiv.style.gap = `${SIZES.s}px`;
+// // FIXME: Where should this util go?
+// // Into its own web component
+// function getTrackContextMenuContent(
+//   render: (settings: RenderSettings) => void,
+//   track: DataTrack,
+//   isDotTrack: boolean,
+//   getAnnotationSources: GetAnnotSources,
+//   getBands: (id: string) => Promise<RenderBand[]>,
+//   moveTrack: (id: string, direction: "up" | "down") => void,
+// ): HTMLDivElement[] {
+//   const buttonsDiv = document.createElement("div");
+//   buttonsDiv.style.display = "flex";
+//   buttonsDiv.style.flexDirection = "row";
+//   buttonsDiv.style.flexWrap = "nowrap";
+//   buttonsDiv.style.gap = `${SIZES.s}px`;
 
-  buttonsDiv.appendChild(
-    getIconButton(ICONS.up, "Up", () => moveTrack(track.id, "up")),
-  );
-  buttonsDiv.appendChild(
-    getIconButton(ICONS.down, "Down", () => moveTrack(track.id, "down")),
-  );
-  buttonsDiv.appendChild(
-    getIconButton(
-      track.getIsHidden() ? ICONS.hide : ICONS.show,
-      "Show / hide",
-      () => {
-        track.toggleHidden();
-        render({});
-      },
-    ),
-  );
-  buttonsDiv.appendChild(
-    getIconButton(
-      track.getIsCollapsed() ? ICONS.expand : ICONS.collapse,
-      "Collapse / expand",
-      () => {
-        track.toggleCollapsed();
-        render({});
-      },
-    ),
-  );
+//   buttonsDiv.appendChild(
+//     getIconButton(ICONS.up, "Up", () => moveTrack(track.id, "up")),
+//   );
+//   buttonsDiv.appendChild(
+//     getIconButton(ICONS.down, "Down", () => moveTrack(track.id, "down")),
+//   );
+//   buttonsDiv.appendChild(
+//     getIconButton(
+//       track.getIsHidden() ? ICONS.hide : ICONS.show,
+//       "Show / hide",
+//       () => {
+//         track.toggleHidden();
+//         render({});
+//       },
+//     ),
+//   );
+//   buttonsDiv.appendChild(
+//     getIconButton(
+//       track.getIsCollapsed() ? ICONS.expand : ICONS.collapse,
+//       "Collapse / expand",
+//       () => {
+//         track.toggleCollapsed();
+//         render({});
+//       },
+//     ),
+//   );
 
-  const returnElements = [buttonsDiv];
+//   const returnElements = [buttonsDiv];
 
-  if (isDotTrack) {
-    const axisRow = getYAxisRow(render, track);
-    returnElements.push(axisRow);
+//   if (isDotTrack) {
+//     const axisRow = getYAxisRow(render, track);
+//     returnElements.push(axisRow);
 
-    const colorSelectRow = getColorSelectRow(
-      track as DotTrack,
-      getAnnotationSources,
-      getBands,
-    );
-    returnElements.push(colorSelectRow);
-  }
-  return returnElements;
-}
+//     const colorSelectRow = getColorSelectRow(
+//       track as DotTrack,
+//       getAnnotationSources,
+//       getBands,
+//     );
+//     returnElements.push(colorSelectRow);
+//   }
+//   return returnElements;
+// }
 
-function getYAxisRow(
-  render: (settings: RenderSettings) => void,
-  track: DataTrack,
-): HTMLDivElement {
-  const axis = track.getYAxis();
+// function getYAxisRow(
+//   render: (settings: RenderSettings) => void,
+//   track: DataTrack,
+// ): HTMLDivElement {
+//   const axis = track.getYAxis();
 
-  const axisRow = getContainer("row");
-  axisRow.style.gap = "8px";
-  const yAxisLabel = document.createTextNode(`Y-axis range:`);
-  axisRow.appendChild(yAxisLabel);
+//   const axisRow = getContainer("row");
+//   axisRow.style.gap = "8px";
+//   const yAxisLabel = document.createTextNode(`Y-axis range:`);
+//   axisRow.appendChild(yAxisLabel);
 
-  const startNode = document.createElement("input");
-  startNode.type = "number";
-  startNode.value = axis.range[0].toString();
-  startNode.step = "0.1";
-  startNode.style.flex = "1 1 0px";
-  startNode.style.minWidth = "0";
-  axisRow.appendChild(startNode);
+//   const startNode = document.createElement("input");
+//   startNode.type = "number";
+//   startNode.value = axis.range[0].toString();
+//   startNode.step = "0.1";
+//   startNode.style.flex = "1 1 0px";
+//   startNode.style.minWidth = "0";
+//   axisRow.appendChild(startNode);
 
-  const endNode = document.createElement("input");
-  endNode.type = "number";
-  endNode.value = axis.range[1].toString();
-  endNode.step = "0.1";
-  endNode.style.flex = "1 1 0px";
-  endNode.style.minWidth = "0";
+//   const endNode = document.createElement("input");
+//   endNode.type = "number";
+//   endNode.value = axis.range[1].toString();
+//   endNode.step = "0.1";
+//   endNode.style.flex = "1 1 0px";
+//   endNode.style.minWidth = "0";
 
-  const onRangeChange = () => {
-    const parsedRange: Rng = [
-      parseFloat(startNode.value),
-      parseFloat(endNode.value),
-    ];
-    track.updateYAxis(parsedRange);
-    render({});
-  };
+//   const onRangeChange = () => {
+//     const parsedRange: Rng = [
+//       parseFloat(startNode.value),
+//       parseFloat(endNode.value),
+//     ];
+//     track.updateYAxis(parsedRange);
+//     render({});
+//   };
 
-  startNode.addEventListener("change", onRangeChange);
-  endNode.addEventListener("change", onRangeChange);
-  axisRow.appendChild(endNode);
-  return axisRow;
-}
+//   startNode.addEventListener("change", onRangeChange);
+//   endNode.addEventListener("change", onRangeChange);
+//   axisRow.appendChild(endNode);
+//   return axisRow;
+// }
 
-function getColorSelectRow(
-  track: DotTrack,
-  getAnnotationSources: GetAnnotSources,
-  getBands: (id: string) => Promise<RenderBand[]>,
-): HTMLDivElement {
-  const colorRow = getContainer("row");
+// function getColorSelectRow(
+//   track: DotTrack,
+//   getAnnotationSources: GetAnnotSources,
+//   getBands: (id: string) => Promise<RenderBand[]>,
+// ): HTMLDivElement {
+//   const colorRow = getContainer("row");
 
-  const label = document.createTextNode("Color:");
+//   const label = document.createTextNode("Color:");
 
-  const select = document.createElement("select") as HTMLSelectElement;
-  select.style.backgroundColor = COLORS.white;
-  const sources = getAnnotationSources({ selectedOnly: false });
+//   const select = document.createElement("select") as HTMLSelectElement;
+//   select.style.backgroundColor = COLORS.white;
+//   const sources = getAnnotationSources({ selectedOnly: false });
 
-  populateSelect(select, sources, true);
+//   populateSelect(select, sources, true);
 
-  select.addEventListener("change", async (_e) => {
-    const currentId = select.value;
-    if (currentId != "") {
-      const bands = await getBands(currentId);
-      track.updateColors(bands);
-    } else {
-      track.updateColors(null);
-    }
-  });
+//   select.addEventListener("change", async (_e) => {
+//     const currentId = select.value;
+//     if (currentId != "") {
+//       const bands = await getBands(currentId);
+//       track.updateColors(bands);
+//     } else {
+//       track.updateColors(null);
+//     }
+//   });
 
-  colorRow.appendChild(label);
-  colorRow.appendChild(select);
+//   colorRow.appendChild(label);
+//   colorRow.appendChild(select);
 
-  return colorRow;
-}
+//   return colorRow;
+// }
 
 customElements.define("track-page", TrackPage);

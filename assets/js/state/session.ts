@@ -3,13 +3,13 @@ import { SideMenu } from "../components/side_menu/side_menu";
 /**
  * The purpose of this class is to keep track of the web session,
  * i.e. state of Gens unrelated to the data.
- * Examples might be what region is watched, highlights, whether 
+ * Examples might be what region is watched, highlights, whether
  * in marker mode.
- * 
+ *
  * What annotations are currently selected.
- * 
+ *
  * It might also be whether tracks are hidden / collapsed / toggled actually.
- * Currently that is maintained by the tracks themselves though. But 
+ * Currently that is maintained by the tracks themselves though. But
  * it should probably be kept here as well.
  */
 export class GensSession {
