@@ -179,12 +179,13 @@ async function initialize(
     () => inputControls.zoomOut(),
     (pan: number) => {
       const startRange = inputControls.getRange();
+      const currChromLength = chromSizes[inputControls.getRegion().chrom];
       const endRange: Rng = [
-        Math.floor(startRange[0] + pan),
-        Math.floor(startRange[1] + pan)
-            ]
+        Math.max(0, Math.floor(startRange[0] - pan)),
+        Math.min(Math.floor(startRange[1] - pan), currChromLength),
+      ];
       inputControls.updatePosition(endRange);
-      render({positionUpdated: true});
+      render({ dataUpdated: true, positionOnly: true });
     },
     (settings: { selectedOnly: boolean }) =>
       settingsPage.getAnnotSources(settings),

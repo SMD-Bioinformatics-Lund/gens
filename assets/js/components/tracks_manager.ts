@@ -541,6 +541,7 @@ export class TracksManager extends ShadowBaseElement {
       sourceId,
       label,
       trackHeight.thin,
+      this.getXRange,
       () =>
         getAnnotTrackData(
           sourceId,
@@ -567,6 +568,7 @@ export class TracksManager extends ShadowBaseElement {
       trackHeight.thick,
       settings.startExpanded,
       settings.yAxis,
+      this.getXRange,
       async () => {
         const data = await dataFn(sampleId);
         // const data = await this.dataSource.getCovData(sampleId);
@@ -596,6 +598,7 @@ export class TracksManager extends ShadowBaseElement {
       id,
       label,
       trackHeight.thin,
+      this.getXRange,
       async () => {
         return {
           xRange: this.getXRange(),
@@ -642,6 +645,7 @@ export class TracksManager extends ShadowBaseElement {
       id,
       label,
       trackHeight.thin,
+      this.getXRange,
       async () => {
         return {
           xRange: this.getXRange(),
