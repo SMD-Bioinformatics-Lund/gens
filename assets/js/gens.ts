@@ -168,6 +168,36 @@ async function initialize(
     session,
   );
 
+  const onPan = (panDistance: number) => {
+    const startRange = inputControls.getRange();
+    const currChromLength = chromSizes[inputControls.getRegion().chrom];
+    const endRange: Rng = [
+      Math.max(0, Math.floor(startRange[0] - panDistance)),
+      Math.min(Math.floor(startRange[1] - panDistance), currChromLength),
+    ];
+    inputControls.updatePosition(endRange);
+    render({ dataUpdated: true, positionOnly: true });
+  };
+
+  const tracksDataSources = {
+    getAnnotationSources: (settings: { selectedOnly: boolean }) =>
+      settingsPage.getAnnotSources(settings),
+    getVariantUrl: (id: string) => getVariantURL(id),
+    getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
+    getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
+    getVariantDetails: (sampleId: string, variantId: string) =>
+      api.getVariantDetails(
+        sampleId,
+        variantId,
+        inputControls.getRegion().chrom,
+      ),
+
+    getAnnotation: (id: string) => renderDataSource.getAnnotation(id),
+    getCovData: (id: string) => renderDataSource.getCovData(id),
+    getBafData: (id: string) => renderDataSource.getBafData(id),
+    getVariantData: (id: string) => renderDataSource.getVariantData(id),
+  };
+
   await tracks.initialize(
     render,
     sampleIds,
@@ -177,31 +207,24 @@ async function initialize(
     () => inputControls.getRegion().chrom,
     () => inputControls.getRange(),
     (range: Rng) => {
+      console.error("Setting position", range);
       inputControls.updatePosition(range);
       render({ dataUpdated: true, positionOnly: true });
     },
     () => inputControls.zoomOut(),
-    (pan: number) => {
-      const startRange = inputControls.getRange();
-      const currChromLength = chromSizes[inputControls.getRegion().chrom];
-      const endRange: Rng = [
-        Math.max(0, Math.floor(startRange[0] - pan)),
-        Math.min(Math.floor(startRange[1] - pan), currChromLength),
-      ];
-      inputControls.updatePosition(endRange);
-      render({ dataUpdated: true, positionOnly: true });
-    },
-    (settings: { selectedOnly: boolean }) =>
-      settingsPage.getAnnotSources(settings),
-    getVariantURL,
-    async (id: string) => await api.getAnnotationDetails(id),
-    async (id: string) => await api.getTranscriptDetails(id),
-    async (sampleId: string, variantId: string) =>
-      await api.getVariantDetails(
-        sampleId,
-        variantId,
-        inputControls.getRegion().chrom,
-      ),
+    onPan,
+    // (settings: { selectedOnly: boolean }) =>
+    //   settingsPage.getAnnotSources(settings),
+    tracksDataSources,
+    // getVariantURL,
+    // async (id: string) => await api.getAnnotationDetails(id),
+    // async (id: string) => await api.getTranscriptDetails(id),
+    // async (sampleId: string, variantId: string) =>
+    //   await api.getVariantDetails(
+    //     sampleId,
+    //     variantId,
+    //     inputControls.getRegion().chrom,
+    //   ),
     session,
   );
 

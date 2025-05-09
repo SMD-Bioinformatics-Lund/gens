@@ -14,7 +14,7 @@ import {
   getVariantContextMenuContent,
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
-import { generateID, rangeSize } from "../util/utils";
+import { generateID } from "../util/utils";
 import { getSimpleButton } from "./util/menu_utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
@@ -34,6 +34,24 @@ const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
 const trackHeight = STYLE.tracks.trackHeight;
+
+const TRACK_HANDLE_CLASS = "track-handle";
+
+interface TracksManagerDataSources {
+  getAnnotationSources: GetAnnotSources;
+  getVariantUrl: (id: string) => string;
+  getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
+  getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>;
+  getVariantDetails: (
+    sampleId: string,
+    variantId: string,
+  ) => Promise<ApiVariantDetails>;
+
+  getAnnotation: (id: string) => Promise<RenderBand[]>;
+  getCovData: (id: string) => Promise<RenderDot[]>;
+  getBafData: (id: string) => Promise<RenderDot[]>;
+  getVariantData: (id: string) => Promise<RenderBand[]>;
+}
 
 // FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
@@ -97,10 +115,11 @@ export class TracksManager extends ShadowBaseElement {
   getChromosome: () => string;
 
   dragCallbacks: DragCallbacks;
-  dataSource: RenderDataSource;
+  // dataSource: RenderDataSource;
+  myDataSources: TracksManagerDataSources;
   renderAll: (settings: RenderSettings) => void;
 
-  getAnnotationSources: GetAnnotSources;
+  // getAnnotationSources: GetAnnotSources;
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
   openTrackContextMenu: (track: DataTrack) => void;
   session: GensSession;
@@ -136,24 +155,32 @@ export class TracksManager extends ShadowBaseElement {
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
     dataSource: RenderDataSource,
+
+    // In session?
     getChromosome: () => string,
     getXRange: () => Rng,
+
+    // Movements - also session?
     onZoomIn: (range: Rng) => void,
     onZoomOut: () => void,
     onPan: (panX: number) => void,
-    getAnnotSources: GetAnnotSources,
-    getVariantURL: (id: string) => string,
-    getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
-    getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
-    getVariantDetails: (
-      sampleId: string,
-      variantId: string,
-    ) => Promise<ApiVariantDetails>,
+
+    // Data sources
+    // getAnnotSources: GetAnnotSources,
+    // getVariantURL: (id: string) => string,
+    // getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
+    // getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
+    // getVariantDetails: (
+    //   sampleId: string,
+    //   variantId: string,
+    // ) => Promise<ApiVariantDetails>,
+    myDataSources: TracksManagerDataSources,
     session: GensSession,
   ) {
-    this.dataSource = dataSource;
-    this.getAnnotationSources = getAnnotSources;
-    this.getAnnotationDetails = getAnnotationDetails;
+    // this.dataSource = dataSource;
+    this.myDataSources = myDataSources;
+    // this.getAnnotationSources = getAnnotSources;
+    // this.getAnnotationDetails = getAnnotationDetails;
 
     this.getXRange = getXRange;
     this.getChromosome = getChromosome;
@@ -162,7 +189,7 @@ export class TracksManager extends ShadowBaseElement {
 
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
-      handle: ".track-handle",
+      handle: `.${TRACK_HANDLE_CLASS}`,
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
@@ -209,7 +236,7 @@ export class TracksManager extends ShadowBaseElement {
       this.session.showContent(track.label, [trackPage]);
 
       trackPage.initialize(
-        getAnnotSources,
+        myDataSources.getAnnotationSources,
         (direction: "up" | "down") => this.moveTrack(track.id, direction),
         () => {
           track.toggleHidden(), render({});
@@ -227,7 +254,7 @@ export class TracksManager extends ShadowBaseElement {
         async (annotId: string | null) => {
           let colorBands = [];
           if (annotId != null) {
-            colorBands = await dataSource.getAnnotation(annotId);
+            colorBands = await myDataSources.getAnnotation(annotId);
           }
           track.setColorBands(colorBands);
           render({});
@@ -258,14 +285,14 @@ export class TracksManager extends ShadowBaseElement {
         `${sampleId}_log2_cov`,
         `${sampleId} cov`,
         sampleId,
-        (sampleId: string) => this.dataSource.getCovData(sampleId),
+        (sampleId: string) => this.myDataSources.getCovData(sampleId),
         { startExpanded, yAxis: { range: COV_Y_RANGE } },
       );
       const bafTrack = this.getDotTrack(
         `${sampleId}_log2_baf`,
         `${sampleId} baf`,
         sampleId,
-        (sampleId: string) => this.dataSource.getBafData(sampleId),
+        (sampleId: string) => this.myDataSources.getBafData(sampleId),
         { startExpanded, yAxis: { range: BAF_Y_RANGE } },
       );
 
@@ -273,9 +300,9 @@ export class TracksManager extends ShadowBaseElement {
         `${sampleId}_variants`,
         `${sampleId} Variants`,
         sampleId,
-        (sampleId: string) => this.dataSource.getVariantData(sampleId),
-        getVariantDetails,
-        getVariantURL,
+        (sampleId: string) => this.myDataSources.getVariantData(sampleId),
+        myDataSources.getVariantDetails,
+        myDataSources.getVariantUrl,
       );
 
       covTracks.push(coverageTrack);
@@ -287,7 +314,7 @@ export class TracksManager extends ShadowBaseElement {
       "genes",
       "Genes",
       () => dataSource.getTranscriptData(),
-      (id: string) => getTranscriptDetails(id),
+      (id: string) => myDataSources.getTranscriptDetails(id),
     );
 
     const overviewTrackCov = this.getOverviewTrack(
@@ -314,7 +341,6 @@ export class TracksManager extends ShadowBaseElement {
       ...covTracks,
       ...bafTracks,
       ...variantTracks,
-      // ...annotationTracks,
       genesTrack,
     );
 
@@ -400,7 +426,9 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   updateAnnotationTracks() {
-    const sources = this.getAnnotationSources({ selectedOnly: true });
+    const sources = this.myDataSources.getAnnotationSources({
+      selectedOnly: true,
+    });
     // const sourcesIds = sources.map((source) => source.id);
 
     const currAnnotTracks = this.annotationTracks;
@@ -507,7 +535,7 @@ export class TracksManager extends ShadowBaseElement {
         getAnnotTrackData(
           sourceId,
           this.getXRange,
-          this.dataSource.getAnnotation,
+          this.myDataSources.getAnnotation,
         ),
       openContextMenuId,
       this.openTrackContextMenu,
@@ -679,7 +707,7 @@ function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
   wrapper.appendChild(track);
 
   const handle = document.createElement("div");
-  handle.className = "track-handle";
+  handle.className = TRACK_HANDLE_CLASS;
   handle.style.position = "absolute";
   handle.style.top = "0";
   handle.style.left = "0";

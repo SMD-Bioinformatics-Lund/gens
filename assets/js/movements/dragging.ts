@@ -37,7 +37,7 @@ export function setupDragging(
   container.addEventListener("pointerup", (event) => {
     isMouseDown = false;
 
-    if (event.button === 0) {
+    if (event.button === 0 && isSpaceDown) {
       const dragEndX = event.offsetX;
 
       container.releasePointerCapture(event.pointerId);
