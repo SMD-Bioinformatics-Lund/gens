@@ -7,12 +7,12 @@ export function setupDrag(
   tracksContainer: HTMLElement,
   getMarkerModeOn: () => boolean,
   getXRange: () => Rng,
-  getChromosome: () => string,
   onSetViewRange: (range: Rng) => void,
   onAddHighlight: (range: Rng) => void,
   onRemoveHighlight: (id: string) => void,
 ) {
   const onDragEnd = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+
     const xRange = getXRange();
     if (xRange == null) {
       console.error("No xRange set");

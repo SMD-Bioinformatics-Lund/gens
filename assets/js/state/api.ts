@@ -35,7 +35,6 @@ export class API {
   }
 
   async initialize() {
-    console.log("initializing");
     for (const chrom of CHROMOSOMES) {
       const chromInfo = await this.getChromData(chrom);
       this.allChromData[chrom] = chromInfo;

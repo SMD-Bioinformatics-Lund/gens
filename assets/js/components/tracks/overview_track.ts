@@ -46,8 +46,6 @@ export class OverviewTrack extends CanvasTrack {
   ) {
     super(id, label, trackHeight);
 
-    console.log("Overview track created");
-
     this.chromSizes = chromSizes;
     this.yRange = yRange;
     this.getRenderData = getRenderData;
@@ -61,8 +59,6 @@ export class OverviewTrack extends CanvasTrack {
 
   initialize() {
     super.initialize();
-
-    console.log("Overview track initialized");
 
     this.marker = document.createElement("gens-marker") as GensMarker;
     this.trackContainer.appendChild(this.marker);
@@ -85,15 +81,12 @@ export class OverviewTrack extends CanvasTrack {
 
   async render(settings: RenderSettings) {
 
-    console.log("Rendering overview track", settings);
-
     // FIXME: This one is a bit tricky isn't it
     // We want it to render not on new data, but on resize
     // Do I have all info I need here?
     // Should the renderData be more granular?
     let newRender = false;
     if (this.renderData == null || settings.resized) {
-      console.log("Getting new rendering data");
       newRender = this.renderData == null;
       this.renderData = await this.getRenderData();
     }
@@ -125,7 +118,6 @@ export class OverviewTrack extends CanvasTrack {
     ]);
 
     if (newRender) {
-      console.log("newRender triggered");
       super.syncDimensions();
       this.renderLoading();
 

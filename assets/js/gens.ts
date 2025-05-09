@@ -217,36 +217,37 @@ function setupShortcuts(
       }
       sideMenu.close();
     }
-    if (e.key === "ArrowLeft") {
-      if (e.ctrlKey || e.metaKey) {
-        const currChrom = session.getChromosome();
-        const currIndex = CHROMOSOMES.indexOf(currChrom);
-        if (currIndex > 0) {
-          const newChrom = CHROMOSOMES[currIndex - 1];
-          onChromClick(newChrom);
-        }
-      } else {
-        inputControls.panLeft();
-      }
-    }
-    if (e.key === "ArrowRight") {
-      if (e.ctrlKey || e.metaKey) {
-        const currChrom = session.getChromosome();
-        const currIndex = CHROMOSOMES.indexOf(currChrom);
-        if (currIndex < CHROMOSOMES.length - 1) {
-          const newChrom = CHROMOSOMES[currIndex + 1];
-          onChromClick(newChrom);
-        }
-      } else {
-        inputControls.panRight();
-      }
-    }
-    if (e.key === "ArrowUp") {
-      inputControls.zoomIn();
-    }
-    if (e.key === "ArrowDown") {
-      inputControls.zoomOut();
-    }
+    // FIXME: Restore these, should not be active when for instance cursor is inside region box
+    // if (e.key === "ArrowLeft") {
+    //   if (e.ctrlKey || e.metaKey) {
+    //     const currChrom = session.getChromosome();
+    //     const currIndex = CHROMOSOMES.indexOf(currChrom);
+    //     if (currIndex > 0) {
+    //       const newChrom = CHROMOSOMES[currIndex - 1];
+    //       onChromClick(newChrom);
+    //     }
+    //   } else {
+    //     inputControls.panLeft();
+    //   }
+    // }
+    // if (e.key === "ArrowRight") {
+    //   if (e.ctrlKey || e.metaKey) {
+    //     const currChrom = session.getChromosome();
+    //     const currIndex = CHROMOSOMES.indexOf(currChrom);
+    //     if (currIndex < CHROMOSOMES.length - 1) {
+    //       const newChrom = CHROMOSOMES[currIndex + 1];
+    //       onChromClick(newChrom);
+    //     }
+    //   } else {
+    //     inputControls.panRight();
+    //   }
+    // }
+    // if (e.key === "ArrowUp") {
+    //   inputControls.zoomIn();
+    // }
+    // if (e.key === "ArrowDown") {
+    //   inputControls.zoomOut();
+    // }
     if (e.key === "r") {
       inputControls.resetZoom();
     }

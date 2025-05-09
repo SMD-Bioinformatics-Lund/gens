@@ -33,8 +33,6 @@ export class GensSession {
     chromSizes: Record<string, number>
   ) {
 
-    console.log("Assigning region", region);
-
     this.render = render;
     this.sideMenu = sideMenu;
     this.highlights = {};

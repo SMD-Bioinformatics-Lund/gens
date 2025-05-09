@@ -175,7 +175,6 @@ export class TracksManager extends ShadowBaseElement {
       render({ dataUpdated: true, positionOnly: true });
     });
 
-
     const openTrackContextMenu = this.createOpenTrackContextMenu(render);
     this.openTrackContextMenu = openTrackContextMenu;
 
@@ -266,9 +265,9 @@ export class TracksManager extends ShadowBaseElement {
 
     this.dataTracks.push(
       ...covTracks,
-      // ...bafTracks,
-      // ...variantTracks,
-      // genesTrack,
+      ...bafTracks,
+      ...variantTracks,
+      genesTrack,
     );
 
     this.topContainer.appendChild(this.ideogramTrack);
@@ -292,8 +291,10 @@ export class TracksManager extends ShadowBaseElement {
       this.tracksContainer,
       () => session.getMarkerModeOn(),
       () => session.getXRange(),
-      () => session.getChromosome(),
-      (range: Rng) => session.setViewRange(range),
+      (range: Rng) => {
+        session.setViewRange(range);
+        render({ dataUpdated: true, positionOnly: true });
+      },
       (range: Rng) => session.addHighlight(range),
       (id: string) => session.removeHighlight(id),
     );
@@ -369,51 +370,41 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
-    // renderHighlights(
-    //   this.tracksContainer,
-    //   this.session.getCurrentHighlights(),
-    //   this.getXScale(),
-    //   (id) => this.session.removeHighlight(id),
-    // );
+    renderHighlights(
+      this.tracksContainer,
+      this.session.getCurrentHighlights(),
+      this.getXScale(),
+      (id) => this.session.removeHighlight(id),
+    );
 
-    // updateAnnotationTracks(
-    //   this.dataSources,
-    //   this.session,
-    //   this.openTrackContextMenu,
-    //   this.addDataTrack,
-    //   this.removeDataTrack,
-    // );
+    const addAnnotationTrack = (newTrack: DataTrack) => {
+      this.dataTracks.push(newTrack);
+      // FIXME: Is this needed?
+      this.annotationTracks.push(newTrack);
+      const trackWrapper = createDataTrackWrapper(newTrack);
+      this.tracksContainer.appendChild(trackWrapper);
+      newTrack.initialize();
+    };
 
-    // for (const trackPage of Object.values(this.trackPages)) {
-    //   trackPage.render(settings);
-    // }
+    updateAnnotationTracks(
+      this.dataSources,
+      this.session,
+      this.openTrackContextMenu,
+      addAnnotationTrack,
+      this.removeDataTrack,
+    );
 
-    console.log("Render");
-
-    for (const dataTrack of this.dataTracks) {
-      dataTrack.debugRender();
+    for (const trackPage of Object.values(this.trackPages)) {
+      trackPage.render(settings);
     }
-
-    this.ideogramTrack.debugRender();
 
     this.ideogramTrack.render(settings);
 
     for (const track of this.dataTracks) {
       track.render(settings);
-      track.debugRender();
     }
 
-    // this.overviewTracks.forEach((track) => track.render(settings));
-  }
-
-  addDataTrack(newTrack: DataTrack, isAnnotation: boolean) {
-    this.dataTracks.push(newTrack);
-    if (isAnnotation) {
-      this.annotationTracks.push(newTrack);
-    }
-    const trackWrapper = createDataTrackWrapper(newTrack);
-    this.tracksContainer.appendChild(trackWrapper);
-    newTrack.initialize();
+    this.overviewTracks.forEach((track) => track.render(settings));
   }
 
   removeDataTrack(id: string) {
@@ -481,7 +472,9 @@ function updateAnnotationTracks(
     selectedOnly: true,
   });
 
-  const currAnnotTracks = dataSources.getAnnotationSources({selectedOnly: true});
+  const currAnnotTracks = dataSources.getAnnotationSources({
+    selectedOnly: true,
+  });
 
   const newSources = diff(sources, currAnnotTracks, (source) => source.id);
   const removedSources = diff(currAnnotTracks, sources, (source) => source.id);
