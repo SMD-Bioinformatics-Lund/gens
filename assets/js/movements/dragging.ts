@@ -44,10 +44,8 @@ export function setupDragging(
   onDragEnd: (range: Rng) => void,
 ) {
   let dragStartX: number | null = null;
-  let dragEndX: number | null = null;
 
   let isSpaceDown = false;
-  let isMouseDown = false;
   window.addEventListener("keydown", (event) => {
     if (event.code === "Space") {
       isSpaceDown = true;
@@ -66,7 +64,6 @@ export function setupDragging(
   });
 
   container.addEventListener("pointerdown", (event) => {
-    isMouseDown = true;
 
     if (isSpaceDown) {
       dragStartX = event.offsetX;
@@ -76,7 +73,6 @@ export function setupDragging(
   });
 
   container.addEventListener("pointerup", (event) => {
-    isMouseDown = false;
 
     if (event.button === 0 && isSpaceDown) {
       const dragEndX = event.offsetX;
@@ -90,6 +86,5 @@ export function setupDragging(
     }
 
     dragStartX = null;
-    dragEndX = null;
   });
 }

@@ -90,7 +90,7 @@ export async function initCanvases({
     return url;
   };
 
-  setupShortcuts(session, sideMenu, inputControls, onChromClick);
+  setupShortcuts(session, sideMenu, inputControls);
 
   const annotSources = await api.getAnnotationSources();
   const defaultAnnot = annotSources
@@ -206,7 +206,6 @@ function setupShortcuts(
   session: GensSession,
   sideMenu: SideMenu,
   inputControls: InputControls,
-  onChromClick: (chrom: string) => void,
 ) {
   // Rebuild the keyboard shortcuts
   document.addEventListener("keydown", (e) => {

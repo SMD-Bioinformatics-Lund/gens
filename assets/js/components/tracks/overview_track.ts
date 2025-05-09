@@ -198,7 +198,7 @@ function renderOverviewPlot(
       // If exchanged for a different letter, this label is rendered, so is Y.
       // If keeping the "Y", nothing is rendered specifically for the Y label
       // More digging is needed here to understand this
-      let renderChrom = `${chrom}.`;
+      const renderChrom = `${chrom}.`;
       drawLabel(
         ctx,
         renderChrom,

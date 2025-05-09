@@ -1,11 +1,6 @@
 import { COLORS, ICONS } from "../constants";
 import { GensSession } from "../state/gens_session";
-import {
-  getPan,
-  parseRegionDesignation,
-  zoomIn,
-  zoomOut,
-} from "../util/navigation";
+import { getPan, zoomIn, zoomOut } from "../util/navigation";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`

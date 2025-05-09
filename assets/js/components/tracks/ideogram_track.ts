@@ -3,7 +3,6 @@ import { STYLE } from "../../constants";
 import { CanvasTrack } from "./base_tracks/canvas_track";
 import "tippy.js/dist/tippy.css";
 import { getLinearScale } from "../../draw/render_utils";
-import { drawBox } from "../../draw/shapes";
 
 export class IdeogramTrack extends CanvasTrack {
   private markerElement: HTMLDivElement;
