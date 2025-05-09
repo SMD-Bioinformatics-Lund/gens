@@ -327,8 +327,15 @@ export class TracksManager extends ShadowBaseElement {
   moveTrack(trackId: string, direction: "up" | "down") {
     const track = this.getTrackById(trackId);
     const trackIndex = this.dataTracks.indexOf(track);
-    const shift = direction == "up" ? -1 : 1;
 
+    if (direction == "up" && trackIndex == 0) {
+      return;
+    }
+    if (direction == "down" && trackIndex == this.dataTracks.length - 1) {
+      return;
+    }
+
+    const shift = direction == "up" ? -1 : 1;
     const trackContainer = track.parentElement;
     const trackSContainer = trackContainer.parentNode;
     if (direction == "up") {
@@ -435,10 +442,12 @@ export class TracksManager extends ShadowBaseElement {
         this.dataSources.getAnnotationSources,
         (direction: "up" | "down") => this.moveTrack(track.id, direction),
         () => {
-          track.toggleHidden(), render({});
+          track.toggleHidden();
+          render({});
         },
         () => {
-          track.toggleCollapsed(), render({});
+          track.toggleCollapsed();
+          render({});
         },
         () => track.getIsHidden(),
         () => track.getIsCollapsed(),

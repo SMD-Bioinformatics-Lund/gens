@@ -120,7 +120,6 @@ export async function initCanvases({
     sampleIds,
     inputControls,
     gensTracks,
-    startRegion,
     settingsPage,
     api,
     onChromClick,
@@ -141,13 +140,13 @@ export async function initCanvases({
   });
 }
 
+// FIXME: Remove this subfunction? Move it to the main function above
 async function initialize(
   session: GensSession,
   render: (settings: RenderSettings) => void,
   sampleIds: string[],
   inputControls: InputControls,
   tracks: TracksManager,
-  startRegion: Region,
   settingsPage: SettingsPage,
   api: API,
   onChromClick: (chrom: string) => void,
@@ -190,7 +189,7 @@ async function initialize(
     getChromInfo: () => renderDataSource.getChromInfo(),
   };
 
-  tracks.initialize(
+  await tracks.initialize(
     render,
     sampleIds,
     chromSizes,

@@ -1,5 +1,18 @@
-export class ShadowBaseElement extends HTMLElement {
+export abstract class ShadowBaseElement extends HTMLElement {
   protected root: ShadowRoot;
+
+  /** Disconnect sets of listeners attached to element on disconnect */
+  private abortController;
+
+  protected getListenerAbortSignal(): AbortSignal {
+    if (this.abortController == null) {
+      throw Error(
+        "Must connect component (remember super.connectedCallback()) before adding listeners",
+      );
+    }
+    return this.abortController.signal;
+  }
+
   constructor(template: HTMLTemplateElement) {
     super();
     this.root = this.attachShadow({ mode: "open" });
@@ -10,5 +23,11 @@ export class ShadowBaseElement extends HTMLElement {
     if (!this.root) {
       this.root = this.attachShadow({ mode: "open" });
     }
+
+    this.abortController = new AbortController();
+  }
+
+  disconnectedCallback() {
+    this.abortController.abort();
   }
 }

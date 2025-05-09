@@ -48,6 +48,8 @@ export abstract class DataTrack extends CanvasTrack {
   session: GensSession;
   //
 
+  labelBox: HoverBox | null;
+
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
 
@@ -109,15 +111,19 @@ export abstract class DataTrack extends CanvasTrack {
       ? this.collapsedTrackHeight
       : this.defaultTrackHeight;
 
-    this.trackContainer.addEventListener(eventKey, (event) => {
-      event.preventDefault();
-      this.expander.toggle();
-      this.currentHeight = this.expander.isExpanded
-        ? this.expander.expandedHeight
-        : height;
-      this.syncDimensions();
-      onExpand();
-    });
+    this.trackContainer.addEventListener(
+      eventKey,
+      (event) => {
+        event.preventDefault();
+        this.expander.toggle();
+        this.currentHeight = this.expander.isExpanded
+          ? this.expander.expandedHeight
+          : height;
+        this.syncDimensions();
+        onExpand();
+      },
+      { signal: this.getListenerAbortSignal() },
+    );
   }
 
   constructor(
@@ -190,12 +196,8 @@ export abstract class DataTrack extends CanvasTrack {
         x2: xScale(band.end),
         y1: 0,
         y2: this.dimensions.height,
-      }
-      drawBox(
-        this.ctx,
-        box,
-        { fillColor: band.color, alpha: 0.3 },
-      );
+      };
+      drawBox(this.ctx, box, { fillColor: band.color, alpha: 0.3 });
     }
 
     // Color fill Y axis area
@@ -219,27 +221,31 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected drawEnd() {
-    const labelBox = this.setupLabel(() => this.openTrackContextMenu(this));
-    setCanvasPointerCursor(
-      this.canvas,
-      () => {
-        const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
-        return hoverTargets.concat([labelBox]);
-      },
-      () => this.session.getMarkerModeOn(),
-      [0, STYLE.yAxis.width],
-    );
-  }
-
-  setupLabel(onClick: () => void): HoverBox {
     const yAxisWidth = STYLE.yAxis.width;
     const labelBox = this.drawTrackLabel(yAxisWidth);
     const hoverBox = {
       label: this.label,
       box: labelBox,
     };
-    setupCanvasClick(this.canvas, () => [hoverBox], onClick);
-    return hoverBox;
+    if (this.labelBox == null) {
+      setupCanvasClick(
+        this.canvas,
+        () => [hoverBox],
+        () => this.openTrackContextMenu(this),
+        this.getListenerAbortSignal(),
+      );
+      setCanvasPointerCursor(
+        this.canvas,
+        () => {
+          const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
+          return hoverTargets.concat([hoverBox]);
+        },
+        () => this.session.getMarkerModeOn(),
+        [0, STYLE.yAxis.width],
+        this.getListenerAbortSignal(),
+      );
+    }
+    this.labelBox = hoverBox;
   }
 
   renderYAxis(yAxis: Axis) {

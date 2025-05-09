@@ -51,8 +51,8 @@ export class BandTrack extends DataTrack {
     this.openContextMenu = openContextMenu;
   }
 
-  initialize() {
-    super.initialize();
+  connectedCallback(): void {
+    super.connectedCallback();
 
     const onElementClick = async (box: HoverBox) => {
       const element = box.element as RenderBand;
