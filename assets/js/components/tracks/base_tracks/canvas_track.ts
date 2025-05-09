@@ -114,7 +114,12 @@ export abstract class CanvasTrack extends ShadowBaseElement {
   async render(_updateData: RenderSettings) {}
 
   initializeClick(onElementClick: (el: HoverBox) => void | null = null) {
-    setupCanvasClick(this.canvas, () => this.hoverTargets, onElementClick);
+    setupCanvasClick(
+      this.canvas,
+      () => this.hoverTargets,
+      onElementClick,
+      this.getAbortSignal(),
+    );
   }
 
   initializeHoverTooltip() {

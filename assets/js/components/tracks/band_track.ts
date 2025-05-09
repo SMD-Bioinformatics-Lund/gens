@@ -54,6 +54,8 @@ export class BandTrack extends DataTrack {
   initialize() {
     super.initialize();
 
+    console.log("Band track initialized");
+
     const onElementClick = async (box: HoverBox) => {
       const element = box.element as RenderBand;
       this.openContextMenu(element.id);

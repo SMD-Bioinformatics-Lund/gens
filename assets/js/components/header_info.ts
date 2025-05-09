@@ -29,7 +29,7 @@ template.innerHTML = String.raw`
 <div id="container">
   <div class="row text">
     <div class="label">Case </div>
-    <a href="" id="case-id">(value)</a>
+    <a href="" id="case-id" target="_blank">(value)</a>
   </div>
   <div class="row text">
     <div class="label">Sample </div>

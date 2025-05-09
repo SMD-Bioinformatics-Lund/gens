@@ -104,20 +104,26 @@ export abstract class DataTrack extends CanvasTrack {
     startExpanded: boolean,
     onExpand: () => void,
   ) {
+    console.log("Expander initialized");
+
     this.expander = new Expander(startExpanded);
     const height = this.isCollapsed
       ? this.collapsedTrackHeight
       : this.defaultTrackHeight;
 
-    this.trackContainer.addEventListener(eventKey, (event) => {
-      event.preventDefault();
-      this.expander.toggle();
-      this.currentHeight = this.expander.isExpanded
-        ? this.expander.expandedHeight
-        : height;
-      this.syncDimensions();
-      onExpand();
-    });
+    this.trackContainer.addEventListener(
+      eventKey,
+      (event) => {
+        event.preventDefault();
+        this.expander.toggle();
+        this.currentHeight = this.expander.isExpanded
+          ? this.expander.expandedHeight
+          : height;
+        this.syncDimensions();
+        onExpand();
+      },
+      { signal: this.abortController.signal },
+    );
   }
 
   constructor(
@@ -190,12 +196,8 @@ export abstract class DataTrack extends CanvasTrack {
         x2: xScale(band.end),
         y1: 0,
         y2: this.dimensions.height,
-      }
-      drawBox(
-        this.ctx,
-        box,
-        { fillColor: band.color, alpha: 0.3 },
-      );
+      };
+      drawBox(this.ctx, box, { fillColor: band.color, alpha: 0.3 });
     }
 
     // Color fill Y axis area
@@ -228,6 +230,7 @@ export abstract class DataTrack extends CanvasTrack {
       },
       () => this.session.getMarkerModeOn(),
       [0, STYLE.yAxis.width],
+      this.abortController.signal,
     );
   }
 

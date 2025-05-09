@@ -98,6 +98,8 @@ export class TrackPage extends ShadowBaseElement {
   }
 
   connectedCallback(): void {
+    super.connectedCallback();
+
     this.yAxis = this.root.querySelector("#y-axis");
     this.colors = this.root.querySelector("#colors");
 
@@ -126,6 +128,11 @@ export class TrackPage extends ShadowBaseElement {
     setYAxis: (newAxis: Rng) => void,
     onColorSelected: (annotId: string) => void,
   ) {
+
+    if (!this.isConnected) {
+      throw Error("Must be connected before being initialized");
+    }
+
     this.isInitialized = true;
     this.getIsHidden = getIsHidden;
     this.getIsCollapsed = getIsCollapsed;
@@ -141,18 +148,34 @@ export class TrackPage extends ShadowBaseElement {
       this.yAxisEnd.value = currY[1].toString();
     }
 
-    this.moveUp.addEventListener("click", () => {
-      moveTrack("up");
-    });
-    this.moveDown.addEventListener("click", () => {
-      moveTrack("down");
-    });
-    this.toggleHide.addEventListener("click", () => {
-      toggleHidden();
-    });
-    this.toggleCollapse.addEventListener("click", () => {
-      toggleCollapsed();
-    });
+    this.moveUp.addEventListener(
+      "click",
+      () => {
+        moveTrack("up");
+      },
+      { signal: this.abortController.signal },
+    );
+    this.moveDown.addEventListener(
+      "click",
+      () => {
+        moveTrack("down");
+      },
+      { signal: this.abortController.signal },
+    );
+    this.toggleHide.addEventListener(
+      "click",
+      () => {
+        toggleHidden();
+      },
+      { signal: this.abortController.signal },
+    );
+    this.toggleCollapse.addEventListener(
+      "click",
+      () => {
+        toggleCollapsed();
+      },
+      { signal: this.abortController.signal },
+    );
 
     if (this.settings.showYAxis) {
       const getCurrRange = (): Rng => {

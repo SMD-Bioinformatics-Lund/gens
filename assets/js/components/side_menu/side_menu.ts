@@ -134,6 +134,10 @@ export class SideMenu extends ShadowBaseElement {
     super(template);
   }
 
+  private readonly onCloseClick = () => {
+    this.removeAttribute("drawer-open");
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.drawer = this.root.querySelector("#settings-drawer") as HTMLElement;
@@ -144,9 +148,11 @@ export class SideMenu extends ShadowBaseElement {
     this.header = this.root.querySelector("#header") as HTMLDivElement;
     this.entries = this.root.querySelector("#entries") as HTMLDivElement;
 
-    this.closeButton.addEventListener("click", () => {
-      this.removeAttribute("drawer-open");
-    });
+    this.closeButton.addEventListener("click", this.onCloseClick);
+  }
+
+  disconnectedCallback() {
+    this.closeButton.removeEventListener("click", this.onCloseClick);
   }
 
   open() {
