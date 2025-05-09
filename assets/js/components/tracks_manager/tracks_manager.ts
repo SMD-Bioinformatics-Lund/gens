@@ -146,17 +146,16 @@ export class TracksManager extends ShadowBaseElement {
     ) as HTMLDivElement;
   }
 
-  // FIXME: Group the callbacks for better overview
   async initialize(
     render: (settings: RenderSettings) => void,
     sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
 
-    myDataSources: TracksManagerDataSources,
+    dataSources: TracksManagerDataSources,
     session: GensSession,
   ) {
-    this.dataSources = myDataSources;
+    this.dataSources = dataSources;
     this.session = session;
     this.renderAll = render;
 
@@ -183,48 +182,9 @@ export class TracksManager extends ShadowBaseElement {
       render({ dataUpdated: true, positionOnly: true });
     });
 
-    this.openTrackContextMenu = (track: DataTrack) => {
-      const isDotTrack = track instanceof DotTrack;
 
-      if (this.trackPages[track.id] == null) {
-        const trackPage = new TrackPage();
-        const trackSettings = {
-          showYAxis: isDotTrack,
-          showColor: true,
-        };
-        trackPage.configure(track.id, trackSettings);
-        this.trackPages[track.id] = trackPage;
-      }
-
-      const trackPage = this.trackPages[track.id];
-      this.session.showContent(track.label, [trackPage]);
-
-      trackPage.initialize(
-        myDataSources.getAnnotationSources,
-        (direction: "up" | "down") => this.moveTrack(track.id, direction),
-        () => {
-          track.toggleHidden(), render({});
-        },
-        () => {
-          track.toggleCollapsed(), render({});
-        },
-        () => track.getIsHidden(),
-        () => track.getIsCollapsed(),
-        isDotTrack ? () => track.getYAxis().range : null,
-        (newY: Rng) => {
-          track.updateYAxis(newY);
-          render({});
-        },
-        async (annotId: string | null) => {
-          let colorBands = [];
-          if (annotId != null) {
-            colorBands = await myDataSources.getAnnotation(annotId);
-          }
-          track.setColorBands(colorBands);
-          render({});
-        },
-      );
-    };
+    const openTrackContextMenu = this.createOpenTrackContextMenu(render);
+    this.openTrackContextMenu = openTrackContextMenu;
 
     const covTracks = [];
     const bafTracks = [];
@@ -237,7 +197,7 @@ export class TracksManager extends ShadowBaseElement {
       async () => {
         return {
           xRange: session.getXRange(),
-          chromInfo: await myDataSources.getChromInfo(),
+          chromInfo: await dataSources.getChromInfo(),
         };
       },
     );
@@ -249,30 +209,30 @@ export class TracksManager extends ShadowBaseElement {
         `${sampleId}_log2_cov`,
         `${sampleId} cov`,
         sampleId,
-        (sampleId: string) => this.dataSources.getCovData(sampleId),
+        (sampleId: string) => dataSources.getCovData(sampleId),
         { startExpanded, yAxis: { range: COV_Y_RANGE } },
         session,
-        this.openTrackContextMenu,
+        openTrackContextMenu,
       );
       const bafTrack = createDotTrack(
         `${sampleId}_log2_baf`,
         `${sampleId} baf`,
         sampleId,
-        (sampleId: string) => this.dataSources.getBafData(sampleId),
+        (sampleId: string) => dataSources.getBafData(sampleId),
         { startExpanded, yAxis: { range: BAF_Y_RANGE } },
         session,
-        this.openTrackContextMenu,
+        openTrackContextMenu,
       );
 
       const variantTrack = createVariantTrack(
         `${sampleId}_variants`,
         `${sampleId} Variants`,
         sampleId,
-        (sampleId: string) => this.dataSources.getVariantData(sampleId),
-        myDataSources.getVariantDetails,
-        myDataSources.getVariantUrl,
+        (sampleId: string) => dataSources.getVariantData(sampleId),
+        dataSources.getVariantDetails,
+        dataSources.getVariantUrl,
         session,
-        this.openTrackContextMenu,
+        openTrackContextMenu,
       );
 
       covTracks.push(coverageTrack);
@@ -283,32 +243,32 @@ export class TracksManager extends ShadowBaseElement {
     const genesTrack = createGenesTrack(
       "genes",
       "Genes",
-      () => myDataSources.getTranscriptData(),
-      (id: string) => myDataSources.getTranscriptDetails(id),
+      () => dataSources.getTranscriptData(),
+      (id: string) => dataSources.getTranscriptDetails(id),
       session,
-      this.openTrackContextMenu,
+      openTrackContextMenu,
     );
 
     const overviewTrackCov = createOverviewTrack(
       "overview_cov",
       "Overview (cov)",
-      () => myDataSources.getOverviewCovData(sampleIds[0]),
+      () => dataSources.getOverviewCovData(sampleIds[0]),
       COV_Y_RANGE,
       chromSizes,
       chromClick,
       session,
-      this.openTrackContextMenu,
+      openTrackContextMenu,
     );
 
     const overviewTrackBaf = createOverviewTrack(
       "overview_baf",
       "Overview (baf)",
-      () => myDataSources.getOverviewBafData(sampleIds[0]),
+      () => dataSources.getOverviewBafData(sampleIds[0]),
       BAF_Y_RANGE,
       chromSizes,
       chromClick,
       session,
-      this.openTrackContextMenu,
+      openTrackContextMenu,
     );
 
     this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
@@ -337,7 +297,6 @@ export class TracksManager extends ShadowBaseElement {
       track.renderLoading();
     });
 
-    // this.setupDrag();
     setupDrag(
       this.tracksContainer,
       () => session.getMarkerModeOn(),
@@ -426,7 +385,13 @@ export class TracksManager extends ShadowBaseElement {
       (id) => this.session.removeHighlight(id),
     );
 
-    this.updateAnnotationTracks();
+    updateAnnotationTracks(
+      this.dataSources,
+      this.session,
+      this.openTrackContextMenu,
+      this.addDataTrack,
+      this.removeDataTrack,
+    );
 
     for (const trackPage of Object.values(this.trackPages)) {
       trackPage.render(settings);
@@ -441,42 +406,99 @@ export class TracksManager extends ShadowBaseElement {
     this.overviewTracks.forEach((track) => track.render(settings));
   }
 
-  updateAnnotationTracks() {
-    const sources = this.dataSources.getAnnotationSources({
-      selectedOnly: true,
-    });
-
-    const currAnnotTracks = this.annotationTracks;
-
-    const newSources = diff(sources, currAnnotTracks, (source) => source.id);
-    const removedSources = diff(
-      currAnnotTracks,
-      sources,
-      (source) => source.id,
-    );
-
-    newSources.forEach((source) => {
-      const newTrack = createAnnotTrack(
-        source.id,
-        source.label,
-        this.dataSources,
-        this.session,
-        this.openTrackContextMenu,
-      );
-      this.dataTracks.push(newTrack);
-      this.annotationTracks.push(newTrack);
-      const trackWrapper = createDataTrackWrapper(newTrack);
-      this.tracksContainer.appendChild(trackWrapper);
-      newTrack.initialize();
-    });
-
-    removedSources.forEach((source) => {
-      const track = this.getTrackById(source.id);
-      const index = this.dataTracks.indexOf(track);
-      this.dataTracks.splice(index, 0);
-      this.tracksContainer.removeChild(track);
-    });
+  addDataTrack(newTrack: DataTrack) {
+    this.dataTracks.push(newTrack);
+    this.annotationTracks.push(newTrack);
+    const trackWrapper = createDataTrackWrapper(newTrack);
+    this.tracksContainer.appendChild(trackWrapper);
+    newTrack.initialize();
   }
+
+  removeDataTrack(id: string) {
+    const track = this.getTrackById(id);
+    const index = this.dataTracks.indexOf(track);
+    this.dataTracks.splice(index, 0);
+    this.tracksContainer.removeChild(track);
+  }
+
+  createOpenTrackContextMenu(render: (settings: RenderSettings) => void) {
+    const openTrackContextMenu = (track: DataTrack) => {
+      const isDotTrack = track instanceof DotTrack;
+
+      if (this.trackPages[track.id] == null) {
+        const trackPage = new TrackPage();
+        const trackSettings = {
+          showYAxis: isDotTrack,
+          showColor: true,
+        };
+        trackPage.configure(track.id, trackSettings);
+        this.trackPages[track.id] = trackPage;
+      }
+
+      const trackPage = this.trackPages[track.id];
+      this.session.showContent(track.label, [trackPage]);
+
+      trackPage.initialize(
+        this.dataSources.getAnnotationSources,
+        (direction: "up" | "down") => this.moveTrack(track.id, direction),
+        () => {
+          track.toggleHidden(), render({});
+        },
+        () => {
+          track.toggleCollapsed(), render({});
+        },
+        () => track.getIsHidden(),
+        () => track.getIsCollapsed(),
+        isDotTrack ? () => track.getYAxis().range : null,
+        (newY: Rng) => {
+          track.updateYAxis(newY);
+          render({});
+        },
+        async (annotId: string | null) => {
+          let colorBands = [];
+          if (annotId != null) {
+            colorBands = await this.dataSources.getAnnotation(annotId);
+          }
+          track.setColorBands(colorBands);
+          render({});
+        },
+      );
+    };
+    return openTrackContextMenu;
+  }
+}
+
+function updateAnnotationTracks(
+  dataSources: TracksManagerDataSources,
+  session: GensSession,
+  openTrackContextMenu: (track: DataTrack) => void,
+  addTrack: (track: DataTrack) => void,
+  removeTrack: (id: string) => void,
+) {
+  const sources = dataSources.getAnnotationSources({
+    selectedOnly: true,
+  });
+
+  const currAnnotTracks = this.annotationTracks;
+
+  const newSources = diff(sources, currAnnotTracks, (source) => source.id);
+  const removedSources = diff(currAnnotTracks, sources, (source) => source.id);
+
+  newSources.forEach((source) => {
+    const newTrack = createAnnotTrack(
+      source.id,
+      source.label,
+      dataSources,
+      session,
+      openTrackContextMenu,
+    );
+    addTrack(newTrack);
+  });
+
+  removedSources.forEach((source) => {
+    removeTrack(source.id);
+
+  });
 }
 
 customElements.define("gens-tracks", TracksManager);
