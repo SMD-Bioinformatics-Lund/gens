@@ -1,5 +1,5 @@
 import { COLORS, ICONS } from "../constants";
-import { GensSession } from "../state/session";
+import { GensSession } from "../state/gens_session";
 import {
   getPan,
   parseRegionDesignation,
@@ -35,41 +35,41 @@ template.innerHTML = String.raw`
   </div>
 `;
 
-class RegionController {
-  _chrom: string;
-  _start: number;
-  _end: number;
-  constructor(region: Region) {
-    this._chrom = region.chrom;
-    this._start = region.start;
-    this._end = region.end;
-  }
+// class RegionController {
+//   _chrom: string;
+//   _start: number;
+//   _end: number;
+//   constructor(region: Region) {
+//     this._chrom = region.chrom;
+//     this._start = region.start;
+//     this._end = region.end;
+//   }
 
-  updateRange(range: Rng) {
-    this._start = range[0];
-    this._end = range[1];
-  }
+//   updateRange(range: Rng) {
+//     this._start = range[0];
+//     this._end = range[1];
+//   }
 
-  getChrom(): string {
-    return this._chrom;
-  }
+//   getChrom(): string {
+//     return this._chrom;
+//   }
 
-  getRange(): Rng {
-    return [this._start, this._end];
-  }
+//   getRange(): Rng {
+//     return [this._start, this._end];
+//   }
 
-  getString() {
-    return `${this._chrom}:${this._start}-${this._end}`;
-  }
+//   getString() {
+//     return `${this._chrom}:${this._start}-${this._end}`;
+//   }
 
-  getRegion(): Region {
-    return {
-      chrom: this._chrom,
-      start: this._start,
-      end: this._end,
-    };
-  }
-}
+//   getRegion(): Region {
+//     return {
+//       chrom: this._chrom,
+//       start: this._start,
+//       end: this._end,
+//     };
+//   }
+// }
 
 export class InputControls extends HTMLElement {
   private panLeftButton: HTMLButtonElement;
@@ -80,12 +80,14 @@ export class InputControls extends HTMLElement {
   private removeHighlights: HTMLButtonElement;
   private toggleMarkerButton: HTMLButtonElement;
 
-  private region: RegionController;
+  // private region: RegionController;
   private currChromLength: number;
 
   private onPositionChange: (newXRange: [number, number]) => void;
   private getMarkerOn: () => boolean;
   private onToggleMarker: () => void;
+
+  private session: GensSession;
 
   connectedCallback() {
     this.appendChild(template.content.cloneNode(true));
@@ -103,40 +105,47 @@ export class InputControls extends HTMLElement {
     ) as HTMLButtonElement;
   }
 
-  getRegion(): Region {
-    return this.region.getRegion();
-  }
+  // getRegion(): Region {
+  //   return this.region.getRegion();
+  // }
 
-  getRange(): [number, number] {
-    if (this.regionField.value == null) {
-      throw Error("Must initialize before accessing getRange");
-    }
-    const region = parseRegionDesignation(this.regionField.value);
-    return [region.start, region.end];
-  }
+  // getRange(): [number, number] {
+  //   if (this.regionField.value == null) {
+  //     throw Error("Must initialize before accessing getRange");
+  //   }
+  //   const region = parseRegionDesignation(this.regionField.value);
+  //   return [region.start, region.end];
+  // }
 
-  updateChromosome(chrom: string, chromLength: number) {
-    this.region = new RegionController({ chrom, start: 1, end: chromLength });
-    this.regionField.value = this.region.getString();
-    this.currChromLength = chromLength;
-  }
+  // updateChromosome(chrom: string, chromLength: number) {
+  //   this.region = new RegionController({ chrom, start: 1, end: chromLength });
+  //   this.regionField.value = this.region.getString();
+  //   this.currChromLength = chromLength;
+  // }
 
-  updatePosition(range: [number, number]) {
-    this.region.updateRange(range);
-    this.regionField.value = this.region.getString();
-  }
+  // updatePosition(range: [number, number]) {
+  //   this.region.updateRange(range);
+  //   this.regionField.value = this.region.getString();
+  // }
 
   initialize(
-    fullRegion: Region,
-    onPositionChange: (newXRange: [number, number]) => void,
     session: GensSession,
+    // fullRegion: Region,
+    onPositionChange: (newXRange: [number, number]) => void,
+    // session: GensSession,
   ) {
-    this.region = new RegionController(fullRegion);
-    this.updatePosition([fullRegion.start, fullRegion.end]);
+    // this.region = new RegionController(fullRegion);
+    // this.updatePosition([fullRegion.start, fullRegion.end]);
+
+    // this.session = session;
+
+    this.session = session;
+
+    this.getMarkerOn = () => this.session.getMarkerModeOn();
+    this.onToggleMarker = () => this.session.toggleMarkerMode();
+
     this.onPositionChange = onPositionChange;
-    this.currChromLength = fullRegion.end;
-    this.getMarkerOn = () => session.getMarkerModeOn();
-    this.onToggleMarker = () => session.toggleMarkerMode();
+    // this.currChromLength = fullRegion.end;
 
     this.panLeftButton.onclick = () => {
       this.panLeft();
@@ -154,49 +163,54 @@ export class InputControls extends HTMLElement {
       this.zoomOut();
     };
 
-    this.removeHighlights.onclick = () => session.removeHighlights();
-    this.toggleMarkerButton.onclick = () => session.toggleMarkerMode();
+    this.removeHighlights.onclick = () => this.session.removeHighlights();
+    this.toggleMarkerButton.onclick = () => this.session.toggleMarkerMode();
   }
 
   render(_settings: RenderSettings) {
     this.toggleMarkerButton.style.backgroundColor = this.getMarkerOn()
       ? COLORS.lightGray
       : "";
+
+    const region = this.session.getRegion();
+    this.regionField.value = `${region.chrom}:${region.start}-${region.end}`;
   }
 
   panLeft() {
-    const newXRange = getPan(this.getRange(), "left");
-    this.updatePosition(newXRange);
+    const currRange = this.session.getXRange();
+    const newXRange = getPan(currRange, "left");
+    // this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
   }
 
   panRight() {
-    const newXRangeRaw = getPan(this.getRange(), "right");
+    const currXRange = this.session.getXRange();
+    const newXRangeRaw = getPan(currXRange, "right");
     const newMax = Math.min(newXRangeRaw[1], this.currChromLength);
     const newXRange: Rng = [newXRangeRaw[0], newMax];
-    this.updatePosition(newXRange);
+    // this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
   }
 
   zoomIn() {
-    const currXRange = this.getRange();
+    const currXRange = this.session.getXRange();
     const newXRange = zoomIn(currXRange);
-    this.updatePosition(newXRange);
+    // this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
   }
 
   zoomOut() {
-    const currXRange = this.getRange();
+    const currXRange = this.session.getXRange();
     const newXRangeRaw = zoomOut(currXRange);
     const newMax = Math.min(newXRangeRaw[1], this.currChromLength);
     const newXRange: Rng = [Math.floor(newXRangeRaw[0]), Math.floor(newMax)];
-    this.updatePosition(newXRange);
+    // this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
   }
 
   resetZoom() {
     const xRange = [1, this.currChromLength] as Rng;
-    this.updatePosition(xRange);
+    // this.updatePosition(xRange);
     this.onPositionChange(xRange);
   }
 

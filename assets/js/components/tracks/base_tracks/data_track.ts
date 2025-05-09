@@ -5,7 +5,7 @@ import {
   renderBackground,
 } from "../../../draw/render_utils";
 import { drawBox, drawLabel, drawLine } from "../../../draw/shapes";
-import { GensSession } from "../../../state/session";
+import { GensSession } from "../../../state/gens_session";
 import { generateTicks, getTickSize } from "../../../util/utils";
 import {
   setupCanvasClick,

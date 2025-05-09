@@ -20,7 +20,7 @@ import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
 
 import Sortable, { SortableEvent } from "sortablejs";
-import { GensSession } from "../state/session";
+import { GensSession } from "../state/gens_session";
 import {
   initializeDragSelect,
   renderHighlights,

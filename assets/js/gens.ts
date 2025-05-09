@@ -17,7 +17,8 @@ import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
 import { SettingsPage } from "./components/side_menu/settings_page";
 import { HeaderInfo } from "./components/header_info";
-import { GensSession } from "./state/session";
+import { GensSession } from "./state/gens_session";
+import { chromSizes } from "./unused/_helper";
 
 export async function initCanvases({
   caseId,
@@ -53,18 +54,7 @@ export async function initCanvases({
   ) as InputControls;
 
   const api = new API(caseId, genomeBuild, gensApiURL);
-
-  const renderDataSource = getRenderDataSource(
-    api,
-    () => {
-      const region = inputControls.getRegion();
-      return region.chrom;
-    },
-    () => {
-      const region = inputControls.getRegion();
-      return [region.start, region.end];
-    },
-  );
+  await api.initialize();
 
   const render = (settings: RenderSettings) => {
     gensTracks.render(settings);
@@ -72,9 +62,43 @@ export async function initCanvases({
     inputControls.render(settings);
   };
 
+
+  // const getChromSize = (chrom: string) => api.getChromData(chrom);
+
+  // const allChromData: Record<string, ChromosomeInfo> = {};
+  // for (const chrom of CHROMOSOMES) {
+  //   const chromInfo = await api.getChromData(chrom);
+  //   allChromData[chrom] = chromInfo;
+  // }
+
+  // const allChromSizes: Record<string, number> = {};
+  // for (const chrom of CHROMOSOMES) {
+  //   const chromLength = allChromData[chrom].size;
+  //   allChromSizes[chrom] = chromLength;
+  // }
+
+  // FIXME: First get all the sizes
+
+  // FIXME: Input controls should receive region from session
+  // Not the other way around
+  const chromSizes = api.getChromSizes();
+  const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
+  const session = new GensSession(
+    render,
+    sideMenu,
+    defaultRegion,
+    chromSizes,
+  );
+
+  const renderDataSource = getRenderDataSource(
+    api,
+    () => session.getChromosome(),
+    () => session.getXRange(),
+  );
+
   const onChromClick = async (chrom) => {
-    const chromData = await api.getChromData(chrom);
-    inputControls.updateChromosome(chrom, chromData.size);
+    // const chromData = await api.getChromData(chrom);
+    session.updateChromosome(chrom);
     render({ dataUpdated: true });
   };
 
@@ -86,11 +110,6 @@ export async function initCanvases({
     const url = `${scoutBaseURL}/document_id/${variantId}`;
     return url;
   };
-
-  // FIXME: Input controls should receive region from session
-  // Not the other way around
-  const defaultRegion = {chrom: "1", start: 1, end: 100000};
-  const session = new GensSession(render, sideMenu, defaultRegion);
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
@@ -163,22 +182,19 @@ async function initialize(
     chromSizes[chromosome] = chromInfo.size;
   }
 
-  inputControls.initialize(
-    startRegion,
-    async (_range) => {
-      render({ dataUpdated: true, positionOnly: true });
-    },
-    session,
-  );
+  inputControls.initialize(session, async (range) => {
+    session.setViewRange(range);
+    render({ dataUpdated: true, positionOnly: true });
+  });
 
   const onPan = (panDistance: number) => {
-    const startRange = inputControls.getRange();
-    const currChromLength = chromSizes[inputControls.getRegion().chrom];
+    const startRange = session.getXRange();
+    const currChromLength = chromSizes[session.getChromosome()];
     const endRange: Rng = [
       Math.max(0, Math.floor(startRange[0] - panDistance)),
       Math.min(Math.floor(startRange[1] - panDistance), currChromLength),
     ];
-    inputControls.updatePosition(endRange);
+    session.setViewRange(endRange);
     render({ dataUpdated: true, positionOnly: true });
   };
 
@@ -189,11 +205,7 @@ async function initialize(
     getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
     getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
     getVariantDetails: (sampleId: string, variantId: string) =>
-      api.getVariantDetails(
-        sampleId,
-        variantId,
-        inputControls.getRegion().chrom,
-      ),
+      api.getVariantDetails(sampleId, variantId, session.getChromosome()),
 
     getAnnotation: (id: string) => renderDataSource.getAnnotation(id),
     getCovData: (id: string) => renderDataSource.getCovData(id),
@@ -259,7 +271,7 @@ function setupShortcuts(
     }
     if (e.key === "ArrowLeft") {
       if (e.ctrlKey || e.metaKey) {
-        const currChrom = inputControls.getRegion().chrom;
+        const currChrom = session.getChromosome();
         const currIndex = CHROMOSOMES.indexOf(currChrom);
         if (currIndex > 0) {
           const newChrom = CHROMOSOMES[currIndex - 1];
@@ -271,7 +283,7 @@ function setupShortcuts(
     }
     if (e.key === "ArrowRight") {
       if (e.ctrlKey || e.metaKey) {
-        const currChrom = inputControls.getRegion().chrom;
+        const currChrom = session.getChromosome();
         const currIndex = CHROMOSOMES.indexOf(currChrom);
         if (currIndex < CHROMOSOMES.length - 1) {
           const newChrom = CHROMOSOMES[currIndex + 1];

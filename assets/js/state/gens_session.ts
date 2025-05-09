@@ -25,21 +25,51 @@ export class GensSession {
   private markerModeOn: boolean = false;
   private highlights: Record<string, RangeHighlight>;
 
+  private chromSizes: Record<string, number>;
+
   constructor(
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
     region: Region,
+    chromSizes: Record<string, number>
   ) {
+
+    console.log("Assigning region", region);
+
     this.render = render;
     this.sideMenu = sideMenu;
     this.highlights = {};
     this.chromosome = region.chrom;
     this.start = region.start;
     this.end = region.end;
+    this.chromSizes = chromSizes;
   }
 
   setViewRange(range: Rng): void {
     console.log("on zoom in");
+  }
+
+  getRegion(): Region {
+    return {
+      chrom: this.chromosome,
+      start: this.start,
+      end: this.end,
+    }
+  }
+
+  // getRange(): Rng {
+  //   return [this.start, this.end] as Rng;
+  // }
+
+  updateChromosome(chrom: string) {
+    this.chromosome = chrom;
+    this.start = 1;
+    this.end = this.chromSizes[chrom];
+  }
+
+  updatePosition(range: Rng): void {
+    this.start = range[0];
+    this.end = range[1];
   }
 
   zoomOut(): void {
