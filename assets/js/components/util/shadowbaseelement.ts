@@ -1,9 +1,10 @@
 export abstract class ShadowBaseElement extends HTMLElement {
   protected root: ShadowRoot;
 
+  /** Disconnect sets of listeners attached to element on disconnect */
   private abortController;
 
-  protected getAbortSignal(): AbortSignal {
+  protected getListenerAbortSignal(): AbortSignal {
     if (this.abortController == null) {
       throw Error(
         "Must connect component (remember super.connectedCallback()) before adding listeners",

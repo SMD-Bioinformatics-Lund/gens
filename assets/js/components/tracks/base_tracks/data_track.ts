@@ -48,6 +48,8 @@ export abstract class DataTrack extends CanvasTrack {
   session: GensSession;
   //
 
+  labelBox: HoverBox | null;
+
   renderData: BandTrackData | DotTrackData | null;
   getRenderData: () => Promise<BandTrackData | DotTrackData>;
 
@@ -104,8 +106,6 @@ export abstract class DataTrack extends CanvasTrack {
     startExpanded: boolean,
     onExpand: () => void,
   ) {
-    console.log("Expander initialized");
-
     this.expander = new Expander(startExpanded);
     const height = this.isCollapsed
       ? this.collapsedTrackHeight
@@ -122,7 +122,7 @@ export abstract class DataTrack extends CanvasTrack {
         this.syncDimensions();
         onExpand();
       },
-      { signal: this.abortController.signal },
+      { signal: this.getListenerAbortSignal() },
     );
   }
 
@@ -221,28 +221,31 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected drawEnd() {
-    const labelBox = this.setupLabel(() => this.openTrackContextMenu(this));
-    setCanvasPointerCursor(
-      this.canvas,
-      () => {
-        const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
-        return hoverTargets.concat([labelBox]);
-      },
-      () => this.session.getMarkerModeOn(),
-      [0, STYLE.yAxis.width],
-      this.abortController.signal,
-    );
-  }
-
-  setupLabel(onClick: () => void): HoverBox {
     const yAxisWidth = STYLE.yAxis.width;
     const labelBox = this.drawTrackLabel(yAxisWidth);
     const hoverBox = {
       label: this.label,
       box: labelBox,
     };
-    setupCanvasClick(this.canvas, () => [hoverBox], onClick);
-    return hoverBox;
+    if (this.labelBox == null) {
+      setupCanvasClick(
+        this.canvas,
+        () => [hoverBox],
+        () => this.openTrackContextMenu(this),
+        this.getListenerAbortSignal(),
+      );
+      setCanvasPointerCursor(
+        this.canvas,
+        () => {
+          const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
+          return hoverTargets.concat([hoverBox]);
+        },
+        () => this.session.getMarkerModeOn(),
+        [0, STYLE.yAxis.width],
+        this.getListenerAbortSignal(),
+      );
+    }
+    this.labelBox = hoverBox;
   }
 
   renderYAxis(yAxis: Axis) {

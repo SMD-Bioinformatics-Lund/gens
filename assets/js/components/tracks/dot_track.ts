@@ -39,8 +39,8 @@ export class DotTrack extends DataTrack {
     this.getRenderData = getRenderData;
   }
 
-  initialize() {
-    super.initialize();
+  connectedCallback(): void {
+    super.connectedCallback();
     const onExpand = () => this.render({});
     this.initializeExpander("contextmenu", this.startExpanded, onExpand);
     this.setExpandedHeight(this.defaultTrackHeight * 2);
@@ -62,6 +62,10 @@ export class DotTrack extends DataTrack {
     drawDotsScaled(this.ctx, dotsInRange, xScale, yScale);
 
     super.drawEnd();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
   }
 }
 

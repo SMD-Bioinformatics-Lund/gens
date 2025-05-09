@@ -72,35 +72,44 @@ export function getCanvasHover(
   canvas: HTMLCanvasElement,
   getHoverTargets: () => HoverBox[],
   settings: HoverSettings,
+  listenerAbortSignal: AbortSignal,
 ) {
   const tooltip = settings.showTooltip ? new Tooltip(document.body) : null;
 
-  canvas.addEventListener("mousemove", (event) => {
-    const hoverTargets = getHoverTargets();
+  canvas.addEventListener(
+    "mousemove",
+    (event) => {
+      const hoverTargets = getHoverTargets();
 
-    if (hoverTargets == null) {
-      return;
-    }
-    if (tooltip != null) {
-      tooltip.onMouseMove(canvas, event.offsetX, event.offsetY);
-    }
-
-    const hovered = hoverTargets.find((target) =>
-      eventInBox(event, target.box),
-    );
-
-    if (tooltip != null) {
-      if (hovered) {
-        tooltip.tooltipEl.textContent = hovered.label;
+      if (hoverTargets == null) {
+        return;
+      }
+      if (tooltip != null) {
         tooltip.onMouseMove(canvas, event.offsetX, event.offsetY);
-      } else {
+      }
+
+      const hovered = hoverTargets.find((target) =>
+        eventInBox(event, target.box),
+      );
+
+      if (tooltip != null) {
+        if (hovered) {
+          tooltip.tooltipEl.textContent = hovered.label;
+          tooltip.onMouseMove(canvas, event.offsetX, event.offsetY);
+        } else {
+          tooltip.onMouseLeave();
+        }
+      }
+    },
+    { signal: listenerAbortSignal },
+  );
+  canvas.addEventListener(
+    "mouseleave",
+    () => {
+      if (tooltip != null) {
         tooltip.onMouseLeave();
       }
-    }
-  });
-  canvas.addEventListener("mouseleave", () => {
-    if (tooltip != null) {
-      tooltip.onMouseLeave();
-    }
-  });
+    },
+    { signal: listenerAbortSignal },
+  );
 }

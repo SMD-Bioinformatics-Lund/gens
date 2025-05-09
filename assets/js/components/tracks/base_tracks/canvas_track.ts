@@ -66,13 +66,8 @@ export abstract class CanvasTrack extends ShadowBaseElement {
     return nNts / nPxs;
   }
 
-  initialize() {
-    if (!this.isConnected) {
-      throw Error(
-        `Component must be attached to DOM before being initialized (label: ${this.label})`,
-      );
-    }
-
+  connectedCallback(): void {
+    super.connectedCallback();
     this.canvas = this.root.getElementById("canvas") as HTMLCanvasElement;
     this.currentHeight = this.defaultTrackHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -80,6 +75,14 @@ export abstract class CanvasTrack extends ShadowBaseElement {
     this.trackContainer = this.root.getElementById(
       "track-container",
     ) as HTMLDivElement;
+  }
+
+  initialize() {
+    if (!this.isConnected) {
+      throw Error(
+        `Component must be attached to DOM before being initialized (label: ${this.label})`,
+      );
+    }
 
     this.syncDimensions();
     this.isInitialized = true;
@@ -118,12 +121,17 @@ export abstract class CanvasTrack extends ShadowBaseElement {
       this.canvas,
       () => this.hoverTargets,
       onElementClick,
-      this.getAbortSignal(),
+      this.getListenerAbortSignal(),
     );
   }
 
   initializeHoverTooltip() {
-    getCanvasHover(this.canvas, () => this.hoverTargets, { showTooltip: true });
+    getCanvasHover(
+      this.canvas,
+      () => this.hoverTargets,
+      { showTooltip: true },
+      this.getListenerAbortSignal(),
+    );
   }
 
   setHoverTargets(hoverTargets: HoverBox[]) {

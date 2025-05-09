@@ -128,7 +128,6 @@ export class TrackPage extends ShadowBaseElement {
     setYAxis: (newAxis: Rng) => void,
     onColorSelected: (annotId: string) => void,
   ) {
-
     if (!this.isConnected) {
       throw Error("Must be connected before being initialized");
     }
@@ -153,28 +152,28 @@ export class TrackPage extends ShadowBaseElement {
       () => {
         moveTrack("up");
       },
-      { signal: this.abortController.signal },
+      { signal: this.getListenerAbortSignal() },
     );
     this.moveDown.addEventListener(
       "click",
       () => {
         moveTrack("down");
       },
-      { signal: this.abortController.signal },
+      { signal: this.getListenerAbortSignal() },
     );
     this.toggleHide.addEventListener(
       "click",
       () => {
         toggleHidden();
       },
-      { signal: this.abortController.signal },
+      { signal: this.getListenerAbortSignal() },
     );
     this.toggleCollapse.addEventListener(
       "click",
       () => {
         toggleCollapsed();
       },
-      { signal: this.abortController.signal },
+      { signal: this.getListenerAbortSignal() },
     );
 
     if (this.settings.showYAxis) {

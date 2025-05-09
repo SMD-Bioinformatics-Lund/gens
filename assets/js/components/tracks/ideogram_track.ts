@@ -20,15 +20,20 @@ export class IdeogramTrack extends CanvasTrack {
     this.getRenderData = getRenderData;
   }
 
-  initialize() {
-
-    super.initialize();
+  connectedCallback(): void {
+    super.connectedCallback();
     const zoomMarkerElement = setupZoomMarkerElement(this.defaultTrackHeight);
     this.trackContainer.appendChild(zoomMarkerElement);
     this.markerElement = zoomMarkerElement;
 
     this.initializeHoverTooltip();
   }
+
+  // initialize() {
+
+  //   super.initialize();
+
+  // }
 
   async render(settings: RenderSettings) {
 
