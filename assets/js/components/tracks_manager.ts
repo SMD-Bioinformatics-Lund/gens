@@ -29,6 +29,7 @@ import { getLinearScale } from "../draw/render_utils";
 import { keyLogger } from "./util/keylogger";
 import { TrackPage } from "./side_menu/track_page";
 import { setupDrag, setupDragging } from "../movements/dragging";
+import { calculatePan, zoomOut } from "../util/navigation";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -203,7 +204,13 @@ export class TracksManager extends ShadowBaseElement {
       const scaledStart = invertedXScale(dragRange[0]);
       const scaledEnd = invertedXScale(dragRange[1]);
 
-      session.onPan(scaledEnd - scaledStart);
+      const panDistance = scaledEnd - scaledStart;
+      const panRange = calculatePan(
+        panDistance,
+        this.session.getXRange(),
+        this.session.getCurrentChromSize(),
+      );
+      this.session.setViewRange(panRange);
     });
 
     // this.dragCallbacks = {
@@ -361,19 +368,23 @@ export class TracksManager extends ShadowBaseElement {
     // this.setupDrag();
     setupDrag(
       this.tracksContainer,
-      session.getMarkerModeOn,
-      session.getXRange,
-      session.getChromosome,
-      session.setViewRange,
-      session.addHighlight,
-      session.removeHighlight,
+      () => session.getMarkerModeOn(),
+      () => session.getXRange(),
+      () => session.getChromosome(),
+      (range: Rng) => session.setViewRange(range),
+      (range: Rng) => session.addHighlight(range),
+      (id: string) => session.removeHighlight(id),
 
       // this.dragCallbacks,
     );
 
     this.tracksContainer.addEventListener("click", () => {
       if (keyLogger.heldKeys.Control) {
-        session.zoomOut();
+        const updatedRange = zoomOut(
+          this.session.getXRange(),
+          this.session.getCurrentChromSize(),
+        );
+        session.setViewRange(updatedRange);
       }
     });
   }

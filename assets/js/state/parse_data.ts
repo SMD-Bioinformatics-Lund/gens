@@ -37,8 +37,6 @@ export function getRenderDataSource(
   const getCovData = async (sampleId: string) => {
     const xRange = getXRange();
 
-    console.log("Hello world");
-
     const zoom = calculateZoom(xRange);
 
     const covRaw = await gensAPI.getCov(sampleId, getChrom(), zoom, xRange);

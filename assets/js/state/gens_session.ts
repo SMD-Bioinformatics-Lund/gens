@@ -46,7 +46,8 @@ export class GensSession {
   }
 
   setViewRange(range: Rng): void {
-    console.log("on zoom in");
+    this.start = range[0];
+    this.end = range[1];
   }
 
   getRegion(): Region {
@@ -72,20 +73,16 @@ export class GensSession {
     this.end = range[1];
   }
 
-  zoomOut(): void {
-    console.log("on zoom out");
-  }
-
-  onPan(panX: number): void {
-    console.log("on pan");
-  }
-
   getChromosome(): string {
     return this.chromosome;
   }
 
   getXRange(): Rng {
     return [this.start, this.end] as Rng;
+  }
+
+  getCurrentChromSize(): number {
+    return this.chromSizes[this.chromosome];
   }
 
   getMarkerModeOn(): boolean {

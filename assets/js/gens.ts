@@ -187,16 +187,6 @@ async function initialize(
     render({ dataUpdated: true, positionOnly: true });
   });
 
-  const onPan = (panDistance: number) => {
-    const startRange = session.getXRange();
-    const currChromLength = chromSizes[session.getChromosome()];
-    const endRange: Rng = [
-      Math.max(0, Math.floor(startRange[0] - panDistance)),
-      Math.min(Math.floor(startRange[1] - panDistance), currChromLength),
-    ];
-    session.setViewRange(endRange);
-    render({ dataUpdated: true, positionOnly: true });
-  };
 
   const tracksDataSources = {
     getAnnotationSources: (settings: { selectedOnly: boolean }) =>

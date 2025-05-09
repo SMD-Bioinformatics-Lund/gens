@@ -81,7 +81,7 @@ export class InputControls extends HTMLElement {
   private toggleMarkerButton: HTMLButtonElement;
 
   // private region: RegionController;
-  private currChromLength: number;
+  // private currChromLength: number;
 
   private onPositionChange: (newXRange: [number, number]) => void;
   private getMarkerOn: () => boolean;
@@ -178,16 +178,22 @@ export class InputControls extends HTMLElement {
 
   panLeft() {
     const currRange = this.session.getXRange();
-    const newXRange = getPan(currRange, "left");
+    const newXRange = getPan(currRange, "left", 1);
     // this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
   }
 
   panRight() {
     const currXRange = this.session.getXRange();
-    const newXRangeRaw = getPan(currXRange, "right");
-    const newMax = Math.min(newXRangeRaw[1], this.currChromLength);
-    const newXRange: Rng = [newXRangeRaw[0], newMax];
+    console.log("Pan right start range", currXRange);
+    const newXRange = getPan(
+      currXRange,
+      "right",
+      this.session.getCurrentChromSize(),
+    );
+    console.log("Pan right new range", newXRange);
+    // const newMax = Math.min(newXRangeRaw[1], this.currChromLength);
+    // const newXRange: Rng = [newXRangeRaw[0], newMax];
     // this.updatePosition(newXRange);
     this.onPositionChange(newXRange);
   }
@@ -200,16 +206,20 @@ export class InputControls extends HTMLElement {
   }
 
   zoomOut() {
-    const currXRange = this.session.getXRange();
-    const newXRangeRaw = zoomOut(currXRange);
-    const newMax = Math.min(newXRangeRaw[1], this.currChromLength);
-    const newXRange: Rng = [Math.floor(newXRangeRaw[0]), Math.floor(newMax)];
+    // const currXRange = this.session.getXRange();
+    // const newXRangeRaw = zoomOut(currXRange);
+    // const newMax = Math.min(newXRangeRaw[1], this.currChromLength);
+    // const newXRange: Rng = [Math.floor(newXRangeRaw[0]), Math.floor(newMax)];
     // this.updatePosition(newXRange);
+    const newXRange = zoomOut(
+      this.session.getXRange(),
+      this.session.getCurrentChromSize(),
+    );
     this.onPositionChange(newXRange);
   }
 
   resetZoom() {
-    const xRange = [1, this.currChromLength] as Rng;
+    const xRange = [1, this.session.getCurrentChromSize()] as Rng;
     // this.updatePosition(xRange);
     this.onPositionChange(xRange);
   }
