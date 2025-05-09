@@ -3,6 +3,7 @@ import { STYLE } from "../../constants";
 import { CanvasTrack } from "./base_tracks/canvas_track";
 import "tippy.js/dist/tippy.css";
 import { getLinearScale } from "../../draw/render_utils";
+import { drawBox } from "../../draw/shapes";
 
 export class IdeogramTrack extends CanvasTrack {
   private markerElement: HTMLDivElement;
@@ -21,18 +22,29 @@ export class IdeogramTrack extends CanvasTrack {
   }
 
   initialize() {
+
+    console.log("Is it initialized");
+
     super.initialize();
     const zoomMarkerElement = setupZoomMarkerElement(this.defaultTrackHeight);
     this.trackContainer.appendChild(zoomMarkerElement);
     this.markerElement = zoomMarkerElement;
 
     this.initializeHoverTooltip();
+
+    this.debugRender();
   }
 
   async render(settings: RenderSettings) {
+
+    console.error("Render called with dimensions", this.dimensions);
+    // drawBox(this.ctx, {x1: 1, x2: 100, y1: 1, y2: 100}, {fillColor: "blue"});
+
     if (settings.dataUpdated || this.renderData == null) {
       this.renderData = await this.getRenderData();
     }
+
+    console.log(this.label, "rendering");
 
     super.syncDimensions();
     this.ctx.clearRect(0, 0, this.dimensions.width, this.dimensions.height);

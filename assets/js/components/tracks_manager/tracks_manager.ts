@@ -6,16 +6,8 @@ import "../tracks/overview_track";
 import { IdeogramTrack } from "../tracks/ideogram_track";
 import { OverviewTrack } from "../tracks/overview_track";
 import { DotTrack } from "../tracks/dot_track";
-import { BandTrack } from "../tracks/band_track";
 import { ANIM_TIME, SIZES, STYLE } from "../../constants";
-import {
-  getAnnotationContextMenuContent,
-  getGenesContextMenuContent,
-  getVariantContextMenuContent,
-} from "../util/menu_content_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
-import { getSimpleButton } from "../util/menu_utils";
-import { DataTrack } from "../tracks/base_tracks/data_track";
 import { diff, moveElement } from "../../util/collections";
 
 import Sortable, { SortableEvent } from "sortablejs";
@@ -35,6 +27,7 @@ import {
   TRACK_HANDLE_CLASS,
   createAnnotTrack,
 } from "./utils";
+import { DataTrack } from "../tracks/base_tracks/data_track";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -257,7 +250,6 @@ export class TracksManager extends ShadowBaseElement {
       chromSizes,
       chromClick,
       session,
-      openTrackContextMenu,
     );
 
     const overviewTrackBaf = createOverviewTrack(
@@ -268,16 +260,15 @@ export class TracksManager extends ShadowBaseElement {
       chromSizes,
       chromClick,
       session,
-      openTrackContextMenu,
     );
 
     this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
 
     this.dataTracks.push(
       ...covTracks,
-      ...bafTracks,
-      ...variantTracks,
-      genesTrack,
+      // ...bafTracks,
+      // ...variantTracks,
+      // genesTrack,
     );
 
     this.topContainer.appendChild(this.ideogramTrack);
@@ -378,37 +369,48 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
-    renderHighlights(
-      this.tracksContainer,
-      this.session.getCurrentHighlights(),
-      this.getXScale(),
-      (id) => this.session.removeHighlight(id),
-    );
+    // renderHighlights(
+    //   this.tracksContainer,
+    //   this.session.getCurrentHighlights(),
+    //   this.getXScale(),
+    //   (id) => this.session.removeHighlight(id),
+    // );
 
-    updateAnnotationTracks(
-      this.dataSources,
-      this.session,
-      this.openTrackContextMenu,
-      this.addDataTrack,
-      this.removeDataTrack,
-    );
+    // updateAnnotationTracks(
+    //   this.dataSources,
+    //   this.session,
+    //   this.openTrackContextMenu,
+    //   this.addDataTrack,
+    //   this.removeDataTrack,
+    // );
 
-    for (const trackPage of Object.values(this.trackPages)) {
-      trackPage.render(settings);
+    // for (const trackPage of Object.values(this.trackPages)) {
+    //   trackPage.render(settings);
+    // }
+
+    console.log("Render");
+
+    for (const dataTrack of this.dataTracks) {
+      dataTrack.debugRender();
     }
+
+    this.ideogramTrack.debugRender();
 
     this.ideogramTrack.render(settings);
 
     for (const track of this.dataTracks) {
       track.render(settings);
+      track.debugRender();
     }
 
-    this.overviewTracks.forEach((track) => track.render(settings));
+    // this.overviewTracks.forEach((track) => track.render(settings));
   }
 
-  addDataTrack(newTrack: DataTrack) {
+  addDataTrack(newTrack: DataTrack, isAnnotation: boolean) {
     this.dataTracks.push(newTrack);
-    this.annotationTracks.push(newTrack);
+    if (isAnnotation) {
+      this.annotationTracks.push(newTrack);
+    }
     const trackWrapper = createDataTrackWrapper(newTrack);
     this.tracksContainer.appendChild(trackWrapper);
     newTrack.initialize();
@@ -479,7 +481,7 @@ function updateAnnotationTracks(
     selectedOnly: true,
   });
 
-  const currAnnotTracks = this.annotationTracks;
+  const currAnnotTracks = dataSources.getAnnotationSources({selectedOnly: true});
 
   const newSources = diff(sources, currAnnotTracks, (source) => source.id);
   const removedSources = diff(currAnnotTracks, sources, (source) => source.id);
@@ -497,7 +499,6 @@ function updateAnnotationTracks(
 
   removedSources.forEach((source) => {
     removeTrack(source.id);
-
   });
 }
 

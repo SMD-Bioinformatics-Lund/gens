@@ -185,7 +185,6 @@ export function createOverviewTrack(
   chromSizes: Record<string, number>,
   chromClick: (chrom: string) => void,
   session: GensSession,
-  openTrackContextMenu: (track: DataTrack) => void,
 ): OverviewTrack {
   const overviewTrack = new OverviewTrack(
     id,

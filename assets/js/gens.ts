@@ -190,7 +190,7 @@ async function initialize(
     getChromInfo: () => renderDataSource.getChromInfo(),
   };
 
-  await tracks.initialize(
+  tracks.initialize(
     render,
     sampleIds,
     chromSizes,

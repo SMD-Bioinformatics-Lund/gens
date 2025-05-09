@@ -1,5 +1,5 @@
 import { renderBackground } from "../../../draw/render_utils";
-import { drawLabel } from "../../../draw/shapes";
+import { drawBox, drawLabel } from "../../../draw/shapes";
 import { ShadowBaseElement } from "../../util/shadowbaseelement";
 import { setupCanvasClick, getCanvasHover } from "../../util/canvas_interaction";
 import { STYLE } from "../../../constants";
@@ -82,6 +82,13 @@ export abstract class CanvasTrack extends ShadowBaseElement {
 
     this.syncDimensions();
     this.isInitialized = true;
+  }
+
+  /**
+   * Draw a blue box straight into canvas for debugging
+   */
+  debugRender() {
+    drawBox(this.ctx, {x1: 1, x2: 100, y1: 1, y2: 100}, {fillColor: "blue"});
   }
 
   renderLoading() {
