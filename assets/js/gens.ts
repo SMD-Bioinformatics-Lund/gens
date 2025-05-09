@@ -1,4 +1,4 @@
-import "./components/tracks_manager";
+import "./components/tracks_manager/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
 import "./components/util/shadowbaseelement";
@@ -10,7 +10,7 @@ import "./movements/marker";
 import "./components/side_menu/track_page";
 
 import { API } from "./state/api";
-import { TracksManager } from "./components/tracks_manager";
+import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES } from "./constants";

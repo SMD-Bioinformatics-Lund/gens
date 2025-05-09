@@ -84,6 +84,19 @@ export class GensSession {
     return this.markerModeOn;
   }
 
+  /**
+   * Distance can be negative
+   */
+  moveXRange(distance: number): void {
+    const startRange = this.getXRange();
+    const chromSize = this.getCurrentChromSize();
+    const newRange: Rng = [
+      Math.max(0, Math.floor(startRange[0] + distance)),
+      Math.min(Math.floor(startRange[1] + distance), chromSize),
+    ];
+    this.setViewRange(newRange);
+  }
+
   toggleMarkerMode() {
     this.markerModeOn = !this.markerModeOn;
     this.render({});

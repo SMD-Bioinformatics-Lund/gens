@@ -22,13 +22,13 @@ export function getPan(
   return [newStartX, newEndX];
 }
 
-export function calculatePan(panDistance: number, startRange: Rng, chromSize: number) {
-  const endRange: Rng = [
-    Math.max(0, Math.floor(startRange[0] - panDistance)),
-    Math.min(Math.floor(startRange[1] - panDistance), chromSize),
-  ];
-  return endRange;
-}
+// export function calculatePan(panDistance: number, startRange: Rng, chromSize: number) {
+//   const endRange: Rng = [
+//     Math.max(0, Math.floor(startRange[0] - panDistance)),
+//     Math.min(Math.floor(startRange[1] - panDistance), chromSize),
+//   ];
+//   return endRange;
+// }
 
 // parse chromosomal region designation string
 // return chromosome, start and end position

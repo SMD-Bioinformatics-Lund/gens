@@ -1,40 +1,47 @@
-import "./tracks/base_tracks/canvas_track";
-import "./tracks/band_track";
-import "./tracks/dot_track";
-import "./tracks/ideogram_track";
-import "./tracks/overview_track";
-import { IdeogramTrack } from "./tracks/ideogram_track";
-import { OverviewTrack } from "./tracks/overview_track";
-import { DotTrack } from "./tracks/dot_track";
-import { BandTrack } from "./tracks/band_track";
-import { ANIM_TIME, SIZES, STYLE } from "../constants";
+import "../tracks/base_tracks/canvas_track";
+import "../tracks/band_track";
+import "../tracks/dot_track";
+import "../tracks/ideogram_track";
+import "../tracks/overview_track";
+import { IdeogramTrack } from "../tracks/ideogram_track";
+import { OverviewTrack } from "../tracks/overview_track";
+import { DotTrack } from "../tracks/dot_track";
+import { BandTrack } from "../tracks/band_track";
+import { ANIM_TIME, SIZES, STYLE } from "../../constants";
 import {
   getAnnotationContextMenuContent,
   getGenesContextMenuContent,
   getVariantContextMenuContent,
-} from "./util/menu_content_utils";
-import { ShadowBaseElement } from "./util/shadowbaseelement";
-import { getSimpleButton } from "./util/menu_utils";
-import { DataTrack } from "./tracks/base_tracks/data_track";
-import { diff, moveElement } from "../util/collections";
+} from "../util/menu_content_utils";
+import { ShadowBaseElement } from "../util/shadowbaseelement";
+import { getSimpleButton } from "../util/menu_utils";
+import { DataTrack } from "../tracks/base_tracks/data_track";
+import { diff, moveElement } from "../../util/collections";
 
 import Sortable, { SortableEvent } from "sortablejs";
-import { GensSession } from "../state/gens_session";
-import { renderHighlights } from "./tracks/base_tracks/interactive_tools";
-import { getLinearScale } from "../draw/render_utils";
-import { keyLogger } from "./util/keylogger";
-import { TrackPage } from "./side_menu/track_page";
-import { setupDrag, setupDragging } from "../movements/dragging";
-import { calculatePan, zoomOut } from "../util/navigation";
+import { GensSession } from "../../state/gens_session";
+import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
+import { getLinearScale } from "../../draw/render_utils";
+import { keyLogger } from "../util/keylogger";
+import { TrackPage } from "../side_menu/track_page";
+import { setupDrag, setupDragging } from "../../movements/dragging";
+import { zoomOut } from "../../util/navigation";
+import {
+  createDotTrack,
+  createGenesTrack,
+  createOverviewTrack,
+  createVariantTrack,
+  createDataTrackWrapper,
+  TRACK_HANDLE_CLASS,
+  createAnnotTrack,
+} from "./utils";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
 
 const trackHeight = STYLE.tracks.trackHeight;
 
-const TRACK_HANDLE_CLASS = "track-handle";
-
-interface TracksManagerDataSources {
+export interface TracksManagerDataSources {
   getAnnotationSources: GetAnnotSources;
   getVariantUrl: (id: string) => string;
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
@@ -95,14 +102,6 @@ template.innerHTML = String.raw`
   <div id="bottom-container"></div>
 `;
 
-interface DragCallbacks {
-  onZoomIn: (range: Rng) => void;
-  onZoomOut: () => void;
-  getHighlights: (chrom: string) => RangeHighlight[];
-  addHighlight: (highlight: RangeHighlight) => void;
-  removeHighlight: (id: string) => void;
-}
-
 export class TracksManager extends ShadowBaseElement {
   topContainer: HTMLDivElement;
   tracksContainer: HTMLDivElement;
@@ -116,7 +115,7 @@ export class TracksManager extends ShadowBaseElement {
   dataTracks: DataTrack[] = [];
 
   annotationTracks: DataTrack[] = [];
-  myDataSources: TracksManagerDataSources;
+  dataSources: TracksManagerDataSources;
   renderAll: (settings: RenderSettings) => void;
 
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
@@ -157,7 +156,7 @@ export class TracksManager extends ShadowBaseElement {
     myDataSources: TracksManagerDataSources,
     session: GensSession,
   ) {
-    this.myDataSources = myDataSources;
+    this.dataSources = myDataSources;
     this.session = session;
     this.renderAll = render;
 
@@ -172,40 +171,32 @@ export class TracksManager extends ShadowBaseElement {
       },
     });
 
-    setupDragging(this.tracksContainer, (dragRange: Rng) => {
+    setupDragging(this.tracksContainer, (dragRangePx: Rng) => {
       const inverted = true;
       const invertedXScale = this.getXScale(inverted);
 
-      const scaledStart = invertedXScale(dragRange[0]);
-      const scaledEnd = invertedXScale(dragRange[1]);
+      const scaledStart = invertedXScale(dragRangePx[0]);
+      const scaledEnd = invertedXScale(dragRangePx[1]);
+      const panDistance = scaledStart - scaledEnd;
 
-      const panDistance = scaledEnd - scaledStart;
-      const panRange = calculatePan(
-        panDistance,
-        this.session.getXRange(),
-        this.session.getCurrentChromSize(),
-      );
-      this.session.setViewRange(panRange);
+      this.session.moveXRange(panDistance);
+      render({ dataUpdated: true, positionOnly: true });
     });
-
 
     this.openTrackContextMenu = (track: DataTrack) => {
       const isDotTrack = track instanceof DotTrack;
 
       if (this.trackPages[track.id] == null) {
         const trackPage = new TrackPage();
-
         const trackSettings = {
           showYAxis: isDotTrack,
           showColor: true,
         };
-
         trackPage.configure(track.id, trackSettings);
         this.trackPages[track.id] = trackPage;
       }
 
       const trackPage = this.trackPages[track.id];
-
       this.session.showContent(track.label, [trackPage]);
 
       trackPage.initialize(
@@ -254,28 +245,34 @@ export class TracksManager extends ShadowBaseElement {
     for (const sampleId of sampleIds) {
       const startExpanded = sampleIds.length == 1 ? true : false;
 
-      const coverageTrack = this.getDotTrack(
+      const coverageTrack = createDotTrack(
         `${sampleId}_log2_cov`,
         `${sampleId} cov`,
         sampleId,
-        (sampleId: string) => this.myDataSources.getCovData(sampleId),
+        (sampleId: string) => this.dataSources.getCovData(sampleId),
         { startExpanded, yAxis: { range: COV_Y_RANGE } },
+        session,
+        this.openTrackContextMenu,
       );
-      const bafTrack = this.getDotTrack(
+      const bafTrack = createDotTrack(
         `${sampleId}_log2_baf`,
         `${sampleId} baf`,
         sampleId,
-        (sampleId: string) => this.myDataSources.getBafData(sampleId),
+        (sampleId: string) => this.dataSources.getBafData(sampleId),
         { startExpanded, yAxis: { range: BAF_Y_RANGE } },
+        session,
+        this.openTrackContextMenu,
       );
 
-      const variantTrack = this.getVariantTrack(
+      const variantTrack = createVariantTrack(
         `${sampleId}_variants`,
         `${sampleId} Variants`,
         sampleId,
-        (sampleId: string) => this.myDataSources.getVariantData(sampleId),
+        (sampleId: string) => this.dataSources.getVariantData(sampleId),
         myDataSources.getVariantDetails,
         myDataSources.getVariantUrl,
+        session,
+        this.openTrackContextMenu,
       );
 
       covTracks.push(coverageTrack);
@@ -283,29 +280,35 @@ export class TracksManager extends ShadowBaseElement {
       variantTracks.push(variantTrack);
     }
 
-    const genesTrack = this.getGenesTrack(
+    const genesTrack = createGenesTrack(
       "genes",
       "Genes",
       () => myDataSources.getTranscriptData(),
       (id: string) => myDataSources.getTranscriptDetails(id),
+      session,
+      this.openTrackContextMenu,
     );
 
-    const overviewTrackCov = this.getOverviewTrack(
+    const overviewTrackCov = createOverviewTrack(
       "overview_cov",
       "Overview (cov)",
       () => myDataSources.getOverviewCovData(sampleIds[0]),
       COV_Y_RANGE,
       chromSizes,
       chromClick,
+      session,
+      this.openTrackContextMenu,
     );
 
-    const overviewTrackBaf = this.getOverviewTrack(
+    const overviewTrackBaf = createOverviewTrack(
       "overview_baf",
       "Overview (baf)",
       () => myDataSources.getOverviewBafData(sampleIds[0]),
       BAF_Y_RANGE,
       chromSizes,
       chromClick,
+      session,
+      this.openTrackContextMenu,
     );
 
     this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
@@ -322,7 +325,8 @@ export class TracksManager extends ShadowBaseElement {
     this.ideogramTrack.renderLoading();
 
     this.dataTracks.forEach((track) => {
-      appendDataTrack(this.tracksContainer, track);
+      const trackWrap = createDataTrackWrapper(track);
+      this.tracksContainer.appendChild(trackWrap);
       track.initialize();
       track.renderLoading();
     });
@@ -369,15 +373,12 @@ export class TracksManager extends ShadowBaseElement {
     console.error("Did not find any track with ID", trackId);
   }
 
-  // FIXME: Hmm, messy with the tracks containers, think about how to simplify this
   moveTrack(trackId: string, direction: "up" | "down") {
     const track = this.getTrackById(trackId);
     const trackIndex = this.dataTracks.indexOf(track);
     const shift = direction == "up" ? -1 : 1;
 
     const trackContainer = track.parentElement;
-
-    // const singleTrackContainer = track.parentNode;
     const trackSContainer = trackContainer.parentNode;
     if (direction == "up") {
       trackSContainer.insertBefore(
@@ -396,45 +397,13 @@ export class TracksManager extends ShadowBaseElement {
 
   showTrack(trackId: string) {
     const track = this.getTrackById(trackId);
-    appendDataTrack(this.tracksContainer, track);
+    const trackWrap = createDataTrackWrapper(track);
+    this.tracksContainer.appendChild(trackWrap);
   }
 
   hideTrack(trackId: string) {
     const track = this.getTrackById(trackId);
     this.tracksContainer.removeChild(track);
-  }
-
-  updateAnnotationTracks() {
-    const sources = this.myDataSources.getAnnotationSources({
-      selectedOnly: true,
-    });
-    // const sourcesIds = sources.map((source) => source.id);
-
-    const currAnnotTracks = this.annotationTracks;
-    // const currAnnotTrackIds = currAnnotTracks.map((track) => track.id);
-
-    const newSources = diff(sources, currAnnotTracks, (source) => source.id);
-    const removedSources = diff(
-      currAnnotTracks,
-      sources,
-      (source) => source.id,
-    );
-
-    newSources.forEach((source) => {
-      const newTrack = this.getAnnotTrack(source.id, source.label);
-      this.dataTracks.push(newTrack);
-      this.annotationTracks.push(newTrack);
-      appendDataTrack(this.tracksContainer, newTrack);
-      newTrack.initialize();
-    });
-
-    removedSources.forEach((source) => {
-      // Remove track
-      const track = this.getTrackById(source.id);
-      const index = this.dataTracks.indexOf(track);
-      this.dataTracks.splice(index, 0);
-      this.tracksContainer.removeChild(track);
-    });
   }
 
   getXScale(inverted: boolean = false): Scale {
@@ -450,8 +419,6 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
-    // FIXME: React to whether tracks are not present
-
     renderHighlights(
       this.tracksContainer,
       this.session.getCurrentHighlights(),
@@ -474,209 +441,42 @@ export class TracksManager extends ShadowBaseElement {
     this.overviewTracks.forEach((track) => track.render(settings));
   }
 
-  getAnnotTrack(sourceId: string, label: string): BandTrack {
-    async function getAnnotTrackData(
-      source: string,
-      getXRange: () => Rng,
-      getAnnotation: (source: string) => Promise<RenderBand[]>,
-    ): Promise<BandTrackData> {
-      const bands = await getAnnotation(source);
-      return {
-        xRange: getXRange(),
-        bands,
-      };
-    }
+  updateAnnotationTracks() {
+    const sources = this.dataSources.getAnnotationSources({
+      selectedOnly: true,
+    });
 
-    const openContextMenuId = async (id: string) => {
-      console.log("opening context menu");
-      const details = await this.getAnnotationDetails(id);
-      const button = getSimpleButton("Set highlight", () => {
-        this.session.addHighlight([details.start, details.end]);
-      });
-      const entries = getAnnotationContextMenuContent(id, details);
-      const content = [button];
-      content.push(...entries);
-      this.session.showContent("Annotations", content);
-    };
+    const currAnnotTracks = this.annotationTracks;
 
-    const track = new BandTrack(
-      sourceId,
-      label,
-      trackHeight.thin,
-      () => this.session.getXRange(),
-      () =>
-        getAnnotTrackData(
-          sourceId,
-          () => this.session.getXRange(),
-          this.myDataSources.getAnnotation,
-        ),
-      openContextMenuId,
-      this.openTrackContextMenu,
-      this.session,
+    const newSources = diff(sources, currAnnotTracks, (source) => source.id);
+    const removedSources = diff(
+      currAnnotTracks,
+      sources,
+      (source) => source.id,
     );
-    return track;
+
+    newSources.forEach((source) => {
+      const newTrack = createAnnotTrack(
+        source.id,
+        source.label,
+        this.dataSources,
+        this.session,
+        this.openTrackContextMenu,
+      );
+      this.dataTracks.push(newTrack);
+      this.annotationTracks.push(newTrack);
+      const trackWrapper = createDataTrackWrapper(newTrack);
+      this.tracksContainer.appendChild(trackWrapper);
+      newTrack.initialize();
+    });
+
+    removedSources.forEach((source) => {
+      const track = this.getTrackById(source.id);
+      const index = this.dataTracks.indexOf(track);
+      this.dataTracks.splice(index, 0);
+      this.tracksContainer.removeChild(track);
+    });
   }
-
-  getDotTrack(
-    id: string,
-    label: string,
-    sampleId: string,
-    dataFn: (sampleId: string) => Promise<RenderDot[]>,
-    settings: { startExpanded: boolean; yAxis: Axis },
-  ): DotTrack {
-    const dotTrack = new DotTrack(
-      id,
-      label,
-      trackHeight.thick,
-      settings.startExpanded,
-      settings.yAxis,
-      () => this.session.getXRange(),
-      async () => {
-        const data = await dataFn(sampleId);
-        // const data = await this.dataSource.getCovData(sampleId);
-        return {
-          xRange: this.session.getXRange(),
-          dots: data,
-        };
-      },
-      this.openTrackContextMenu,
-      this.session,
-    );
-    return dotTrack;
-  }
-
-  getVariantTrack(
-    id: string,
-    label: string,
-    sampleId: string,
-    dataFn: (sampleId: string) => Promise<RenderBand[]>,
-    getVariantDetails: (
-      sampleId: string,
-      variantId: string,
-    ) => Promise<ApiVariantDetails>,
-    getVariantURL: (variantId: string) => string,
-  ): BandTrack {
-    const variantTrack = new BandTrack(
-      id,
-      label,
-      trackHeight.thin,
-      () => this.session.getXRange(),
-      async () => {
-        return {
-          xRange: this.session.getXRange(),
-          bands: await dataFn(sampleId),
-        };
-      },
-      async (variantId: string) => {
-        const details = await getVariantDetails(sampleId, variantId);
-        const scoutUrl = getVariantURL(variantId);
-
-        const button = getSimpleButton("Set highlight", () => {
-          this.session.addHighlight([details.position, details.end]);
-        });
-
-        const entries = getVariantContextMenuContent(
-          variantId,
-          details,
-          scoutUrl,
-        );
-        const content = [button];
-        content.push(...entries);
-
-        this.session.showContent("Variant", content);
-      },
-      this.openTrackContextMenu,
-      this.session,
-    );
-    return variantTrack;
-  }
-
-  getGenesTrack(
-    id: string,
-    label: string,
-    getBands: () => Promise<RenderBand[]>,
-    getDetails: (id: string) => Promise<ApiGeneDetails>,
-  ): BandTrack {
-    const genesTrack = new BandTrack(
-      id,
-      label,
-      trackHeight.thin,
-      () => this.session.getXRange(),
-      async () => {
-        return {
-          xRange: this.session.getXRange(),
-          bands: await getBands(),
-        };
-      },
-      async (id) => {
-        const details = await getDetails(id);
-        const button = getSimpleButton("Set highlight", () => {
-          this.session.addHighlight([details.start, details.end]);
-        });
-        const entries = getGenesContextMenuContent(id, details);
-        const content = [button];
-        content.push(...entries);
-        this.session.showContent("Transcript", content);
-      },
-      this.openTrackContextMenu,
-      this.session,
-    );
-    return genesTrack;
-  }
-
-  getOverviewTrack(
-    id: string,
-    label: string,
-    getData: () => Promise<Record<string, RenderDot[]>>,
-    yRange: Rng,
-    chromSizes: Record<string, number>,
-    chromClick: (chrom: string) => void,
-  ): OverviewTrack {
-    const overviewTrack = new OverviewTrack(
-      id,
-      label,
-      trackHeight.thick,
-      chromSizes,
-      chromClick,
-      yRange,
-      async () => {
-        return {
-          dotsPerChrom: await getData(),
-          xRange: this.session.getXRange(),
-          chromosome: this.session.getChromosome(),
-        };
-      },
-      () => {
-        const xRange = this.session.getXRange();
-        const chrom = this.session.getChromosome();
-        return {
-          chrom,
-          start: xRange[0],
-          end: xRange[1],
-        };
-      },
-      true,
-    );
-    return overviewTrack;
-  }
-}
-
-function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
-  const wrapper = document.createElement("div");
-  wrapper.classList.add("track-wrapper");
-  wrapper.style.position = "relative";
-  wrapper.appendChild(track);
-
-  const handle = document.createElement("div");
-  handle.className = TRACK_HANDLE_CLASS;
-  handle.style.position = "absolute";
-  handle.style.top = "0";
-  handle.style.left = "0";
-  handle.style.width = `${STYLE.yAxis.width}px`;
-  handle.style.height = "100%";
-  wrapper.appendChild(handle);
-
-  parentContainer.appendChild(wrapper);
 }
 
 customElements.define("gens-tracks", TracksManager);
