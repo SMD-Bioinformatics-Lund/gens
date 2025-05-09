@@ -66,14 +66,6 @@ export class BandTrack extends DataTrack {
     this.initializeExpander("contextmenu", startExpanded, onExpand);
   }
 
-  // initialize() {
-  //   super.initialize();
-
-  //   console.log("Band track initialized");
-
-
-  // }
-
   override draw() {
     super.drawStart();
 
