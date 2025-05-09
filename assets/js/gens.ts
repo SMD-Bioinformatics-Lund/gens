@@ -1,4 +1,4 @@
-import "./components/tracks_manager";
+import "./components/tracks_manager/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
 import "./components/util/shadowbaseelement";
@@ -6,18 +6,18 @@ import "./components/util/choice_select";
 import "./components/side_menu/settings_page";
 import "./components/side_menu/side_menu";
 import "./components/header_info";
-import "./components/util/marker";
+import "./movements/marker";
 import "./components/side_menu/track_page";
 
 import { API } from "./state/api";
-import { TracksManager } from "./components/tracks_manager";
+import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
 import { SettingsPage } from "./components/side_menu/settings_page";
 import { HeaderInfo } from "./components/header_info";
-import { GensSession } from "./state/session";
+import { GensSession } from "./state/gens_session";
 
 export async function initCanvases({
   caseId,
@@ -42,25 +42,18 @@ export async function initCanvases({
   const settingsPage = document.createElement("settings-page") as SettingsPage;
 
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
-  headerInfo.initialize(caseId, sampleIds);
+  headerInfo.initialize(
+    caseId,
+    sampleIds,
+    `${scoutBaseURL}/case/case_id/${caseId}`,
+  );
 
   const inputControls = document.getElementById(
     "input-controls",
   ) as InputControls;
 
   const api = new API(caseId, genomeBuild, gensApiURL);
-
-  const renderDataSource = getRenderDataSource(
-    api,
-    () => {
-      const region = inputControls.getRegion();
-      return region.chrom;
-    },
-    () => {
-      const region = inputControls.getRegion();
-      return [region.start, region.end];
-    },
-  );
+  await api.initialize();
 
   const render = (settings: RenderSettings) => {
     gensTracks.render(settings);
@@ -68,9 +61,23 @@ export async function initCanvases({
     inputControls.render(settings);
   };
 
+  const chromSizes = api.getChromSizes();
+  const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
+  const session = new GensSession(
+    render,
+    sideMenu,
+    defaultRegion,
+    chromSizes,
+  );
+
+  const renderDataSource = getRenderDataSource(
+    api,
+    () => session.getChromosome(),
+    () => session.getXRange(),
+  );
+
   const onChromClick = async (chrom) => {
-    const chromData = await api.getChromData(chrom);
-    inputControls.updateChromosome(chrom, chromData.size);
+    session.updateChromosome(chrom);
     render({ dataUpdated: true });
   };
 
@@ -83,9 +90,7 @@ export async function initCanvases({
     return url;
   };
 
-  const session = new GensSession(render, sideMenu);
-
-  setupShortcuts(session, sideMenu, inputControls, onChromClick);
+  setupShortcuts(session, sideMenu, inputControls);
 
   const annotSources = await api.getAnnotationSources();
   const defaultAnnot = annotSources
@@ -156,48 +161,41 @@ async function initialize(
     chromSizes[chromosome] = chromInfo.size;
   }
 
-  inputControls.initialize(
-    startRegion,
-    async (_range) => {
-      render({ dataUpdated: true, positionOnly: true });
-    },
-    session,
-  );
+  inputControls.initialize(session, async (range) => {
+    session.setViewRange(range);
+    render({ dataUpdated: true, positionOnly: true });
+  });
 
-  await tracks.initialize(
+
+  const tracksDataSources = {
+    getAnnotationSources: (settings: { selectedOnly: boolean }) =>
+      settingsPage.getAnnotSources(settings),
+    getVariantUrl: (id: string) => getVariantURL(id),
+    getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
+    getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
+    getVariantDetails: (sampleId: string, variantId: string) =>
+      api.getVariantDetails(sampleId, variantId, session.getChromosome()),
+
+    getAnnotation: (id: string) => renderDataSource.getAnnotation(id),
+    getCovData: (id: string) => renderDataSource.getCovData(id),
+    getBafData: (id: string) => renderDataSource.getBafData(id),
+    getVariantData: (id: string) => renderDataSource.getVariantData(id),
+
+    getTranscriptData: () => renderDataSource.getTranscriptData(),
+    getOverviewCovData: (sampleId: string) =>
+      renderDataSource.getOverviewCovData(sampleId),
+    getOverviewBafData: (sampleId: string) =>
+      renderDataSource.getOverviewBafData(sampleId),
+
+    getChromInfo: () => renderDataSource.getChromInfo(),
+  };
+
+  tracks.initialize(
     render,
     sampleIds,
     chromSizes,
     onChromClick,
-    renderDataSource,
-    () => inputControls.getRegion().chrom,
-    () => inputControls.getRange(),
-    (range: Rng) => {
-      inputControls.updatePosition(range);
-      render({ dataUpdated: true, positionOnly: true });
-    },
-    () => inputControls.zoomOut(),
-    (pan: number) => {
-      const startRange = inputControls.getRange();
-      const currChromLength = chromSizes[inputControls.getRegion().chrom];
-      const endRange: Rng = [
-        Math.max(0, Math.floor(startRange[0] - pan)),
-        Math.min(Math.floor(startRange[1] - pan), currChromLength),
-      ];
-      inputControls.updatePosition(endRange);
-      render({ dataUpdated: true, positionOnly: true });
-    },
-    (settings: { selectedOnly: boolean }) =>
-      settingsPage.getAnnotSources(settings),
-    getVariantURL,
-    async (id: string) => await api.getAnnotationDetails(id),
-    async (id: string) => await api.getTranscriptDetails(id),
-    async (sampleId: string, variantId: string) =>
-      await api.getVariantDetails(
-        sampleId,
-        variantId,
-        inputControls.getRegion().chrom,
-      ),
+    tracksDataSources,
     session,
   );
 
@@ -208,47 +206,47 @@ function setupShortcuts(
   session: GensSession,
   sideMenu: SideMenu,
   inputControls: InputControls,
-  onChromClick: (chrom: string) => void,
 ) {
   // Rebuild the keyboard shortcuts
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-      if (session.getMarkerMode()) {
+      if (session.getMarkerModeOn()) {
         inputControls.toggleMarkerMode();
         return;
       }
       sideMenu.close();
     }
-    if (e.key === "ArrowLeft") {
-      if (e.ctrlKey || e.metaKey) {
-        const currChrom = inputControls.getRegion().chrom;
-        const currIndex = CHROMOSOMES.indexOf(currChrom);
-        if (currIndex > 0) {
-          const newChrom = CHROMOSOMES[currIndex - 1];
-          onChromClick(newChrom);
-        }
-      } else {
-        inputControls.panLeft();
-      }
-    }
-    if (e.key === "ArrowRight") {
-      if (e.ctrlKey || e.metaKey) {
-        const currChrom = inputControls.getRegion().chrom;
-        const currIndex = CHROMOSOMES.indexOf(currChrom);
-        if (currIndex < CHROMOSOMES.length - 1) {
-          const newChrom = CHROMOSOMES[currIndex + 1];
-          onChromClick(newChrom);
-        }
-      } else {
-        inputControls.panRight();
-      }
-    }
-    if (e.key === "ArrowUp") {
-      inputControls.zoomIn();
-    }
-    if (e.key === "ArrowDown") {
-      inputControls.zoomOut();
-    }
+    // FIXME: Restore these, should not be active when for instance cursor is inside region box
+    // if (e.key === "ArrowLeft") {
+    //   if (e.ctrlKey || e.metaKey) {
+    //     const currChrom = session.getChromosome();
+    //     const currIndex = CHROMOSOMES.indexOf(currChrom);
+    //     if (currIndex > 0) {
+    //       const newChrom = CHROMOSOMES[currIndex - 1];
+    //       onChromClick(newChrom);
+    //     }
+    //   } else {
+    //     inputControls.panLeft();
+    //   }
+    // }
+    // if (e.key === "ArrowRight") {
+    //   if (e.ctrlKey || e.metaKey) {
+    //     const currChrom = session.getChromosome();
+    //     const currIndex = CHROMOSOMES.indexOf(currChrom);
+    //     if (currIndex < CHROMOSOMES.length - 1) {
+    //       const newChrom = CHROMOSOMES[currIndex + 1];
+    //       onChromClick(newChrom);
+    //     }
+    //   } else {
+    //     inputControls.panRight();
+    //   }
+    // }
+    // if (e.key === "ArrowUp") {
+    //   inputControls.zoomIn();
+    // }
+    // if (e.key === "ArrowDown") {
+    //   inputControls.zoomOut();
+    // }
     if (e.key === "r") {
       inputControls.resetZoom();
     }

@@ -21,6 +21,7 @@ export class IdeogramTrack extends CanvasTrack {
   }
 
   initialize() {
+
     super.initialize();
     const zoomMarkerElement = setupZoomMarkerElement(this.defaultTrackHeight);
     this.trackContainer.appendChild(zoomMarkerElement);
@@ -30,6 +31,7 @@ export class IdeogramTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
+
     if (settings.dataUpdated || this.renderData == null) {
       this.renderData = await this.getRenderData();
     }

@@ -1,3 +1,4 @@
+import { CHROMOSOMES } from "../constants";
 import { get } from "../util/fetch";
 import { zip } from "../util/utils";
 
@@ -11,10 +12,33 @@ export class API {
   // Remaining zoom levels (up to "d") are loaded dynamically and
   // only for the points currently in view
 
+  private allChromData: Record<string, ChromosomeInfo> = {};
+
+  getChromSizes(): Record<string, number> {
+
+    if (this.allChromData == null) {
+      throw Error("Must initialize before accessing the chromosome sizes");
+    }
+
+    const allChromSizes = {};
+    for (const chrom of CHROMOSOMES) {
+      const chromLength = this.allChromData[chrom].size;
+      allChromSizes[chrom] = chromLength;
+    }
+    return allChromSizes;
+  }
+
   constructor(caseId: string, genomeBuild: number, gensApiURL: string) {
     this.caseId = caseId;
     this.genomeBuild = genomeBuild;
     this.apiURI = gensApiURL;
+  }
+
+  async initialize() {
+    for (const chrom of CHROMOSOMES) {
+      const chromInfo = await this.getChromData(chrom);
+      this.allChromData[chrom] = chromInfo;
+    }
   }
 
   getAnnotationDetails(id: string): Promise<ApiAnnotationDetails> {
@@ -104,6 +128,7 @@ export class API {
           sampleId,
           this.caseId,
           this.apiURI,
+          this.getChromSizes(),
         );
       }
       return this.covSampleChrZoomCache[sampleId][chrom][zoom];
@@ -147,6 +172,7 @@ export class API {
           sampleId,
           this.caseId,
           this.apiURI,
+          this.getChromSizes()
         );
       }
       return this.bafSampleZoomChrCache[sampleId][chrom][zoom];
@@ -270,27 +296,16 @@ async function getCovData(
   caseId: string,
   chrom: string,
   zoom: string,
-  range?: Rng,
+  range: Rng,
 ): Promise<ApiCoverageDot[]> {
-  let query;
-  if (range != null) {
-    query = {
-      sample_id: sampleId,
-      case_id: caseId,
-      chromosome: chrom,
-      zoom_level: zoom,
-      start: range[0],
-      end: range[1],
-    };
-  } else {
-    query = {
-      sample_id: sampleId,
-      case_id: caseId,
-      chromosome: chrom,
-      zoom_level: zoom,
-      start: 1,
-    };
-  }
+  const query = {
+    sample_id: sampleId,
+    case_id: caseId,
+    chromosome: chrom,
+    zoom_level: zoom,
+    start: range[0],
+    end: range[1],
+  };
 
   const regionResult = (await get(new URL(endpoint, apiURI).href, query)) as {
     position: number[];
@@ -316,6 +331,7 @@ function getDataPerZoom(
   sampleId: string,
   caseId: string,
   apiURI: string,
+  chromSizes: Record<string, number>,
 ): Record<string, Promise<ApiCoverageDot[]>> {
   const dataPerZoom: Record<string, Promise<ApiCoverageDot[]>> = {};
 
@@ -327,6 +343,7 @@ function getDataPerZoom(
       caseId,
       chrom,
       zoom,
+      [1, chromSizes[chrom]],
     );
     dataPerZoom[zoom] = parsedResult;
   }

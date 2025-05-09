@@ -5,7 +5,7 @@ import {
   renderBackground,
 } from "../../../draw/render_utils";
 import { drawBox, drawLabel, drawLine } from "../../../draw/shapes";
-import { GensSession } from "../../../state/session";
+import { GensSession } from "../../../state/gens_session";
 import { generateTicks, getTickSize } from "../../../util/utils";
 import {
   setupCanvasClick,
@@ -226,7 +226,7 @@ export abstract class DataTrack extends CanvasTrack {
         const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
         return hoverTargets.concat([labelBox]);
       },
-      () => this.session.getMarkerMode(),
+      () => this.session.getMarkerModeOn(),
       [0, STYLE.yAxis.width],
     );
   }

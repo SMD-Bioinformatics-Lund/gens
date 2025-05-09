@@ -25,7 +25,7 @@ export function getRenderDataSource(
   getXRange: () => Rng,
 ): RenderDataSource {
   const getChromInfo = async () => {
-    return await gensAPI.getChromData(getChrom());
+    return gensAPI.getChromData(getChrom());
   };
 
   const getAnnotation = async (recordId: string) => {

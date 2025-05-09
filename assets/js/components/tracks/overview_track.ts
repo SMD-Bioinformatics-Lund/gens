@@ -7,7 +7,7 @@ import {
   linearScale,
   renderBackground,
 } from "../../draw/render_utils";
-import { GensMarker } from "../util/marker";
+import { GensMarker } from "../../movements/marker";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;
@@ -80,6 +80,7 @@ export class OverviewTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
+
     // FIXME: This one is a bit tricky isn't it
     // We want it to render not on new data, but on resize
     // Do I have all info I need here?
@@ -197,7 +198,7 @@ function renderOverviewPlot(
       // If exchanged for a different letter, this label is rendered, so is Y.
       // If keeping the "Y", nothing is rendered specifically for the Y label
       // More digging is needed here to understand this
-      let renderChrom = `${chrom}.`;
+      const renderChrom = `${chrom}.`;
       drawLabel(
         ctx,
         renderChrom,

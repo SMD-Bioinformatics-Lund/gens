@@ -1,6 +1,6 @@
 import { STYLE } from "../../constants";
 import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
-import { GensSession } from "../../state/session";
+import { GensSession } from "../../state/gens_session";
 import { DataTrack } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {

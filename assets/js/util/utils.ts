@@ -282,12 +282,13 @@ export function populateSelect(
     opt.value = id;
     opt.innerHTML = label;
     return opt;
-  }
+  };
 
   if (includeNoSelect) {
-    select.appendChild(getOption("", "---"));    
+    select.appendChild(getOption("", "---"));
   }
   for (const option of options) {
     select.appendChild(getOption(option.id, option.label));
   }
 }
+

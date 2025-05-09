@@ -13,8 +13,8 @@ Choices.prototype._onClick = function (event: MouseEvent) {
   // Now, getting the full path where we can check inside the shadow DOM whether
   // the select is clicked
   const path = event.composedPath?.() || [];
-  var containerOuter = this.containerOuter;
-  var clickWasWithinContainer = path.includes(containerOuter.element);
+  const containerOuter = this.containerOuter;
+  const clickWasWithinContainer = path.includes(containerOuter.element);
 
   // Previous line
   // var clickWasWithinContainer = containerOuter.element.contains(target);

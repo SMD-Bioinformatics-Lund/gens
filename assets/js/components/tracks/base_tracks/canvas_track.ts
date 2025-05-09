@@ -1,9 +1,11 @@
 import { renderBackground } from "../../../draw/render_utils";
-import { drawLabel } from "../../../draw/shapes";
+import { drawBox, drawLabel } from "../../../draw/shapes";
 import { ShadowBaseElement } from "../../util/shadowbaseelement";
-import { setupCanvasClick, getCanvasHover } from "../../util/canvas_interaction";
+import {
+  setupCanvasClick,
+  getCanvasHover,
+} from "../../util/canvas_interaction";
 import { STYLE } from "../../../constants";
-
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -58,7 +60,6 @@ export abstract class CanvasTrack extends ShadowBaseElement {
     this.collapsedTrackHeight = STYLE.tracks.trackHeight.extraThin;
   }
 
-
   getNtsPerPixel(xRange: Rng) {
     const nNts = xRange[1] - xRange[0];
     const nPxs = this.dimensions.width;
@@ -84,9 +85,19 @@ export abstract class CanvasTrack extends ShadowBaseElement {
     this.isInitialized = true;
   }
 
+  /**
+   * Draw a blue box straight into canvas for debugging
+   */
+  debugRender(
+    color: string = "blue",
+    box: Box = { x1: 1, x2: 100, y1: 1, y2: 100 },
+  ) {
+    drawBox(this.ctx, box, { fillColor: color });
+  }
+
   renderLoading() {
     if (this.ctx == null) {
-      throw Error(`${this.label}: Track cannot be rendered before initialized`)
+      throw Error(`${this.label}: Track cannot be rendered before initialized`);
     }
     renderBackground(this.ctx, this.dimensions);
     drawLabel(
@@ -101,7 +112,6 @@ export abstract class CanvasTrack extends ShadowBaseElement {
   // Placeholder needed for Typescript to understand that an array of CanvasTracks
   // can all be rendered as such: canvas.render(updateData);
   async render(_updateData: RenderSettings) {}
-
 
   initializeClick(onElementClick: (el: HoverBox) => void | null = null) {
     setupCanvasClick(this.canvas, () => this.hoverTargets, onElementClick);

@@ -8,7 +8,7 @@ import { STYLE } from "../../constants";
 import { drawArrow, getLinearScale } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
 import { DataTrack } from "./base_tracks/data_track";
-import { GensSession } from "../../state/session";
+import { GensSession } from "../../state/gens_session";
 
 export class BandTrack extends DataTrack {
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
