@@ -6,7 +6,7 @@ import "./components/util/choice_select";
 import "./components/side_menu/settings_page";
 import "./components/side_menu/side_menu";
 import "./components/header_info";
-import "./components/util/marker";
+import "./movements/marker";
 import "./components/side_menu/track_page";
 
 import { API } from "./state/api";
@@ -42,7 +42,11 @@ export async function initCanvases({
   const settingsPage = document.createElement("settings-page") as SettingsPage;
 
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
-  headerInfo.initialize(caseId, sampleIds);
+  headerInfo.initialize(
+    caseId,
+    sampleIds,
+    `${scoutBaseURL}/case/case_id/${caseId}`,
+  );
 
   const inputControls = document.getElementById(
     "input-controls",

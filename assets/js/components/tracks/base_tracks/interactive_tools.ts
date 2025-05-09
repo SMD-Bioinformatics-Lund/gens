@@ -1,11 +1,11 @@
 import { COLORS, STYLE } from "../../../constants";
+import { GensMarker } from "../../../movements/marker";
 import {
   generateID,
   scaleRange,
   sortRange,
 } from "../../../util/utils";
 import { keyLogger } from "../../util/keylogger";
-import { GensMarker } from "../../util/marker";
 
 export function initializeDragSelect(
   element: HTMLElement,

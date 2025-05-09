@@ -7,7 +7,7 @@ import {
   linearScale,
   renderBackground,
 } from "../../draw/render_utils";
-import { GensMarker } from "../util/marker";
+import { GensMarker } from "../../movements/marker";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;

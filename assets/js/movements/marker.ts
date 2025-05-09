@@ -1,6 +1,6 @@
-import { SIZES, STYLE } from "../../constants";
-import { rangeSize, sortRange } from "../../util/utils";
-import { ShadowBaseElement } from "./shadowbaseelement";
+import { ShadowBaseElement } from "../components/util/shadowbaseelement";
+import { SIZES, STYLE } from "../constants";
+import { rangeSize, sortRange } from "../util/utils";
 
 const style = STYLE.menu;
 

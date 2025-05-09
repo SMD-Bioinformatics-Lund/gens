@@ -29,7 +29,7 @@ template.innerHTML = String.raw`
 <div id="container">
   <div class="row text">
     <div class="label">Case </div>
-    <div id="case-id">(value)</div>
+    <a href="" id="case-id">(value)</a>
   </div>
   <div class="row text">
     <div class="label">Sample </div>
@@ -39,7 +39,7 @@ template.innerHTML = String.raw`
 `;
 
 export class HeaderInfo extends ShadowBaseElement {
-  private caseIdElem: HTMLDivElement;
+  private caseIdElem: HTMLAnchorElement;
   private sampleIdsElem: HTMLDivElement;
 
   constructor() {
@@ -47,14 +47,17 @@ export class HeaderInfo extends ShadowBaseElement {
   }
 
   connectedCallback(): void {
-    this.caseIdElem = this.root.querySelector("#case-id") as HTMLDivElement;
-    this.sampleIdsElem = this.root.querySelector(
-      "#sample-ids",
-    ) as HTMLDivElement;
+    this.caseIdElem = this.root.querySelector("#case-id");
+    this.sampleIdsElem = this.root.querySelector("#sample-ids");
   }
 
-  initialize(caseId: string, sampleIds: string[]) {
+  initialize(
+    caseId: string,
+    sampleIds: string[],
+    caseURL: string,
+  ) {
     this.caseIdElem.innerHTML = caseId;
+    this.caseIdElem.href = caseId;
     this.sampleIdsElem.innerHTML = sampleIds.join(", ");
   }
 }
