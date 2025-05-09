@@ -17,6 +17,7 @@ export class BandTrack extends DataTrack {
   constructor(
     id: string,
     label: string,
+    trackType: TrackType,
     trackHeight: number,
     getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
@@ -27,6 +28,7 @@ export class BandTrack extends DataTrack {
     super(
       id,
       label,
+      trackType,
       getXRange,
       // FIXME: Supply xScale directly?
       () => {

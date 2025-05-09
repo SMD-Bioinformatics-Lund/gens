@@ -35,6 +35,8 @@ export abstract class DataTrack extends CanvasTrack {
   getYScale: () => Scale;
   openTrackContextMenu: (track: DataTrack) => void;
 
+  trackType: TrackType;
+
   private colorBands: RenderBand[] = [];
   setColorBands(colorBands: RenderBand[]) {
     this.colorBands = colorBands;
@@ -129,6 +131,7 @@ export abstract class DataTrack extends CanvasTrack {
   constructor(
     id: string,
     label: string,
+    trackType: TrackType,
     getXRange: () => Rng,
     getXScale: () => Scale,
     openTrackContextMenu: (track: DataTrack) => void,
@@ -136,6 +139,7 @@ export abstract class DataTrack extends CanvasTrack {
     session: GensSession,
   ) {
     super(id, label, settings.defaultHeight);
+    this.trackType = trackType;
     this.settings = settings;
     this.getXRange = getXRange;
     this.getXScale = getXScale;

@@ -84,6 +84,8 @@ export abstract class CanvasTrack extends ShadowBaseElement {
       );
     }
 
+    // FIXME: Can this be moved to connected callback?
+    // Then the initialize could be completely removed
     this.syncDimensions();
     this.isInitialized = true;
   }

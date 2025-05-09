@@ -106,8 +106,9 @@ export class TracksManager extends ShadowBaseElement {
   ideogramTrack: IdeogramTrack;
   overviewTracks: OverviewTrack[];
   dataTracks: DataTrack[] = [];
+  idToWrapper: Record<string,HTMLDivElement> = {};
 
-  annotationTracks: DataTrack[] = [];
+  // annotationTracks: DataTrack[] = [];
   dataSources: TracksManagerDataSources;
   renderAll: (settings: RenderSettings) => void;
 
@@ -384,21 +385,22 @@ export class TracksManager extends ShadowBaseElement {
       (id) => this.session.removeHighlight(id),
     );
 
-    const addAnnotationTrack = (newTrack: DataTrack) => {
-      this.dataTracks.push(newTrack);
-      // FIXME: Is this needed?
-      this.annotationTracks.push(newTrack);
-      const trackWrapper = createDataTrackWrapper(newTrack);
-      this.tracksContainer.appendChild(trackWrapper);
-      newTrack.initialize();
-    };
+    // const addAnnotationTrack = (newTrack: DataTrack) => {
+    //   this.dataTracks.push(newTrack);
+    //   // FIXME: Is this needed?
+    //   // this.annotationTracks.push(newTrack);
+    //   const trackWrapper = createDataTrackWrapper(newTrack);
+    //   this.tracksContainer.appendChild(trackWrapper);
+    //   newTrack.initialize();
+    // };
 
     updateAnnotationTracks(
+      this.dataTracks.filter((track) => track.trackType == "annotation"),
       this.dataSources,
       this.session,
       this.openTrackContextMenu,
-      addAnnotationTrack,
-      this.removeDataTrack,
+      (track: DataTrack) => this.addDataTrack(track),
+      (id: string) => this.removeDataTrack(id),
     );
 
     for (const trackPage of Object.values(this.trackPages)) {
@@ -414,11 +416,26 @@ export class TracksManager extends ShadowBaseElement {
     this.overviewTracks.forEach((track) => track.render(settings));
   }
 
+  addDataTrack(newTrack: DataTrack) {
+    this.dataTracks.push(newTrack);
+    const trackWrapper = createDataTrackWrapper(newTrack);
+    this.tracksContainer.appendChild(trackWrapper);
+    newTrack.initialize();
+    
+    this.idToWrapper[newTrack.id] = trackWrapper;
+  }
+
   removeDataTrack(id: string) {
     const track = this.getTrackById(id);
     const index = this.dataTracks.indexOf(track);
-    this.dataTracks.splice(index, 0);
-    this.tracksContainer.removeChild(track);
+    this.dataTracks.splice(index, 1);
+
+    const wrapper = this.idToWrapper[id];
+
+    /** Each track is wrapped in a parent div. Here, remove this wrapper. */
+    this.tracksContainer.removeChild(wrapper);
+
+    delete this.idToWrapper[id];
   }
 
   createOpenTrackContextMenu(render: (settings: RenderSettings) => void) {
@@ -471,6 +488,7 @@ export class TracksManager extends ShadowBaseElement {
 }
 
 function updateAnnotationTracks(
+  currAnnotTracks: DataTrack[],
   dataSources: TracksManagerDataSources,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
@@ -481,14 +499,11 @@ function updateAnnotationTracks(
     selectedOnly: true,
   });
 
-  const currAnnotTracks = dataSources.getAnnotationSources({
-    selectedOnly: true,
-  });
-
   const newSources = diff(sources, currAnnotTracks, (source) => source.id);
   const removedSources = diff(currAnnotTracks, sources, (source) => source.id);
 
   newSources.forEach((source) => {
+    console.log("Adding new track");
     const newTrack = createAnnotTrack(
       source.id,
       source.label,
