@@ -18,7 +18,6 @@ import { SideMenu } from "./components/side_menu/side_menu";
 import { SettingsPage } from "./components/side_menu/settings_page";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
-import { chromSizes } from "./unused/_helper";
 
 export async function initCanvases({
   caseId,
@@ -62,25 +61,6 @@ export async function initCanvases({
     inputControls.render(settings);
   };
 
-
-  // const getChromSize = (chrom: string) => api.getChromData(chrom);
-
-  // const allChromData: Record<string, ChromosomeInfo> = {};
-  // for (const chrom of CHROMOSOMES) {
-  //   const chromInfo = await api.getChromData(chrom);
-  //   allChromData[chrom] = chromInfo;
-  // }
-
-  // const allChromSizes: Record<string, number> = {};
-  // for (const chrom of CHROMOSOMES) {
-  //   const chromLength = allChromData[chrom].size;
-  //   allChromSizes[chrom] = chromLength;
-  // }
-
-  // FIXME: First get all the sizes
-
-  // FIXME: Input controls should receive region from session
-  // Not the other way around
   const chromSizes = api.getChromSizes();
   const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
   const session = new GensSession(
@@ -97,7 +77,6 @@ export async function initCanvases({
   );
 
   const onChromClick = async (chrom) => {
-    // const chromData = await api.getChromData(chrom);
     session.updateChromosome(chrom);
     render({ dataUpdated: true });
   };
@@ -216,28 +195,7 @@ async function initialize(
     sampleIds,
     chromSizes,
     onChromClick,
-    // renderDataSource,
-    // () => inputControls.getRegion().chrom,
-    // () => inputControls.getRange(),
-    // (range: Rng) => {
-    //   console.error("Setting position", range);
-    //   inputControls.updatePosition(range);
-    //   render({ dataUpdated: true, positionOnly: true });
-    // },
-    // () => inputControls.zoomOut(),
-    // onPan,
-    // (settings: { selectedOnly: boolean }) =>
-    //   settingsPage.getAnnotSources(settings),
     tracksDataSources,
-    // getVariantURL,
-    // async (id: string) => await api.getAnnotationDetails(id),
-    // async (id: string) => await api.getTranscriptDetails(id),
-    // async (sampleId: string, variantId: string) =>
-    //   await api.getVariantDetails(
-    //     sampleId,
-    //     variantId,
-    //     inputControls.getRegion().chrom,
-    //   ),
     session,
   );
 

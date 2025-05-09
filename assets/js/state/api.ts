@@ -14,13 +14,6 @@ export class API {
 
   private allChromData: Record<string, ChromosomeInfo> = {};
 
-  // getChromData(chrom: string): ChromosomeInfo {
-  //   if (this.allChromData == null) {
-  //     throw Error("Must initialize before accessing the chromosome info");
-  //   }
-  //   return this.allChromData[chrom];
-  // }
-
   getChromSizes(): Record<string, number> {
 
     if (this.allChromData == null) {

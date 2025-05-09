@@ -1,7 +1,6 @@
 import { initializeDragSelect } from "../components/tracks/base_tracks/interactive_tools";
-import { COLORS, STYLE } from "../constants";
+import { STYLE } from "../constants";
 import { getLinearScale } from "../draw/render_utils";
-import { generateID } from "../util/utils";
 
 // FIXME: Both needed? Probably not
 export function setupDrag(
@@ -12,7 +11,6 @@ export function setupDrag(
   onSetViewRange: (range: Rng) => void,
   onAddHighlight: (range: Rng) => void,
   onRemoveHighlight: (id: string) => void,
-  // dragCallbacks: DragCallbacks,
 ) {
   const onDragEnd = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
     const xRange = getXRange();

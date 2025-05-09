@@ -22,17 +22,12 @@ export function getPan(
   return [newStartX, newEndX];
 }
 
-// FIXME: Maybe in session instead?
 export function calculatePan(panDistance: number, startRange: Rng, chromSize: number) {
-  // const startRange = session.getXRange();
-  // const currChromLength = chromSizes[session.getChromosome()];
   const endRange: Rng = [
     Math.max(0, Math.floor(startRange[0] - panDistance)),
     Math.min(Math.floor(startRange[1] - panDistance), chromSize),
   ];
   return endRange;
-  // session.setViewRange(endRange);
-  // render({ dataUpdated: true, positionOnly: true });
 }
 
 // parse chromosomal region designation string
@@ -77,5 +72,4 @@ export function zoomOut(
   newEnd = Math.min(newEnd, maxX);
 
   return [newStart, newEnd];
-  // pos.end += factor;
 }

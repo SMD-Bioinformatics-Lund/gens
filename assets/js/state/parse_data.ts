@@ -26,7 +26,6 @@ export function getRenderDataSource(
 ): RenderDataSource {
   const getChromInfo = async () => {
     return gensAPI.getChromData(getChrom());
-    // return await gensAPI.getChromData(getChrom());
   };
 
   const getAnnotation = async (recordId: string) => {
@@ -36,7 +35,6 @@ export function getRenderDataSource(
 
   const getCovData = async (sampleId: string) => {
     const xRange = getXRange();
-
     const zoom = calculateZoom(xRange);
 
     const covRaw = await gensAPI.getCov(sampleId, getChrom(), zoom, xRange);

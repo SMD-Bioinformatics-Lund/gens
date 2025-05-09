@@ -15,7 +15,6 @@ import { generateID } from "../util/utils";
  * it should probably be kept here as well.
  */
 export class GensSession {
-  // FIXME: Could / should the region be in there? Yes.
   chromosome: string;
   start: number;
   end: number;
@@ -57,10 +56,6 @@ export class GensSession {
       end: this.end,
     }
   }
-
-  // getRange(): Rng {
-  //   return [this.start, this.end] as Rng;
-  // }
 
   updateChromosome(chrom: string) {
     this.chromosome = chrom;

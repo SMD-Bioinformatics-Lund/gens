@@ -7,24 +7,20 @@ import { IdeogramTrack } from "./tracks/ideogram_track";
 import { OverviewTrack } from "./tracks/overview_track";
 import { DotTrack } from "./tracks/dot_track";
 import { BandTrack } from "./tracks/band_track";
-import { ANIM_TIME, COLORS, SIZES, STYLE } from "../constants";
+import { ANIM_TIME, SIZES, STYLE } from "../constants";
 import {
   getAnnotationContextMenuContent,
   getGenesContextMenuContent,
   getVariantContextMenuContent,
 } from "./util/menu_content_utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
-import { generateID } from "../util/utils";
 import { getSimpleButton } from "./util/menu_utils";
 import { DataTrack } from "./tracks/base_tracks/data_track";
 import { diff, moveElement } from "../util/collections";
 
 import Sortable, { SortableEvent } from "sortablejs";
 import { GensSession } from "../state/gens_session";
-import {
-  initializeDragSelect,
-  renderHighlights,
-} from "./tracks/base_tracks/interactive_tools";
+import { renderHighlights } from "./tracks/base_tracks/interactive_tools";
 import { getLinearScale } from "../draw/render_utils";
 import { keyLogger } from "./util/keylogger";
 import { TrackPage } from "./side_menu/track_page";
@@ -119,17 +115,10 @@ export class TracksManager extends ShadowBaseElement {
   overviewTracks: OverviewTrack[];
   dataTracks: DataTrack[] = [];
 
-  // FIXME: Remove this one or?
   annotationTracks: DataTrack[] = [];
-  // getXRange: () => Rng;
-  // getChromosome: () => string;
-
-  // dragCallbacks: DragCallbacks;
-  // dataSource: RenderDataSource;
   myDataSources: TracksManagerDataSources;
   renderAll: (settings: RenderSettings) => void;
 
-  // getAnnotationSources: GetAnnotSources;
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
   openTrackContextMenu: (track: DataTrack) => void;
   session: GensSession;
@@ -164,25 +153,11 @@ export class TracksManager extends ShadowBaseElement {
     sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
-    // dataSource: RenderDataSource,
-
-    // In session?
-    // getChromosome: () => string,
-    // getXRange: () => Rng,
-    // onZoomIn: (range: Rng) => void,
-    // onZoomOut: () => void,
-    // onPan: (panX: number) => void,
 
     myDataSources: TracksManagerDataSources,
     session: GensSession,
   ) {
-    // this.dataSource = dataSource;
     this.myDataSources = myDataSources;
-    // this.getAnnotationSources = getAnnotSources;
-    // this.getAnnotationDetails = getAnnotationDetails;
-
-    // this.getXRange = getXRange;
-    // this.getChromosome = getChromosome;
     this.session = session;
     this.renderAll = render;
 
@@ -213,13 +188,6 @@ export class TracksManager extends ShadowBaseElement {
       this.session.setViewRange(panRange);
     });
 
-    // this.dragCallbacks = {
-    //   onZoomIn,
-    //   onZoomOut,
-    //   getHighlights: session.getHighlights.bind(session),
-    //   addHighlight: session.addHighlight.bind(session),
-    //   removeHighlight: session.removeHighlight.bind(session),
-    // };
 
     this.openTrackContextMenu = (track: DataTrack) => {
       const isDotTrack = track instanceof DotTrack;
@@ -374,8 +342,6 @@ export class TracksManager extends ShadowBaseElement {
       (range: Rng) => session.setViewRange(range),
       (range: Rng) => session.addHighlight(range),
       (id: string) => session.removeHighlight(id),
-
-      // this.dragCallbacks,
     );
 
     this.tracksContainer.addEventListener("click", () => {

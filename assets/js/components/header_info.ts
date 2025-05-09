@@ -57,7 +57,7 @@ export class HeaderInfo extends ShadowBaseElement {
     caseURL: string,
   ) {
     this.caseIdElem.innerHTML = caseId;
-    this.caseIdElem.href = caseId;
+    this.caseIdElem.href = caseURL;
     this.sampleIdsElem.innerHTML = sampleIds.join(", ");
   }
 }
