@@ -135,7 +135,7 @@ export class InputControls extends HTMLElement {
     this.updatePosition([fullRegion.start, fullRegion.end]);
     this.onPositionChange = onPositionChange;
     this.currChromLength = fullRegion.end;
-    this.getMarkerOn = () => session.getMarkerMode();
+    this.getMarkerOn = () => session.getMarkerModeOn();
     this.onToggleMarker = () => session.toggleMarkerMode();
 
     this.panLeftButton.onclick = () => {

@@ -28,7 +28,7 @@ import {
 import { getLinearScale } from "../draw/render_utils";
 import { keyLogger } from "./util/keylogger";
 import { TrackPage } from "./side_menu/track_page";
-import { setupDragging } from "../movements/dragging";
+import { setupDrag, setupDragging } from "../movements/dragging";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -51,6 +51,15 @@ interface TracksManagerDataSources {
   getCovData: (id: string) => Promise<RenderDot[]>;
   getBafData: (id: string) => Promise<RenderDot[]>;
   getVariantData: (id: string) => Promise<RenderBand[]>;
+
+  getChromInfo: () => Promise<ChromosomeInfo>;
+  getTranscriptData: () => Promise<RenderBand[]>;
+  getOverviewCovData: (
+    sampleId: string,
+  ) => Promise<Record<string, RenderDot[]>>;
+  getOverviewBafData: (
+    sampleId: string,
+  ) => Promise<Record<string, RenderDot[]>>;
 }
 
 // FIXME: This will need to be generalized such that tracks aren't hard-coded
@@ -111,10 +120,10 @@ export class TracksManager extends ShadowBaseElement {
 
   // FIXME: Remove this one or?
   annotationTracks: DataTrack[] = [];
-  getXRange: () => Rng;
-  getChromosome: () => string;
+  // getXRange: () => Rng;
+  // getChromosome: () => string;
 
-  dragCallbacks: DragCallbacks;
+  // dragCallbacks: DragCallbacks;
   // dataSource: RenderDataSource;
   myDataSources: TracksManagerDataSources;
   renderAll: (settings: RenderSettings) => void;
@@ -154,26 +163,15 @@ export class TracksManager extends ShadowBaseElement {
     sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
-    dataSource: RenderDataSource,
+    // dataSource: RenderDataSource,
 
     // In session?
-    getChromosome: () => string,
-    getXRange: () => Rng,
+    // getChromosome: () => string,
+    // getXRange: () => Rng,
+    // onZoomIn: (range: Rng) => void,
+    // onZoomOut: () => void,
+    // onPan: (panX: number) => void,
 
-    // Movements - also session?
-    onZoomIn: (range: Rng) => void,
-    onZoomOut: () => void,
-    onPan: (panX: number) => void,
-
-    // Data sources
-    // getAnnotSources: GetAnnotSources,
-    // getVariantURL: (id: string) => string,
-    // getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
-    // getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
-    // getVariantDetails: (
-    //   sampleId: string,
-    //   variantId: string,
-    // ) => Promise<ApiVariantDetails>,
     myDataSources: TracksManagerDataSources,
     session: GensSession,
   ) {
@@ -182,8 +180,8 @@ export class TracksManager extends ShadowBaseElement {
     // this.getAnnotationSources = getAnnotSources;
     // this.getAnnotationDetails = getAnnotationDetails;
 
-    this.getXRange = getXRange;
-    this.getChromosome = getChromosome;
+    // this.getXRange = getXRange;
+    // this.getChromosome = getChromosome;
     this.session = session;
     this.renderAll = render;
 
@@ -205,16 +203,16 @@ export class TracksManager extends ShadowBaseElement {
       const scaledStart = invertedXScale(dragRange[0]);
       const scaledEnd = invertedXScale(dragRange[1]);
 
-      onPan(scaledEnd - scaledStart);
+      session.onPan(scaledEnd - scaledStart);
     });
 
-    this.dragCallbacks = {
-      onZoomIn,
-      onZoomOut,
-      getHighlights: session.getHighlights.bind(session),
-      addHighlight: session.addHighlight.bind(session),
-      removeHighlight: session.removeHighlight.bind(session),
-    };
+    // this.dragCallbacks = {
+    //   onZoomIn,
+    //   onZoomOut,
+    //   getHighlights: session.getHighlights.bind(session),
+    //   addHighlight: session.addHighlight.bind(session),
+    //   removeHighlight: session.removeHighlight.bind(session),
+    // };
 
     this.openTrackContextMenu = (track: DataTrack) => {
       const isDotTrack = track instanceof DotTrack;
@@ -272,8 +270,8 @@ export class TracksManager extends ShadowBaseElement {
       trackHeight.extraThin,
       async () => {
         return {
-          xRange: getXRange(),
-          chromInfo: await dataSource.getChromInfo(),
+          xRange: session.getXRange(),
+          chromInfo: await myDataSources.getChromInfo(),
         };
       },
     );
@@ -313,14 +311,14 @@ export class TracksManager extends ShadowBaseElement {
     const genesTrack = this.getGenesTrack(
       "genes",
       "Genes",
-      () => dataSource.getTranscriptData(),
+      () => myDataSources.getTranscriptData(),
       (id: string) => myDataSources.getTranscriptDetails(id),
     );
 
     const overviewTrackCov = this.getOverviewTrack(
       "overview_cov",
       "Overview (cov)",
-      () => dataSource.getOverviewCovData(sampleIds[0]),
+      () => myDataSources.getOverviewCovData(sampleIds[0]),
       COV_Y_RANGE,
       chromSizes,
       chromClick,
@@ -329,7 +327,7 @@ export class TracksManager extends ShadowBaseElement {
     const overviewTrackBaf = this.getOverviewTrack(
       "overview_baf",
       "Overview (baf)",
-      () => dataSource.getOverviewBafData(sampleIds[0]),
+      () => myDataSources.getOverviewBafData(sampleIds[0]),
       BAF_Y_RANGE,
       chromSizes,
       chromClick,
@@ -363,15 +361,19 @@ export class TracksManager extends ShadowBaseElement {
     // this.setupDrag();
     setupDrag(
       this.tracksContainer,
-      session,
-      getXRange,
-      getChromosome,
-      this.dragCallbacks,
+      session.getMarkerModeOn,
+      session.getXRange,
+      session.getChromosome,
+      session.setViewRange,
+      session.addHighlight,
+      session.removeHighlight,
+
+      // this.dragCallbacks,
     );
 
     this.tracksContainer.addEventListener("click", () => {
       if (keyLogger.heldKeys.Control) {
-        this.dragCallbacks.onZoomOut();
+        session.zoomOut();
       }
     });
   }
@@ -459,7 +461,7 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   getXScale(inverted: boolean = false): Scale {
-    const xRange = this.getXRange();
+    const xRange = this.session.getXRange();
     const yAxisWidth = STYLE.yAxis.width;
 
     const xDomain: Rng = [yAxisWidth, this.tracksContainer.offsetWidth];
@@ -475,9 +477,9 @@ export class TracksManager extends ShadowBaseElement {
 
     renderHighlights(
       this.tracksContainer,
-      this.dragCallbacks.getHighlights(this.getChromosome()),
+      this.session.getCurrentHighlights(),
       this.getXScale(),
-      (id) => this.dragCallbacks.removeHighlight(id),
+      (id) => this.session.removeHighlight(id),
     );
 
     this.updateAnnotationTracks();
@@ -512,13 +514,7 @@ export class TracksManager extends ShadowBaseElement {
       console.log("opening context menu");
       const details = await this.getAnnotationDetails(id);
       const button = getSimpleButton("Set highlight", () => {
-        const id = generateID();
-        this.dragCallbacks.addHighlight({
-          id,
-          chromosome: this.getChromosome(),
-          range: [details.start, details.end],
-          color: COLORS.transparentBlue,
-        });
+        this.session.addHighlight([details.start, details.end]);
       });
       const entries = getAnnotationContextMenuContent(id, details);
       const content = [button];
@@ -530,11 +526,11 @@ export class TracksManager extends ShadowBaseElement {
       sourceId,
       label,
       trackHeight.thin,
-      this.getXRange,
+      () => this.session.getXRange(),
       () =>
         getAnnotTrackData(
           sourceId,
-          this.getXRange,
+          () => this.session.getXRange(),
           this.myDataSources.getAnnotation,
         ),
       openContextMenuId,
@@ -557,12 +553,12 @@ export class TracksManager extends ShadowBaseElement {
       trackHeight.thick,
       settings.startExpanded,
       settings.yAxis,
-      this.getXRange,
+      () => this.session.getXRange(),
       async () => {
         const data = await dataFn(sampleId);
         // const data = await this.dataSource.getCovData(sampleId);
         return {
-          xRange: this.getXRange(),
+          xRange: this.session.getXRange(),
           dots: data,
         };
       },
@@ -587,10 +583,10 @@ export class TracksManager extends ShadowBaseElement {
       id,
       label,
       trackHeight.thin,
-      this.getXRange,
+      () => this.session.getXRange(),
       async () => {
         return {
-          xRange: this.getXRange(),
+          xRange: this.session.getXRange(),
           bands: await dataFn(sampleId),
         };
       },
@@ -599,13 +595,7 @@ export class TracksManager extends ShadowBaseElement {
         const scoutUrl = getVariantURL(variantId);
 
         const button = getSimpleButton("Set highlight", () => {
-          const id = generateID();
-          this.dragCallbacks.addHighlight({
-            id,
-            chromosome: this.getChromosome(),
-            range: [details.position, details.end],
-            color: COLORS.transparentBlue,
-          });
+          this.session.addHighlight([details.position, details.end]);
         });
 
         const entries = getVariantContextMenuContent(
@@ -634,23 +624,17 @@ export class TracksManager extends ShadowBaseElement {
       id,
       label,
       trackHeight.thin,
-      this.getXRange,
+      () => this.session.getXRange(),
       async () => {
         return {
-          xRange: this.getXRange(),
+          xRange: this.session.getXRange(),
           bands: await getBands(),
         };
       },
       async (id) => {
         const details = await getDetails(id);
         const button = getSimpleButton("Set highlight", () => {
-          const id = generateID();
-          this.dragCallbacks.addHighlight({
-            id,
-            chromosome: this.getChromosome(),
-            range: [details.start, details.end],
-            color: COLORS.transparentBlue,
-          });
+          this.session.addHighlight([details.start, details.end]);
         });
         const entries = getGenesContextMenuContent(id, details);
         const content = [button];
@@ -681,13 +665,13 @@ export class TracksManager extends ShadowBaseElement {
       async () => {
         return {
           dotsPerChrom: await getData(),
-          xRange: this.getXRange(),
-          chromosome: this.getChromosome(),
+          xRange: this.session.getXRange(),
+          chromosome: this.session.getChromosome(),
         };
       },
       () => {
-        const xRange = this.getXRange();
-        const chrom = this.getChromosome();
+        const xRange = this.session.getXRange();
+        const chrom = this.session.getChromosome();
         return {
           chrom,
           start: xRange[0],
@@ -716,49 +700,6 @@ function appendDataTrack(parentContainer: HTMLDivElement, track: DataTrack) {
   wrapper.appendChild(handle);
 
   parentContainer.appendChild(wrapper);
-}
-
-function setupDrag(
-  tracksContainer: HTMLElement,
-  session: GensSession,
-  getXRange: () => Rng,
-  getChromosome: () => string,
-  dragCallbacks: DragCallbacks,
-) {
-  const onDragEnd = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
-    const xRange = getXRange();
-    if (xRange == null) {
-      console.error("No xRange set");
-    }
-
-    const yAxisWidth = STYLE.yAxis.width;
-
-    const pixelToPos = getLinearScale(
-      [yAxisWidth, tracksContainer.offsetWidth],
-      xRange,
-    );
-    const posStart = pixelToPos(Math.max(yAxisWidth, pxRangeX[0]));
-    const posEnd = pixelToPos(Math.max(yAxisWidth, pxRangeX[1]));
-
-    if (shiftPress) {
-      dragCallbacks.onZoomIn([Math.floor(posStart), Math.floor(posEnd)]);
-    } else {
-      const id = generateID();
-      dragCallbacks.addHighlight({
-        id,
-        chromosome: getChromosome(),
-        range: [posStart, posEnd],
-        color: COLORS.transparentBlue,
-      });
-    }
-  };
-
-  initializeDragSelect(
-    tracksContainer,
-    onDragEnd,
-    dragCallbacks.removeHighlight,
-    () => session.getMarkerMode(),
-  );
 }
 
 customElements.define("gens-tracks", TracksManager);

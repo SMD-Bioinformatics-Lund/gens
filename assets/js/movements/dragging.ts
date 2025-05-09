@@ -1,3 +1,46 @@
+import { initializeDragSelect } from "../components/tracks/base_tracks/interactive_tools";
+import { COLORS, STYLE } from "../constants";
+import { getLinearScale } from "../draw/render_utils";
+import { generateID } from "../util/utils";
+
+// FIXME: Both needed? Probably not
+export function setupDrag(
+  tracksContainer: HTMLElement,
+  getMarkerModeOn: () => boolean,
+  getXRange: () => Rng,
+  getChromosome: () => string,
+  onSetViewRange: (range: Rng) => void,
+  onAddHighlight: (range: Rng) => void,
+  onRemoveHighlight: (id: string) => void,
+  // dragCallbacks: DragCallbacks,
+) {
+  const onDragEnd = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
+    const xRange = getXRange();
+    if (xRange == null) {
+      console.error("No xRange set");
+    }
+
+    const yAxisWidth = STYLE.yAxis.width;
+
+    const pixelToPos = getLinearScale(
+      [yAxisWidth, tracksContainer.offsetWidth],
+      xRange,
+    );
+    const posStart = pixelToPos(Math.max(yAxisWidth, pxRangeX[0]));
+    const posEnd = pixelToPos(Math.max(yAxisWidth, pxRangeX[1]));
+
+    if (shiftPress) {
+      onSetViewRange([Math.floor(posStart), Math.floor(posEnd)]);
+    } else {
+      onAddHighlight([posStart, posEnd]);
+    }
+  };
+
+  initializeDragSelect(tracksContainer, onDragEnd, onRemoveHighlight, () =>
+    getMarkerModeOn(),
+  );
+}
+
 export function setupDragging(
   container: HTMLElement,
   onDragEnd: (range: Rng) => void,

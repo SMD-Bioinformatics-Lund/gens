@@ -87,7 +87,10 @@ export async function initCanvases({
     return url;
   };
 
-  const session = new GensSession(render, sideMenu);
+  // FIXME: Input controls should receive region from session
+  // Not the other way around
+  const defaultRegion = {chrom: "1", start: 1, end: 100000};
+  const session = new GensSession(render, sideMenu, defaultRegion);
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
@@ -196,6 +199,14 @@ async function initialize(
     getCovData: (id: string) => renderDataSource.getCovData(id),
     getBafData: (id: string) => renderDataSource.getBafData(id),
     getVariantData: (id: string) => renderDataSource.getVariantData(id),
+
+    getTranscriptData: () => renderDataSource.getTranscriptData(),
+    getOverviewCovData: (sampleId: string) =>
+      renderDataSource.getOverviewCovData(sampleId),
+    getOverviewBafData: (sampleId: string) =>
+      renderDataSource.getOverviewBafData(sampleId),
+
+    getChromInfo: () => renderDataSource.getChromInfo(),
   };
 
   await tracks.initialize(
@@ -203,16 +214,16 @@ async function initialize(
     sampleIds,
     chromSizes,
     onChromClick,
-    renderDataSource,
-    () => inputControls.getRegion().chrom,
-    () => inputControls.getRange(),
-    (range: Rng) => {
-      console.error("Setting position", range);
-      inputControls.updatePosition(range);
-      render({ dataUpdated: true, positionOnly: true });
-    },
-    () => inputControls.zoomOut(),
-    onPan,
+    // renderDataSource,
+    // () => inputControls.getRegion().chrom,
+    // () => inputControls.getRange(),
+    // (range: Rng) => {
+    //   console.error("Setting position", range);
+    //   inputControls.updatePosition(range);
+    //   render({ dataUpdated: true, positionOnly: true });
+    // },
+    // () => inputControls.zoomOut(),
+    // onPan,
     // (settings: { selectedOnly: boolean }) =>
     //   settingsPage.getAnnotSources(settings),
     tracksDataSources,
@@ -240,7 +251,7 @@ function setupShortcuts(
   // Rebuild the keyboard shortcuts
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-      if (session.getMarkerMode()) {
+      if (session.getMarkerModeOn()) {
         inputControls.toggleMarkerMode();
         return;
       }

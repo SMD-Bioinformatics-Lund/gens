@@ -226,7 +226,7 @@ export abstract class DataTrack extends CanvasTrack {
         const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
         return hoverTargets.concat([labelBox]);
       },
-      () => this.session.getMarkerMode(),
+      () => this.session.getMarkerModeOn(),
       [0, STYLE.yAxis.width],
     );
   }
