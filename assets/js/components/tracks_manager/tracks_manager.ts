@@ -382,6 +382,7 @@ export class TracksManager extends ShadowBaseElement {
       this.tracksContainer,
       this.session.getCurrentHighlights(),
       this.getXScale(),
+      [STYLE.yAxis.width, this.tracksContainer.offsetWidth],
       (id) => this.session.removeHighlight(id),
     );
 

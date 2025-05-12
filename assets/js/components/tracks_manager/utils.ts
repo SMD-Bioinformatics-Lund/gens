@@ -40,8 +40,10 @@ export function createAnnotTrack(
     const button = getSimpleButton("Set highlight", () => {
       session.addHighlight([details.start, details.end]);
     });
+    const container = document.createElement("div");
+    container.appendChild(button);
     const entries = getAnnotationContextMenuContent(id, details);
-    const content = [button];
+    const content = [container];
     content.push(...entries);
     session.showContent("Annotations", content);
   };

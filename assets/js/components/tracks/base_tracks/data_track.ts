@@ -157,6 +157,39 @@ export abstract class DataTrack extends CanvasTrack {
     this.openTrackContextMenu = openTrackContextMenu;
   }
 
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    // Label click
+    setupCanvasClick(
+      this.canvas,
+      () => {
+        const targets = this.labelBox != null ? [this.labelBox] : [];
+        return targets;
+      },
+      () => this.openTrackContextMenu(this),
+      this.getListenerAbortSignal(),
+    );
+    // Pointer cursor (for all)
+    setCanvasPointerCursor(
+      this.canvas,
+      () => {
+        const targets = this.hoverTargets != null ? [...this.hoverTargets] : [];
+        if (this.labelBox != null) {
+          targets.push(this.labelBox);
+        }
+        return targets;
+      },
+      () => this.session.getMarkerModeOn(),
+      [0, STYLE.yAxis.width],
+      this.getListenerAbortSignal(),
+    );
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+  }
+
   async render(settings: RenderSettings) {
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
     // is to prevent repeated API requests when rapidly zooming/panning
@@ -227,29 +260,10 @@ export abstract class DataTrack extends CanvasTrack {
   protected drawEnd() {
     const yAxisWidth = STYLE.yAxis.width;
     const labelBox = this.drawTrackLabel(yAxisWidth);
-    const hoverBox = {
+    this.labelBox = {
       label: this.label,
       box: labelBox,
     };
-    if (this.labelBox == null) {
-      setupCanvasClick(
-        this.canvas,
-        () => [hoverBox],
-        () => this.openTrackContextMenu(this),
-        this.getListenerAbortSignal(),
-      );
-      setCanvasPointerCursor(
-        this.canvas,
-        () => {
-          const hoverTargets = this.hoverTargets ? this.hoverTargets : [];
-          return hoverTargets.concat([hoverBox]);
-        },
-        () => this.session.getMarkerModeOn(),
-        [0, STYLE.yAxis.width],
-        this.getListenerAbortSignal(),
-      );
-    }
-    this.labelBox = hoverBox;
   }
 
   renderYAxis(yAxis: Axis) {

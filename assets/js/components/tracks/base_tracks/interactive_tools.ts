@@ -91,6 +91,7 @@ export function renderHighlights(
   container: HTMLDivElement,
   highlights: { id: string; range: Rng; color: string }[],
   xScale: Scale,
+  renderLimitsPx: Rng,
   onMarkerRemove: (markerId: string) => void,
 ) {
   const markerClass = "highlight-marker";
@@ -100,6 +101,14 @@ export function renderHighlights(
     .forEach((old: Element) => old.remove());
 
   for (const { id, range, color } of highlights) {
+
+    let [minXPx, maxXPx] = scaleRange(range, xScale);
+
+    // Only render those inside the rendering area
+    if (maxXPx < renderLimitsPx[0]) {
+      continue;
+    }
+
     const marker = document.createElement("gens-marker") as GensMarker;
     container.appendChild(marker);
     marker.initialize(id, container.offsetHeight, color, onMarkerRemove);
@@ -107,8 +116,16 @@ export function renderHighlights(
     marker.classList.add(markerClass);
     container.appendChild(marker);
 
-    const rangePx = scaleRange(range, xScale);
+    // Truncate those partially landing outside the rendering area
+    // This prevents glitches such as highlights over the y-axis area
+    if (minXPx < renderLimitsPx[0]) {
+      minXPx = renderLimitsPx[0];
+    }
+    if (maxXPx > renderLimitsPx[1]) {
+      maxXPx = renderLimitsPx[1];
+    }
 
-    marker.render(rangePx);
+    console.log("Rendering marker at", [minXPx, maxXPx]);
+    marker.render([minXPx, maxXPx]);
   }
 }
