@@ -174,7 +174,7 @@ export abstract class DataTrack extends CanvasTrack {
     setCanvasPointerCursor(
       this.canvas,
       () => {
-        const targets = [...this.hoverTargets];
+        const targets = this.hoverTargets != null ? [...this.hoverTargets] : [];
         if (this.labelBox != null) {
           targets.push(this.labelBox);
         }

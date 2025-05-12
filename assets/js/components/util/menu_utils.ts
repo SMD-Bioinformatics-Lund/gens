@@ -20,6 +20,8 @@ export function getSimpleButton(text: string, onClick: () => void): HTMLDivEleme
   button.onclick = onClick;
   button.style.padding = "4px 8px";
   button.style.borderRadius = "4px";
+  button.style.display = "inline-block";
+  button.style.width = "auto";
   return button;
 }
 

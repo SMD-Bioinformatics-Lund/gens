@@ -10,6 +10,8 @@ import { drawLabel } from "../../draw/shapes";
 import { DataTrack } from "./base_tracks/data_track";
 import { GensSession } from "../../state/gens_session";
 
+const LEFT_PX_EDGE = STYLE.yAxis.width;
+
 export class BandTrack extends DataTrack {
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
   openContextMenu: (id: string) => void;
@@ -33,9 +35,8 @@ export class BandTrack extends DataTrack {
       // FIXME: Supply xScale directly?
       () => {
         const xRange = this.renderData.xRange;
-        const yAxisWidth = STYLE.yAxis.width;
         const xScale = getLinearScale(xRange, [
-          yAxisWidth,
+          LEFT_PX_EDGE,
           this.dimensions.width,
         ]);
         return xScale;
@@ -83,8 +84,9 @@ export class BandTrack extends DataTrack {
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
+
     const xScale = getLinearScale(xRange, [
-      STYLE.yAxis.width,
+      LEFT_PX_EDGE,
       this.dimensions.width,
     ]);
 
@@ -132,6 +134,7 @@ export class BandTrack extends DataTrack {
         xScale,
         showDetails,
         this.isExpanded(),
+        [LEFT_PX_EDGE, this.dimensions.width],
       );
       return bandHoverTargets;
     });
@@ -161,6 +164,7 @@ function drawBand(
   xScale: (number) => number,
   showDetails: boolean,
   isExpanded: boolean,
+  screenRange?: Rng,
 ): HoverBox[] {
   const y1 = band.y1;
   const y2 = band.y2;
@@ -172,7 +176,16 @@ function drawBand(
 
   // Body
   const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
-  const [xPxStart, xPxEnd] = xPxRange;
+  let [xPxStart, xPxEnd] = xPxRange;
+  // Make sure bands keep within their drawing area
+  if (screenRange != null) {
+    if (xPxRange[0] < screenRange[0]) {
+      xPxStart = screenRange[0];
+    }
+    if (xPxRange[1] > screenRange[1]) {
+      xPxEnd = screenRange[1];
+    }
+  }
   ctx.fillStyle = band.color;
   const width = Math.max(xPxEnd - xPxStart, STYLE.bandTrack.minBandWidth);
   ctx.fillRect(xPxStart, y1, width, height);
