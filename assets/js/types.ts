@@ -483,3 +483,5 @@ interface RangeHighlight {
   range: Rng;
   color: string;
 }
+
+type TrackType = "annotation" | "variant" | "dot" | "gene";

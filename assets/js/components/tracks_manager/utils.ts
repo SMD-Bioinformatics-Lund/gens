@@ -49,6 +49,7 @@ export function createAnnotTrack(
   const track = new BandTrack(
     sourceId,
     label,
+    "annotation",
     trackHeight.thin,
     () => session.getXRange(),
     () =>
@@ -76,6 +77,7 @@ export function createDotTrack(
   const dotTrack = new DotTrack(
     id,
     label,
+    "dot",
     trackHeight.thick,
     settings.startExpanded,
     settings.yAxis,
@@ -110,6 +112,7 @@ export function createVariantTrack(
   const variantTrack = new BandTrack(
     id,
     label,
+    "variant",
     trackHeight.thin,
     () => session.getXRange(),
     async () => {
@@ -153,6 +156,7 @@ export function createGenesTrack(
   const genesTrack = new BandTrack(
     id,
     label,
+    "gene",
     trackHeight.thin,
     () => session.getXRange(),
     async () => {

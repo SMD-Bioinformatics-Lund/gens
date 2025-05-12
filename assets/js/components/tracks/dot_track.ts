@@ -9,6 +9,7 @@ export class DotTrack extends DataTrack {
   constructor(
     id: string,
     label: string,
+    trackType: TrackType,
     trackHeight: number,
     startExpanded: boolean,
     yAxis: Axis,
@@ -20,6 +21,7 @@ export class DotTrack extends DataTrack {
     super(
       id,
       label,
+      trackType,
       getXRange,
       () => {
         // const xRange = this.renderData.xRange;
