@@ -116,7 +116,6 @@ export function getContainer(direction: "row" | "column", text?: string) {
   row.style.display = "flex";
   row.style.flexDirection = direction;
   row.style.flexWrap = "nowrap";
-  row.style.whiteSpace = "nowrap";
   if (text != null) {
     row.appendChild(getDiv(text));
   }
