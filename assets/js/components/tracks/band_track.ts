@@ -56,6 +56,8 @@ export class BandTrack extends DataTrack {
   connectedCallback(): void {
     super.connectedCallback();
 
+    console.log(this.label, "connected");
+
     const onElementClick = async (box: HoverBox) => {
       const element = box.element as RenderBand;
       this.openContextMenu(element.id);
@@ -66,6 +68,12 @@ export class BandTrack extends DataTrack {
     const startExpanded = false;
     const onExpand = () => this.render({});
     this.initializeExpander("contextmenu", startExpanded, onExpand);
+  }
+
+  disconnectedCallback(): void {
+      super.disconnectedCallback();
+
+      console.log(this.label, "disconnected");
   }
 
   override draw() {

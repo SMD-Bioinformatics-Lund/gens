@@ -79,6 +79,7 @@ export function getCanvasHover(
   canvas.addEventListener(
     "mousemove",
     (event) => {
+      console.log("Mouse is moving");
       const hoverTargets = getHoverTargets();
 
       if (hoverTargets == null) {
