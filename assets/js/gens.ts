@@ -90,7 +90,7 @@ export async function initCanvases({
     return url;
   };
 
-  setupShortcuts(session, sideMenu, inputControls);
+  setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
   const annotSources = await api.getAnnotationSources();
   const defaultAnnot = annotSources
@@ -205,6 +205,7 @@ function setupShortcuts(
   session: GensSession,
   sideMenu: SideMenu,
   inputControls: InputControls,
+  onChromClick: (chrom: string) => void,
 ) {
   // Rebuild the keyboard shortcuts
   document.addEventListener("keydown", (e) => {
@@ -215,37 +216,40 @@ function setupShortcuts(
       }
       sideMenu.close();
     }
-    // FIXME: Restore these, should not be active when for instance cursor is inside region box
-    // if (e.key === "ArrowLeft") {
-    //   if (e.ctrlKey || e.metaKey) {
-    //     const currChrom = session.getChromosome();
-    //     const currIndex = CHROMOSOMES.indexOf(currChrom);
-    //     if (currIndex > 0) {
-    //       const newChrom = CHROMOSOMES[currIndex - 1];
-    //       onChromClick(newChrom);
-    //     }
-    //   } else {
-    //     inputControls.panLeft();
-    //   }
-    // }
-    // if (e.key === "ArrowRight") {
-    //   if (e.ctrlKey || e.metaKey) {
-    //     const currChrom = session.getChromosome();
-    //     const currIndex = CHROMOSOMES.indexOf(currChrom);
-    //     if (currIndex < CHROMOSOMES.length - 1) {
-    //       const newChrom = CHROMOSOMES[currIndex + 1];
-    //       onChromClick(newChrom);
-    //     }
-    //   } else {
-    //     inputControls.panRight();
-    //   }
-    // }
-    // if (e.key === "ArrowUp") {
-    //   inputControls.zoomIn();
-    // }
-    // if (e.key === "ArrowDown") {
-    //   inputControls.zoomOut();
-    // }
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      if (e.ctrlKey || e.metaKey) {
+        const currChrom = session.getChromosome();
+        const currIndex = CHROMOSOMES.indexOf(currChrom);
+        if (currIndex > 0) {
+          const newChrom = CHROMOSOMES[currIndex - 1];
+          onChromClick(newChrom);
+        }
+      } else {
+        inputControls.panLeft();
+      }
+    }
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      if (e.ctrlKey || e.metaKey) {
+        const currChrom = session.getChromosome();
+        const currIndex = CHROMOSOMES.indexOf(currChrom);
+        if (currIndex < CHROMOSOMES.length - 1) {
+          const newChrom = CHROMOSOMES[currIndex + 1];
+          onChromClick(newChrom);
+        }
+      } else {
+        inputControls.panRight();
+      }
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      inputControls.zoomIn();
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      inputControls.zoomOut();
+    }
     if (e.key === "r") {
       inputControls.resetZoom();
     }
