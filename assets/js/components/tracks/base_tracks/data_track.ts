@@ -272,7 +272,6 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   renderYAxis(yAxis: Axis) {
-    // const yScale = getLinearScale(yAxis.range, this.getYDim());
     const yScale = this.getYScale();
     const tickSize = getTickSize(yAxis.range);
     const ticks = generateTicks(yAxis.range, tickSize);

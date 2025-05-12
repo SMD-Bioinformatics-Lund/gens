@@ -38,8 +38,6 @@ template.innerHTML = String.raw`
   <div class="col text">
     <div title="Gens version" class="label" id="version">Version</div>
     <a title="Case ID" href="" id="case-id" target="_blank">(value)</a>
-    <!-- &nbsp; -->
-    <!-- <div title="Sample IDs">(<span id="sample-ids">(value)</span>)</div> -->
   </div>
 </div>
 `;
@@ -61,7 +59,7 @@ export class HeaderInfo extends ShadowBaseElement {
 
   initialize(
     caseId: string,
-    sampleIds: string[],
+    _sampleIds: string[],
     caseURL: string,
     version: string,
   ) {
