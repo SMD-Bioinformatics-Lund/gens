@@ -106,9 +106,9 @@ export class TracksManager extends ShadowBaseElement {
   ideogramTrack: IdeogramTrack;
   overviewTracks: OverviewTrack[];
   dataTracks: DataTrack[] = [];
-  idToWrapper: Record<string,HTMLDivElement> = {};
+  /** Keeps track of track container divs. Might be worth making a web component to do this wrapping. */
+  dataTrackIdToWrapper: Record<string,HTMLDivElement> = {};
 
-  // annotationTracks: DataTrack[] = [];
   dataSources: TracksManagerDataSources;
   renderAll: (settings: RenderSettings) => void;
 
@@ -385,15 +385,6 @@ export class TracksManager extends ShadowBaseElement {
       (id) => this.session.removeHighlight(id),
     );
 
-    // const addAnnotationTrack = (newTrack: DataTrack) => {
-    //   this.dataTracks.push(newTrack);
-    //   // FIXME: Is this needed?
-    //   // this.annotationTracks.push(newTrack);
-    //   const trackWrapper = createDataTrackWrapper(newTrack);
-    //   this.tracksContainer.appendChild(trackWrapper);
-    //   newTrack.initialize();
-    // };
-
     updateAnnotationTracks(
       this.dataTracks.filter((track) => track.trackType == "annotation"),
       this.dataSources,
@@ -422,7 +413,7 @@ export class TracksManager extends ShadowBaseElement {
     this.tracksContainer.appendChild(trackWrapper);
     newTrack.initialize();
     
-    this.idToWrapper[newTrack.id] = trackWrapper;
+    this.dataTrackIdToWrapper[newTrack.id] = trackWrapper;
   }
 
   removeDataTrack(id: string) {
@@ -430,12 +421,12 @@ export class TracksManager extends ShadowBaseElement {
     const index = this.dataTracks.indexOf(track);
     this.dataTracks.splice(index, 1);
 
-    const wrapper = this.idToWrapper[id];
+    const wrapper = this.dataTrackIdToWrapper[id];
 
     /** Each track is wrapped in a parent div. Here, remove this wrapper. */
     this.tracksContainer.removeChild(wrapper);
 
-    delete this.idToWrapper[id];
+    delete this.dataTrackIdToWrapper[id];
   }
 
   createOpenTrackContextMenu(render: (settings: RenderSettings) => void) {
@@ -503,7 +494,6 @@ function updateAnnotationTracks(
   const removedSources = diff(currAnnotTracks, sources, (source) => source.id);
 
   newSources.forEach((source) => {
-    console.log("Adding new track");
     const newTrack = createAnnotTrack(
       source.id,
       source.label,
