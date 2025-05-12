@@ -56,7 +56,7 @@ template.innerHTML = String.raw`
     <input id="y-axis-end" type="number" step="0.1">
   </div>
   <div id="colors" class="row">
-    <div>Color by:</div>
+    <div>Color by: </div>
     <select id="color-select">
   </div>
 `;
@@ -69,7 +69,7 @@ interface TrackPageSettings {
 export class TrackPage extends ShadowBaseElement {
   isInitialized: boolean = false;
 
-  private trackId: string;
+  private _trackId: string;
   private settings: TrackPageSettings;
   private getAnnotationSources: GetAnnotSources;
 
@@ -93,7 +93,7 @@ export class TrackPage extends ShadowBaseElement {
 
   // Before being connected to the DOM
   configure(trackId: string, settings: TrackPageSettings) {
-    this.trackId = trackId;
+    this._trackId = trackId;
     this.settings = settings;
   }
 
@@ -132,11 +132,10 @@ export class TrackPage extends ShadowBaseElement {
       throw Error("Must be connected before being initialized");
     }
 
-    this.isInitialized = true;
     this.getIsHidden = getIsHidden;
     this.getIsCollapsed = getIsCollapsed;
 
-    if (this.settings.showColor) {
+    if (this.settings.showColor && !this.isInitialized) {
       const annotSources = getBandTracks({ selectedOnly: false });
       populateSelect(this.colorSelect, annotSources, true);
     }
@@ -198,6 +197,8 @@ export class TrackPage extends ShadowBaseElement {
         onColorSelected(id);
       });
     }
+
+    this.isInitialized = true;
   }
 
   render(_settings: RenderSettings) {
