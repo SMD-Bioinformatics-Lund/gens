@@ -469,6 +469,7 @@ interface DragCallbacks {
 
 interface Axis {
   range: Rng;
+  reverse: boolean;
 }
 
 interface RenderSettings {

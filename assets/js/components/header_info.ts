@@ -6,8 +6,8 @@ template.innerHTML = String.raw`
 <style>
   #container {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    align-items: center;
     height: 100%;
     padding-left: ${SIZES.s}px;
   }
@@ -17,30 +17,35 @@ template.innerHTML = String.raw`
     padding-top: ${SIZES.xs}px;
     justify-content: space-between;
   }
+  .col {
+    display: flex;
+    flex-direction: column;
+  }
   .text {
-    font-size: ${FONT_SIZE.medium}px;
+    font-size: ${FONT_SIZE.large}px;
     color: ${COLORS.darkGray};
   }
   .label {
     font-weight: ${FONT_WEIGHT.header};
     padding-right: ${SIZES.xs}px;
   }
+  a {
+    color: ${COLORS.darkGray}
+  }
 </style>
 <div id="container">
-  <div class="row text">
-    <div class="label">Case </div>
-    <a href="" id="case-id" target="_blank">(value)</a>
-  </div>
-  <div class="row text">
-    <div class="label">Sample </div>
-    <div id="sample-ids">(value)</div>
+
+  <div class="col text">
+    <div title="Gens version" class="label" id="version">Version</div>
+    <a title="Case ID" href="" id="case-id" target="_blank">(value)</a>
   </div>
 </div>
 `;
 
 export class HeaderInfo extends ShadowBaseElement {
   private caseIdElem: HTMLAnchorElement;
-  private sampleIdsElem: HTMLDivElement;
+  // private sampleIdsElem: HTMLDivElement;
+  private versionElem: HTMLDivElement;
 
   constructor() {
     super(template);
@@ -48,17 +53,20 @@ export class HeaderInfo extends ShadowBaseElement {
 
   connectedCallback(): void {
     this.caseIdElem = this.root.querySelector("#case-id");
-    this.sampleIdsElem = this.root.querySelector("#sample-ids");
+    // this.sampleIdsElem = this.root.querySelector("#sample-ids");
+    this.versionElem = this.root.querySelector("#version");
   }
 
   initialize(
     caseId: string,
-    sampleIds: string[],
+    _sampleIds: string[],
     caseURL: string,
+    version: string,
   ) {
     this.caseIdElem.innerHTML = caseId;
     this.caseIdElem.href = caseURL;
-    this.sampleIdsElem.innerHTML = sampleIds.join(", ");
+    // this.sampleIdsElem.innerHTML = sampleIds.join(", ");
+    this.versionElem.innerHTML = version;
   }
 }
 

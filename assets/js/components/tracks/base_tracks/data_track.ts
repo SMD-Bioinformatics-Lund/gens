@@ -20,6 +20,7 @@ interface Settings {
   dragSelect: boolean;
   yAxis: {
     range: Rng;
+    reverse: boolean;
   } | null;
 }
 
@@ -150,7 +151,11 @@ export abstract class DataTrack extends CanvasTrack {
     };
     this.getYScale = () => {
       const yRange = this.getYRange();
-      const yScale = getLinearScale(yRange, this.getYDim());
+      const yScale = getLinearScale(
+        yRange,
+        this.getYDim(),
+        settings.yAxis.reverse,
+      );
       return yScale;
     };
 
@@ -267,7 +272,7 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   renderYAxis(yAxis: Axis) {
-    const yScale = getLinearScale(yAxis.range, this.getYDim());
+    const yScale = this.getYScale();
     const tickSize = getTickSize(yAxis.range);
     const ticks = generateTicks(yAxis.range, tickSize);
 

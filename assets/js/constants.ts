@@ -62,6 +62,12 @@ export const SIZES = {
 
 const font = "12px sans-serif";
 
+const TRACK_HEIGHTS = {
+  extraThin: 20,
+  thin: 45,
+  thick: 120,
+}
+
 // FIXME: First step is to gather all constants here
 // FIXME: Then, the content below should be homogenized
 export const STYLE = {
@@ -125,11 +131,7 @@ export const STYLE = {
     textLaneSize: 20,
     backgroundColor: COLORS.white,
     frameLineWidth: 2,
-    trackHeight: {
-      extraThin: 20,
-      thin: 45,
-      thick: 80,
-    },
+    trackHeight: TRACK_HEIGHTS,
   },
   ideogramTrack: {
     endBevelProportion: 0.05,
