@@ -203,7 +203,7 @@ export class TracksManager extends ShadowBaseElement {
         `${sampleId} cov`,
         sampleId,
         (sampleId: string) => dataSources.getCovData(sampleId),
-        { startExpanded, yAxis: { range: COV_Y_RANGE } },
+        { startExpanded, yAxis: { range: COV_Y_RANGE, reverse: true } },
         session,
         openTrackContextMenu,
       );
@@ -212,7 +212,7 @@ export class TracksManager extends ShadowBaseElement {
         `${sampleId} baf`,
         sampleId,
         (sampleId: string) => dataSources.getBafData(sampleId),
-        { startExpanded, yAxis: { range: BAF_Y_RANGE } },
+        { startExpanded, yAxis: { range: BAF_Y_RANGE, reverse: true } },
         session,
         openTrackContextMenu,
       );

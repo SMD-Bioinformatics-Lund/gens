@@ -172,11 +172,13 @@ export function rgbArrayToString(rgbArray: number[]): string {
   return `rgb(${rgbArray[0]},${rgbArray[1]},${rgbArray[2]})`;
 }
 
-/**
- * Builds a function used to map from domain (i.e. nucleotides)
- * to range (i.e. pixels)
- */
-export function getLinearScale(domain: Rng, range: Rng): Scale {
+export function getLinearScale(origDomain: Rng, range: Rng, reverse: boolean = false): Scale {
+
+  let domain = origDomain;
+  if (reverse) {
+    domain = [origDomain[1], origDomain[0]];
+  }
+
   const scale = (pos: number) => {
     return linearScale(pos, domain, range);
   };
