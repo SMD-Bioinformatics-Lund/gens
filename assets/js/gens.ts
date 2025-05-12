@@ -27,6 +27,7 @@ export async function initCanvases({
   gensApiURL,
   annotationFile: defaultAnnotationName,
   startRegion,
+  version,
 }: {
   caseId: string;
   sampleIds: string[];
@@ -35,6 +36,7 @@ export async function initCanvases({
   gensApiURL: string;
   annotationFile: string;
   startRegion: Region;
+  version: string;
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
@@ -46,6 +48,7 @@ export async function initCanvases({
     caseId,
     sampleIds,
     `${scoutBaseURL}/case/case_id/${caseId}`,
+    version,
   );
 
   const inputControls = document.getElementById(
