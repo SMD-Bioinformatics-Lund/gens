@@ -105,7 +105,7 @@ $marker-gray-color: #7c7c7c;
 
 .header {
   font-size: 22px;
-  padding: 15px 20px;
+  padding: 4px 15px;
   position: sticky;
   top: 0;
 
@@ -122,8 +122,8 @@ $marker-gray-color: #7c7c7c;
 }
 
 #logo-container {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: $white-color;
 
@@ -135,8 +135,8 @@ $marker-gray-color: #7c7c7c;
 .logo {
   background: url(./svg/gens-logo-only.svg) no-repeat top left;
   background-size: contain;
-  width: 35px;
-  height: 35px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
 }
 
