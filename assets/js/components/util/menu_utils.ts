@@ -31,7 +31,7 @@ export function getIconButton(icon: string, title: string, onClick: () => void):
   button.className = "icon-button";
 
   const iconElem = document.createElement("span") as HTMLSpanElement;
-  iconElem.classList = `fas ${icon}`
+  iconElem.classList = `fas ${icon} fa-fw`
   button.appendChild(iconElem);
   
   return button;
