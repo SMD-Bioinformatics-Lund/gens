@@ -109,6 +109,10 @@ export function renderHighlights(
 
     const rangePx = scaleRange(range, xScale);
 
+<<<<<<< Updated upstream
     marker.render(rangePx);
+=======
+    marker.render([minXPx, maxXPx]);
+>>>>>>> Stashed changes
   }
 }

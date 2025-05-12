@@ -68,6 +68,13 @@ export class BandTrack extends DataTrack {
     this.initializeExpander("contextmenu", startExpanded, onExpand);
   }
 
+<<<<<<< Updated upstream
+=======
+  disconnectedCallback(): void {
+      super.disconnectedCallback();
+  }
+
+>>>>>>> Stashed changes
   override draw() {
     super.drawStart();
 
