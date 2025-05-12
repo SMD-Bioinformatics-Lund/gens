@@ -91,7 +91,7 @@ export class BandTrack extends DataTrack {
       const surrounding = rangeSurroundsRange([band.start, band.end], xRange);
 
       return inRange || surrounding;
-    });
+    }).sort((r1, r2) => r1.start < r2.start ? -1 : 1);
 
     const { numberLanes, bandOverlaps } = getOverlapInfo(bandsInView);
 

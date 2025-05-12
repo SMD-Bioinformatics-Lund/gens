@@ -130,13 +130,15 @@ export function createVariantTrack(
       const button = getSimpleButton("Set highlight", () => {
         session.addHighlight([details.position, details.end]);
       });
+      const container = document.createElement("div");
+      container.appendChild(button);
 
       const entries = getVariantContextMenuContent(
         variantId,
         details,
         scoutUrl,
       );
-      const content = [button];
+      const content = [container];
       content.push(...entries);
 
       session.showContent("Variant", content);
@@ -169,11 +171,13 @@ export function createGenesTrack(
     },
     async (id) => {
       const details = await getDetails(id);
+      const container = document.createElement("div");
       const button = getSimpleButton("Set highlight", () => {
         session.addHighlight([details.start, details.end]);
       });
+      container.appendChild(button);
       const entries = getGenesContextMenuContent(id, details);
-      const content = [button];
+      const content = [container];
       content.push(...entries);
       session.showContent("Transcript", content);
     },

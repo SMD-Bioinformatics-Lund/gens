@@ -2,14 +2,16 @@
 /**
  * Get the number of prior ranges overlapping the current target
  * Also calculates the first free "lane", i.e. the first position where no range is present
- * Assumes ranges sorted on their start position
  */
 export function getOverlapInfo(
-  ranges: { id: string; start: number; end: number }[],
+  rawRanges: { id: string; start: number; end: number }[],
 ): {
   bandOverlaps: Record<string, { nOverlapping: number; lane: number }>;
   numberLanes: number;
 } {
+
+  const ranges = rawRanges.sort((r1, r2) => r1.start < r2.start ? -1 : 1);
+
   const bandOverlaps: Record<string, { nOverlapping: number; lane: number }> =
     {};
 
