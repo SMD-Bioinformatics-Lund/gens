@@ -48,7 +48,7 @@ export class SamplesTable extends ShadowBaseElement {
     this.bodyElem = this.root.querySelector("#body");
   }
 
-  initialize(sampleInfo: SampleInfo[]) {
+  initialize(sampleInfo: SampleInfo[], scoutBaseURL: string) {
     console.log(this.bodyElem);
     removeChildren(this.bodyElem);
 
@@ -62,20 +62,56 @@ export class SamplesTable extends ShadowBaseElement {
       // files_present: boolean,
       // created_at: string,
 
-      const fields = [
-        "case_id",
-        "sample_ids",
-        "genome_build",
-        "has_overview_file",
-        "files_present",
-        "created_at",
-      ];
+      // const fields = [
+      //   "case_id",
+      //   "sample_ids",
+      //   "genome_build",
+      //   "has_overview_file",
+      //   "files_present",
+      //   "created_at",
+      // ];
 
-      for (const field of fields) {
-        const cell = document.createElement("td");
-        cell.textContent = sample[field];
-        row.appendChild(cell);
-      }
+      // Case cell
+      const caseCell = document.createElement("td");
+      const caseLink = document.createElement("a");
+      caseLink.innerHTML = `${sample.case_id}`;
+      caseLink.href = ""
+
+      const scoutLinkDiv = document.createElement("div");
+      const scoutLink = document.createElement("a");
+      scoutLink.href = `${scoutBaseURL}/case/case_id/${sample.case_id}`
+      scoutLink.innerHTML = "Scout";
+      scoutLinkDiv.appendChild(document.createTextNode("("));
+      scoutLinkDiv.appendChild(scoutLink);
+      scoutLinkDiv.appendChild(document.createTextNode(")"));
+      caseCell.appendChild(caseLink);
+      caseCell.appendChild(scoutLinkDiv);
+      row.appendChild(caseCell);
+
+      // Samples cell
+      const samplesCell = document.createElement("td");
+      samplesCell.innerHTML = sample.sample_ids.join(", ");
+      row.appendChild(samplesCell);
+
+      // Genome build cell
+      const genomeBuildCell = document.createElement("td");
+      genomeBuildCell.innerHTML = sample.genome_build.toString();
+      row.appendChild(genomeBuildCell);
+
+      // Overview file cell
+      const overviewCell = document.createElement("td");
+      overviewCell.innerHTML = sample.has_overview_file ? "X" : "-";
+      row.appendChild(overviewCell);
+
+      // COV/BAF cell
+      const covBafCell = document.createElement("td");
+      covBafCell.innerHTML = sample.files_present ? "X" : "-";
+      row.appendChild(covBafCell);
+
+      // Import date cell
+      const importDateCell = document.createElement("td");
+      importDateCell.innerHTML = sample.created_at;
+      row.appendChild(importDateCell);
 
       this.bodyElem.appendChild(row);
     }
@@ -109,7 +145,7 @@ export class GensHome extends HTMLElement {
   initialize(nrSamples: number, samples: SampleInfo[]) {
     this.nrSamplesElem.innerHTML = nrSamples.toString();
 
-    this.tableElem.initialize(samples);
+    this.tableElem.initialize(samples, "base URL");
 
     console.log("Got the samples", samples);
   }
