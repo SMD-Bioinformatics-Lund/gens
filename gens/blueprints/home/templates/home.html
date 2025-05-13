@@ -22,7 +22,8 @@
   <script>
     const totalSamples = `{{ total_samples }}`;
     const samplesJSON = JSON.parse(`{{ samples | tojson }}`);
-    gens.testHomeInit(totalSamples, samplesJSON);
+    const genomeBuild = `{{ genome_build }}`;
+    gens.testHomeInit(totalSamples, samplesJSON, genomeBuild);
   </script>
 {% endblock %}
 

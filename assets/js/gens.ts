@@ -25,18 +25,17 @@ import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
 
 
-export async function testHomeInit(totalSamples: number, samples: SampleInfo[], scoutBaseURL: string) {
-  console.log("Testing a home init");
+export async function testHomeInit(totalSamples: number, samples: SampleInfo[], scoutBaseURL: string, genomeBuild: number) {
 
   const gens_home = document.querySelector("#gens-home") as GensHome;
 
   const getGensURL = (caseId: string, sampleIds: string[]) => {
     // FIXME: Extract genome build
     // FIXME: Look into how to organize end points - should this be through the API class? Probably.
-    return `/app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=38`;
+    return `/app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
   }
 
-  gens_home.initialize(totalSamples, samples, scoutBaseURL, getGensURL);
+  gens_home.initialize(samples, scoutBaseURL, getGensURL);
 }
 
 export async function initCanvases({

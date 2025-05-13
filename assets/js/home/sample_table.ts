@@ -16,11 +16,6 @@ const menubarFontColor = "#f4faff";
 const tableTemplate = document.createElement("template");
 tableTemplate.innerHTML = String.raw`
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" />
-<style>
-  #table-container {
-    width: 1400px;
-  }
-</style>
 <table id="my-table">
   <thead>
     <tr>
@@ -33,14 +28,6 @@ tableTemplate.innerHTML = String.raw`
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>Case id</td>
-      <td>Sample id(s)</td>
-      <td>Genome build</td>
-      <td>Overview file(s)</td>
-      <td>BAM/BAF(s) found</td>
-      <td>Import date</td>
-    </tr>
   </tbody>
 </table>
 `;
@@ -55,7 +42,7 @@ export class SamplesTable extends HTMLElement {
     this.dataTable = new DataTable("#my-table", {
       searchable: true,
       fixedHeight: true,
-      perPage: 10,
+      perPage: 20,
     });
   }
 

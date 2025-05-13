@@ -2,14 +2,11 @@
   "dependencies": {
     "@floating-ui/dom": "^1.6.13",
     "@popperjs/core": "^2.11.8",
-    "@tanstack/table-core": "^8.21.3",
-    "ag-grid-community": "^33.3.0",
     "choices.js": "^11.1.0",
     "lodash.debounce": "^4.0.8",
     "npm": "^11.2.0",
     "simple-datatables": "^10.0.0",
     "sortablejs": "^1.15.6",
-    "tabulator-tables": "^6.3.1",
     "tippy.js": "^6.3.7"
   },
   "name": "gens",
