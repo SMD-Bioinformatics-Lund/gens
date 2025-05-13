@@ -9,6 +9,9 @@ import "./components/header_info";
 import "./movements/marker";
 import "./components/side_menu/track_page";
 
+import "./home/gens_home";
+import "./home/sample_table";
+
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
@@ -18,6 +21,22 @@ import { SideMenu } from "./components/side_menu/side_menu";
 import { SettingsPage } from "./components/side_menu/settings_page";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
+import { GensHome } from "./home/gens_home";
+import { SampleInfo } from "./home/sample_table";
+
+
+export async function testHomeInit(totalSamples: number, samples: SampleInfo[], scoutBaseURL: string, genomeBuild: number) {
+
+  const gens_home = document.querySelector("#gens-home") as GensHome;
+
+  const getGensURL = (caseId: string, sampleIds: string[]) => {
+    // FIXME: Extract genome build
+    // FIXME: Look into how to organize end points - should this be through the API class? Probably.
+    return `/app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
+  }
+
+  gens_home.initialize(samples, scoutBaseURL, getGensURL);
+}
 
 export async function initCanvases({
   caseId,

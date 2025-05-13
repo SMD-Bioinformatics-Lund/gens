@@ -42,7 +42,7 @@ export function getURLRow(text: string) {
   const row = getContainer("row");
   const span = document.createElement("span");
 
-  const pmid_regex = /(PMID: \s*(\d+))|(https?:\/\/[^\s\)]+)|(www\.[^\s\)]+)|(OMIM #(\d+))|(ORPHA:\s*(\d+))/g;
+  const pmid_regex = /(PMID: \s*(\d+))|(https?:\/\/[^\s)]+)|(www\.[^\s)]+)|(OMIM #(\d+))|(ORPHA:\s*(\d+))/g;
 
   const groups = {
     pmid: 1,

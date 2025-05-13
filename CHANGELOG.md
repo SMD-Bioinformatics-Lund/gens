@@ -18,6 +18,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Tracks menu and customize Y-axis
  - Drag and drop of tracks
  - Color backgrounds in any data track by any annotation track
+ - Simple data table to display sample list, allowing search and sorting
 
 ### Changed
  - Resolution increased 2x for tracks.

@@ -52,6 +52,7 @@ export class HeaderInfo extends ShadowBaseElement {
   }
 
   connectedCallback(): void {
+    super.connectedCallback();
     this.caseIdElem = this.root.querySelector("#case-id");
     // this.sampleIdsElem = this.root.querySelector("#sample-ids");
     this.versionElem = this.root.querySelector("#version");
