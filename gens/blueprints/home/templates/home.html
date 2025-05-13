@@ -10,6 +10,10 @@
 
 {% block scripts %}
   {{ super() }}
+  <script
+    type="module"
+    src="{{ url_for('gens.static', filename='gens.min.js') }}"
+  ></script>
 {% endblock scripts %}
 
 {% block body %}
@@ -18,6 +22,7 @@
 {% endblock %}
 
 {% block content %}
+<gens-home></gens-home>
 <div class="content">
   <h1>Samples</h1>
   <p>There are {{ total_samples }} samples loaded into Gens. Click on a <em>sample_id</em> to open it</p>

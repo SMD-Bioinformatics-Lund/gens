@@ -9,6 +9,8 @@ import "./components/header_info";
 import "./movements/marker";
 import "./components/side_menu/track_page";
 
+import "./home/gens_home";
+
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
