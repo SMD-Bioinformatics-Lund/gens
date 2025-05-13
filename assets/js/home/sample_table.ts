@@ -9,10 +9,6 @@ export interface SampleInfo {
   created_at: string;
 }
 
-const tableBorderColor = "#ddd";
-const menubarBgColor = "#4c6d94";
-const menubarFontColor = "#f4faff";
-
 const tableTemplate = document.createElement("template");
 tableTemplate.innerHTML = String.raw`
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" />
