@@ -3,11 +3,14 @@
 import { ShadowBaseElement } from "../components/util/shadowbaseelement";
 import { removeChildren } from "../util/utils";
 
+import { DataTable } from "simple-datatables";
+
 import {
   ModuleRegistry,
   AllCommunityModule,
   createGrid,
   GridOptions,
+  GridApi,
 } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -30,11 +33,19 @@ const menubarFontColor = "#f4faff";
 const tableTemplate = document.createElement("template");
 tableTemplate.innerHTML = String.raw`
 <link rel="stylesheet" href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css"/>
+<style>
+  #table-container {
+    width: 1200px;
+  }
+</style>
 <div id="table-container" class="ag-theme-alpine"></div>
 `;
 
 export class SamplesTable extends ShadowBaseElement {
   private tableContainer: HTMLDivElement;
+
+  
+  // private gridApi: GridApi;
   // private tabulator?: Tabulator;
 
   constructor() {
@@ -44,24 +55,31 @@ export class SamplesTable extends ShadowBaseElement {
   connectedCallback(): void {
     super.connectedCallback();
 
-    this.tableContainer = this.root.querySelector("#table-container");
-    const gridOptions = {
-      // Row Data: The data to be displayed.
-      rowData: [
-        { make: "Tesla", model: "Model Y", price: 64950, electric: true },
-        { make: "Ford", model: "F-Series", price: 33850, electric: false },
-        { make: "Toyota", model: "Corolla", price: 29600, electric: false },
-      ],
-      // Column Definitions: Defines the columns to be displayed.
-      columnDefs: [
-        { field: "make" },
-        { field: "model" },
-        { field: "price" },
-        { field: "electric" },
-      ],
-    };
-    // @ts-ignore
-    createGrid(this.tableContainer, gridOptions);
+    const tableContainer = this.root.querySelector("#table-container") as HTMLDivElement;
+
+    const dataTable = new DataTable(tableContainer);
+
+    // const gridOptions = {
+    //   // Row Data: The data to be displayed.
+    //   rowData: [],
+    //   // Column Definitions: Defines the columns to be displayed.
+    //   columnDefs: [
+    //     { field: "make" },
+    //     { field: "model" },
+    //     { field: "price" },
+    //     { field: "electric" },
+    //   ],
+    //   domLayout: 'autoHeight',
+    // };
+    // // @ts-ignore
+    // this.gridApi = createGrid(this.tableContainer, gridOptions);
+    // const rowData = [
+    //     {make: 'Toyota', model: 'Celica', price: 35000},
+    //     {make: 'Ford', model: 'Mondeo', price: 32000},
+    //     {make: 'Porsche', model: 'Boxter', price: 72000}
+    // ];
+    // // @ts-ignore
+    // this.gridApi.setRowData(rowData)
   }
 
   initialize(sampleInfo: SampleInfo[], scoutBaseURL: string) {
