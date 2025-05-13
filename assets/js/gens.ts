@@ -25,7 +25,7 @@ import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
 
 
-export async function testHomeInit(totalSamples: number, samples: SampleInfo[], scoutBaseURL: string, genomeBuild: number) {
+export async function testHomeInit(samples: SampleInfo[], scoutBaseURL: string, genomeBuild: number) {
 
   const gens_home = document.querySelector("#gens-home") as GensHome;
 

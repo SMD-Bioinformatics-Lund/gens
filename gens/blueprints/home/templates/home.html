@@ -20,10 +20,11 @@
   {{ super() }}
   <div id="data" data-samples="{{ samples | tojson }}"></div>
   <script>
-    const totalSamples = `{{ total_samples }}`;
     const samplesJSON = JSON.parse(`{{ samples | tojson }}`);
-    const genomeBuild = `{{ genome_build }}`;
-    gens.testHomeInit(totalSamples, samplesJSON, genomeBuild);
+    // FIXME: Get from the backend
+    const genomeBuild = 38;
+    const scoutBaseURL = "<placeholder>"
+    gens.testHomeInit(samplesJSON, scoutBaseURL, genomeBuild);
   </script>
 {% endblock %}
 
