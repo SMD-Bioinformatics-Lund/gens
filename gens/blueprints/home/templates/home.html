@@ -11,7 +11,6 @@
 {% block scripts %}
   {{ super() }}
   <script
-    type="module"
     src="{{ url_for('gens.static', filename='gens.min.js') }}"
   ></script>
 {% endblock scripts %}
@@ -19,10 +18,16 @@
 {% block body %}
   {{ navbar('home', version, current_user) }}
   {{ super() }}
+  <div id="data" data-samples="{{ samples | tojson }}"></div>
+  <script>
+    const totalSamples = `{{ total_samples }}`;
+    const samplesJSON = JSON.parse(`{{ samples | tojson }}`);
+    gens.testHomeInit(totalSamples, samplesJSON);
+  </script>
 {% endblock %}
 
 {% block content %}
-<gens-home></gens-home>
+<gens-home id="gens-home"></gens-home>
 <div class="content">
   <h1>Samples</h1>
   <p>There are {{ total_samples }} samples loaded into Gens. Click on a <em>sample_id</em> to open it</p>
@@ -87,7 +92,7 @@
   {{ pagination_bar(pagination) }}
 {% endmacro %}
 
-{% macro pagination_bar(pagination)%}
+{% macro pagination_bar(pagination) %}
   <div class="pagination">
     <ul>
       {% set start = 1 if pagination["current_page"] == 1 else pagination["current_page"] - 1 %}

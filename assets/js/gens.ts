@@ -20,6 +20,14 @@ import { SideMenu } from "./components/side_menu/side_menu";
 import { SettingsPage } from "./components/side_menu/settings_page";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
+import { GensHome, SampleInfo } from "./home/gens_home";
+
+export async function testHomeInit(totalSamples: number, samples: SampleInfo[]) {
+  console.log("Testing a home init");
+
+  const gens_home = document.querySelector("#gens-home") as GensHome;
+  gens_home.initialize(totalSamples, samples);
+}
 
 export async function initCanvases({
   caseId,
