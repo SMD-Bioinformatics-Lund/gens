@@ -21,11 +21,6 @@ template.innerHTML = String.raw`
       <icon-button id="down" icon="${ICONS.down}"></icon-button>
       <icon-button id="hide" icon="${ICONS.show}"></icon-button>
       <icon-button id="collapse" icon="${ICONS.expand}"></icon-button>
-
-      <!-- <div id="up" class="icon-button fas ${ICONS.up}"></div>
-      <div id="down" class="icon-button fas ${ICONS.down}"></div>
-      <div id="hide" class="icon-button fas ${ICONS.show}"></div>
-      <div id="collapse" class="icon-button fas ${ICONS.expand}"></div> -->
     </g-row>
   </g-row>
 `;

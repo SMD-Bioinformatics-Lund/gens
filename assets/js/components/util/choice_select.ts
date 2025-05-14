@@ -6,7 +6,6 @@ import { ShadowBaseElement } from "./shadowbaseelement";
 // onClick does not seem to play well with being inside a shadow DOM
 // Some adjustments were needed
 Choices.prototype._onClick = function (event: MouseEvent) {
-
   // Previously the target ended up on outside the shadow DOM components
   // var target = event.target;
 
@@ -50,21 +49,46 @@ template.innerHTML = String.raw`
       z-index: 3000;
     }
   </style>
-  <select id="select" multiple></select>
+  <select id="select"></select>
 `;
 
 export class ChoiceSelect extends ShadowBaseElement {
   private selectElement: HTMLSelectElement;
   private choiceElement: Choices;
+  private onChange: (ids: string[]) => void;
+
+  static get observedAttributes() {
+    return ["multiple"];
+  }
 
   constructor() {
     super(template);
+
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    const isMultipleMode = this.hasAttribute("multiple");
+
     this.selectElement = this.root.querySelector("#select");
+
+    if (isMultipleMode) {
+      this.selectElement.setAttribute("multiple", "");
+    } else {
+      this.selectElement.removeAttribute("multiple");
+    }
+
     this.choiceElement = new Choices(this.selectElement, {
-      placeholderValue: "Choices",
-      removeItemButton: true,
+      placeholderValue: "",
+      removeItemButton: isMultipleMode,
       itemSelectText: "",
     });
+
+    this.selectElement.addEventListener("change", () => {
+      const vals = this.choiceElement.getValue(true) as string[];
+      this.dispatchEvent(new CustomEvent("change", { detail: { values: vals}, bubbles: true, composed: true}))
+    })
   }
 
   setChoices(choices: InputChoice[]) {
@@ -75,11 +99,8 @@ export class ChoiceSelect extends ShadowBaseElement {
     return this.choiceElement.getValue() as EventChoice[];
   }
 
-  initialize(changeCallback: (choiceIds: string[]) => void) {
-    this.selectElement.addEventListener("change", () => {
-      const selectedIds = this.choiceElement.getValue(true) as string[];
-      changeCallback(selectedIds);
-    })
+  initialize(onChange: (choiceIds: string[]) => void) {
+    this.onChange = onChange;
   }
 }
 

@@ -1,4 +1,4 @@
-import { ICONS } from "../../constants";
+import { ICONS, SIZES } from "../../constants";
 import { prefixNts } from "../../util/utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
@@ -9,10 +9,13 @@ template.innerHTML = String.raw`
       justify-content: space-between;
       width: 100%;
     }
+    #button-row {
+      gap: ${SIZES.s}px;
+    }
   </style>
   <g-row id="content-row">
     <div id="label"></div>
-    <g-row>
+    <g-row id="button-row">
       <icon-button id="goto" icon="${ICONS.right}"></icon-button>
       <icon-button id="remove" icon="${ICONS.xmark}"></icon-button>
     </g-row>

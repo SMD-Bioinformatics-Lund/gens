@@ -46,18 +46,20 @@ template.innerHTML = String.raw`
     .icon-button:active {
       background: ${COLORS.lightGray};
     }
+    #samples-header-row {
+      gap: ${SIZES.s}px;
+    }
   </style>
   <div class="header-row">
     <div class="header">Annotation sources</div>
   </div>
   <div class="choices-container">
-    <choice-select id="choice-select"></choice-select>
+    <choice-select id="choice-select" multiple></choice-select>
   </div>
   <g-row class="header-row">
     <div class="header">Samples</div>
-    <g-row>
-      <!-- FIXME: How to do this? Can I use the Choices again? -->
-      <input/>
+    <g-row id="samples-header-row">
+      <choice-select id="sample-select"></choice-select>
       <icon-button icon="${ICONS.plus}"></icon-button>
     </g-row>
   </g-row>
@@ -76,7 +78,8 @@ export class SettingsPage extends ShadowBaseElement {
   private samplesOverview: HTMLDivElement;
   private tracksOverview: HTMLDivElement;
   private highlightsOverview: HTMLDivElement;
-  private choiceSelect: ChoiceSelect;
+  private annotSelect: ChoiceSelect;
+  private sampleSelect: ChoiceSelect;
 
   private onChange: () => void;
   private annotationSources: ApiAnnotationTrack[];
@@ -127,7 +130,8 @@ export class SettingsPage extends ShadowBaseElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.choiceSelect = this.root.querySelector("#choice-select");
+    this.annotSelect = this.root.querySelector("#choice-select");
+    this.sampleSelect = this.root.querySelector("#sample-select");
     this.tracksOverview = this.root.querySelector("#tracks-overview");
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
@@ -135,13 +139,25 @@ export class SettingsPage extends ShadowBaseElement {
 
   initialize() {
     this.isInitialized = true;
-    this.choiceSelect.setChoices(
-      getChoices(
+    this.annotSelect.setChoices(
+      getAnnotationChoices(
         this.annotationSources,
         this.defaultAnnots.map((a) => a.id),
       ),
     );
-    this.choiceSelect.initialize(this.onAnnotationChanged);
+    this.annotSelect.initialize(this.onAnnotationChanged);
+
+    const sampleChoices = [
+      { label: "A", value: "aa" },
+      { label: "B", value: "bb" },
+      { label: "C", value: "cc" },
+      { label: "D", value: "dd" },
+      { label: "E", value: "ee" },
+    ];
+    this.sampleSelect.setChoices(sampleChoices);
+    this.sampleSelect.initialize(() => {
+      console.log("Sample selection changed");
+    });
 
     this.onChange();
   }
@@ -196,11 +212,11 @@ export class SettingsPage extends ShadowBaseElement {
       });
     }
 
-    if (this.choiceSelect == null) {
+    if (this.annotSelect == null) {
       return this.defaultAnnots;
     }
 
-    const choices = this.choiceSelect.getChoices();
+    const choices = this.annotSelect.getChoices();
     const returnVals = choices.map((obj) => {
       return {
         id: obj.value,
@@ -211,7 +227,7 @@ export class SettingsPage extends ShadowBaseElement {
   }
 }
 
-function getChoices(
+function getAnnotationChoices(
   annotationSources: ApiAnnotationTrack[],
   defaultAnnotIds: string[],
 ): InputChoice[] {
