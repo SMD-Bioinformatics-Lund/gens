@@ -35,7 +35,6 @@ export class IdeogramTrack extends CanvasTrack {
     this.initializeHoverTooltip();
 
     this.initializeClick((band) => {
-      console.log("Clicked band!", band);
       this.onBandClick(band.element as RenderBand);
     });
 
@@ -65,57 +64,28 @@ export class IdeogramTrack extends CanvasTrack {
 
     const { chromInfo, xRange } = this.renderData;
 
-    // console.log(chromInfo);
+    const chromInfoBands = chromInfo.bands.sort((b1, b2) =>
+      b1.start < b2.start ? -1 : 1,
+    );
 
-    // const chromInfoBands = chromInfo.bands.sort((b1, b2) => b1.start < b2.start ? -1 : 1).slice(0, 2);
-    // const chromInfoBands = chromInfo.bands.slice(0, 5);
-
-    const chromInfoBands = [
-      {
-        id: "id1",
-        stain: "gneg",
-        start: 1,
-        end: 1,
-      },
-      {
-        id: "id2",
-        stain: "gpos25",
-        start: 2,
-        end: 2,
-      },
-      {
-        id: "id3",
-        stain: "gpos75",
-        start: 3,
-        end: 3,
-      },
-    ];
-
-    console.log(chromInfoBands);
-
-    const calculatedSize = sumArray(
-      chromInfoBands.map((band) => band.end - band.start + 1),
-    ) + 1;
-
-    console.log("Calculated size", calculatedSize);
-
+    const chromSize = chromInfo.size;
     const style = STYLE.ideogramTrack;
 
     const xScale = getLinearScale(
-      [1, calculatedSize],
+      [1, chromSize],
       [style.xPad, this.dimensions.width - style.xPad],
     );
 
     let centromere = null;
-    // if (chromInfo.centromere !== null) {
-    //   const start = Math.round(xScale(chromInfo.centromere.start));
-    //   const end = Math.round(xScale(chromInfo.centromere.end));
-    //   centromere = {
-    //     start,
-    //     end,
-    //     center: (start + end) / 2,
-    //   };
-    // }
+    if (chromInfo.centromere !== null) {
+      const start = Math.round(xScale(chromInfo.centromere.start));
+      const end = Math.round(xScale(chromInfo.centromere.end));
+      centromere = {
+        start,
+        end,
+        center: (start + end) / 2,
+      };
+    }
 
     const stainToColor = STYLE.ideogramTrack.stainToColor;
     const renderBands = chromInfoBands.map((band) => {
@@ -129,26 +99,23 @@ export class IdeogramTrack extends CanvasTrack {
       return renderBand;
     });
 
-    console.log("Render bands", renderBands);
-
-    // const chromShape = getChromosomeShape(
-    //   this.ctx,
-    //   style.yPad,
-    //   this.dimensions,
-    //   centromere,
-    //   style.lineColor,
-    //   style.lineColor,
-    //   xScale,
-    //   chromInfo.size,
-    // );
+    const chromShape = getChromosomeShape(
+      this.ctx,
+      style.yPad,
+      this.dimensions,
+      centromere,
+      style.lineColor,
+      style.lineColor,
+      xScale,
+      chromInfo.size,
+    );
 
     drawChromosomeBands(
       this.ctx,
       this.dimensions,
       renderBands,
       xScale,
-      null,
-      // chromShape,
+      chromShape,
       style.yPad,
       style.lineWidth,
     );
@@ -167,32 +134,28 @@ export class IdeogramTrack extends CanvasTrack {
     });
     this.hoverTargets = targets;
 
-    renderZoomMarker(this.markerElement, xRange, calculatedSize, xScale);
+    const isZoomed = xRange[0] != 1 || xRange[1] != chromSize;
+    renderZoomMarker(this.markerElement, xRange, xScale, isZoomed);
   }
 }
 
 function renderZoomMarker(
   markerElement: HTMLDivElement,
   xRange: [number, number],
-  chromSize: number,
   xScale: Scale,
+  isZoomed: boolean,
 ) {
-  console.log("Rendering range:", xRange);
-
-  console.log("xRange", xRange);
 
   // Hide if not zoomed
-  const hideMarker = xRange[0] == 1 && xRange[1] == chromSize;
+  const hideMarker = !isZoomed;
   markerElement.hidden = hideMarker;
   if (!hideMarker) {
-    const pxStart = xScale(xRange[0]);
-    const pxEnd = xScale(xRange[1] + 1);
+    const pxStart = Math.floor(xScale(xRange[0]));
+    const pxEnd = Math.floor(xScale(xRange[1]));
     const pxWidth = pxEnd - pxStart;
 
-    console.log("Scaled", pxStart, pxEnd, pxWidth);
-
+    markerElement.style.left = `${pxStart}px`;
     markerElement.style.width = `${pxWidth}px`;
-    markerElement.style.marginLeft = `${pxStart}px`;
   }
 }
 
@@ -201,21 +164,27 @@ function setupZoomMarkerElement(trackHeight: number): HTMLDivElement {
   markerElement.id = "ideogram-marker";
   markerElement.className = "marker";
 
-  const leftMargin = STYLE.ideogramMarker.leftMargin;
+  const style = STYLE.ideogramMarker;
+  const colors = STYLE.colors;
 
   markerElement.style.position = "absolute";
-  markerElement.style.backgroundColor = STYLE.colors.transparentYellow;
+  markerElement.style.backgroundColor = colors.transparentYellow;
 
-  const bw = STYLE.ideogramMarker.borderWidth;
-  markerElement.style.borderLeft = `${bw}px solid ${STYLE.colors.red}`;
-  markerElement.style.borderRight = `${bw}px solid ${STYLE.colors.red}`;
+  markerElement.style.border = "none";
+  markerElement.style.outline = "none";
+
+  markerElement.style.boxShadow = [
+    `inset ${style.borderWidth}px 0 0 ${colors.red}`,
+    `inset -${style.borderWidth}px 0 0 ${colors.red}`,
+  ].join(", ");
+  markerElement.style.boxSizing = "border-box";
 
   markerElement.hidden = true;
 
-  markerElement.style.height = `${trackHeight - bw}px`;
+  markerElement.style.height = `${trackHeight}px`;
   markerElement.style.width = "0px";
   markerElement.style.top = "0px";
-  markerElement.style.marginLeft = `${leftMargin}px`;
+  markerElement.style.left = `${style.leftMargin}px`;
 
   markerElement.style.pointerEvents = "none";
 
