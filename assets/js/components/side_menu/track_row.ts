@@ -1,10 +1,9 @@
-import { COLORS, ICONS, SIZES } from "../../constants";
+import { ICONS, SIZES } from "../../constants";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     #main-row {
       justify-content: space-between;
@@ -27,7 +26,7 @@ template.innerHTML = String.raw`
       <div id="down" class="icon-button fas ${ICONS.down}"></div>
       <div id="hide" class="icon-button fas ${ICONS.show}"></div>
       <div id="collapse" class="icon-button fas ${ICONS.expand}"></div> -->
-  </g-row>
+    </g-row>
   </g-row>
 `;
 

@@ -1,4 +1,4 @@
-import { COLORS, ICONS, SIZES } from "../../constants";
+import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
 import { SampleInfo } from "../../home/sample_table";
 import { removeChildren } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
@@ -6,14 +6,24 @@ import { ChoiceSelect } from "../util/choice_select";
 import { getIconButton } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
-import { TrackRow } from "./settings_page_components";
+import { TrackRow } from "./track_row";
+import { SampleRow } from "./sample_row";
+import { HighlightRow } from "./highlight_row";
+
+// FIXME: How to manage the content? Something to do later?
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     .header {
-      padding-top: ${SIZES.xs}px;
+      font-weight: ${FONT_WEIGHT.header};
+    }
+    .header-row {
+      justify-content: space-between;
+      width: 100%;
+      padding-top: ${SIZES.m}px;
+      padding-bottom: ${SIZES.xs}px;
     }
     .row {
       display: flex;
@@ -37,16 +47,29 @@ template.innerHTML = String.raw`
       background: ${COLORS.lightGray};
     }
   </style>
-  <div class="header">Annotation sources</div>
+  <div class="header-row">
+    <div class="header">Annotation sources</div>
+  </div>
   <div class="choices-container">
     <choice-select id="choice-select"></choice-select>
   </div>
-  <div class="header">Samples</div>
+  <g-row class="header-row">
+    <div class="header">Samples</div>
+    <g-row>
+      <!-- FIXME: How to do this? Can I use the Choices again? -->
+      <input/>
+      <icon-button icon="${ICONS.plus}"></icon-button>
+    </g-row>
+  </g-row>
   <div id="samples-overview"></div>
-  <div class="header">Tracks</div>
-  <div id="tracks-overview"></div>
-  <div class="header">Highlights</div>
+  <div class="header-row">
+    <div class="header">Highlights</div>
+  </div>
   <div id="highlights-overview"></div>
+  <div class="header-row">
+    <div class="header">Tracks</div>
+  </div>
+  <div id="tracks-overview"></div>
 `;
 
 export class SettingsPage extends ShadowBaseElement {
@@ -117,12 +140,13 @@ export class SettingsPage extends ShadowBaseElement {
     );
     this.tracksOverview.appendChild(tracksSection);
 
+    const samples = this.getCurrentSamples();
     removeChildren(this.samplesOverview);
-    const samplesSection = getSamplesSection();
+    const samplesSection = getSamplesSection(samples);
     this.samplesOverview.appendChild(samplesSection);
 
     removeChildren(this.highlightsOverview);
-    const highlightsSection = getHighlightsSection();
+    const highlightsSection = getHighlightsSection(this.getHighlights());
     this.highlightsOverview.appendChild(highlightsSection);
   }
 
@@ -192,17 +216,35 @@ function getChoices(
   return choices;
 }
 
-function getSamplesSection(): HTMLDivElement {
-  const text = document.createTextNode("samples section");
+function getSamplesSection(sampleIds: string[]): HTMLDivElement {
   const container = document.createElement("div");
-  container.appendChild(text);
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.gap = `${SIZES.xs}px`;
+
+  for (const sampleId of sampleIds) {
+    const sampleRow = new SampleRow();
+    sampleRow.initialize(sampleId, () => {
+      console.log("Remove sample");
+    });
+    container.appendChild(sampleRow);
+  }
+
   return container;
 }
 
-function getHighlightsSection(): HTMLDivElement {
-  const text = document.createTextNode("highlights section");
+function getHighlightsSection(highlights: RangeHighlight[]): HTMLDivElement {
   const container = document.createElement("div");
-  container.appendChild(text);
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.gap = `${SIZES.xs}px`;
+
+  for (const highlight of highlights) {
+    const highlightRow = new HighlightRow();
+    highlightRow.initialize(highlight);
+    container.appendChild(highlightRow);
+  }
+
   return container;
 }
 
@@ -220,48 +262,6 @@ function getTracksSection(
     trackRow.initialize(track, onMove, onToggleShow, onToggleCollapse);
     tracksSection.appendChild(trackRow);
   }
-
-  // for (const track of tracks) {
-  //   const rowDiv = document.createElement("div");
-  //   rowDiv.className = "row";
-  //   rowDiv.style.display = "flex";
-  //   rowDiv.style.flexDirection = "row";
-  //   rowDiv.style.alignItems = "center";
-  //   rowDiv.style.justifyContent = "space-between";
-
-  //   rowDiv.appendChild(document.createTextNode(track.label));
-
-  //   const buttonsDiv = document.createElement("div");
-  //   buttonsDiv.style.display = "flex";
-  //   buttonsDiv.style.flexDirection = "row";
-  //   buttonsDiv.style.flexWrap = "nowrap";
-  //   buttonsDiv.style.gap = `${SIZES.s}px`;
-
-  //   buttonsDiv.appendChild(
-  //     getIconButton(ICONS.up, "Up", () => onMove(track, "up")),
-  //   );
-  //   buttonsDiv.appendChild(
-  //     getIconButton(ICONS.down, "Down", () => onMove(track, "down")),
-  //   );
-  //   buttonsDiv.appendChild(
-  //     getIconButton(
-  //       track.getIsHidden() ? ICONS.hide : ICONS.show,
-  //       "Show / hide",
-  //       () => onToggleShow(track),
-  //     ),
-  //   );
-  //   buttonsDiv.appendChild(
-  //     getIconButton(
-  //       track.getIsCollapsed() ? ICONS.expand : ICONS.collapse,
-  //       "Collapse / expand",
-  //       () => onToggleCollapse(track),
-  //     ),
-  //   );
-
-  //   rowDiv.appendChild(buttonsDiv);
-
-  //   tracksSection.appendChild(rowDiv);
-  // }
   return tracksSection;
 }
 

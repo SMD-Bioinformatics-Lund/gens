@@ -31,7 +31,7 @@ template.innerHTML = String.raw`
   </style>
   <div id="icon" class="fas"></div>
 `;
-class IconButton extends ShadowBaseElement {
+export class IconButton extends ShadowBaseElement {
 
   static get observedAttributes() {
     return ["icon"];
