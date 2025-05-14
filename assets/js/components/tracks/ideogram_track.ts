@@ -2,9 +2,8 @@ import { drawChromosomeBands, getChromosomeShape } from "../../draw/ideogram";
 import { STYLE } from "../../constants";
 import { CanvasTrack } from "./base_tracks/canvas_track";
 import "tippy.js/dist/tippy.css";
-import { getLinearScale, renderBand } from "../../draw/render_utils";
-import { setCanvasPointerCursor } from "../util/canvas_interaction";
-import { eventInBox, sumArray } from "../../util/utils";
+import { getLinearScale } from "../../draw/render_utils";
+import { eventInBox } from "../../util/utils";
 
 export class IdeogramTrack extends CanvasTrack {
   private markerElement: HTMLDivElement;

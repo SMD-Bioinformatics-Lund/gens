@@ -19,6 +19,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Drag and drop of tracks
  - Color backgrounds in any data track by any annotation track
  - Simple data table to display sample list, allowing search and sorting
+ - Navigate to position by clicking ideogram bands
 
 ### Changed
  - Resolution increased 2x for tracks.
