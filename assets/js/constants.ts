@@ -136,7 +136,8 @@ export const STYLE = {
   ideogramTrack: {
     endBevelProportion: 0.05,
     centromereIndentProportion: 0.3,
-    xPad: SIZES.m,
+    xPad: 10,
+    // xPad: SIZES.m,
     yPad: SIZES.xs,
     lineColor: COLORS.darkGray,
     lineWidth: 1,

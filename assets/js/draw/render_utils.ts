@@ -115,8 +115,8 @@ export function drawRect(
   fillColor: string = null,
   open: boolean = false,
 ) {
-  x = Math.floor(x) + 0.5;
-  y = Math.floor(y) + 0.5;
+  x = Math.floor(x);
+  y = Math.floor(y);
   width = Math.floor(width);
 
   if (color !== null) ctx.strokeStyle = color;

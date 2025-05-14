@@ -6,43 +6,42 @@ export function drawChromosomeBands(
   dim: Dimensions,
   bands: RenderBand[],
   xScale: Scale,
-  chromShape: Path2D,
+  chromShape: Path2D | null,
   yPad: number,
   lineWidth: number,
 ) {
+  if (chromShape != null) {
+    ctx.save();
+    // Clip using previously calculated edge path
+    ctx.clip(chromShape);
+  }
+  bands.map((band) => {
+    console.log("Calculating rect");
 
-  ctx.save();
-  // Clip using previously calculated edge path
-  ctx.clip(chromShape);
-  bands
-    .map((band) => {
-      const path = drawRect(
-        ctx,
-        xScale(band.start),
-        0,
-        xScale(band.end - band.start),
-        dim.height,
-        lineWidth,
-        band.color,
-        band.color,
-      );
+    const path = drawRect(
+      ctx,
+      xScale(band.start),
+      0,
+      xScale(band.end) - xScale(band.start),
+      dim.height,
+      lineWidth,
+      band.color,
+      band.color,
+    );
 
-      return {
-        id: band.label,
-        x: xScale(band.start),
-        y: yPad,
-        width: xScale(band.end - band.start),
-        height: dim.height - yPad * 2,
-        path,
-      };
-    })
-    .filter((band) => {
-      if (band.path === null) {
-        console.error("Is this ever triggered? A band without a path");
-      }
-      return band.path !== null;
-    });
-  ctx.restore();
+    return {
+      id: band.label,
+      x: xScale(band.start),
+      y: yPad,
+      width: xScale(band.end - band.start),
+      height: dim.height - yPad * 2,
+      path,
+    };
+  });
+
+  if (chromShape != null) {
+    ctx.restore();
+  }
 }
 
 /**
@@ -59,7 +58,6 @@ export function getChromosomeShape(
   xScale: Scale,
   chromSize: number,
 ): Path2D {
-
   const style = STYLE.ideogramTrack;
 
   const bevelWidth = Math.round(dim.width * style.endBevelProportion);
@@ -99,13 +97,7 @@ export function getChromosomeShape(
   path.lineTo(xEndPx - bevelWidth, yPad);
 
   // Right end cap
-  path.arcTo(
-    xEndPx,
-    yPad,
-    xEndPx,
-    yPad + dim.height / 2,
-    chromEndRadius,
-  );
+  path.arcTo(xEndPx, yPad, xEndPx, yPad + dim.height / 2, chromEndRadius);
   path.arcTo(
     xEndPx,
     dim.height - yPad,

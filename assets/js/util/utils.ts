@@ -292,3 +292,10 @@ export function populateSelect(
   }
 }
 
+export function sumArray(arr: number[]): number {
+  let acc = 0;
+  for (const val of arr) {
+    acc += val;
+  }
+  return acc;
+}
