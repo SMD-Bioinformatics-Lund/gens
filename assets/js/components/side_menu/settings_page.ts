@@ -49,6 +49,10 @@ template.innerHTML = String.raw`
     #samples-header-row {
       gap: ${SIZES.s}px;
     }
+    #sample-select {
+      min-width: 100px;
+      padding-right: 10px;
+    }
   </style>
   <div class="header-row">
     <div class="header">Annotation sources</div>
@@ -147,14 +151,13 @@ export class SettingsPage extends ShadowBaseElement {
     );
     this.annotSelect.initialize(this.onAnnotationChanged);
 
-    const sampleChoices = [
-      { label: "A", value: "aa" },
-      { label: "B", value: "bb" },
-      { label: "C", value: "cc" },
-      { label: "D", value: "dd" },
-      { label: "E", value: "ee" },
-    ];
-    this.sampleSelect.setChoices(sampleChoices);
+    const samples = this.getAllSamples().map((s) => {
+      return {
+        label: s,
+        value: s,
+      }
+    });
+    this.sampleSelect.setChoices(samples);
     this.sampleSelect.initialize(() => {
       console.log("Sample selection changed");
     });
