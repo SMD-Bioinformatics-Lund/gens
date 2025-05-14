@@ -55,10 +55,14 @@ export class GensSession {
     }
   }
 
-  updateChromosome(chrom: string) {
+  updateChromosome(chrom: string, range: Rng = null) {
     this.chromosome = chrom;
-    this.start = 1;
-    this.end = this.chromSizes[chrom];
+
+    const start = range != null ? range[0] : 1;
+    const end = range != null ? range[1] : this.chromSizes[chrom];
+
+    this.start = start;
+    this.end = end;
   }
 
   updatePosition(range: Rng): void {

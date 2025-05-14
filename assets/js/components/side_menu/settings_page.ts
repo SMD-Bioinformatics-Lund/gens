@@ -88,11 +88,41 @@ export class SettingsPage extends ShadowBaseElement {
   private getCurrentSamples: () => string[];
   private getAllSamples: () => string[];
   private getHighlights: () => RangeHighlight[];
+  private gotoHighlight: (region: Region) => void;
+  private removeHighlight: (id: string) => void;
 
   public isInitialized: boolean = false;
 
   constructor() {
     super(template);
+  }
+
+  setSources(
+    onChange: () => void,
+    annotationSources: ApiAnnotationTrack[],
+    defaultAnnots: { id: string; label: string }[],
+    onAnnotationChanged: (sources: string[]) => void,
+    getDataTracks: () => DataTrack[],
+    onTrackMove: (trackId: string, direction: "up" | "down") => void,
+    getCurrentSamples: () => string[],
+    getAllSamples: () => string[],
+    getHighlights: () => RangeHighlight[],
+    gotoHighlight: (region: Region) => void,
+    removeHighlight: (id: string) => void,
+  ) {
+    this.onChange = onChange;
+    this.annotationSources = annotationSources;
+    this.defaultAnnots = defaultAnnots;
+    this.onAnnotationChanged = onAnnotationChanged;
+    this.getDataTracks = getDataTracks;
+    this.onTrackMove = onTrackMove;
+
+    this.getCurrentSamples = getCurrentSamples;
+    this.getAllSamples = getAllSamples;
+    this.getHighlights = getHighlights;
+
+    this.gotoHighlight = gotoHighlight;
+    this.removeHighlight = removeHighlight;
   }
 
   connectedCallback() {
@@ -146,31 +176,12 @@ export class SettingsPage extends ShadowBaseElement {
     this.samplesOverview.appendChild(samplesSection);
 
     removeChildren(this.highlightsOverview);
-    const highlightsSection = getHighlightsSection(this.getHighlights());
+    const highlightsSection = getHighlightsSection(
+      this.getHighlights(),
+      (region: Region) => this.gotoHighlight(region),
+      (id: string) => this.removeHighlight(id),
+    );
     this.highlightsOverview.appendChild(highlightsSection);
-  }
-
-  setSources(
-    onChange: () => void,
-    annotationSources: ApiAnnotationTrack[],
-    defaultAnnots: { id: string; label: string }[],
-    onAnnotationChanged: (sources: string[]) => void,
-    getDataTracks: () => DataTrack[],
-    onTrackMove: (trackId: string, direction: "up" | "down") => void,
-    getCurrentSamples: () => string[],
-    getAllSamples: () => string[],
-    getHighlights: () => RangeHighlight[],
-  ) {
-    this.onChange = onChange;
-    this.annotationSources = annotationSources;
-    this.defaultAnnots = defaultAnnots;
-    this.onAnnotationChanged = onAnnotationChanged;
-    this.getDataTracks = getDataTracks;
-    this.onTrackMove = onTrackMove;
-
-    this.getCurrentSamples = getCurrentSamples;
-    this.getAllSamples = getAllSamples;
-    this.getHighlights = getHighlights;
   }
 
   getAnnotSources(settings: {
@@ -233,7 +244,11 @@ function getSamplesSection(sampleIds: string[]): HTMLDivElement {
   return container;
 }
 
-function getHighlightsSection(highlights: RangeHighlight[]): HTMLDivElement {
+function getHighlightsSection(
+  highlights: RangeHighlight[],
+  onGotoHighlight: (region: Region) => void,
+  onRemoveHighlight: (id: string) => void,
+): HTMLDivElement {
   const container = document.createElement("div");
   container.style.display = "flex";
   container.style.flexDirection = "column";
@@ -241,7 +256,7 @@ function getHighlightsSection(highlights: RangeHighlight[]): HTMLDivElement {
 
   for (const highlight of highlights) {
     const highlightRow = new HighlightRow();
-    highlightRow.initialize(highlight);
+    highlightRow.initialize(highlight, onGotoHighlight, onRemoveHighlight);
     container.appendChild(highlightRow);
   }
 

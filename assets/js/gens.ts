@@ -27,16 +27,18 @@ import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
 
-
-export async function testHomeInit(samples: SampleInfo[], scoutBaseURL: string, genomeBuild: number) {
-
+export async function testHomeInit(
+  samples: SampleInfo[],
+  scoutBaseURL: string,
+  genomeBuild: number,
+) {
   const gens_home = document.querySelector("#gens-home") as GensHome;
 
   const getGensURL = (caseId: string, sampleIds: string[]) => {
     // FIXME: Extract genome build
     // FIXME: Look into how to organize end points - should this be through the API class? Probably.
     return `/app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
-  }
+  };
 
   gens_home.initialize(samples, scoutBaseURL, getGensURL);
 }
@@ -90,12 +92,7 @@ export async function initCanvases({
 
   const chromSizes = api.getChromSizes();
   const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
-  const session = new GensSession(
-    render,
-    sideMenu,
-    defaultRegion,
-    chromSizes,
-  );
+  const session = new GensSession(render, sideMenu, defaultRegion, chromSizes);
 
   const renderDataSource = getRenderDataSource(
     api,
@@ -143,6 +140,14 @@ export async function initCanvases({
     () => sampleIds,
     () => allSampleIds,
     () => session.getAllHighlights(),
+    (region: Region) => {
+      const positionOnly = region.chrom == session.getChromosome();
+      session.updateChromosome(region.chrom, [region.start, region.end]);
+      render({ dataUpdated: true, positionOnly });
+    },
+    (id: string) => {
+      session.removeHighlight(id);
+    },
   );
 
   initialize(
@@ -195,7 +200,6 @@ async function initialize(
     session.setViewRange(range);
     render({ dataUpdated: true, positionOnly: true });
   });
-
 
   const tracksDataSources = {
     getAnnotationSources: (settings: { selectedOnly: boolean }) =>

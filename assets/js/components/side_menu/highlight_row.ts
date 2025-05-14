@@ -13,34 +13,59 @@ template.innerHTML = String.raw`
   <g-row id="content-row">
     <div id="label"></div>
     <g-row>
-      <icon-button icon="${ICONS.right}"></icon-button>
-      <icon-button icon="${ICONS.xmark}"></icon-button>
+      <icon-button id="goto" icon="${ICONS.right}"></icon-button>
+      <icon-button id="remove" icon="${ICONS.xmark}"></icon-button>
     </g-row>
   </g-row>
 `;
 
 export class HighlightRow extends ShadowBaseElement {
   private labelElem: HTMLDivElement;
+  private gotoElem: HTMLDivElement;
+  private removeElem: HTMLDivElement;
 
   private highlight: RangeHighlight;
+  private onGoToHighlight: (region: Region) => void;
+  private onRemoveHighlight: (id: string) => void;
 
   constructor() {
     super(template);
   }
 
-  initialize(highlight: RangeHighlight) {
+  initialize(
+    highlight: RangeHighlight,
+    onGoToHighlight: (region: Region) => void,
+    onRemoveHighlight: (id: string) => void,
+  ) {
     this.highlight = highlight;
+    this.onGoToHighlight = onGoToHighlight;
+    this.onRemoveHighlight = onRemoveHighlight;
   }
 
   connectedCallback(): void {
     super.connectedCallback();
 
     this.labelElem = this.root.querySelector("#label");
+    this.gotoElem = this.root.querySelector("#goto");
+    this.removeElem = this.root.querySelector("#remove");
 
-    const start = prefixNts(this.highlight.range[0])
-    const end = prefixNts(this.highlight.range[1])
+    const range = this.highlight.range;
+    const start = prefixNts(range[0]);
+    const end = prefixNts(range[1]);
+    const region = {
+      chrom: this.highlight.chromosome,
+      start: range[0],
+      end: range[1],
+    }
 
     this.labelElem.innerHTML = `${this.highlight.chromosome}:${start}-${end}`;
+    this.addElementListener(this.gotoElem, "click", () => {
+      this.onGoToHighlight(region);
+    });
+
+    this.addElementListener(this.removeElem, "click", () => {
+      this.onRemoveHighlight(this.highlight.id);
+    })
   }
 }
 
