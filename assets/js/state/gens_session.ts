@@ -104,6 +104,10 @@ export class GensSession {
     this.sideMenu.showContent(header, content);
   }
 
+  getAllHighlights(): RangeHighlight[] {
+    return Object.values(this.highlights);
+  }
+
   getHighlights(chrom: string): RangeHighlight[] {
     return Object.values(this.highlights).filter((h) => h.chromosome === chrom);
   }

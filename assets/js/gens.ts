@@ -47,6 +47,7 @@ export async function initCanvases({
   annotationFile: defaultAnnotationName,
   startRegion,
   version,
+  allSampleIds,
 }: {
   caseId: string;
   sampleIds: string[];
@@ -56,6 +57,7 @@ export async function initCanvases({
   annotationFile: string;
   startRegion: Region;
   version: string;
+  allSampleIds: string[];
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
@@ -134,6 +136,10 @@ export async function initCanvases({
     () => gensTracks.getDataTracks(),
     (trackId: string, direction: "up" | "down") =>
       gensTracks.moveTrack(trackId, direction),
+
+    () => sampleIds,
+    () => allSampleIds,
+    () => session.getAllHighlights(),
   );
 
   initialize(

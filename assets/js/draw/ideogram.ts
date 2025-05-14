@@ -16,8 +16,6 @@ export function drawChromosomeBands(
     ctx.clip(chromShape);
   }
   bands.map((band) => {
-    console.log("Calculating rect");
-
     const path = drawRect(
       ctx,
       xScale(band.start),

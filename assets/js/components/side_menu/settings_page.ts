@@ -1,4 +1,5 @@
 import { COLORS, ICONS, SIZES } from "../../constants";
+import { SampleInfo } from "../../home/sample_table";
 import { removeChildren } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ChoiceSelect } from "../util/choice_select";
@@ -39,19 +40,31 @@ template.innerHTML = String.raw`
   <div class="choices-container">
     <choice-select id="choice-select"></choice-select>
   </div>
+  <div class="header">Samples</div>
+  <div id="samples-overview"></div>
   <div class="header">Tracks</div>
   <div id="tracks-overview"></div>
+  <div class="header">Highlights</div>
+  <div id="highlights-overview"></div>
 `;
 
 export class SettingsPage extends ShadowBaseElement {
-  private onChange: () => void;
+
+  private samplesOverview: HTMLDivElement;
+  private tracksOverview: HTMLDivElement;
+  private highlightsOverview: HTMLDivElement;
   private choiceSelect: ChoiceSelect;
+
+  private onChange: () => void;
   private annotationSources: ApiAnnotationTrack[];
   private defaultAnnots: { id: string; label: string }[];
   private onAnnotationChanged: (sources: string[]) => void;
   private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
-  private tracksOverview: HTMLDivElement;
+
+  private getCurrentSamples: () => string[];
+  private getAllSamples: () => string[];
+  private getHighlights: () => RangeHighlight[];
 
   public isInitialized: boolean = false;
 
@@ -88,6 +101,7 @@ export class SettingsPage extends ShadowBaseElement {
     }
     removeChildren(this.tracksOverview);
     const tracks = this.getDataTracks();
+    // FIXME: Could part of this simply be part of the template?
     const tracksSection = getTracksSection(
       tracks,
       (track: DataTrack, direction: "up" | "down") => {
@@ -104,6 +118,14 @@ export class SettingsPage extends ShadowBaseElement {
       },
     );
     this.tracksOverview.appendChild(tracksSection);
+
+    removeChildren(this.samplesOverview);
+    const samplesSection = getSamplesSection();
+    this.samplesOverview.appendChild(samplesSection);
+
+    removeChildren(this.tracksOverview);
+    const highlightsSection = getHighlightsSection();
+    this.tracksOverview.appendChild(highlightsSection);
   }
 
   setSources(
@@ -113,6 +135,9 @@ export class SettingsPage extends ShadowBaseElement {
     onAnnotationChanged: (sources: string[]) => void,
     getDataTracks: () => DataTrack[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
+    getCurrentSamples: () => string[],
+    getAllSamples: () => string[],
+    getHighlights: () => RangeHighlight[],
   ) {
     this.onChange = onChange;
     this.annotationSources = annotationSources;
@@ -120,6 +145,10 @@ export class SettingsPage extends ShadowBaseElement {
     this.onAnnotationChanged = onAnnotationChanged;
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
+
+    this.getCurrentSamples = getCurrentSamples;
+    this.getAllSamples = getAllSamples;
+    this.getHighlights = getHighlights;
   }
 
   getAnnotSources(settings: {
@@ -164,6 +193,20 @@ function getChoices(
     choices.push(choice);
   }
   return choices;
+}
+
+function getSamplesSection(): HTMLDivElement {
+  const text = document.createTextNode("samples section");
+  const container = document.createElement("div");
+  container.appendChild(text);
+  return container;
+}
+
+function getHighlightsSection(): HTMLDivElement {
+  const text = document.createTextNode("highlights section");
+  const container = document.createElement("div");
+  container.appendChild(text);
+  return container;
 }
 
 function getTracksSection(
