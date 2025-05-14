@@ -9,6 +9,7 @@ import "./components/side_menu/side_menu";
 import "./components/header_info";
 import "./movements/marker";
 import "./components/side_menu/track_page";
+import "./components/util/base_components";
 
 import "./home/gens_home";
 import "./home/sample_table";

@@ -1,35 +1,42 @@
-import { SIZES } from "../../constants";
+import { ICONS, SIZES } from "../../constants";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    .row {
-      display: flex;
-      flex-direction: "row";
-      align-items: "center";
-      justify-content: "space-between";
+    #main-row {
+      justify-content: space-between;
+      width: 100%;
     }
-    .button {
+    .icon-button {
+      height: ${SIZES.l}px;
+      width: ${SIZES.l}px;
       display: flex;
       flex-direction: row;
       flex-wrap: nowrap;
       gap: ${SIZES.s}px;
+      align-items: center;
+      justify-content: center;
+    }
+    #button-row {
+      gap: ${SIZES.s}px;
     }
   </style>
-  <div class="row">
+  <g-row id="main-row">
     <div id="label"></div>
-    <div class="row">
-      <button id="up" class="button"></button>
-      <button id="down" class="button"></button>
-      <button id="hide" class="button"></button>
-      <button id="collapse" class="button"></button>
-    </div>
-  </div>
+    <g-row id="button-row">
+      <button id="up" class="button fas ${ICONS.up}"></button>
+      <button id="down" class="button fas ${ICONS.down}"></button>
+      <button id="hide" class="button fas ${ICONS.show}"></button>
+      <button id="collapse" class="button fas ${ICONS.expand}"></button>
+  </g-row>
+  </g-row>
 `;
 
-export class TrackEntry extends ShadowBaseElement {
+export class TrackRow extends ShadowBaseElement {
+  private label: HTMLDivElement;
   private up: HTMLButtonElement;
   private down: HTMLButtonElement;
   private toggleHide: HTMLButtonElement;
@@ -44,7 +51,7 @@ export class TrackEntry extends ShadowBaseElement {
     super(template);
   }
 
-  setup(
+  initialize(
     track: DataTrack,
     onMove: (track: DataTrack, direction: "up" | "down") => void,
     onToggleShow: (track: DataTrack) => void,
@@ -59,24 +66,28 @@ export class TrackEntry extends ShadowBaseElement {
   connectedCallback(): void {
     super.connectedCallback();
 
+    this.label = this.root.querySelector("#label");
     this.up = this.root.querySelector("#up");
     this.down = this.root.querySelector("#down");
     this.toggleHide = this.root.querySelector("#hide");
     this.toggleCollapse = this.root.querySelector("#collapse");
 
-    this.up.click = () => {
+    this.label.innerHTML = this.track.label;
+
+    this.up.onclick = () => {
+      console.log("Moving");
       this.onMove(this.track, "up");
     };
-    this.down.click = () => {
+    this.down.onclick = () => {
       this.onMove(this.track, "down");
     };
-    this.toggleHide.click = () => {
+    this.toggleHide.onclick = () => {
 
     }
-    this.toggleCollapse.click = () => {
-      
+    this.toggleCollapse.onclick = () => {
+
     }
   }
 }
 
-customElements.define("track-entry", TrackEntry);
+customElements.define("track-row", TrackRow);

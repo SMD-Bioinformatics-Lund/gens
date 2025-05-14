@@ -6,6 +6,7 @@ import { ChoiceSelect } from "../util/choice_select";
 import { getIconButton } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
+import { TrackRow } from "./settings_page_components";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -214,46 +215,53 @@ function getTracksSection(
   const tracksSection = document.createElement("div");
 
   for (const track of tracks) {
-    const rowDiv = document.createElement("div");
-    rowDiv.className = "row";
-    rowDiv.style.display = "flex";
-    rowDiv.style.flexDirection = "row";
-    rowDiv.style.alignItems = "center";
-    rowDiv.style.justifyContent = "space-between";
-
-    rowDiv.appendChild(document.createTextNode(track.label));
-
-    const buttonsDiv = document.createElement("div");
-    buttonsDiv.style.display = "flex";
-    buttonsDiv.style.flexDirection = "row";
-    buttonsDiv.style.flexWrap = "nowrap";
-    buttonsDiv.style.gap = `${SIZES.s}px`;
-
-    buttonsDiv.appendChild(
-      getIconButton(ICONS.up, "Up", () => onMove(track, "up")),
-    );
-    buttonsDiv.appendChild(
-      getIconButton(ICONS.down, "Down", () => onMove(track, "down")),
-    );
-    buttonsDiv.appendChild(
-      getIconButton(
-        track.getIsHidden() ? ICONS.hide : ICONS.show,
-        "Show / hide",
-        () => onToggleShow(track),
-      ),
-    );
-    buttonsDiv.appendChild(
-      getIconButton(
-        track.getIsCollapsed() ? ICONS.expand : ICONS.collapse,
-        "Collapse / expand",
-        () => onToggleCollapse(track),
-      ),
-    );
-
-    rowDiv.appendChild(buttonsDiv);
-
-    tracksSection.appendChild(rowDiv);
+    const trackRow = new TrackRow();
+    trackRow.className = "row";
+    trackRow.initialize(track, onMove, onToggleShow, onToggleCollapse);
+    tracksSection.appendChild(trackRow);
   }
+
+  // for (const track of tracks) {
+  //   const rowDiv = document.createElement("div");
+  //   rowDiv.className = "row";
+  //   rowDiv.style.display = "flex";
+  //   rowDiv.style.flexDirection = "row";
+  //   rowDiv.style.alignItems = "center";
+  //   rowDiv.style.justifyContent = "space-between";
+
+  //   rowDiv.appendChild(document.createTextNode(track.label));
+
+  //   const buttonsDiv = document.createElement("div");
+  //   buttonsDiv.style.display = "flex";
+  //   buttonsDiv.style.flexDirection = "row";
+  //   buttonsDiv.style.flexWrap = "nowrap";
+  //   buttonsDiv.style.gap = `${SIZES.s}px`;
+
+  //   buttonsDiv.appendChild(
+  //     getIconButton(ICONS.up, "Up", () => onMove(track, "up")),
+  //   );
+  //   buttonsDiv.appendChild(
+  //     getIconButton(ICONS.down, "Down", () => onMove(track, "down")),
+  //   );
+  //   buttonsDiv.appendChild(
+  //     getIconButton(
+  //       track.getIsHidden() ? ICONS.hide : ICONS.show,
+  //       "Show / hide",
+  //       () => onToggleShow(track),
+  //     ),
+  //   );
+  //   buttonsDiv.appendChild(
+  //     getIconButton(
+  //       track.getIsCollapsed() ? ICONS.expand : ICONS.collapse,
+  //       "Collapse / expand",
+  //       () => onToggleCollapse(track),
+  //     ),
+  //   );
+
+  //   rowDiv.appendChild(buttonsDiv);
+
+  //   tracksSection.appendChild(rowDiv);
+  // }
   return tracksSection;
 }
 
