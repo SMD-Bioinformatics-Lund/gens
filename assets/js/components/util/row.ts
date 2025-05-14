@@ -1,6 +1,5 @@
 import { ShadowBaseElement } from "./shadowbaseelement";
 
-
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>
@@ -12,11 +11,9 @@ template.innerHTML = String.raw`
   </style>
   <slot></slot>
 `;
-
 class Row extends ShadowBaseElement {
   constructor() {
     super(template);
   }
 }
-
 customElements.define("g-row", Row);

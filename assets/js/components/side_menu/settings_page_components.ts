@@ -10,26 +10,6 @@ template.innerHTML = String.raw`
       justify-content: space-between;
       width: 100%;
     }
-    .icon-button {
-      display: inline-block;
-      width: auto;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      align-items: center;
-      justify-content: center;
-      background-color: ${COLORS.white};
-      cursor: pointer;
-      border: 1px solid ${COLORS.lightGray};
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-    .icon-button:hover {
-      background: ${COLORS.extraLightGray};
-    }
-    /* FIXME: Nicer button response colors */
-    .icon-button:active {
-      background: ${COLORS.lightGray};
-    }
     #button-row {
       gap: ${SIZES.s}px;
     }
@@ -37,10 +17,16 @@ template.innerHTML = String.raw`
   <g-row id="main-row">
     <div id="label"></div>
     <g-row id="button-row">
-      <div id="up" class="icon-button fas ${ICONS.up}"></div>
+
+      <icon-button id="up" icon="${ICONS.up}"></icon-button>
+      <icon-button id="down" icon="${ICONS.down}"></icon-button>
+      <icon-button id="hide" icon="${ICONS.show}"></icon-button>
+      <icon-button id="collapse" icon="${ICONS.expand}"></icon-button>
+
+      <!-- <div id="up" class="icon-button fas ${ICONS.up}"></div>
       <div id="down" class="icon-button fas ${ICONS.down}"></div>
       <div id="hide" class="icon-button fas ${ICONS.show}"></div>
-      <div id="collapse" class="icon-button fas ${ICONS.expand}"></div>
+      <div id="collapse" class="icon-button fas ${ICONS.expand}"></div> -->
   </g-row>
   </g-row>
 `;
