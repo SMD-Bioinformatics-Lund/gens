@@ -1,4 +1,4 @@
-import { ICONS, SIZES } from "../../constants";
+import { COLORS, ICONS, SIZES } from "../../constants";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
@@ -11,14 +11,24 @@ template.innerHTML = String.raw`
       width: 100%;
     }
     .icon-button {
-      height: ${SIZES.l}px;
-      width: ${SIZES.l}px;
-      display: flex;
+      display: inline-block;
+      width: auto;
       flex-direction: row;
       flex-wrap: nowrap;
-      gap: ${SIZES.s}px;
       align-items: center;
       justify-content: center;
+      background-color: ${COLORS.white};
+      cursor: pointer;
+      border: 1px solid ${COLORS.lightGray};
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .icon-button:hover {
+      background: ${COLORS.extraLightGray};
+    }
+    /* FIXME: Nicer button response colors */
+    .icon-button:active {
+      background: ${COLORS.lightGray};
     }
     #button-row {
       gap: ${SIZES.s}px;
@@ -27,10 +37,10 @@ template.innerHTML = String.raw`
   <g-row id="main-row">
     <div id="label"></div>
     <g-row id="button-row">
-      <button id="up" class="button fas ${ICONS.up}"></button>
-      <button id="down" class="button fas ${ICONS.down}"></button>
-      <button id="hide" class="button fas ${ICONS.show}"></button>
-      <button id="collapse" class="button fas ${ICONS.expand}"></button>
+      <div id="up" class="icon-button fas ${ICONS.up}"></div>
+      <div id="down" class="icon-button fas ${ICONS.down}"></div>
+      <div id="hide" class="icon-button fas ${ICONS.show}"></div>
+      <div id="collapse" class="icon-button fas ${ICONS.expand}"></div>
   </g-row>
   </g-row>
 `;
@@ -82,11 +92,16 @@ export class TrackRow extends ShadowBaseElement {
       this.onMove(this.track, "down");
     };
     this.toggleHide.onclick = () => {
-
+      this.onToggleShow(this.track);
     }
     this.toggleCollapse.onclick = () => {
-
+      this.onToggleCollapse(this.track);
     }
+  }
+
+  render(settings: RenderSettings) {
+    this.toggleHide.classList = `icon-button fas ${ICONS.show}`;
+    this.toggleCollapse.classList = `icon-button fas ${ICONS.show}`;
   }
 }
 
