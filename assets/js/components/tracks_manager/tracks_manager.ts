@@ -193,6 +193,10 @@ export class TracksManager extends ShadowBaseElement {
           chromInfo: await dataSources.getChromInfo(),
         };
       },
+      (band: RenderBand) => {
+        session.setViewRange([band.start, band.end]);
+        render({ dataUpdated: true, positionOnly: true });
+      }
     );
 
     for (const sampleId of sampleIds) {

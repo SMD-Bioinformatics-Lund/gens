@@ -69,10 +69,6 @@ export class BandTrack extends DataTrack {
     this.initializeExpander("contextmenu", startExpanded, onExpand);
   }
 
-  disconnectedCallback(): void {
-      super.disconnectedCallback();
-  }
-
   override draw() {
     super.drawStart();
 
@@ -80,18 +76,19 @@ export class BandTrack extends DataTrack {
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
-
     const xScale = getLinearScale(xRange, [
       LEFT_PX_EDGE,
       this.dimensions.width,
     ]);
 
-    const bandsInView = bands.filter((band) => {
-      const inRange = rangeInRange([band.start, band.end], xRange);
-      const surrounding = rangeSurroundsRange([band.start, band.end], xRange);
+    const bandsInView = bands
+      .filter((band) => {
+        const inRange = rangeInRange([band.start, band.end], xRange);
+        const surrounding = rangeSurroundsRange([band.start, band.end], xRange);
 
-      return inRange || surrounding;
-    }).sort((r1, r2) => r1.start < r2.start ? -1 : 1);
+        return inRange || surrounding;
+      })
+      .sort((r1, r2) => (r1.start < r2.start ? -1 : 1));
 
     const { numberLanes, bandOverlaps } = getOverlapInfo(bandsInView);
 

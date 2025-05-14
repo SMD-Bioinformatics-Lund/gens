@@ -2,7 +2,9 @@ import { drawChromosomeBands, getChromosomeShape } from "../../draw/ideogram";
 import { STYLE } from "../../constants";
 import { CanvasTrack } from "./base_tracks/canvas_track";
 import "tippy.js/dist/tippy.css";
-import { getLinearScale } from "../../draw/render_utils";
+import { getLinearScale, renderBand } from "../../draw/render_utils";
+import { setCanvasPointerCursor } from "../util/canvas_interaction";
+import { eventInBox } from "../../util/utils";
 
 export class IdeogramTrack extends CanvasTrack {
   private markerElement: HTMLDivElement;
@@ -10,14 +12,18 @@ export class IdeogramTrack extends CanvasTrack {
   private renderData: IdeogramTrackData;
   private getRenderData: () => Promise<IdeogramTrackData>;
 
+  private onBandClick: (band: RenderBand) => void;
+
   constructor(
     id: string,
     label: string,
     trackHeight: number,
     getRenderData: () => Promise<IdeogramTrackData>,
+    onBandClick: (band: RenderBand) => void,
   ) {
     super(id, label, trackHeight);
     this.getRenderData = getRenderData;
+    this.onBandClick = onBandClick;
   }
 
   connectedCallback(): void {
@@ -27,10 +33,28 @@ export class IdeogramTrack extends CanvasTrack {
     this.markerElement = zoomMarkerElement;
 
     this.initializeHoverTooltip();
+
+    this.initializeClick((band) => {
+      console.log("Clicked band!", band);
+      this.onBandClick(band.element as RenderBand);
+    });
+
+    this.canvas.addEventListener(
+      "mousemove",
+      (event) => {
+        const hovered = this.hoverTargets.some((target) =>
+          eventInBox(event, target.box),
+        );
+        // FIXME: Use CSS class here
+        this.canvas.style.cursor = hovered ? "pointer" : "";
+      },
+      {
+        signal: this.getListenerAbortSignal(),
+      },
+    );
   }
 
   async render(settings: RenderSettings) {
-
     if (settings.dataUpdated || this.renderData == null) {
       this.renderData = await this.getRenderData();
     }
@@ -54,19 +78,20 @@ export class IdeogramTrack extends CanvasTrack {
       centromere = {
         start,
         end,
-        center: (start + end) / 2
+        center: (start + end) / 2,
       };
     }
 
     const stainToColor = STYLE.ideogramTrack.stainToColor;
     const renderBands = chromInfo.bands.map((band) => {
-      return {
+      const renderBand: RenderBand = {
         id: band.id,
         label: band.id,
-        start: xScale(band.start),
-        end: xScale(band.end),
+        start: band.start,
+        end: band.end,
         color: stainToColor[band.stain],
       };
+      return renderBand;
     });
 
     const chromShape = getChromosomeShape(
@@ -77,27 +102,29 @@ export class IdeogramTrack extends CanvasTrack {
       style.lineColor,
       style.lineColor,
       xScale,
-      chromInfo.size
+      chromInfo.size,
     );
 
     drawChromosomeBands(
       this.ctx,
       this.dimensions,
       renderBands,
+      xScale,
       chromShape,
       style.yPad,
-      style.lineWidth
+      style.lineWidth,
     );
 
     const targets = renderBands.map((band) => {
       return {
         label: band.label,
         box: {
-          x1: band.start,
-          x2: band.end,
+          x1: xScale(band.start),
+          x2: xScale(band.end),
           y1: 0,
           y2: this.dimensions.height,
         },
+        element: band,
       };
     });
     this.hoverTargets = targets;

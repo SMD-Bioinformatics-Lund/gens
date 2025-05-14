@@ -61,6 +61,7 @@ export function setCanvasPointerCursor(
         const hovered = hoverTargets.some((target) =>
           eventInBox(event, target.box),
         );
+        // FIXME: Use CSS class here
         canvas.style.cursor = hovered ? "pointer" : "";
       }
     },

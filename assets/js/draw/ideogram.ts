@@ -5,6 +5,7 @@ export function drawChromosomeBands(
   ctx: CanvasRenderingContext2D,
   dim: Dimensions,
   bands: RenderBand[],
+  xScale: Scale,
   chromShape: Path2D,
   yPad: number,
   lineWidth: number,
@@ -17,9 +18,9 @@ export function drawChromosomeBands(
     .map((band) => {
       const path = drawRect(
         ctx,
-        band.start,
+        xScale(band.start),
         0,
-        band.end - band.start,
+        xScale(band.end - band.start),
         dim.height,
         lineWidth,
         band.color,
@@ -28,9 +29,9 @@ export function drawChromosomeBands(
 
       return {
         id: band.label,
-        x: band.start,
+        x: xScale(band.start),
         y: yPad,
-        width: band.end - band.start,
+        width: xScale(band.end - band.start),
         height: dim.height - yPad * 2,
         path,
       };
