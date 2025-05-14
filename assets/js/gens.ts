@@ -4,6 +4,7 @@ import "./components/util/popup";
 import "./components/util/shadowbaseelement";
 import "./components/util/choice_select";
 import "./components/side_menu/settings_page";
+import "./components/side_menu/settings_page_components";
 import "./components/side_menu/side_menu";
 import "./components/header_info";
 import "./movements/marker";

@@ -49,7 +49,6 @@ template.innerHTML = String.raw`
 `;
 
 export class SettingsPage extends ShadowBaseElement {
-
   private samplesOverview: HTMLDivElement;
   private tracksOverview: HTMLDivElement;
   private highlightsOverview: HTMLDivElement;
@@ -74,12 +73,10 @@ export class SettingsPage extends ShadowBaseElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.choiceSelect = this.root.querySelector(
-      "#choice-select",
-    ) as ChoiceSelect;
-    this.tracksOverview = this.root.querySelector(
-      "#tracks-overview",
-    ) as HTMLDivElement;
+    this.choiceSelect = this.root.querySelector("#choice-select");
+    this.tracksOverview = this.root.querySelector("#tracks-overview");
+    this.samplesOverview = this.root.querySelector("#samples-overview");
+    this.highlightsOverview = this.root.querySelector("#highlights-overview");
   }
 
   initialize() {
@@ -123,9 +120,9 @@ export class SettingsPage extends ShadowBaseElement {
     const samplesSection = getSamplesSection();
     this.samplesOverview.appendChild(samplesSection);
 
-    removeChildren(this.tracksOverview);
+    removeChildren(this.highlightsOverview);
     const highlightsSection = getHighlightsSection();
-    this.tracksOverview.appendChild(highlightsSection);
+    this.highlightsOverview.appendChild(highlightsSection);
   }
 
   setSources(
@@ -154,7 +151,6 @@ export class SettingsPage extends ShadowBaseElement {
   getAnnotSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
-
     if (!settings.selectedOnly) {
       return this.annotationSources.map((source) => {
         return {
