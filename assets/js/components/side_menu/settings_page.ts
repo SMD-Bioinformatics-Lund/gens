@@ -43,6 +43,16 @@ template.innerHTML = String.raw`
     .icon-button:active {
       background: ${COLORS.lightGray};
     }
+    .height-input {
+      max-width: 100px;
+    }
+    .height-row {
+      justify-content: space-between;
+      padding-bottom: ${SIZES.xs}px;
+    }
+    .height-inputs {
+      gap: ${SIZES.xs}px;
+    }
     #samples-header-row {
       gap: ${SIZES.s}px;
     }
@@ -72,6 +82,19 @@ template.innerHTML = String.raw`
   <div class="header-row">
     <div class="header">Tracks</div>
   </div>
+  <flex-row class="height-row">
+    <div>Band track height</div>
+    <flex-row class="height-inputs">
+      <input title="Collapsed height" id="band-collapsed-height" class="height-input" type="number" step="5">
+    </flex-row>
+  </flex-row>
+  <flex-row class="height-row">
+    <div>Dot track heights</div>
+    <flex-row class="height-inputs">
+      <input title="Collapsed height" id="dot-collapsed-height" class="height-input" type="number" step="5">
+      <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
+    </flex-row>
+  </flex-row>
   <div id="tracks-overview"></div>
 `;
 
@@ -82,6 +105,9 @@ export class SettingsPage extends ShadowBaseElement {
   private annotSelect: ChoiceSelect;
   private sampleSelect: ChoiceSelect;
   private addSampleButton: IconButton;
+  private bandTrackCollapsedHeightElem: HTMLInputElement;
+  private dotTrackCollapsedHeightElem: HTMLInputElement;
+  private dotTrackExpandedHeightElem: HTMLInputElement;
 
   private onChange: () => void;
   private annotationSources: ApiAnnotationTrack[];
@@ -145,6 +171,22 @@ export class SettingsPage extends ShadowBaseElement {
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
     this.addSampleButton = this.root.querySelector("#add-sample");
+
+    this.bandTrackCollapsedHeightElem = this.root.querySelector(
+      "#band-collapsed-height",
+    );
+    this.dotTrackCollapsedHeightElem = this.root.querySelector(
+      "#dot-collapsed-height",
+    );
+    this.dotTrackExpandedHeightElem = this.root.querySelector(
+      "#dot-expanded-height",
+    );
+
+    // FIXME: Link in the values
+    // FIXME: Link in the callbacks
+    this.bandTrackCollapsedHeightElem.value = "0";
+    this.dotTrackCollapsedHeightElem.value = "0";
+    this.dotTrackExpandedHeightElem.value = "0";
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const sampleId = this.sampleSelect.getChoice().value;
