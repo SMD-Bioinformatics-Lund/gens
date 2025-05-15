@@ -55,7 +55,6 @@ export class IconButton extends ShadowBaseElement {
   }
 
   public set icon(value: string) {
-    console.log("Icon set to", value);
     this.setAttribute("icon", value);
   }
 

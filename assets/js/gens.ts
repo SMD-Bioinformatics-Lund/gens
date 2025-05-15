@@ -1,4 +1,3 @@
-import "./components/util/icon_button";
 
 
 import "./components/tracks_manager/tracks_manager";
@@ -12,6 +11,7 @@ import "./components/side_menu/side_menu";
 import "./components/header_info";
 import "./movements/marker";
 import "./components/side_menu/track_page";
+import "./components/util/icon_button";
 import "./components/util/row";
 
 import "./home/gens_home";

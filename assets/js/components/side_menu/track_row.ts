@@ -65,8 +65,6 @@ export class TrackRow extends ShadowBaseElement {
 
   connectedCallback(): void {
 
-    console.log("Connected");
-
     super.connectedCallback();
 
     this.label = this.root.querySelector("#label");
