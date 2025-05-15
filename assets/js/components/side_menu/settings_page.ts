@@ -140,7 +140,6 @@ export class SettingsPage extends ShadowBaseElement {
     super(template);
   }
 
-  // FIXME: Eventually much of this might be stored in the session object
   setSources(
     session: GensSession,
     onChange: () => void,

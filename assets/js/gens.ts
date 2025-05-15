@@ -171,7 +171,6 @@ export async function initCanvases({
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (trackHeights: TrackHeights) => {
-      console.log("Assigning new track heights", trackHeights);
       session.setTrackHeights(trackHeights);
       gensTracks.setTrackHeights(trackHeights);
       render({});
