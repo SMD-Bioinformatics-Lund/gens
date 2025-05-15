@@ -56,7 +56,7 @@ export function drawLineInScale(
 export function drawLine(
   ctx: CanvasRenderingContext2D,
   coords: Box,
-  style: LineStyle = { },
+  style: LineStyle = {},
 ) {
   const {
     lineWidth = 1,
@@ -133,6 +133,9 @@ export function drawLabel(
     textColor = STYLE.tracks.textColor,
     textAlign = "left",
     boxStyle = undefined,
+    rotation = 0,
+    pivotX,
+    pivotY,
   } = style;
 
   ctx.font = font;
@@ -146,13 +149,22 @@ export function drawLabel(
   const frameWidth = textWidth + 2 * padding;
   const y1 = topY - padding;
   const frameHeight = textHeight + 2 * padding;
-
   const box: Box = {
     x1,
     x2: x1 + frameWidth,
     y1,
     y2: y1 + frameHeight,
   };
+
+  if (rotation !== 0) {
+    const cx = pivotX ?? leftX + frameWidth / 2;
+    const cy = pivotY ?? topY + frameHeight / 2;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rotation);
+    ctx.translate(-cx, -cy);
+  }
 
   if (boxStyle != undefined) {
     drawBox(ctx, box, boxStyle);
@@ -162,6 +174,10 @@ export function drawLabel(
   ctx.textAlign = textAlign;
   ctx.textBaseline = textBaseline;
   ctx.fillText(label, leftX, topY);
+
+  if (rotation !== 0) {
+    ctx.restore();
+  }
 
   return box;
 }
@@ -175,7 +191,7 @@ export function drawBox(
     fillColor = STYLE.tracks.backgroundColor,
     borderColor = STYLE.tracks.textFrameColor,
     borderWidth = STYLE.tracks.gridLineWidth,
-    alpha = 1
+    alpha = 1,
   } = style;
 
   ctx.save();

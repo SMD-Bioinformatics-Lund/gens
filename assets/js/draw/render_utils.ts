@@ -1,5 +1,5 @@
 import { rangeSize } from "../util/utils";
-import { STYLE } from "../constants";
+import { SIZES, STYLE } from "../constants";
 import { drawLabel, drawLine } from "./shapes";
 
 export function drawYAxis(
@@ -7,6 +7,7 @@ export function drawYAxis(
   ys: number[],
   yScale: Scale,
   yRange: Rng,
+  label: string,
 ) {
   const style = STYLE.yAxis;
   drawLine(
@@ -27,6 +28,18 @@ export function drawYAxis(
       withFrame: false,
     });
   }
+
+  const midPoint = (yRange[1] + yRange[0]) / 2;
+  console.log(midPoint);
+  console.log(yScale(midPoint));
+
+  drawLabel(ctx, label, 0, yScale(midPoint), {
+    rotation: -Math.PI / 2,
+    // textAlign: "center",
+    // textBaseline: "middle",
+    // pivotX: 4,
+    // pivotY: ctx.canvas.height / 2
+  });
 }
 
 export function renderBackground(
@@ -172,8 +185,11 @@ export function rgbArrayToString(rgbArray: number[]): string {
   return `rgb(${rgbArray[0]},${rgbArray[1]},${rgbArray[2]})`;
 }
 
-export function getLinearScale(origDomain: Rng, range: Rng, reverse: boolean = false): Scale {
-
+export function getLinearScale(
+  origDomain: Rng,
+  range: Rng,
+  reverse: boolean = false,
+): Scale {
   let domain = origDomain;
   if (reverse) {
     domain = [origDomain[1], origDomain[0]];

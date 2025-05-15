@@ -294,12 +294,12 @@ export abstract class DataTrack extends CanvasTrack {
       };
 
       drawLine(this.ctx, lineDims, {
-        color: STYLE.colors.lightGray,
-        dashed: true,
+        color: STYLE.colors.lighterGray,
+        dashed: false,
       });
     }
 
-    drawYAxis(this.ctx, ticks, yScale, yAxis.range);
+    drawYAxis(this.ctx, ticks, yScale, yAxis.range, this.label);
   }
 
   drawTrackLabel(shiftRight: number = 0): Box {

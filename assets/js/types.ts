@@ -218,6 +218,9 @@ interface LabelStyle {
   font?: string;
   textColor?: string;
   boxStyle?: BoxStyle;
+  rotation?: number;
+  pivotX?: number;
+  pivotY?: number;
 }
 
 interface LineStyle {
