@@ -32,6 +32,10 @@ template.innerHTML = String.raw`
   </div>
 `;
 
+export interface CanvasTrackSettings {
+  height: number;
+}
+
 export abstract class CanvasTrack extends ShadowBaseElement {
   public id: string;
   public label: string;
@@ -41,8 +45,8 @@ export abstract class CanvasTrack extends ShadowBaseElement {
   protected dimensions: { width: number; height: number };
   protected scaleFactor: number;
   protected trackContainer: HTMLDivElement;
-  protected defaultTrackHeight: number;
-  protected collapsedTrackHeight: number;
+
+  protected startHeight: number;
   protected currentHeight: number;
 
   hoverTargets: HoverBox[];
@@ -51,13 +55,13 @@ export abstract class CanvasTrack extends ShadowBaseElement {
 
   onElementClick: (element: RenderBand | RenderDot) => void | null;
 
-  constructor(id: string, label: string, defaultHeight: number) {
+  constructor(id: string, label: string, settings: CanvasTrackSettings) {
     super(template);
 
     this.id = id;
     this.label = label;
-    this.defaultTrackHeight = defaultHeight;
-    this.collapsedTrackHeight = STYLE.tracks.trackHeight.extraThin;
+    this.startHeight = settings.height;
+    this.currentHeight = this.startHeight;
   }
 
   getNtsPerPixel(xRange: Rng) {
@@ -69,7 +73,7 @@ export abstract class CanvasTrack extends ShadowBaseElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.canvas = this.root.getElementById("canvas") as HTMLCanvasElement;
-    this.currentHeight = this.defaultTrackHeight;
+    this.currentHeight = this.startHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     this.trackContainer = this.root.getElementById(

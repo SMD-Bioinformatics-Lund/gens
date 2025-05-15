@@ -15,8 +15,14 @@ import { CanvasTrack } from "./canvas_track";
 
 import debounce from "lodash.debounce";
 
-interface Settings {
-  defaultHeight: number;
+export interface ExpandedTrackHeight {
+  collapsedHeight: number;
+  expandedHeight?: number;
+  startExpanded: boolean;
+}
+
+interface DataTrackSettings {
+  height: ExpandedTrackHeight;
   dragSelect: boolean;
   yAxis: {
     range: Rng;
@@ -29,7 +35,7 @@ const DEBOUNCE_DELAY = 50;
 const Y_PAD = SIZES.s;
 
 export abstract class DataTrack extends CanvasTrack {
-  settings: Settings;
+  settings: DataTrackSettings;
   getXRange: () => Rng;
   getXScale: () => Scale;
   getYRange: () => Rng;
@@ -37,6 +43,9 @@ export abstract class DataTrack extends CanvasTrack {
   openTrackContextMenu: (track: DataTrack) => void;
 
   trackType: TrackType;
+
+  protected defaultTrackHeight: number;
+  protected collapsedTrackHeight: number;
 
   private colorBands: RenderBand[] = [];
   setColorBands(colorBands: RenderBand[]) {
@@ -136,10 +145,14 @@ export abstract class DataTrack extends CanvasTrack {
     getXRange: () => Rng,
     getXScale: () => Scale,
     openTrackContextMenu: (track: DataTrack) => void,
-    settings: Settings,
+    settings: DataTrackSettings,
     session: GensSession,
   ) {
-    super(id, label, settings.defaultHeight);
+    super(id, label, {
+      height: settings.height.startExpanded
+        ? settings.height.expandedHeight
+        : settings.height.collapsedHeight
+    });
     this.trackType = trackType;
     this.settings = settings;
     this.getXRange = getXRange;
@@ -160,6 +173,8 @@ export abstract class DataTrack extends CanvasTrack {
     };
 
     this.openTrackContextMenu = openTrackContextMenu;
+
+    this.collapsedTrackHeight = STYLE.tracks.trackHeight.extraThin;
   }
 
   connectedCallback(): void {

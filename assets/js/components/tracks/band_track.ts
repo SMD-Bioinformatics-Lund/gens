@@ -7,10 +7,14 @@ import {
 import { STYLE } from "../../constants";
 import { drawArrow, getLinearScale } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
-import { DataTrack } from "./base_tracks/data_track";
+import { DataTrack, ExpandedTrackHeight } from "./base_tracks/data_track";
 import { GensSession } from "../../state/gens_session";
 
 const LEFT_PX_EDGE = STYLE.yAxis.width;
+
+interface BandTrackSettings {
+  height: ExpandedTrackHeight;
+}
 
 export class BandTrack extends DataTrack {
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
@@ -20,7 +24,7 @@ export class BandTrack extends DataTrack {
     id: string,
     label: string,
     trackType: TrackType,
-    trackHeight: number,
+    settings: { height: ExpandedTrackHeight },
     getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
@@ -43,7 +47,7 @@ export class BandTrack extends DataTrack {
       },
       openTrackContextMenu,
       {
-        defaultHeight: trackHeight,
+        height: settings.height,
         dragSelect: true,
         yAxis: null,
       },

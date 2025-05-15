@@ -190,7 +190,7 @@ export class TracksManager extends ShadowBaseElement {
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
       "Ideogram",
-      trackHeight.extraThin,
+      { height: trackHeight.extraThin },
       async () => {
         return {
           xRange: session.getXRange(),
