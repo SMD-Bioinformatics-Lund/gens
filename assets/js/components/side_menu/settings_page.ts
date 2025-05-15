@@ -8,6 +8,13 @@ import { TrackRow } from "./track_row";
 import { SampleRow } from "./sample_row";
 import { HighlightRow } from "./highlight_row";
 import { IconButton } from "../util/icon_button";
+import { GensSession } from "../../state/gens_session";
+
+export interface TrackHeights {
+  bandCollapsed: number;
+  dotCollapsed: number;
+  dotExpanded: number;
+}
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -109,21 +116,23 @@ export class SettingsPage extends ShadowBaseElement {
   private dotTrackCollapsedHeightElem: HTMLInputElement;
   private dotTrackExpandedHeightElem: HTMLInputElement;
 
+  private session: GensSession;
+
   private onChange: () => void;
   private annotationSources: ApiAnnotationTrack[];
   private defaultAnnots: { id: string; label: string }[];
   private onAnnotationChanged: (sources: string[]) => void;
   private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
-
   private getCurrentSamples: () => string[];
   private getAllSamples: () => string[];
   private getHighlights: () => RangeHighlight[];
   private gotoHighlight: (region: Region) => void;
   private removeHighlight: (id: string) => void;
-
   private onAddSample: (id: string) => void;
   private onRemoveSample: (id: string) => void;
+  private getTrackHeights: () => TrackHeights;
+  private setTrackHeights: (sizes: TrackHeights) => void;
 
   public isInitialized: boolean = false;
 
@@ -131,21 +140,22 @@ export class SettingsPage extends ShadowBaseElement {
     super(template);
   }
 
+  // FIXME: Eventually much of this might be stored in the session object
   setSources(
+    session: GensSession,
     onChange: () => void,
     annotationSources: ApiAnnotationTrack[],
     defaultAnnots: { id: string; label: string }[],
     onAnnotationChanged: (sources: string[]) => void,
     getDataTracks: () => DataTrack[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
-    getCurrentSamples: () => string[],
     getAllSamples: () => string[],
-    getHighlights: () => RangeHighlight[],
     gotoHighlight: (region: Region) => void,
-    removeHighlight: (id: string) => void,
     onAddSample: (id: string) => void,
     onRemoveSample: (id: string) => void,
+    setTrackHeights: (trackHeights: TrackHeights) => void,
   ) {
+    this.session = session;
     this.onChange = onChange;
     this.annotationSources = annotationSources;
     this.defaultAnnots = defaultAnnots;
@@ -153,14 +163,19 @@ export class SettingsPage extends ShadowBaseElement {
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
 
-    this.getCurrentSamples = getCurrentSamples;
+    this.getCurrentSamples = () => session.getSamples();
     this.getAllSamples = getAllSamples;
-    this.getHighlights = getHighlights;
+    this.getHighlights = () => session.getAllHighlights();
 
     this.gotoHighlight = gotoHighlight;
-    this.removeHighlight = removeHighlight;
+    this.removeHighlight = (id: string) => {
+      session.removeHighlight(id);
+    };
     this.onAddSample = onAddSample;
     this.onRemoveSample = onRemoveSample;
+
+    this.getTrackHeights = () => session.getTrackHeights();
+    this.setTrackHeights = setTrackHeights;
   }
 
   connectedCallback() {
@@ -182,11 +197,11 @@ export class SettingsPage extends ShadowBaseElement {
       "#dot-expanded-height",
     );
 
-    // FIXME: Link in the values
-    // FIXME: Link in the callbacks
-    this.bandTrackCollapsedHeightElem.value = "0";
-    this.dotTrackCollapsedHeightElem.value = "0";
-    this.dotTrackExpandedHeightElem.value = "0";
+    const trackSizes = this.getTrackHeights();
+
+    this.bandTrackCollapsedHeightElem.value = `${trackSizes.bandCollapsed}`;
+    this.dotTrackCollapsedHeightElem.value = `${trackSizes.dotCollapsed}`;
+    this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const sampleId = this.sampleSelect.getChoice().value;
@@ -194,6 +209,27 @@ export class SettingsPage extends ShadowBaseElement {
     });
 
     this.addElementListener(this.sampleSelect, "change", () => {
+      this.render({});
+    });
+
+    const myGetTrackHeights = (): TrackHeights => {
+      return {
+        bandCollapsed: parseInt(this.bandTrackCollapsedHeightElem.value),
+        dotCollapsed: parseInt(this.dotTrackCollapsedHeightElem.value),
+        dotExpanded: parseInt(this.dotTrackExpandedHeightElem.value),
+      };
+    };
+
+    this.addElementListener(this.bandTrackCollapsedHeightElem, "change", () => {
+      this.setTrackHeights(myGetTrackHeights());
+      this.render({});
+    });
+    this.addElementListener(this.dotTrackCollapsedHeightElem, "change", () => {
+      this.setTrackHeights(myGetTrackHeights());
+      this.render({});
+    });
+    this.addElementListener(this.dotTrackExpandedHeightElem, "change", () => {
+      this.setTrackHeights(myGetTrackHeights());
       this.render({});
     });
   }
@@ -207,13 +243,7 @@ export class SettingsPage extends ShadowBaseElement {
       ),
     );
     this.annotSelect.initialize(this.onAnnotationChanged);
-
-    // this.sampleSelect.initialize(() => {
-    //   console.log("Sample selection changed");
-    // });
-
     this.setupSampleSelect();
-
     this.onChange();
   }
 
@@ -272,6 +302,11 @@ export class SettingsPage extends ShadowBaseElement {
     this.highlightsOverview.appendChild(highlightsSection);
 
     this.addSampleButton.disabled = this.sampleSelect.getChoice() == null;
+
+    const { bandCollapsed, dotCollapsed, dotExpanded } = this.getTrackHeights();
+    this.bandTrackCollapsedHeightElem.value = `${bandCollapsed}`;
+    this.dotTrackCollapsedHeightElem.value = `${dotCollapsed}`;
+    this.dotTrackExpandedHeightElem.value = `${dotExpanded}`;
   }
 
   getAnnotSources(settings: {

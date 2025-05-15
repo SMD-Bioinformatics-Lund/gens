@@ -19,9 +19,9 @@ import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
-import { CHROMOSOMES } from "./constants";
+import { CHROMOSOMES, STYLE } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
-import { SettingsPage } from "./components/side_menu/settings_page";
+import { SettingsPage, TrackHeights } from "./components/side_menu/settings_page";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
@@ -90,6 +90,12 @@ export async function initCanvases({
     inputControls.render(settings);
   };
 
+  const trackHeights: TrackHeights = {
+    bandCollapsed: STYLE.tracks.trackHeight.thin,
+    dotCollapsed: STYLE.tracks.trackHeight.thin,
+    dotExpanded: STYLE.tracks.trackHeight.thick
+  }
+
   const chromSizes = api.getChromSizes();
   const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
   const session = new GensSession(
@@ -98,6 +104,7 @@ export async function initCanvases({
     defaultRegion,
     chromSizes,
     sampleIds,
+    trackHeights,
   );
 
   const renderDataSource = getRenderDataSource(
@@ -133,6 +140,7 @@ export async function initCanvases({
     });
 
   settingsPage.setSources(
+    session,
     () => render({}),
     annotSources,
     defaultAnnot,
@@ -142,19 +150,14 @@ export async function initCanvases({
     () => gensTracks.getDataTracks(),
     (trackId: string, direction: "up" | "down") =>
       gensTracks.moveTrack(trackId, direction),
-    () => session.getSamples(),
     () => {
       const samples = session.getSamples();
       return allSampleIds.filter(s => !samples.includes(s));
     },
-    () => session.getAllHighlights(),
     (region: Region) => {
       const positionOnly = region.chrom == session.getChromosome();
       session.updateChromosome(region.chrom, [region.start, region.end]);
       render({ dataUpdated: true, positionOnly });
-    },
-    (id: string) => {
-      session.removeHighlight(id);
     },
     (sampleId: string) => {
       gensTracks.addSample(sampleId);
@@ -166,6 +169,12 @@ export async function initCanvases({
       session.removeSample(sampleId);
       gensTracks.removeSample(sampleId);
       render({ dataUpdated: true, samplesUpdated: true });
+    },
+    (trackHeights: TrackHeights) => {
+      console.log("Assigning new track heights", trackHeights);
+      session.setTrackHeights(trackHeights);
+      gensTracks.setTrackHeights(trackHeights);
+      render({});
     },
   );
 

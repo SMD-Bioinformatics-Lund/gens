@@ -79,6 +79,14 @@ export abstract class DataTrack extends CanvasTrack {
     return this.isExpanded;
   }
 
+  setHeights(collapsed: number, expanded?: number) {
+    this.settings.height.collapsedHeight = collapsed;
+    if (expanded != null) {
+      this.settings.height.expandedHeight = expanded;
+    }
+    this.syncHeight();
+  }
+
   toggleHidden() {
     this.isHidden = !this.isHidden;
     // FIXME: Consider using a CSS class for this
@@ -100,6 +108,10 @@ export abstract class DataTrack extends CanvasTrack {
       throw Error("Must assign an expanded height before expanding the track");
     }
 
+    this.syncHeight();
+  }
+
+  syncHeight() {
     this.currentHeight = this.isExpanded
       ? this.settings.height.expandedHeight
       : this.settings.height.collapsedHeight;

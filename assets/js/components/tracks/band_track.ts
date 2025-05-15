@@ -100,8 +100,13 @@ export class BandTrack extends DataTrack {
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
 
+    const bandTopBottomPad =
+      this.currentHeight > STYLE.bandTrack.dynamicPadThreshold
+        ? STYLE.bandTrack.trackPadding
+        : this.currentHeight / STYLE.bandTrack.dynamicPadFraction;
+
     const yScale = getBandYScale(
-      STYLE.bandTrack.trackPadding,
+      bandTopBottomPad,
       STYLE.bandTrack.bandPadding,
       this.getIsExpanded() ? numberLanes : 1,
       this.dimensions.height,

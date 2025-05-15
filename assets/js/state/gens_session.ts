@@ -1,3 +1,4 @@
+import { TrackHeights } from "../components/side_menu/settings_page";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COLORS } from "../constants";
 import { generateID } from "../util/utils";
@@ -27,12 +28,15 @@ export class GensSession {
 
   private samples: string[];
 
+  private trackHeights: TrackHeights;
+
   constructor(
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
     region: Region,
     chromSizes: Record<string, number>,
     samples: string[],
+    trackHeights: TrackHeights,
   ) {
 
     this.render = render;
@@ -43,6 +47,15 @@ export class GensSession {
     this.end = region.end;
     this.chromSizes = chromSizes;
     this.samples = samples;
+    this.trackHeights = trackHeights;
+  }
+
+  getTrackHeights(): TrackHeights {
+    return this.trackHeights;
+  }
+
+  setTrackHeights(heights: TrackHeights) {
+    this.trackHeights = heights;
   }
 
   getSamples(): string[] {
