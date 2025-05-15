@@ -13,6 +13,16 @@ export abstract class ShadowBaseElement extends HTMLElement {
     return this.abortController.signal;
   }
 
+  protected addElementListener(
+    element: HTMLElement,
+    type: keyof HTMLElementEventMap,
+    callback: (event: Event) => void,
+  ) {
+    element.addEventListener(type, callback, {
+      signal: this.getListenerAbortSignal(),
+    });
+  }
+
   constructor(template: HTMLTemplateElement) {
     super();
     this.root = this.attachShadow({ mode: "open" });

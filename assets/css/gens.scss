@@ -72,7 +72,7 @@ $marker-gray-color: #7c7c7c;
 .button {
   border: 0px;
   /* box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3); */
-  padding: 4px 10px;
+  padding: 4px 8px;
   cursor: pointer;
   background: $button-white;
   border: 1px solid $button-black;
@@ -83,7 +83,7 @@ $marker-gray-color: #7c7c7c;
   justify-content: center;
 
   .fas {
-    font-size: 20px;
+    font-size: 16px;
     line-height: 1;
     color: $button-gray;
   }

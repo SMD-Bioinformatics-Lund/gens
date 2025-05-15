@@ -21,19 +21,22 @@ export const ANIM_TIME = {
 }
 
 export const ICONS = {
-  up: "fa-arrow-up",
+  collapse: "fa-minimize",
   down: "fa-arrow-down",
-  right: "fa-arrow-right",
+  expand: "fa-maximize",
+  hide: "fa-eye-slash",
+  plus: "fa-plus",
   left: "fa-arrow-left",
+  marker: "fa-marker",
+  minus: "fa-minus",
+  right: "fa-arrow-right",
+  search: "fa-search",
+  show: "fa-eye",
+  trash: "fa-trash",
+  up: "fa-arrow-up",
+  xmark: "fa-xmark",
   zoomin: "fa-search-plus",
   zoomout: "fa-search-minus",
-  search: "fa-search",
-  xmark: "fa-xmark",
-  marker: "fa-marker",
-  show: "fa-eye",
-  hide: "fa-eye-slash",
-  collapse: "fa-minimize",
-  expand: "fa-maximize",
 }
 
 export const COLORS = {
@@ -49,14 +52,14 @@ export const COLORS = {
   purple: "#5E4B8B",
   gold: "#D4AF37",
   transparentYellow: "#dcd16f44",
-  transparentBlue: "#55667744",
+  transparentBlue: "#55667722",
 };
 
 export const SIZES = {
   xxs: 2,
   xs: 4,
   s: 6,
-  m: 9,
+  m: 8,
   l: 12,
 }
 

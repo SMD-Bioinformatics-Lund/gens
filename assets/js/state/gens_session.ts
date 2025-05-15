@@ -15,7 +15,7 @@ import { generateID } from "../util/utils";
  * it should probably be kept here as well.
  */
 export class GensSession {
-  chromosome: string;
+  chromosome: string
   start: number;
   end: number;
 
@@ -23,14 +23,16 @@ export class GensSession {
   private sideMenu: SideMenu;
   private markerModeOn: boolean = false;
   private highlights: Record<string, RangeHighlight>;
-
   private chromSizes: Record<string, number>;
+
+  private samples: string[];
 
   constructor(
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
     region: Region,
-    chromSizes: Record<string, number>
+    chromSizes: Record<string, number>,
+    samples: string[],
   ) {
 
     this.render = render;
@@ -40,6 +42,20 @@ export class GensSession {
     this.start = region.start;
     this.end = region.end;
     this.chromSizes = chromSizes;
+    this.samples = samples;
+  }
+
+  getSamples(): string[] {
+    return this.samples;
+  }
+
+  addSample(sampleId: string) {
+    this.samples.push(sampleId);
+  }
+
+  removeSample(sampleId: string): void {
+    const pos = this.samples.indexOf(sampleId);
+    this.samples.splice(pos, 1);
   }
 
   setViewRange(range: Rng): void {
@@ -55,10 +71,14 @@ export class GensSession {
     }
   }
 
-  updateChromosome(chrom: string) {
+  updateChromosome(chrom: string, range: Rng = null) {
     this.chromosome = chrom;
-    this.start = 1;
-    this.end = this.chromSizes[chrom];
+
+    const start = range != null ? range[0] : 1;
+    const end = range != null ? range[1] : this.chromSizes[chrom];
+
+    this.start = start;
+    this.end = end;
   }
 
   updatePosition(range: Rng): void {
@@ -102,6 +122,10 @@ export class GensSession {
 
   showContent(header: string, content: HTMLElement[]) {
     this.sideMenu.showContent(header, content);
+  }
+
+  getAllHighlights(): RangeHighlight[] {
+    return Object.values(this.highlights);
   }
 
   getHighlights(chrom: string): RangeHighlight[] {

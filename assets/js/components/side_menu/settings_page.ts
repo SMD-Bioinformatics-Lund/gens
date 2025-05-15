@@ -1,17 +1,26 @@
-import { COLORS, ICONS, SIZES } from "../../constants";
+import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
 import { removeChildren } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ChoiceSelect } from "../util/choice_select";
-import { getIconButton } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
+import { TrackRow } from "./track_row";
+import { SampleRow } from "./sample_row";
+import { HighlightRow } from "./highlight_row";
+import { IconButton } from "../util/icon_button";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     .header {
-      padding-top: ${SIZES.xs}px;
+      font-weight: ${FONT_WEIGHT.header};
+    }
+    .header-row {
+      justify-content: space-between;
+      width: 100%;
+      padding-top: ${SIZES.m}px;
+      padding-bottom: ${SIZES.xs}px;
     }
     .row {
       display: flex;
@@ -34,24 +43,61 @@ template.innerHTML = String.raw`
     .icon-button:active {
       background: ${COLORS.lightGray};
     }
+    #samples-header-row {
+      gap: ${SIZES.s}px;
+    }
+    #sample-select {
+      min-width: 100px;
+      padding-right: 10px;
+    }
   </style>
-  <div class="header">Annotation sources</div>
-  <div class="choices-container">
-    <choice-select id="choice-select"></choice-select>
+  <div class="header-row">
+    <div class="header">Annotation sources</div>
   </div>
-  <div class="header">Tracks</div>
+  <div class="choices-container">
+    <choice-select id="choice-select" multiple></choice-select>
+  </div>
+  <flex-row class="header-row">
+    <div class="header">Samples</div>
+    <flex-row id="samples-header-row">
+      <choice-select id="sample-select"></choice-select>
+      <icon-button id="add-sample" icon="${ICONS.plus}"></icon-button>
+    </flex-row>
+  </flex-row>
+  <div id="samples-overview"></div>
+  <div class="header-row">
+    <div class="header">Highlights</div>
+  </div>
+  <div id="highlights-overview"></div>
+  <div class="header-row">
+    <div class="header">Tracks</div>
+  </div>
   <div id="tracks-overview"></div>
 `;
 
 export class SettingsPage extends ShadowBaseElement {
+  private samplesOverview: HTMLDivElement;
+  private tracksOverview: HTMLDivElement;
+  private highlightsOverview: HTMLDivElement;
+  private annotSelect: ChoiceSelect;
+  private sampleSelect: ChoiceSelect;
+  private addSampleButton: IconButton;
+
   private onChange: () => void;
-  private choiceSelect: ChoiceSelect;
   private annotationSources: ApiAnnotationTrack[];
   private defaultAnnots: { id: string; label: string }[];
   private onAnnotationChanged: (sources: string[]) => void;
   private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
-  private tracksOverview: HTMLDivElement;
+
+  private getCurrentSamples: () => string[];
+  private getAllSamples: () => string[];
+  private getHighlights: () => RangeHighlight[];
+  private gotoHighlight: (region: Region) => void;
+  private removeHighlight: (id: string) => void;
+
+  private onAddSample: (id: string) => void;
+  private onRemoveSample: (id: string) => void;
 
   public isInitialized: boolean = false;
 
@@ -59,35 +105,98 @@ export class SettingsPage extends ShadowBaseElement {
     super(template);
   }
 
+  setSources(
+    onChange: () => void,
+    annotationSources: ApiAnnotationTrack[],
+    defaultAnnots: { id: string; label: string }[],
+    onAnnotationChanged: (sources: string[]) => void,
+    getDataTracks: () => DataTrack[],
+    onTrackMove: (trackId: string, direction: "up" | "down") => void,
+    getCurrentSamples: () => string[],
+    getAllSamples: () => string[],
+    getHighlights: () => RangeHighlight[],
+    gotoHighlight: (region: Region) => void,
+    removeHighlight: (id: string) => void,
+    onAddSample: (id: string) => void,
+    onRemoveSample: (id: string) => void,
+  ) {
+    this.onChange = onChange;
+    this.annotationSources = annotationSources;
+    this.defaultAnnots = defaultAnnots;
+    this.onAnnotationChanged = onAnnotationChanged;
+    this.getDataTracks = getDataTracks;
+    this.onTrackMove = onTrackMove;
+
+    this.getCurrentSamples = getCurrentSamples;
+    this.getAllSamples = getAllSamples;
+    this.getHighlights = getHighlights;
+
+    this.gotoHighlight = gotoHighlight;
+    this.removeHighlight = removeHighlight;
+    this.onAddSample = onAddSample;
+    this.onRemoveSample = onRemoveSample;
+  }
+
   connectedCallback() {
     super.connectedCallback();
-    this.choiceSelect = this.root.querySelector(
-      "#choice-select",
-    ) as ChoiceSelect;
-    this.tracksOverview = this.root.querySelector(
-      "#tracks-overview",
-    ) as HTMLDivElement;
+    this.annotSelect = this.root.querySelector("#choice-select");
+    this.sampleSelect = this.root.querySelector("#sample-select");
+    this.tracksOverview = this.root.querySelector("#tracks-overview");
+    this.samplesOverview = this.root.querySelector("#samples-overview");
+    this.highlightsOverview = this.root.querySelector("#highlights-overview");
+    this.addSampleButton = this.root.querySelector("#add-sample");
+
+    this.addElementListener(this.addSampleButton, "click", () => {
+      const sampleId = this.sampleSelect.getChoice().value;
+      this.onAddSample(sampleId);
+    });
+
+    this.addElementListener(this.sampleSelect, "change", () => {
+      this.render({});
+    });
   }
 
   initialize() {
     this.isInitialized = true;
-    this.choiceSelect.setChoices(
-      getChoices(
+    this.annotSelect.setChoices(
+      getAnnotationChoices(
         this.annotationSources,
         this.defaultAnnots.map((a) => a.id),
       ),
     );
-    this.choiceSelect.initialize(this.onAnnotationChanged);
+    this.annotSelect.initialize(this.onAnnotationChanged);
+
+    // this.sampleSelect.initialize(() => {
+    //   console.log("Sample selection changed");
+    // });
+
+    this.setupSampleSelect();
 
     this.onChange();
   }
 
-  render(_settings: RenderSettings) {
+  private setupSampleSelect() {
+    const allSamples = this.getAllSamples().map((s) => {
+      return {
+        label: s,
+        value: s,
+      };
+    });
+    this.sampleSelect.setChoices(allSamples);
+  }
+
+  render(settings: RenderSettings) {
     if (this.tracksOverview == null) {
       return;
     }
+
+    if (settings.samplesUpdated) {
+      this.setupSampleSelect();
+    }
+
     removeChildren(this.tracksOverview);
     const tracks = this.getDataTracks();
+    // FIXME: Could part of this simply be part of the template?
     const tracksSection = getTracksSection(
       tracks,
       (track: DataTrack, direction: "up" | "down") => {
@@ -104,28 +213,28 @@ export class SettingsPage extends ShadowBaseElement {
       },
     );
     this.tracksOverview.appendChild(tracksSection);
-  }
 
-  setSources(
-    onChange: () => void,
-    annotationSources: ApiAnnotationTrack[],
-    defaultAnnots: { id: string; label: string }[],
-    onAnnotationChanged: (sources: string[]) => void,
-    getDataTracks: () => DataTrack[],
-    onTrackMove: (trackId: string, direction: "up" | "down") => void,
-  ) {
-    this.onChange = onChange;
-    this.annotationSources = annotationSources;
-    this.defaultAnnots = defaultAnnots;
-    this.onAnnotationChanged = onAnnotationChanged;
-    this.getDataTracks = getDataTracks;
-    this.onTrackMove = onTrackMove;
+    const samples = this.getCurrentSamples();
+    removeChildren(this.samplesOverview);
+    const samplesSection = getSamplesSection(samples, (sampleId: string) =>
+      this.onRemoveSample(sampleId),
+    );
+    this.samplesOverview.appendChild(samplesSection);
+
+    removeChildren(this.highlightsOverview);
+    const highlightsSection = getHighlightsSection(
+      this.getHighlights(),
+      (region: Region) => this.gotoHighlight(region),
+      (id: string) => this.removeHighlight(id),
+    );
+    this.highlightsOverview.appendChild(highlightsSection);
+
+    this.addSampleButton.disabled = this.sampleSelect.getChoice() == null;
   }
 
   getAnnotSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
-
     if (!settings.selectedOnly) {
       return this.annotationSources.map((source) => {
         return {
@@ -135,11 +244,11 @@ export class SettingsPage extends ShadowBaseElement {
       });
     }
 
-    if (this.choiceSelect == null) {
+    if (this.annotSelect == null) {
       return this.defaultAnnots;
     }
 
-    const choices = this.choiceSelect.getChoices();
+    const choices = this.annotSelect.getChoices();
     const returnVals = choices.map((obj) => {
       return {
         id: obj.value,
@@ -150,7 +259,7 @@ export class SettingsPage extends ShadowBaseElement {
   }
 }
 
-function getChoices(
+function getAnnotationChoices(
   annotationSources: ApiAnnotationTrack[],
   defaultAnnotIds: string[],
 ): InputChoice[] {
@@ -166,6 +275,50 @@ function getChoices(
   return choices;
 }
 
+function getSamplesSection(
+  sampleIds: string[],
+  removeSample: (id: string) => void,
+): HTMLDivElement {
+  const container = document.createElement("div");
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.gap = `${SIZES.xs}px`;
+
+  for (const sampleId of sampleIds) {
+    const sampleRow = new SampleRow();
+    sampleRow.initialize(sampleId, removeSample);
+    container.appendChild(sampleRow);
+  }
+
+  return container;
+}
+
+function getHighlightsSection(
+  highlights: RangeHighlight[],
+  onGotoHighlight: (region: Region) => void,
+  onRemoveHighlight: (id: string) => void,
+): HTMLDivElement {
+  const container = document.createElement("div");
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.gap = `${SIZES.xs}px`;
+
+  if (highlights.length > 0) {
+    for (const highlight of highlights) {
+      const highlightRow = new HighlightRow();
+      highlightRow.initialize(highlight, onGotoHighlight, onRemoveHighlight);
+      container.appendChild(highlightRow);
+    }
+  } else {
+    const placeholder = document.createTextNode(
+      "No highlights currently active",
+    );
+    container.appendChild(placeholder);
+  }
+
+  return container;
+}
+
 function getTracksSection(
   tracks: DataTrack[],
   onMove: (track: DataTrack, direction: "up" | "down") => void,
@@ -175,45 +328,10 @@ function getTracksSection(
   const tracksSection = document.createElement("div");
 
   for (const track of tracks) {
-    const rowDiv = document.createElement("div");
-    rowDiv.className = "row";
-    rowDiv.style.display = "flex";
-    rowDiv.style.flexDirection = "row";
-    rowDiv.style.alignItems = "center";
-    rowDiv.style.justifyContent = "space-between";
-
-    rowDiv.appendChild(document.createTextNode(track.label));
-
-    const buttonsDiv = document.createElement("div");
-    buttonsDiv.style.display = "flex";
-    buttonsDiv.style.flexDirection = "row";
-    buttonsDiv.style.flexWrap = "nowrap";
-    buttonsDiv.style.gap = `${SIZES.s}px`;
-
-    buttonsDiv.appendChild(
-      getIconButton(ICONS.up, "Up", () => onMove(track, "up")),
-    );
-    buttonsDiv.appendChild(
-      getIconButton(ICONS.down, "Down", () => onMove(track, "down")),
-    );
-    buttonsDiv.appendChild(
-      getIconButton(
-        track.getIsHidden() ? ICONS.hide : ICONS.show,
-        "Show / hide",
-        () => onToggleShow(track),
-      ),
-    );
-    buttonsDiv.appendChild(
-      getIconButton(
-        track.getIsCollapsed() ? ICONS.expand : ICONS.collapse,
-        "Collapse / expand",
-        () => onToggleCollapse(track),
-      ),
-    );
-
-    rowDiv.appendChild(buttonsDiv);
-
-    tracksSection.appendChild(rowDiv);
+    const trackRow = new TrackRow();
+    trackRow.className = "row";
+    trackRow.initialize(track, onMove, onToggleShow, onToggleCollapse);
+    tracksSection.appendChild(trackRow);
   }
   return tracksSection;
 }

@@ -4,10 +4,13 @@ import "./components/util/popup";
 import "./components/util/shadowbaseelement";
 import "./components/util/choice_select";
 import "./components/side_menu/settings_page";
+import "./components/side_menu/track_row";
 import "./components/side_menu/side_menu";
 import "./components/header_info";
 import "./movements/marker";
 import "./components/side_menu/track_page";
+import "./components/util/row";
+import "./components/util/icon_button";
 
 import "./home/gens_home";
 import "./home/sample_table";
@@ -24,16 +27,18 @@ import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
 
-
-export async function testHomeInit(samples: SampleInfo[], scoutBaseURL: string, genomeBuild: number) {
-
+export async function testHomeInit(
+  samples: SampleInfo[],
+  scoutBaseURL: string,
+  genomeBuild: number,
+) {
   const gens_home = document.querySelector("#gens-home") as GensHome;
 
   const getGensURL = (caseId: string, sampleIds: string[]) => {
     // FIXME: Extract genome build
     // FIXME: Look into how to organize end points - should this be through the API class? Probably.
     return `/app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
-  }
+  };
 
   gens_home.initialize(samples, scoutBaseURL, getGensURL);
 }
@@ -47,6 +52,7 @@ export async function initCanvases({
   annotationFile: defaultAnnotationName,
   startRegion,
   version,
+  allSampleIds,
 }: {
   caseId: string;
   sampleIds: string[];
@@ -56,6 +62,7 @@ export async function initCanvases({
   annotationFile: string;
   startRegion: Region;
   version: string;
+  allSampleIds: string[];
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
@@ -90,6 +97,7 @@ export async function initCanvases({
     sideMenu,
     defaultRegion,
     chromSizes,
+    sampleIds,
   );
 
   const renderDataSource = getRenderDataSource(
@@ -134,6 +142,31 @@ export async function initCanvases({
     () => gensTracks.getDataTracks(),
     (trackId: string, direction: "up" | "down") =>
       gensTracks.moveTrack(trackId, direction),
+    () => session.getSamples(),
+    () => {
+      const samples = session.getSamples();
+      return allSampleIds.filter(s => !samples.includes(s));
+    },
+    () => session.getAllHighlights(),
+    (region: Region) => {
+      const positionOnly = region.chrom == session.getChromosome();
+      session.updateChromosome(region.chrom, [region.start, region.end]);
+      render({ dataUpdated: true, positionOnly });
+    },
+    (id: string) => {
+      session.removeHighlight(id);
+    },
+    (sampleId: string) => {
+      gensTracks.addSample(sampleId);
+      session.addSample(sampleId);
+      render({ dataUpdated: true, samplesUpdated: true });
+    },
+    (sampleId: string) => {
+      // FIXME: This should eventually be session only, with tracks responding on rerender
+      session.removeSample(sampleId);
+      gensTracks.removeSample(sampleId);
+      render({ dataUpdated: true, samplesUpdated: true });
+    },
   );
 
   initialize(
@@ -186,7 +219,6 @@ async function initialize(
     session.setViewRange(range);
     render({ dataUpdated: true, positionOnly: true });
   });
-
 
   const tracksDataSources = {
     getAnnotationSources: (settings: { selectedOnly: boolean }) =>

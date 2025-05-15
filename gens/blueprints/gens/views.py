@@ -9,7 +9,7 @@ from pymongo.database import Database
 from gens import version
 from gens.config import UI_COLORS, settings
 from gens.crud.genomic import get_chromosome_info
-from gens.crud.samples import get_sample
+from gens.crud.samples import get_sample, get_samples_per_case
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.genomic import parse_region_str
 from gens.models.genomic import GenomeBuild
@@ -57,7 +57,6 @@ def display_samples(case_id: str) -> str:
     # verify that sample has been loaded
     db: Database = current_app.config["GENS_DB"]
 
-
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
 
@@ -67,10 +66,15 @@ def display_samples(case_id: str) -> str:
     if parsed_region.end is None:
         chrom_info = get_chromosome_info(db, parsed_region.chromosome, genome_build)
         if chrom_info is None:
-            raise ValueError(
-                f"Chromosome {parsed_region.chromosome} is not found in the database"
-            )
+            raise ValueError(f"Chromosome {parsed_region.chromosome} is not found in the database")
         parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})
+
+    samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
+
+    all_samples = set()
+    for case_samples in samples_per_case.values():
+        for sample in case_samples:
+            all_samples.add(sample.sample_id)
 
     return render_template(
         "gens.html",
@@ -81,11 +85,12 @@ def display_samples(case_id: str) -> str:
         end=parsed_region.end,
         case_id=case_id,
         sample_ids=sample_ids,
+        all_sample_ids=list(all_samples),
         genome_build=genome_build.value,
         print_page=print_page,
         annotation=annotation,
         selected_variant=selected_variant,
         todays_date=date.today(),
         version=version,
-        gens_api_url=settings.gens_api_url
+        gens_api_url=settings.gens_api_url,
     )
