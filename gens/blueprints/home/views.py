@@ -34,38 +34,23 @@ def home() -> str:
 
     db: Database = current_app.config["GENS_DB"]
     # set pagination
-    page = request.args.get("page", 1, type=int)
-    start = (page - 1) * SAMPLES_PER_PAGE
-    samples_per_case = get_samples_per_case(
-        db.get_collection(SAMPLES_COLLECTION), skip=start, limit=SAMPLES_PER_PAGE
-    )
-    # FIXME: Temporary case solutions
-    # This will soon not be a Flask template but a regular HTML page, so this
-    # is a temporary solution
-    pagination_info = {
-        "from": start + 1,
-        "to": start + SAMPLES_PER_PAGE,
-        "current_page": page,
-        "last_page": (
-            len(samples_per_case) // SAMPLES_PER_PAGE
-            if len(samples_per_case) % SAMPLES_PER_PAGE == 0
-            else (len(samples_per_case) // SAMPLES_PER_PAGE) + 1
-        ),
-    }
+    samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
     parsed_samples = [
         {
             "case_id": case_id,
             "sample_ids": [s.sample_id for s in samples],
             "genome_build": samples[0].genome_build,
             "has_overview_file": len([s for s in samples if s.overview_file is None]) == 0,
-            "files_present": len([s for s in samples if s.overview_file is None or s.coverage_file is None]) == 0,
+            "files_present": len(
+                [s for s in samples if s.overview_file is None or s.coverage_file is None]
+            )
+            == 0,
             "created_at": samples[0].created_at.strftime("%Y-%m-%d"),
         }
         for (case_id, samples) in samples_per_case.items()
     ]
     return render_template(
         "home.html",
-        pagination=pagination_info,
         samples=parsed_samples,
         total_samples=len(samples_per_case),
         scout_base_url=str(settings.scout_url),

@@ -9,8 +9,6 @@ import { SampleRow } from "./sample_row";
 import { HighlightRow } from "./highlight_row";
 import { IconButton } from "../util/icon_button";
 
-// FIXME: How to manage the content? Something to do later?
-
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -184,11 +182,6 @@ export class SettingsPage extends ShadowBaseElement {
         value: s,
       };
     });
-    const extraSamples = [];
-    for (let i = 1; i <= 20000; i++) {
-      extraSamples.push({ label: `sample_${i}`, value: `Sample ${i}` });
-    }
-    allSamples.push(...extraSamples);
     this.sampleSelect.setChoices(allSamples);
   }
 

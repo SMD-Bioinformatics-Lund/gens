@@ -1,4 +1,4 @@
-import { COLORS } from "../../constants";
+import { COLORS, SIZES } from "../../constants";
 import { ShadowBaseElement } from "./shadowbaseelement";
 
 const template = document.createElement("template");
@@ -15,8 +15,8 @@ template.innerHTML = String.raw`
       background-color: ${COLORS.white};
       cursor: pointer;
       border: 1px solid ${COLORS.lightGray};
-      padding: 4px 8px;
-      border-radius: 4px;
+      padding: ${SIZES.xs}px ${SIZES.m}px;
+      border-radius: ${SIZES.xs}px;
     }
     :host(:hover) {
       background: ${COLORS.extraLightGray};

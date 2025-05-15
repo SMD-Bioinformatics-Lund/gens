@@ -59,7 +59,7 @@ export const SIZES = {
   xxs: 2,
   xs: 4,
   s: 6,
-  m: 9,
+  m: 8,
   l: 12,
 }
 
