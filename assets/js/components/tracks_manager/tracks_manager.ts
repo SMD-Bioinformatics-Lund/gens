@@ -107,7 +107,7 @@ export class TracksManager extends ShadowBaseElement {
   overviewTracks: OverviewTrack[];
   dataTracks: DataTrack[] = [];
   /** Keeps track of track container divs. Might be worth making a web component to do this wrapping. */
-  dataTrackIdToWrapper: Record<string,HTMLDivElement> = {};
+  dataTrackIdToWrapper: Record<string, HTMLDivElement> = {};
 
   dataSources: TracksManagerDataSources;
   renderAll: (settings: RenderSettings) => void;
@@ -117,6 +117,10 @@ export class TracksManager extends ShadowBaseElement {
   session: GensSession;
 
   trackPages: Record<string, TrackPage> = {};
+  sampleToTracks: Record<
+    string,
+    { cov: DataTrack; baf: DataTrack; variant: DataTrack }
+  > = {};
 
   constructor() {
     super(template);
@@ -196,45 +200,25 @@ export class TracksManager extends ShadowBaseElement {
       (band: RenderBand) => {
         session.setViewRange([band.start, band.end]);
         render({ dataUpdated: true, positionOnly: true });
-      }
+      },
     );
 
     for (const sampleId of sampleIds) {
       const startExpanded = sampleIds.length == 1 ? true : false;
 
-      const coverageTrack = createDotTrack(
-        `${sampleId}_log2_cov`,
-        `${sampleId} cov`,
+      const sampleTracks = createSampleTracks(
         sampleId,
-        (sampleId: string) => dataSources.getCovData(sampleId),
-        { startExpanded, yAxis: { range: COV_Y_RANGE, reverse: true } },
-        session,
-        openTrackContextMenu,
-      );
-      const bafTrack = createDotTrack(
-        `${sampleId}_log2_baf`,
-        `${sampleId} baf`,
-        sampleId,
-        (sampleId: string) => dataSources.getBafData(sampleId),
-        { startExpanded, yAxis: { range: BAF_Y_RANGE, reverse: true } },
+        dataSources,
+        startExpanded,
         session,
         openTrackContextMenu,
       );
 
-      const variantTrack = createVariantTrack(
-        `${sampleId}_variants`,
-        `${sampleId} Variants`,
-        sampleId,
-        (sampleId: string) => dataSources.getVariantData(sampleId),
-        dataSources.getVariantDetails,
-        dataSources.getVariantUrl,
-        session,
-        openTrackContextMenu,
-      );
+      this.sampleToTracks[sampleId] = sampleTracks;
 
-      covTracks.push(coverageTrack);
-      bafTracks.push(bafTrack);
-      variantTracks.push(variantTrack);
+      covTracks.push(sampleTracks.cov);
+      bafTracks.push(sampleTracks.baf);
+      variantTracks.push(sampleTracks.variant);
     }
 
     const genesTrack = createGenesTrack(
@@ -359,11 +343,30 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   addSample(sampleId: string) {
+    const sampleTracks = createSampleTracks(
+      sampleId,
+      this.dataSources,
+      false,
+      this.session,
+      this.openTrackContextMenu,
+    );
+    this.dataTracks.push(sampleTracks.cov);
+    this.dataTracks.push(sampleTracks.baf);
+    this.dataTracks.push(sampleTracks.variant);
 
+    this.sampleToTracks[sampleId] = sampleTracks;
   }
 
   removeSample(sampleId: string) {
-    
+    const tracks = this.sampleToTracks[sampleId];
+
+    for (const [sampleId, track] of Object.entries(tracks)) {
+      this.hideTrack(track.id);
+      const index = this.dataTracks.indexOf(track);
+      this.dataTracks.splice(index, 1);
+    }
+
+    delete this.sampleToTracks[sampleId];
   }
 
   showTrack(trackId: string) {
@@ -374,7 +377,7 @@ export class TracksManager extends ShadowBaseElement {
 
   hideTrack(trackId: string) {
     const track = this.getTrackById(trackId);
-    this.tracksContainer.removeChild(track);
+    this.tracksContainer.removeChild(track.parentElement);
   }
 
   getXScale(inverted: boolean = false): Scale {
@@ -425,7 +428,7 @@ export class TracksManager extends ShadowBaseElement {
     const trackWrapper = createDataTrackWrapper(newTrack);
     this.tracksContainer.appendChild(trackWrapper);
     newTrack.initialize();
-    
+
     this.dataTrackIdToWrapper[newTrack.id] = trackWrapper;
   }
 
@@ -489,6 +492,53 @@ export class TracksManager extends ShadowBaseElement {
     };
     return openTrackContextMenu;
   }
+}
+
+function createSampleTracks(
+  sampleId: string,
+  dataSources: TracksManagerDataSources,
+  startExpanded: boolean,
+  session: GensSession,
+  openTrackContextMenu: (track: DataTrack) => void,
+): {
+  cov: DataTrack;
+  baf: DataTrack;
+  variant: DataTrack;
+} {
+  const coverageTrack = createDotTrack(
+    `${sampleId}_log2_cov`,
+    `${sampleId} cov`,
+    sampleId,
+    (sampleId: string) => dataSources.getCovData(sampleId),
+    { startExpanded, yAxis: { range: COV_Y_RANGE, reverse: true } },
+    session,
+    openTrackContextMenu,
+  );
+  const bafTrack = createDotTrack(
+    `${sampleId}_log2_baf`,
+    `${sampleId} baf`,
+    sampleId,
+    (sampleId: string) => dataSources.getBafData(sampleId),
+    { startExpanded, yAxis: { range: BAF_Y_RANGE, reverse: true } },
+    session,
+    openTrackContextMenu,
+  );
+
+  const variantTrack = createVariantTrack(
+    `${sampleId}_variants`,
+    `${sampleId} Variants`,
+    sampleId,
+    (sampleId: string) => dataSources.getVariantData(sampleId),
+    dataSources.getVariantDetails,
+    dataSources.getVariantUrl,
+    session,
+    openTrackContextMenu,
+  );
+  return {
+    cov: coverageTrack,
+    baf: bafTrack,
+    variant: variantTrack,
+  };
 }
 
 function updateAnnotationTracks(

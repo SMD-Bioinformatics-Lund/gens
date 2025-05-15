@@ -92,7 +92,13 @@ export async function initCanvases({
 
   const chromSizes = api.getChromSizes();
   const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
-  const session = new GensSession(render, sideMenu, defaultRegion, chromSizes);
+  const session = new GensSession(
+    render,
+    sideMenu,
+    defaultRegion,
+    chromSizes,
+    sampleIds,
+  );
 
   const renderDataSource = getRenderDataSource(
     api,
@@ -137,7 +143,7 @@ export async function initCanvases({
     (trackId: string, direction: "up" | "down") =>
       gensTracks.moveTrack(trackId, direction),
 
-    () => sampleIds,
+    () => session.getSamples(),
     () => allSampleIds,
     () => session.getAllHighlights(),
     (region: Region) => {
@@ -149,19 +155,20 @@ export async function initCanvases({
       session.removeHighlight(id);
     },
     (sampleId: string) => {
-      
       gensTracks.addSample(sampleId);
-      render({dataUpdated: true});
+      render({ dataUpdated: true });
 
       console.log("Adding sample", sampleId);
 
       console.log("Continue from here");
     },
     (sampleId: string) => {
+      console.log("Removing sample", sampleId);
+      // FIXME: This should eventually be session only, with tracks responding on rerender
+      session.removeSample(sampleId);
       gensTracks.removeSample(sampleId);
-      render({dataUpdated: true});
-      console.log("Removing sample", sampleId)
-    }
+      render({ dataUpdated: true });
+    },
   );
 
   initialize(

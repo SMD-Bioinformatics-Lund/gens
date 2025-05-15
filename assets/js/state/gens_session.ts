@@ -25,11 +25,14 @@ export class GensSession {
   private highlights: Record<string, RangeHighlight>;
   private chromSizes: Record<string, number>;
 
+  private samples: string[];
+
   constructor(
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
     region: Region,
-    chromSizes: Record<string, number>
+    chromSizes: Record<string, number>,
+    samples: string[],
   ) {
 
     this.render = render;
@@ -39,6 +42,16 @@ export class GensSession {
     this.start = region.start;
     this.end = region.end;
     this.chromSizes = chromSizes;
+    this.samples = samples;
+  }
+
+  getSamples(): string[] {
+    return this.samples;
+  }
+
+  removeSample(sampleId: string): void {
+    const pos = this.samples.indexOf(sampleId);
+    this.samples.splice(pos, 1);
   }
 
   setViewRange(range: Rng): void {
