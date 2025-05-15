@@ -15,7 +15,7 @@ import { generateID } from "../util/utils";
  * it should probably be kept here as well.
  */
 export class GensSession {
-  chromosome: string;
+  chromosome: string
   start: number;
   end: number;
 
@@ -23,7 +23,6 @@ export class GensSession {
   private sideMenu: SideMenu;
   private markerModeOn: boolean = false;
   private highlights: Record<string, RangeHighlight>;
-
   private chromSizes: Record<string, number>;
 
   constructor(

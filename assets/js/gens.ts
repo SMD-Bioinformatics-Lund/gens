@@ -149,9 +149,17 @@ export async function initCanvases({
       session.removeHighlight(id);
     },
     (sampleId: string) => {
+      
+      gensTracks.addSample(sampleId);
+      render({dataUpdated: true});
+
       console.log("Adding sample", sampleId);
+
+      console.log("Continue from here");
     },
     (sampleId: string) => {
+      gensTracks.removeSample(sampleId);
+      render({dataUpdated: true});
       console.log("Removing sample", sampleId)
     }
   );

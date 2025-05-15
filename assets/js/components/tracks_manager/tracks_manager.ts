@@ -358,6 +358,14 @@ export class TracksManager extends ShadowBaseElement {
     moveElement(this.dataTracks, trackIndex, shift, true);
   }
 
+  addSample(sampleId: string) {
+
+  }
+
+  removeSample(sampleId: string) {
+    
+  }
+
   showTrack(trackId: string) {
     const track = this.getTrackById(trackId);
     const trackWrap = createDataTrackWrapper(track);
