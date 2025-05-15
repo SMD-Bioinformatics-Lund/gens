@@ -8,6 +8,13 @@ import { TrackRow } from "./track_row";
 import { SampleRow } from "./sample_row";
 import { HighlightRow } from "./highlight_row";
 import { IconButton } from "../util/icon_button";
+import { GensSession } from "../../state/gens_session";
+
+export interface TrackHeights {
+  bandCollapsed: number;
+  dotCollapsed: number;
+  dotExpanded: number;
+}
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -43,6 +50,16 @@ template.innerHTML = String.raw`
     .icon-button:active {
       background: ${COLORS.lightGray};
     }
+    .height-input {
+      max-width: 100px;
+    }
+    .height-row {
+      justify-content: space-between;
+      padding-bottom: ${SIZES.xs}px;
+    }
+    .height-inputs {
+      gap: ${SIZES.xs}px;
+    }
     #samples-header-row {
       gap: ${SIZES.s}px;
     }
@@ -72,6 +89,19 @@ template.innerHTML = String.raw`
   <div class="header-row">
     <div class="header">Tracks</div>
   </div>
+  <flex-row class="height-row">
+    <div>Band track height</div>
+    <flex-row class="height-inputs">
+      <input title="Collapsed height" id="band-collapsed-height" class="height-input" type="number" step="5">
+    </flex-row>
+  </flex-row>
+  <flex-row class="height-row">
+    <div>Dot track heights</div>
+    <flex-row class="height-inputs">
+      <input title="Collapsed height" id="dot-collapsed-height" class="height-input" type="number" step="5">
+      <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
+    </flex-row>
+  </flex-row>
   <div id="tracks-overview"></div>
 `;
 
@@ -82,6 +112,11 @@ export class SettingsPage extends ShadowBaseElement {
   private annotSelect: ChoiceSelect;
   private sampleSelect: ChoiceSelect;
   private addSampleButton: IconButton;
+  private bandTrackCollapsedHeightElem: HTMLInputElement;
+  private dotTrackCollapsedHeightElem: HTMLInputElement;
+  private dotTrackExpandedHeightElem: HTMLInputElement;
+
+  private session: GensSession;
 
   private onChange: () => void;
   private annotationSources: ApiAnnotationTrack[];
@@ -89,15 +124,15 @@ export class SettingsPage extends ShadowBaseElement {
   private onAnnotationChanged: (sources: string[]) => void;
   private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
-
   private getCurrentSamples: () => string[];
   private getAllSamples: () => string[];
   private getHighlights: () => RangeHighlight[];
   private gotoHighlight: (region: Region) => void;
   private removeHighlight: (id: string) => void;
-
   private onAddSample: (id: string) => void;
   private onRemoveSample: (id: string) => void;
+  private getTrackHeights: () => TrackHeights;
+  private setTrackHeights: (sizes: TrackHeights) => void;
 
   public isInitialized: boolean = false;
 
@@ -106,20 +141,20 @@ export class SettingsPage extends ShadowBaseElement {
   }
 
   setSources(
+    session: GensSession,
     onChange: () => void,
     annotationSources: ApiAnnotationTrack[],
     defaultAnnots: { id: string; label: string }[],
     onAnnotationChanged: (sources: string[]) => void,
     getDataTracks: () => DataTrack[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
-    getCurrentSamples: () => string[],
     getAllSamples: () => string[],
-    getHighlights: () => RangeHighlight[],
     gotoHighlight: (region: Region) => void,
-    removeHighlight: (id: string) => void,
     onAddSample: (id: string) => void,
     onRemoveSample: (id: string) => void,
+    setTrackHeights: (trackHeights: TrackHeights) => void,
   ) {
+    this.session = session;
     this.onChange = onChange;
     this.annotationSources = annotationSources;
     this.defaultAnnots = defaultAnnots;
@@ -127,14 +162,19 @@ export class SettingsPage extends ShadowBaseElement {
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
 
-    this.getCurrentSamples = getCurrentSamples;
+    this.getCurrentSamples = () => session.getSamples();
     this.getAllSamples = getAllSamples;
-    this.getHighlights = getHighlights;
+    this.getHighlights = () => session.getAllHighlights();
 
     this.gotoHighlight = gotoHighlight;
-    this.removeHighlight = removeHighlight;
+    this.removeHighlight = (id: string) => {
+      session.removeHighlight(id);
+    };
     this.onAddSample = onAddSample;
     this.onRemoveSample = onRemoveSample;
+
+    this.getTrackHeights = () => session.getTrackHeights();
+    this.setTrackHeights = setTrackHeights;
   }
 
   connectedCallback() {
@@ -146,12 +186,49 @@ export class SettingsPage extends ShadowBaseElement {
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
     this.addSampleButton = this.root.querySelector("#add-sample");
 
+    this.bandTrackCollapsedHeightElem = this.root.querySelector(
+      "#band-collapsed-height",
+    );
+    this.dotTrackCollapsedHeightElem = this.root.querySelector(
+      "#dot-collapsed-height",
+    );
+    this.dotTrackExpandedHeightElem = this.root.querySelector(
+      "#dot-expanded-height",
+    );
+
+    const trackSizes = this.getTrackHeights();
+
+    this.bandTrackCollapsedHeightElem.value = `${trackSizes.bandCollapsed}`;
+    this.dotTrackCollapsedHeightElem.value = `${trackSizes.dotCollapsed}`;
+    this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
+
     this.addElementListener(this.addSampleButton, "click", () => {
       const sampleId = this.sampleSelect.getChoice().value;
       this.onAddSample(sampleId);
     });
 
     this.addElementListener(this.sampleSelect, "change", () => {
+      this.render({});
+    });
+
+    const myGetTrackHeights = (): TrackHeights => {
+      return {
+        bandCollapsed: parseInt(this.bandTrackCollapsedHeightElem.value),
+        dotCollapsed: parseInt(this.dotTrackCollapsedHeightElem.value),
+        dotExpanded: parseInt(this.dotTrackExpandedHeightElem.value),
+      };
+    };
+
+    this.addElementListener(this.bandTrackCollapsedHeightElem, "change", () => {
+      this.setTrackHeights(myGetTrackHeights());
+      this.render({});
+    });
+    this.addElementListener(this.dotTrackCollapsedHeightElem, "change", () => {
+      this.setTrackHeights(myGetTrackHeights());
+      this.render({});
+    });
+    this.addElementListener(this.dotTrackExpandedHeightElem, "change", () => {
+      this.setTrackHeights(myGetTrackHeights());
       this.render({});
     });
   }
@@ -165,13 +242,7 @@ export class SettingsPage extends ShadowBaseElement {
       ),
     );
     this.annotSelect.initialize(this.onAnnotationChanged);
-
-    // this.sampleSelect.initialize(() => {
-    //   console.log("Sample selection changed");
-    // });
-
     this.setupSampleSelect();
-
     this.onChange();
   }
 
@@ -208,7 +279,7 @@ export class SettingsPage extends ShadowBaseElement {
         this.onChange();
       },
       (track: DataTrack) => {
-        track.toggleCollapsed();
+        track.toggleExpanded();
         this.onChange();
       },
     );
@@ -230,6 +301,11 @@ export class SettingsPage extends ShadowBaseElement {
     this.highlightsOverview.appendChild(highlightsSection);
 
     this.addSampleButton.disabled = this.sampleSelect.getChoice() == null;
+
+    const { bandCollapsed, dotCollapsed, dotExpanded } = this.getTrackHeights();
+    this.bandTrackCollapsedHeightElem.value = `${bandCollapsed}`;
+    this.dotTrackCollapsedHeightElem.value = `${dotCollapsed}`;
+    this.dotTrackExpandedHeightElem.value = `${dotExpanded}`;
   }
 
   getAnnotSources(settings: {

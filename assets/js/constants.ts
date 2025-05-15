@@ -102,6 +102,8 @@ export const STYLE = {
     bandPadding: SIZES.xxs,
     edgeColor: COLORS.darkGray,
     minBandWidth: 2,
+    dynamicPadThreshold: 40,
+    dynamicPadFraction: 8,
   },
   ideogramMarker: {
     leftMargin: SIZES.xs,

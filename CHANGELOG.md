@@ -21,6 +21,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Simple data table to display sample list, allowing search and sorting
  - Navigate to position by clicking ideogram bands
  - Add any additional sample to an ongoing session
+ - Track heights are customizable
 
 ### Changed
  - Resolution increased 2x for tracks.

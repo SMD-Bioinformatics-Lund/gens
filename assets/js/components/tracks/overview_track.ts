@@ -1,7 +1,7 @@
 import { drawLabel, drawLine } from "../../draw/shapes";
 import { transformMap, padRange, generateID } from "../../util/utils";
 import { COLORS, STYLE } from "../../constants";
-import { CanvasTrack } from "./base_tracks/canvas_track";
+import { CanvasTrack, CanvasTrackSettings } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,
   linearScale,
@@ -36,7 +36,7 @@ export class OverviewTrack extends CanvasTrack {
   constructor(
     id: string,
     label: string,
-    trackHeight: number,
+    settings: CanvasTrackSettings,
     chromSizes: Record<string, number>,
     onChromosomeClick: (chrom: string) => void,
     yRange: Rng,
@@ -44,7 +44,7 @@ export class OverviewTrack extends CanvasTrack {
     getRegion: () => Region,
     drawLabels: boolean,
   ) {
-    super(id, label, trackHeight);
+    super(id, label, settings);
 
     this.chromSizes = chromSizes;
     this.yRange = yRange;

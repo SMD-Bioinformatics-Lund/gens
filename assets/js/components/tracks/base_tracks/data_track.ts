@@ -15,8 +15,14 @@ import { CanvasTrack } from "./canvas_track";
 
 import debounce from "lodash.debounce";
 
-interface Settings {
-  defaultHeight: number;
+export interface ExpandedTrackHeight {
+  collapsedHeight: number;
+  expandedHeight?: number;
+  startExpanded: boolean;
+}
+
+interface DataTrackSettings {
+  height: ExpandedTrackHeight;
   dragSelect: boolean;
   yAxis: {
     range: Rng;
@@ -29,7 +35,7 @@ const DEBOUNCE_DELAY = 50;
 const Y_PAD = SIZES.s;
 
 export abstract class DataTrack extends CanvasTrack {
-  settings: Settings;
+  settings: DataTrackSettings;
   getXRange: () => Rng;
   getXScale: () => Scale;
   getYRange: () => Rng;
@@ -38,18 +44,17 @@ export abstract class DataTrack extends CanvasTrack {
 
   trackType: TrackType;
 
+  protected defaultTrackHeight: number;
+  protected collapsedTrackHeight: number;
+
   private colorBands: RenderBand[] = [];
   setColorBands(colorBands: RenderBand[]) {
     this.colorBands = colorBands;
   }
 
-  // FIXME: All of this state should live elsewhere I think
-  // Controlled by the tracks_manager perhaps
   private isHidden: boolean = false;
-  private isCollapsed: boolean = false;
-  private expander: Expander;
+  private isExpanded: boolean;
   session: GensSession;
-  //
 
   labelBox: HoverBox | null;
 
@@ -70,12 +75,16 @@ export abstract class DataTrack extends CanvasTrack {
     this.settings.yAxis.range = range;
   }
 
-  isExpanded(): boolean {
-    return this.expander.isExpanded;
+  getIsExpanded(): boolean {
+    return this.isExpanded;
   }
 
-  getIsCollapsed(): boolean {
-    return this.isCollapsed;
+  setHeights(collapsed: number, expanded?: number) {
+    this.settings.height.collapsedHeight = collapsed;
+    if (expanded != null) {
+      this.settings.height.expandedHeight = expanded;
+    }
+    this.syncHeight();
   }
 
   toggleHidden() {
@@ -92,36 +101,28 @@ export abstract class DataTrack extends CanvasTrack {
     return this.isHidden;
   }
 
-  toggleCollapsed() {
-    this.isCollapsed = !this.isCollapsed;
-    this.currentHeight = this.expander.isExpanded
-      ? this.expander.expandedHeight
-      : this.isCollapsed
-        ? this.collapsedTrackHeight
-        : this.defaultTrackHeight;
+  toggleExpanded() {
+    this.isExpanded = !this.isExpanded;
+
+    if (this.isExpanded && this.settings.height.expandedHeight == null) {
+      throw Error("Must assign an expanded height before expanding the track");
+    }
+
+    this.syncHeight();
   }
 
-  // FIXME: Simplify the height management
-  // The track manager can keep track of the expansion state
-  // While the track only knows its height
-  initializeExpander(
-    eventKey: string,
-    startExpanded: boolean,
-    onExpand: () => void,
-  ) {
-    this.expander = new Expander(startExpanded);
-    const height = this.isCollapsed
-      ? this.collapsedTrackHeight
-      : this.defaultTrackHeight;
+  syncHeight() {
+    this.currentHeight = this.isExpanded
+      ? this.settings.height.expandedHeight
+      : this.settings.height.collapsedHeight;
+  }
 
+  initializeExpander(eventKey: string, onExpand: () => void) {
     this.trackContainer.addEventListener(
       eventKey,
       (event) => {
         event.preventDefault();
-        this.expander.toggle();
-        this.currentHeight = this.expander.isExpanded
-          ? this.expander.expandedHeight
-          : height;
+        this.toggleExpanded();
         this.syncDimensions();
         onExpand();
       },
@@ -136,15 +137,21 @@ export abstract class DataTrack extends CanvasTrack {
     getXRange: () => Rng,
     getXScale: () => Scale,
     openTrackContextMenu: (track: DataTrack) => void,
-    settings: Settings,
+    settings: DataTrackSettings,
     session: GensSession,
   ) {
-    super(id, label, settings.defaultHeight);
+    super(id, label, {
+      height: settings.height.startExpanded
+        ? settings.height.expandedHeight
+        : settings.height.collapsedHeight,
+    });
     this.trackType = trackType;
     this.settings = settings;
     this.getXRange = getXRange;
     this.getXScale = getXScale;
     this.session = session;
+
+    this.isExpanded = settings.height.startExpanded;
 
     this.getYRange = () => {
       return settings.yAxis.range;
@@ -255,8 +262,8 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   setExpandedHeight(height: number) {
-    this.expander.expandedHeight = height;
-    if (this.expander.isExpanded) {
+    this.settings.height.expandedHeight = height;
+    if (this.isExpanded) {
       this.currentHeight = height;
       this.syncDimensions();
     }
@@ -296,41 +303,12 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   drawTrackLabel(shiftRight: number = 0): Box {
-    if (!this.isCollapsed) {
-      return drawLabel(
-        this.ctx,
-        this.label,
-        STYLE.tracks.textPadding + shiftRight,
-        STYLE.tracks.textPadding,
-        { textBaseline: "top", boxStyle: {} },
-      );
-    } else {
-      // FIXME: Display something on hover
-      return {
-        x1: 0,
-        x2: STYLE.yAxis.width,
-        y1: 0,
-        y2: this.dimensions.height,
-      };
-    }
-  }
-}
-
-// FIXME: Consider what to do with this one. Remove? General height controller?
-// This should live in the tracks manager. They only need to know their final
-// height.
-class Expander {
-  expandedHeight: number = null;
-  isExpanded: boolean;
-
-  constructor(isExpanded: boolean) {
-    this.isExpanded = isExpanded;
-  }
-
-  toggle() {
-    this.isExpanded = !this.isExpanded;
-    if (this.isExpanded && this.expandedHeight == null) {
-      console.error("Need to assign an expanded height");
-    }
+    return drawLabel(
+      this.ctx,
+      this.label,
+      STYLE.tracks.textPadding + shiftRight,
+      STYLE.tracks.textPadding,
+      { textBaseline: "top", boxStyle: {} },
+    );
   }
 }

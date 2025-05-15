@@ -1,6 +1,6 @@
 import { drawChromosomeBands, getChromosomeShape } from "../../draw/ideogram";
 import { STYLE } from "../../constants";
-import { CanvasTrack } from "./base_tracks/canvas_track";
+import { CanvasTrack, CanvasTrackSettings } from "./base_tracks/canvas_track";
 import "tippy.js/dist/tippy.css";
 import { getLinearScale } from "../../draw/render_utils";
 import { eventInBox } from "../../util/utils";
@@ -16,18 +16,18 @@ export class IdeogramTrack extends CanvasTrack {
   constructor(
     id: string,
     label: string,
-    trackHeight: number,
+    settings: CanvasTrackSettings,
     getRenderData: () => Promise<IdeogramTrackData>,
     onBandClick: (band: RenderBand) => void,
   ) {
-    super(id, label, trackHeight);
+    super(id, label, settings);
     this.getRenderData = getRenderData;
     this.onBandClick = onBandClick;
   }
 
   connectedCallback(): void {
     super.connectedCallback();
-    const zoomMarkerElement = setupZoomMarkerElement(this.defaultTrackHeight);
+    const zoomMarkerElement = setupZoomMarkerElement(this.currentHeight);
     this.trackContainer.appendChild(zoomMarkerElement);
     this.markerElement = zoomMarkerElement;
 
@@ -144,7 +144,6 @@ function renderZoomMarker(
   xScale: Scale,
   isZoomed: boolean,
 ) {
-
   // Hide if not zoomed
   const hideMarker = !isZoomed;
   markerElement.hidden = hideMarker;

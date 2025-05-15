@@ -52,7 +52,7 @@ export function createAnnotTrack(
     sourceId,
     label,
     "annotation",
-    trackHeight.thin,
+    { height: { collapsedHeight: trackHeight.thin, startExpanded: false } },
     () => session.getXRange(),
     () =>
       getAnnotTrackData(
@@ -80,8 +80,13 @@ export function createDotTrack(
     id,
     label,
     "dot",
-    trackHeight.thick,
-    settings.startExpanded,
+    {
+      height: {
+        collapsedHeight: trackHeight.thin,
+        expandedHeight: trackHeight.thick,
+        startExpanded: settings.startExpanded,
+      },
+    },
     settings.yAxis,
     () => session.getXRange(),
     async () => {
@@ -115,7 +120,7 @@ export function createVariantTrack(
     id,
     label,
     "variant",
-    trackHeight.thin,
+    { height: { collapsedHeight: trackHeight.thin, startExpanded: false } },
     () => session.getXRange(),
     async () => {
       return {
@@ -161,7 +166,7 @@ export function createGenesTrack(
     id,
     label,
     "gene",
-    trackHeight.thin,
+    { height: { collapsedHeight: trackHeight.thin, startExpanded: false } },
     () => session.getXRange(),
     async () => {
       return {
@@ -199,7 +204,7 @@ export function createOverviewTrack(
   const overviewTrack = new OverviewTrack(
     id,
     label,
-    trackHeight.thick,
+    { height: trackHeight.thick },
     chromSizes,
     chromClick,
     yRange,

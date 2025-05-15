@@ -1,7 +1,7 @@
 import { STYLE } from "../../constants";
 import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
 import { GensSession } from "../../state/gens_session";
-import { DataTrack } from "./base_tracks/data_track";
+import { DataTrack, ExpandedTrackHeight } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {
   startExpanded: boolean;
@@ -10,8 +10,7 @@ export class DotTrack extends DataTrack {
     id: string,
     label: string,
     trackType: TrackType,
-    trackHeight: number,
-    startExpanded: boolean,
+    settings: { height: ExpandedTrackHeight },
     yAxis: Axis,
     getXRange: () => Rng,
     getRenderData: () => Promise<DotTrackData>,
@@ -34,18 +33,17 @@ export class DotTrack extends DataTrack {
         return xScale;
       },
       openTrackContextMenu,
-      { defaultHeight: trackHeight, dragSelect: true, yAxis },
+      { height: settings.height, dragSelect: true, yAxis },
       session,
     );
-    this.startExpanded = startExpanded;
     this.getRenderData = getRenderData;
   }
 
   connectedCallback(): void {
     super.connectedCallback();
     const onExpand = () => this.render({});
-    this.initializeExpander("contextmenu", this.startExpanded, onExpand);
-    this.setExpandedHeight(this.defaultTrackHeight * 2);
+    this.initializeExpander("contextmenu", onExpand);
+    this.setExpandedHeight(this.settings.height.expandedHeight);
   }
 
   override draw() {

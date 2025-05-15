@@ -7,10 +7,14 @@ import {
 import { STYLE } from "../../constants";
 import { drawArrow, getLinearScale } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
-import { DataTrack } from "./base_tracks/data_track";
+import { DataTrack, ExpandedTrackHeight } from "./base_tracks/data_track";
 import { GensSession } from "../../state/gens_session";
 
 const LEFT_PX_EDGE = STYLE.yAxis.width;
+
+interface BandTrackSettings {
+  height: ExpandedTrackHeight;
+}
 
 export class BandTrack extends DataTrack {
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
@@ -20,7 +24,7 @@ export class BandTrack extends DataTrack {
     id: string,
     label: string,
     trackType: TrackType,
-    trackHeight: number,
+    settings: { height: ExpandedTrackHeight },
     getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
@@ -43,7 +47,7 @@ export class BandTrack extends DataTrack {
       },
       openTrackContextMenu,
       {
-        defaultHeight: trackHeight,
+        height: settings.height,
         dragSelect: true,
         yAxis: null,
       },
@@ -64,9 +68,8 @@ export class BandTrack extends DataTrack {
 
     this.initializeHoverTooltip();
     this.initializeClick(onElementClick);
-    const startExpanded = false;
     const onExpand = () => this.render({});
-    this.initializeExpander("contextmenu", startExpanded, onExpand);
+    this.initializeExpander("contextmenu", onExpand);
   }
 
   override draw() {
@@ -93,14 +96,19 @@ export class BandTrack extends DataTrack {
     const { numberLanes, bandOverlaps } = getOverlapInfo(bandsInView);
 
     const labelSize =
-      this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
+      this.getIsExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
 
+    const bandTopBottomPad =
+      this.currentHeight > STYLE.bandTrack.dynamicPadThreshold
+        ? STYLE.bandTrack.trackPadding
+        : this.currentHeight / STYLE.bandTrack.dynamicPadFraction;
+
     const yScale = getBandYScale(
-      STYLE.bandTrack.trackPadding,
+      bandTopBottomPad,
       STYLE.bandTrack.bandPadding,
-      this.isExpanded() ? numberLanes : 1,
+      this.getIsExpanded() ? numberLanes : 1,
       this.dimensions.height,
       labelSize,
     );
@@ -110,7 +118,7 @@ export class BandTrack extends DataTrack {
         throw Error(`Missing ID: ${band.id}`);
       }
       const bandNOverlap = bandOverlaps[band.id].lane;
-      const yRange = yScale(bandNOverlap, this.isExpanded());
+      const yRange = yScale(bandNOverlap, this.getIsExpanded());
 
       const renderBand = Object.create(band);
       renderBand.y1 = yRange[0];
@@ -126,7 +134,7 @@ export class BandTrack extends DataTrack {
         band,
         xScale,
         showDetails,
-        this.isExpanded(),
+        this.getIsExpanded(),
         [LEFT_PX_EDGE, this.dimensions.width],
       );
       return bandHoverTargets;

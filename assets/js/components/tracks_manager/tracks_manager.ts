@@ -28,6 +28,8 @@ import {
   createAnnotTrack,
 } from "./utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
+import { TrackHeights } from "../side_menu/settings_page";
+import { BandTrack } from "../tracks/band_track";
 
 const COV_Y_RANGE: [number, number] = [-3, 3];
 const BAF_Y_RANGE: [number, number] = [0, 1];
@@ -190,7 +192,7 @@ export class TracksManager extends ShadowBaseElement {
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
       "Ideogram",
-      trackHeight.extraThin,
+      { height: trackHeight.extraThin },
       async () => {
         return {
           xRange: session.getXRange(),
@@ -384,13 +386,23 @@ export class TracksManager extends ShadowBaseElement {
   getXScale(inverted: boolean = false): Scale {
     const xRange = this.session.getXRange();
     const yAxisWidth = STYLE.yAxis.width;
-
     const xDomain: Rng = [yAxisWidth, this.tracksContainer.offsetWidth];
-
     const xScale = !inverted
       ? getLinearScale(xRange, xDomain)
       : getLinearScale(xDomain, xRange);
     return xScale;
+  }
+
+  setTrackHeights(trackHeights: TrackHeights) {
+    for (const track of this.dataTracks) {
+      if (track instanceof BandTrack) {
+        track.setHeights(trackHeights.bandCollapsed);
+      } else if (track instanceof DotTrack) {
+        track.setHeights(trackHeights.dotCollapsed, trackHeights.dotExpanded);
+      } else {
+        console.error("Track of unknown DataTrack category:", track);
+      }
+    }
   }
 
   render(settings: RenderSettings) {
@@ -471,11 +483,11 @@ export class TracksManager extends ShadowBaseElement {
           render({});
         },
         () => {
-          track.toggleCollapsed();
+          track.toggleExpanded();
           render({});
         },
         () => track.getIsHidden(),
-        () => track.getIsCollapsed(),
+        () => track.getIsExpanded(),
         isDotTrack ? () => track.getYAxis().range : null,
         (newY: Rng) => {
           track.updateYAxis(newY);
