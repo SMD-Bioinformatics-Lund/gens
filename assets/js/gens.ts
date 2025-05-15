@@ -142,9 +142,11 @@ export async function initCanvases({
     () => gensTracks.getDataTracks(),
     (trackId: string, direction: "up" | "down") =>
       gensTracks.moveTrack(trackId, direction),
-
     () => session.getSamples(),
-    () => allSampleIds,
+    () => {
+      const samples = session.getSamples();
+      return allSampleIds.filter(s => !samples.includes(s));
+    },
     () => session.getAllHighlights(),
     (region: Region) => {
       const positionOnly = region.chrom == session.getChromosome();
@@ -156,18 +158,14 @@ export async function initCanvases({
     },
     (sampleId: string) => {
       gensTracks.addSample(sampleId);
-      render({ dataUpdated: true });
-
-      console.log("Adding sample", sampleId);
-
-      console.log("Continue from here");
+      session.addSample(sampleId);
+      render({ dataUpdated: true, samplesUpdated: true });
     },
     (sampleId: string) => {
-      console.log("Removing sample", sampleId);
       // FIXME: This should eventually be session only, with tracks responding on rerender
       session.removeSample(sampleId);
       gensTracks.removeSample(sampleId);
-      render({ dataUpdated: true });
+      render({ dataUpdated: true, samplesUpdated: true });
     },
   );
 

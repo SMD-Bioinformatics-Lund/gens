@@ -168,7 +168,17 @@ export class SettingsPage extends ShadowBaseElement {
     );
     this.annotSelect.initialize(this.onAnnotationChanged);
 
-    const samples = this.getAllSamples().map((s) => {
+    // this.sampleSelect.initialize(() => {
+    //   console.log("Sample selection changed");
+    // });
+
+    this.setupSampleSelect();
+
+    this.onChange();
+  }
+
+  private setupSampleSelect() {
+    const allSamples = this.getAllSamples().map((s) => {
       return {
         label: s,
         value: s,
@@ -178,19 +188,19 @@ export class SettingsPage extends ShadowBaseElement {
     for (let i = 1; i <= 20000; i++) {
       extraSamples.push({ label: `sample_${i}`, value: `Sample ${i}` });
     }
-    samples.push(...extraSamples);
-    this.sampleSelect.setChoices(samples);
-    // this.sampleSelect.initialize(() => {
-    //   console.log("Sample selection changed");
-    // });
-
-    this.onChange();
+    allSamples.push(...extraSamples);
+    this.sampleSelect.setChoices(allSamples);
   }
 
-  render(_settings: RenderSettings) {
+  render(settings: RenderSettings) {
     if (this.tracksOverview == null) {
       return;
     }
+
+    if (settings.samplesUpdated) {
+      this.setupSampleSelect();
+    }
+
     removeChildren(this.tracksOverview);
     const tracks = this.getDataTracks();
     // FIXME: Could part of this simply be part of the template?
@@ -212,7 +222,6 @@ export class SettingsPage extends ShadowBaseElement {
     this.tracksOverview.appendChild(tracksSection);
 
     const samples = this.getCurrentSamples();
-    console.log("Current samples", samples);
     removeChildren(this.samplesOverview);
     const samplesSection = getSamplesSection(samples, (sampleId: string) =>
       this.onRemoveSample(sampleId),

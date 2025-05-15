@@ -350,9 +350,14 @@ export class TracksManager extends ShadowBaseElement {
       this.session,
       this.openTrackContextMenu,
     );
-    this.dataTracks.push(sampleTracks.cov);
-    this.dataTracks.push(sampleTracks.baf);
-    this.dataTracks.push(sampleTracks.variant);
+
+    this.addDataTrack(sampleTracks.cov);
+    this.addDataTrack(sampleTracks.baf);
+    this.addDataTrack(sampleTracks.variant);
+
+    // this.dataTracks.push(sampleTracks.cov);
+    // this.dataTracks.push(sampleTracks.baf);
+    // this.dataTracks.push(sampleTracks.variant);
 
     this.sampleToTracks[sampleId] = sampleTracks;
   }

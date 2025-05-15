@@ -140,6 +140,8 @@ export class ChoiceSelect extends ShadowBaseElement {
   }
 
   setChoices(choices: InputChoice[]) {
+    this.choiceElement.clearChoices();
+    this.choiceElement.clearStore();
     this.choiceElement.setChoices(choices);
   }
 
@@ -148,8 +150,6 @@ export class ChoiceSelect extends ShadowBaseElement {
   }
 
   getChoice(): EventChoice | null {
-
-    console.log(this.choiceElement.getValue())
 
     return this.choiceElement.getValue()
       ? (this.choiceElement.getValue() as EventChoice)

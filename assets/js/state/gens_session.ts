@@ -49,6 +49,10 @@ export class GensSession {
     return this.samples;
   }
 
+  addSample(sampleId: string) {
+    this.samples.push(sampleId);
+  }
+
   removeSample(sampleId: string): void {
     const pos = this.samples.indexOf(sampleId);
     this.samples.splice(pos, 1);
