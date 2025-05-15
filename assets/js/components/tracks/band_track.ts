@@ -68,9 +68,8 @@ export class BandTrack extends DataTrack {
 
     this.initializeHoverTooltip();
     this.initializeClick(onElementClick);
-    const startExpanded = false;
     const onExpand = () => this.render({});
-    this.initializeExpander("contextmenu", startExpanded, onExpand);
+    this.initializeExpander("contextmenu", onExpand);
   }
 
   override draw() {
@@ -97,14 +96,14 @@ export class BandTrack extends DataTrack {
     const { numberLanes, bandOverlaps } = getOverlapInfo(bandsInView);
 
     const labelSize =
-      this.isExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
+      this.getIsExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
 
     const yScale = getBandYScale(
       STYLE.bandTrack.trackPadding,
       STYLE.bandTrack.bandPadding,
-      this.isExpanded() ? numberLanes : 1,
+      this.getIsExpanded() ? numberLanes : 1,
       this.dimensions.height,
       labelSize,
     );
@@ -114,7 +113,7 @@ export class BandTrack extends DataTrack {
         throw Error(`Missing ID: ${band.id}`);
       }
       const bandNOverlap = bandOverlaps[band.id].lane;
-      const yRange = yScale(bandNOverlap, this.isExpanded());
+      const yRange = yScale(bandNOverlap, this.getIsExpanded());
 
       const renderBand = Object.create(band);
       renderBand.y1 = yRange[0];
@@ -130,7 +129,7 @@ export class BandTrack extends DataTrack {
         band,
         xScale,
         showDetails,
-        this.isExpanded(),
+        this.getIsExpanded(),
         [LEFT_PX_EDGE, this.dimensions.width],
       );
       return bandHoverTargets;

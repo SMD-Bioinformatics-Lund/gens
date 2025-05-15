@@ -208,7 +208,7 @@ export class SettingsPage extends ShadowBaseElement {
         this.onChange();
       },
       (track: DataTrack) => {
-        track.toggleCollapsed();
+        track.toggleExpanded();
         this.onChange();
       },
     );
