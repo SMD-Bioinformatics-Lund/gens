@@ -71,8 +71,8 @@ template.innerHTML = String.raw`
   <div class="header-row">
     <div class="header">Annotation sources</div>
   </div>
-  <div class="choices-container">
-    <choice-select id="choice-select" multiple></choice-select>
+  <div>
+    <choice-select id="annotation-select" multiple></choice-select>
   </div>
   <flex-row class="header-row">
     <div class="header">Samples</div>
@@ -179,7 +179,7 @@ export class SettingsPage extends ShadowBaseElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.annotSelect = this.root.querySelector("#choice-select");
+    this.annotSelect = this.root.querySelector("#annotation-select");
     this.sampleSelect = this.root.querySelector("#sample-select");
     this.tracksOverview = this.root.querySelector("#tracks-overview");
     this.samplesOverview = this.root.querySelector("#samples-overview");
@@ -205,6 +205,10 @@ export class SettingsPage extends ShadowBaseElement {
     this.addElementListener(this.addSampleButton, "click", () => {
       const sampleId = this.sampleSelect.getChoice().value;
       this.onAddSample(sampleId);
+    });
+
+    this.addElementListener(this.annotSelect, "change", () => {
+      this.render({});
     });
 
     this.addElementListener(this.sampleSelect, "change", () => {
@@ -404,9 +408,16 @@ function getTracksSection(
   const tracksSection = document.createElement("div");
 
   for (const track of tracks) {
-    const trackRow = new TrackRow();
+    const trackRow = document.createElement("track-row") as TrackRow;
     trackRow.className = "row";
-    trackRow.initialize(track, onMove, onToggleShow, onToggleCollapse);
+    trackRow.initialize(
+      track,
+      onMove,
+      onToggleShow,
+      onToggleCollapse,
+      () => track.getIsHidden(),
+      () => track.getIsExpanded(),
+    );
     tracksSection.appendChild(trackRow);
   }
   return tracksSection;

@@ -1,5 +1,6 @@
 import { ICONS, SIZES } from "../../constants";
 import { DataTrack } from "../tracks/base_tracks/data_track";
+import { IconButton } from "../util/icon_button";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
 const template = document.createElement("template");
@@ -19,23 +20,26 @@ template.innerHTML = String.raw`
 
       <icon-button id="up" icon="${ICONS.up}"></icon-button>
       <icon-button id="down" icon="${ICONS.down}"></icon-button>
-      <icon-button id="hide" icon="${ICONS.show}"></icon-button>
-      <icon-button id="collapse" icon="${ICONS.expand}"></icon-button>
+      <icon-button id="hide" icon="${ICONS.hide}"></icon-button>
+      <icon-button id="collapse" icon="${ICONS.collapse}"></icon-button>
     </flex-row>
   </flex-row>
 `;
 
 export class TrackRow extends ShadowBaseElement {
   private label: HTMLDivElement;
-  private up: HTMLButtonElement;
-  private down: HTMLButtonElement;
-  private toggleHide: HTMLButtonElement;
-  private toggleCollapse: HTMLButtonElement;
+  private up: IconButton;
+  private down: IconButton;
+  private toggleHide: IconButton;
+  private toggleExpand: IconButton;
 
   track: DataTrack;
   onMove: (track: DataTrack, direction: "up" | "down") => void;
   onToggleShow: (track: DataTrack) => void;
-  onToggleCollapse: (track: DataTrack) => void;
+  onToggleExpand: (track: DataTrack) => void;
+
+  getIsHidden: () => boolean;
+  getIsExpanded: () => boolean;
 
   constructor() {
     super(template);
@@ -46,23 +50,41 @@ export class TrackRow extends ShadowBaseElement {
     onMove: (track: DataTrack, direction: "up" | "down") => void,
     onToggleShow: (track: DataTrack) => void,
     onToggleCollapse: (track: DataTrack) => void,
+    getIsHidden: () => boolean,
+    getIsExpanded: () => boolean,
   ) {
+    console.log("Initialized");
+
     this.track = track;
     this.onMove = onMove;
     this.onToggleShow = onToggleShow;
-    this.onToggleCollapse = onToggleCollapse;
+    this.onToggleExpand = onToggleCollapse;
+    this.getIsHidden = getIsHidden;
+    this.getIsExpanded = getIsExpanded;
   }
 
   connectedCallback(): void {
+
+    console.log("Connected");
+
     super.connectedCallback();
 
     this.label = this.root.querySelector("#label");
     this.up = this.root.querySelector("#up");
     this.down = this.root.querySelector("#down");
     this.toggleHide = this.root.querySelector("#hide");
-    this.toggleCollapse = this.root.querySelector("#collapse");
+    this.toggleExpand = this.root.querySelector("#collapse");
 
     this.label.innerHTML = this.track.label;
+
+    // This is needed to make sure the icon buttons are classes
+    // before later assigning the icon, i.e.
+    // this.toggleHide.icon = ICONS.down;
+    // If not doing this, the component is not upgraded yet
+    // at that point and will not assign the property
+    this.shadowRoot!
+        .querySelectorAll('icon-button')
+        .forEach(el => customElements.upgrade(el));
 
     this.up.onclick = () => {
       console.log("Moving");
@@ -74,14 +96,12 @@ export class TrackRow extends ShadowBaseElement {
     this.toggleHide.onclick = () => {
       this.onToggleShow(this.track);
     }
-    this.toggleCollapse.onclick = () => {
-      this.onToggleCollapse(this.track);
+    this.toggleExpand.onclick = () => {
+      this.onToggleExpand(this.track);
     }
-  }
 
-  render(settings: RenderSettings) {
-    this.toggleHide.classList = `icon-button fas ${ICONS.show}`;
-    this.toggleCollapse.classList = `icon-button fas ${ICONS.show}`;
+    this.toggleHide.icon = this.getIsHidden() ? ICONS.hide : ICONS.show;
+    this.toggleExpand.icon = this.getIsExpanded() ? ICONS.expand : ICONS.collapse;
   }
 }
 

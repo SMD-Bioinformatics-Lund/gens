@@ -54,6 +54,15 @@ export class IconButton extends ShadowBaseElement {
     super(template);
   }
 
+  public set icon(value: string) {
+    console.log("Icon set to", value);
+    this.setAttribute("icon", value);
+  }
+
+  public get icon(): string {
+    return this.getAttribute("icon");
+  }
+
   public set disabled(value: boolean) {
     if (value) {
       this.setAttribute("disabled", "");
@@ -68,9 +77,6 @@ export class IconButton extends ShadowBaseElement {
 
   attributeChangedCallback(name: string, _oldVal: string, newVal: string) {
 
-    if (!this.root) {
-      return;
-    }
     const iconEl = this.root.querySelector("#icon") as HTMLElement;
 
     if (name === "icon") {
