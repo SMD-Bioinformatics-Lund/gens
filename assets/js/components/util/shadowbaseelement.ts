@@ -15,7 +15,7 @@ export abstract class ShadowBaseElement extends HTMLElement {
 
   protected addElementListener(
     element: HTMLElement,
-    type: string,
+    type: keyof HTMLElementEventMap,
     callback: (event: Event) => void,
   ) {
     element.addEventListener(type, callback, {

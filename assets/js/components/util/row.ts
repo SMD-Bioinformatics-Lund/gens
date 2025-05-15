@@ -16,4 +16,4 @@ class Row extends ShadowBaseElement {
     super(template);
   }
 }
-customElements.define("g-row", Row);
+customElements.define("flex-row", Row);

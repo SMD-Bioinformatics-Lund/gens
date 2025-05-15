@@ -1,14 +1,13 @@
 import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
-import { SampleInfo } from "../../home/sample_table";
 import { removeChildren } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ChoiceSelect } from "../util/choice_select";
-import { getIconButton } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
 import { TrackRow } from "./track_row";
 import { SampleRow } from "./sample_row";
 import { HighlightRow } from "./highlight_row";
+import { IconButton } from "../util/icon_button";
 
 // FIXME: How to manage the content? Something to do later?
 
@@ -60,13 +59,13 @@ template.innerHTML = String.raw`
   <div class="choices-container">
     <choice-select id="choice-select" multiple></choice-select>
   </div>
-  <g-row class="header-row">
+  <flex-row class="header-row">
     <div class="header">Samples</div>
-    <g-row id="samples-header-row">
+    <flex-row id="samples-header-row">
       <choice-select id="sample-select"></choice-select>
-      <icon-button icon="${ICONS.plus}"></icon-button>
-    </g-row>
-  </g-row>
+      <icon-button id="add-sample" icon="${ICONS.plus}"></icon-button>
+    </flex-row>
+  </flex-row>
   <div id="samples-overview"></div>
   <div class="header-row">
     <div class="header">Highlights</div>
@@ -84,6 +83,7 @@ export class SettingsPage extends ShadowBaseElement {
   private highlightsOverview: HTMLDivElement;
   private annotSelect: ChoiceSelect;
   private sampleSelect: ChoiceSelect;
+  private addSampleButton: IconButton;
 
   private onChange: () => void;
   private annotationSources: ApiAnnotationTrack[];
@@ -97,6 +97,9 @@ export class SettingsPage extends ShadowBaseElement {
   private getHighlights: () => RangeHighlight[];
   private gotoHighlight: (region: Region) => void;
   private removeHighlight: (id: string) => void;
+
+  private onAddSample: (id: string) => void;
+  private onRemoveSample: (id: string) => void;
 
   public isInitialized: boolean = false;
 
@@ -116,6 +119,8 @@ export class SettingsPage extends ShadowBaseElement {
     getHighlights: () => RangeHighlight[],
     gotoHighlight: (region: Region) => void,
     removeHighlight: (id: string) => void,
+    onAddSample: (id: string) => void,
+    onRemoveSample: (id: string) => void,
   ) {
     this.onChange = onChange;
     this.annotationSources = annotationSources;
@@ -130,6 +135,8 @@ export class SettingsPage extends ShadowBaseElement {
 
     this.gotoHighlight = gotoHighlight;
     this.removeHighlight = removeHighlight;
+    this.onAddSample = onAddSample;
+    this.onRemoveSample = onRemoveSample;
   }
 
   connectedCallback() {
@@ -139,6 +146,16 @@ export class SettingsPage extends ShadowBaseElement {
     this.tracksOverview = this.root.querySelector("#tracks-overview");
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
+    this.addSampleButton = this.root.querySelector("#add-sample");
+
+    this.addElementListener(this.addSampleButton, "click", () => {
+      const sampleId = this.sampleSelect.getChoice().value;
+      this.onAddSample(sampleId);
+    });
+
+    this.addElementListener(this.sampleSelect, "change", () => {
+      this.render({});
+    });
   }
 
   initialize() {
@@ -155,12 +172,17 @@ export class SettingsPage extends ShadowBaseElement {
       return {
         label: s,
         value: s,
-      }
+      };
     });
+    const extraSamples = [];
+    for (let i = 1; i <= 20000; i++) {
+      extraSamples.push({ label: `sample_${i}`, value: `Sample ${i}` });
+    }
+    samples.push(...extraSamples);
     this.sampleSelect.setChoices(samples);
-    this.sampleSelect.initialize(() => {
-      console.log("Sample selection changed");
-    });
+    // this.sampleSelect.initialize(() => {
+    //   console.log("Sample selection changed");
+    // });
 
     this.onChange();
   }
@@ -191,7 +213,9 @@ export class SettingsPage extends ShadowBaseElement {
 
     const samples = this.getCurrentSamples();
     removeChildren(this.samplesOverview);
-    const samplesSection = getSamplesSection(samples);
+    const samplesSection = getSamplesSection(samples, (sampleId: string) =>
+      this.onRemoveSample(sampleId),
+    );
     this.samplesOverview.appendChild(samplesSection);
 
     removeChildren(this.highlightsOverview);
@@ -201,6 +225,8 @@ export class SettingsPage extends ShadowBaseElement {
       (id: string) => this.removeHighlight(id),
     );
     this.highlightsOverview.appendChild(highlightsSection);
+
+    this.addSampleButton.disabled = this.sampleSelect.getChoice() == null;
   }
 
   getAnnotSources(settings: {
@@ -246,7 +272,10 @@ function getAnnotationChoices(
   return choices;
 }
 
-function getSamplesSection(sampleIds: string[]): HTMLDivElement {
+function getSamplesSection(
+  sampleIds: string[],
+  removeSample: (id: string) => void,
+): HTMLDivElement {
   const container = document.createElement("div");
   container.style.display = "flex";
   container.style.flexDirection = "column";
@@ -254,9 +283,7 @@ function getSamplesSection(sampleIds: string[]): HTMLDivElement {
 
   for (const sampleId of sampleIds) {
     const sampleRow = new SampleRow();
-    sampleRow.initialize(sampleId, () => {
-      console.log("Remove sample");
-    });
+    sampleRow.initialize(sampleId, removeSample);
     container.appendChild(sampleRow);
   }
 
@@ -273,10 +300,17 @@ function getHighlightsSection(
   container.style.flexDirection = "column";
   container.style.gap = `${SIZES.xs}px`;
 
-  for (const highlight of highlights) {
-    const highlightRow = new HighlightRow();
-    highlightRow.initialize(highlight, onGotoHighlight, onRemoveHighlight);
-    container.appendChild(highlightRow);
+  if (highlights.length > 0) {
+    for (const highlight of highlights) {
+      const highlightRow = new HighlightRow();
+      highlightRow.initialize(highlight, onGotoHighlight, onRemoveHighlight);
+      container.appendChild(highlightRow);
+    }
+  } else {
+    const placeholder = document.createTextNode(
+      "No highlights currently active",
+    );
+    container.appendChild(placeholder);
   }
 
   return container;

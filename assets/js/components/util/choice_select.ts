@@ -43,11 +43,51 @@ Choices.prototype._onClick = function (event: MouseEvent) {
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+
   <style>
-    .choices__list--dropdown {
-      z-index: 3000;
-    }
+   .choices__list--dropdown {
+     z-index: 3000;
+   }
+
+  /* Kudos to ChatGPT for making this mess work. Big FIXME to clean this up. Will see if that happens. */
+
+  /* 1. Vertically center items & tighten up their padding */
+  .choices__list--dropdown .choices__item,
+  .choices__list[aria-expanded] .choices__item {
+    display: flex;            /* switch to flex to align contents */
+    align-items: center;      /* vertically center text/icon */
+    padding: 4px 8px !important;  /* smaller top/bottom & left/right padding */
+    box-sizing: border-box;   /* include padding in width */
+  }
+
+  /* 2. Shrink the “selected” single value box and input padding */
+  .choices__inner {
+    padding: 4px 8px !important;  /* match dropdown items */
+    min-height: auto !important;  /* let it collapse */
+    height: auto !important;
+    box-sizing: border-box;
+  }
+
+  /* 3. Keep the dropdown from overshooting to the right */
+  .choices__list--dropdown,
+  .choices__list[aria-expanded] {
+    width: auto !important;       /* allow its content width */
+    max-width: 100% !important;   /* but never exceed container */
+    overflow: hidden !important;  /* clip any rogue overflow */
+  }
+
+  /* 4. Tuck the arrow back in if needed */
+  .choices[data-type*="select-one"] .choices__inner::after {
+    right: 8px !important;        /* pull arrow back towards text */
+  }
+
+  /* 5. Ensure host/container shows full dropdown */
+  :host,
+  :host * {
+    overflow: visible !important;
+  }
+
   </style>
   <select id="select"></select>
 `;
@@ -63,7 +103,6 @@ export class ChoiceSelect extends ShadowBaseElement {
 
   constructor() {
     super(template);
-
   }
 
   connectedCallback(): void {
@@ -83,12 +122,21 @@ export class ChoiceSelect extends ShadowBaseElement {
       placeholderValue: "",
       removeItemButton: isMultipleMode,
       itemSelectText: "",
+      shouldSort: false,
+      renderChoiceLimit: 20,
+      searchResultLimit: 50,
     });
 
     this.selectElement.addEventListener("change", () => {
       const vals = this.choiceElement.getValue(true) as string[];
-      this.dispatchEvent(new CustomEvent("change", { detail: { values: vals}, bubbles: true, composed: true}))
-    })
+      this.dispatchEvent(
+        new CustomEvent("change", {
+          detail: { values: vals },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    });
   }
 
   setChoices(choices: InputChoice[]) {
@@ -97,6 +145,15 @@ export class ChoiceSelect extends ShadowBaseElement {
 
   getChoices(): EventChoice[] {
     return this.choiceElement.getValue() as EventChoice[];
+  }
+
+  getChoice(): EventChoice | null {
+
+    console.log(this.choiceElement.getValue())
+
+    return this.choiceElement.getValue()
+      ? (this.choiceElement.getValue() as EventChoice)
+      : null;
   }
 
   initialize(onChange: (choiceIds: string[]) => void) {

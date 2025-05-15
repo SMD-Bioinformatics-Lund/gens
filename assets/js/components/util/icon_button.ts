@@ -18,6 +18,19 @@ template.innerHTML = String.raw`
       padding: 4px 8px;
       border-radius: 4px;
     }
+    :host(:hover) {
+      background: ${COLORS.extraLightGray};
+    }
+    :host(:active) {
+      background: ${COLORS.lightGray};
+    }
+    :host([disabled]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: ${COLORS.white};
+      border-color: ${COLORS.lightGray};
+    }
     #icon {
       font-size: 1em;
     }
@@ -34,17 +47,42 @@ template.innerHTML = String.raw`
 export class IconButton extends ShadowBaseElement {
 
   static get observedAttributes() {
-    return ["icon"];
+    return ["icon", "disabled"];
   }
 
   constructor() {
     super(template);
   }
 
+  public set disabled(value: boolean) {
+    if (value) {
+      this.setAttribute("disabled", "");
+    } else {
+      this.removeAttribute("disabled");
+    }
+  }
+
+  public get disabled(): boolean {
+    return this.hasAttribute("disabled");
+  }
+
   attributeChangedCallback(name: string, _oldVal: string, newVal: string) {
-    if (name === "icon" && this.root) {
-      const iconEl = this.root.querySelector("#icon") as HTMLElement;
+
+    if (!this.root) {
+      return;
+    }
+    const iconEl = this.root.querySelector("#icon") as HTMLElement;
+
+    if (name === "icon") {
       iconEl.className = `fas ${newVal}`;
+    }
+
+    if (name === "disabled") {
+      if (newVal !== null) {
+        this.setAttribute("aria-disabled", "true");
+      } else {
+        this.removeAttribute("aria-disabled");
+      }
     }
   }
 }

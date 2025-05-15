@@ -148,6 +148,12 @@ export async function initCanvases({
     (id: string) => {
       session.removeHighlight(id);
     },
+    (sampleId: string) => {
+      console.log("Adding sample", sampleId);
+    },
+    (sampleId: string) => {
+      console.log("Removing sample", sampleId)
+    }
   );
 
   initialize(

@@ -13,13 +13,13 @@ template.innerHTML = String.raw`
       gap: ${SIZES.s}px;
     }
   </style>
-  <g-row id="content-row">
+  <flex-row id="content-row">
     <div id="label"></div>
-    <g-row id="button-row">
+    <flex-row id="button-row">
       <icon-button id="goto" icon="${ICONS.right}"></icon-button>
       <icon-button id="remove" icon="${ICONS.xmark}"></icon-button>
-    </g-row>
-  </g-row>
+    </flex-row>
+  </flex-row>
 `;
 
 export class HighlightRow extends ShadowBaseElement {

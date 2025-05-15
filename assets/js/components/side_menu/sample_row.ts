@@ -10,12 +10,12 @@ template.innerHTML = String.raw`
       width: 100%;
     }
   </style>
-  <g-row id="main-row">
+  <flex-row id="main-row">
     <div id="label"></div>
-    <g-row>
+    <flex-row>
       <icon-button id="remove" icon="${ICONS.trash}"></icon-button>
-    </g-row>
-  </g-row>
+    </flex-row>
+  </flex-row>
 `;
 
 export class SampleRow extends ShadowBaseElement {

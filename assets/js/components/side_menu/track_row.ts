@@ -13,16 +13,16 @@ template.innerHTML = String.raw`
       gap: ${SIZES.s}px;
     }
   </style>
-  <g-row id="main-row">
+  <flex-row id="main-row">
     <div id="label"></div>
-    <g-row id="button-row">
+    <flex-row id="button-row">
 
       <icon-button id="up" icon="${ICONS.up}"></icon-button>
       <icon-button id="down" icon="${ICONS.down}"></icon-button>
       <icon-button id="hide" icon="${ICONS.show}"></icon-button>
       <icon-button id="collapse" icon="${ICONS.expand}"></icon-button>
-    </g-row>
-  </g-row>
+    </flex-row>
+  </flex-row>
 `;
 
 export class TrackRow extends ShadowBaseElement {
