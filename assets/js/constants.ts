@@ -69,7 +69,7 @@ const font = "12px sans-serif";
 const TRACK_HEIGHTS = {
   extraThin: 20,
   thin: 45,
-  thick: 120,
+  thick: 180,
 }
 
 // FIXME: First step is to gather all constants here

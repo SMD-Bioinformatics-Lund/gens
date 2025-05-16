@@ -24,10 +24,7 @@ export interface ExpandedTrackHeight {
 interface DataTrackSettings {
   height: ExpandedTrackHeight;
   dragSelect: boolean;
-  yAxis: {
-    range: Rng;
-    reverse: boolean;
-  } | null;
+  yAxis: Axis | null;
 }
 
 const DEBOUNCE_DELAY = 50;
@@ -299,7 +296,7 @@ export abstract class DataTrack extends CanvasTrack {
       });
     }
 
-    drawYAxis(this.ctx, ticks, yScale, yAxis.range, this.label);
+    drawYAxis(this.ctx, ticks, yScale, yAxis.range, yAxis.label);
   }
 
   drawTrackLabel(shiftRight: number = 0): Box {

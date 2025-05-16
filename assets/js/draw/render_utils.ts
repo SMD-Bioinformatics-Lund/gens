@@ -1,5 +1,5 @@
 import { rangeSize } from "../util/utils";
-import { SIZES, STYLE } from "../constants";
+import { STYLE } from "../constants";
 import { drawLabel, drawLine } from "./shapes";
 
 export function drawYAxis(
@@ -33,12 +33,10 @@ export function drawYAxis(
   console.log(midPoint);
   console.log(yScale(midPoint));
 
-  drawLabel(ctx, label, 0, yScale(midPoint), {
+  drawLabel(ctx, label, 4, yScale(midPoint), {
     rotation: -Math.PI / 2,
-    // textAlign: "center",
-    // textBaseline: "middle",
-    // pivotX: 4,
-    // pivotY: ctx.canvas.height / 2
+    textAlign: "center",
+    textBaseline: "top",
   });
 }
 

@@ -523,7 +523,7 @@ function createSampleTracks(
     `${sampleId} cov`,
     sampleId,
     (sampleId: string) => dataSources.getCovData(sampleId),
-    { startExpanded, yAxis: { range: COV_Y_RANGE, reverse: true } },
+    { startExpanded, yAxis: { range: COV_Y_RANGE, reverse: true, label: "LABEL" } },
     session,
     openTrackContextMenu,
   );
@@ -532,7 +532,7 @@ function createSampleTracks(
     `${sampleId} baf`,
     sampleId,
     (sampleId: string) => dataSources.getBafData(sampleId),
-    { startExpanded, yAxis: { range: BAF_Y_RANGE, reverse: true } },
+    { startExpanded, yAxis: { range: BAF_Y_RANGE, reverse: true, label: "LABEL"} },
     session,
     openTrackContextMenu,
   );

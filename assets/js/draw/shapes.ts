@@ -134,8 +134,6 @@ export function drawLabel(
     textAlign = "left",
     boxStyle = undefined,
     rotation = 0,
-    pivotX,
-    pivotY,
   } = style;
 
   ctx.font = font;
@@ -157,8 +155,8 @@ export function drawLabel(
   };
 
   if (rotation !== 0) {
-    const cx = pivotX ?? leftX + frameWidth / 2;
-    const cy = pivotY ?? topY + frameHeight / 2;
+    const cx = leftX;
+    const cy = topY;
 
     ctx.save();
     ctx.translate(cx, cy);
