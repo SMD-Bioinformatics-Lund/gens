@@ -75,9 +75,6 @@ export class ChromosomeView extends ShadowBaseElement {
 
         this.chromosomeTracksContainer.appendChild(trackWrapper);
         track.initialize();
-
-        // Add to chrom tracks
-        // Add to sample tracks
       }
     }
   }

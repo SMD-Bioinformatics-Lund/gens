@@ -370,16 +370,6 @@ export class TrackView extends ShadowBaseElement {
     this.tracksContainer.removeChild(track.parentElement);
   }
 
-  // getXScale(inverted: boolean = false): Scale {
-  //   const xRange = this.session.getXRange();
-  //   const yAxisWidth = STYLE.yAxis.width;
-  //   const xDomain: Rng = [yAxisWidth, this.tracksContainer.offsetWidth];
-  //   const xScale = !inverted
-  //     ? getLinearScale(xRange, xDomain)
-  //     : getLinearScale(xDomain, xRange);
-  //   return xScale;
-  // }
-
   setTrackHeights(trackHeights: TrackHeights) {
     for (const track of this.dataTracks) {
       if (track instanceof BandTrack) {
