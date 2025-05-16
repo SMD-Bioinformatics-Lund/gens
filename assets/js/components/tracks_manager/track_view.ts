@@ -48,6 +48,8 @@ export interface DataTrackInfo {
   sampleId: string | null;
 }
 
+// FIXME: Session to carry track state?
+
 export class TrackView extends ShadowBaseElement {
   topContainer: HTMLDivElement;
   tracksContainer: HTMLDivElement;
@@ -59,7 +61,6 @@ export class TrackView extends ShadowBaseElement {
   sampleIds: string[];
 
   dataTracksInfo: DataTrackInfo[] = [];
-  // dataTracks: DataTrack[] = [];
   ideogramTrack: IdeogramTrack;
   overviewTracks: OverviewTrack[] = [];
   dataTrackIdToWrapper: Record<string, HTMLDivElement> = {};
@@ -84,7 +85,7 @@ export class TrackView extends ShadowBaseElement {
     this.bottomContainer = this.root.querySelector("#bottom-container");
   }
 
-  initialize(
+  public initialize(
     render: (settings: RenderSettings) => void,
     sampleIds: string[],
     chromSizes: Record<string, number>,
@@ -227,6 +228,8 @@ export class TrackView extends ShadowBaseElement {
       track.renderLoading();
     });
 
+    this.dataTracksInfo = tracks;
+
     this.overviewTracks.forEach((track) => {
       this.bottomContainer.appendChild(track);
       track.initialize();
@@ -256,7 +259,7 @@ export class TrackView extends ShadowBaseElement {
     });
   }
 
-  getXScale(inverted: boolean = false): Scale {
+  private getXScale(inverted: boolean = false): Scale {
     const xRange = this.session.getXRange();
     const yAxisWidth = STYLE.yAxis.width;
     const xDomain: Rng = [yAxisWidth, this.tracksContainer.offsetWidth];
@@ -266,7 +269,7 @@ export class TrackView extends ShadowBaseElement {
     return xScale;
   }
 
-  createOpenTrackContextMenu(render: (settings: RenderSettings) => void) {
+  private createOpenTrackContextMenu(render: (settings: RenderSettings) => void) {
     const openTrackContextMenu = (track: DataTrack) => {
       const isDotTrack = track instanceof DotTrack;
 
@@ -314,12 +317,12 @@ export class TrackView extends ShadowBaseElement {
     return openTrackContextMenu;
   }
 
-  getDataTracks(): DataTrack[] {
+  public getDataTracks(): DataTrack[] {
     return this.dataTracksInfo.filter((track) => track instanceof DataTrack);
   }
 
   // FIXME: Seems this should be a more general util
-  moveTrack(trackId: string, direction: "up" | "down") {
+  public moveTrack(trackId: string, direction: "up" | "down") {
     const trackInfo = getDataTrackInfoById(this.dataTracksInfo, trackId);
     const trackInfoIndex = this.dataTracksInfo.indexOf(trackInfo);
 
@@ -352,7 +355,7 @@ export class TrackView extends ShadowBaseElement {
     moveElement(this.dataTracksInfo, trackInfoIndex, shift, true);
   }
 
-  addSample(sampleId: string) {
+  public addSample(sampleId: string) {
     const sampleTracks = createSampleTracks(
       sampleId,
       this.dataSources,
@@ -419,7 +422,7 @@ export class TrackView extends ShadowBaseElement {
     this.tracksContainer.removeChild(track.container);
   }
 
-  setTrackHeights(trackHeights: TrackHeights) {
+  public setTrackHeights(trackHeights: TrackHeights) {
     for (const track of this.dataTracksInfo) {
       if (track instanceof BandTrack) {
         track.setHeights(trackHeights.bandCollapsed);
@@ -431,6 +434,7 @@ export class TrackView extends ShadowBaseElement {
     }
   }
 
+  // FIXME: Should this be refactored?
   removeDataTrack(id: string) {
     const trackInfo = getDataTrackInfoById(this.dataTracksInfo, id);
     const index = this.dataTracksInfo.indexOf(trackInfo);
@@ -444,7 +448,10 @@ export class TrackView extends ShadowBaseElement {
     delete this.dataTrackIdToWrapper[id];
   }
 
-  render(settings: RenderSettings) {
+  public render(settings: RenderSettings) {
+
+    console.log("Track view render", this.dataTracksInfo);
+
     // FIXME: Extract function
     renderHighlights(
       this.tracksContainer,
