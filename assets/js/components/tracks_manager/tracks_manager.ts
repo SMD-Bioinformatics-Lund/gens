@@ -1,42 +1,13 @@
-import "../tracks/base_tracks/canvas_track";
-import "../tracks/band_track";
-import "../tracks/dot_track";
-import "../tracks/ideogram_track";
-import "../tracks/overview_track";
-import { IdeogramTrack } from "../tracks/ideogram_track";
-import { OverviewTrack } from "../tracks/overview_track";
-import { DotTrack } from "../tracks/dot_track";
-import { ANIM_TIME, CHROMOSOMES, SIZES, STYLE } from "../../constants";
+import { SIZES, STYLE } from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
-import { diff, moveElement } from "../../util/collections";
 
-import Sortable, { SortableEvent } from "sortablejs";
 import { GensSession } from "../../state/gens_session";
-import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
-import { getLinearScale } from "../../draw/render_utils";
-import { keyLogger } from "../util/keylogger";
-import { TrackPage } from "../side_menu/track_page";
-import { setupDrag, setupDragging } from "../../movements/dragging";
-import { zoomOut } from "../../util/navigation";
-import {
-  createDotTrack,
-  createGenesTrack,
-  createOverviewTrack,
-  createVariantTrack,
-  createDataTrackWrapper,
-  TRACK_HANDLE_CLASS,
-  createAnnotTrack,
-} from "./utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
-import { TrackHeights } from "../side_menu/settings_page";
-import { BandTrack } from "../tracks/band_track";
 import { TrackView } from "./track_view";
 import { ChromosomeView } from "./chromosome_view";
 
 export const COV_Y_RANGE: [number, number] = [-3, 3];
 export const BAF_Y_RANGE: [number, number] = [0, 1];
-
-const trackHeight = STYLE.tracks.trackHeight;
 
 export interface TracksManagerDataSources {
   getAnnotationSources: GetAnnotSources;
@@ -97,14 +68,6 @@ template.innerHTML = String.raw`
       cursor: grabbing;
     }
   </style>
-  <!-- <div id="track-view">
-    <div id="top-container"></div>
-    <div id="tracks-container"></div>
-    <div id="bottom-container"></div>
-  </div>
-  <div id="chromosome-view" hidden>
-    <div id="chromosome-tracks-container"></div>
-  </div> -->
   <chromosome-view id="chromosome-view"></chromosome-view>
   <track-view id="track-view"></track-view>
 `;

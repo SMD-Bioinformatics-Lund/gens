@@ -8,6 +8,7 @@ import {
   createGenesTrack,
   createOverviewTrack,
   createVariantTrack,
+  getTrackInfo,
   TRACK_HANDLE_CLASS,
 } from "./utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
@@ -41,6 +42,12 @@ template.innerHTML = String.raw`
   <div id="bottom-container"></div>
 `;
 
+export interface DataTrackInfo {
+  track: DataTrack;
+  container: HTMLDivElement;
+  sampleId: string | null;
+}
+
 export class TrackView extends ShadowBaseElement {
   topContainer: HTMLDivElement;
   tracksContainer: HTMLDivElement;
@@ -50,7 +57,9 @@ export class TrackView extends ShadowBaseElement {
   dataSources: TracksManagerDataSources;
   renderAll: (settings: RenderSettings) => void;
   sampleIds: string[];
-  dataTracks: DataTrack[] = [];
+
+  dataTracksInfo: DataTrackInfo[] = [];
+  // dataTracks: DataTrack[] = [];
   ideogramTrack: IdeogramTrack;
   overviewTracks: OverviewTrack[] = [];
   dataTrackIdToWrapper: Record<string, HTMLDivElement> = {};
@@ -60,7 +69,7 @@ export class TrackView extends ShadowBaseElement {
 
   sampleToTracks: Record<
     string,
-    { cov: DataTrack; baf: DataTrack; variant: DataTrack }
+    { cov: DataTrackInfo; baf: DataTrackInfo; variant: DataTrackInfo }
   > = {};
 
   constructor() {
@@ -96,8 +105,8 @@ export class TrackView extends ShadowBaseElement {
       handle: `.${TRACK_HANDLE_CLASS}`,
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
-        const [moved] = this.dataTracks.splice(oldIndex, 1);
-        this.dataTracks.splice(newIndex, 0, moved);
+        const [moved] = this.dataTracksInfo.splice(oldIndex, 1);
+        this.dataTracksInfo.splice(newIndex, 0, moved);
         render({});
       },
     });
@@ -114,9 +123,9 @@ export class TrackView extends ShadowBaseElement {
       render({ dataUpdated: true, positionOnly: true });
     });
 
-    const covTracks = [];
-    const bafTracks = [];
-    const variantTracks = [];
+    const covTracks: DataTrackInfo[] = [];
+    const bafTracks: DataTrackInfo[] = [];
+    const variantTracks: DataTrackInfo[] = [];
 
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -183,20 +192,37 @@ export class TrackView extends ShadowBaseElement {
       openTrackContextMenu,
     );
 
-    this.dataTracks.push(
+    const tracks: DataTrackInfo[] = [
       ...covTracks,
       ...bafTracks,
       ...variantTracks,
       genesTrack,
-    );
+    ];
+
+    // const tracks: DataTrackInfo[] = bareTracks.map((track) => {
+    //   // this.setupDataTrack(track);
+    //   const container = document.createElement("div") as HTMLDivElement;
+    //   container.appendChild(track);
+    //   return {
+    //     track,
+    //     container,
+    //   };
+    // });
+
+    // this.dataTracks.push(
+    //   ...covTracks,
+    //   ...bafTracks,
+    //   ...variantTracks,
+    //   genesTrack,
+    // );
 
     this.topContainer.appendChild(this.ideogramTrack);
     this.ideogramTrack.initialize();
     this.ideogramTrack.renderLoading();
 
-    this.dataTracks.forEach((track) => {
-      const trackWrap = createDataTrackWrapper(track);
-      this.tracksContainer.appendChild(trackWrap);
+    tracks.forEach(({ track, container }) => {
+      // const trackWrap = createDataTrackWrapper(track);
+      this.tracksContainer.appendChild(container);
       track.initialize();
       track.renderLoading();
     });
@@ -289,46 +315,41 @@ export class TrackView extends ShadowBaseElement {
   }
 
   getDataTracks(): DataTrack[] {
-    return this.dataTracks.filter((track) => track instanceof DataTrack);
+    return this.dataTracksInfo.filter((track) => track instanceof DataTrack);
   }
 
-  getTrackById(trackId: string): DataTrack {
-    for (let i = 0; i < this.dataTracks.length; i++) {
-      if (this.dataTracks[i].id == trackId) {
-        const track = this.dataTracks[i];
-        return track;
-      }
-    }
-    console.error("Did not find any track with ID", trackId);
-  }
-
+  // FIXME: Seems this should be a more general util
   moveTrack(trackId: string, direction: "up" | "down") {
-    const track = this.getTrackById(trackId);
-    const trackIndex = this.dataTracks.indexOf(track);
+    const trackInfo = getDataTrackInfoById(this.dataTracksInfo, trackId);
+    const trackInfoIndex = this.dataTracksInfo.indexOf(trackInfo);
 
-    if (direction == "up" && trackIndex == 0) {
+    if (direction == "up" && trackInfoIndex == 0) {
       return;
     }
-    if (direction == "down" && trackIndex == this.dataTracks.length - 1) {
+    if (
+      direction == "down" &&
+      trackInfoIndex == this.dataTracksInfo.length - 1
+    ) {
       return;
     }
 
     const shift = direction == "up" ? -1 : 1;
-    const trackContainer = track.parentElement;
+    const trackContainer = trackInfo.container;
+    // FIXME: Shouldn't this always be the same container? Test it
     const trackSContainer = trackContainer.parentNode;
     if (direction == "up") {
       trackSContainer.insertBefore(
         trackContainer,
-        this.dataTracks[trackIndex - 1].parentNode,
+        this.dataTracksInfo[trackInfoIndex - 1].container,
       );
     } else {
       trackSContainer.insertBefore(
         trackContainer,
-        this.dataTracks[trackIndex + 1].parentNode.nextSibling,
+        this.dataTracksInfo[trackInfoIndex + 1].container.nextSibling,
       );
     }
 
-    moveElement(this.dataTracks, trackIndex, shift, true);
+    moveElement(this.dataTracksInfo, trackInfoIndex, shift, true);
   }
 
   addSample(sampleId: string) {
@@ -340,38 +361,66 @@ export class TrackView extends ShadowBaseElement {
       this.openTrackContextMenu,
     );
 
-    this.addDataTrack(sampleTracks.cov);
-    this.addDataTrack(sampleTracks.baf);
-    this.addDataTrack(sampleTracks.variant);
+    // this.setupDataTrack(sampleTracks.cov);
+    // this.setupDataTrack(sampleTracks.baf);
+    // this.setupDataTrack(sampleTracks.variant);
 
-    this.sampleToTracks[sampleId] = sampleTracks;
+    this.dataTracksInfo.push(
+      sampleTracks.cov,
+      sampleTracks.baf,
+      sampleTracks.variant,
+    );
+    // this.sampleToTracks[sampleId] = sampleTracks;
   }
 
-  removeSample(sampleId: string) {
-    const tracks = this.sampleToTracks[sampleId];
+  public removeSample(sampleId: string) {
+    // const tracks = this.sampleToTracks[sampleId];
 
-    for (const [sampleId, track] of Object.entries(tracks)) {
-      this.hideTrack(track.id);
-      const index = this.dataTracks.indexOf(track);
-      this.dataTracks.splice(index, 1);
+    const removeInfos = this.dataTracksInfo.filter(
+      (info) => info.sampleId === sampleId,
+    );
+
+    this.dataTracksInfo = this.dataTracksInfo.filter(
+      (info) => info.sampleId !== sampleId,
+    );
+
+    for (const removeInfo of removeInfos) {
+      this.tracksContainer.removeChild(removeInfo.container);
     }
 
-    delete this.sampleToTracks[sampleId];
+    // const removeInds = [];
+    // for (let i = 0; i < this.dataTracksInfo.length; i++) {
+    //   const info = this.dataTracksInfo[i];
+    //   if (info.sampleId === sampleId) {
+    //     removeInds.push(i);
+    //   }
+    // }
+
+    // const toRemove = this.dataTracksInfo.filter((info) => {
+    //   info.sampleId === sampleId
+    // })
+
+    // for (const [sampleId, track] of Object.entries(tracks)) {
+    //   this.hideTrack(track.track.id);
+    //   const index = this.dataTracksInfo.indexOf(track);
+    //   this.dataTracksInfo.splice(index, 1);
+    // }
+
+    // delete this.sampleToTracks[sampleId];
   }
 
-  showTrack(trackId: string) {
-    const track = this.getTrackById(trackId);
-    const trackWrap = createDataTrackWrapper(track);
-    this.tracksContainer.appendChild(trackWrap);
+  public showTrack(trackId: string) {
+    const track = getDataTrackInfoById(this.dataTracksInfo, trackId);
+    this.tracksContainer.appendChild(track.container);
   }
 
-  hideTrack(trackId: string) {
-    const track = this.getTrackById(trackId);
-    this.tracksContainer.removeChild(track.parentElement);
+  public hideTrack(trackId: string) {
+    const track = getDataTrackInfoById(this.dataTracksInfo, trackId);
+    this.tracksContainer.removeChild(track.container);
   }
 
   setTrackHeights(trackHeights: TrackHeights) {
-    for (const track of this.dataTracks) {
+    for (const track of this.dataTracksInfo) {
       if (track instanceof BandTrack) {
         track.setHeights(trackHeights.bandCollapsed);
       } else if (track instanceof DotTrack) {
@@ -382,19 +431,10 @@ export class TrackView extends ShadowBaseElement {
     }
   }
 
-  addDataTrack(newTrack: DataTrack) {
-    this.dataTracks.push(newTrack);
-    const trackWrapper = createDataTrackWrapper(newTrack);
-    this.tracksContainer.appendChild(trackWrapper);
-    newTrack.initialize();
-
-    this.dataTrackIdToWrapper[newTrack.id] = trackWrapper;
-  }
-
   removeDataTrack(id: string) {
-    const track = this.getTrackById(id);
-    const index = this.dataTracks.indexOf(track);
-    this.dataTracks.splice(index, 1);
+    const trackInfo = getDataTrackInfoById(this.dataTracksInfo, id);
+    const index = this.dataTracksInfo.indexOf(trackInfo);
+    this.dataTracksInfo.splice(index, 1);
 
     const wrapper = this.dataTrackIdToWrapper[id];
 
@@ -415,11 +455,16 @@ export class TrackView extends ShadowBaseElement {
     );
 
     updateAnnotationTracks(
-      this.dataTracks.filter((track) => track.trackType == "annotation"),
+      this.dataTracksInfo.filter(
+        (info) => info.track.trackType == "annotation",
+      ),
       this.dataSources,
       this.session,
       this.openTrackContextMenu,
-      (track: DataTrack) => this.addDataTrack(track),
+      (track: DataTrack) => {
+        const info = getTrackInfo(track, null);
+
+      },
       (id: string) => this.removeDataTrack(id),
     );
 
@@ -429,12 +474,25 @@ export class TrackView extends ShadowBaseElement {
 
     this.ideogramTrack.render(settings);
 
-    for (const track of this.dataTracks) {
-      track.render(settings);
+    for (const trackInfo of this.dataTracksInfo) {
+      trackInfo.track.render(settings);
     }
 
     this.overviewTracks.forEach((track) => track.render(settings));
   }
+}
+
+function getDataTrackInfoById(
+  tracks: DataTrackInfo[],
+  trackId: string,
+): DataTrackInfo {
+  for (let i = 0; i < tracks.length; i++) {
+    if (tracks[i].track.id == trackId) {
+      const track = tracks[i];
+      return track;
+    }
+  }
+  console.error("Did not find any track with ID", trackId);
 }
 
 export function createSampleTracks(
@@ -444,9 +502,9 @@ export function createSampleTracks(
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): {
-  cov: DataTrack;
-  baf: DataTrack;
-  variant: DataTrack;
+  cov: DataTrackInfo;
+  baf: DataTrackInfo;
+  variant: DataTrackInfo;
 } {
   const coverageTrack = createDotTrack(
     `${sampleId}_log2_cov`,
@@ -496,14 +554,14 @@ export function createSampleTracks(
     openTrackContextMenu,
   );
   return {
-    cov: coverageTrack,
-    baf: bafTrack,
-    variant: variantTrack,
+    cov: getTrackInfo(coverageTrack, sampleId),
+    baf: getTrackInfo(bafTrack, sampleId),
+    variant: getTrackInfo(variantTrack, sampleId),
   };
 }
 
 function updateAnnotationTracks(
-  currAnnotTracks: DataTrack[],
+  currAnnotTracks: DataTrackInfo[],
   dataSources: TracksManagerDataSources,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
@@ -514,8 +572,18 @@ function updateAnnotationTracks(
     selectedOnly: true,
   });
 
-  const newSources = diff(sources, currAnnotTracks, (source) => source.id);
-  const removedSources = diff(currAnnotTracks, sources, (source) => source.id);
+  const currTrackIds = currAnnotTracks.map((info) => info.track.id);
+  const sourceIds = sources.map((source) => source.id);
+
+  const newSources = sources.filter(
+    (source) => !currTrackIds.includes(source.id),
+  );
+  const removedSourceIds = currAnnotTracks
+    .map((info) => info.track.id)
+    .filter((id) => !sourceIds.includes(id));
+
+  // const newSources = diff(sources, currAnnotTracks, (source) => source.track.id);
+  // const removedSources = diff(currAnnotTracks, sources, (source) => source.track.id);
 
   newSources.forEach((source) => {
     const newTrack = createAnnotTrack(
@@ -528,8 +596,8 @@ function updateAnnotationTracks(
     addTrack(newTrack);
   });
 
-  removedSources.forEach((source) => {
-    removeTrack(source.id);
+  removedSourceIds.forEach((id) => {
+    removeTrack(id);
   });
 }
 

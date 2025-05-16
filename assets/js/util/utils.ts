@@ -299,3 +299,11 @@ export function sumArray(arr: number[]): number {
   }
   return acc;
 }
+
+export function spliceMany<T>(arr: T[], inds: number[]) {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (inds.includes(i)) {
+      arr.splice(i, 1);
+    }
+  }
+}

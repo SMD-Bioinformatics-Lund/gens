@@ -10,6 +10,7 @@ import {
   getVariantContextMenuContent,
 } from "../util/menu_content_utils";
 import { getSimpleButton } from "../util/menu_utils";
+import { DataTrackInfo } from "./track_view";
 import { TracksManagerDataSources } from "./tracks_manager";
 
 const trackHeight = STYLE.tracks.trackHeight;
@@ -154,6 +155,16 @@ export function createVariantTrack(
   return variantTrack;
 }
 
+export function getTrackInfo(track:DataTrack, sampleId: string|null): DataTrackInfo {
+  const container = document.createElement("div");
+  container.appendChild(track);
+  return {
+    track,
+    container,
+    sampleId
+  }
+}
+
 export function createGenesTrack(
   id: string,
   label: string,
@@ -161,7 +172,7 @@ export function createGenesTrack(
   getDetails: (id: string) => Promise<ApiGeneDetails>,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
-): BandTrack {
+): DataTrackInfo {
   const genesTrack = new BandTrack(
     id,
     label,
@@ -189,7 +200,7 @@ export function createGenesTrack(
     openTrackContextMenu,
     session,
   );
-  return genesTrack;
+  return getTrackInfo(genesTrack, null);
 }
 
 export function createOverviewTrack(

@@ -12,10 +12,6 @@ import { GensSession } from "../../state/gens_session";
 
 const LEFT_PX_EDGE = STYLE.yAxis.width;
 
-interface BandTrackSettings {
-  height: ExpandedTrackHeight;
-}
-
 export class BandTrack extends DataTrack {
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
   openContextMenu: (id: string) => void;
