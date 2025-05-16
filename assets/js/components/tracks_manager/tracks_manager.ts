@@ -6,7 +6,7 @@ import "../tracks/overview_track";
 import { IdeogramTrack } from "../tracks/ideogram_track";
 import { OverviewTrack } from "../tracks/overview_track";
 import { DotTrack } from "../tracks/dot_track";
-import { ANIM_TIME, SIZES, STYLE } from "../../constants";
+import { ANIM_TIME, CHROMOSOMES, SIZES, STYLE } from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { diff, moveElement } from "../../util/collections";
 
@@ -47,7 +47,10 @@ export interface TracksManagerDataSources {
   ) => Promise<ApiVariantDetails>;
 
   getAnnotation: (id: string) => Promise<RenderBand[]>;
-  getCovData: (id: string) => Promise<RenderDot[]>;
+  getCovData: (
+    id: string,
+    settings: { chrom?: string },
+  ) => Promise<RenderDot[]>;
   getBafData: (id: string) => Promise<RenderDot[]>;
   getVariantData: (id: string) => Promise<RenderBand[]>;
 
@@ -98,7 +101,7 @@ template.innerHTML = String.raw`
     <div id="bottom-container"></div>
   </div>
   <div id="chromosome-view" hidden>
-    <div>Hello</div>
+    <div id="chromosome-tracks-container"></div>
   </div>
 `;
 
@@ -109,10 +112,13 @@ export class TracksManager extends ShadowBaseElement {
   topContainer: HTMLDivElement;
   tracksContainer: HTMLDivElement;
   bottomContainer: HTMLDivElement;
+  chromosomeTracksContainer: HTMLDivElement;
 
   session: GensSession;
   dataSources: TracksManagerDataSources;
   renderAll: (settings: RenderSettings) => void;
+  chromosomeViewInitialized: boolean = false;
+  sampleIds: string[];
 
   // FIXME: Think about a shared interface
   ideogramTrack: IdeogramTrack;
@@ -147,6 +153,9 @@ export class TracksManager extends ShadowBaseElement {
     this.topContainer = this.root.querySelector("#top-container");
     this.tracksContainer = this.root.querySelector("#tracks-container");
     this.bottomContainer = this.root.querySelector("#bottom-container");
+    this.chromosomeTracksContainer = this.root.querySelector(
+      "#chromosome-tracks-container",
+    );
   }
 
   async initialize(
@@ -160,6 +169,7 @@ export class TracksManager extends ShadowBaseElement {
     this.dataSources = dataSources;
     this.session = session;
     this.renderAll = render;
+    this.sampleIds = sampleIds;
 
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
@@ -408,7 +418,6 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
-
     const chromViewActive = this.session.getChromViewActive();
     this.chromosomesView.hidden = !chromViewActive;
     this.trackView.hidden = chromViewActive;
@@ -422,7 +431,7 @@ export class TracksManager extends ShadowBaseElement {
         [STYLE.yAxis.width, this.tracksContainer.offsetWidth],
         (id) => this.session.removeHighlight(id),
       );
-  
+
       updateAnnotationTracks(
         this.dataTracks.filter((track) => track.trackType == "annotation"),
         this.dataSources,
@@ -431,19 +440,24 @@ export class TracksManager extends ShadowBaseElement {
         (track: DataTrack) => this.addDataTrack(track),
         (id: string) => this.removeDataTrack(id),
       );
-  
+
       for (const trackPage of Object.values(this.trackPages)) {
         trackPage.render(settings);
       }
-  
+
       this.ideogramTrack.render(settings);
-  
+
       for (const track of this.dataTracks) {
         track.render(settings);
       }
-  
+
       this.overviewTracks.forEach((track) => track.render(settings));
     } else {
+      if (!this.chromosomeViewInitialized) {
+        console.log("Initializing view");
+        this.chromosomeViewInitialized = true;
+        this.initializeChromosomeView(this.sampleIds);
+      }
       console.log("Rendering chromosome view");
     }
   }
@@ -517,6 +531,46 @@ export class TracksManager extends ShadowBaseElement {
     };
     return openTrackContextMenu;
   }
+
+  initializeChromosomeView(sampleIds: string[]) {
+    console.log("Inside initialize");
+
+    const chromosomes = CHROMOSOMES;
+    for (const chrom of chromosomes) {
+      for (const sampleId of sampleIds) {
+        const trackId = `${sampleId}_${chrom}_cov`;
+        const trackLabel = `${sampleId} ${chrom}`;
+        // Only load overview here or?
+        const track = createDotTrack(
+          trackId,
+          trackLabel,
+          sampleId,
+          () => this.dataSources.getCovData(sampleId, { chrom }),
+          {
+            startExpanded: false,
+            yAxis: {
+              range: COV_Y_RANGE,
+              reverse: true,
+              label: "Log2 Ratio",
+              hideLabelOnCollapse: true,
+              hideTicksOnCollapse: true,
+            },
+          },
+          this.session,
+          this.openTrackContextMenu,
+        );
+
+        const trackWrapper = createDataTrackWrapper(track);
+
+        this.chromosomeTracksContainer.appendChild(trackWrapper);
+        track.initialize();
+        track.render({});
+
+        // Add to chrom tracks
+        // Add to sample tracks
+      }
+    }
+  }
 }
 
 function createSampleTracks(
@@ -534,10 +588,16 @@ function createSampleTracks(
     `${sampleId}_log2_cov`,
     `${sampleId} cov`,
     sampleId,
-    (sampleId: string) => dataSources.getCovData(sampleId),
+    (sampleId: string) => dataSources.getCovData(sampleId, {}),
     {
       startExpanded,
-      yAxis: { range: COV_Y_RANGE, reverse: true, label: "Log2 Ratio" },
+      yAxis: {
+        range: COV_Y_RANGE,
+        reverse: true,
+        label: "Log2 Ratio",
+        hideLabelOnCollapse: true,
+        hideTicksOnCollapse: true,
+      },
     },
     session,
     openTrackContextMenu,
@@ -549,7 +609,13 @@ function createSampleTracks(
     (sampleId: string) => dataSources.getBafData(sampleId),
     {
       startExpanded,
-      yAxis: { range: BAF_Y_RANGE, reverse: true, label: "B Allele Freq" },
+      yAxis: {
+        range: BAF_Y_RANGE,
+        reverse: true,
+        label: "B Allele Freq",
+        hideLabelOnCollapse: true,
+        hideTicksOnCollapse: true,
+      },
     },
     session,
     openTrackContextMenu,

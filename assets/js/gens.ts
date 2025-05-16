@@ -212,7 +212,7 @@ export async function initCanvases({
   chromViewButton.addEventListener("click", () => {
     session.toggleChromViewActive();
     render({});
-  })
+  });
 }
 
 // FIXME: Remove this subfunction? Move it to the main function above
@@ -250,7 +250,8 @@ async function initialize(
       api.getVariantDetails(sampleId, variantId, session.getChromosome()),
 
     getAnnotation: (id: string) => renderDataSource.getAnnotation(id),
-    getCovData: (id: string) => renderDataSource.getCovData(id),
+    getCovData: (id: string, settings: { chrom: string }) =>
+      renderDataSource.getCovData(id, settings),
     getBafData: (id: string) => renderDataSource.getBafData(id),
     getVariantData: (id: string) => renderDataSource.getVariantData(id),
 

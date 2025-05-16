@@ -296,7 +296,12 @@ export abstract class DataTrack extends CanvasTrack {
       });
     }
 
-    drawYAxis(this.ctx, ticks, yScale, yAxis.range, yAxis.label);
+    const hideDetails = yAxis.hideLabelOnCollapse && !this.isExpanded;
+
+    const label = hideDetails ? "" : yAxis.label;
+    const renderTicks = hideDetails ? [] : ticks;
+
+    drawYAxis(this.ctx, renderTicks, yScale, yAxis.range, label);
   }
 
   drawTrackLabel(shiftRight: number = 0): Box {

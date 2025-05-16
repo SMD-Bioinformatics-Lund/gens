@@ -1,3 +1,4 @@
+import { SettingsPage } from "../components/side_menu/settings_page";
 import { STYLE } from "../constants";
 import { prefixNts, transformMap } from "../util/utils";
 import { API } from "./api";
@@ -33,30 +34,52 @@ export function getRenderDataSource(
     return parseAnnotations(annotData, getChrom());
   };
 
-  const getCovData = async (sampleId: string) => {
+  const getCovData = async (
+    sampleId: string,
+    settings: { chrom?: string } = {},
+  ) => {
+
+    console.log("Getting cov data with settings", settings);
+
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    const covRaw = await gensAPI.getCov(sampleId, getChrom(), zoom, xRange);
+    let chrom = settings.chrom ?? getChrom();
+
+    const covRaw = await gensAPI.getCov(sampleId, chrom, zoom, xRange);
     return parseCoverageDot(covRaw, STYLE.colors.darkGray);
   };
 
-  const getBafData = async (sampleId: string) => {
+  const getBafData = async (
+    sampleId: string,
+    settings: { chrom?: string } = {},
+  ) => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    const bafRaw = await gensAPI.getBaf(sampleId, getChrom(), zoom, xRange);
+    let chrom = settings.chrom ?? getChrom();
+
+    const bafRaw = await gensAPI.getBaf(sampleId, chrom, zoom, xRange);
     return parseCoverageDot(bafRaw, STYLE.colors.darkGray);
   };
 
-  const getTranscriptData = async () => {
-    const onlyMane = true;
-    const transcriptsRaw = await gensAPI.getTranscripts(getChrom(), onlyMane);
+  const getTranscriptData = async (
+    settings: { chrom?: string; onlyMane } = { onlyMane: true },
+  ) => {
+    let chrom = settings.chrom ?? getChrom();
+    const transcriptsRaw = await gensAPI.getTranscripts(
+      chrom,
+      settings.onlyMane,
+    );
     return parseTranscripts(transcriptsRaw);
   };
 
-  const getVariantData = async (sampleId: string) => {
-    const variantsRaw = await gensAPI.getVariants(sampleId, getChrom());
+  const getVariantData = async (
+    sampleId: string,
+    settings: { chrom?: string } = {},
+  ) => {
+    let chrom = settings.chrom ?? getChrom();
+    const variantsRaw = await gensAPI.getVariants(sampleId, chrom);
     return parseVariants(variantsRaw, STYLE.variantColors);
   };
 
@@ -94,7 +117,7 @@ export function parseAnnotations(
   chromosome: string,
 ): RenderBand[] {
   const results = annotations
-    .filter((annot) => (annot.chrom == chromosome))
+    .filter((annot) => annot.chrom == chromosome)
     .map((annot) => {
       const label = annot.name;
       return {
@@ -129,21 +152,20 @@ function parseExons(
 export function parseTranscripts(
   transcripts: ApiSimplifiedTranscript[],
 ): RenderBand[] {
-  const transcriptsToRender: RenderBand[] = transcripts
-    .map((transcript) => {
-      const exons = parseExons(transcript.record_id, transcript.features);
-      const renderBand: RenderBand = {
-        id: transcript.record_id,
-        start: transcript.start,
-        end: transcript.end,
-        label: transcript.name,
-        color: STYLE.colors.lightGray,
-        hoverInfo: `${transcript.name}`,
-        direction: transcript.strand as "+" | "-",
-        subBands: exons,
-      };
-      return renderBand;
-    });
+  const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
+    const exons = parseExons(transcript.record_id, transcript.features);
+    const renderBand: RenderBand = {
+      id: transcript.record_id,
+      start: transcript.start,
+      end: transcript.end,
+      label: transcript.name,
+      color: STYLE.colors.lightGray,
+      hoverInfo: `${transcript.name}`,
+      direction: transcript.strand as "+" | "-",
+      subBands: exons,
+    };
+    return renderBand;
+  });
 
   // FIXME: This should be done on the backend
   const seenIds = new Set();
