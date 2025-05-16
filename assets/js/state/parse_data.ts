@@ -39,8 +39,6 @@ export function getRenderDataSource(
     settings: { chrom?: string } = {},
   ) => {
 
-    console.log("Getting cov data with settings", settings);
-
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 

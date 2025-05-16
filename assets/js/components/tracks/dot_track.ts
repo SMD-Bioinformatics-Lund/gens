@@ -48,8 +48,6 @@ export class DotTrack extends DataTrack {
 
   override draw() {
 
-    console.log("Is drawing dot chart");
-
     super.drawStart();
 
     const { dots } = this.renderData as DotTrackData;

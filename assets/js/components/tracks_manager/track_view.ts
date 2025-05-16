@@ -3,7 +3,6 @@ import { ShadowBaseElement } from "../util/shadowbaseelement";
 import Sortable, { SortableEvent } from "sortablejs";
 import {
   createAnnotTrack,
-  createDataTrackWrapper,
   createDotTrack,
   createGenesTrack,
   createOverviewTrack,
@@ -30,6 +29,7 @@ import { BandTrack } from "../tracks/band_track";
 import { TrackHeights } from "../side_menu/settings_page";
 import { diff, moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
+import { removeOne } from "../../util/utils";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -200,23 +200,6 @@ export class TrackView extends ShadowBaseElement {
       genesTrack,
     ];
 
-    // const tracks: DataTrackInfo[] = bareTracks.map((track) => {
-    //   // this.setupDataTrack(track);
-    //   const container = document.createElement("div") as HTMLDivElement;
-    //   container.appendChild(track);
-    //   return {
-    //     track,
-    //     container,
-    //   };
-    // });
-
-    // this.dataTracks.push(
-    //   ...covTracks,
-    //   ...bafTracks,
-    //   ...variantTracks,
-    //   genesTrack,
-    // );
-
     this.topContainer.appendChild(this.ideogramTrack);
     this.ideogramTrack.initialize();
     this.ideogramTrack.renderLoading();
@@ -248,7 +231,7 @@ export class TrackView extends ShadowBaseElement {
       (id: string) => session.removeHighlight(id),
     );
 
-    this.tracksContainer.addEventListener("click", () => {
+    this.addElementListener(this.tracksContainer, "click", () => {
       if (keyLogger.heldKeys.Control) {
         const updatedRange = zoomOut(
           this.session.getXRange(),
@@ -269,7 +252,9 @@ export class TrackView extends ShadowBaseElement {
     return xScale;
   }
 
-  private createOpenTrackContextMenu(render: (settings: RenderSettings) => void) {
+  private createOpenTrackContextMenu(
+    render: (settings: RenderSettings) => void,
+  ) {
     const openTrackContextMenu = (track: DataTrack) => {
       const isDotTrack = track instanceof DotTrack;
 
@@ -390,26 +375,6 @@ export class TrackView extends ShadowBaseElement {
     for (const removeInfo of removeInfos) {
       this.tracksContainer.removeChild(removeInfo.container);
     }
-
-    // const removeInds = [];
-    // for (let i = 0; i < this.dataTracksInfo.length; i++) {
-    //   const info = this.dataTracksInfo[i];
-    //   if (info.sampleId === sampleId) {
-    //     removeInds.push(i);
-    //   }
-    // }
-
-    // const toRemove = this.dataTracksInfo.filter((info) => {
-    //   info.sampleId === sampleId
-    // })
-
-    // for (const [sampleId, track] of Object.entries(tracks)) {
-    //   this.hideTrack(track.track.id);
-    //   const index = this.dataTracksInfo.indexOf(track);
-    //   this.dataTracksInfo.splice(index, 1);
-    // }
-
-    // delete this.sampleToTracks[sampleId];
   }
 
   public showTrack(trackId: string) {
@@ -434,24 +399,7 @@ export class TrackView extends ShadowBaseElement {
     }
   }
 
-  // FIXME: Should this be refactored?
-  removeDataTrack(id: string) {
-    const trackInfo = getDataTrackInfoById(this.dataTracksInfo, id);
-    const index = this.dataTracksInfo.indexOf(trackInfo);
-    this.dataTracksInfo.splice(index, 1);
-
-    const wrapper = this.dataTrackIdToWrapper[id];
-
-    /** Each track is wrapped in a parent div. Here, remove this wrapper. */
-    this.tracksContainer.removeChild(wrapper);
-
-    delete this.dataTrackIdToWrapper[id];
-  }
-
   public render(settings: RenderSettings) {
-
-    console.log("Track view render", this.dataTracksInfo);
-
     // FIXME: Extract function
     renderHighlights(
       this.tracksContainer,
@@ -470,9 +418,12 @@ export class TrackView extends ShadowBaseElement {
       this.openTrackContextMenu,
       (track: DataTrack) => {
         const info = getTrackInfo(track, null);
-
+        return info;
       },
-      (id: string) => this.removeDataTrack(id),
+      (id: string) => {
+        const match = removeOne(this.dataTracksInfo, (info) => info.track.id === id);
+        this.tracksContainer.removeChild(match.container);
+      },
     );
 
     for (const trackPage of Object.values(this.trackPages)) {

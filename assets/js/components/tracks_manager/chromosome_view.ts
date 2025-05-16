@@ -38,8 +38,6 @@ export class ChromosomeView extends ShadowBaseElement {
     sampleIds: string[],
     dataSources: TracksManagerDataSources,
   ) {
-    console.log("Inside initialize");
-
     this.session = session;
     this.sampleIds = sampleIds;
     this.dataSources = dataSources;
