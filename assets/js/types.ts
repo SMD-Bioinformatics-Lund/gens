@@ -218,6 +218,7 @@ interface LabelStyle {
   font?: string;
   textColor?: string;
   boxStyle?: BoxStyle;
+  rotation?: number;
 }
 
 interface LineStyle {
@@ -470,6 +471,7 @@ interface DragCallbacks {
 interface Axis {
   range: Rng;
   reverse: boolean;
+  label: string;
 }
 
 interface RenderSettings {

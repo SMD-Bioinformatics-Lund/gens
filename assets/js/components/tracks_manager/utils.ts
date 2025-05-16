@@ -204,7 +204,7 @@ export function createOverviewTrack(
   const overviewTrack = new OverviewTrack(
     id,
     label,
-    { height: trackHeight.thick },
+    { height: trackHeight.medium },
     chromSizes,
     chromClick,
     yRange,

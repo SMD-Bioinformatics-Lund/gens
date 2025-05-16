@@ -7,6 +7,7 @@ export function drawYAxis(
   ys: number[],
   yScale: Scale,
   yRange: Rng,
+  label: string,
 ) {
   const style = STYLE.yAxis;
   drawLine(
@@ -27,6 +28,14 @@ export function drawYAxis(
       withFrame: false,
     });
   }
+
+  const midPoint = (yRange[1] + yRange[0]) / 2;
+
+  drawLabel(ctx, label, 4, yScale(midPoint), {
+    rotation: -Math.PI / 2,
+    textAlign: "center",
+    textBaseline: "top",
+  });
 }
 
 export function renderBackground(
@@ -157,14 +166,16 @@ export function drawDotsScaled(
   dots: RenderDot[],
   xScale: Scale,
   yScale: Scale,
-  dotSize: number = 2,
+  settings: { size: number; color: string },
 ) {
+  const { color, size } = settings;
+
   dots.forEach((dot) => {
-    ctx.fillStyle = dot.color;
+    ctx.fillStyle = color;
     const xPixel = xScale(dot.x);
     const yPixel = yScale(dot.y);
 
-    ctx.fillRect(xPixel - dotSize / 2, yPixel - dotSize / 2, dotSize, dotSize);
+    ctx.fillRect(xPixel - size / 2, yPixel - size / 2, size, size);
   });
 }
 
@@ -172,8 +183,11 @@ export function rgbArrayToString(rgbArray: number[]): string {
   return `rgb(${rgbArray[0]},${rgbArray[1]},${rgbArray[2]})`;
 }
 
-export function getLinearScale(origDomain: Rng, range: Rng, reverse: boolean = false): Scale {
-
+export function getLinearScale(
+  origDomain: Rng,
+  range: Rng,
+  reverse: boolean = false,
+): Scale {
   let domain = origDomain;
   if (reverse) {
     domain = [origDomain[1], origDomain[0]];

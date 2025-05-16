@@ -44,6 +44,7 @@ export const COLORS = {
   black: "#222",
   darkGray: "#555",
   lightGray: "#ccc",
+  lighterGray: "#eee",
   extraLightGray: "#fafafa",
   yellow: "#dcd16f",
   red: "#f00",
@@ -68,7 +69,8 @@ const font = "12px sans-serif";
 const TRACK_HEIGHTS = {
   extraThin: 20,
   thin: 45,
-  thick: 120,
+  medium: 120,
+  thick: 180,
 }
 
 // FIXME: First step is to gather all constants here
@@ -104,6 +106,10 @@ export const STYLE = {
     minBandWidth: 2,
     dynamicPadThreshold: 40,
     dynamicPadFraction: 8,
+  },
+  dotTrack: {
+    dotSize: 2,
+    dotColor: COLORS.black,
   },
   ideogramMarker: {
     leftMargin: SIZES.xs,
