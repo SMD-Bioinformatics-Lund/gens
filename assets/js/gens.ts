@@ -14,6 +14,8 @@ import "./components/util/row";
 
 import "./home/gens_home";
 import "./home/sample_table";
+import "./components/tracks_manager/chromosome_view";
+import "./components/tracks_manager/track_view";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
@@ -151,9 +153,9 @@ export async function initCanvases({
     (_newSources) => {
       render({ dataUpdated: false });
     },
-    () => gensTracks.getDataTracks(),
+    () => gensTracks.trackView.getDataTracks(),
     (trackId: string, direction: "up" | "down") =>
-      gensTracks.moveTrack(trackId, direction),
+      gensTracks.trackView.moveTrack(trackId, direction),
     () => {
       const samples = session.getSamples();
       return allSampleIds.filter((s) => !samples.includes(s));
@@ -164,19 +166,19 @@ export async function initCanvases({
       render({ dataUpdated: true, positionOnly });
     },
     (sampleId: string) => {
-      gensTracks.addSample(sampleId);
+      gensTracks.trackView.addSample(sampleId);
       session.addSample(sampleId);
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (sampleId: string) => {
       // FIXME: This should eventually be session only, with tracks responding on rerender
       session.removeSample(sampleId);
-      gensTracks.removeSample(sampleId);
+      gensTracks.trackView.removeSample(sampleId);
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (trackHeights: TrackHeights) => {
       session.setTrackHeights(trackHeights);
-      gensTracks.setTrackHeights(trackHeights);
+      gensTracks.trackView.setTrackHeights(trackHeights);
       render({});
     },
   );
