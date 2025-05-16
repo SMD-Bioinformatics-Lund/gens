@@ -30,8 +30,6 @@ export function drawYAxis(
   }
 
   const midPoint = (yRange[1] + yRange[0]) / 2;
-  console.log(midPoint);
-  console.log(yScale(midPoint));
 
   drawLabel(ctx, label, 4, yScale(midPoint), {
     rotation: -Math.PI / 2,
@@ -168,14 +166,16 @@ export function drawDotsScaled(
   dots: RenderDot[],
   xScale: Scale,
   yScale: Scale,
-  dotSize: number = 2,
+  settings: { size: number; color: string },
 ) {
+  const { color, size } = settings;
+
   dots.forEach((dot) => {
-    ctx.fillStyle = dot.color;
+    ctx.fillStyle = color;
     const xPixel = xScale(dot.x);
     const yPixel = yScale(dot.y);
 
-    ctx.fillRect(xPixel - dotSize / 2, yPixel - dotSize / 2, dotSize, dotSize);
+    ctx.fillRect(xPixel - size / 2, yPixel - size / 2, size, size);
   });
 }
 

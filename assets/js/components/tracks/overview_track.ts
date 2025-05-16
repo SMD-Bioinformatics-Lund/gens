@@ -80,7 +80,6 @@ export class OverviewTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-
     // FIXME: This one is a bit tricky isn't it
     // We want it to render not on new data, but on resize
     // Do I have all info I need here?
@@ -193,7 +192,6 @@ function renderOverviewPlot(
     };
 
     if (drawLabels) {
-
       // FIXME: Something really strange is going on here for the "Y" letter.
       // If exchanged for a different letter, this label is rendered, so is Y.
       // If keeping the "Y", nothing is rendered specifically for the Y label
@@ -217,7 +215,10 @@ function renderOverviewPlot(
       copyDot.color = STYLE.colors.darkGray;
       return copyDot;
     });
-    drawDotsScaled(ctx, coloredDots, chromXScale, yScale, DOT_SIZE);
+    drawDotsScaled(ctx, coloredDots, chromXScale, yScale, {
+      size: DOT_SIZE,
+      color: COLORS.black,
+    });
   });
 }
 

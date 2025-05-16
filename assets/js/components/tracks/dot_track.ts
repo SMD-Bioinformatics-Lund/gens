@@ -59,7 +59,10 @@ export class DotTrack extends DataTrack {
       (dot) => dot.x >= xRange[0] && dot.y <= xRange[1],
     );
 
-    drawDotsScaled(this.ctx, dotsInRange, xScale, yScale);
+    drawDotsScaled(this.ctx, dotsInRange, xScale, yScale, {
+      size: STYLE.dotTrack.dotSize,
+      color: STYLE.dotTrack.dotColor,
+    });
 
     super.drawEnd();
   }

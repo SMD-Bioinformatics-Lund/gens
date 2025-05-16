@@ -69,6 +69,7 @@ const font = "12px sans-serif";
 const TRACK_HEIGHTS = {
   extraThin: 20,
   thin: 45,
+  medium: 120,
   thick: 180,
 }
 
@@ -105,6 +106,10 @@ export const STYLE = {
     minBandWidth: 2,
     dynamicPadThreshold: 40,
     dynamicPadFraction: 8,
+  },
+  dotTrack: {
+    dotSize: 2,
+    dotColor: COLORS.black,
   },
   ideogramMarker: {
     leftMargin: SIZES.xs,
