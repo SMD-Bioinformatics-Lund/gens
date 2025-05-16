@@ -21,6 +21,7 @@ export const ANIM_TIME = {
 }
 
 export const ICONS = {
+  chromosomes: "fa-chart-bar",
   collapse: "fa-minimize",
   down: "fa-arrow-down",
   expand: "fa-maximize",

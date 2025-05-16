@@ -1,5 +1,3 @@
-
-
 import "./components/tracks_manager/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
@@ -16,6 +14,8 @@ import "./components/util/row";
 
 import "./home/gens_home";
 import "./home/sample_table";
+import "./components/tracks_manager/chromosome_view";
+import "./components/tracks_manager/track_view";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
@@ -23,11 +23,15 @@ import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES, STYLE } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
-import { SettingsPage, TrackHeights } from "./components/side_menu/settings_page";
+import {
+  SettingsPage,
+  TrackHeights,
+} from "./components/side_menu/settings_page";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
+import { IconButton } from "./components/util/icon_button";
 
 export async function testHomeInit(
   samples: SampleInfo[],
@@ -95,8 +99,8 @@ export async function initCanvases({
   const trackHeights: TrackHeights = {
     bandCollapsed: STYLE.tracks.trackHeight.thin,
     dotCollapsed: STYLE.tracks.trackHeight.thin,
-    dotExpanded: STYLE.tracks.trackHeight.thick
-  }
+    dotExpanded: STYLE.tracks.trackHeight.thick,
+  };
 
   const chromSizes = api.getChromSizes();
   const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
@@ -149,12 +153,12 @@ export async function initCanvases({
     (_newSources) => {
       render({ dataUpdated: false });
     },
-    () => gensTracks.getDataTracks(),
+    () => gensTracks.trackView.getDataTracks(),
     (trackId: string, direction: "up" | "down") =>
-      gensTracks.moveTrack(trackId, direction),
+      gensTracks.trackView.moveTrack(trackId, direction),
     () => {
       const samples = session.getSamples();
-      return allSampleIds.filter(s => !samples.includes(s));
+      return allSampleIds.filter((s) => !samples.includes(s));
     },
     (region: Region) => {
       const positionOnly = region.chrom == session.getChromosome();
@@ -162,19 +166,19 @@ export async function initCanvases({
       render({ dataUpdated: true, positionOnly });
     },
     (sampleId: string) => {
-      gensTracks.addSample(sampleId);
+      gensTracks.trackView.addSample(sampleId);
       session.addSample(sampleId);
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (sampleId: string) => {
       // FIXME: This should eventually be session only, with tracks responding on rerender
       session.removeSample(sampleId);
-      gensTracks.removeSample(sampleId);
+      gensTracks.trackView.removeSample(sampleId);
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (trackHeights: TrackHeights) => {
       session.setTrackHeights(trackHeights);
-      gensTracks.setTrackHeights(trackHeights);
+      gensTracks.trackView.setTrackHeights(trackHeights);
       render({});
     },
   );
@@ -195,13 +199,21 @@ export async function initCanvases({
 
   const settingsButton = document.getElementById(
     "settings-button",
-  ) as HTMLDivElement;
+  ) as IconButton;
   settingsButton.addEventListener("click", () => {
     sideMenu.showContent("Settings", [settingsPage]);
 
     if (!settingsPage.isInitialized) {
       settingsPage.initialize();
     }
+  });
+
+  const chromViewButton = document.getElementById(
+    "chromosome-view-button",
+  ) as IconButton;
+  chromViewButton.addEventListener("click", () => {
+    session.toggleChromViewActive();
+    render({});
   });
 }
 
@@ -240,7 +252,8 @@ async function initialize(
       api.getVariantDetails(sampleId, variantId, session.getChromosome()),
 
     getAnnotation: (id: string) => renderDataSource.getAnnotation(id),
-    getCovData: (id: string) => renderDataSource.getCovData(id),
+    getCovData: (id: string, settings: { chrom: string }) =>
+      renderDataSource.getCovData(id, settings),
     getBafData: (id: string) => renderDataSource.getBafData(id),
     getVariantData: (id: string) => renderDataSource.getVariantData(id),
 

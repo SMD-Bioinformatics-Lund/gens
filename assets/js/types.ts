@@ -241,7 +241,10 @@ type GetAnnotSources = (settings: {
 interface RenderDataSource {
   getChromInfo: () => Promise<ChromosomeInfo>;
   getAnnotation: (id: string) => Promise<RenderBand[]>;
-  getCovData: (sampleId: string) => Promise<RenderDot[]>;
+  getCovData: (
+    sampleId: string,
+    settings: { chrom: string },
+  ) => Promise<RenderDot[]>;
   getBafData: (sampleId: string) => Promise<RenderDot[]>;
   getTranscriptData: () => Promise<RenderBand[]>;
   getVariantData: (sampleId: string) => Promise<RenderBand[]>;
@@ -472,6 +475,8 @@ interface Axis {
   range: Rng;
   reverse: boolean;
   label: string;
+  hideLabelOnCollapse: boolean;
+  hideTicksOnCollapse: boolean;
 }
 
 interface RenderSettings {

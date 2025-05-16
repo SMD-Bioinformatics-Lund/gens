@@ -47,6 +47,7 @@ export class DotTrack extends DataTrack {
   }
 
   override draw() {
+
     super.drawStart();
 
     const { dots } = this.renderData as DotTrackData;
