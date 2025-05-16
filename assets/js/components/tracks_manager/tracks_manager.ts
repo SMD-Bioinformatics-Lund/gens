@@ -92,17 +92,27 @@ template.innerHTML = String.raw`
       cursor: grabbing;
     }
   </style>
-  <div id="top-container"></div>
-  <div id="tracks-container"></div>
-  <div id="bottom-container"></div>
+  <div id="track-view">
+    <div id="top-container"></div>
+    <div id="tracks-container"></div>
+    <div id="bottom-container"></div>
+  </div>
+  <div id="chromosome-view" hidden>
+    <div>Hello</div>
+  </div>
 `;
 
 export class TracksManager extends ShadowBaseElement {
+  trackView: HTMLDivElement;
+  chromosomesView: HTMLDivElement;
+
   topContainer: HTMLDivElement;
   tracksContainer: HTMLDivElement;
   bottomContainer: HTMLDivElement;
-  isInitialized = false;
-  // annotationsContainer: HTMLDivElement;
+
+  session: GensSession;
+  dataSources: TracksManagerDataSources;
+  renderAll: (settings: RenderSettings) => void;
 
   // FIXME: Think about a shared interface
   ideogramTrack: IdeogramTrack;
@@ -111,12 +121,8 @@ export class TracksManager extends ShadowBaseElement {
   /** Keeps track of track container divs. Might be worth making a web component to do this wrapping. */
   dataTrackIdToWrapper: Record<string, HTMLDivElement> = {};
 
-  dataSources: TracksManagerDataSources;
-  renderAll: (settings: RenderSettings) => void;
-
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
   openTrackContextMenu: (track: DataTrack) => void;
-  session: GensSession;
 
   trackPages: Record<string, TrackPage> = {};
   sampleToTracks: Record<
@@ -135,15 +141,12 @@ export class TracksManager extends ShadowBaseElement {
       }
     });
 
-    this.topContainer = this.root.querySelector(
-      "#top-container",
-    ) as HTMLDivElement;
-    this.tracksContainer = this.root.querySelector(
-      "#tracks-container",
-    ) as HTMLDivElement;
-    this.bottomContainer = this.root.querySelector(
-      "#bottom-container",
-    ) as HTMLDivElement;
+    this.trackView = this.root.querySelector("#track-view");
+    this.chromosomesView = this.root.querySelector("#chromosome-view");
+
+    this.topContainer = this.root.querySelector("#top-container");
+    this.tracksContainer = this.root.querySelector("#tracks-container");
+    this.bottomContainer = this.root.querySelector("#bottom-container");
   }
 
   async initialize(
@@ -151,7 +154,6 @@ export class TracksManager extends ShadowBaseElement {
     sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
-
     dataSources: TracksManagerDataSources,
     session: GensSession,
   ) {
@@ -406,34 +408,44 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
-    renderHighlights(
-      this.tracksContainer,
-      this.session.getCurrentHighlights(),
-      this.getXScale(),
-      [STYLE.yAxis.width, this.tracksContainer.offsetWidth],
-      (id) => this.session.removeHighlight(id),
-    );
 
-    updateAnnotationTracks(
-      this.dataTracks.filter((track) => track.trackType == "annotation"),
-      this.dataSources,
-      this.session,
-      this.openTrackContextMenu,
-      (track: DataTrack) => this.addDataTrack(track),
-      (id: string) => this.removeDataTrack(id),
-    );
+    const chromViewActive = this.session.getChromViewActive();
+    this.chromosomesView.hidden = !chromViewActive;
+    this.trackView.hidden = chromViewActive;
 
-    for (const trackPage of Object.values(this.trackPages)) {
-      trackPage.render(settings);
+    if (!chromViewActive) {
+      // FIXME: Extract function
+      renderHighlights(
+        this.tracksContainer,
+        this.session.getCurrentHighlights(),
+        this.getXScale(),
+        [STYLE.yAxis.width, this.tracksContainer.offsetWidth],
+        (id) => this.session.removeHighlight(id),
+      );
+  
+      updateAnnotationTracks(
+        this.dataTracks.filter((track) => track.trackType == "annotation"),
+        this.dataSources,
+        this.session,
+        this.openTrackContextMenu,
+        (track: DataTrack) => this.addDataTrack(track),
+        (id: string) => this.removeDataTrack(id),
+      );
+  
+      for (const trackPage of Object.values(this.trackPages)) {
+        trackPage.render(settings);
+      }
+  
+      this.ideogramTrack.render(settings);
+  
+      for (const track of this.dataTracks) {
+        track.render(settings);
+      }
+  
+      this.overviewTracks.forEach((track) => track.render(settings));
+    } else {
+      console.log("Rendering chromosome view");
     }
-
-    this.ideogramTrack.render(settings);
-
-    for (const track of this.dataTracks) {
-      track.render(settings);
-    }
-
-    this.overviewTracks.forEach((track) => track.render(settings));
   }
 
   addDataTrack(newTrack: DataTrack) {

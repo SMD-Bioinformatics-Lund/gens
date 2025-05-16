@@ -1,5 +1,3 @@
-
-
 import "./components/tracks_manager/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
@@ -23,11 +21,15 @@ import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES, STYLE } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
-import { SettingsPage, TrackHeights } from "./components/side_menu/settings_page";
+import {
+  SettingsPage,
+  TrackHeights,
+} from "./components/side_menu/settings_page";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
+import { IconButton } from "./components/util/icon_button";
 
 export async function testHomeInit(
   samples: SampleInfo[],
@@ -95,8 +97,8 @@ export async function initCanvases({
   const trackHeights: TrackHeights = {
     bandCollapsed: STYLE.tracks.trackHeight.thin,
     dotCollapsed: STYLE.tracks.trackHeight.thin,
-    dotExpanded: STYLE.tracks.trackHeight.thick
-  }
+    dotExpanded: STYLE.tracks.trackHeight.thick,
+  };
 
   const chromSizes = api.getChromSizes();
   const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
@@ -154,7 +156,7 @@ export async function initCanvases({
       gensTracks.moveTrack(trackId, direction),
     () => {
       const samples = session.getSamples();
-      return allSampleIds.filter(s => !samples.includes(s));
+      return allSampleIds.filter((s) => !samples.includes(s));
     },
     (region: Region) => {
       const positionOnly = region.chrom == session.getChromosome();
@@ -195,7 +197,7 @@ export async function initCanvases({
 
   const settingsButton = document.getElementById(
     "settings-button",
-  ) as HTMLDivElement;
+  ) as IconButton;
   settingsButton.addEventListener("click", () => {
     sideMenu.showContent("Settings", [settingsPage]);
 
@@ -203,6 +205,14 @@ export async function initCanvases({
       settingsPage.initialize();
     }
   });
+
+  const chromViewButton = document.getElementById(
+    "chromosome-view-button",
+  ) as IconButton;
+  chromViewButton.addEventListener("click", () => {
+    session.toggleChromViewActive();
+    render({});
+  })
 }
 
 // FIXME: Remove this subfunction? Move it to the main function above

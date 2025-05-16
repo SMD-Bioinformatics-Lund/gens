@@ -30,6 +30,16 @@ export class GensSession {
 
   private trackHeights: TrackHeights;
 
+  private chromViewActive: boolean;
+
+  getChromViewActive(): boolean {
+    return this.chromViewActive;
+  }
+
+  toggleChromViewActive() {
+    this.chromViewActive = !this.chromViewActive;
+  }
+
   constructor(
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
