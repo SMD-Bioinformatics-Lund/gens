@@ -7,7 +7,7 @@ import {
 import { STYLE } from "../../constants";
 import { drawArrow, getLinearScale } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
-import { DataTrack, ExpandedTrackHeight } from "./base_tracks/data_track";
+import { DataTrack, DataTrackSettings, ExpandedTrackHeight } from "./base_tracks/data_track";
 import { GensSession } from "../../state/gens_session";
 
 const LEFT_PX_EDGE = STYLE.yAxis.width;
@@ -20,7 +20,9 @@ export class BandTrack extends DataTrack {
     id: string,
     label: string,
     trackType: TrackType,
-    settings: { height: ExpandedTrackHeight },
+    getSettings: () => DataTrackSettings,
+    updateSettings: (settings: DataTrackSettings) => void,
+    // settings: { height: ExpandedTrackHeight },
     getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
@@ -42,11 +44,13 @@ export class BandTrack extends DataTrack {
         return xScale;
       },
       openTrackContextMenu,
-      {
-        height: settings.height,
-        dragSelect: true,
-        yAxis: null,
-      },
+      getSettings,
+      updateSettings,
+      // {
+      //   height: settings.height,
+      //   dragSelect: true,
+      //   yAxis: null,
+      // },
       session,
     );
 

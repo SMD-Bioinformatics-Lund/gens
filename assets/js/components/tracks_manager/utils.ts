@@ -1,7 +1,7 @@
 import { STYLE } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { BandTrack } from "../tracks/band_track";
-import { DataTrack } from "../tracks/base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { DotTrack } from "../tracks/dot_track";
 import { OverviewTrack } from "../tracks/overview_track";
 import {
@@ -49,11 +49,19 @@ export function createAnnotTrack(
     session.showContent("Annotations", content);
   };
 
+  // FIXME: Move to session
+  let fnSettings: DataTrackSettings = {
+    height: { collapsedHeight: trackHeight.thin, startExpanded: false },
+  };
+
   const track = new BandTrack(
     sourceId,
     label,
     "annotation",
-    { height: { collapsedHeight: trackHeight.thin, startExpanded: false } },
+    () => fnSettings,
+    (settings) => {
+      fnSettings = settings;
+    },
     () => session.getXRange(),
     () =>
       getAnnotTrackData(
@@ -77,18 +85,30 @@ export function createDotTrack(
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): DotTrack {
+  // FIXME: Move to session
+  let fnSettings: DataTrackSettings = {
+    height: {
+      collapsedHeight: trackHeight.thin,
+      expandedHeight: trackHeight.thick,
+      startExpanded: settings.startExpanded,
+    },
+    yAxis: settings.yAxis,
+  };
+
   const dotTrack = new DotTrack(
     id,
     label,
     "dot",
-    {
-      height: {
-        collapsedHeight: trackHeight.thin,
-        expandedHeight: trackHeight.thick,
-        startExpanded: settings.startExpanded,
-      },
-    },
-    settings.yAxis,
+    () => fnSettings,
+    (settings) => (fnSettings = settings),
+    // {
+    //   height: {
+    //     collapsedHeight: trackHeight.thin,
+    //     expandedHeight: trackHeight.thick,
+    //     startExpanded: settings.startExpanded,
+    //   },
+    // },
+    // settings.yAxis,
     () => session.getXRange(),
     async () => {
       const data = await dataFn(sampleId);
@@ -117,11 +137,18 @@ export function createVariantTrack(
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): BandTrack {
+
+  // FIXME: Move to session
+  let fnSettings: DataTrackSettings = {
+    height: { collapsedHeight: trackHeight.thin, startExpanded: false },
+  };
+
   const variantTrack = new BandTrack(
     id,
     label,
     "variant",
-    { height: { collapsedHeight: trackHeight.thin, startExpanded: false } },
+    () => fnSettings,
+    (settings) => fnSettings = settings,
     () => session.getXRange(),
     async () => {
       return {
@@ -155,13 +182,16 @@ export function createVariantTrack(
   return variantTrack;
 }
 
-export function getTrackInfo(track:DataTrack, sampleId: string|null): DataTrackInfo {
+export function getTrackInfo(
+  track: DataTrack,
+  sampleId: string | null,
+): DataTrackInfo {
   const wrapper = createDataTrackWrapper(track);
   return {
     track,
     container: wrapper,
-    sampleId
-  }
+    sampleId,
+  };
 }
 
 export function createGenesTrack(
@@ -172,11 +202,18 @@ export function createGenesTrack(
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): DataTrackInfo {
+
+  // FIXME: Move to session
+  let fnSettings: DataTrackSettings = {
+    height: { collapsedHeight: trackHeight.thin, startExpanded: false },
+  };
+
   const genesTrack = new BandTrack(
     id,
     label,
     "gene",
-    { height: { collapsedHeight: trackHeight.thin, startExpanded: false } },
+    () => fnSettings,
+    (settings) => fnSettings = settings,
     () => session.getXRange(),
     async () => {
       return {

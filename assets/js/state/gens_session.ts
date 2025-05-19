@@ -1,5 +1,6 @@
 import { TrackHeights } from "../components/side_menu/settings_page";
 import { SideMenu } from "../components/side_menu/side_menu";
+import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
 import { COLORS } from "../constants";
 import { generateID } from "../util/utils";
 
@@ -29,8 +30,10 @@ export class GensSession {
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
 
+  private trackSettings: Record<string, DataTrackSettings>;
 
   constructor(
+    // FIXME: This does not belong here I think
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
     region: Region,

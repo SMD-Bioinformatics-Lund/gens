@@ -21,10 +21,9 @@ export interface ExpandedTrackHeight {
   startExpanded: boolean;
 }
 
-interface DataTrackSettings {
+export interface DataTrackSettings {
   height: ExpandedTrackHeight;
-  dragSelect: boolean;
-  yAxis: Axis | null;
+  yAxis?: Axis;
 }
 
 const DEBOUNCE_DELAY = 50;
@@ -32,7 +31,6 @@ const DEBOUNCE_DELAY = 50;
 const Y_PAD = SIZES.s;
 
 export abstract class DataTrack extends CanvasTrack {
-
   public trackType: TrackType;
   public setColorBands(colorBands: RenderBand[]) {
     this.colorBands = colorBands;
@@ -40,7 +38,9 @@ export abstract class DataTrack extends CanvasTrack {
 
   protected defaultTrackHeight: number;
   protected collapsedTrackHeight: number;
-  protected settings: DataTrackSettings;
+  // Callback to allow multi-layered
+  protected getSettings: () => DataTrackSettings;
+  protected updateSettings: (settings: DataTrackSettings) => void;
   protected session: GensSession;
   protected renderData: BandTrackData | DotTrackData | null;
 
@@ -62,11 +62,11 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   public getYAxis(): Axis | null {
-    return this.settings.yAxis;
+    return this.getSettings().yAxis;
   }
 
   public updateYAxis(range: Rng) {
-    this.settings.yAxis.range = range;
+    this.getSettings().yAxis.range = range;
   }
 
   public getIsExpanded(): boolean {
@@ -74,9 +74,9 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   public setHeights(collapsed: number, expanded?: number) {
-    this.settings.height.collapsedHeight = collapsed;
+    this.getSettings().height.collapsedHeight = collapsed;
     if (expanded != null) {
-      this.settings.height.expandedHeight = expanded;
+      this.getSettings().height.expandedHeight = expanded;
     }
     this.syncHeight();
   }
@@ -98,7 +98,7 @@ export abstract class DataTrack extends CanvasTrack {
   public toggleExpanded() {
     this.isExpanded = !this.isExpanded;
 
-    if (this.isExpanded && this.settings.height.expandedHeight == null) {
+    if (this.isExpanded && this.getSettings().height.expandedHeight == null) {
       throw Error("Must assign an expanded height before expanding the track");
     }
 
@@ -107,8 +107,8 @@ export abstract class DataTrack extends CanvasTrack {
 
   protected syncHeight() {
     this.currentHeight = this.isExpanded
-      ? this.settings.height.expandedHeight
-      : this.settings.height.collapsedHeight;
+      ? this.getSettings().height.expandedHeight
+      : this.getSettings().height.collapsedHeight;
   }
 
   protected initializeExpander(eventKey: string, onExpand: () => void) {
@@ -131,31 +131,46 @@ export abstract class DataTrack extends CanvasTrack {
     getXRange: () => Rng,
     getXScale: () => Scale,
     openTrackContextMenu: (track: DataTrack) => void,
-    settings: DataTrackSettings,
+    getSettings: () => DataTrackSettings,
+    updateSettings: (settings: DataTrackSettings) => void,
     session: GensSession,
   ) {
+    const heightConf = getSettings != null ? getSettings().height : null;
+    const height =
+      heightConf != null
+        ? heightConf.startExpanded
+          ? heightConf.expandedHeight
+          : heightConf.collapsedHeight
+        : 10;
     super(id, label, {
-      height: settings.height.startExpanded
-        ? settings.height.expandedHeight
-        : settings.height.collapsedHeight,
+      height,
     });
+
+    // FIXME: This convoluted "solution" is to deal with the "shadow cloning"
+    // performed during the drag and drop
+    // Some more thinking is needed here before merge
+    if (getSettings == null) {
+      return;
+    }
+    
     this.trackType = trackType;
-    this.settings = settings;
+    this.getSettings = getSettings;
     this.getXRange = getXRange;
     this.getXScale = getXScale;
     this.session = session;
+    this.updateSettings = updateSettings;
 
-    this.isExpanded = settings.height.startExpanded;
+    this.isExpanded = heightConf.startExpanded;
 
     this.getYRange = () => {
-      return settings.yAxis.range;
+      return getSettings().yAxis.range;
     };
     this.getYScale = () => {
       const yRange = this.getYRange();
       const yScale = getLinearScale(
         yRange,
         this.getYDim(),
-        settings.yAxis.reverse,
+        getSettings().yAxis.reverse,
       );
       return yScale;
     };
@@ -197,7 +212,6 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
     // is to prevent repeated API requests when rapidly zooming/panning
     // Only the last request is of interest
@@ -251,13 +265,15 @@ export abstract class DataTrack extends CanvasTrack {
       { fillColor: COLORS.extraLightGray },
     );
 
-    if (this.settings.yAxis != null) {
-      this.renderYAxis(this.settings.yAxis);
+    if (this.getSettings().yAxis != null) {
+      this.renderYAxis(this.getSettings().yAxis);
     }
   }
 
   setExpandedHeight(height: number) {
-    this.settings.height.expandedHeight = height;
+    const settings = this.getSettings();
+    settings.height.expandedHeight = height;
+    this.updateSettings(settings);
     if (this.isExpanded) {
       this.currentHeight = height;
       this.syncDimensions();
