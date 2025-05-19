@@ -156,11 +156,10 @@ export function createVariantTrack(
 }
 
 export function getTrackInfo(track:DataTrack, sampleId: string|null): DataTrackInfo {
-  const container = document.createElement("div");
-  container.appendChild(track);
+  const wrapper = createDataTrackWrapper(track);
   return {
     track,
-    container,
+    container: wrapper,
     sampleId
   }
 }

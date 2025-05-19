@@ -113,6 +113,7 @@ export class TrackView extends ShadowBaseElement {
     });
 
     setupDragging(this.tracksContainer, (dragRangePx: Rng) => {
+
       const inverted = true;
       const invertedXScale = this.getXScale(inverted);
 

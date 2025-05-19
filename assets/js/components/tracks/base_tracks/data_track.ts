@@ -32,51 +32,48 @@ const DEBOUNCE_DELAY = 50;
 const Y_PAD = SIZES.s;
 
 export abstract class DataTrack extends CanvasTrack {
-  settings: DataTrackSettings;
-  getXRange: () => Rng;
-  getXScale: () => Scale;
-  getYRange: () => Rng;
-  getYScale: () => Scale;
-  openTrackContextMenu: (track: DataTrack) => void;
 
-  trackType: TrackType;
-
-  protected defaultTrackHeight: number;
-  protected collapsedTrackHeight: number;
-
-  private colorBands: RenderBand[] = [];
-  setColorBands(colorBands: RenderBand[]) {
+  public trackType: TrackType;
+  public setColorBands(colorBands: RenderBand[]) {
     this.colorBands = colorBands;
   }
 
+  protected defaultTrackHeight: number;
+  protected collapsedTrackHeight: number;
+  protected settings: DataTrackSettings;
+  protected session: GensSession;
+  protected renderData: BandTrackData | DotTrackData | null;
+
+  private colorBands: RenderBand[] = [];
   private isHidden: boolean = false;
   private isExpanded: boolean;
-  session: GensSession;
-
-  labelBox: HoverBox | null;
-
-  renderData: BandTrackData | DotTrackData | null;
-  getRenderData: () => Promise<BandTrackData | DotTrackData>;
-
+  private labelBox: HoverBox | null;
   private renderSeq = 0;
 
-  getYDim(): Rng {
+  protected getRenderData: () => Promise<BandTrackData | DotTrackData>;
+  protected getXRange: () => Rng;
+  protected getXScale: () => Scale;
+  protected getYRange: () => Rng;
+  protected getYScale: () => Scale;
+  protected openTrackContextMenu: (track: DataTrack) => void;
+
+  public getYDim(): Rng {
     return [Y_PAD, this.dimensions.height - Y_PAD];
   }
 
-  getYAxis(): Axis | null {
+  public getYAxis(): Axis | null {
     return this.settings.yAxis;
   }
 
-  updateYAxis(range: Rng) {
+  public updateYAxis(range: Rng) {
     this.settings.yAxis.range = range;
   }
 
-  getIsExpanded(): boolean {
+  public getIsExpanded(): boolean {
     return this.isExpanded;
   }
 
-  setHeights(collapsed: number, expanded?: number) {
+  public setHeights(collapsed: number, expanded?: number) {
     this.settings.height.collapsedHeight = collapsed;
     if (expanded != null) {
       this.settings.height.expandedHeight = expanded;
@@ -84,7 +81,7 @@ export abstract class DataTrack extends CanvasTrack {
     this.syncHeight();
   }
 
-  toggleHidden() {
+  public toggleHidden() {
     this.isHidden = !this.isHidden;
     // FIXME: Consider using a CSS class for this
     if (this.isHidden) {
@@ -94,11 +91,11 @@ export abstract class DataTrack extends CanvasTrack {
     }
   }
 
-  getIsHidden() {
+  public getIsHidden() {
     return this.isHidden;
   }
 
-  toggleExpanded() {
+  public toggleExpanded() {
     this.isExpanded = !this.isExpanded;
 
     if (this.isExpanded && this.settings.height.expandedHeight == null) {
@@ -108,13 +105,13 @@ export abstract class DataTrack extends CanvasTrack {
     this.syncHeight();
   }
 
-  syncHeight() {
+  protected syncHeight() {
     this.currentHeight = this.isExpanded
       ? this.settings.height.expandedHeight
       : this.settings.height.collapsedHeight;
   }
 
-  initializeExpander(eventKey: string, onExpand: () => void) {
+  protected initializeExpander(eventKey: string, onExpand: () => void) {
     this.trackContainer.addEventListener(
       eventKey,
       (event) => {

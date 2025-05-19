@@ -197,6 +197,7 @@ export function eventInBox(
   point: { offsetX: number; offsetY: number },
   box: Box,
 ): boolean {
+
   return (
     point.offsetX >= box.x1 &&
     point.offsetX <= box.x2 &&
