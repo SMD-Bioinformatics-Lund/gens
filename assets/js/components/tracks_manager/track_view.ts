@@ -178,6 +178,7 @@ export class TrackView extends ShadowBaseElement {
         dataSources,
         startExpanded,
         session,
+        true,
         openTrackContextMenu,
       );
 
@@ -344,12 +345,13 @@ export class TrackView extends ShadowBaseElement {
     moveElement(this.dataTracksInfo, trackInfoIndex, shift, true);
   }
 
-  public addSample(sampleId: string) {
+  public addSample(sampleId: string, isTrackViewTrack: boolean) {
     const sampleTracks = createSampleTracks(
       sampleId,
       this.dataSources,
       false,
       this.session,
+      isTrackViewTrack,
       this.openTrackContextMenu,
     );
 
@@ -462,6 +464,7 @@ export function createSampleTracks(
   dataSources: TracksManagerDataSources,
   startExpanded: boolean,
   session: GensSession,
+  isTrackViewTrack: boolean,
   openTrackContextMenu: (track: DataTrack) => void,
 ): {
   cov: DataTrackInfo;
@@ -482,6 +485,7 @@ export function createSampleTracks(
         hideLabelOnCollapse: true,
         hideTicksOnCollapse: true,
       },
+      hasLabel: isTrackViewTrack,
     },
     session,
     openTrackContextMenu,
@@ -500,6 +504,7 @@ export function createSampleTracks(
         hideLabelOnCollapse: true,
         hideTicksOnCollapse: true,
       },
+      hasLabel: isTrackViewTrack,
     },
     session,
     openTrackContextMenu,

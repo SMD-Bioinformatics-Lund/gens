@@ -58,10 +58,11 @@ export class ChromosomeView extends ShadowBaseElement {
             yAxis: {
               range: COV_Y_RANGE,
               reverse: true,
-              label: "Log2 Ratio",
-              hideLabelOnCollapse: true,
+              label: chrom,
+              hideLabelOnCollapse: false,
               hideTicksOnCollapse: true,
             },
+            hasLabel: false,
           },
           this.session,
           this.openTrackContextMenu,

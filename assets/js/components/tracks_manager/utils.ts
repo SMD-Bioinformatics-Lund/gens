@@ -52,6 +52,7 @@ export function createAnnotTrack(
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     height: { collapsedHeight: trackHeight.thin, startExpanded: false },
+    hasLabel: true,
   };
 
   const track = new BandTrack(
@@ -81,7 +82,7 @@ export function createDotTrack(
   label: string,
   sampleId: string,
   dataFn: (sampleId: string) => Promise<RenderDot[]>,
-  settings: { startExpanded: boolean; yAxis: Axis },
+  settings: { startExpanded: boolean; yAxis: Axis; hasLabel: boolean },
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): DotTrack {
@@ -93,6 +94,7 @@ export function createDotTrack(
       startExpanded: settings.startExpanded,
     },
     yAxis: settings.yAxis,
+    hasLabel: settings.hasLabel,
   };
 
   const dotTrack = new DotTrack(
@@ -137,10 +139,10 @@ export function createVariantTrack(
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): BandTrack {
-
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     height: { collapsedHeight: trackHeight.thin, startExpanded: false },
+    hasLabel: false,
   };
 
   const variantTrack = new BandTrack(
@@ -148,7 +150,7 @@ export function createVariantTrack(
     label,
     "variant",
     () => fnSettings,
-    (settings) => fnSettings = settings,
+    (settings) => (fnSettings = settings),
     () => session.getXRange(),
     async () => {
       return {
@@ -202,10 +204,10 @@ export function createGenesTrack(
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): DataTrackInfo {
-
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     height: { collapsedHeight: trackHeight.thin, startExpanded: false },
+    hasLabel: false,
   };
 
   const genesTrack = new BandTrack(
@@ -213,7 +215,7 @@ export function createGenesTrack(
     label,
     "gene",
     () => fnSettings,
-    (settings) => fnSettings = settings,
+    (settings) => (fnSettings = settings),
     () => session.getXRange(),
     async () => {
       return {

@@ -24,6 +24,7 @@ export interface ExpandedTrackHeight {
 export interface DataTrackSettings {
   height: ExpandedTrackHeight;
   yAxis?: Axis;
+  hasLabel: boolean;
 }
 
 const DEBOUNCE_DELAY = 50;
@@ -281,12 +282,14 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected drawEnd() {
-    const yAxisWidth = STYLE.yAxis.width;
-    const labelBox = this.drawTrackLabel(yAxisWidth);
-    this.labelBox = {
-      label: this.label,
-      box: labelBox,
-    };
+    if (this.getSettings().hasLabel) {
+      const yAxisWidth = STYLE.yAxis.width;
+      const labelBox = this.drawTrackLabel(yAxisWidth);
+      this.labelBox = {
+        label: this.label,
+        box: labelBox,
+      };
+    }
   }
 
   renderYAxis(yAxis: Axis) {
@@ -310,10 +313,11 @@ export abstract class DataTrack extends CanvasTrack {
       });
     }
 
-    const hideDetails = yAxis.hideLabelOnCollapse && !this.isExpanded;
+    const hideLabel = yAxis.hideLabelOnCollapse && !this.isExpanded;
+    const hideTicks = yAxis.hideTicksOnCollapse && !this.isExpanded;
 
-    const label = hideDetails ? "" : yAxis.label;
-    const renderTicks = hideDetails ? [] : ticks;
+    const label = hideLabel ? "" : yAxis.label;
+    const renderTicks = hideTicks ? [] : ticks;
 
     drawYAxis(this.ctx, renderTicks, yScale, yAxis.range, label);
   }

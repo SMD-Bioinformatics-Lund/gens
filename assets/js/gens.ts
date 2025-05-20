@@ -165,8 +165,9 @@ export async function initCanvases({
       session.updateChromosome(region.chrom, [region.start, region.end]);
       render({ dataUpdated: true, positionOnly });
     },
+    // FIXME: Something strange here, why is the trackview looping to itself?
     (sampleId: string) => {
-      gensTracks.trackView.addSample(sampleId);
+      gensTracks.trackView.addSample(sampleId, true);
       session.addSample(sampleId);
       render({ dataUpdated: true, samplesUpdated: true });
     },
