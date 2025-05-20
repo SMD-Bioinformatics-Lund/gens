@@ -1,4 +1,8 @@
-import { TrackHeights } from "../components/side_menu/settings_page";
+import { Settings } from "http2";
+import {
+  SettingsPage,
+  TrackHeights,
+} from "../components/side_menu/settings_page";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
 import { COLORS } from "../constants";
@@ -17,8 +21,7 @@ import { generateID } from "../util/utils";
  * it should probably be kept here as well.
  */
 export class GensSession {
-
-  private chromosome: string
+  private chromosome: string;
   private start: number;
   private end: number;
   private render: (settings: RenderSettings) => void;
@@ -30,7 +33,11 @@ export class GensSession {
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
 
+  private scoutBaseURL: string;
+
   private trackSettings: Record<string, DataTrackSettings>;
+
+  private settings: SettingsPage;
 
   constructor(
     // FIXME: This does not belong here I think
@@ -40,8 +47,10 @@ export class GensSession {
     chromSizes: Record<string, number>,
     samples: string[],
     trackHeights: TrackHeights,
+    scoutBaseURL: string,
+    // FIXME: Unsure if the full settings should be stored
+    settings: SettingsPage,
   ) {
-
     this.render = render;
     this.sideMenu = sideMenu;
     this.highlights = {};
@@ -51,6 +60,18 @@ export class GensSession {
     this.chromSizes = chromSizes;
     this.samples = samples;
     this.trackHeights = trackHeights;
+    this.scoutBaseURL = scoutBaseURL;
+    this.settings = settings;
+  }
+
+  public getAnnotationSources(settings: {
+    selectedOnly: boolean;
+  }): { id: string; label: string }[] {
+    return this.settings.getAnnotSources(settings);
+  }
+
+  public getVariantURL(variantId: string): string {
+    return `${this.scoutBaseURL}/document_id/${variantId}`;
   }
 
   public getChromViewActive(): boolean {
@@ -92,7 +113,7 @@ export class GensSession {
       chrom: this.chromosome,
       start: this.start,
       end: this.end,
-    }
+    };
   }
 
   public updateChromosome(chrom: string, range: Rng = null) {

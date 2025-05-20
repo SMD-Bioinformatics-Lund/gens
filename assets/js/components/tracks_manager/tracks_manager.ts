@@ -9,33 +9,36 @@ import { ChromosomeView } from "./chromosome_view";
 export const COV_Y_RANGE: [number, number] = [-3, 3];
 export const BAF_Y_RANGE: [number, number] = [0, 1];
 
-export interface TracksManagerDataSources {
-  getAnnotationSources: GetAnnotSources;
-  getVariantUrl: (id: string) => string;
-  getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
-  getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>;
-  getVariantDetails: (
-    sampleId: string,
-    variantId: string,
-  ) => Promise<ApiVariantDetails>;
+// export interface TracksManagerDataSources {
+//   getAnnotationSources: GetAnnotSources;
+//   getVariantUrl: (id: string) => string;
+//   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
+//   getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>;
+//   getVariantDetails: (
+//     sampleId: string,
+//     variantId: string,
+//   ) => Promise<ApiVariantDetails>;
 
-  getAnnotation: (id: string) => Promise<RenderBand[]>;
-  getCovData: (
-    id: string,
-    settings: { chrom?: string },
-  ) => Promise<RenderDot[]>;
-  getBafData: (id: string) => Promise<RenderDot[]>;
-  getVariantData: (id: string) => Promise<RenderBand[]>;
+//   getAnnotation: (
+//     id: string,
+//     settings: { chrom?: string },
+//   ) => Promise<RenderBand[]>;
+//   getCovData: (
+//     id: string,
+//     settings: { chrom?: string },
+//   ) => Promise<RenderDot[]>;
+//   getBafData: (id: string) => Promise<RenderDot[]>;
+//   getVariantData: (id: string) => Promise<RenderBand[]>;
 
-  getChromInfo: () => Promise<ChromosomeInfo>;
-  getTranscriptData: () => Promise<RenderBand[]>;
-  getOverviewCovData: (
-    sampleId: string,
-  ) => Promise<Record<string, RenderDot[]>>;
-  getOverviewBafData: (
-    sampleId: string,
-  ) => Promise<Record<string, RenderDot[]>>;
-}
+//   getChromInfo: () => Promise<ChromosomeInfo>;
+//   getTranscriptData: () => Promise<RenderBand[]>;
+//   getOverviewCovData: (
+//     sampleId: string,
+//   ) => Promise<Record<string, RenderDot[]>>;
+//   getOverviewBafData: (
+//     sampleId: string,
+//   ) => Promise<Record<string, RenderDot[]>>;
+// }
 
 // FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
@@ -102,7 +105,7 @@ export class TracksManager extends ShadowBaseElement {
     sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
-    dataSources: TracksManagerDataSources,
+    dataSource: RenderDataSource,
     session: GensSession,
   ) {
     this.session = session;
@@ -112,11 +115,11 @@ export class TracksManager extends ShadowBaseElement {
       sampleIds,
       chromSizes,
       chromClick,
-      dataSources,
+      dataSource,
       session,
     );
 
-    this.chromosomeView.initialize(session, sampleIds, dataSources);
+    this.chromosomeView.initialize(session, sampleIds, dataSource);
   }
 
   render(settings: RenderSettings) {

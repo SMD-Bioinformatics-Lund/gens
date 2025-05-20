@@ -16,11 +16,7 @@ import { GensSession } from "../../state/gens_session";
 import { getLinearScale } from "../../draw/render_utils";
 import { OverviewTrack } from "../tracks/overview_track";
 import { IdeogramTrack } from "../tracks/ideogram_track";
-import {
-  BAF_Y_RANGE,
-  COV_Y_RANGE,
-  TracksManagerDataSources,
-} from "./tracks_manager";
+import { BAF_Y_RANGE, COV_Y_RANGE } from "./tracks_manager";
 import { TrackPage } from "../side_menu/track_page";
 import { DotTrack } from "../tracks/dot_track";
 import { keyLogger } from "../util/keylogger";
@@ -56,7 +52,7 @@ export class TrackView extends ShadowBaseElement {
   bottomContainer: HTMLDivElement;
 
   session: GensSession;
-  dataSources: TracksManagerDataSources;
+  dataSource: RenderDataSource;
   renderAll: (settings: RenderSettings) => void;
   sampleIds: string[];
 
@@ -90,13 +86,15 @@ export class TrackView extends ShadowBaseElement {
     sampleIds: string[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
-    dataSources: TracksManagerDataSources,
+    dataSources: RenderDataSource,
     session: GensSession,
   ) {
-    this.dataSources = dataSources;
+    this.dataSource = dataSources;
     this.session = session;
     this.renderAll = render;
     this.sampleIds = sampleIds;
+
+    const chrom = session.getChromosome();
 
     const openTrackContextMenu = this.createOpenTrackContextMenu(render);
     this.openTrackContextMenu = openTrackContextMenu;
@@ -105,8 +103,7 @@ export class TrackView extends ShadowBaseElement {
       animation: ANIM_TIME.medium,
       handle: `.${TRACK_HANDLE_CLASS}`,
       onEnd: (evt: SortableEvent) => {
-
-        console.log("on end")
+        console.log("on end");
 
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracksInfo.splice(oldIndex, 1);
@@ -116,7 +113,6 @@ export class TrackView extends ShadowBaseElement {
     });
 
     setupDragging(this.tracksContainer, (dragRangePx: Rng) => {
-
       const inverted = true;
       const invertedXScale = this.getXScale(inverted);
 
@@ -175,6 +171,7 @@ export class TrackView extends ShadowBaseElement {
 
       const sampleTracks = createSampleTracks(
         sampleId,
+        chrom,
         dataSources,
         startExpanded,
         session,
@@ -192,7 +189,7 @@ export class TrackView extends ShadowBaseElement {
     const genesTrack = createGenesTrack(
       "genes",
       "Genes",
-      () => dataSources.getTranscriptData(),
+      () => dataSources.getTranscriptBands(chrom),
       (id: string) => dataSources.getTranscriptDetails(id),
       session,
       openTrackContextMenu,
@@ -277,7 +274,7 @@ export class TrackView extends ShadowBaseElement {
       this.session.showContent(track.label, [trackPage]);
 
       trackPage.initialize(
-        this.dataSources.getAnnotationSources,
+        this.session.getAnnotationSources,
         (direction: "up" | "down") => this.moveTrack(track.id, direction),
         () => {
           track.toggleHidden();
@@ -297,7 +294,10 @@ export class TrackView extends ShadowBaseElement {
         async (annotId: string | null) => {
           let colorBands = [];
           if (annotId != null) {
-            colorBands = await this.dataSources.getAnnotation(annotId);
+            colorBands = await this.dataSource.getAnnotation(
+              annotId,
+              this.session.getChromosome(),
+            );
           }
           track.setColorBands(colorBands);
           render({});
@@ -345,10 +345,11 @@ export class TrackView extends ShadowBaseElement {
     moveElement(this.dataTracksInfo, trackInfoIndex, shift, true);
   }
 
-  public addSample(sampleId: string, isTrackViewTrack: boolean) {
+  public addSample(sampleId: string, chrom: string, isTrackViewTrack: boolean) {
     const sampleTracks = createSampleTracks(
       sampleId,
-      this.dataSources,
+      chrom,
+      this.dataSource,
       false,
       this.session,
       isTrackViewTrack,
@@ -419,7 +420,7 @@ export class TrackView extends ShadowBaseElement {
       this.dataTracksInfo.filter(
         (info) => info.track.trackType == "annotation",
       ),
-      this.dataSources,
+      this.dataSource,
       this.session,
       this.openTrackContextMenu,
       (track: DataTrack) => {
@@ -427,7 +428,10 @@ export class TrackView extends ShadowBaseElement {
         return info;
       },
       (id: string) => {
-        const match = removeOne(this.dataTracksInfo, (info) => info.track.id === id);
+        const match = removeOne(
+          this.dataTracksInfo,
+          (info) => info.track.id === id,
+        );
         this.tracksContainer.removeChild(match.container);
       },
     );
@@ -461,7 +465,8 @@ function getDataTrackInfoById(
 
 export function createSampleTracks(
   sampleId: string,
-  dataSources: TracksManagerDataSources,
+  chrom: string,
+  dataSources: RenderDataSource,
   startExpanded: boolean,
   session: GensSession,
   isTrackViewTrack: boolean,
@@ -475,7 +480,7 @@ export function createSampleTracks(
     `${sampleId}_log2_cov`,
     `${sampleId} cov`,
     sampleId,
-    (sampleId: string) => dataSources.getCovData(sampleId, {}),
+    (sampleId: string) => dataSources.getCovData(sampleId, chrom),
     {
       startExpanded,
       yAxis: {
@@ -494,7 +499,7 @@ export function createSampleTracks(
     `${sampleId}_log2_baf`,
     `${sampleId} baf`,
     sampleId,
-    (sampleId: string) => dataSources.getBafData(sampleId),
+    (sampleId: string) => dataSources.getBafData(sampleId, chrom),
     {
       startExpanded,
       yAxis: {
@@ -513,10 +518,10 @@ export function createSampleTracks(
   const variantTrack = createVariantTrack(
     `${sampleId}_variants`,
     `${sampleId} Variants`,
-    sampleId,
-    (sampleId: string) => dataSources.getVariantData(sampleId),
-    dataSources.getVariantDetails,
-    dataSources.getVariantUrl,
+    () => dataSources.getVariantBands(sampleId, chrom),
+    (variantId: string) =>
+      dataSources.getVariantDetails(sampleId, variantId, chrom),
+    (variantId: string) => session.getVariantURL(variantId),
     session,
     openTrackContextMenu,
   );
@@ -529,13 +534,13 @@ export function createSampleTracks(
 
 function updateAnnotationTracks(
   currAnnotTracks: DataTrackInfo[],
-  dataSources: TracksManagerDataSources,
+  dataSource: RenderDataSource,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
   addTrack: (track: DataTrack) => void,
   removeTrack: (id: string) => void,
 ) {
-  const sources = dataSources.getAnnotationSources({
+  const sources = session.getAnnotationSources({
     selectedOnly: true,
   });
 
@@ -553,12 +558,16 @@ function updateAnnotationTracks(
   // const removedSources = diff(currAnnotTracks, sources, (source) => source.track.id);
 
   newSources.forEach((source) => {
+    const hasLabel = true;
     const newTrack = createAnnotTrack(
       source.id,
       source.label,
-      dataSources,
+      () => dataSource.getAnnotation(source.id, session.getChromosome()),
+      (bandId: string) => dataSource.getAnnotationDetails(bandId),
       session,
       openTrackContextMenu,
+      STYLE.tracks.trackHeight.thin,
+      hasLabel,
     );
     addTrack(newTrack);
   });

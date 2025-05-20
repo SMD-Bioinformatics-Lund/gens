@@ -21,68 +21,48 @@ function calculateZoom(xRange: Rng) {
 }
 
 export function getRenderDataSource(
-  gensAPI: API,
+  api: API,
   getChrom: () => string,
   getXRange: () => Rng,
 ): RenderDataSource {
   const getChromInfo = async () => {
-    return gensAPI.getChromData(getChrom());
+    return api.getChromData(getChrom());
   };
 
-  const getAnnotation = async (recordId: string) => {
-    const annotData = await gensAPI.getAnnotations(recordId);
-    return parseAnnotations(annotData, getChrom());
+  const getAnnotation = async (recordId: string, chrom: string) => {
+    const annotData = await api.getAnnotations(recordId);
+    return parseAnnotations(annotData, chrom);
   };
 
-  const getCovData = async (
-    sampleId: string,
-    settings: { chrom?: string } = {},
-  ) => {
-
+  const getCovData = async (sampleId: string, chrom: string) => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    let chrom = settings.chrom ?? getChrom();
-
-    const covRaw = await gensAPI.getCov(sampleId, chrom, zoom, xRange);
+    const covRaw = await api.getCov(sampleId, chrom, zoom, xRange);
     return parseCoverageDot(covRaw, STYLE.colors.darkGray);
   };
 
-  const getBafData = async (
-    sampleId: string,
-    settings: { chrom?: string } = {},
-  ) => {
+  const getBafData = async (sampleId: string, chrom: string) => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    let chrom = settings.chrom ?? getChrom();
-
-    const bafRaw = await gensAPI.getBaf(sampleId, chrom, zoom, xRange);
+    const bafRaw = await api.getBaf(sampleId, chrom, zoom, xRange);
     return parseCoverageDot(bafRaw, STYLE.colors.darkGray);
   };
 
-  const getTranscriptData = async (
-    settings: { chrom?: string; onlyMane } = { onlyMane: true },
-  ) => {
-    let chrom = settings.chrom ?? getChrom();
-    const transcriptsRaw = await gensAPI.getTranscripts(
-      chrom,
-      settings.onlyMane,
-    );
+  const getTranscriptBands = async (chrom: string) => {
+    const onlyMane = true;
+    const transcriptsRaw = await api.getTranscripts(chrom, onlyMane);
     return parseTranscripts(transcriptsRaw);
   };
 
-  const getVariantData = async (
-    sampleId: string,
-    settings: { chrom?: string } = {},
-  ) => {
-    let chrom = settings.chrom ?? getChrom();
-    const variantsRaw = await gensAPI.getVariants(sampleId, chrom);
+  const getVariantData = async (sampleId: string, chrom: string) => {
+    const variantsRaw = await api.getVariants(sampleId, chrom);
     return parseVariants(variantsRaw, STYLE.variantColors);
   };
 
   const getOverviewCovData = async (sampleId: string) => {
-    const overviewCovRaw = await gensAPI.getOverviewCovData(sampleId);
+    const overviewCovRaw = await api.getOverviewCovData(sampleId);
     const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
       parseCoverageDot(cov, STYLE.colors.darkGray),
     );
@@ -90,7 +70,7 @@ export function getRenderDataSource(
   };
 
   const getOverviewBafData = async (sampleId: string) => {
-    const overviewBafRaw = await gensAPI.getOverviewBafData(sampleId);
+    const overviewBafRaw = await api.getOverviewBafData(sampleId);
     const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
       parseCoverageDot(cov, STYLE.colors.darkGray),
     );
@@ -100,10 +80,14 @@ export function getRenderDataSource(
   const renderDataSource: RenderDataSource = {
     getChromInfo,
     getAnnotation,
+    getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
     getCovData,
     getBafData,
-    getTranscriptData,
-    getVariantData,
+    getTranscriptBands,
+    getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
+    getVariantBands: getVariantData,
+    getVariantDetails: (sampleId: string, variantId: string, chrom: string) =>
+      api.getVariantDetails(sampleId, variantId, chrom),
     getOverviewCovData,
     getOverviewBafData,
   };

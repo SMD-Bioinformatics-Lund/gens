@@ -11,25 +11,28 @@ import {
 } from "../util/menu_content_utils";
 import { getSimpleButton } from "../util/menu_utils";
 import { DataTrackInfo } from "./track_view";
-import { TracksManagerDataSources } from "./tracks_manager";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
 export const TRACK_HANDLE_CLASS = "track-handle";
 
 export function createAnnotTrack(
-  sourceId: string,
+  trackId: string,
   label: string,
-  dataSources: TracksManagerDataSources,
+  getAnnotationBands: () => Promise<RenderBand[]>,
+  getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
+  // dataSource: TracksManagerDataSources,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
+  height: number,
+  hasLabel: boolean,
 ): BandTrack {
+  // FIXME: Seems the x range should be separated from the annotations or?
   async function getAnnotTrackData(
-    source: string,
     getXRange: () => Rng,
-    getAnnotation: (source: string) => Promise<RenderBand[]>,
+    getAnnotation: () => Promise<RenderBand[]>,
   ): Promise<BandTrackData> {
-    const bands = await getAnnotation(source);
+    const bands = await getAnnotation();
     return {
       xRange: getXRange(),
       bands,
@@ -37,7 +40,8 @@ export function createAnnotTrack(
   }
 
   const openContextMenuId = async (id: string) => {
-    const details = await dataSources.getAnnotationDetails(id);
+    // const details = await dataSource.getAnnotationDetails(id);
+    const details = await getAnnotationDetails(id);
     const button = getSimpleButton("Set highlight", () => {
       session.addHighlight([details.start, details.end]);
     });
@@ -51,12 +55,12 @@ export function createAnnotTrack(
 
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
-    height: { collapsedHeight: trackHeight.thin, startExpanded: false },
-    hasLabel: true,
+    height: { collapsedHeight: height, startExpanded: false },
+    hasLabel,
   };
 
   const track = new BandTrack(
-    sourceId,
+    trackId,
     label,
     "annotation",
     () => fnSettings,
@@ -66,9 +70,8 @@ export function createAnnotTrack(
     () => session.getXRange(),
     () =>
       getAnnotTrackData(
-        sourceId,
         () => session.getXRange(),
-        dataSources.getAnnotation,
+        getAnnotationBands,
       ),
     openContextMenuId,
     openTrackContextMenu,
@@ -129,10 +132,8 @@ export function createDotTrack(
 export function createVariantTrack(
   id: string,
   label: string,
-  sampleId: string,
-  dataFn: (sampleId: string) => Promise<RenderBand[]>,
+  dataFn: () => Promise<RenderBand[]>,
   getVariantDetails: (
-    sampleId: string,
     variantId: string,
   ) => Promise<ApiVariantDetails>,
   getVariantURL: (variantId: string) => string,
@@ -155,11 +156,11 @@ export function createVariantTrack(
     async () => {
       return {
         xRange: session.getXRange(),
-        bands: await dataFn(sampleId),
+        bands: await dataFn(),
       };
     },
     async (variantId: string) => {
-      const details = await getVariantDetails(sampleId, variantId);
+      const details = await getVariantDetails(variantId);
       const scoutUrl = getVariantURL(variantId);
 
       const button = getSimpleButton("Set highlight", () => {

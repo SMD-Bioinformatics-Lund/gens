@@ -33,7 +33,7 @@ import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
 import { IconButton } from "./components/util/icon_button";
 
-export async function testHomeInit(
+export async function samplesListInit(
   samples: SampleInfo[],
   scoutBaseURL: string,
   genomeBuild: number,
@@ -53,7 +53,7 @@ export async function initCanvases({
   caseId,
   sampleIds,
   genomeBuild,
-  scoutBaseURL: scoutBaseURL,
+  scoutBaseURL,
   gensApiURL,
   annotationFile: defaultAnnotationName,
   startRegion,
@@ -111,6 +111,8 @@ export async function initCanvases({
     chromSizes,
     sampleIds,
     trackHeights,
+    scoutBaseURL,
+    settingsPage,
   );
 
   const renderDataSource = getRenderDataSource(
@@ -126,11 +128,6 @@ export async function initCanvases({
 
   const getChromInfo = async (chromosome: string): Promise<ChromosomeInfo> => {
     return await api.getChromData(chromosome);
-  };
-
-  const getVariantURL = (variantId) => {
-    const url = `${scoutBaseURL}/document_id/${variantId}`;
-    return url;
   };
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
@@ -167,7 +164,8 @@ export async function initCanvases({
     },
     // FIXME: Something strange here, why is the trackview looping to itself?
     (sampleId: string) => {
-      gensTracks.trackView.addSample(sampleId, true);
+      const isTrackView = true;
+      gensTracks.trackView.addSample(sampleId, session.getChromosome(), isTrackView);
       session.addSample(sampleId);
       render({ dataUpdated: true, samplesUpdated: true });
     },
@@ -195,7 +193,6 @@ export async function initCanvases({
     onChromClick,
     getChromInfo,
     renderDataSource,
-    getVariantURL,
   );
 
   const settingsButton = document.getElementById(
@@ -230,7 +227,6 @@ async function initialize(
   onChromClick: (chrom: string) => void,
   getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
   renderDataSource: RenderDataSource,
-  getVariantURL: (variantId: string) => string,
 ) {
   const chromSizes = {};
   for (const chromosome of CHROMOSOMES) {
@@ -243,36 +239,39 @@ async function initialize(
     render({ dataUpdated: true, positionOnly: true });
   });
 
-  const tracksDataSources = {
-    getAnnotationSources: (settings: { selectedOnly: boolean }) =>
-      settingsPage.getAnnotSources(settings),
-    getVariantUrl: (id: string) => getVariantURL(id),
-    getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
-    getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
-    getVariantDetails: (sampleId: string, variantId: string) =>
-      api.getVariantDetails(sampleId, variantId, session.getChromosome()),
+  // // FIXME: Is this extra layer needed?
+  // // Probably not?
+  // const tracksDataSource = {
+  //   getAnnotationSources: (settings: { selectedOnly: boolean }) =>
+  //     settingsPage.getAnnotSources(settings),
+  //   getVariantUrl: (id: string) => getVariantURL(id),
+  //   getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
+  //   getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
+  //   getVariantDetails: (sampleId: string, variantId: string) =>
+  //     api.getVariantDetails(sampleId, variantId, session.getChromosome()),
 
-    getAnnotation: (id: string) => renderDataSource.getAnnotation(id),
-    getCovData: (id: string, settings: { chrom: string }) =>
-      renderDataSource.getCovData(id, settings),
-    getBafData: (id: string) => renderDataSource.getBafData(id),
-    getVariantData: (id: string) => renderDataSource.getVariantData(id),
+  //   getAnnotationBands: (id: string, settings: { chrom?: string }) =>
+  //     renderDataSource.getAnnotation(id, settings),
+  //   getCovData: (id: string, settings: { chrom: string }) =>
+  //     renderDataSource.getCovData(id, settings),
+  //   getBafData: (id: string) => renderDataSource.getBafData(id),
+  //   getVariantData: (id: string) => renderDataSource.getVariantData(id),
 
-    getTranscriptData: () => renderDataSource.getTranscriptData(),
-    getOverviewCovData: (sampleId: string) =>
-      renderDataSource.getOverviewCovData(sampleId),
-    getOverviewBafData: (sampleId: string) =>
-      renderDataSource.getOverviewBafData(sampleId),
+  //   getTranscriptData: () => renderDataSource.getTranscriptData(),
+  //   getOverviewCovData: (sampleId: string) =>
+  //     renderDataSource.getOverviewCovData(sampleId),
+  //   getOverviewBafData: (sampleId: string) =>
+  //     renderDataSource.getOverviewBafData(sampleId),
 
-    getChromInfo: () => renderDataSource.getChromInfo(),
-  };
+  //   getChromInfo: () => renderDataSource.getChromInfo(),
+  // };
 
   await tracks.initialize(
     render,
     sampleIds,
     chromSizes,
     onChromClick,
-    tracksDataSources,
+    renderDataSource,
     session,
   );
 
