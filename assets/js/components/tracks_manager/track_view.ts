@@ -59,7 +59,7 @@ export class TrackView extends ShadowBaseElement {
   dataTracks: DataTrackInfo[] = [];
   ideogramTrack: IdeogramTrack;
   overviewTracks: OverviewTrack[] = [];
-  dataTrackIdToWrapper: Record<string, HTMLDivElement> = {};
+  // dataTrackIdToWrapper: Record<string, HTMLDivElement> = {};
 
   openTrackContextMenu: (track: DataTrack) => void;
   trackPages: Record<string, TrackPage> = {};

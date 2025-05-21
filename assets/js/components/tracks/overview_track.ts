@@ -118,6 +118,10 @@ export class OverviewTrack extends CanvasTrack {
 
     if (newRender) {
       super.syncDimensions();
+      if (this.dimensions.width === 0 || this.dimensions.height === 0) {
+        console.error("Check this - no dimensions yet?");
+        return;
+      }
       this.renderLoading();
 
       // Sync the static canvas sizes

@@ -1,5 +1,7 @@
 import { CHROMOSOMES, STYLE } from "../../constants";
 import { GensSession } from "../../state/gens_session";
+import { removeOne } from "../../util/utils";
+import { BandTrack } from "../tracks/band_track";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { DataTrackInfo } from "./track_view";
@@ -7,6 +9,7 @@ import {
   createAnnotTrack,
   createDataTrackWrapper,
   createDotTrack,
+  getTrackInfo,
 } from "./utils";
 
 const COV_Y_RANGE: [number, number] = [-2, 2];
@@ -25,7 +28,11 @@ export class ChromosomeView extends ShadowBaseElement {
   private dataSource: RenderDataSource;
   private openTrackContextMenu: (track: DataTrack) => void;
 
+  private currentAnnotationIds: Set<string> = new Set();
+
   private tracks: DataTrack[] = [];
+
+  private chromosomeGroups: Record<string, HTMLDivElement> = {};
 
   constructor() {
     super(template);
@@ -51,18 +58,11 @@ export class ChromosomeView extends ShadowBaseElement {
     this.openTrackContextMenu = openTrackContextMenu;
 
     for (const chrom of CHROMOSOMES) {
-
       const subgroup = document.createElement("div") as HTMLDivElement;
       const subgroupLabel = document.createTextNode(`C: ${chrom}`);
       subgroup.appendChild(subgroupLabel);
       this.chromosomeTracksContainer.appendChild(subgroup);
-
-      const onAddTrack = (trackInfo: DataTrackInfo) => {
-        console.log("Adding track info", trackInfo);
-        this.tracks.push(trackInfo.track);
-        subgroup.appendChild(trackInfo.container);
-        trackInfo.track.initialize();
-      };
+      this.chromosomeGroups[chrom] = subgroup;
 
       setupDotTracks(
         session,
@@ -71,25 +71,72 @@ export class ChromosomeView extends ShadowBaseElement {
         openTrackContextMenu,
         (sampleId: string, chrom: string) =>
           dataSource.getCovData(sampleId, chrom),
-        onAddTrack,
+        (trackInfo: DataTrackInfo) => {
+          this.onAddTrack(subgroup, trackInfo);
+        },
       );
-      setupAnnotTracks(session, chrom, dataSource, onAddTrack);
+
+      const annotSources = session.getAnnotationSources({
+        selectedOnly: true,
+      });
+      for (const { id } of annotSources) {
+        this.currentAnnotationIds.add(id);
+      }
+      setupAnnotTracks(
+        annotSources,
+        session,
+        chrom,
+        dataSource,
+        (trackInfo: DataTrackInfo) => this.onAddTrack(subgroup, trackInfo),
+      );
     }
   }
 
-  render(settings: RenderSettings) {
-    // updateAnnotationTracks(
+  public render(settings: RenderSettings) {
+    updateAnnotationTracks(
+      this.session.getAnnotationSources({ selectedOnly: true }),
+      [...this.currentAnnotationIds],
+      (sourceId: string, chrom: string) =>
+        this.dataSource.getAnnotationBands(sourceId, chrom),
+      (bandId: string) => this.dataSource.getAnnotationDetails(bandId),
+      this.session,
+      this.openTrackContextMenu,
+      (track: DataTrackInfo, chrom: string) => {
+        const subgroup = this.chromosomeGroups[chrom];
 
-    // )
+        this.onAddTrack(subgroup, track);
+      },
+      (id: string, chrom: string) => {
+        const subgroup = this.chromosomeGroups[chrom];
+
+        this.onRemoveTrack(subgroup, id);
+      },
+    );
 
     for (const track of this.tracks) {
       track.render(settings);
     }
   }
+
+  private onAddTrack(subgroup: HTMLDivElement, trackInfo: DataTrackInfo) {
+    this.tracks.push(trackInfo.track);
+    subgroup.appendChild(trackInfo.container);
+    trackInfo.track.initialize();
+  }
+
+  private onRemoveTrack(subgroup: HTMLDivElement, id: string) {
+    const removedTrack = removeOne(
+      this.tracks,
+      (track: DataTrack) => track.id == id,
+    );
+    // FIXME: Should the info be used here as well?
+    subgroup.removeChild(removedTrack.parentElement);
+  }
 }
 
 function updateAnnotationTracks(
-  currAnnotTracks: string[],
+  sources: { id: string; label: string }[],
+  trackIds: string[],
   getAnnotationBands: (
     sourceId: string,
     chrom: string,
@@ -97,24 +144,51 @@ function updateAnnotationTracks(
   getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
-  addTrack: (track: DataTrack) => void,
-  removeTrack: (id: string) => void,
-) {}
+  addTrack: (track: DataTrackInfo, chrom: string) => void,
+  removeTrack: (id: string, chrom: string) => void,
+) {
+  // FIXME: Merge with the track view function
+  const sourceIds = sources.map((source) => source.id);
+
+  const newSources = sources.filter((source) => !trackIds.includes(source.id));
+  const removedSourceIds = trackIds.filter((id) => !sourceIds.includes(id));
+
+  newSources.forEach((source) => {
+    const hasLabel = true;
+
+    for (const chrom of CHROMOSOMES) {
+      const newTrack = createAnnotTrack(
+        source.id,
+        source.label,
+        () => getAnnotationBands(source.id, session.getChromosome()),
+        (bandId: string) => getAnnotationDetails(bandId),
+        session,
+        openTrackContextMenu,
+        STYLE.tracks.trackHeight.thin,
+        hasLabel,
+      );
+      const trackInfo = getTrackInfo(newTrack, null);
+      addTrack(trackInfo, chrom);
+    }
+  });
+
+  removedSourceIds.forEach((sourceId) => {
+    for (const chrom of CHROMOSOMES) {
+      const trackId = `${sourceId}_${chrom}`;
+      removeTrack(trackId, chrom);
+    }
+  });
+}
 
 function setupAnnotTracks(
+  annotSources: { id: string; label: string }[],
   session: GensSession,
   chrom: string,
   dataSource: RenderDataSource,
   addTrack: (trackInfo: DataTrackInfo) => void,
 ) {
-  const annotSources = session.getAnnotationSources({
-    selectedOnly: true,
-  });
-
-  console.log("Annotation sources", annotSources);
-
   for (const { id: annotId, label: annotLabel } of annotSources) {
-    const trackId = `${annotLabel}_${chrom}_annot`;
+    const trackId = `${annotId}_${chrom}`;
     const trackLabel = `${annotLabel} ${chrom}`;
 
     const hasLabel = false;
