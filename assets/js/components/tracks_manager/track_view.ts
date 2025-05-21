@@ -372,7 +372,7 @@ export class TrackView extends ShadowBaseElement {
     this.tracksContainer.appendChild(sampleTracks.baf.container);
     this.tracksContainer.appendChild(sampleTracks.variant.container);
 
-    Object.values(sampleTracks).map(({track}) => track.initialize());
+    Object.values(sampleTracks).map(({ track }) => track.initialize());
     // this.sampleToTracks[sampleId] = sampleTracks;
   }
 
@@ -583,8 +583,7 @@ function updateAnnotationTracks(
       (bandId: string) => getAnnotationDetails(bandId),
       session,
       openTrackContextMenu,
-      STYLE.tracks.trackHeight.thin,
-      hasLabel,
+      { height: STYLE.tracks.trackHeight.thin, hasLabel },
     );
     addTrack(newTrack);
   });

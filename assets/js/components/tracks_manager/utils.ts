@@ -24,8 +24,7 @@ export function createAnnotTrack(
   // dataSource: TracksManagerDataSources,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
-  height: number,
-  hasLabel: boolean,
+  settings: { height: number, hasLabel: boolean, yPadBands?: boolean }
 ): BandTrack {
   // FIXME: Seems the x range should be separated from the annotations or?
   async function getAnnotTrackData(
@@ -55,8 +54,9 @@ export function createAnnotTrack(
 
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
-    height: { collapsedHeight: height, startExpanded: false },
-    hasLabel,
+    height: { collapsedHeight: settings.height, startExpanded: false },
+    hasLabel: settings.hasLabel,
+    yPadBands: settings.yPadBands,
   };
 
   const track = new BandTrack(

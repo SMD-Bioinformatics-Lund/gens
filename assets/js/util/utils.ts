@@ -331,3 +331,7 @@ export function removeOne<T>(arr: T[], matchFn: (arg: T) => boolean): T {
   const [removed] = arr.splice(foundIndex, 1);
   return removed;
 }
+
+export function div(): HTMLDivElement {
+  return document.createElement("div") as HTMLDivElement;
+}

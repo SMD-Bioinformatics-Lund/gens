@@ -23,8 +23,9 @@ export interface ExpandedTrackHeight {
 
 export interface DataTrackSettings {
   height: ExpandedTrackHeight;
-  yAxis?: Axis;
   hasLabel: boolean;
+  yAxis?: Axis;
+  yPadBands?: boolean;
 }
 
 const DEBOUNCE_DELAY = 50;

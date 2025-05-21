@@ -46,11 +46,6 @@ export class BandTrack extends DataTrack {
       openTrackContextMenu,
       getSettings,
       updateSettings,
-      // {
-      //   height: settings.height,
-      //   dragSelect: true,
-      //   yAxis: null,
-      // },
       session,
     );
 
@@ -107,7 +102,7 @@ export class BandTrack extends DataTrack {
 
     const yScale = getBandYScale(
       bandTopBottomPad,
-      STYLE.bandTrack.bandPadding,
+      this.getIsExpanded() || this.getSettings().yPadBands ? STYLE.bandTrack.bandPadding : 0,
       this.getIsExpanded() ? numberLanes : 1,
       this.dimensions.height,
       labelSize,

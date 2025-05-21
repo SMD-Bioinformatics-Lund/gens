@@ -36,9 +36,6 @@ export class DotTrack extends DataTrack {
       openTrackContextMenu,
       getSettings,
       updateSettings,
-      // () => {
-      //   return { height: getSettings().height, dragSelect: true, yAxis };
-      // },
       session,
     );
     this.getRenderData = getRenderData;

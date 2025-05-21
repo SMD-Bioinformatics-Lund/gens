@@ -69,6 +69,7 @@ const font = "12px sans-serif";
 
 const TRACK_HEIGHTS = {
   extraThin: 20,
+  thinnest: 10,
   thin: 45,
   medium: 120,
   thick: 180,
