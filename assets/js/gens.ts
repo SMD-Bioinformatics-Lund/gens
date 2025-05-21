@@ -132,8 +132,8 @@ export async function initCanvases({
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
-  const annotSources = await api.getAnnotationSources();
-  const defaultAnnot = annotSources
+  const allAnnotSources = await api.getAnnotationSources();
+  const defaultAnnot = allAnnotSources
     .filter((track) => track.name === defaultAnnotationName)
     .map((track) => {
       return {
@@ -145,9 +145,10 @@ export async function initCanvases({
   settingsPage.setSources(
     session,
     () => render({}),
-    annotSources,
+    allAnnotSources,
     defaultAnnot,
     (_newSources) => {
+      console.log("Annotations changed");
       render({ dataUpdated: false });
     },
     () => gensTracks.trackView.getDataTracks(),

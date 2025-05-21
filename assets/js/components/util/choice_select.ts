@@ -139,17 +139,17 @@ export class ChoiceSelect extends ShadowBaseElement {
     });
   }
 
-  setChoices(choices: InputChoice[]) {
+  setValues(values: InputChoice[]) {
     this.choiceElement.clearChoices();
     this.choiceElement.clearStore();
-    this.choiceElement.setChoices(choices);
+    this.choiceElement.setChoices(values);
   }
 
-  getChoices(): EventChoice[] {
+  getValues(): EventChoice[] {
     return this.choiceElement.getValue() as EventChoice[];
   }
 
-  getChoice(): EventChoice | null {
+  getValue(): EventChoice | null {
 
     return this.choiceElement.getValue()
       ? (this.choiceElement.getValue() as EventChoice)

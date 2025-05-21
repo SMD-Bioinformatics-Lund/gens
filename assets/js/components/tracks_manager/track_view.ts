@@ -7,7 +7,7 @@ import {
   createGenesTrack,
   createOverviewTrack,
   createVariantTrack,
-  getTrackInfo,
+  getTrackInfo as getTrack,
   TRACK_HANDLE_CLASS,
 } from "./utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
@@ -56,7 +56,7 @@ export class TrackView extends ShadowBaseElement {
   renderAll: (settings: RenderSettings) => void;
   sampleIds: string[];
 
-  dataTracksInfo: DataTrackInfo[] = [];
+  dataTracks: DataTrackInfo[] = [];
   ideogramTrack: IdeogramTrack;
   overviewTracks: OverviewTrack[] = [];
   dataTrackIdToWrapper: Record<string, HTMLDivElement> = {};
@@ -106,8 +106,8 @@ export class TrackView extends ShadowBaseElement {
         console.log("on end");
 
         const { oldIndex, newIndex } = evt;
-        const [moved] = this.dataTracksInfo.splice(oldIndex, 1);
-        this.dataTracksInfo.splice(newIndex, 0, moved);
+        const [moved] = this.dataTracks.splice(oldIndex, 1);
+        this.dataTracks.splice(newIndex, 0, moved);
         render({});
       },
     });
@@ -213,7 +213,7 @@ export class TrackView extends ShadowBaseElement {
       track.renderLoading();
     });
 
-    this.dataTracksInfo = tracks;
+    this.dataTracks = tracks;
 
     this.overviewTracks.forEach((track) => {
       this.bottomContainer.appendChild(track);
@@ -308,20 +308,20 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public getDataTracks(): DataTrack[] {
-    return this.dataTracksInfo.filter((track) => track instanceof DataTrack);
+    return this.dataTracks.filter((track) => track instanceof DataTrack);
   }
 
   // FIXME: Seems this should be a more general util
   public moveTrack(trackId: string, direction: "up" | "down") {
-    const trackInfo = getDataTrackInfoById(this.dataTracksInfo, trackId);
-    const trackInfoIndex = this.dataTracksInfo.indexOf(trackInfo);
+    const trackInfo = getDataTrackInfoById(this.dataTracks, trackId);
+    const trackInfoIndex = this.dataTracks.indexOf(trackInfo);
 
     if (direction == "up" && trackInfoIndex == 0) {
       return;
     }
     if (
       direction == "down" &&
-      trackInfoIndex == this.dataTracksInfo.length - 1
+      trackInfoIndex == this.dataTracks.length - 1
     ) {
       return;
     }
@@ -333,16 +333,16 @@ export class TrackView extends ShadowBaseElement {
     if (direction == "up") {
       trackSContainer.insertBefore(
         trackContainer,
-        this.dataTracksInfo[trackInfoIndex - 1].container,
+        this.dataTracks[trackInfoIndex - 1].container,
       );
     } else {
       trackSContainer.insertBefore(
         trackContainer,
-        this.dataTracksInfo[trackInfoIndex + 1].container.nextSibling,
+        this.dataTracks[trackInfoIndex + 1].container.nextSibling,
       );
     }
 
-    moveElement(this.dataTracksInfo, trackInfoIndex, shift, true);
+    moveElement(this.dataTracks, trackInfoIndex, shift, true);
   }
 
   public addSample(sampleId: string, chrom: string, isTrackViewTrack: boolean) {
@@ -360,7 +360,7 @@ export class TrackView extends ShadowBaseElement {
     // this.setupDataTrack(sampleTracks.baf);
     // this.setupDataTrack(sampleTracks.variant);
 
-    this.dataTracksInfo.push(
+    this.dataTracks.push(
       sampleTracks.cov,
       sampleTracks.baf,
       sampleTracks.variant,
@@ -371,11 +371,11 @@ export class TrackView extends ShadowBaseElement {
   public removeSample(sampleId: string) {
     // const tracks = this.sampleToTracks[sampleId];
 
-    const removeInfos = this.dataTracksInfo.filter(
+    const removeInfos = this.dataTracks.filter(
       (info) => info.sampleId === sampleId,
     );
 
-    this.dataTracksInfo = this.dataTracksInfo.filter(
+    this.dataTracks = this.dataTracks.filter(
       (info) => info.sampleId !== sampleId,
     );
 
@@ -385,17 +385,17 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public showTrack(trackId: string) {
-    const track = getDataTrackInfoById(this.dataTracksInfo, trackId);
+    const track = getDataTrackInfoById(this.dataTracks, trackId);
     this.tracksContainer.appendChild(track.container);
   }
 
   public hideTrack(trackId: string) {
-    const track = getDataTrackInfoById(this.dataTracksInfo, trackId);
+    const track = getDataTrackInfoById(this.dataTracks, trackId);
     this.tracksContainer.removeChild(track.container);
   }
 
   public setTrackHeights(trackHeights: TrackHeights) {
-    for (const track of this.dataTracksInfo) {
+    for (const track of this.dataTracks) {
       if (track instanceof BandTrack) {
         track.setHeights(trackHeights.bandCollapsed);
       } else if (track instanceof DotTrack) {
@@ -407,6 +407,7 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
+
     // FIXME: Extract function
     renderHighlights(
       this.tracksContainer,
@@ -417,19 +418,22 @@ export class TrackView extends ShadowBaseElement {
     );
 
     updateAnnotationTracks(
-      this.dataTracksInfo.filter(
+      this.dataTracks.filter(
         (info) => info.track.trackType == "annotation",
       ),
       this.dataSource,
       this.session,
       this.openTrackContextMenu,
       (track: DataTrack) => {
-        const info = getTrackInfo(track, null);
-        return info;
+        const annotTrack = getTrack(track, null);
+        this.dataTracks.push(annotTrack);
+        this.tracksContainer.appendChild(annotTrack.container);
+        annotTrack.track.initialize();
+        // return info;
       },
       (id: string) => {
         const match = removeOne(
-          this.dataTracksInfo,
+          this.dataTracks,
           (info) => info.track.id === id,
         );
         this.tracksContainer.removeChild(match.container);
@@ -442,7 +446,7 @@ export class TrackView extends ShadowBaseElement {
 
     this.ideogramTrack.render(settings);
 
-    for (const trackInfo of this.dataTracksInfo) {
+    for (const trackInfo of this.dataTracks) {
       trackInfo.track.render(settings);
     }
 
@@ -526,9 +530,9 @@ export function createSampleTracks(
     openTrackContextMenu,
   );
   return {
-    cov: getTrackInfo(coverageTrack, sampleId),
-    baf: getTrackInfo(bafTrack, sampleId),
-    variant: getTrackInfo(variantTrack, sampleId),
+    cov: getTrack(coverageTrack, sampleId),
+    baf: getTrack(bafTrack, sampleId),
+    variant: getTrack(variantTrack, sampleId),
   };
 }
 
@@ -540,9 +544,13 @@ function updateAnnotationTracks(
   addTrack: (track: DataTrack) => void,
   removeTrack: (id: string) => void,
 ) {
+  console.log("Updating annotation tracks");
+
   const sources = session.getAnnotationSources({
     selectedOnly: true,
   });
+
+  console.log("Current sources", sources);
 
   const currTrackIds = currAnnotTracks.map((info) => info.track.id);
   const sourceIds = sources.map((source) => source.id);
@@ -556,6 +564,9 @@ function updateAnnotationTracks(
 
   // const newSources = diff(sources, currAnnotTracks, (source) => source.track.id);
   // const removedSources = diff(currAnnotTracks, sources, (source) => source.track.id);
+
+  console.log("New sources", newSources);
+  console.log("Removed sources", removedSourceIds);
 
   newSources.forEach((source) => {
     const hasLabel = true;

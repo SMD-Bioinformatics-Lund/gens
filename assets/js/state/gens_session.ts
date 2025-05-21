@@ -67,6 +67,7 @@ export class GensSession {
   public getAnnotationSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
+    // FIXME: Should this be owned by the session?
     return this.settings.getAnnotSources(settings);
   }
 

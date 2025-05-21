@@ -128,6 +128,8 @@ export class TracksManager extends ShadowBaseElement {
     this.chromosomeView.hidden = !chromViewActive;
     this.trackView.hidden = chromViewActive;
 
+    console.log("Rendering tracks manager", chromViewActive);
+
     if (!chromViewActive) {
       this.trackView.render(settings);
     } else {
