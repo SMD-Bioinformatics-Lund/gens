@@ -7,7 +7,7 @@ import {
 import { STYLE } from "../../constants";
 import { drawArrow, getLinearScale } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
-import { DataTrack, DataTrackSettings, ExpandedTrackHeight } from "./base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
 import { GensSession } from "../../state/gens_session";
 
 const LEFT_PX_EDGE = STYLE.yAxis.width;
@@ -22,7 +22,6 @@ export class BandTrack extends DataTrack {
     trackType: TrackType,
     getSettings: () => DataTrackSettings,
     updateSettings: (settings: DataTrackSettings) => void,
-    // settings: { height: ExpandedTrackHeight },
     getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
@@ -102,7 +101,9 @@ export class BandTrack extends DataTrack {
 
     const yScale = getBandYScale(
       bandTopBottomPad,
-      this.getIsExpanded() || this.getSettings().yPadBands ? STYLE.bandTrack.bandPadding : 0,
+      this.getIsExpanded() || this.getSettings().yPadBands
+        ? STYLE.bandTrack.bandPadding
+        : 0,
       this.getIsExpanded() ? numberLanes : 1,
       this.dimensions.height,
       labelSize,

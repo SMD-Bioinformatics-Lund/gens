@@ -1,4 +1,3 @@
-import { SettingsPage } from "../components/side_menu/settings_page";
 import { STYLE } from "../constants";
 import { prefixNts, transformMap } from "../util/utils";
 import { API } from "./api";

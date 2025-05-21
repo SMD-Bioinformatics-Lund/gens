@@ -40,7 +40,7 @@ export abstract class DataTrack extends CanvasTrack {
 
   protected defaultTrackHeight: number;
   protected collapsedTrackHeight: number;
-  // Callback to allow multi-layered
+  // Callback to allow multi-layered settings object
   protected getSettings: () => DataTrackSettings;
   protected updateSettings: (settings: DataTrackSettings) => void;
   protected session: GensSession;

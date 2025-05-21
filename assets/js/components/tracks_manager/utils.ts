@@ -21,7 +21,6 @@ export function createAnnotTrack(
   label: string,
   getAnnotationBands: () => Promise<RenderBand[]>,
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
-  // dataSource: TracksManagerDataSources,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
   settings: { height: number, hasLabel: boolean, yPadBands?: boolean }
@@ -106,14 +105,6 @@ export function createDotTrack(
     "dot",
     () => fnSettings,
     (settings) => (fnSettings = settings),
-    // {
-    //   height: {
-    //     collapsedHeight: trackHeight.thin,
-    //     expandedHeight: trackHeight.thick,
-    //     startExpanded: settings.startExpanded,
-    //   },
-    // },
-    // settings.yAxis,
     () => session.getXRange(),
     async () => {
       const data = await dataFn(sampleId);

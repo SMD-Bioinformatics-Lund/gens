@@ -12,7 +12,6 @@ export class DotTrack extends DataTrack {
     trackType: TrackType,
     getSettings: () => DataTrackSettings,
     updateSettings: (settings: DataTrackSettings) => void,
-    // yAxis: Axis,
     getXRange: () => Rng,
     getRenderData: () => Promise<DotTrackData>,
     openTrackContextMenu: (track: DataTrack) => void,
@@ -45,6 +44,7 @@ export class DotTrack extends DataTrack {
     super.connectedCallback();
 
     if (!this.getSettings) {
+      console.error("this.getSettings not yet present?");
       return;
     }
 

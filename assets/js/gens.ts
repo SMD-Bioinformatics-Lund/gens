@@ -163,7 +163,8 @@ export async function initCanvases({
       session.updateChromosome(region.chrom, [region.start, region.end]);
       render({ dataUpdated: true, positionOnly });
     },
-    // FIXME: Something strange here, why is the trackview looping to itself?
+    // FIXME: Something strange here in how things are organized,
+    // why is the trackview looping to itself?
     (sampleId: string) => {
       const isTrackView = true;
       gensTracks.trackView.addSample(sampleId, session.getChromosome(), isTrackView);
@@ -239,33 +240,6 @@ async function initialize(
     session.setViewRange(range);
     render({ dataUpdated: true, positionOnly: true });
   });
-
-  // // FIXME: Is this extra layer needed?
-  // // Probably not?
-  // const tracksDataSource = {
-  //   getAnnotationSources: (settings: { selectedOnly: boolean }) =>
-  //     settingsPage.getAnnotSources(settings),
-  //   getVariantUrl: (id: string) => getVariantURL(id),
-  //   getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
-  //   getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
-  //   getVariantDetails: (sampleId: string, variantId: string) =>
-  //     api.getVariantDetails(sampleId, variantId, session.getChromosome()),
-
-  //   getAnnotationBands: (id: string, settings: { chrom?: string }) =>
-  //     renderDataSource.getAnnotation(id, settings),
-  //   getCovData: (id: string, settings: { chrom: string }) =>
-  //     renderDataSource.getCovData(id, settings),
-  //   getBafData: (id: string) => renderDataSource.getBafData(id),
-  //   getVariantData: (id: string) => renderDataSource.getVariantData(id),
-
-  //   getTranscriptData: () => renderDataSource.getTranscriptData(),
-  //   getOverviewCovData: (sampleId: string) =>
-  //     renderDataSource.getOverviewCovData(sampleId),
-  //   getOverviewBafData: (sampleId: string) =>
-  //     renderDataSource.getOverviewBafData(sampleId),
-
-  //   getChromInfo: () => renderDataSource.getChromInfo(),
-  // };
 
   await tracks.initialize(
     render,

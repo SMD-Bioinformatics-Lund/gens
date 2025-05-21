@@ -91,7 +91,7 @@ export class TracksManager extends ShadowBaseElement {
       session,
       sampleIds,
       dataSource,
-      (track: DataTrack) => {
+      (_track: DataTrack) => {
         console.log(
           "FIXME: Context menu also for chromosome view (should use the same base logic)",
         );

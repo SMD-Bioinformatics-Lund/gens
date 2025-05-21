@@ -1,4 +1,3 @@
-import { Settings } from "http2";
 import {
   SettingsPage,
   TrackHeights,
@@ -32,11 +31,7 @@ export class GensSession {
   private samples: string[];
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
-
   private scoutBaseURL: string;
-
-  private trackSettings: Record<string, DataTrackSettings>;
-
   private settings: SettingsPage;
 
   constructor(

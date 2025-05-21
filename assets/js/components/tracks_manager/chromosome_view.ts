@@ -23,12 +23,9 @@ template.innerHTML = String.raw`
 
 export class ChromosomeView extends ShadowBaseElement {
   private chromosomeTracksContainer: HTMLDivElement;
-  private sampleIds: string[];
   private session: GensSession;
   private dataSource: RenderDataSource;
   private openTrackContextMenu: (track: DataTrack) => void;
-
-  // private currentAnnotationIds: Set<string> = new Set();
 
   private tracks: DataTrack[] = [];
 
@@ -36,7 +33,6 @@ export class ChromosomeView extends ShadowBaseElement {
     string,
     { samples: HTMLDivElement; annotations: HTMLDivElement }
   > = {};
-  // private chromosomeGroups: Record<string, HTMLDivElement> = {};
 
   constructor() {
     super(template);
@@ -57,7 +53,6 @@ export class ChromosomeView extends ShadowBaseElement {
     openTrackContextMenu: (track: DataTrack) => void,
   ) {
     this.session = session;
-    this.sampleIds = sampleIds;
     this.dataSource = dataSource;
     this.openTrackContextMenu = openTrackContextMenu;
 

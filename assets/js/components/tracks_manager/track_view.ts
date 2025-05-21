@@ -44,27 +44,23 @@ export interface DataTrackInfo {
   sampleId: string | null;
 }
 
-// FIXME: Session to carry track state?
-
 export class TrackView extends ShadowBaseElement {
-  topContainer: HTMLDivElement;
-  tracksContainer: HTMLDivElement;
-  bottomContainer: HTMLDivElement;
 
-  session: GensSession;
-  dataSource: RenderDataSource;
-  renderAll: (settings: RenderSettings) => void;
-  sampleIds: string[];
+  private topContainer: HTMLDivElement;
+  private tracksContainer: HTMLDivElement;
+  private bottomContainer: HTMLDivElement;
 
-  dataTracks: DataTrackInfo[] = [];
-  ideogramTrack: IdeogramTrack;
-  overviewTracks: OverviewTrack[] = [];
-  // dataTrackIdToWrapper: Record<string, HTMLDivElement> = {};
+  private session: GensSession;
+  private dataSource: RenderDataSource;
 
-  openTrackContextMenu: (track: DataTrack) => void;
-  trackPages: Record<string, TrackPage> = {};
+  private dataTracks: DataTrackInfo[] = [];
+  private ideogramTrack: IdeogramTrack;
+  private overviewTracks: OverviewTrack[] = [];
 
-  sampleToTracks: Record<
+  private openTrackContextMenu: (track: DataTrack) => void;
+  private trackPages: Record<string, TrackPage> = {};
+
+  private sampleToTracks: Record<
     string,
     { cov: DataTrackInfo; baf: DataTrackInfo; variant: DataTrackInfo }
   > = {};
@@ -91,8 +87,6 @@ export class TrackView extends ShadowBaseElement {
   ) {
     this.dataSource = dataSources;
     this.session = session;
-    this.renderAll = render;
-    this.sampleIds = sampleIds;
 
     const chrom = session.getChromosome();
 
@@ -207,7 +201,6 @@ export class TrackView extends ShadowBaseElement {
     this.ideogramTrack.renderLoading();
 
     tracks.forEach(({ track, container }) => {
-      // const trackWrap = createDataTrackWrapper(track);
       this.tracksContainer.appendChild(container);
       track.initialize();
       track.renderLoading();
@@ -354,14 +347,6 @@ export class TrackView extends ShadowBaseElement {
       this.openTrackContextMenu,
     );
 
-    // sampleTracks.cov.track.initialize();
-    // sampleTracks.baf.track.initialize();
-    // sampleTracks.variant.track.initialize();
-
-    // this.setupDataTrack(sampleTracks.cov);
-    // this.setupDataTrack(sampleTracks.baf);
-    // this.setupDataTrack(sampleTracks.variant);
-
     this.dataTracks.push(
       sampleTracks.cov,
       sampleTracks.baf,
@@ -373,12 +358,9 @@ export class TrackView extends ShadowBaseElement {
     this.tracksContainer.appendChild(sampleTracks.variant.container);
 
     Object.values(sampleTracks).map(({ track }) => track.initialize());
-    // this.sampleToTracks[sampleId] = sampleTracks;
   }
 
   public removeSample(sampleId: string) {
-    // const tracks = this.sampleToTracks[sampleId];
-
     const removeInfos = this.dataTracks.filter(
       (info) => info.sampleId === sampleId,
     );
@@ -415,7 +397,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
-    // FIXME: Extract function
     renderHighlights(
       this.tracksContainer,
       this.session.getCurrentHighlights(),
@@ -436,7 +417,6 @@ export class TrackView extends ShadowBaseElement {
         this.dataTracks.push(annotTrack);
         this.tracksContainer.appendChild(annotTrack.container);
         annotTrack.track.initialize();
-        // return info;
       },
       (id: string) => {
         const match = removeOne(
@@ -451,17 +431,9 @@ export class TrackView extends ShadowBaseElement {
     Object.values(this.trackPages).forEach((trackPage) =>
       trackPage.render(settings),
     );
-    // for (const trackPage of ) {
-    //   trackPage.render(settings);
-    // }
 
     this.ideogramTrack.render(settings);
     this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
-
-    // for (const trackInfo of this.dataTracks) {
-    //   trackInfo.track.render(settings);
-    // }
-
     this.overviewTracks.forEach((track) => track.render(settings));
   }
 }
