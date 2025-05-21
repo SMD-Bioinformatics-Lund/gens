@@ -1,4 +1,4 @@
-import { CHROMOSOMES, STYLE } from "../../constants";
+import { CHROMOSOMES, SIZES, STYLE } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { removeOne } from "../../util/utils";
 import { BandTrack } from "../tracks/band_track";
@@ -59,8 +59,18 @@ export class ChromosomeView extends ShadowBaseElement {
 
     for (const chrom of CHROMOSOMES) {
       const subgroup = document.createElement("div") as HTMLDivElement;
-      const subgroupLabel = document.createTextNode(`C: ${chrom}`);
-      subgroup.appendChild(subgroupLabel);
+      subgroup.style.paddingBottom = `${SIZES.xxs}px`;
+      // subgroup.style.display = "flex";
+      // subgroup.style.flexDirection = "row";
+
+      // const subgroupLabel = document.createTextNode(`C: ${chrom}`);
+      // subgroup.appendChild(subgroupLabel);
+
+      // const tracksCol = document.createElement("div") as HTMLDivElement;
+      // tracksCol.style.display = "flex";
+      // tracksCol.style.flexDirection = "column";
+      // subgroup.appendChild(tracksCol);
+
       this.chromosomeTracksContainer.appendChild(subgroup);
       this.chromosomeGroups[chrom] = subgroup;
 
@@ -180,7 +190,7 @@ function updateAnnotationTracks(
       const newTrack = createAnnotTrack(
         trackId,
         source.label,
-        () => getAnnotationBands(source.id, session.getChromosome()),
+        () => getAnnotationBands(source.id, chrom),
         (bandId: string) => getAnnotationDetails(bandId),
         session,
         openTrackContextMenu,
