@@ -9,37 +9,6 @@ import { ChromosomeView } from "./chromosome_view";
 export const COV_Y_RANGE: [number, number] = [-3, 3];
 export const BAF_Y_RANGE: [number, number] = [0, 1];
 
-// export interface TracksManagerDataSources {
-//   getAnnotationSources: GetAnnotSources;
-//   getVariantUrl: (id: string) => string;
-//   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
-//   getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>;
-//   getVariantDetails: (
-//     sampleId: string,
-//     variantId: string,
-//   ) => Promise<ApiVariantDetails>;
-
-//   getAnnotation: (
-//     id: string,
-//     settings: { chrom?: string },
-//   ) => Promise<RenderBand[]>;
-//   getCovData: (
-//     id: string,
-//     settings: { chrom?: string },
-//   ) => Promise<RenderDot[]>;
-//   getBafData: (id: string) => Promise<RenderDot[]>;
-//   getVariantData: (id: string) => Promise<RenderBand[]>;
-
-//   getChromInfo: () => Promise<ChromosomeInfo>;
-//   getTranscriptData: () => Promise<RenderBand[]>;
-//   getOverviewCovData: (
-//     sampleId: string,
-//   ) => Promise<Record<string, RenderDot[]>>;
-//   getOverviewBafData: (
-//     sampleId: string,
-//   ) => Promise<Record<string, RenderDot[]>>;
-// }
-
 // FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -119,7 +88,16 @@ export class TracksManager extends ShadowBaseElement {
       session,
     );
 
-    this.chromosomeView.initialize(session, sampleIds, dataSource);
+    this.chromosomeView.initialize(
+      session,
+      sampleIds,
+      dataSource,
+      (track: DataTrack) => {
+        console.log(
+          "FIXME: Context menu also for chromosome view (should use the same base logic)",
+        );
+      },
+    );
   }
 
   render(settings: RenderSettings) {

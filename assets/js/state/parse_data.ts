@@ -79,7 +79,7 @@ export function getRenderDataSource(
 
   const renderDataSource: RenderDataSource = {
     getChromInfo,
-    getAnnotation,
+    getAnnotationBands: getAnnotation,
     getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
     getCovData,
     getBafData,

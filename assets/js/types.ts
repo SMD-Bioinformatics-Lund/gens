@@ -241,7 +241,7 @@ type GetAnnotSources = (settings: {
 interface RenderDataSource {
   getChromInfo: () => Promise<ChromosomeInfo>;
 
-  getAnnotation: (id: string, chrom: string) => Promise<RenderBand[]>;
+  getAnnotationBands: (id: string, chrom: string) => Promise<RenderBand[]>;
   getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>;
 
   getCovData: (sampleId: string, chrom: string) => Promise<RenderDot[]>;

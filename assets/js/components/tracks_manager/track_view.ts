@@ -254,6 +254,7 @@ export class TrackView extends ShadowBaseElement {
     return xScale;
   }
 
+  // FIXME: Lift this one up one level
   private createOpenTrackContextMenu(
     render: (settings: RenderSettings) => void,
   ) {
@@ -294,7 +295,7 @@ export class TrackView extends ShadowBaseElement {
         async (annotId: string | null) => {
           let colorBands = [];
           if (annotId != null) {
-            colorBands = await this.dataSource.getAnnotation(
+            colorBands = await this.dataSource.getAnnotationBands(
               annotId,
               this.session.getChromosome(),
             );
@@ -319,10 +320,7 @@ export class TrackView extends ShadowBaseElement {
     if (direction == "up" && trackInfoIndex == 0) {
       return;
     }
-    if (
-      direction == "down" &&
-      trackInfoIndex == this.dataTracks.length - 1
-    ) {
+    if (direction == "down" && trackInfoIndex == this.dataTracks.length - 1) {
       return;
     }
 
@@ -407,7 +405,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
-
     // FIXME: Extract function
     renderHighlights(
       this.tracksContainer,
@@ -418,10 +415,10 @@ export class TrackView extends ShadowBaseElement {
     );
 
     updateAnnotationTracks(
-      this.dataTracks.filter(
-        (info) => info.track.trackType == "annotation",
-      ),
-      this.dataSource,
+      this.dataTracks.filter((info) => info.track.trackType == "annotation"),
+      (sourceId: string, chrom: string) =>
+        this.dataSource.getAnnotationBands(sourceId, chrom),
+      (bandId: string) => this.dataSource.getAnnotationDetails(bandId),
       this.session,
       this.openTrackContextMenu,
       (track: DataTrack) => {
@@ -539,25 +536,22 @@ export function createSampleTracks(
 
 function updateAnnotationTracks(
   currAnnotTracks: DataTrackInfo[],
-  dataSource: RenderDataSource,
+  getAnnotationBands: (
+    sourceId: string,
+    chrom: string,
+  ) => Promise<RenderBand[]>,
+  getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
   addTrack: (track: DataTrack) => void,
   removeTrack: (id: string) => void,
 ) {
-  console.log("Updating annotation tracks");
-
   const sources = session.getAnnotationSources({
     selectedOnly: true,
   });
 
-  console.log("Current sources", sources);
-
   const currTrackIds = currAnnotTracks.map((info) => info.track.id);
   const sourceIds = sources.map((source) => source.id);
-
-  console.log("Curr track IDs", currTrackIds);
-  console.log("Source IDs", sourceIds);
 
   const newSources = sources.filter(
     (source) => !currTrackIds.includes(source.id),
@@ -566,19 +560,13 @@ function updateAnnotationTracks(
     .map((info) => info.track.id)
     .filter((id) => !sourceIds.includes(id));
 
-  // const newSources = diff(sources, currAnnotTracks, (source) => source.track.id);
-  // const removedSources = diff(currAnnotTracks, sources, (source) => source.track.id);
-
-  console.log("New sources", newSources);
-  console.log("Removed sources", removedSourceIds);
-
   newSources.forEach((source) => {
     const hasLabel = true;
     const newTrack = createAnnotTrack(
       source.id,
       source.label,
-      () => dataSource.getAnnotation(source.id, session.getChromosome()),
-      (bandId: string) => dataSource.getAnnotationDetails(bandId),
+      () => getAnnotationBands(source.id, session.getChromosome()),
+      (bandId: string) => getAnnotationDetails(bandId),
       session,
       openTrackContextMenu,
       STYLE.tracks.trackHeight.thin,

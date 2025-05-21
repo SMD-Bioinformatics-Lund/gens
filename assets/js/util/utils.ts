@@ -330,11 +330,4 @@ export function removeOne<T>(arr: T[], matchFn: (arg: T) => boolean): T {
 
   const [removed] = arr.splice(foundIndex, 1);
   return removed;
-
-  // const matches = arr.filter((arg) => matchFn(arg));
-  // if (matches.length != 1) {
-  //   throw Error(`${matches.length} matches found. This function expects strictly one.`)
-  // }
-  // const match = matches[0];
-  // return match;
 }
