@@ -22,7 +22,6 @@ template.innerHTML = String.raw`
 
 export class ChromosomeView extends ShadowBaseElement {
   private chromosomeTracksContainer: HTMLDivElement;
-  private isInitialized: boolean;
   private sampleIds: string[];
   private session: GensSession;
   private dataSource: RenderDataSource;
@@ -60,16 +59,6 @@ export class ChromosomeView extends ShadowBaseElement {
     for (const chrom of CHROMOSOMES) {
       const subgroup = document.createElement("div") as HTMLDivElement;
       subgroup.style.paddingBottom = `${SIZES.xxs}px`;
-      // subgroup.style.display = "flex";
-      // subgroup.style.flexDirection = "row";
-
-      // const subgroupLabel = document.createTextNode(`C: ${chrom}`);
-      // subgroup.appendChild(subgroupLabel);
-
-      // const tracksCol = document.createElement("div") as HTMLDivElement;
-      // tracksCol.style.display = "flex";
-      // tracksCol.style.flexDirection = "column";
-      // subgroup.appendChild(tracksCol);
 
       this.chromosomeTracksContainer.appendChild(subgroup);
       this.chromosomeGroups[chrom] = subgroup;
@@ -107,7 +96,6 @@ export class ChromosomeView extends ShadowBaseElement {
     // FIXME: Util
     const chr1Group = this.chromosomeGroups["1"] as HTMLDivElement;
     const bandTracks = [...chr1Group.querySelectorAll("band-track")] as BandTrack[];
-    console.log("Current band tracks", bandTracks);
     // IDs are on the format source_chr
     // Can this be done neater?
     const currentBandTracks = bandTracks.map((track) => track.id.split("_")[0]);
@@ -142,12 +130,9 @@ export class ChromosomeView extends ShadowBaseElement {
   }
 
   private onRemoveTrack(sourceId: string) {
-    console.log("Attempting to remove source", sourceId);
-
     for (const chrom of CHROMOSOMES) {
       const subgroup = this.chromosomeGroups[chrom];
       const trackId = `${sourceId}_${chrom}`;
-      console.log("Track id", trackId, "tracks", this.tracks);
       const removedTrack = removeOne(
         this.tracks,
         (track: DataTrack) => track.id == trackId,
@@ -179,8 +164,6 @@ function updateAnnotationTracks(
 
   const newSources = sources.filter((source) => !trackIds.includes(source.id));
   const removedSourceIds = trackIds.filter((id) => !sourceIds.includes(id));
-
-  console.log("New sources", newSources, "removed sources", removedSourceIds);
 
   newSources.forEach((source) => {
     const hasLabel = false;

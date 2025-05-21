@@ -205,10 +205,6 @@ export class SettingsPage extends ShadowBaseElement {
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
-      console.log("Annotations changed inside");
-      // this.onAnnotationChanged(
-      //   this.annotSelect.getValues().map((choice) => choice.value),
-      // );
       this.onChange();
     });
 
@@ -246,7 +242,6 @@ export class SettingsPage extends ShadowBaseElement {
         this.defaultAnnots.map((a) => a.id),
       ),
     );
-    // this.annotSelect.initialize(this.onAnnotationChanged);
     this.setupSampleSelect();
     this.onChange();
   }
@@ -262,6 +257,7 @@ export class SettingsPage extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
+
     if (this.tracksOverview == null) {
       return;
     }
@@ -291,6 +287,7 @@ export class SettingsPage extends ShadowBaseElement {
     this.tracksOverview.appendChild(tracksSection);
 
     const samples = this.getCurrentSamples();
+    console.log("> Current samples");
     removeChildren(this.samplesOverview);
     const samplesSection = getSamplesSection(samples, (sampleId: string) =>
       this.onRemoveSample(sampleId),

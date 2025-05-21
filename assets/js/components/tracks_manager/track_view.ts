@@ -354,6 +354,10 @@ export class TrackView extends ShadowBaseElement {
       this.openTrackContextMenu,
     );
 
+    // sampleTracks.cov.track.initialize();
+    // sampleTracks.baf.track.initialize();
+    // sampleTracks.variant.track.initialize();
+
     // this.setupDataTrack(sampleTracks.cov);
     // this.setupDataTrack(sampleTracks.baf);
     // this.setupDataTrack(sampleTracks.variant);
@@ -363,6 +367,12 @@ export class TrackView extends ShadowBaseElement {
       sampleTracks.baf,
       sampleTracks.variant,
     );
+
+    this.tracksContainer.appendChild(sampleTracks.cov.container);
+    this.tracksContainer.appendChild(sampleTracks.baf.container);
+    this.tracksContainer.appendChild(sampleTracks.variant.container);
+
+    Object.values(sampleTracks).map(({track}) => track.initialize());
     // this.sampleToTracks[sampleId] = sampleTracks;
   }
 
@@ -429,7 +439,6 @@ export class TrackView extends ShadowBaseElement {
         // return info;
       },
       (id: string) => {
-        console.log("Attempting removal of", id);
         const match = removeOne(
           this.dataTracks,
           (info) => info.track.id === id,
@@ -438,15 +447,20 @@ export class TrackView extends ShadowBaseElement {
       },
     );
 
-    for (const trackPage of Object.values(this.trackPages)) {
-      trackPage.render(settings);
-    }
+    // FIXME: Only the active one needs to be rendered isn't it?
+    Object.values(this.trackPages).forEach((trackPage) =>
+      trackPage.render(settings),
+    );
+    // for (const trackPage of ) {
+    //   trackPage.render(settings);
+    // }
 
     this.ideogramTrack.render(settings);
+    this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
 
-    for (const trackInfo of this.dataTracks) {
-      trackInfo.track.render(settings);
-    }
+    // for (const trackInfo of this.dataTracks) {
+    //   trackInfo.track.render(settings);
+    // }
 
     this.overviewTracks.forEach((track) => track.render(settings));
   }
