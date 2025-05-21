@@ -287,7 +287,6 @@ export class SettingsPage extends ShadowBaseElement {
     this.tracksOverview.appendChild(tracksSection);
 
     const samples = this.getCurrentSamples();
-    console.log("> Current samples");
     removeChildren(this.samplesOverview);
     const samplesSection = getSamplesSection(samples, (sampleId: string) =>
       this.onRemoveSample(sampleId),
