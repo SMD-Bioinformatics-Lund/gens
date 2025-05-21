@@ -28,7 +28,7 @@ export class ChromosomeView extends ShadowBaseElement {
   private dataSource: RenderDataSource;
   private openTrackContextMenu: (track: DataTrack) => void;
 
-  private currentAnnotationIds: Set<string> = new Set();
+  // private currentAnnotationIds: Set<string> = new Set();
 
   private tracks: DataTrack[] = [];
 
@@ -79,9 +79,9 @@ export class ChromosomeView extends ShadowBaseElement {
       const annotSources = session.getAnnotationSources({
         selectedOnly: true,
       });
-      for (const { id } of annotSources) {
-        this.currentAnnotationIds.add(id);
-      }
+      // for (const { id } of annotSources) {
+      //   this.currentAnnotationIds.add(id);
+      // }
       setupAnnotTracks(
         annotSources,
         session,
@@ -93,9 +93,18 @@ export class ChromosomeView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
+
+    // FIXME: Util
+    const chr1Group = this.chromosomeGroups["1"] as HTMLDivElement;
+    const bandTracks = [...chr1Group.querySelectorAll("band-track")] as BandTrack[];
+    console.log("Current band tracks", bandTracks);
+    // IDs are on the format source_chr
+    // Can this be done neater?
+    const currentBandTracks = bandTracks.map((track) => track.id.split("_")[0]);
+
     updateAnnotationTracks(
       this.session.getAnnotationSources({ selectedOnly: true }),
-      [...this.currentAnnotationIds],
+      currentBandTracks,
       (sourceId: string, chrom: string) =>
         this.dataSource.getAnnotationBands(sourceId, chrom),
       (bandId: string) => this.dataSource.getAnnotationDetails(bandId),
@@ -106,10 +115,8 @@ export class ChromosomeView extends ShadowBaseElement {
 
         this.onAddTrack(subgroup, track);
       },
-      (id: string, chrom: string) => {
-        const subgroup = this.chromosomeGroups[chrom];
-
-        this.onRemoveTrack(subgroup, id);
+      (id: string) => {
+        this.onRemoveTrack(id);
       },
     );
 
@@ -124,16 +131,26 @@ export class ChromosomeView extends ShadowBaseElement {
     trackInfo.track.initialize();
   }
 
-  private onRemoveTrack(subgroup: HTMLDivElement, id: string) {
-    const removedTrack = removeOne(
-      this.tracks,
-      (track: DataTrack) => track.id == id,
-    );
-    // FIXME: Should the info be used here as well?
-    subgroup.removeChild(removedTrack.parentElement);
+  private onRemoveTrack(sourceId: string) {
+    console.log("Attempting to remove source", sourceId);
+
+    for (const chrom of CHROMOSOMES) {
+      const subgroup = this.chromosomeGroups[chrom];
+      const trackId = `${sourceId}_${chrom}`;
+      console.log("Track id", trackId, "tracks", this.tracks);
+      const removedTrack = removeOne(
+        this.tracks,
+        (track: DataTrack) => track.id == trackId,
+      );
+      // FIXME: Should the info be used here as well?
+      subgroup.removeChild(removedTrack.parentElement);
+    }
   }
 }
 
+// FIXME: Should maybe flatten this one a bit?
+// Separating the source ID logic
+// Having a shared track setup logic with the init
 function updateAnnotationTracks(
   sources: { id: string; label: string }[],
   trackIds: string[],
@@ -145,7 +162,7 @@ function updateAnnotationTracks(
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
   addTrack: (track: DataTrackInfo, chrom: string) => void,
-  removeTrack: (id: string, chrom: string) => void,
+  removeTrack: (sourceId: string) => void,
 ) {
   // FIXME: Merge with the track view function
   const sourceIds = sources.map((source) => source.id);
@@ -153,18 +170,21 @@ function updateAnnotationTracks(
   const newSources = sources.filter((source) => !trackIds.includes(source.id));
   const removedSourceIds = trackIds.filter((id) => !sourceIds.includes(id));
 
+  console.log("New sources", newSources, "removed sources", removedSourceIds);
+
   newSources.forEach((source) => {
-    const hasLabel = true;
+    const hasLabel = false;
 
     for (const chrom of CHROMOSOMES) {
+      const trackId = `${source.id}_${chrom}`;
       const newTrack = createAnnotTrack(
-        source.id,
+        trackId,
         source.label,
         () => getAnnotationBands(source.id, session.getChromosome()),
         (bandId: string) => getAnnotationDetails(bandId),
         session,
         openTrackContextMenu,
-        STYLE.tracks.trackHeight.thin,
+        STYLE.tracks.trackHeight.extraThin,
         hasLabel,
       );
       const trackInfo = getTrackInfo(newTrack, null);
@@ -173,10 +193,7 @@ function updateAnnotationTracks(
   });
 
   removedSourceIds.forEach((sourceId) => {
-    for (const chrom of CHROMOSOMES) {
-      const trackId = `${sourceId}_${chrom}`;
-      removeTrack(trackId, chrom);
-    }
+    removeTrack(sourceId);
   });
 }
 

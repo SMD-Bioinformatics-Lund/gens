@@ -60,10 +60,7 @@ export class TracksManager extends ShadowBaseElement {
 
   connectedCallback() {
     window.addEventListener("resize", () => {
-      console.log("Resized", this.onChange);
-      if (this.onChange != null) {
-        this.onChange({ resized: true });
-      }
+      this.onChange({ resized: true });
     });
 
     this.trackView = this.root.querySelector("#track-view");
