@@ -310,10 +310,31 @@ export function spliceMany<T>(arr: T[], inds: number[]) {
 }
 
 export function removeOne<T>(arr: T[], matchFn: (arg: T) => boolean): T {
-  const matches = arr.filter((arg) => matchFn(arg));
-  if (matches.length != 1) {
-    throw Error(`${matches.length} matches found. This function expects strictly one.`)
+
+  let foundIndex = -1;
+  let count = 0;
+
+  for (let i = 0; i < arr.length; i++) {
+    if (matchFn(arr[i])) {
+      count++;
+      foundIndex = i;
+      if (count > 1) {
+        break;
+      }
+    }
   }
-  const match = matches[0];
-  return match;
+
+  if (count !== 1) {
+    throw new Error(`${count} matches found. This function expects strictly one.`);
+  }
+
+  const [removed] = arr.splice(foundIndex, 1);
+  return removed;
+
+  // const matches = arr.filter((arg) => matchFn(arg));
+  // if (matches.length != 1) {
+  //   throw Error(`${matches.length} matches found. This function expects strictly one.`)
+  // }
+  // const match = matches[0];
+  // return match;
 }

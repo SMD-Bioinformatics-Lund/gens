@@ -432,6 +432,7 @@ export class TrackView extends ShadowBaseElement {
         // return info;
       },
       (id: string) => {
+        console.log("Attempting removal of", id);
         const match = removeOne(
           this.dataTracks,
           (info) => info.track.id === id,
@@ -554,6 +555,9 @@ function updateAnnotationTracks(
 
   const currTrackIds = currAnnotTracks.map((info) => info.track.id);
   const sourceIds = sources.map((source) => source.id);
+
+  console.log("Curr track IDs", currTrackIds);
+  console.log("Source IDs", sourceIds);
 
   const newSources = sources.filter(
     (source) => !currTrackIds.includes(source.id),
