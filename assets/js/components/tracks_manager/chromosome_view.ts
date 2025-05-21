@@ -50,26 +50,31 @@ export class ChromosomeView extends ShadowBaseElement {
     this.dataSource = dataSource;
     this.openTrackContextMenu = openTrackContextMenu;
 
-    const onAddTrack = (trackInfo: DataTrackInfo) => {
-      this.tracks.push(trackInfo.track);
-      this.chromosomeTracksContainer.appendChild(trackInfo.container);
-      trackInfo.track.initialize();
-    };
+    for (const chrom of CHROMOSOMES) {
 
-    setupDotTracks(
-      session,
-      sampleIds,
-      openTrackContextMenu,
-      (sampleId: string, chrom: string) =>
-        dataSource.getCovData(sampleId, chrom),
-      onAddTrack,
-    );
-    setupAnnotTracks(
-      session,
-      this.session.getChromosome(),
-      dataSource,
-      onAddTrack,
-    );
+      const subgroup = document.createElement("div") as HTMLDivElement;
+      const subgroupLabel = document.createTextNode(`C: ${chrom}`);
+      subgroup.appendChild(subgroupLabel);
+      this.chromosomeTracksContainer.appendChild(subgroup);
+
+      const onAddTrack = (trackInfo: DataTrackInfo) => {
+        console.log("Adding track info", trackInfo);
+        this.tracks.push(trackInfo.track);
+        subgroup.appendChild(trackInfo.container);
+        trackInfo.track.initialize();
+      };
+
+      setupDotTracks(
+        session,
+        sampleIds,
+        chrom,
+        openTrackContextMenu,
+        (sampleId: string, chrom: string) =>
+          dataSource.getCovData(sampleId, chrom),
+        onAddTrack,
+      );
+      setupAnnotTracks(session, chrom, dataSource, onAddTrack);
+    }
   }
 
   render(settings: RenderSettings) {
@@ -102,11 +107,13 @@ function setupAnnotTracks(
   dataSource: RenderDataSource,
   addTrack: (trackInfo: DataTrackInfo) => void,
 ) {
-  for (const { id: annotId, label: annotLabel } of session.getAnnotationSources(
-    {
-      selectedOnly: true,
-    },
-  )) {
+  const annotSources = session.getAnnotationSources({
+    selectedOnly: true,
+  });
+
+  console.log("Annotation sources", annotSources);
+
+  for (const { id: annotId, label: annotLabel } of annotSources) {
     const trackId = `${annotLabel}_${chrom}_annot`;
     const trackLabel = `${annotLabel} ${chrom}`;
 
@@ -134,47 +141,42 @@ function setupAnnotTracks(
 function setupDotTracks(
   session: GensSession,
   sampleIds: string[],
+  chrom: string,
   openTrackContextMenu: (track: DataTrack) => void,
   getCovData: (sampleId: string, chrom: string) => Promise<RenderDot[]>,
   onAddTrack: (track: DataTrackInfo) => void,
 ) {
-  const chromosomes = CHROMOSOMES;
-  for (const chrom of chromosomes) {
-    // FIXME: Per chromosome group created
-    // Guess this will be needed for interactively adding / removing annot tracks
-
-    for (const sampleId of sampleIds) {
-      const trackId = `${sampleId}_${chrom}_cov`;
-      const trackLabel = `${sampleId} ${chrom}`;
-      const dotTrack = createDotTrack(
-        trackId,
-        trackLabel,
-        sampleId,
-        // FIXME: Control zoom levels for getCovData
-        () => getCovData(sampleId, chrom),
-        // () => this.dataSource.getCovData(sampleId, chrom),
-        {
-          startExpanded: false,
-          yAxis: {
-            range: COV_Y_RANGE,
-            reverse: true,
-            label: chrom,
-            hideLabelOnCollapse: false,
-            hideTicksOnCollapse: true,
-          },
-          hasLabel: false,
+  for (const sampleId of sampleIds) {
+    const trackId = `${sampleId}_${chrom}_cov`;
+    const trackLabel = `${sampleId} ${chrom}`;
+    const dotTrack = createDotTrack(
+      trackId,
+      trackLabel,
+      sampleId,
+      // FIXME: Control zoom levels for getCovData
+      () => getCovData(sampleId, chrom),
+      // () => this.dataSource.getCovData(sampleId, chrom),
+      {
+        startExpanded: false,
+        yAxis: {
+          range: COV_Y_RANGE,
+          reverse: true,
+          label: chrom,
+          hideLabelOnCollapse: false,
+          hideTicksOnCollapse: true,
         },
-        session,
-        openTrackContextMenu,
-      );
-      const trackWrapper = createDataTrackWrapper(dotTrack);
-      const trackInfo: DataTrackInfo = {
-        track: dotTrack,
-        container: trackWrapper,
-        sampleId,
-      };
-      onAddTrack(trackInfo);
-    }
+        hasLabel: false,
+      },
+      session,
+      openTrackContextMenu,
+    );
+    const trackWrapper = createDataTrackWrapper(dotTrack);
+    const trackInfo: DataTrackInfo = {
+      track: dotTrack,
+      container: trackWrapper,
+      sampleId,
+    };
+    onAddTrack(trackInfo);
   }
 }
 
