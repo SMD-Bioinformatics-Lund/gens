@@ -49,7 +49,7 @@ export class TracksManager extends ShadowBaseElement {
   public chromosomeView: ChromosomeView;
 
   private session: GensSession;
-  private renderAll: (settings: RenderSettings) => void;
+  private onChange: (settings: RenderSettings) => void;
 
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>;
   openTrackContextMenu: (track: DataTrack) => void;
@@ -60,8 +60,9 @@ export class TracksManager extends ShadowBaseElement {
 
   connectedCallback() {
     window.addEventListener("resize", () => {
-      if (this.renderAll != null) {
-        this.renderAll({ resized: true });
+      console.log("Resized", this.onChange);
+      if (this.onChange != null) {
+        this.onChange({ resized: true });
       }
     });
 
@@ -78,6 +79,7 @@ export class TracksManager extends ShadowBaseElement {
     session: GensSession,
   ) {
     this.session = session;
+    this.onChange = render;
 
     this.trackView.initialize(
       render,
@@ -105,8 +107,6 @@ export class TracksManager extends ShadowBaseElement {
     const chromViewActive = this.session.getChromViewActive();
     this.chromosomeView.hidden = !chromViewActive;
     this.trackView.hidden = chromViewActive;
-
-    console.log("Rendering tracks manager", chromViewActive);
 
     if (!chromViewActive) {
       this.trackView.render(settings);
