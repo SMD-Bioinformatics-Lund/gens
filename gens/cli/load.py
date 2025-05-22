@@ -224,7 +224,9 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
                     if not ignore_errors:
                         raise
                     continue
-                records.append(formatted_rec)
+
+                if formatted_rec is not None:
+                    records.append(formatted_rec)
 
         if len(file_meta) > 0:
             # add metadata from file to the previously created track

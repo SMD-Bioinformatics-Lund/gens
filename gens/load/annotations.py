@@ -113,7 +113,9 @@ def set_missing_fields(annotation: dict[str, str | int | None], name: str) -> No
 
 
 def fmt_bed_to_annotation(
-    entry: dict[str, str], track_id: PydanticObjectId, genome_build: GenomeBuild,
+    entry: dict[str, str],
+    track_id: PydanticObjectId,
+    genome_build: GenomeBuild,
 ) -> AnnotationRecord:
     """Parse a bed or aed entry"""
     annotation: dict[str, Any] = {}
@@ -207,12 +209,18 @@ def format_aed_entry(value: str, format: str) -> AedDatatypes:
                 LOG.warning(f"Unable to parse {value} to URI, returning as string")
                 return str(value)
         case "aed:DateTime":
-            return datetime.fromisoformat(value)
+            try:
+                return datetime.fromisoformat(value)
+            except ValueError:
+                LOG.warning(f"Unable to parse {value} to datetime, returning as string")
+                return str(value)
         case "aed:Color":
             try:
                 return Color(value)
             except PydanticCustomError:
-                LOG.warning(f"Color could not be parsed correctly, returning string as is for value: {value}")
+                LOG.warning(
+                    f"Color could not be parsed correctly, returning string as is for value: {value}"
+                )
                 return str(value)
         case _ if format.startswith("aed:"):
             return value
@@ -233,7 +241,7 @@ def _parse_aed_header(
     col_def: dict[int, AedPropertyDefinition] = {
         col_no: _parse_aed_property(col) for col_no, col in enumerate(raw_header)
     }
-    # parase optional metadata
+    # parse optional metadata
     file_metadata: list[dict[str, AedDatatypes]] = []
     while True:
         next_line = peek_line(fh)
@@ -291,24 +299,20 @@ def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata
     Reference: https://assets.thermofisher.com/TFS-Assets/GSD/Handbooks/Chromosome_analysis_suite_v4.2_user-guide.pdf
     """
     with open(file, encoding="utf-8-sig") as aed_fh:
-        # aed_reader = csv.reader(aed, delimiter="\t")
         column_definitions, file_metadata = _parse_aed_header(aed_fh)
 
-        # iterate over file content
-        records: list[dict[str, AedDatatypes | None]] = []
-        for line in aed_fh:
-            raw_cell_values = [cell.strip() for cell in line.split("\t")]
-            if len(raw_cell_values) > len(column_definitions):
-                message = f"The header contains fewer columns than the table for row: {raw_cell_values}"
-                if continue_on_error:
-                    LOG.error(message)
-                    continue
-                else:
-                    raise ValueError(message)
+        # This can deal with quote surrounded comments containing line breaks
+        reader = csv.reader(
+            aed_fh, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL, escapechar="\\"
+        )
 
-            # format cell values and store temporarily in dict
+        records: list[dict[str, AedDatatypes | None]] = []
+
+        for entry in reader:
+
             fmt_values: dict[str, AedDatatypes | None] = {}
-            for col_idx, raw_value in enumerate(raw_cell_values):
+
+            for col_idx, raw_value in enumerate(entry):
                 col_def = column_definitions[col_idx]
                 if raw_value == "":
                     fmt_values[col_def.name] = None
@@ -316,13 +320,15 @@ def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata
                     try:
                         result = format_aed_entry(raw_value, col_def.type)
                     except ValueError:
-                        LOG.warning("Failed to format AED entry %s as format %s", raw_value, col_def.type)
+                        LOG.warning(
+                            "Failed to format AED entry %s as format %s", raw_value, col_def.type
+                        )
                         if not continue_on_error:
                             raise
                         continue
                     fmt_values[col_def.name] = result
-
             records.append(fmt_values)
+
     return file_metadata, records
 
 
@@ -351,11 +357,15 @@ def format_bed_data(data_type: str, value: str) -> str | int | Color | None:
 
 
 def fmt_aed_to_annotation(
-    record: AedRecord, track_id: PydanticObjectId, genome_build: GenomeBuild, exclude_na: bool = True
-) -> AnnotationRecord:
+    record: AedRecord,
+    track_id: PydanticObjectId,
+    genome_build: GenomeBuild,
+    exclude_na: bool = True,
+) -> AnnotationRecord | None:
     """Format a AED record to the Gens anntoation format.
 
     This parser is a complement to the more general AED parser."""
+
     # try extract references from notes
     refs: list[ReferenceUrl | ScientificArticle] = []
     comments: list[Comment] = []
@@ -410,25 +420,15 @@ def fmt_aed_to_annotation(
         if any([field_name in EXCLUDE_FIELDS, value is None and exclude_na]):
             continue
         if isinstance(value, datetime):
-            metadata.append(
-                DatetimeMetadata(field_name=field_name, value=value, type="datetime")
-            )
+            metadata.append(DatetimeMetadata(field_name=field_name, value=value, type="datetime"))
         elif isinstance(value, str):
-            metadata.append(
-                GenericMetadata(field_name=field_name, value=value, type="string")
-            )
+            metadata.append(GenericMetadata(field_name=field_name, value=value, type="string"))
         elif isinstance(value, int):
-            metadata.append(
-                GenericMetadata(field_name=field_name, value=value, type="integer")
-            )
+            metadata.append(GenericMetadata(field_name=field_name, value=value, type="integer"))
         elif isinstance(value, float):
-            metadata.append(
-                GenericMetadata(field_name=field_name, value=value, type="float")
-            )
+            metadata.append(GenericMetadata(field_name=field_name, value=value, type="float"))
         elif isinstance(value, bool):
-            metadata.append(
-                GenericMetadata(field_name=field_name, value=value, type="bool")
-            )
+            metadata.append(GenericMetadata(field_name=field_name, value=value, type="bool"))
         elif isinstance(value, AnyHttpUrl):
             metadata.append(
                 UrlMetadata(
@@ -439,9 +439,7 @@ def fmt_aed_to_annotation(
             )
         else:
 
-            metadata.append(
-                GenericMetadata(field_name=field_name, value=str(value), type="string")
-            )
+            metadata.append(GenericMetadata(field_name=field_name, value=str(value), type="string"))
 
     # Various checks to make sure the received data is in expected format
     # This data is manually entered, meaning that various types of errors might and will be found here
@@ -454,7 +452,13 @@ def fmt_aed_to_annotation(
     rec_sequence = record["sequence"]
 
     if rec_start is None or not isinstance(rec_start, int) or rec_start <= 0:
-        raise ValueError(f"start expected to be present and greater than 0, found: {rec_start} for record {record}")
+        if rec_start == 0:
+            LOG.error("Found start 0, assigning 1")
+            rec_start = 1
+        else:
+            raise ValueError(
+                f"start expected to be present and greater than 0, found: {rec_start} for record {record}"
+            )
 
     if rec_end is None or not isinstance(rec_end, int):
         raise ValueError(f"end expected in int format, found: {rec_end} for record {record}")
@@ -466,12 +470,20 @@ def fmt_aed_to_annotation(
     if rec_sequence is None or not isinstance(rec_sequence, str):
         raise ValueError(f"sequence expected in str format, found: {rec_sequence}")
 
+    try:
+        chromosome = Chromosome(rec_sequence.strip("chr"))
+    except ValueError as e:
+        LOG.error(f"Failed to parse chromosome: {rec_sequence}, skipping")
+        return None
+
+
+
     # build metadata
     return AnnotationRecord(
         track_id=track_id,
         name=str(record["name"]),
         genome_build=genome_build,
-        chrom=Chromosome(rec_sequence.strip("chr")),
+        chrom=chromosome,
         start=rec_start,
         end=rec_end,
         color=rec_color,
