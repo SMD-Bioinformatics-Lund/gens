@@ -38,7 +38,7 @@ template.innerHTML = String.raw`
   <div id="bottom-container"></div>
 `;
 
-export interface DataTrackInfo {
+export interface TrackViewTrackInfo {
   track: DataTrack;
   container: HTMLDivElement;
   sampleId: string | null;
@@ -53,7 +53,7 @@ export class TrackView extends ShadowBaseElement {
   private session: GensSession;
   private dataSource: RenderDataSource;
 
-  private dataTracks: DataTrackInfo[] = [];
+  private dataTracks: TrackViewTrackInfo[] = [];
   private ideogramTrack: IdeogramTrack;
   private overviewTracks: OverviewTrack[] = [];
 
@@ -62,7 +62,7 @@ export class TrackView extends ShadowBaseElement {
 
   private sampleToTracks: Record<
     string,
-    { cov: DataTrackInfo; baf: DataTrackInfo; variant: DataTrackInfo }
+    { cov: TrackViewTrackInfo; baf: TrackViewTrackInfo; variant: TrackViewTrackInfo }
   > = {};
 
   constructor() {
@@ -118,9 +118,9 @@ export class TrackView extends ShadowBaseElement {
       render({ dataUpdated: true, positionOnly: true });
     });
 
-    const covTracks: DataTrackInfo[] = [];
-    const bafTracks: DataTrackInfo[] = [];
-    const variantTracks: DataTrackInfo[] = [];
+    const covTracks: TrackViewTrackInfo[] = [];
+    const bafTracks: TrackViewTrackInfo[] = [];
+    const variantTracks: TrackViewTrackInfo[] = [];
 
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -189,7 +189,7 @@ export class TrackView extends ShadowBaseElement {
       openTrackContextMenu,
     );
 
-    const tracks: DataTrackInfo[] = [
+    const tracks: TrackViewTrackInfo[] = [
       ...covTracks,
       ...bafTracks,
       ...variantTracks,
@@ -439,9 +439,9 @@ export class TrackView extends ShadowBaseElement {
 }
 
 function getDataTrackInfoById(
-  tracks: DataTrackInfo[],
+  tracks: TrackViewTrackInfo[],
   trackId: string,
-): DataTrackInfo {
+): TrackViewTrackInfo {
   for (let i = 0; i < tracks.length; i++) {
     if (tracks[i].track.id == trackId) {
       const track = tracks[i];
@@ -460,9 +460,9 @@ export function createSampleTracks(
   isTrackViewTrack: boolean,
   openTrackContextMenu: (track: DataTrack) => void,
 ): {
-  cov: DataTrackInfo;
-  baf: DataTrackInfo;
-  variant: DataTrackInfo;
+  cov: TrackViewTrackInfo;
+  baf: TrackViewTrackInfo;
+  variant: TrackViewTrackInfo;
 } {
   const coverageTrack = createDotTrack(
     `${sampleId}_log2_cov`,
@@ -521,7 +521,7 @@ export function createSampleTracks(
 }
 
 function updateAnnotationTracks(
-  currAnnotTracks: DataTrackInfo[],
+  currAnnotTracks: TrackViewTrackInfo[],
   getAnnotationBands: (
     sourceId: string,
     chrom: string,
