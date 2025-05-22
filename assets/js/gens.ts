@@ -1,5 +1,3 @@
-
-
 import "./components/tracks_manager/tracks_manager";
 import "./components/input_controls";
 import "./components/util/popup";
@@ -16,6 +14,8 @@ import "./components/util/row";
 
 import "./home/gens_home";
 import "./home/sample_table";
+import "./components/tracks_manager/chromosome_view";
+import "./components/tracks_manager/track_view";
 
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
@@ -23,13 +23,17 @@ import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES, STYLE } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
-import { SettingsPage, TrackHeights } from "./components/side_menu/settings_page";
+import {
+  SettingsPage,
+  TrackHeights,
+} from "./components/side_menu/settings_page";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
+import { IconButton } from "./components/util/icon_button";
 
-export async function testHomeInit(
+export async function samplesListInit(
   samples: SampleInfo[],
   scoutBaseURL: string,
   genomeBuild: number,
@@ -49,7 +53,7 @@ export async function initCanvases({
   caseId,
   sampleIds,
   genomeBuild,
-  scoutBaseURL: scoutBaseURL,
+  scoutBaseURL,
   gensApiURL,
   annotationFile: defaultAnnotationName,
   startRegion,
@@ -95,8 +99,8 @@ export async function initCanvases({
   const trackHeights: TrackHeights = {
     bandCollapsed: STYLE.tracks.trackHeight.thin,
     dotCollapsed: STYLE.tracks.trackHeight.thin,
-    dotExpanded: STYLE.tracks.trackHeight.thick
-  }
+    dotExpanded: STYLE.tracks.trackHeight.thick,
+  };
 
   const chromSizes = api.getChromSizes();
   const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
@@ -107,6 +111,8 @@ export async function initCanvases({
     chromSizes,
     sampleIds,
     trackHeights,
+    scoutBaseURL,
+    settingsPage,
   );
 
   const renderDataSource = getRenderDataSource(
@@ -124,15 +130,10 @@ export async function initCanvases({
     return await api.getChromData(chromosome);
   };
 
-  const getVariantURL = (variantId) => {
-    const url = `${scoutBaseURL}/document_id/${variantId}`;
-    return url;
-  };
-
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
-  const annotSources = await api.getAnnotationSources();
-  const defaultAnnot = annotSources
+  const allAnnotSources = await api.getAnnotationSources();
+  const defaultAnnot = allAnnotSources
     .filter((track) => track.name === defaultAnnotationName)
     .map((track) => {
       return {
@@ -144,37 +145,41 @@ export async function initCanvases({
   settingsPage.setSources(
     session,
     () => render({}),
-    annotSources,
+    allAnnotSources,
     defaultAnnot,
     (_newSources) => {
+      console.log("Annotations changed");
       render({ dataUpdated: false });
     },
-    () => gensTracks.getDataTracks(),
+    () => gensTracks.trackView.getDataTracks(),
     (trackId: string, direction: "up" | "down") =>
-      gensTracks.moveTrack(trackId, direction),
+      gensTracks.trackView.moveTrack(trackId, direction),
     () => {
       const samples = session.getSamples();
-      return allSampleIds.filter(s => !samples.includes(s));
+      return allSampleIds.filter((s) => !samples.includes(s));
     },
     (region: Region) => {
       const positionOnly = region.chrom == session.getChromosome();
       session.updateChromosome(region.chrom, [region.start, region.end]);
       render({ dataUpdated: true, positionOnly });
     },
+    // FIXME: Something strange here in how things are organized,
+    // why is the trackview looping to itself?
     (sampleId: string) => {
-      gensTracks.addSample(sampleId);
+      const isTrackView = true;
+      gensTracks.trackView.addSample(sampleId, session.getChromosome(), isTrackView);
       session.addSample(sampleId);
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (sampleId: string) => {
       // FIXME: This should eventually be session only, with tracks responding on rerender
       session.removeSample(sampleId);
-      gensTracks.removeSample(sampleId);
+      gensTracks.trackView.removeSample(sampleId);
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (trackHeights: TrackHeights) => {
       session.setTrackHeights(trackHeights);
-      gensTracks.setTrackHeights(trackHeights);
+      gensTracks.trackView.setTrackHeights(trackHeights);
       render({});
     },
   );
@@ -190,18 +195,25 @@ export async function initCanvases({
     onChromClick,
     getChromInfo,
     renderDataSource,
-    getVariantURL,
   );
 
   const settingsButton = document.getElementById(
     "settings-button",
-  ) as HTMLDivElement;
+  ) as IconButton;
   settingsButton.addEventListener("click", () => {
     sideMenu.showContent("Settings", [settingsPage]);
 
     if (!settingsPage.isInitialized) {
       settingsPage.initialize();
     }
+  });
+
+  const chromViewButton = document.getElementById(
+    "chromosome-view-button",
+  ) as IconButton;
+  chromViewButton.addEventListener("click", () => {
+    session.toggleChromViewActive();
+    render({});
   });
 }
 
@@ -217,7 +229,6 @@ async function initialize(
   onChromClick: (chrom: string) => void,
   getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
   renderDataSource: RenderDataSource,
-  getVariantURL: (variantId: string) => string,
 ) {
   const chromSizes = {};
   for (const chromosome of CHROMOSOMES) {
@@ -230,35 +241,12 @@ async function initialize(
     render({ dataUpdated: true, positionOnly: true });
   });
 
-  const tracksDataSources = {
-    getAnnotationSources: (settings: { selectedOnly: boolean }) =>
-      settingsPage.getAnnotSources(settings),
-    getVariantUrl: (id: string) => getVariantURL(id),
-    getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
-    getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
-    getVariantDetails: (sampleId: string, variantId: string) =>
-      api.getVariantDetails(sampleId, variantId, session.getChromosome()),
-
-    getAnnotation: (id: string) => renderDataSource.getAnnotation(id),
-    getCovData: (id: string) => renderDataSource.getCovData(id),
-    getBafData: (id: string) => renderDataSource.getBafData(id),
-    getVariantData: (id: string) => renderDataSource.getVariantData(id),
-
-    getTranscriptData: () => renderDataSource.getTranscriptData(),
-    getOverviewCovData: (sampleId: string) =>
-      renderDataSource.getOverviewCovData(sampleId),
-    getOverviewBafData: (sampleId: string) =>
-      renderDataSource.getOverviewBafData(sampleId),
-
-    getChromInfo: () => renderDataSource.getChromInfo(),
-  };
-
   await tracks.initialize(
     render,
     sampleIds,
     chromSizes,
     onChromClick,
-    tracksDataSources,
+    renderDataSource,
     session,
   );
 

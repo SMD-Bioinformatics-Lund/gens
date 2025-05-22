@@ -21,6 +21,7 @@ export const ANIM_TIME = {
 }
 
 export const ICONS = {
+  chromosomes: "fa-chart-bar",
   collapse: "fa-minimize",
   down: "fa-arrow-down",
   expand: "fa-maximize",
@@ -67,10 +68,12 @@ export const SIZES = {
 const font = "12px sans-serif";
 
 const TRACK_HEIGHTS = {
-  extraThin: 20,
-  thin: 45,
+  thick: 240,
   medium: 120,
-  thick: 180,
+  thin: 45,
+  thinner: 30,
+  extraThin: 20,
+  thinnest: 10,
 }
 
 // FIXME: First step is to gather all constants here
@@ -106,6 +109,7 @@ export const STYLE = {
     minBandWidth: 2,
     dynamicPadThreshold: 40,
     dynamicPadFraction: 8,
+    trackViewHeight: TRACK_HEIGHTS.thinner,
   },
   dotTrack: {
     dotSize: 2,

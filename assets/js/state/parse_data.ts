@@ -20,48 +20,48 @@ function calculateZoom(xRange: Rng) {
 }
 
 export function getRenderDataSource(
-  gensAPI: API,
+  api: API,
   getChrom: () => string,
   getXRange: () => Rng,
 ): RenderDataSource {
   const getChromInfo = async () => {
-    return gensAPI.getChromData(getChrom());
+    return api.getChromData(getChrom());
   };
 
-  const getAnnotation = async (recordId: string) => {
-    const annotData = await gensAPI.getAnnotations(recordId);
-    return parseAnnotations(annotData, getChrom());
+  const getAnnotation = async (recordId: string, chrom: string) => {
+    const annotData = await api.getAnnotations(recordId);
+    return parseAnnotations(annotData, chrom);
   };
 
-  const getCovData = async (sampleId: string) => {
+  const getCovData = async (sampleId: string, chrom: string) => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    const covRaw = await gensAPI.getCov(sampleId, getChrom(), zoom, xRange);
+    const covRaw = await api.getCov(sampleId, chrom, zoom, xRange);
     return parseCoverageDot(covRaw, STYLE.colors.darkGray);
   };
 
-  const getBafData = async (sampleId: string) => {
+  const getBafData = async (sampleId: string, chrom: string) => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    const bafRaw = await gensAPI.getBaf(sampleId, getChrom(), zoom, xRange);
+    const bafRaw = await api.getBaf(sampleId, chrom, zoom, xRange);
     return parseCoverageDot(bafRaw, STYLE.colors.darkGray);
   };
 
-  const getTranscriptData = async () => {
+  const getTranscriptBands = async (chrom: string) => {
     const onlyMane = true;
-    const transcriptsRaw = await gensAPI.getTranscripts(getChrom(), onlyMane);
+    const transcriptsRaw = await api.getTranscripts(chrom, onlyMane);
     return parseTranscripts(transcriptsRaw);
   };
 
-  const getVariantData = async (sampleId: string) => {
-    const variantsRaw = await gensAPI.getVariants(sampleId, getChrom());
+  const getVariantData = async (sampleId: string, chrom: string) => {
+    const variantsRaw = await api.getVariants(sampleId, chrom);
     return parseVariants(variantsRaw, STYLE.variantColors);
   };
 
   const getOverviewCovData = async (sampleId: string) => {
-    const overviewCovRaw = await gensAPI.getOverviewCovData(sampleId);
+    const overviewCovRaw = await api.getOverviewCovData(sampleId);
     const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
       parseCoverageDot(cov, STYLE.colors.darkGray),
     );
@@ -69,7 +69,7 @@ export function getRenderDataSource(
   };
 
   const getOverviewBafData = async (sampleId: string) => {
-    const overviewBafRaw = await gensAPI.getOverviewBafData(sampleId);
+    const overviewBafRaw = await api.getOverviewBafData(sampleId);
     const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
       parseCoverageDot(cov, STYLE.colors.darkGray),
     );
@@ -78,11 +78,15 @@ export function getRenderDataSource(
 
   const renderDataSource: RenderDataSource = {
     getChromInfo,
-    getAnnotation,
+    getAnnotationBands: getAnnotation,
+    getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
     getCovData,
     getBafData,
-    getTranscriptData,
-    getVariantData,
+    getTranscriptBands,
+    getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
+    getVariantBands: getVariantData,
+    getVariantDetails: (sampleId: string, variantId: string, chrom: string) =>
+      api.getVariantDetails(sampleId, variantId, chrom),
     getOverviewCovData,
     getOverviewBafData,
   };
@@ -94,7 +98,7 @@ export function parseAnnotations(
   chromosome: string,
 ): RenderBand[] {
   const results = annotations
-    .filter((annot) => (annot.chrom == chromosome))
+    .filter((annot) => annot.chrom == chromosome)
     .map((annot) => {
       const label = annot.name;
       return {
@@ -129,21 +133,20 @@ function parseExons(
 export function parseTranscripts(
   transcripts: ApiSimplifiedTranscript[],
 ): RenderBand[] {
-  const transcriptsToRender: RenderBand[] = transcripts
-    .map((transcript) => {
-      const exons = parseExons(transcript.record_id, transcript.features);
-      const renderBand: RenderBand = {
-        id: transcript.record_id,
-        start: transcript.start,
-        end: transcript.end,
-        label: transcript.name,
-        color: STYLE.colors.lightGray,
-        hoverInfo: `${transcript.name}`,
-        direction: transcript.strand as "+" | "-",
-        subBands: exons,
-      };
-      return renderBand;
-    });
+  const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
+    const exons = parseExons(transcript.record_id, transcript.features);
+    const renderBand: RenderBand = {
+      id: transcript.record_id,
+      start: transcript.start,
+      end: transcript.end,
+      label: transcript.name,
+      color: STYLE.colors.lightGray,
+      hoverInfo: `${transcript.name}`,
+      direction: transcript.strand as "+" | "-",
+      subBands: exons,
+    };
+    return renderBand;
+  });
 
   // FIXME: This should be done on the backend
   const seenIds = new Set();

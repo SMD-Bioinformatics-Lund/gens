@@ -116,10 +116,8 @@ export class SettingsPage extends ShadowBaseElement {
   private dotTrackCollapsedHeightElem: HTMLInputElement;
   private dotTrackExpandedHeightElem: HTMLInputElement;
 
-  private session: GensSession;
-
   private onChange: () => void;
-  private annotationSources: ApiAnnotationTrack[];
+  private allAnnotationSources: ApiAnnotationTrack[];
   private defaultAnnots: { id: string; label: string }[];
   private onAnnotationChanged: (sources: string[]) => void;
   private getDataTracks: () => DataTrack[];
@@ -143,7 +141,7 @@ export class SettingsPage extends ShadowBaseElement {
   setSources(
     session: GensSession,
     onChange: () => void,
-    annotationSources: ApiAnnotationTrack[],
+    allAnnotationSources: ApiAnnotationTrack[],
     defaultAnnots: { id: string; label: string }[],
     onAnnotationChanged: (sources: string[]) => void,
     getDataTracks: () => DataTrack[],
@@ -154,9 +152,8 @@ export class SettingsPage extends ShadowBaseElement {
     onRemoveSample: (id: string) => void,
     setTrackHeights: (trackHeights: TrackHeights) => void,
   ) {
-    this.session = session;
     this.onChange = onChange;
-    this.annotationSources = annotationSources;
+    this.allAnnotationSources = allAnnotationSources;
     this.defaultAnnots = defaultAnnots;
     this.onAnnotationChanged = onAnnotationChanged;
     this.getDataTracks = getDataTracks;
@@ -203,12 +200,12 @@ export class SettingsPage extends ShadowBaseElement {
     this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
-      const sampleId = this.sampleSelect.getChoice().value;
+      const sampleId = this.sampleSelect.getValue().value;
       this.onAddSample(sampleId);
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
-      this.render({});
+      this.onChange();
     });
 
     this.addElementListener(this.sampleSelect, "change", () => {
@@ -239,13 +236,12 @@ export class SettingsPage extends ShadowBaseElement {
 
   initialize() {
     this.isInitialized = true;
-    this.annotSelect.setChoices(
+    this.annotSelect.setValues(
       getAnnotationChoices(
-        this.annotationSources,
+        this.allAnnotationSources,
         this.defaultAnnots.map((a) => a.id),
       ),
     );
-    this.annotSelect.initialize(this.onAnnotationChanged);
     this.setupSampleSelect();
     this.onChange();
   }
@@ -257,10 +253,11 @@ export class SettingsPage extends ShadowBaseElement {
         value: s,
       };
     });
-    this.sampleSelect.setChoices(allSamples);
+    this.sampleSelect.setValues(allSamples);
   }
 
   render(settings: RenderSettings) {
+
     if (this.tracksOverview == null) {
       return;
     }
@@ -304,7 +301,7 @@ export class SettingsPage extends ShadowBaseElement {
     );
     this.highlightsOverview.appendChild(highlightsSection);
 
-    this.addSampleButton.disabled = this.sampleSelect.getChoice() == null;
+    this.addSampleButton.disabled = this.sampleSelect.getValue() == null;
 
     const { bandCollapsed, dotCollapsed, dotExpanded } = this.getTrackHeights();
     this.bandTrackCollapsedHeightElem.value = `${bandCollapsed}`;
@@ -316,7 +313,7 @@ export class SettingsPage extends ShadowBaseElement {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
     if (!settings.selectedOnly) {
-      return this.annotationSources.map((source) => {
+      return this.allAnnotationSources.map((source) => {
         return {
           id: source.track_id,
           label: source.name,
@@ -328,7 +325,7 @@ export class SettingsPage extends ShadowBaseElement {
       return this.defaultAnnots;
     }
 
-    const choices = this.annotSelect.getChoices();
+    const choices = this.annotSelect.getValues();
     const returnVals = choices.map((obj) => {
       return {
         id: obj.value,

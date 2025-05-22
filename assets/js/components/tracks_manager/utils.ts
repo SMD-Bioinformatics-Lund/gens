@@ -1,7 +1,7 @@
 import { STYLE } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { BandTrack } from "../tracks/band_track";
-import { DataTrack } from "../tracks/base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { DotTrack } from "../tracks/dot_track";
 import { OverviewTrack } from "../tracks/overview_track";
 import {
@@ -10,25 +10,27 @@ import {
   getVariantContextMenuContent,
 } from "../util/menu_content_utils";
 import { getSimpleButton } from "../util/menu_utils";
-import { TracksManagerDataSources } from "./tracks_manager";
+import { TrackViewTrackInfo } from "./track_view";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
 export const TRACK_HANDLE_CLASS = "track-handle";
 
 export function createAnnotTrack(
-  sourceId: string,
+  trackId: string,
   label: string,
-  dataSources: TracksManagerDataSources,
+  getAnnotationBands: () => Promise<RenderBand[]>,
+  getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
+  settings: { height: number, hasLabel: boolean, yPadBands?: boolean }
 ): BandTrack {
+  // FIXME: Seems the x range should be separated from the annotations or?
   async function getAnnotTrackData(
-    source: string,
     getXRange: () => Rng,
-    getAnnotation: (source: string) => Promise<RenderBand[]>,
+    getAnnotation: () => Promise<RenderBand[]>,
   ): Promise<BandTrackData> {
-    const bands = await getAnnotation(source);
+    const bands = await getAnnotation();
     return {
       xRange: getXRange(),
       bands,
@@ -36,7 +38,8 @@ export function createAnnotTrack(
   }
 
   const openContextMenuId = async (id: string) => {
-    const details = await dataSources.getAnnotationDetails(id);
+    // const details = await dataSource.getAnnotationDetails(id);
+    const details = await getAnnotationDetails(id);
     const button = getSimpleButton("Set highlight", () => {
       session.addHighlight([details.start, details.end]);
     });
@@ -48,17 +51,26 @@ export function createAnnotTrack(
     session.showContent("Annotations", content);
   };
 
+  // FIXME: Move to session
+  let fnSettings: DataTrackSettings = {
+    height: { collapsedHeight: settings.height, startExpanded: false },
+    hasLabel: settings.hasLabel,
+    yPadBands: settings.yPadBands,
+  };
+
   const track = new BandTrack(
-    sourceId,
+    trackId,
     label,
     "annotation",
-    { height: { collapsedHeight: trackHeight.thin, startExpanded: false } },
+    () => fnSettings,
+    (settings) => {
+      fnSettings = settings;
+    },
     () => session.getXRange(),
     () =>
       getAnnotTrackData(
-        sourceId,
         () => session.getXRange(),
-        dataSources.getAnnotation,
+        getAnnotationBands,
       ),
     openContextMenuId,
     openTrackContextMenu,
@@ -72,22 +84,27 @@ export function createDotTrack(
   label: string,
   sampleId: string,
   dataFn: (sampleId: string) => Promise<RenderDot[]>,
-  settings: { startExpanded: boolean; yAxis: Axis },
+  settings: { startExpanded: boolean; yAxis: Axis; hasLabel: boolean },
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): DotTrack {
+  // FIXME: Move to session
+  let fnSettings: DataTrackSettings = {
+    height: {
+      collapsedHeight: trackHeight.thin,
+      expandedHeight: trackHeight.thick,
+      startExpanded: settings.startExpanded,
+    },
+    yAxis: settings.yAxis,
+    hasLabel: settings.hasLabel,
+  };
+
   const dotTrack = new DotTrack(
     id,
     label,
     "dot",
-    {
-      height: {
-        collapsedHeight: trackHeight.thin,
-        expandedHeight: trackHeight.thick,
-        startExpanded: settings.startExpanded,
-      },
-    },
-    settings.yAxis,
+    () => fnSettings,
+    (settings) => (fnSettings = settings),
     () => session.getXRange(),
     async () => {
       const data = await dataFn(sampleId);
@@ -106,30 +123,35 @@ export function createDotTrack(
 export function createVariantTrack(
   id: string,
   label: string,
-  sampleId: string,
-  dataFn: (sampleId: string) => Promise<RenderBand[]>,
+  dataFn: () => Promise<RenderBand[]>,
   getVariantDetails: (
-    sampleId: string,
     variantId: string,
   ) => Promise<ApiVariantDetails>,
   getVariantURL: (variantId: string) => string,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): BandTrack {
+  // FIXME: Move to session
+  let fnSettings: DataTrackSettings = {
+    height: { collapsedHeight: STYLE.bandTrack.trackViewHeight, startExpanded: false },
+    hasLabel: true,
+  };
+
   const variantTrack = new BandTrack(
     id,
     label,
     "variant",
-    { height: { collapsedHeight: trackHeight.thin, startExpanded: false } },
+    () => fnSettings,
+    (settings) => (fnSettings = settings),
     () => session.getXRange(),
     async () => {
       return {
         xRange: session.getXRange(),
-        bands: await dataFn(sampleId),
+        bands: await dataFn(),
       };
     },
     async (variantId: string) => {
-      const details = await getVariantDetails(sampleId, variantId);
+      const details = await getVariantDetails(variantId);
       const scoutUrl = getVariantURL(variantId);
 
       const button = getSimpleButton("Set highlight", () => {
@@ -154,19 +176,38 @@ export function createVariantTrack(
   return variantTrack;
 }
 
-export function createGenesTrack(
+export function getTrackInfo(
+  track: DataTrack,
+  sampleId: string | null,
+): TrackViewTrackInfo {
+  const wrapper = createDataTrackWrapper(track);
+  return {
+    track,
+    container: wrapper,
+    sampleId,
+  };
+}
+
+export function createGeneTrack(
   id: string,
   label: string,
   getBands: () => Promise<RenderBand[]>,
   getDetails: (id: string) => Promise<ApiGeneDetails>,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
-): BandTrack {
+): TrackViewTrackInfo {
+  // FIXME: Move to session
+  let fnSettings: DataTrackSettings = {
+    height: { collapsedHeight: STYLE.bandTrack.trackViewHeight, startExpanded: false },
+    hasLabel: true,
+  };
+
   const genesTrack = new BandTrack(
     id,
     label,
     "gene",
-    { height: { collapsedHeight: trackHeight.thin, startExpanded: false } },
+    () => fnSettings,
+    (settings) => (fnSettings = settings),
     () => session.getXRange(),
     async () => {
       return {
@@ -189,7 +230,7 @@ export function createGenesTrack(
     openTrackContextMenu,
     session,
   );
-  return genesTrack;
+  return getTrackInfo(genesTrack, null);
 }
 
 export function createOverviewTrack(

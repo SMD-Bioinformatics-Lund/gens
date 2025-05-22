@@ -197,6 +197,7 @@ export function eventInBox(
   point: { offsetX: number; offsetY: number },
   box: Box,
 ): boolean {
+
   return (
     point.offsetX >= box.x1 &&
     point.offsetX <= box.x2 &&
@@ -298,4 +299,39 @@ export function sumArray(arr: number[]): number {
     acc += val;
   }
   return acc;
+}
+
+export function spliceMany<T>(arr: T[], inds: number[]) {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (inds.includes(i)) {
+      arr.splice(i, 1);
+    }
+  }
+}
+
+export function removeOne<T>(arr: T[], matchFn: (arg: T) => boolean): T {
+
+  let foundIndex = -1;
+  let count = 0;
+
+  for (let i = 0; i < arr.length; i++) {
+    if (matchFn(arr[i])) {
+      count++;
+      foundIndex = i;
+      if (count > 1) {
+        break;
+      }
+    }
+  }
+
+  if (count !== 1) {
+    throw new Error(`${count} matches found. This function expects strictly one.`);
+  }
+
+  const [removed] = arr.splice(foundIndex, 1);
+  return removed;
+}
+
+export function div(): HTMLDivElement {
+  return document.createElement("div") as HTMLDivElement;
 }

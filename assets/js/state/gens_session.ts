@@ -1,4 +1,7 @@
-import { TrackHeights } from "../components/side_menu/settings_page";
+import {
+  SettingsPage,
+  TrackHeights,
+} from "../components/side_menu/settings_page";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COLORS } from "../constants";
 import { generateID } from "../util/utils";
@@ -16,29 +19,32 @@ import { generateID } from "../util/utils";
  * it should probably be kept here as well.
  */
 export class GensSession {
-  chromosome: string
-  start: number;
-  end: number;
-
+  private chromosome: string;
+  private start: number;
+  private end: number;
   private render: (settings: RenderSettings) => void;
   private sideMenu: SideMenu;
   private markerModeOn: boolean = false;
   private highlights: Record<string, RangeHighlight>;
   private chromSizes: Record<string, number>;
-
   private samples: string[];
-
   private trackHeights: TrackHeights;
+  private chromViewActive: boolean;
+  private scoutBaseURL: string;
+  private settings: SettingsPage;
 
   constructor(
+    // FIXME: This does not belong here I think
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
     region: Region,
     chromSizes: Record<string, number>,
     samples: string[],
     trackHeights: TrackHeights,
+    scoutBaseURL: string,
+    // FIXME: Unsure if the full settings should be stored
+    settings: SettingsPage,
   ) {
-
     this.render = render;
     this.sideMenu = sideMenu;
     this.highlights = {};
@@ -48,43 +54,64 @@ export class GensSession {
     this.chromSizes = chromSizes;
     this.samples = samples;
     this.trackHeights = trackHeights;
+    this.scoutBaseURL = scoutBaseURL;
+    this.settings = settings;
   }
 
-  getTrackHeights(): TrackHeights {
+  public getAnnotationSources(settings: {
+    selectedOnly: boolean;
+  }): { id: string; label: string }[] {
+    // FIXME: Should this be owned by the session?
+    return this.settings.getAnnotSources(settings);
+  }
+
+  public getVariantURL(variantId: string): string {
+    return `${this.scoutBaseURL}/document_id/${variantId}`;
+  }
+
+  public getChromViewActive(): boolean {
+    return this.chromViewActive;
+  }
+
+  public toggleChromViewActive() {
+    this.chromViewActive = !this.chromViewActive;
+  }
+
+  public getTrackHeights(): TrackHeights {
     return this.trackHeights;
   }
 
-  setTrackHeights(heights: TrackHeights) {
+  public setTrackHeights(heights: TrackHeights) {
     this.trackHeights = heights;
   }
 
-  getSamples(): string[] {
+  public getSamples(): string[] {
     return this.samples;
   }
 
-  addSample(sampleId: string) {
+  public addSample(sampleId: string) {
     this.samples.push(sampleId);
   }
 
-  removeSample(sampleId: string): void {
+  public removeSample(sampleId: string): void {
     const pos = this.samples.indexOf(sampleId);
     this.samples.splice(pos, 1);
   }
 
-  setViewRange(range: Rng): void {
+  public setViewRange(range: Rng): void {
     this.start = range[0];
     this.end = range[1];
   }
 
-  getRegion(): Region {
+  public getRegion(): Region {
     return {
       chrom: this.chromosome,
       start: this.start,
       end: this.end,
-    }
+    };
   }
 
-  updateChromosome(chrom: string, range: Rng = null) {
+  public updateChromosome(chrom: string, range: Rng = null) {
     this.chromosome = chrom;
 
     const start = range != null ? range[0] : 1;
@@ -94,31 +121,31 @@ export class GensSession {
     this.end = end;
   }
 
-  updatePosition(range: Rng): void {
+  public updatePosition(range: Rng): void {
     this.start = range[0];
     this.end = range[1];
   }
 
-  getChromosome(): string {
+  public getChromosome(): string {
     return this.chromosome;
   }
 
-  getXRange(): Rng {
+  public getXRange(): Rng {
     return [this.start, this.end] as Rng;
   }
 
-  getCurrentChromSize(): number {
+  public getCurrentChromSize(): number {
     return this.chromSizes[this.chromosome];
   }
 
-  getMarkerModeOn(): boolean {
+  public getMarkerModeOn(): boolean {
     return this.markerModeOn;
   }
 
   /**
    * Distance can be negative
    */
-  moveXRange(distance: number): void {
+  public moveXRange(distance: number): void {
     const startRange = this.getXRange();
     const chromSize = this.getCurrentChromSize();
     const newRange: Rng = [
@@ -128,35 +155,36 @@ export class GensSession {
     this.setViewRange(newRange);
   }
 
-  toggleMarkerMode() {
+  public toggleMarkerMode() {
     this.markerModeOn = !this.markerModeOn;
     this.render({});
   }
 
-  showContent(header: string, content: HTMLElement[]) {
+  public showContent(header: string, content: HTMLElement[]) {
     this.sideMenu.showContent(header, content);
   }
 
-  getAllHighlights(): RangeHighlight[] {
+  public getAllHighlights(): RangeHighlight[] {
     return Object.values(this.highlights);
   }
 
-  getHighlights(chrom: string): RangeHighlight[] {
+  public getHighlights(chrom: string): RangeHighlight[] {
     return Object.values(this.highlights).filter((h) => h.chromosome === chrom);
   }
 
   /**
    * Return highlights for the currently viewed chromosome
    */
-  getCurrentHighlights(): RangeHighlight[] {
+  public getCurrentHighlights(): RangeHighlight[] {
     return this.getHighlights(this.chromosome);
   }
 
-  removeHighlights() {
+  public removeHighlights() {
     this.highlights = {};
     this.render({});
   }
-  addHighlight(range: Rng): string {
+
+  public addHighlight(range: Rng): string {
     const id = generateID();
 
     const highlight = {
@@ -170,7 +198,8 @@ export class GensSession {
     this.render({});
     return id;
   }
-  removeHighlight(id: string) {
+
+  public removeHighlight(id: string) {
     delete this.highlights[id];
     this.render({});
   }

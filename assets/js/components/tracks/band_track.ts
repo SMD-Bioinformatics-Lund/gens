@@ -7,14 +7,10 @@ import {
 import { STYLE } from "../../constants";
 import { drawArrow, getLinearScale } from "../../draw/render_utils";
 import { drawLabel } from "../../draw/shapes";
-import { DataTrack, ExpandedTrackHeight } from "./base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
 import { GensSession } from "../../state/gens_session";
 
 const LEFT_PX_EDGE = STYLE.yAxis.width;
-
-interface BandTrackSettings {
-  height: ExpandedTrackHeight;
-}
 
 export class BandTrack extends DataTrack {
   getPopupInfo: (box: HoverBox) => Promise<PopupContent>;
@@ -24,7 +20,8 @@ export class BandTrack extends DataTrack {
     id: string,
     label: string,
     trackType: TrackType,
-    settings: { height: ExpandedTrackHeight },
+    getSettings: () => DataTrackSettings,
+    updateSettings: (settings: DataTrackSettings) => void,
     getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
@@ -46,11 +43,8 @@ export class BandTrack extends DataTrack {
         return xScale;
       },
       openTrackContextMenu,
-      {
-        height: settings.height,
-        dragSelect: true,
-        yAxis: null,
-      },
+      getSettings,
+      updateSettings,
       session,
     );
 
@@ -107,7 +101,9 @@ export class BandTrack extends DataTrack {
 
     const yScale = getBandYScale(
       bandTopBottomPad,
-      STYLE.bandTrack.bandPadding,
+      this.getIsExpanded() || this.getSettings().yPadBands
+        ? STYLE.bandTrack.bandPadding
+        : 0,
       this.getIsExpanded() ? numberLanes : 1,
       this.dimensions.height,
       labelSize,

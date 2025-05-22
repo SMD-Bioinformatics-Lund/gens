@@ -240,11 +240,24 @@ type GetAnnotSources = (settings: {
 
 interface RenderDataSource {
   getChromInfo: () => Promise<ChromosomeInfo>;
-  getAnnotation: (id: string) => Promise<RenderBand[]>;
-  getCovData: (sampleId: string) => Promise<RenderDot[]>;
-  getBafData: (sampleId: string) => Promise<RenderDot[]>;
-  getTranscriptData: () => Promise<RenderBand[]>;
-  getVariantData: (sampleId: string) => Promise<RenderBand[]>;
+
+  getAnnotationBands: (id: string, chrom: string) => Promise<RenderBand[]>;
+  getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>;
+
+  getCovData: (sampleId: string, chrom: string) => Promise<RenderDot[]>;
+  getBafData: (sampleId: string, chrom: string) => Promise<RenderDot[]>;
+
+  getTranscriptBands: (chrom: string) => Promise<RenderBand[]>;
+  getTranscriptDetails: (geneId: string) => Promise<ApiGeneDetails>;
+
+  getVariantBands: (sampleId: string, chrom: string) => Promise<RenderBand[]>;
+  getVariantDetails: (
+    sampleId: string,
+    variantId: string,
+    // FIXME: Temporary workaround due to lacking backend point requires chrom also here
+    chrom: string,
+  ) => Promise<ApiVariantDetails>;
+
   getOverviewCovData: (
     sampleId: string,
   ) => Promise<Record<string, RenderDot[]>>;
@@ -472,6 +485,8 @@ interface Axis {
   range: Rng;
   reverse: boolean;
   label: string;
+  hideLabelOnCollapse: boolean;
+  hideTicksOnCollapse: boolean;
 }
 
 interface RenderSettings {

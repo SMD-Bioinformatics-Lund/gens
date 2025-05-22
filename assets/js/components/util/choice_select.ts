@@ -95,7 +95,6 @@ template.innerHTML = String.raw`
 export class ChoiceSelect extends ShadowBaseElement {
   private selectElement: HTMLSelectElement;
   private choiceElement: Choices;
-  private onChange: (ids: string[]) => void;
 
   static get observedAttributes() {
     return ["multiple"];
@@ -118,46 +117,45 @@ export class ChoiceSelect extends ShadowBaseElement {
       this.selectElement.removeAttribute("multiple");
     }
 
-    this.choiceElement = new Choices(this.selectElement, {
-      placeholderValue: "",
-      removeItemButton: isMultipleMode,
-      itemSelectText: "",
-      shouldSort: false,
-      renderChoiceLimit: 20,
-      searchResultLimit: 50,
-    });
-
-    this.selectElement.addEventListener("change", () => {
-      const vals = this.choiceElement.getValue(true) as string[];
-      this.dispatchEvent(
-        new CustomEvent("change", {
-          detail: { values: vals },
-          bubbles: true,
-          composed: true,
-        }),
-      );
-    });
+    if (!this.choiceElement) {
+      this.choiceElement = new Choices(this.selectElement, {
+        placeholderValue: "",
+        removeItemButton: isMultipleMode,
+        itemSelectText: "",
+        shouldSort: false,
+        renderChoiceLimit: 20,
+        searchResultLimit: 50,
+      });
+  
+      this.selectElement.addEventListener("change", () => {
+  
+        const vals = this.choiceElement.getValue(true) as string[];
+        this.dispatchEvent(
+          new CustomEvent("change", {
+            detail: { values: vals },
+            bubbles: true,
+            composed: true,
+          }),
+        );
+      });
+    }
   }
 
-  setChoices(choices: InputChoice[]) {
+  setValues(values: InputChoice[]) {
     this.choiceElement.clearChoices();
     this.choiceElement.clearStore();
-    this.choiceElement.setChoices(choices);
+    this.choiceElement.setChoices(values);
   }
 
-  getChoices(): EventChoice[] {
+  getValues(): EventChoice[] {
     return this.choiceElement.getValue() as EventChoice[];
   }
 
-  getChoice(): EventChoice | null {
+  getValue(): EventChoice | null {
 
     return this.choiceElement.getValue()
       ? (this.choiceElement.getValue() as EventChoice)
       : null;
-  }
-
-  initialize(onChange: (choiceIds: string[]) => void) {
-    this.onChange = onChange;
   }
 }
 
