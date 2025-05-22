@@ -13,7 +13,16 @@ const COV_Y_RANGE: [number, number] = [-2, 2];
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
-  <style></style>
+  <style>
+    #chromosome-tracks-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+  </style>
   <div id="chromosome-tracks-container"></div>
 `;
 
