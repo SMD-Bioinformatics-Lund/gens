@@ -4,7 +4,7 @@ import Sortable, { SortableEvent } from "sortablejs";
 import {
   createAnnotTrack,
   createDotTrack,
-  createGenesTrack,
+  createGeneTrack,
   createOverviewTrack,
   createVariantTrack,
   getTrackInfo as getTrack,
@@ -183,7 +183,7 @@ export class TrackView extends ShadowBaseElement {
       variantTracks.push(sampleTracks.variant);
     }
 
-    const genesTrack = createGenesTrack(
+    const genesTrack = createGeneTrack(
       "genes",
       "Genes",
       () => dataSources.getTranscriptBands(chrom),
@@ -309,7 +309,6 @@ export class TrackView extends ShadowBaseElement {
     return this.dataTracks.filter((track) => track instanceof DataTrack);
   }
 
-  // FIXME: Seems this should be a more general util
   public moveTrack(trackId: string, direction: "up" | "down") {
     const trackInfo = getDataTrackInfoById(this.dataTracks, trackId);
     const trackInfoIndex = this.dataTracks.indexOf(trackInfo);
@@ -559,7 +558,7 @@ function updateAnnotationTracks(
       (bandId: string) => getAnnotationDetails(bandId),
       session,
       openTrackContextMenu,
-      { height: STYLE.tracks.trackHeight.thin, hasLabel },
+      { height: STYLE.bandTrack.trackViewHeight, hasLabel },
     );
     addTrack(newTrack);
   });

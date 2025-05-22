@@ -133,8 +133,8 @@ export function createVariantTrack(
 ): BandTrack {
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
-    height: { collapsedHeight: trackHeight.thin, startExpanded: false },
-    hasLabel: false,
+    height: { collapsedHeight: STYLE.bandTrack.trackViewHeight, startExpanded: false },
+    hasLabel: true,
   };
 
   const variantTrack = new BandTrack(
@@ -188,7 +188,7 @@ export function getTrackInfo(
   };
 }
 
-export function createGenesTrack(
+export function createGeneTrack(
   id: string,
   label: string,
   getBands: () => Promise<RenderBand[]>,
@@ -198,8 +198,8 @@ export function createGenesTrack(
 ): TrackViewTrackInfo {
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
-    height: { collapsedHeight: trackHeight.thin, startExpanded: false },
-    hasLabel: false,
+    height: { collapsedHeight: STYLE.bandTrack.trackViewHeight, startExpanded: false },
+    hasLabel: true,
   };
 
   const genesTrack = new BandTrack(

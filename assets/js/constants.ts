@@ -68,11 +68,12 @@ export const SIZES = {
 const font = "12px sans-serif";
 
 const TRACK_HEIGHTS = {
+  thick: 240,
+  medium: 120,
+  thin: 45,
+  thinner: 30,
   extraThin: 20,
   thinnest: 10,
-  thin: 45,
-  medium: 120,
-  thick: 240,
 }
 
 // FIXME: First step is to gather all constants here
@@ -108,6 +109,7 @@ export const STYLE = {
     minBandWidth: 2,
     dynamicPadThreshold: 40,
     dynamicPadFraction: 8,
+    trackViewHeight: TRACK_HEIGHTS.thinner,
   },
   dotTrack: {
     dotSize: 2,
