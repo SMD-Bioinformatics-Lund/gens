@@ -45,7 +45,6 @@ export interface TrackViewTrackInfo {
 }
 
 export class TrackView extends ShadowBaseElement {
-
   private topContainer: HTMLDivElement;
   private tracksContainer: HTMLDivElement;
   private bottomContainer: HTMLDivElement;
@@ -62,7 +61,11 @@ export class TrackView extends ShadowBaseElement {
 
   private sampleToTracks: Record<
     string,
-    { cov: TrackViewTrackInfo; baf: TrackViewTrackInfo; variant: TrackViewTrackInfo }
+    {
+      cov: TrackViewTrackInfo;
+      baf: TrackViewTrackInfo;
+      variant: TrackViewTrackInfo;
+    }
   > = {};
 
   constructor() {
@@ -268,7 +271,8 @@ export class TrackView extends ShadowBaseElement {
       this.session.showContent(track.label, [trackPage]);
 
       trackPage.initialize(
-        this.session.getAnnotationSources,
+        (settings: { selectedOnly: boolean }) =>
+          this.session.getAnnotationSources(settings),
         (direction: "up" | "down") => this.moveTrack(track.id, direction),
         () => {
           track.toggleHidden();
