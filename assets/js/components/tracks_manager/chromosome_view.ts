@@ -1,15 +1,12 @@
 import { CHROMOSOMES, SIZES, STYLE } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { div, removeOne } from "../../util/utils";
-import { BandTrack } from "../tracks/band_track";
 import { DataTrack } from "../tracks/base_tracks/data_track";
-import { DotTrack } from "../tracks/dot_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import {
   createAnnotTrack,
   createDataTrackWrapper,
   createDotTrack,
-  getTrackInfo,
 } from "./utils";
 
 const COV_Y_RANGE: [number, number] = [-2, 2];

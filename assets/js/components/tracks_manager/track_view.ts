@@ -100,7 +100,6 @@ export class TrackView extends ShadowBaseElement {
       animation: ANIM_TIME.medium,
       handle: `.${TRACK_HANDLE_CLASS}`,
       onEnd: (evt: SortableEvent) => {
-        console.log("on end");
 
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);

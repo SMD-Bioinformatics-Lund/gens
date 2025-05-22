@@ -1,7 +1,7 @@
 import { STYLE } from "../../constants";
 import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
 import { GensSession } from "../../state/gens_session";
-import { DataTrack, DataTrackSettings, ExpandedTrackHeight } from "./base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {
   startExpanded: boolean;
@@ -42,11 +42,6 @@ export class DotTrack extends DataTrack {
 
   connectedCallback(): void {
     super.connectedCallback();
-
-    if (!this.getSettings) {
-      console.error("this.getSettings not yet present?");
-      return;
-    }
 
     const onExpand = () => this.render({});
     this.initializeExpander("contextmenu", onExpand);

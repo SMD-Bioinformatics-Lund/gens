@@ -148,9 +148,9 @@ export abstract class DataTrack extends CanvasTrack {
       height,
     });
 
-    // FIXME: This convoluted "solution" is to deal with the "shadow cloning"
+    // FIXME: This is to deal with the "shadow cloning"
     // performed during the drag and drop
-    // Some more thinking is needed here before merge
+    // Look into this ahead
     if (getSettings == null) {
       return;
     }
