@@ -46,7 +46,8 @@ def home() -> str:
                 [s for s in samples if s.overview_file is None or s.coverage_file is None]
             )
             == 0,
-            "created_at": samples[0].created_at.strftime("%Y-%m-%d"),
+            "created_at": samples[0].created_at,
+            # "created_at": samples[0].created_at.strftime("%Y-%m-%d"),
         }
         for (case_id, samples) in samples_per_case.items()
     ]
