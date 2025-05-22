@@ -72,7 +72,7 @@ const TRACK_HEIGHTS = {
   thinnest: 10,
   thin: 45,
   medium: 120,
-  thick: 180,
+  thick: 240,
 }
 
 // FIXME: First step is to gather all constants here

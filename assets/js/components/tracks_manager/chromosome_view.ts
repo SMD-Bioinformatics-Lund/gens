@@ -38,7 +38,6 @@ export class ChromosomeView extends ShadowBaseElement {
   private chromosomeTracksContainer: HTMLDivElement;
   private session: GensSession;
   private dataSource: RenderDataSource;
-  // private openTrackContextMenu: (track: DataTrack) => void;
   private tracks: ChromViewTrackInfo[] = [];
   private chromosomeGroups: Record<string, ChromosomeGroup> = {};
 
@@ -56,13 +55,10 @@ export class ChromosomeView extends ShadowBaseElement {
 
   initialize(
     session: GensSession,
-    sampleIds: string[],
     dataSource: RenderDataSource,
-    openTrackContextMenu: (track: DataTrack) => void,
   ) {
     this.session = session;
     this.dataSource = dataSource;
-    // this.openTrackContextMenu = openTrackContextMenu;
 
     for (const chrom of CHROMOSOMES) {
       const {
@@ -76,145 +72,61 @@ export class ChromosomeView extends ShadowBaseElement {
         samples: sampleGroup,
         annotations: annotGroup,
       };
-
-      setupDotTracks(
-        session,
-        sampleIds,
-        chrom,
-        openTrackContextMenu,
-        (sampleId: string, chrom: string) =>
-          dataSource.getCovData(sampleId, chrom),
-        (trackInfo: ChromViewTrackInfo) => {
-          this.onAddTrack(sampleGroup, trackInfo);
-        },
-      );
-
-      const annotSources = session.getAnnotationSources({
-        selectedOnly: true,
-      });
-      addAnnotTracks(
-        annotSources,
-        session,
-        chrom,
-        dataSource,
-        (trackInfo: ChromViewTrackInfo) =>
-          this.onAddTrack(annotGroup, trackInfo),
-      );
     }
   }
 
   public render(settings: RenderSettings) {
-    // FIXME: Util
-    // const chr1GroupAnnots = this.chromosomeGroups["1"].annotations;
-    // const bandTracks = [
-    //   ...chr1GroupAnnots.querySelectorAll("band-track"),
-    // ] as BandTrack[];
-    // IDs are on the format source_chr
-    // Can this be done neater?
     const currentBandTracks = this.tracks
       .filter(
         (track) => track.chromosome === "1" && track.type === "annotation",
       )
       .map((track) => track.sourceId);
-    // const currentBandTracks = bandTracks.map((track) => track.id.split("_")[0]);
 
-    const sources = this.session.getAnnotationSources({ selectedOnly: true });
     const trackIds = currentBandTracks;
+    const sourceIds = this.session
+      .getAnnotationSources({ selectedOnly: true })
+      .map((source) => source.id);
 
-    // FIXME: Merge with the track view function
-    const sourceIds = sources.map((source) => source.id);
-    const newSources = sources.filter(
-      (source) => !trackIds.includes(source.id),
-    );
-    const removedSourceIds = trackIds.filter((id) => !sourceIds.includes(id));
+    const annotDiff = getDiff(trackIds, sourceIds);
 
-    for (const chrom of CHROMOSOMES) {
-      const annotGroup = this.chromosomeGroups[chrom].annotations;
-      addAnnotTracks(
-        newSources,
-        this.session,
-        chrom,
-        this.dataSource,
-        (trackInfo: ChromViewTrackInfo) =>
-          this.onAddTrack(annotGroup, trackInfo),
-      );
-    }
-
-    removedSourceIds.forEach((sourceId) => {
-      this.onRemoveTrack(sourceId, "annotations");
-    });
-
-    // const chr1GroupSamples = this.chromosomeGroups["1"].samples;
-    // const dotTracks = [
-    //   ...chr1GroupSamples.querySelectorAll("dot-track"),
-    // ] as DotTrack[];
-
-    const currentDotTrackIDs = this.tracks
+    const trackSampleIds = this.tracks
       .filter((track) => track.chromosome === "1" && track.type == "coverage")
       .map((track) => track.sampleId);
-
-    // IDs are on the format source_chr
-    // Can this be done neater?
-    // const currentDotTrackIDs = dotTracks.map((track) => track.id.split("_")[0]);
-
-    const samples = this.session.getSamples();
-    const trackSampleIds = currentDotTrackIDs;
-    const newSamples = samples.filter(
-      (sampleId) => !trackSampleIds.includes(sampleId),
-    );
-    const removedSampleIds = trackSampleIds.filter(
-      (id) => !samples.includes(id),
-    );
-
-    const onAddTrack = (track: ChromViewTrackInfo) => {
-      const subgroup = this.chromosomeGroups[track.chromosome].samples;
-      this.onAddTrack(subgroup, track);
-    };
-    const onRemoveTrack = (id: string) => {
-      this.onRemoveTrack(id, "samples");
-    };
+    const settingSamples = this.session.getSamples();
+    const sampleDiff = getDiff(trackSampleIds, settingSamples);
 
     const getCovData = (sampleId: string, chrom: string) =>
       this.dataSource.getCovData(sampleId, chrom);
 
-    newSamples.forEach((sampleId) => {
-      for (const chrom of CHROMOSOMES) {
-        const yAxis: Axis = {
-          range: COV_Y_RANGE,
-          reverse: true,
-          label: sampleId,
-          hideLabelOnCollapse: false,
-          hideTicksOnCollapse: true,
-        };
+    // Adding new tracks per chromosome
+    for (const chrom of CHROMOSOMES) {
+      const chromGroup = this.chromosomeGroups[chrom];
+      addAnnotTracks(
+        annotDiff.new,
+        this.session,
+        chrom,
+        this.dataSource,
+        (trackInfo: ChromViewTrackInfo) =>
+          this.onAddTrack(chromGroup.annotations, trackInfo),
+      );
 
-        const trackId = `${sampleId}_${chrom}`;
-        const trackLabel = `${sampleId} Cov`;
-        const newTrack = createDotTrack(
-          trackId,
-          trackLabel,
-          sampleId,
-          () => getCovData(sampleId, chrom),
-          { startExpanded: false, hasLabel: false, yAxis },
-          this.session,
-          (_track: DataTrack) => {
-            console.log("No context menu at the moment");
-          },
-        );
-        const wrapper = createDataTrackWrapper(newTrack);
-        const trackInfo: ChromViewTrackInfo = {
-          track: newTrack,
-          container: wrapper,
-          chromosome: chrom,
-          sourceId: null,
-          sampleId: sampleId,
-          type: "coverage",
-        };
-        onAddTrack(trackInfo);
-      }
+      addSampleTracks(
+        this.session,
+        sampleDiff.new,
+        chrom,
+        (sampleId: string) => getCovData(sampleId, chrom),
+        (trackInfo: ChromViewTrackInfo) => {
+          this.onAddTrack(chromGroup.samples, trackInfo);
+        },
+      );
+    }
 
-      removedSampleIds.forEach((id) => {
-        onRemoveTrack(id);
-      });
+    annotDiff.removed.forEach((sourceId) => {
+      this.onRemoveTrack(sourceId, "annotations");
+    });
+
+    sampleDiff.removed.forEach((id) => {
+      this.onRemoveTrack(id, "samples");
     });
 
     for (const track of this.tracks) {
@@ -243,15 +155,15 @@ export class ChromosomeView extends ShadowBaseElement {
 }
 
 function addAnnotTracks(
-  annotSources: { id: string; label: string }[],
+  annotIds: string[],
   session: GensSession,
   chrom: string,
   dataSource: RenderDataSource,
   addTrack: (trackInfo: ChromViewTrackInfo) => void,
 ) {
-  for (const { id: annotId, label: annotLabel } of annotSources) {
+  for (const annotId of annotIds) {
     const trackId = `${annotId}_${chrom}`;
-    const trackLabel = `${annotLabel} ${chrom}`;
+    const trackLabel = `FIXME (${annotId}) ${chrom}`;
 
     const annotTrack = createAnnotTrack(
       trackId,
@@ -279,22 +191,24 @@ function addAnnotTracks(
   }
 }
 
-// function getDiff(
-//   queryElem: HTMLDivElement,
-//   query: string,
-//   currentIds: string[],
-// ): { added: string[]; removed: string[] } {
-//   const tracks = [...queryElem.querySelectorAll(query)] as DataTrack[];
-//   // FIXME: How to carry these? Can we use the data structure instead?
-//   const trackIds = tracks.map((track) => track.id.split("_")[0]);
+function getDiff(
+  previousIds: string[],
+  updatedIds: string[],
+): { new: string[]; removed: string[] } {
+  const newIds = updatedIds.filter(
+    (sampleId) => !previousIds.includes(sampleId),
+  );
+  const removedIds = previousIds.filter((id) => !updatedIds.includes(id));
+  return {
+    new: newIds,
+    removed: removedIds,
+  };
+}
 
-// }
-
-function setupDotTracks(
+function addSampleTracks(
   session: GensSession,
   sampleIds: string[],
   chrom: string,
-  openTrackContextMenu: (track: DataTrack) => void,
   getCovData: (sampleId: string, chrom: string) => Promise<RenderDot[]>,
   onAddTrack: (track: ChromViewTrackInfo) => void,
 ) {
@@ -305,9 +219,7 @@ function setupDotTracks(
       trackId,
       trackLabel,
       sampleId,
-      // FIXME: Control zoom levels for getCovData
       () => getCovData(sampleId, chrom),
-      // () => this.dataSource.getCovData(sampleId, chrom),
       {
         startExpanded: false,
         yAxis: {
@@ -320,7 +232,9 @@ function setupDotTracks(
         hasLabel: false,
       },
       session,
-      openTrackContextMenu,
+      (_track: DataTrack) => {
+        console.error("Should this one be activated?");
+      },
     );
     const trackWrapper = createDataTrackWrapper(dotTrack);
     const trackInfo: ChromViewTrackInfo = {

@@ -89,13 +89,7 @@ export class TracksManager extends ShadowBaseElement {
 
     this.chromosomeView.initialize(
       session,
-      sampleIds,
       dataSource,
-      (_track: DataTrack) => {
-        console.log(
-          "FIXME: Context menu also for chromosome view (should use the same base logic)",
-        );
-      },
     );
   }
 
