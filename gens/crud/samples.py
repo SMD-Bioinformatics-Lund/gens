@@ -3,6 +3,7 @@
 import logging
 from typing import Any, Dict, List
 
+from pydantic import ValidationError
 from pymongo import DESCENDING
 from pymongo.collection import Collection
 from pymongo.database import Database
@@ -100,7 +101,12 @@ def get_samples_per_case(
 
     case_to_samples: dict[str, list[SampleInfo]] = {}
     for sample in cursor:
-        sample_data = SampleInfo.model_validate(sample)
+        try:
+            sample_data = SampleInfo.model_validate(sample)
+        except ValidationError as err:
+            LOG.error(f"Failed to load sample: {sample}")
+            continue
+
         case_id = sample_data.case_id
         if not case_to_samples.get(case_id):
             case_to_samples[case_id] = []
