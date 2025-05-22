@@ -19,20 +19,20 @@
     <link rel='stylesheet' href='{{ url_for('gens.static', filename='gens.min.css') }}' type='text/css'>
 {% endblock css_style %} -->
 {% block scripts %}
-    <script src='{{ url_for('gens.static', filename='gens.min.js') }}'></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+  <script src='{{ url_for('gens.static', filename='gens.min.js') }}'></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
 
 {% endblock scripts %}
 
 {% macro loading() %}
-    <div class="loading-view">
-        <div class="loading-container">
-            <p id="loading" class="message">Loading sample</p>
-            <p id="printing" class="message" hidden>Preparing to print</p>
-            <div class="spinner"></div>
-        </div>
-    </div>
+  <div class="loading-view">
+      <div class="loading-container">
+          <p id="loading" class="message">Loading sample</p>
+          <p id="printing" class="message" hidden>Preparing to print</p>
+          <div class="spinner"></div>
+      </div>
+  </div>
 {% endmacro %}
 
 {% block body %}
@@ -53,8 +53,16 @@
     </div>
     <input-controls id="input-controls"></input-controls>
     <div>
-      <icon-button title="Toggle chromosome view" id="chromosome-view-button" icon="fa-chart-bar"></icon-button>
-      <icon-button title="Open settings menu" id="settings-button" icon="fa-cog"></icon-button>
+
+      <button title="Toggle chromosome view" id="chromosome-view-button" class='button'>
+        <span class="fas fa-chart-bar"></span>
+      </button>
+      <button title="Open settings menu" id="settings-button" class='button'>
+        <span class="fas fa-cog"></span>
+      </button>
+
+      <!-- <icon-button title="Toggle chromosome view" id="chromosome-view-button" icon="fa-chart-bar" class="button"></icon-button>
+      <icon-button title="Open settings menu" id="settings-button" icon="fa-cog" class="button"></icon-button> -->
     </div>
   </div>
 

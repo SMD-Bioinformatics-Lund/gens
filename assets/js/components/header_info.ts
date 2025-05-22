@@ -23,14 +23,14 @@ template.innerHTML = String.raw`
   }
   .text {
     font-size: ${FONT_SIZE.large}px;
-    color: ${COLORS.darkGray};
+    color: ${COLORS.white};
   }
   .label {
     font-weight: ${FONT_WEIGHT.header};
     padding-right: ${SIZES.xs}px;
   }
   a {
-    color: ${COLORS.darkGray}
+    color: ${COLORS.white}
   }
 </style>
 <div id="container">
