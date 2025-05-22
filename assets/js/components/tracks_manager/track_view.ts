@@ -32,6 +32,9 @@ const trackHeight = STYLE.tracks.trackHeight;
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>
+    #tracks-container {
+      position: relative;
+    }
   </style>
   <div id="top-container"></div>
   <div id="tracks-container"></div>

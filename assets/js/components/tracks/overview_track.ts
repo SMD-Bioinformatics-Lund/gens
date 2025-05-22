@@ -66,7 +66,7 @@ export class OverviewTrack extends CanvasTrack {
     this.marker.initialize(
       id,
       this.dimensions.height,
-      COLORS.transparentYellow,
+      { color: COLORS.transparentYellow, isCreated: true },
       null,
     );
 

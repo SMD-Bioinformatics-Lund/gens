@@ -1,10 +1,6 @@
 import { COLORS, STYLE } from "../../../constants";
 import { GensMarker } from "../../../movements/marker";
-import {
-  generateID,
-  scaleRange,
-  sortRange,
-} from "../../../util/utils";
+import { generateID, scaleRange, sortRange } from "../../../util/utils";
 import { keyLogger } from "../../util/keylogger";
 
 export function initializeDragSelect(
@@ -34,14 +30,14 @@ export function initializeDragSelect(
         ? COLORS.transparentYellow
         : COLORS.transparentBlue;
       marker = document.createElement("gens-marker") as GensMarker;
-      element.appendChild(marker);
       const id = generateID();
       marker.initialize(
         id,
         element.offsetHeight,
-        color,
+        { color, isCreated: false },
         getMarkerMode() ? onMarkerRemove : null,
       );
+      element.appendChild(marker);
     } else {
       // FIXME: Drag to pan here
     }
@@ -96,12 +92,13 @@ export function renderHighlights(
 ) {
   const markerClass = "highlight-marker";
 
+  console.log("Render highlights repeatedly rendered");
+
   container
     .querySelectorAll(`.${markerClass}`)
     .forEach((old: Element) => old.remove());
 
   for (const { id, range, color } of highlights) {
-
     let [minXPx, maxXPx] = scaleRange(range, xScale);
 
     // Only render those inside the rendering area
@@ -110,11 +107,15 @@ export function renderHighlights(
     }
 
     const marker = document.createElement("gens-marker") as GensMarker;
+    marker.initialize(
+      id,
+      container.offsetHeight, 
+      { color, isCreated: true },
+      onMarkerRemove
+    );
     container.appendChild(marker);
-    marker.initialize(id, container.offsetHeight, color, onMarkerRemove);
 
     marker.classList.add(markerClass);
-    container.appendChild(marker);
 
     // Truncate those partially landing outside the rendering area
     // This prevents glitches such as highlights over the y-axis area

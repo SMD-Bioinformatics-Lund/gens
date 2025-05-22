@@ -48,43 +48,58 @@ export class GensMarker extends ShadowBaseElement {
   // clicking through on the underlying canvas
   // Better approaches to this are welcome
   private onMouseMove: (e: MouseEvent) => void;
+  private closeCallback: (id: string) => void;
+  private markerId: string;
+  private height: number;
+  private color: string;
+  // Is it still being dragged out or has it been created
+  private isCreated: boolean;
 
   constructor() {
     super(template);
   }
 
+  initialize(
+    markerId: string,
+    height: number,
+    settings: { color: string; isCreated: boolean },
+    closeCallback: ((id: string) => void) | null,
+  ) {
+    this.markerId = markerId;
+    this.height = height;
+    this.color = settings.color;
+    this.isCreated = settings.isCreated;
+    this.closeCallback = closeCallback;
+  }
+
   connectedCallback(): void {
     this.close = this.root.querySelector("#close");
+
+    // Normally it would be preferable to deal with the mouse hover though CSS only
+    // Here is tricky though, as we want pointer: none to let it click elements below
+    if (this.closeCallback != null) {
+      this.onMouseMove = this.handleMouseMove.bind(this);
+    }
+
+    this.style.height = `${this.height}px`;
+    this.style.width = "0px";
+    this.style.backgroundColor = this.color;
+    this.classList.toggle(
+      "has-close",
+      this.closeCallback != null && this.isCreated,
+    );
+
+    if (this.closeCallback != null) {
+      this.close.addEventListener("click", () => {
+        this.closeCallback(this.markerId);
+      });
+    }
 
     document.addEventListener("mousemove", this.onMouseMove);
   }
 
   disconnectedCallback(): void {
     document.removeEventListener("mousemove", this.onMouseMove);
-  }
-
-  initialize(
-    markerId: string,
-    height: number,
-    color: string,
-    closeCallback: ((id: string) => void) | null,
-  ) {
-    // Normally it would be preferable to deal with the mouse hover though CSS only
-    // Here is tricky though, as we want pointer: none to let it click elements below
-    if (closeCallback != null) {
-      this.onMouseMove = this.handleMouseMove.bind(this);
-    }
-
-    this.style.height = `${height}px`;
-    this.style.width = "0px";
-    this.style.backgroundColor = color;
-    this.classList.toggle("has-close", closeCallback != null);
-
-    if (closeCallback != null) {
-      this.close.addEventListener("click", () => {
-        closeCallback(markerId);
-      });
-    }
   }
 
   render(pxRange: Rng) {
@@ -101,7 +116,7 @@ export class GensMarker extends ShadowBaseElement {
       e.clientX <= r.right &&
       e.clientY >= r.top &&
       e.clientY <= r.bottom;
-    this.close.style.display = over ? "block" : "none";
+    this.close.style.display = this.isCreated && over ? "block" : "none";
   }
 }
 
