@@ -36,14 +36,16 @@ import { IconButton } from "./components/util/icon_button";
 export async function samplesListInit(
   samples: SampleInfo[],
   scoutBaseURL: string,
+  gensBaseURL: string,
   genomeBuild: number,
 ) {
   const gens_home = document.querySelector("#gens-home") as GensHome;
 
   const getGensURL = (caseId: string, sampleIds: string[]) => {
-    // FIXME: Extract genome build
-    // FIXME: Look into how to organize end points - should this be through the API class? Probably.
-    return `/app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
+
+    const subpath = `app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
+
+    return new URL(subpath, gensBaseURL).href;
   };
 
   gens_home.initialize(samples, scoutBaseURL, getGensURL);

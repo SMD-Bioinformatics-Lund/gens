@@ -48,10 +48,10 @@ export class DotTrack extends DataTrack {
     this.setExpandedHeight(this.getSettings().height.expandedHeight);
   }
 
-  override draw() {
+  override draw(renderData: DotTrackData) {
     super.drawStart();
 
-    const { dots } = this.renderData as DotTrackData;
+    const { dots } = renderData;
 
     const xRange = this.getXRange();
     const xScale = this.getXScale();

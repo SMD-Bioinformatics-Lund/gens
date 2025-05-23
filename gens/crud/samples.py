@@ -3,6 +3,7 @@
 import logging
 from typing import Any, Dict, List
 
+from pydantic import ValidationError
 from pymongo import DESCENDING
 from pymongo.collection import Collection
 from pymongo.database import Database
@@ -89,22 +90,58 @@ def get_samples(
     return result
 
 
+class TmpSample:
+    case_id: str
+    sample_id: str
+    baf_file: str
+    coverage_file: str
+    overview_file: str | None
+    genome_build: str
+    created_at: str
+    def __init__(self, case_id, sample_id, baf_file, coverage_file, overview_file, genome_build, created_at):
+        self.case_id = case_id
+        self.sample_id = sample_id
+        self.baf_file = baf_file
+        self.coverage_file = coverage_file
+        self.overview_file = overview_file
+        self.genome_build = genome_build
+        self.created_at = created_at
+
+
 # FIXME: This needs to be more properly reworked to deal with cases
+# FIXME: Using the TmpSample class as a temporary solution to speed up loading compared to pydantic checking
+# When doing this checking on many samples, it takes some time
 def get_samples_per_case(
     samples_c: Collection[dict[str, Any]], skip: int = 0, limit: int | None = None
-) -> Dict[str, List[SampleInfo]]:
+) -> Dict[str, List[TmpSample]]:
 
     cursor = samples_c.find().sort("created_at", DESCENDING).skip(skip)
     if limit is not None:
         cursor.limit(limit)
 
-    case_to_samples: dict[str, list[SampleInfo]] = {}
+    case_to_samples: dict[str, list[TmpSample]] = {}
     for sample in cursor:
-        sample_data = SampleInfo.model_validate(sample)
-        case_id = sample_data.case_id
+        # try:
+        #     sample_data = SampleInfo.model_validate(sample)
+        # except ValidationError as err:
+        #     LOG.error(f"Failed to load sample: {sample}")
+        #     continue
+
+        case_id = sample["case_id"]
+        # case_id = sample_data.case_id
         if not case_to_samples.get(case_id):
             case_to_samples[case_id] = []
-        case_to_samples[case_id].append(sample_data)
+        sample_class = TmpSample(
+            sample["case_id"],
+            sample["sample_id"],
+            sample["baf_file"],
+            sample["coverage_file"],
+            sample["overview_file"],
+            sample["genome_build"],
+            sample["created_at"]
+        )
+
+        case_to_samples[case_id].append(sample_class)
 
     return case_to_samples
 

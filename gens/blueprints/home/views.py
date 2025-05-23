@@ -12,6 +12,7 @@ from gens.config import settings
 from gens.crud.annotations import get_data_update_timestamp
 from gens.crud.samples import get_samples_per_case
 from gens.db.collections import SAMPLES_COLLECTION
+from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
@@ -45,15 +46,23 @@ def home() -> str:
                 [s for s in samples if s.overview_file is None or s.coverage_file is None]
             )
             == 0,
-            "created_at": samples[0].created_at.strftime("%Y-%m-%d"),
+            "created_at": samples[0].created_at,
+            # "created_at": samples[0].created_at.strftime("%Y-%m-%d"),
         }
         for (case_id, samples) in samples_per_case.items()
     ]
+
+    with current_app.app_context():
+        genome_build = GenomeBuild(int(request.args.get("genome_build", "38")))
+
+
     return render_template(
         "home.html",
         samples=parsed_samples,
         total_samples=len(samples_per_case),
         scout_base_url=str(settings.scout_url),
+        gens_api_url=str(settings.gens_api_url),
+        genome_build=genome_build.value,
         version=version,
     )
 

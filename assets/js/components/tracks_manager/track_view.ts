@@ -23,7 +23,7 @@ import { keyLogger } from "../util/keylogger";
 import { zoomOut } from "../../util/navigation";
 import { BandTrack } from "../tracks/band_track";
 import { TrackHeights } from "../side_menu/settings_page";
-import { diff, moveElement } from "../../util/collections";
+import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne } from "../../util/utils";
 
@@ -32,6 +32,26 @@ const trackHeight = STYLE.tracks.trackHeight;
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>
+    .track-handle {
+      cursor: grab;
+    }
+    .track-handle:active,
+    .track.dragging .track-handle {
+      cursor: grabbing;
+    }
+    #tracks-container {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    #tracks-container.grabbable {
+      cursor: grab;
+    }
+    #tracks-container.grabbing {
+      cursor: grabbing;
+    }
+
   </style>
   <div id="top-container"></div>
   <div id="tracks-container"></div>
@@ -167,7 +187,6 @@ export class TrackView extends ShadowBaseElement {
 
       const sampleTracks = createSampleTracks(
         sampleId,
-        chrom,
         dataSources,
         startExpanded,
         session,
@@ -341,7 +360,6 @@ export class TrackView extends ShadowBaseElement {
   public addSample(sampleId: string, chrom: string, isTrackViewTrack: boolean) {
     const sampleTracks = createSampleTracks(
       sampleId,
-      chrom,
       this.dataSource,
       false,
       this.session,
@@ -453,9 +471,8 @@ function getDataTrackInfoById(
   console.error("Did not find any track with ID", trackId);
 }
 
-export function createSampleTracks(
+function createSampleTracks(
   sampleId: string,
-  chrom: string,
   dataSources: RenderDataSource,
   startExpanded: boolean,
   session: GensSession,
@@ -470,7 +487,7 @@ export function createSampleTracks(
     `${sampleId}_log2_cov`,
     `${sampleId} cov`,
     sampleId,
-    (sampleId: string) => dataSources.getCovData(sampleId, chrom),
+    (sampleId: string) => dataSources.getCovData(sampleId, session.getChromosome()),
     {
       startExpanded,
       yAxis: {
@@ -489,7 +506,7 @@ export function createSampleTracks(
     `${sampleId}_log2_baf`,
     `${sampleId} baf`,
     sampleId,
-    (sampleId: string) => dataSources.getBafData(sampleId, chrom),
+    (sampleId: string) => dataSources.getBafData(sampleId, session.getChromosome()),
     {
       startExpanded,
       yAxis: {
@@ -508,9 +525,9 @@ export function createSampleTracks(
   const variantTrack = createVariantTrack(
     `${sampleId}_variants`,
     `${sampleId} Variants`,
-    () => dataSources.getVariantBands(sampleId, chrom),
+    () => dataSources.getVariantBands(sampleId, session.getChromosome()),
     (variantId: string) =>
-      dataSources.getVariantDetails(sampleId, variantId, chrom),
+      dataSources.getVariantDetails(sampleId, variantId, session.getChromosome()),
     (variantId: string) => session.getVariantURL(variantId),
     session,
     openTrackContextMenu,

@@ -74,7 +74,8 @@ template.innerHTML = String.raw`
   .choices__list[aria-expanded] {
     width: auto !important;       /* allow its content width */
     max-width: 100% !important;   /* but never exceed container */
-    overflow: hidden !important;  /* clip any rogue overflow */
+    max-height: 200px;
+    overflow-y: auto !important;  /* allow vertical scroll */
   }
 
   /* 4. Tuck the arrow back in if needed */

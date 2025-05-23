@@ -61,14 +61,14 @@ export class OverviewTrack extends CanvasTrack {
     super.initialize();
 
     this.marker = document.createElement("gens-marker") as GensMarker;
-    this.trackContainer.appendChild(this.marker);
     const id = generateID();
     this.marker.initialize(
       id,
       this.dimensions.height,
-      COLORS.transparentYellow,
+      { color: COLORS.transparentYellow, isCreated: true },
       null,
     );
+    this.trackContainer.appendChild(this.marker);
 
     this.canvas.addEventListener("mousedown", (event) => {
       event.stopPropagation();

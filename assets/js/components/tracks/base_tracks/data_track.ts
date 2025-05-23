@@ -225,7 +225,7 @@ export abstract class DataTrack extends CanvasTrack {
         if (mySeq !== this.renderSeq) {
           return;
         }
-        this.draw();
+        this.draw(this.renderData);
       },
       DEBOUNCE_DELAY,
       { leading: false, trailing: true },
@@ -237,11 +237,11 @@ export abstract class DataTrack extends CanvasTrack {
       }
       fetchData();
     } else {
-      this.draw();
+      this.draw(this.renderData);
     }
   }
 
-  abstract draw(): void;
+  abstract draw(renderData: DotTrackData | BandTrackData): void;
 
   protected drawStart() {
     super.syncDimensions();
