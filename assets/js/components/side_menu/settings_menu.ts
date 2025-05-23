@@ -105,7 +105,7 @@ template.innerHTML = String.raw`
   <div id="tracks-overview"></div>
 `;
 
-export class SettingsPage extends ShadowBaseElement {
+export class SettingsMenu extends ShadowBaseElement {
   private samplesOverview: HTMLDivElement;
   private tracksOverview: HTMLDivElement;
   private highlightsOverview: HTMLDivElement;
@@ -420,4 +420,4 @@ function getTracksSection(
   return tracksSection;
 }
 
-customElements.define("settings-page", SettingsPage);
+customElements.define("settings-page", SettingsMenu);

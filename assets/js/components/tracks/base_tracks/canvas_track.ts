@@ -73,7 +73,6 @@ export abstract class CanvasTrack extends ShadowBaseElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.canvas = this.root.getElementById("canvas") as HTMLCanvasElement;
-    this.currentHeight = this.startHeight;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     this.trackContainer = this.root.getElementById(

@@ -17,12 +17,12 @@ import { getLinearScale } from "../../draw/render_utils";
 import { OverviewTrack } from "../tracks/overview_track";
 import { IdeogramTrack } from "../tracks/ideogram_track";
 import { BAF_Y_RANGE, COV_Y_RANGE } from "./tracks_manager";
-import { TrackPage } from "../side_menu/track_page";
+import { TrackMenu } from "../side_menu/track_menu";
 import { DotTrack } from "../tracks/dot_track";
 import { keyLogger } from "../util/keylogger";
 import { zoomOut } from "../../util/navigation";
 import { BandTrack } from "../tracks/band_track";
-import { TrackHeights } from "../side_menu/settings_page";
+import { TrackHeights } from "../side_menu/settings_menu";
 import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne } from "../../util/utils";
@@ -51,9 +51,20 @@ template.innerHTML = String.raw`
     #tracks-container.grabbing {
       cursor: grabbing;
     }
-
+    #top-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+    #position-label {
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100px;
+    }
   </style>
-  <div id="top-container"></div>
+  <div id="top-container">
+    <div id="position-label"></div>
+  </div>
   <div id="tracks-container"></div>
   <div id="bottom-container"></div>
 `;
@@ -68,6 +79,7 @@ export class TrackView extends ShadowBaseElement {
   private topContainer: HTMLDivElement;
   private tracksContainer: HTMLDivElement;
   private bottomContainer: HTMLDivElement;
+  private positionLabel: HTMLDivElement;
 
   private session: GensSession;
   private dataSource: RenderDataSource;
@@ -77,7 +89,7 @@ export class TrackView extends ShadowBaseElement {
   private overviewTracks: OverviewTrack[] = [];
 
   private openTrackContextMenu: (track: DataTrack) => void;
-  private trackPages: Record<string, TrackPage> = {};
+  private trackPages: Record<string, TrackMenu> = {};
 
   private sampleToTracks: Record<
     string,
@@ -98,6 +110,7 @@ export class TrackView extends ShadowBaseElement {
     this.topContainer = this.root.querySelector("#top-container");
     this.tracksContainer = this.root.querySelector("#tracks-container");
     this.bottomContainer = this.root.querySelector("#bottom-container");
+    this.positionLabel = this.root.querySelector("#position-label");
   }
 
   public initialize(
@@ -124,6 +137,8 @@ export class TrackView extends ShadowBaseElement {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
+
+        console.log("Drag end");
         render({});
       },
     });
@@ -147,7 +162,7 @@ export class TrackView extends ShadowBaseElement {
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
       "Ideogram",
-      { height: trackHeight.extraThin },
+      { height: trackHeight.xs },
       async () => {
         return {
           xRange: session.getXRange(),
@@ -276,7 +291,7 @@ export class TrackView extends ShadowBaseElement {
       const isDotTrack = track instanceof DotTrack;
 
       if (this.trackPages[track.id] == null) {
-        const trackPage = new TrackPage();
+        const trackPage = new TrackMenu();
         const trackSettings = {
           showYAxis: isDotTrack,
           showColor: true,
@@ -455,6 +470,10 @@ export class TrackView extends ShadowBaseElement {
     this.ideogramTrack.render(settings);
     this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
     this.overviewTracks.forEach((track) => track.render(settings));
+
+    const [startChrSeg, endChrSeg] = this.session.getChrSegments();
+
+    this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 }
 
@@ -574,7 +593,7 @@ function updateAnnotationTracks(
       (bandId: string) => getAnnotationDetails(bandId),
       session,
       openTrackContextMenu,
-      { height: STYLE.bandTrack.trackViewHeight, hasLabel },
+      { height: STYLE.bandTrack.trackViewHeight, showLabelWhenCollapsed: hasLabel },
     );
     addTrack(newTrack);
   });

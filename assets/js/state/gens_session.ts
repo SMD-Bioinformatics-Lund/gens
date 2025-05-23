@@ -1,7 +1,7 @@
 import {
-  SettingsPage,
+  SettingsMenu,
   TrackHeights,
-} from "../components/side_menu/settings_page";
+} from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COLORS } from "../constants";
 import { generateID } from "../util/utils";
@@ -27,23 +27,27 @@ export class GensSession {
   private markerModeOn: boolean = false;
   private highlights: Record<string, RangeHighlight>;
   private chromSizes: Record<string, number>;
+  private chromInfo: Record<string, ChromosomeInfo>;
   private samples: string[];
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
   private scoutBaseURL: string;
-  private settings: SettingsPage;
+  private gensBaseURL: string;
+  private settings: SettingsMenu;
 
   constructor(
     // FIXME: This does not belong here I think
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
     region: Region,
+    chromInfo: Record<string, ChromosomeInfo>,
     chromSizes: Record<string, number>,
     samples: string[],
     trackHeights: TrackHeights,
     scoutBaseURL: string,
+    gensBaseURL: string,
     // FIXME: Unsure if the full settings should be stored
-    settings: SettingsPage,
+    settings: SettingsMenu,
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
@@ -51,11 +55,17 @@ export class GensSession {
     this.chromosome = region.chrom;
     this.start = region.start;
     this.end = region.end;
+    this.chromInfo = chromInfo;
     this.chromSizes = chromSizes;
     this.samples = samples;
     this.trackHeights = trackHeights;
     this.scoutBaseURL = scoutBaseURL;
+    this.gensBaseURL = gensBaseURL;
     this.settings = settings;
+  }
+
+  public getGensBaseURL(): string {
+    return this.gensBaseURL;
   }
 
   public getAnnotationSources(settings: {
@@ -132,6 +142,23 @@ export class GensSession {
 
   public getXRange(): Rng {
     return [this.start, this.end] as Rng;
+  }
+
+  public getChrSegments(): [string, string] {
+    const startPos = this.start;
+    const endPos = this.end;
+
+    const currChromInfo = this.chromInfo[this.chromosome];
+
+    const startBand = currChromInfo.bands.find(
+      (band) => band.start <= startPos && band.end >= startPos,
+    );
+
+    const endBand = currChromInfo.bands.find(
+      (band) => band.start <= endPos && band.end >= endPos,
+    );
+
+    return [startBand.id, endBand.id];
   }
 
   public getCurrentChromSize(): number {

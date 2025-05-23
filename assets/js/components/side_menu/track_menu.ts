@@ -66,7 +66,7 @@ interface TrackPageSettings {
   showColor: boolean;
 }
 
-export class TrackPage extends ShadowBaseElement {
+export class TrackMenu extends ShadowBaseElement {
   isInitialized: boolean = false;
 
   private _trackId: string;
@@ -210,4 +210,4 @@ export class TrackPage extends ShadowBaseElement {
   }
 }
 
-customElements.define("track-page", TrackPage);
+customElements.define("track-page", TrackMenu);
