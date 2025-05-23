@@ -92,8 +92,6 @@ export function renderHighlights(
 ) {
   const markerClass = "highlight-marker";
 
-  console.log("Render highlights repeatedly rendered");
-
   container
     .querySelectorAll(`.${markerClass}`)
     .forEach((old: Element) => old.remove());

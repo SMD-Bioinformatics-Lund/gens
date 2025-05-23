@@ -109,6 +109,8 @@ class TmpSample:
 
 
 # FIXME: This needs to be more properly reworked to deal with cases
+# FIXME: Using the TmpSample class as a temporary solution to speed up loading compared to pydantic checking
+# When doing this checking on many samples, it takes some time
 def get_samples_per_case(
     samples_c: Collection[dict[str, Any]], skip: int = 0, limit: int | None = None
 ) -> Dict[str, List[TmpSample]]:

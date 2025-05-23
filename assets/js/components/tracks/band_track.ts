@@ -70,7 +70,6 @@ export class BandTrack extends DataTrack {
     super.drawStart();
 
     const { bands, xRange } = renderData;
-    // const { bands, xRange } = this.renderData as BandTrackData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 

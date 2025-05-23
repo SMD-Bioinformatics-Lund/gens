@@ -214,9 +214,6 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-
-    console.log("> Starting the render with settings", settings);
-
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
     // is to prevent repeated API requests when rapidly zooming/panning
     // Only the last request is of interest
@@ -224,13 +221,10 @@ export abstract class DataTrack extends CanvasTrack {
       async () => {
         this.renderSeq = this.renderSeq + 1;
         const mySeq = this.renderSeq;
-        console.log("> Getting new data");
         this.renderData = await this.getRenderData();
         if (mySeq !== this.renderSeq) {
-          console.log("> Returning due to myseq?");
           return;
         }
-        console.log("> Resulting data: ", this.renderData);
         this.draw(this.renderData);
       },
       DEBOUNCE_DELAY,
@@ -238,7 +232,6 @@ export abstract class DataTrack extends CanvasTrack {
     );
 
     if (settings.dataUpdated || this.renderData == null) {
-      console.log("> Inside if")
       if (!settings.positionOnly) {
         this.renderLoading();
       }
