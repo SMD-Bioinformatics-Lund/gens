@@ -15,7 +15,6 @@ export class API {
   private allChromData: Record<string, ChromosomeInfo> = {};
 
   getChromSizes(): Record<string, number> {
-
     if (this.allChromData == null) {
       throw Error("Must initialize before accessing the chromosome sizes");
     }
@@ -43,6 +42,20 @@ export class API {
       const chromInfo = await this.getChromData(chrom);
       this.allChromData[chrom] = chromInfo;
     }
+  }
+
+  getSearchResult(query: string): Promise<ApiSearchResult | null> {
+    const details = get(
+      new URL(`search/result/${query}`, this.apiURI).href,
+      {},
+    ).then((result) => {
+      if (result["chromosome"] != null) {
+        return result;
+      } else {
+        return null;
+      }
+    });
+    return details;
   }
 
   getAnnotationDetails(id: string): Promise<ApiAnnotationDetails> {
@@ -176,7 +189,7 @@ export class API {
           sampleId,
           this.caseId,
           this.apiURI,
-          this.getChromSizes()
+          this.getChromSizes(),
         );
       }
       return this.bafSampleZoomChrCache[sampleId][chrom][zoom];

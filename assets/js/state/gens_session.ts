@@ -121,7 +121,7 @@ export class GensSession {
     };
   }
 
-  public updateChromosome(chrom: string, range: Rng = null) {
+  public setChromosome(chrom: string, range: Rng = null) {
     this.chromosome = chrom;
 
     const start = range != null ? range[0] : 1;

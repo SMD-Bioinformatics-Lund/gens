@@ -126,10 +126,9 @@ export async function initCanvases({
   );
 
   const onChromClick = async (chrom) => {
-    session.updateChromosome(chrom);
+    session.setChromosome(chrom);
     render({ dataUpdated: true });
   };
-
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
@@ -161,7 +160,7 @@ export async function initCanvases({
     },
     (region: Region) => {
       const positionOnly = region.chrom == session.getChromosome();
-      session.updateChromosome(region.chrom, [region.start, region.end]);
+      session.setChromosome(region.chrom, [region.start, region.end]);
       render({ dataUpdated: true, positionOnly });
     },
     // FIXME: Something strange here in how things are organized,
@@ -206,6 +205,9 @@ export async function initCanvases({
       session.toggleChromViewActive();
       render({});
     },
+    (query: string) => {
+      return api.getSearchResult(query);
+    },
   );
 
   await gensTracks.initialize(
@@ -219,4 +221,3 @@ export async function initCanvases({
 
   render({ dataUpdated: true, resized: true });
 }
-
