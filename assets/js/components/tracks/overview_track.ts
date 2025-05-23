@@ -97,8 +97,6 @@ export class OverviewTrack extends CanvasTrack {
     const dataChanged = firstTime || settings.dataUpdated;
     const sizeChanged = firstTime || settings.resized;
 
-    console.log("was empty", firstTime, "data changed", dataChanged, "size changed", sizeChanged);
-
     if (dataChanged) {
       this.renderData = await this.getRenderData();
     }

@@ -17,6 +17,9 @@ template.innerHTML = String.raw`
       <button title="Pan right" id="pan-right" class='button pan'>
         <span class="fas ${ICONS.right}"></span>
       </button>
+      <button title="Reset zoom" id="zoom-reset" class='button zoom'>
+        <span class="fas ${ICONS.reset}"></span>
+      </button>
       <input onFocus='this.select();' id='region-field' type='text' class="text-input">
       <button title="Run search" id="submit" class='button pan'>
         <span class="fas ${ICONS.search}"></span>
@@ -35,6 +38,7 @@ export class InputControls extends HTMLElement {
   private panRightButton: HTMLButtonElement;
   private zoomInButton: HTMLButtonElement;
   private zoomOutButton: HTMLButtonElement;
+  private zoomResetButton: HTMLButtonElement;
   private regionField: HTMLInputElement;
   private removeHighlights: HTMLButtonElement;
   private toggleMarkerButton: HTMLButtonElement;
@@ -52,6 +56,7 @@ export class InputControls extends HTMLElement {
     this.panRightButton = this.querySelector("#pan-right") as HTMLButtonElement;
     this.zoomInButton = this.querySelector("#zoom-in") as HTMLButtonElement;
     this.zoomOutButton = this.querySelector("#zoom-out") as HTMLButtonElement;
+    this.zoomResetButton = this.querySelector("#zoom-reset") as HTMLButtonElement;
     this.regionField = this.querySelector("#region-field") as HTMLInputElement;
     this.removeHighlights = this.querySelector(
       "#remove-highlights",
@@ -87,6 +92,10 @@ export class InputControls extends HTMLElement {
     this.zoomOutButton.onclick = () => {
       this.zoomOut();
     };
+
+    this.zoomResetButton.onclick = () => {
+      this.resetZoom();
+    }
 
     this.removeHighlights.onclick = () => this.session.removeHighlights();
     this.toggleMarkerButton.onclick = () => this.session.toggleMarkerMode();

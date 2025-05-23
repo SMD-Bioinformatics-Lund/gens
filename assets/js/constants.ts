@@ -30,6 +30,7 @@ export const ICONS = {
   left: "fa-arrow-left",
   marker: "fa-marker",
   minus: "fa-minus",
+  reset: "fa-rotate-right",
   right: "fa-arrow-right",
   search: "fa-search",
   show: "fa-eye",
