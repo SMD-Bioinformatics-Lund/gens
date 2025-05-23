@@ -13,6 +13,16 @@ const X_PAD = 5;
 const DOT_SIZE = 2;
 const PIXEL_RATIO = 2;
 
+interface Metrics {
+  xRange: Rng;
+  xScale: Scale;
+  yScale: Scale;
+  chromRanges: Record<string, Rng>;
+  viewPxRange: Rng;
+  chromStartPos: number;
+  pxRanges: Record<string, Rng>;
+}
+
 export class OverviewTrack extends CanvasTrack {
   totalChromSize: number;
   chromSizes: Record<string, number>;
@@ -20,8 +30,10 @@ export class OverviewTrack extends CanvasTrack {
   onChromosomeClick: (chrom: string) => void;
   yRange: Rng;
 
+  // metrics: Metrics;
+
   pxRanges: Record<string, Rng> = {};
-  isRendered: boolean;
+  // isRendered: boolean;
 
   renderData: OverviewTrackData | null;
   getRenderData: () => Promise<OverviewTrackData>;
@@ -80,72 +92,47 @@ export class OverviewTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-    // FIXME: This one is a bit tricky isn't it
-    // We want it to render not on new data, but on resize
-    // Do I have all info I need here?
-    // Should the renderData be more granular?
-    let newRender = false;
-    if (this.renderData == null || settings.resized) {
-      newRender = this.renderData == null;
+
+    const firstTime = this.renderData == null;
+    const dataChanged = firstTime || settings.dataUpdated;
+    const sizeChanged = firstTime || settings.resized;
+
+    console.log("was empty", firstTime, "data changed", dataChanged, "size changed", sizeChanged);
+
+    if (dataChanged) {
       this.renderData = await this.getRenderData();
     }
 
-    const { dotsPerChrom } = this.renderData;
-    // Too slow to rerender all dots, but we still want to
-    // rerender the highlight
-    const { chrom: chromosome, start, end } = this.getRegion();
-    const xRange = [start, end];
+    super.syncDimensions();
 
-    const totalChromSize = Object.values(this.chromSizes).reduce(
-      (tot, size) => tot + size,
-      0,
+    const region = this.getRegion();
+    const metrics = calculateMetrics(
+      region,
+      this.chromSizes,
+      this.dimensions,
+      this.drawLabels,
+      this.yRange,
     );
 
-    const xScale = (pos: number) => {
-      return linearScale(pos, [0, totalChromSize], [0, this.dimensions.width]);
-    };
-    const yPadding = this.drawLabels ? STYLE.overviewTrack.titleSpace : 0;
+    this.pxRanges = metrics.pxRanges;
 
-    const yScale = (pos: number) => {
-      return linearScale(pos, this.yRange, [yPadding, this.dimensions.height]);
-    };
-
-    const chromRanges = getChromRanges(this.chromSizes);
-    this.pxRanges = transformMap(chromRanges, ([start, end]) => [
-      xScale(start),
-      xScale(end),
-    ]);
-
-    if (newRender) {
-      super.syncDimensions();
-      if (this.dimensions.width === 0 || this.dimensions.height === 0) {
-        console.error("Check this - no dimensions yet?");
-        return;
-      }
-      this.renderLoading();
-
-      // Sync the static canvas sizes
+    if (sizeChanged) {
       this.staticBuffer.width = this.dimensions.width * PIXEL_RATIO;
       this.staticBuffer.height = this.dimensions.height * PIXEL_RATIO;
       this.staticCtx.resetTransform();
       this.staticCtx.scale(PIXEL_RATIO, PIXEL_RATIO);
-
       renderBackground(this.staticCtx, this.dimensions, STYLE.tracks.edgeColor);
       renderOverviewPlot(
         this.staticCtx,
         this.pxRanges,
-        yScale,
-        dotsPerChrom,
+        metrics.yScale,
+        this.renderData.dotsPerChrom,
         this.chromSizes,
         this.drawLabels,
         this.dimensions.height,
       );
-
-      this.isRendered = true;
     }
 
-    // Render offscreen canvas to display canvas
-    super.syncDimensions();
     this.ctx.clearRect(0, 0, this.dimensions.width, this.dimensions.height);
     this.ctx.drawImage(
       this.staticBuffer,
@@ -159,13 +146,60 @@ export class OverviewTrack extends CanvasTrack {
       this.dimensions.height,
     );
 
-    const chromStartPos = chromRanges[chromosome][0];
-    const viewPxRange: Rng = [
-      xScale(xRange[0] + chromStartPos),
-      xScale(xRange[1] + chromStartPos),
-    ];
-    this.marker.render(viewPxRange);
+    this.marker.render(metrics.viewPxRange);
   }
+}
+
+function calculateMetrics(
+  region: Region,
+  chromSizes: Record<string, number>,
+  dim: Dimensions,
+  drawLabels: boolean,
+  yRange: Rng,
+): {
+  xRange: Rng;
+  xScale: Scale;
+  yScale: Scale;
+  chromRanges: Record<string, Rng>;
+  viewPxRange: Rng;
+  chromStartPos: number;
+  pxRanges: Record<string, Rng>;
+} {
+  const totalChromSize = Object.values(chromSizes).reduce(
+    (tot, size) => tot + size,
+    0,
+  );
+  const xScale = (pos: number) => {
+    return linearScale(pos, [0, totalChromSize], [0, dim.width]);
+  };
+  const chromRanges = getChromRanges(chromSizes);
+  const pxRanges: Record<string, Rng> = transformMap(
+    chromRanges,
+    ([start, end]) => [xScale(start), xScale(end)],
+  );
+
+  const xRange: Rng = [region.start, region.end];
+
+  const chromStartPos = chromRanges[region.chrom][0];
+  const viewPxRange: Rng = [
+    xScale(xRange[0] + chromStartPos),
+    xScale(xRange[1] + chromStartPos),
+  ];
+
+  const yPadding = drawLabels ? STYLE.overviewTrack.titleSpace : 0;
+  const yScale = (pos: number) => {
+    return linearScale(pos, yRange, [yPadding, dim.height]);
+  };
+
+  return {
+    xRange,
+    xScale,
+    yScale,
+    chromRanges,
+    viewPxRange,
+    chromStartPos,
+    pxRanges,
+  };
 }
 
 function renderOverviewPlot(

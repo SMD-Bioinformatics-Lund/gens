@@ -58,8 +58,6 @@ export function createAnnotTrack(
     yPadBands: settings.yPadBands,
   };
 
-  console.log("The height is", settings.height);
-
   const track = new BandTrack(
     trackId,
     label,
