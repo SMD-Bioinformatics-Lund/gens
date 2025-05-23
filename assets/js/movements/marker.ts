@@ -1,5 +1,5 @@
 import { ShadowBaseElement } from "../components/util/shadowbaseelement";
-import { SIZES, STYLE } from "../constants";
+import { COLORS, SIZES, STYLE } from "../constants";
 import { rangeSize, sortRange } from "../util/utils";
 
 const style = STYLE.menu;
@@ -13,6 +13,8 @@ template.innerHTML = String.raw`
       top: 0;
       display: flex;
       pointer-events: none;
+      z-index: 10000;
+      background-color: ${COLORS.transparentYellow};
     }
     #close {
       display: none;
@@ -103,10 +105,13 @@ export class GensMarker extends ShadowBaseElement {
   }
 
   render(pxRange: Rng) {
+
     const sortedRange = sortRange(pxRange);
     const width = rangeSize(sortedRange);
+    console.log("Rendering marker", sortedRange, width);
     this.style.left = `${sortedRange[0]}px`;
     this.style.width = `${width}px`;
+    this.style.height = `${this.height}px`;
   }
 
   private handleMouseMove(e: MouseEvent) {

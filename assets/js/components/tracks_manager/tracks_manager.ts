@@ -9,7 +9,6 @@ import { ChromosomeView } from "./chromosome_view";
 export const COV_Y_RANGE: [number, number] = [-3, 3];
 export const BAF_Y_RANGE: [number, number] = [0, 1];
 
-// FIXME: This will need to be generalized such that tracks aren't hard-coded
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>
