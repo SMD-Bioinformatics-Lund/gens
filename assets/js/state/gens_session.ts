@@ -27,6 +27,7 @@ export class GensSession {
   private markerModeOn: boolean = false;
   private highlights: Record<string, RangeHighlight>;
   private chromSizes: Record<string, number>;
+  private chromInfo: Record<string, ChromosomeInfo>;
   private samples: string[];
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
@@ -38,6 +39,7 @@ export class GensSession {
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
     region: Region,
+    chromInfo: Record<string, ChromosomeInfo>,
     chromSizes: Record<string, number>,
     samples: string[],
     trackHeights: TrackHeights,
@@ -51,6 +53,7 @@ export class GensSession {
     this.chromosome = region.chrom;
     this.start = region.start;
     this.end = region.end;
+    this.chromInfo = chromInfo;
     this.chromSizes = chromSizes;
     this.samples = samples;
     this.trackHeights = trackHeights;
@@ -132,6 +135,25 @@ export class GensSession {
 
   public getXRange(): Rng {
     return [this.start, this.end] as Rng;
+  }
+
+  public getChrSegments(): [string, string] {
+    const startPos = this.start;
+    const endPos = this.end;
+
+    const currChromInfo = this.chromInfo[this.chromosome];
+
+    console.log(currChromInfo);
+
+    const startBand = currChromInfo.bands.find(
+      (band) => band.start <= startPos && band.end >= startPos,
+    );
+
+    const endBand = currChromInfo.bands.find(
+      (band) => band.start <= endPos && band.end >= endPos,
+    );
+
+    return [startBand.id, endBand.id];
   }
 
   public getCurrentChromSize(): number {

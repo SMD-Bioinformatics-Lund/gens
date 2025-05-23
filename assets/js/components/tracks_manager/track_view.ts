@@ -51,9 +51,20 @@ template.innerHTML = String.raw`
     #tracks-container.grabbing {
       cursor: grabbing;
     }
-
+    #top-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+    #position-label {
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100px;
+    }
   </style>
-  <div id="top-container"></div>
+  <div id="top-container">
+    <div id="position-label"></div>
+  </div>
   <div id="tracks-container"></div>
   <div id="bottom-container"></div>
 `;
@@ -68,6 +79,7 @@ export class TrackView extends ShadowBaseElement {
   private topContainer: HTMLDivElement;
   private tracksContainer: HTMLDivElement;
   private bottomContainer: HTMLDivElement;
+  private positionLabel: HTMLDivElement;
 
   private session: GensSession;
   private dataSource: RenderDataSource;
@@ -98,6 +110,7 @@ export class TrackView extends ShadowBaseElement {
     this.topContainer = this.root.querySelector("#top-container");
     this.tracksContainer = this.root.querySelector("#tracks-container");
     this.bottomContainer = this.root.querySelector("#bottom-container");
+    this.positionLabel = this.root.querySelector("#position-label");
   }
 
   public initialize(
@@ -455,6 +468,10 @@ export class TrackView extends ShadowBaseElement {
     this.ideogramTrack.render(settings);
     this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
     this.overviewTracks.forEach((track) => track.render(settings));
+
+    const [startChrSeg, endChrSeg] = this.session.getChrSegments();
+
+    this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 }
 

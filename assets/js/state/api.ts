@@ -28,6 +28,10 @@ export class API {
     return allChromSizes;
   }
 
+  getChromInfo(): Record<string, ChromosomeInfo> {
+    return this.allChromData;
+  }
+
   constructor(caseId: string, genomeBuild: number, gensApiURL: string) {
     this.caseId = caseId;
     this.genomeBuild = genomeBuild;

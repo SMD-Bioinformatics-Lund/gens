@@ -105,12 +105,14 @@ export async function initCanvases({
     dotExpanded: STYLE.tracks.trackHeight.xl,
   };
 
+  const chromInfo = api.getChromInfo();
   const chromSizes = api.getChromSizes();
   const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
   const session = new GensSession(
     render,
     sideMenu,
     defaultRegion,
+    chromInfo,
     chromSizes,
     sampleIds,
     trackHeights,
