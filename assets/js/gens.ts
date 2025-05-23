@@ -40,8 +40,6 @@ export async function samplesListInit(
   gensBaseURL: string,
   genomeBuild: number,
 ) {
-  console.log("Obtaining samples", samples);
-
   const gens_home = document.querySelector("#gens-home") as GensHome;
 
   const getGensURL = (caseId: string, sampleIds: string[]) => {

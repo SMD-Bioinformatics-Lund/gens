@@ -100,13 +100,9 @@ export abstract class DataTrack extends CanvasTrack {
 
   public toggleExpanded() {
 
-    console.error("Toggling expanded");
-
     const settings = this.getSettings();
     settings.isExpanded = !settings.isExpanded;
     this.updateSettings(settings);
-
-    // this.isExpanded = !this.isExpanded;
 
     if (settings.isExpanded && settings.height.expandedHeight == null) {
       return;
@@ -158,12 +154,6 @@ export abstract class DataTrack extends CanvasTrack {
       height,
     });
 
-    // FIXME: This is to deal with the "shadow cloning"
-    // performed during the drag and drop
-    // Look into this ahead
-    // if (getSettings == null) {
-    //   return;
-    // }
     
     this.trackType = trackType;
     this.getSettings = getSettings;
@@ -171,8 +161,6 @@ export abstract class DataTrack extends CanvasTrack {
     this.getXScale = getXScale;
     this.session = session;
     this.updateSettings = updateSettings;
-
-    // this.isExpanded = heightConf.startExpanded;
 
     this.getYRange = () => {
       return getSettings().yAxis.range;
@@ -287,7 +275,6 @@ export abstract class DataTrack extends CanvasTrack {
     settings.height.expandedHeight = height;
     this.updateSettings(settings);
     if (settings.isExpanded) {
-      console.log(this.label, "Assigning height", height);
       this.currentHeight = height;
       this.syncDimensions();
     }

@@ -61,7 +61,6 @@ export abstract class CanvasTrack extends ShadowBaseElement {
     this.id = id;
     this.label = label;
     this.startHeight = settings.height;
-    console.log("Assigning current height", this.startHeight);
     this.currentHeight = this.startHeight;
   }
 
@@ -145,9 +144,6 @@ export abstract class CanvasTrack extends ShadowBaseElement {
   }
 
   syncDimensions() {
-
-    console.error(this.label, "Syncing dimensions with current height", this.currentHeight);
-
     if (!this.canvas || !this.trackContainer) {
       console.error("Cannot run syncDimensions before initialize");
       return;
@@ -174,8 +170,6 @@ export abstract class CanvasTrack extends ShadowBaseElement {
       const ctx = this.canvas.getContext("2d");
       ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     }
-
-    console.log(this.label, displayWidth, displayHeight);
 
     this.dimensions = {
       width: displayWidth,

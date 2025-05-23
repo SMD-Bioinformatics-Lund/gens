@@ -45,7 +45,6 @@ export class DotTrack extends DataTrack {
 
     const onExpand = () => this.render({});
     this.initializeExpander("contextmenu", onExpand);
-    // this.setExpandedHeight(this.getSettings().height.expandedHeight);
   }
 
   override draw(renderData: DotTrackData) {

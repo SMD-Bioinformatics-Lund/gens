@@ -67,7 +67,6 @@ export class BandTrack extends DataTrack {
   }
 
   override draw(renderData: BandTrackData) {
-    // super.drawStart();
 
     const { bands, xRange } = renderData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
@@ -88,8 +87,6 @@ export class BandTrack extends DataTrack {
       .sort((r1, r2) => (r1.start < r2.start ? -1 : 1));
 
     const { numberLanes, bandOverlaps } = getOverlapInfo(bandsInView);
-
-    console.error("Number lanes", numberLanes)
 
     const labelSize =
       this.getIsExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
@@ -129,10 +126,6 @@ export class BandTrack extends DataTrack {
 
       return renderBand;
     });
-
-    // super.drawStart();
-
-
 
     const hoverTargets = renderBand.flatMap((band) => {
       const bandHoverTargets = drawBand(
