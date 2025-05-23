@@ -112,8 +112,6 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected syncHeight() {
-    console.log(this.label, "Assigning height", this.getSettings());
-
     this.currentHeight = this.getSettings().isExpanded
       ? this.getSettings().height.expandedHeight
       : this.getSettings().height.collapsedHeight;
