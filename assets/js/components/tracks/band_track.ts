@@ -67,7 +67,7 @@ export class BandTrack extends DataTrack {
   }
 
   override draw(renderData: BandTrackData) {
-    super.drawStart();
+    // super.drawStart();
 
     const { bands, xRange } = renderData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
@@ -89,10 +89,16 @@ export class BandTrack extends DataTrack {
 
     const { numberLanes, bandOverlaps } = getOverlapInfo(bandsInView);
 
+    console.error("Number lanes", numberLanes)
+
     const labelSize =
       this.getIsExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
+
+    // FIXME: Investigate why background coloring disappears if doing this before 
+    // settings expanded track height
+    super.drawStart();
 
     const bandTopBottomPad =
       this.currentHeight > STYLE.bandTrack.dynamicPadThreshold
@@ -123,6 +129,10 @@ export class BandTrack extends DataTrack {
 
       return renderBand;
     });
+
+    // super.drawStart();
+
+
 
     const hoverTargets = renderBand.flatMap((band) => {
       const bandHoverTargets = drawBand(

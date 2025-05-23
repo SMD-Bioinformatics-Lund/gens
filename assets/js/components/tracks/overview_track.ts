@@ -30,10 +30,7 @@ export class OverviewTrack extends CanvasTrack {
   onChromosomeClick: (chrom: string) => void;
   yRange: Rng;
 
-  // metrics: Metrics;
-
   pxRanges: Record<string, Rng> = {};
-  // isRendered: boolean;
 
   renderData: OverviewTrackData | null;
   getRenderData: () => Promise<OverviewTrackData>;

@@ -23,7 +23,11 @@ export function createAnnotTrack(
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
-  settings: { height: number, showLabelWhenCollapsed: boolean, yPadBands?: boolean }
+  settings: {
+    height: number;
+    showLabelWhenCollapsed: boolean;
+    yPadBands?: boolean;
+  },
 ): BandTrack {
   // FIXME: Seems the x range should be separated from the annotations or?
   async function getAnnotTrackData(
@@ -56,6 +60,7 @@ export function createAnnotTrack(
     height: { collapsedHeight: settings.height, startExpanded: false },
     showLabelWhenCollapsed: settings.showLabelWhenCollapsed,
     yPadBands: settings.yPadBands,
+    isExpanded: false,
   };
 
   const track = new BandTrack(
@@ -67,11 +72,7 @@ export function createAnnotTrack(
       fnSettings = settings;
     },
     () => session.getXRange(),
-    () =>
-      getAnnotTrackData(
-        () => session.getXRange(),
-        getAnnotationBands,
-      ),
+    () => getAnnotTrackData(() => session.getXRange(), getAnnotationBands),
     openContextMenuId,
     openTrackContextMenu,
     session,
@@ -97,6 +98,7 @@ export function createDotTrack(
     },
     yAxis: settings.yAxis,
     showLabelWhenCollapsed: settings.hasLabel,
+    isExpanded: settings.startExpanded,
   };
 
   const dotTrack = new DotTrack(
@@ -124,17 +126,19 @@ export function createVariantTrack(
   id: string,
   label: string,
   dataFn: () => Promise<RenderBand[]>,
-  getVariantDetails: (
-    variantId: string,
-  ) => Promise<ApiVariantDetails>,
+  getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>,
   getVariantURL: (variantId: string) => string,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): BandTrack {
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
-    height: { collapsedHeight: STYLE.bandTrack.trackViewHeight, startExpanded: false },
+    height: {
+      collapsedHeight: STYLE.bandTrack.trackViewHeight,
+      startExpanded: false,
+    },
     showLabelWhenCollapsed: true,
+    isExpanded: false,
   };
 
   const variantTrack = new BandTrack(
@@ -198,8 +202,12 @@ export function createGeneTrack(
 ): TrackViewTrackInfo {
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
-    height: { collapsedHeight: STYLE.bandTrack.trackViewHeight, startExpanded: false },
+    height: {
+      collapsedHeight: STYLE.bandTrack.trackViewHeight,
+      startExpanded: false,
+    },
     showLabelWhenCollapsed: true,
+    isExpanded: false,
   };
 
   const genesTrack = new BandTrack(

@@ -137,6 +137,8 @@ export class TrackView extends ShadowBaseElement {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
+
+        console.log("Drag end");
         render({});
       },
     });

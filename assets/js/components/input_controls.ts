@@ -32,7 +32,7 @@ template.innerHTML = String.raw`
   </style>
   <div id="input-controls-container">
     <div id="logo-part">
-      <a href="{{ url_for('home.home') }}">
+      <a id="gens-home-link" href="">
         <div id="logo-container">
           <span class='logo'></span>
         </div>
@@ -91,6 +91,8 @@ export class InputControls extends HTMLElement {
   private chromosomeViewButton: HTMLButtonElement;
   private settingsButton: HTMLButtonElement;
 
+  private gensHomeLink: HTMLAnchorElement;
+
   private onPositionChange: (newXRange: [number, number]) => void;
   private getMarkerOn: () => boolean;
   private onToggleMarker: () => void;
@@ -108,10 +110,8 @@ export class InputControls extends HTMLElement {
     this.session = session;
     this.onOpenSettings = onOpenSettings;
     this.onToggleChromView = onToggleChromView;
-
     this.getMarkerOn = () => this.session.getMarkerModeOn();
     this.onToggleMarker = () => this.session.toggleMarkerMode();
-
     this.onPositionChange = onPositionChange;
 
     this.panLeftButton.onclick = () => {
@@ -136,25 +136,22 @@ export class InputControls extends HTMLElement {
 
     this.removeHighlights.onclick = () => this.session.removeHighlights();
     this.toggleMarkerButton.onclick = () => this.session.toggleMarkerMode();
+
+    this.gensHomeLink.href = session.getGensBaseURL();
   }
 
   connectedCallback() {
     this.appendChild(template.content.cloneNode(true));
 
-    this.panLeftButton = this.querySelector("#pan-left") as HTMLButtonElement;
-    this.panRightButton = this.querySelector("#pan-right") as HTMLButtonElement;
-    this.zoomInButton = this.querySelector("#zoom-in") as HTMLButtonElement;
-    this.zoomOutButton = this.querySelector("#zoom-out") as HTMLButtonElement;
-    this.zoomResetButton = this.querySelector(
-      "#zoom-reset",
-    ) as HTMLButtonElement;
-    this.regionField = this.querySelector("#region-field") as HTMLInputElement;
-    this.removeHighlights = this.querySelector(
-      "#remove-highlights",
-    ) as HTMLButtonElement;
-    this.toggleMarkerButton = this.querySelector(
-      "#toggle-marker",
-    ) as HTMLButtonElement;
+    this.panLeftButton = this.querySelector("#pan-left");
+    this.panRightButton = this.querySelector("#pan-right");
+    this.zoomInButton = this.querySelector("#zoom-in");
+    this.zoomOutButton = this.querySelector("#zoom-out");
+    this.zoomResetButton = this.querySelector("#zoom-reset");
+    this.regionField = this.querySelector("#region-field");
+    this.removeHighlights = this.querySelector("#remove-highlights");
+    this.toggleMarkerButton = this.querySelector("#toggle-marker");
+    this.gensHomeLink = this.querySelector("#gens-home-link");
 
     this.chromosomeViewButton = this.querySelector("#chromosome-view-button");
     this.settingsButton = this.querySelector("#settings-button");

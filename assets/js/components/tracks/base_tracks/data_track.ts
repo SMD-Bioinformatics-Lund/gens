@@ -26,6 +26,7 @@ export interface DataTrackSettings {
   showLabelWhenCollapsed: boolean;
   yAxis?: Axis;
   yPadBands?: boolean;
+  isExpanded: boolean;
 }
 
 const DEBOUNCE_DELAY = 50;
@@ -48,7 +49,7 @@ export abstract class DataTrack extends CanvasTrack {
 
   private colorBands: RenderBand[] = [];
   private isHidden: boolean = false;
-  private isExpanded: boolean;
+  // private isExpanded: boolean;
   private labelBox: HoverBox | null;
   private renderSeq = 0;
 
@@ -72,7 +73,7 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   public getIsExpanded(): boolean {
-    return this.isExpanded;
+    return this.getSettings().isExpanded;
   }
 
   public setHeights(collapsed: number, expanded?: number) {
@@ -98,17 +99,26 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   public toggleExpanded() {
-    this.isExpanded = !this.isExpanded;
 
-    if (this.isExpanded && this.getSettings().height.expandedHeight == null) {
-      throw Error("Must assign an expanded height before expanding the track");
+    console.error("Toggling expanded");
+
+    const settings = this.getSettings();
+    settings.isExpanded = !settings.isExpanded;
+    this.updateSettings(settings);
+
+    // this.isExpanded = !this.isExpanded;
+
+    if (settings.isExpanded && settings.height.expandedHeight == null) {
+      return;
     }
 
     this.syncHeight();
   }
 
   protected syncHeight() {
-    this.currentHeight = this.isExpanded
+    console.log(this.label, "Assigning height", this.getSettings());
+
+    this.currentHeight = this.getSettings().isExpanded
       ? this.getSettings().height.expandedHeight
       : this.getSettings().height.collapsedHeight;
   }
@@ -151,9 +161,9 @@ export abstract class DataTrack extends CanvasTrack {
     // FIXME: This is to deal with the "shadow cloning"
     // performed during the drag and drop
     // Look into this ahead
-    if (getSettings == null) {
-      return;
-    }
+    // if (getSettings == null) {
+    //   return;
+    // }
     
     this.trackType = trackType;
     this.getSettings = getSettings;
@@ -162,7 +172,7 @@ export abstract class DataTrack extends CanvasTrack {
     this.session = session;
     this.updateSettings = updateSettings;
 
-    this.isExpanded = heightConf.startExpanded;
+    // this.isExpanded = heightConf.startExpanded;
 
     this.getYRange = () => {
       return getSettings().yAxis.range;
@@ -276,14 +286,16 @@ export abstract class DataTrack extends CanvasTrack {
     const settings = this.getSettings();
     settings.height.expandedHeight = height;
     this.updateSettings(settings);
-    if (this.isExpanded) {
+    if (settings.isExpanded) {
+      console.log(this.label, "Assigning height", height);
       this.currentHeight = height;
       this.syncDimensions();
     }
   }
 
   protected drawEnd() {
-    if (this.isExpanded || this.getSettings().showLabelWhenCollapsed) {
+    const settings = this.getSettings();
+    if (settings.isExpanded || settings.showLabelWhenCollapsed) {
       const yAxisWidth = STYLE.yAxis.width;
       const labelBox = this.drawTrackLabel(yAxisWidth);
       this.labelBox = {
@@ -314,8 +326,9 @@ export abstract class DataTrack extends CanvasTrack {
       });
     }
 
-    const hideLabel = yAxis.hideLabelOnCollapse && !this.isExpanded;
-    const hideTicks = yAxis.hideTicksOnCollapse && !this.isExpanded;
+    const settings = this.getSettings();
+    const hideLabel = yAxis.hideLabelOnCollapse && !settings.isExpanded;
+    const hideTicks = yAxis.hideTicksOnCollapse && !settings.isExpanded;
 
     const label = hideLabel ? "" : yAxis.label;
     const renderTicks = hideTicks ? [] : ticks;

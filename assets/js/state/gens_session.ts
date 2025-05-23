@@ -32,6 +32,7 @@ export class GensSession {
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
   private scoutBaseURL: string;
+  private gensBaseURL: string;
   private settings: SettingsMenu;
 
   constructor(
@@ -44,6 +45,7 @@ export class GensSession {
     samples: string[],
     trackHeights: TrackHeights,
     scoutBaseURL: string,
+    gensBaseURL: string,
     // FIXME: Unsure if the full settings should be stored
     settings: SettingsMenu,
   ) {
@@ -58,7 +60,12 @@ export class GensSession {
     this.samples = samples;
     this.trackHeights = trackHeights;
     this.scoutBaseURL = scoutBaseURL;
+    this.gensBaseURL = gensBaseURL;
     this.settings = settings;
+  }
+
+  public getGensBaseURL(): string {
+    return this.gensBaseURL;
   }
 
   public getAnnotationSources(settings: {
@@ -142,8 +149,6 @@ export class GensSession {
     const endPos = this.end;
 
     const currChromInfo = this.chromInfo[this.chromosome];
-
-    console.log(currChromInfo);
 
     const startBand = currChromInfo.bands.find(
       (band) => band.start <= startPos && band.end >= startPos,

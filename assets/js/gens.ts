@@ -117,6 +117,7 @@ export async function initCanvases({
     sampleIds,
     trackHeights,
     scoutBaseURL,
+    gensApiURL.replace(/\/$/, "") + "/app/",
     settingsPage,
   );
 
