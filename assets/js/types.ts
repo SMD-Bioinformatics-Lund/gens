@@ -7,6 +7,12 @@ interface ApiAnnotationTrack {
   genome_build: number;
 }
 
+interface ApiSearchResult {
+  chromosome: string;
+  start: number;
+  end: number;
+}
+
 interface ApiSimplifiedAnnotation {
   record_id: string;
   name: string;

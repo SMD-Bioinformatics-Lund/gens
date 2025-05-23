@@ -1,4 +1,4 @@
-import { COLORS, ICONS, SIZES } from "../constants";
+import { CHROMOSOMES, COLORS, ICONS, SIZES } from "../constants";
 import { GensSession } from "../state/gens_session";
 import { getPan, zoomIn, zoomOut } from "../util/navigation";
 
@@ -57,7 +57,7 @@ template.innerHTML = String.raw`
         <span class="fas ${ICONS.reset}"></span>
       </button>
       <input onFocus='this.select();' id='region-field' type='text' class="text-input">
-      <button title="Run search" id="submit" class='button pan'>
+      <button title="Run search" id="search" class='button pan'>
         <span class="fas ${ICONS.search}"></span>
       </button>
       <button title="Toggle marker mode" id="toggle-marker" class='button pan'>
@@ -91,6 +91,8 @@ export class InputControls extends HTMLElement {
   private chromosomeViewButton: HTMLButtonElement;
   private settingsButton: HTMLButtonElement;
 
+  private searchButton: HTMLButtonElement;
+
   private gensHomeLink: HTMLAnchorElement;
 
   private onPositionChange: (newXRange: [number, number]) => void;
@@ -98,6 +100,8 @@ export class InputControls extends HTMLElement {
   private onToggleMarker: () => void;
   private onOpenSettings: () => void;
   private onToggleChromView: () => void;
+  private onSearch: (query: string) => Promise<ApiSearchResult | null>;
+  private onChange: (settings: RenderSettings) => void;
 
   private session: GensSession;
 
@@ -106,6 +110,8 @@ export class InputControls extends HTMLElement {
     onPositionChange: (newXRange: [number, number]) => void,
     onOpenSettings: () => void,
     onToggleChromView: () => void,
+    onSearch: (query: string) => Promise<ApiSearchResult | null>,
+    onChange: (settings: RenderSettings) => void,
   ) {
     this.session = session;
     this.onOpenSettings = onOpenSettings;
@@ -113,6 +119,8 @@ export class InputControls extends HTMLElement {
     this.getMarkerOn = () => this.session.getMarkerModeOn();
     this.onToggleMarker = () => this.session.toggleMarkerMode();
     this.onPositionChange = onPositionChange;
+    this.onSearch = onSearch;
+    this.onChange = onChange;
 
     this.panLeftButton.onclick = () => {
       this.panLeft();
@@ -156,12 +164,36 @@ export class InputControls extends HTMLElement {
     this.chromosomeViewButton = this.querySelector("#chromosome-view-button");
     this.settingsButton = this.querySelector("#settings-button");
 
+    this.searchButton = this.querySelector("#search");
+
     this.chromosomeViewButton.addEventListener("click", () => {
       this.onToggleChromView();
     });
 
     this.settingsButton.addEventListener("click", () => {
       this.onOpenSettings();
+    });
+
+    // FIXME: Also enter when inside the input?
+    this.searchButton.addEventListener("click", () => {
+      const currentValue = this.regionField.value;
+      // console.log("Search", currentValue);
+      queryRegionOrGene(
+        currentValue,
+        this.session.getGenomeBuild(),
+        (chrom: string, range?: Rng) => {
+          this.session.setChromosome(chrom, range);
+          this.onChange({ dataUpdated: true, positionOnly: true });
+        },
+        this.onSearch,
+      );
+    });
+
+    this.regionField.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        this.searchButton.click();
+      }
     });
   }
 
@@ -214,6 +246,27 @@ export class InputControls extends HTMLElement {
 
   toggleMarkerMode() {
     this.onToggleMarker();
+  }
+}
+
+async function queryRegionOrGene(
+  query: string,
+  genomeBuild: number,
+  onChangePosition: (chrom: string, range?: Rng) => void,
+  getSearchResult: (string) => Promise<ApiSearchResult | null>,
+) {
+  if (query.includes(":")) {
+    const [chrom, rangeStr] = query.split(":");
+    const range = rangeStr.split("-").map((val) => parseInt(val)) as Rng;
+    onChangePosition(chrom, range);
+  } else if (CHROMOSOMES.includes(query)) {
+    onChangePosition(query);
+  } else {
+    const searchResult = await getSearchResult(query);
+    onChangePosition(searchResult.chromosome, [
+      searchResult.start,
+      searchResult.end,
+    ]);
   }
 }
 

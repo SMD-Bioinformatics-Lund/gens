@@ -11,6 +11,13 @@ export function setupShortcuts(
 ) {
   // Rebuild the keyboard shortcuts
   document.addEventListener("keydown", (e) => {
+    const active = document.activeElement as HTMLElement | null;
+    const excludeFields = ["INPUT", "SELECT", "TEXTAREA", "SIDE-MENU"];
+    let isEditing = false;
+    if (active && excludeFields.includes(active.tagName)) {
+      isEditing = true;
+    }
+
     if (e.key === "Escape") {
       if (session.getMarkerModeOn()) {
         inputControls.toggleMarkerMode();
@@ -19,6 +26,7 @@ export function setupShortcuts(
       sideMenu.close();
     }
     if (e.key === "ArrowLeft") {
+      if (isEditing) return;
       e.preventDefault();
       if (e.ctrlKey || e.metaKey) {
         const currChrom = session.getChromosome();
@@ -32,6 +40,7 @@ export function setupShortcuts(
       }
     }
     if (e.key === "ArrowRight") {
+      if (isEditing) return;
       e.preventDefault();
       if (e.ctrlKey || e.metaKey) {
         const currChrom = session.getChromosome();
@@ -45,17 +54,21 @@ export function setupShortcuts(
       }
     }
     if (e.key === "ArrowUp") {
+      if (isEditing) return;
       e.preventDefault();
       inputControls.zoomIn();
     }
     if (e.key === "ArrowDown") {
+      if (isEditing) return;
       e.preventDefault();
       inputControls.zoomOut();
     }
     if (e.key === "r") {
+      if (isEditing) return;
       inputControls.resetZoom();
     }
     if (e.key === "m") {
+      if (isEditing) return;
       inputControls.toggleMarkerMode();
     }
   });

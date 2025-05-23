@@ -34,6 +34,7 @@ export class GensSession {
   private scoutBaseURL: string;
   private gensBaseURL: string;
   private settings: SettingsMenu;
+  private genomeBuild: number;
 
   constructor(
     // FIXME: This does not belong here I think
@@ -48,6 +49,7 @@ export class GensSession {
     gensBaseURL: string,
     // FIXME: Unsure if the full settings should be stored
     settings: SettingsMenu,
+    genomeBuild: number,
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
@@ -62,6 +64,11 @@ export class GensSession {
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.settings = settings;
+    this.genomeBuild = genomeBuild;
+  }
+
+  public getGenomeBuild(): number {
+    return this.genomeBuild
   }
 
   public getGensBaseURL(): string {
@@ -121,7 +128,7 @@ export class GensSession {
     };
   }
 
-  public updateChromosome(chrom: string, range: Rng = null) {
+  public setChromosome(chrom: string, range: Rng = null) {
     this.chromosome = chrom;
 
     const start = range != null ? range[0] : 1;
