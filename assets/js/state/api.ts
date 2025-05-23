@@ -45,16 +45,22 @@ export class API {
   }
 
   getSearchResult(query: string): Promise<ApiSearchResult | null> {
-    const details = get(
-      new URL(`search/result/${query}`, this.apiURI).href,
-      {},
-    ).then((result) => {
-      if (result["chromosome"] != null) {
-        return result;
-      } else {
-        return null;
-      }
-    });
+    console.log(this.apiURI);
+    const params = {
+      q: query,
+      genome_build: this.genomeBuild,
+    };
+
+    const details = get(new URL(`search/result`, this.apiURI), params).then(
+      (result) => {
+        console.log("Finding result", result);
+        if (result["chromosome"] != null) {
+          return result;
+        } else {
+          return null;
+        }
+      },
+    );
     return details;
   }
 
@@ -216,7 +222,7 @@ export class API {
     if (!isCached) {
       const query = {
         chromosome: chrom,
-        genome_build: 38,
+        genome_build: this.genomeBuild,
         only_mane: onlyMane,
       };
       const transcripts = get(

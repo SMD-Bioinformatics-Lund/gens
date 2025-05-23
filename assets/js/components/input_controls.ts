@@ -102,6 +102,7 @@ export class InputControls extends HTMLElement {
   private onOpenSettings: () => void;
   private onToggleChromView: () => void;
   private onSearch: (query: string) => Promise<ApiSearchResult | null>;
+  private onChange: (settings: RenderSettings) => void;
 
   private session: GensSession;
 
@@ -110,7 +111,8 @@ export class InputControls extends HTMLElement {
     onPositionChange: (newXRange: [number, number]) => void,
     onOpenSettings: () => void,
     onToggleChromView: () => void,
-    onSearch: (query: string) => Promise<ApiSearchResult | null>
+    onSearch: (query: string) => Promise<ApiSearchResult | null>,
+    onChange: (settings: RenderSettings) => void,
   ) {
     this.session = session;
     this.onOpenSettings = onOpenSettings;
@@ -119,6 +121,7 @@ export class InputControls extends HTMLElement {
     this.onToggleMarker = () => this.session.toggleMarkerMode();
     this.onPositionChange = onPositionChange;
     this.onSearch = onSearch;
+    this.onChange = onChange;
 
     this.panLeftButton.onclick = () => {
       this.panLeft();
@@ -176,7 +179,15 @@ export class InputControls extends HTMLElement {
     this.searchButton.addEventListener("click", () => {
       const currentValue = this.regionField.value;
       // console.log("Search", currentValue);
-      queryRegionOrGene(currentValue, 38, this.session, this.onSearch);
+      queryRegionOrGene(
+        currentValue,
+        38,
+        (chrom: string, range?: Rng) => {
+          this.session.setChromosome(chrom, range);
+          this.onChange({ dataUpdated: true, positionOnly: true });
+        },
+        this.onSearch,
+      );
     });
 
     this.regionField.addEventListener("keydown", (e: KeyboardEvent) => {
@@ -242,36 +253,21 @@ export class InputControls extends HTMLElement {
 async function queryRegionOrGene(
   query: string,
   genomeBuild: number,
-  session: GensSession,
+  onChangePosition: (chrom: string, range?: Rng) => void,
   getSearchResult: (string) => Promise<ApiSearchResult | null>,
 ) {
   if (query.includes(":")) {
     const [chrom, rangeStr] = query.split(":");
     const range = rangeStr.split("-").map((val) => parseInt(val)) as Rng;
-    session.setChromosome(chrom, range);
+    onChangePosition(chrom, range);
   } else if (CHROMOSOMES.includes(query)) {
-    session.setChromosome(query);
+    onChangePosition(query);
   } else {
-    console.log("Search annotation");
-
     const searchResult = await getSearchResult(query);
-
-    console.log("Found", searchResult);
-    // How does the API look now?
-
-    // FIXME: Move into API
-    // get("search-annotation", {
-    //     query: query,
-    //     genome_build: genomeBuild,
-    // }).then((result) => {
-    //     if (result.status === 200) {
-    //         drawTrackDeprecated({
-    //             chrom: result.chromosome,
-    //             start: result.start_pos,
-    //             end: result.end_pos,
-    //         });
-    //     }
-    // });
+    onChangePosition(searchResult.chromosome, [
+      searchResult.start,
+      searchResult.end,
+    ]);
   }
 }
 

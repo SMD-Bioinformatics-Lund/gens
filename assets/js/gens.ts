@@ -208,6 +208,9 @@ export async function initCanvases({
     (query: string) => {
       return api.getSearchResult(query);
     },
+    (settings: RenderSettings) => {
+      render(settings);
+    }
   );
 
   await gensTracks.initialize(
