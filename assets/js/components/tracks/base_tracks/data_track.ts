@@ -23,7 +23,7 @@ export interface ExpandedTrackHeight {
 
 export interface DataTrackSettings {
   height: ExpandedTrackHeight;
-  hasLabel: boolean;
+  showLabelWhenCollapsed: boolean;
   yAxis?: Axis;
   yPadBands?: boolean;
 }
@@ -283,7 +283,7 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected drawEnd() {
-    if (this.getSettings().hasLabel) {
+    if (this.isExpanded || this.getSettings().showLabelWhenCollapsed) {
       const yAxisWidth = STYLE.yAxis.width;
       const labelBox = this.drawTrackLabel(yAxisWidth);
       this.labelBox = {

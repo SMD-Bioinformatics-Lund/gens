@@ -58,10 +58,7 @@ export class ChromosomeView extends ShadowBaseElement {
     );
   }
 
-  initialize(
-    session: GensSession,
-    dataSource: RenderDataSource,
-  ) {
+  initialize(session: GensSession, dataSource: RenderDataSource) {
     this.session = session;
     this.dataSource = dataSource;
 
@@ -108,6 +105,11 @@ export class ChromosomeView extends ShadowBaseElement {
       const chromGroup = this.chromosomeGroups[chrom];
       addAnnotTracks(
         annotDiff.new,
+        (id: string) => {
+          return this.session
+            .getAnnotationSources({ selectedOnly: true })
+            .find((source) => source.id == id).label;
+        },
         this.session,
         chrom,
         this.dataSource,
@@ -161,6 +163,7 @@ export class ChromosomeView extends ShadowBaseElement {
 
 function addAnnotTracks(
   annotIds: string[],
+  getLabel: (id: string) => string,
   session: GensSession,
   chrom: string,
   dataSource: RenderDataSource,
@@ -168,7 +171,7 @@ function addAnnotTracks(
 ) {
   for (const annotId of annotIds) {
     const trackId = `${annotId}_${chrom}`;
-    const trackLabel = `FIXME (${annotId}) ${chrom}`;
+    const trackLabel = getLabel(annotId);
 
     const annotTrack = createAnnotTrack(
       trackId,
@@ -179,7 +182,7 @@ function addAnnotTracks(
       (_track) => {},
       {
         height: STYLE.tracks.trackHeight.thinnest,
-        hasLabel: true,
+        showLabelWhenCollapsed: false,
         yPadBands: false,
       },
     );

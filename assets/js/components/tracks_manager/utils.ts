@@ -23,7 +23,7 @@ export function createAnnotTrack(
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
-  settings: { height: number, hasLabel: boolean, yPadBands?: boolean }
+  settings: { height: number, showLabelWhenCollapsed: boolean, yPadBands?: boolean }
 ): BandTrack {
   // FIXME: Seems the x range should be separated from the annotations or?
   async function getAnnotTrackData(
@@ -54,7 +54,7 @@ export function createAnnotTrack(
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     height: { collapsedHeight: settings.height, startExpanded: false },
-    hasLabel: settings.hasLabel,
+    showLabelWhenCollapsed: settings.showLabelWhenCollapsed,
     yPadBands: settings.yPadBands,
   };
 
@@ -96,7 +96,7 @@ export function createDotTrack(
       startExpanded: settings.startExpanded,
     },
     yAxis: settings.yAxis,
-    hasLabel: settings.hasLabel,
+    showLabelWhenCollapsed: settings.hasLabel,
   };
 
   const dotTrack = new DotTrack(
@@ -134,7 +134,7 @@ export function createVariantTrack(
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     height: { collapsedHeight: STYLE.bandTrack.trackViewHeight, startExpanded: false },
-    hasLabel: true,
+    showLabelWhenCollapsed: true,
   };
 
   const variantTrack = new BandTrack(
@@ -199,7 +199,7 @@ export function createGeneTrack(
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     height: { collapsedHeight: STYLE.bandTrack.trackViewHeight, startExpanded: false },
-    hasLabel: true,
+    showLabelWhenCollapsed: true,
   };
 
   const genesTrack = new BandTrack(

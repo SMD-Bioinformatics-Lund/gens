@@ -574,7 +574,7 @@ function updateAnnotationTracks(
       (bandId: string) => getAnnotationDetails(bandId),
       session,
       openTrackContextMenu,
-      { height: STYLE.bandTrack.trackViewHeight, hasLabel },
+      { height: STYLE.bandTrack.trackViewHeight, showLabelWhenCollapsed: hasLabel },
     );
     addTrack(newTrack);
   });
