@@ -48,18 +48,25 @@ export class DotTrack extends DataTrack {
     this.setExpandedHeight(this.getSettings().height.expandedHeight);
   }
 
-  override draw() {
+  override draw(renderData: DotTrackData) {
     super.drawStart();
 
-    const { dots } = this.renderData as DotTrackData;
+    // const { dots } = this.renderData as DotTrackData;
+    const { dots } = renderData;
 
     const xRange = this.getXRange();
     const xScale = this.getXScale();
     const yScale = this.getYScale();
 
+    console.log("X range", xRange);
+
+    console.log("Dots", dots);
+
     const dotsInRange = dots.filter(
       (dot) => dot.x >= xRange[0] && dot.y <= xRange[1],
     );
+
+    console.log("Dots in range", dotsInRange);
 
     drawDotsScaled(this.ctx, dotsInRange, xScale, yScale, {
       size: STYLE.dotTrack.dotSize,

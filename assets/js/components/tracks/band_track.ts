@@ -66,10 +66,11 @@ export class BandTrack extends DataTrack {
     this.initializeExpander("contextmenu", onExpand);
   }
 
-  override draw() {
+  override draw(renderData: BandTrackData) {
     super.drawStart();
 
-    const { bands, xRange } = this.renderData as BandTrackData;
+    const { bands, xRange } = renderData;
+    // const { bands, xRange } = this.renderData as BandTrackData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 

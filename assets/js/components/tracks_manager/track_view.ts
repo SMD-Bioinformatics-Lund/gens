@@ -187,7 +187,6 @@ export class TrackView extends ShadowBaseElement {
 
       const sampleTracks = createSampleTracks(
         sampleId,
-        chrom,
         dataSources,
         startExpanded,
         session,
@@ -361,7 +360,6 @@ export class TrackView extends ShadowBaseElement {
   public addSample(sampleId: string, chrom: string, isTrackViewTrack: boolean) {
     const sampleTracks = createSampleTracks(
       sampleId,
-      chrom,
       this.dataSource,
       false,
       this.session,
@@ -473,9 +471,8 @@ function getDataTrackInfoById(
   console.error("Did not find any track with ID", trackId);
 }
 
-export function createSampleTracks(
+function createSampleTracks(
   sampleId: string,
-  chrom: string,
   dataSources: RenderDataSource,
   startExpanded: boolean,
   session: GensSession,
@@ -490,7 +487,7 @@ export function createSampleTracks(
     `${sampleId}_log2_cov`,
     `${sampleId} cov`,
     sampleId,
-    (sampleId: string) => dataSources.getCovData(sampleId, chrom),
+    (sampleId: string) => dataSources.getCovData(sampleId, session.getChromosome()),
     {
       startExpanded,
       yAxis: {
@@ -509,7 +506,7 @@ export function createSampleTracks(
     `${sampleId}_log2_baf`,
     `${sampleId} baf`,
     sampleId,
-    (sampleId: string) => dataSources.getBafData(sampleId, chrom),
+    (sampleId: string) => dataSources.getBafData(sampleId, session.getChromosome()),
     {
       startExpanded,
       yAxis: {
@@ -528,9 +525,9 @@ export function createSampleTracks(
   const variantTrack = createVariantTrack(
     `${sampleId}_variants`,
     `${sampleId} Variants`,
-    () => dataSources.getVariantBands(sampleId, chrom),
+    () => dataSources.getVariantBands(sampleId, session.getChromosome()),
     (variantId: string) =>
-      dataSources.getVariantDetails(sampleId, variantId, chrom),
+      dataSources.getVariantDetails(sampleId, variantId, session.getChromosome()),
     (variantId: string) => session.getVariantURL(variantId),
     session,
     openTrackContextMenu,
