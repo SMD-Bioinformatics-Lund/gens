@@ -23,7 +23,7 @@ import { keyLogger } from "../util/keylogger";
 import { zoomOut } from "../../util/navigation";
 import { BandTrack } from "../tracks/band_track";
 import { TrackHeights } from "../side_menu/settings_page";
-import { diff, moveElement } from "../../util/collections";
+import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne } from "../../util/utils";
 
@@ -32,9 +32,26 @@ const trackHeight = STYLE.tracks.trackHeight;
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>
+    .track-handle {
+      cursor: grab;
+    }
+    .track-handle:active,
+    .track.dragging .track-handle {
+      cursor: grabbing;
+    }
     #tracks-container {
       position: relative;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
     }
+    #tracks-container.grabbable {
+      cursor: grab;
+    }
+    #tracks-container.grabbing {
+      cursor: grabbing;
+    }
+
   </style>
   <div id="top-container"></div>
   <div id="tracks-container"></div>

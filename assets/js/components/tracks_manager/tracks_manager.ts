@@ -13,24 +13,11 @@ export const BAF_Y_RANGE: [number, number] = [0, 1];
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>
-    .track-handle {
-      cursor: grab;
-    }
-    .track-handle:active,
-    .track.dragging .track-handle {
-      cursor: grabbing;
-    }
-    #tracks-container {
-      position: relative;
-      width: 100%;
-      max-width: 100%;
+    :host {
+      display: block;
+      /* Size includes also borders and paddings */
       box-sizing: border-box;
-    }
-    #tracks-container.grabbable {
-      cursor: grab;
-    }
-    #tracks-container.grabbing {
-      cursor: grabbing;
+      padding: 0px ${SIZES.m}px;
     }
   </style>
   <chromosome-view id="chromosome-view"></chromosome-view>

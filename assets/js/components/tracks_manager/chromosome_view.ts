@@ -19,8 +19,7 @@ template.innerHTML = String.raw`
       flex-direction: column;
       width: 100%;
       height: 100%;
-      overflow-y: auto;
-      overscroll-behavior: contain;
+      box-sizing: border-box;
     }
   </style>
   <div id="chromosome-tracks-container"></div>
