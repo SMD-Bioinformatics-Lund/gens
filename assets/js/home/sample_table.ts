@@ -28,6 +28,17 @@ tableTemplate.innerHTML = String.raw`
 </table>
 `;
 
+function prettyDate(isoString: string): string {
+const d = new Date(isoString);
+  const pad = (n) => String(n).padStart(2, "0");
+  const Y = d.getFullYear();
+  const M = pad(d.getMonth() + 1);
+  const D = pad(d.getDate());
+  const h = pad(d.getHours());
+  const m = pad(d.getMinutes());
+  return `${Y}-${M}-${D} ${h}:${m}`;
+}
+
 export class SamplesTable extends HTMLElement {
   private table: HTMLTableElement;
   private dataTable: DataTable;
@@ -39,6 +50,7 @@ export class SamplesTable extends HTMLElement {
       searchable: true,
       fixedHeight: true,
       perPage: 20,
+      labels: { noRows: "Loading..." },
     });
   }
 
@@ -61,7 +73,7 @@ export class SamplesTable extends HTMLElement {
       s.genome_build.toString(),
       s.has_overview_file ? "✓" : "✗",
       s.files_present ? "✓" : "✗",
-      s.created_at,
+      prettyDate(s.created_at),
     ]);
 
     this.dataTable.insert({ data: newRows });

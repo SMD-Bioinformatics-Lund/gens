@@ -74,7 +74,7 @@ def display_samples(case_id: str) -> str:
     all_samples = set()
     for case_samples in samples_per_case.values():
         for sample in case_samples:
-            all_samples.add(sample.sample_id)
+            all_samples.add(sample["sample_id"])
 
     return render_template(
         "gens.html",

@@ -179,7 +179,7 @@ function addAnnotTracks(
       (_track) => {},
       {
         height: STYLE.tracks.trackHeight.thinnest,
-        hasLabel: false,
+        hasLabel: true,
         yPadBands: false,
       },
     );
@@ -219,7 +219,7 @@ function addSampleTracks(
 ) {
   for (const sampleId of sampleIds) {
     const trackId = `${sampleId}_${chrom}`;
-    const trackLabel = `${sampleId} ${chrom}`;
+    const trackLabel = sampleId;
     const dotTrack = createDotTrack(
       trackId,
       trackLabel,
@@ -230,11 +230,11 @@ function addSampleTracks(
         yAxis: {
           range: COV_Y_RANGE,
           reverse: true,
-          label: sampleId,
-          hideLabelOnCollapse: false,
+          label: "Log2 ratio",
+          hideLabelOnCollapse: true,
           hideTicksOnCollapse: true,
         },
-        hasLabel: false,
+        hasLabel: true,
       },
       session,
       (_track: DataTrack) => {
