@@ -1,4 +1,4 @@
-import { COLORS, SIZES, STYLE } from "../../../constants";
+import { COLORS, SIZES, STYLE, TRANSPARENCY } from "../../../constants";
 import {
   drawYAxis,
   getLinearScale,
@@ -329,7 +329,7 @@ export abstract class DataTrack extends CanvasTrack {
       this.label,
       STYLE.tracks.textPadding + shiftRight,
       STYLE.tracks.textPadding,
-      { textBaseline: "top", boxStyle: {} },
+      { textBaseline: "top", boxStyle: { fillColor: `${COLORS.white}${TRANSPARENCY.s}` } },
     );
   }
 }

@@ -58,6 +58,8 @@ export function createAnnotTrack(
     yPadBands: settings.yPadBands,
   };
 
+  console.log("The height is", settings.height);
+
   const track = new BandTrack(
     trackId,
     label,
@@ -91,8 +93,8 @@ export function createDotTrack(
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     height: {
-      collapsedHeight: trackHeight.thin,
-      expandedHeight: trackHeight.thick,
+      collapsedHeight: trackHeight.m,
+      expandedHeight: trackHeight.xl,
       startExpanded: settings.startExpanded,
     },
     yAxis: settings.yAxis,
@@ -245,7 +247,7 @@ export function createOverviewTrack(
   const overviewTrack = new OverviewTrack(
     id,
     label,
-    { height: trackHeight.medium },
+    { height: trackHeight.l },
     chromSizes,
     chromClick,
     yRange,

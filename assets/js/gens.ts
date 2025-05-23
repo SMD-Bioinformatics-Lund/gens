@@ -3,12 +3,12 @@ import "./components/input_controls";
 import "./components/util/popup";
 import "./components/util/shadowbaseelement";
 import "./components/util/choice_select";
-import "./components/side_menu/settings_page";
+import "./components/side_menu/settings_menu";
 import "./components/side_menu/track_row";
 import "./components/side_menu/side_menu";
 import "./components/header_info";
 import "./movements/marker";
-import "./components/side_menu/track_page";
+import "./components/side_menu/track_menu";
 import "./components/util/icon_button";
 import "./components/util/row";
 
@@ -24,9 +24,9 @@ import { getRenderDataSource } from "./state/parse_data";
 import { CHROMOSOMES, STYLE } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
 import {
-  SettingsPage,
+  SettingsMenu,
   TrackHeights,
-} from "./components/side_menu/settings_page";
+} from "./components/side_menu/settings_menu";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
@@ -78,7 +78,7 @@ export async function initCanvases({
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
 
   const sideMenu = document.getElementById("side-menu") as SideMenu;
-  const settingsPage = document.createElement("settings-page") as SettingsPage;
+  const settingsPage = document.createElement("settings-page") as SettingsMenu;
 
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
   headerInfo.initialize(
@@ -102,9 +102,9 @@ export async function initCanvases({
   };
 
   const trackHeights: TrackHeights = {
-    bandCollapsed: STYLE.tracks.trackHeight.thin,
-    dotCollapsed: STYLE.tracks.trackHeight.thin,
-    dotExpanded: STYLE.tracks.trackHeight.thick,
+    bandCollapsed: STYLE.tracks.trackHeight.m,
+    dotCollapsed: STYLE.tracks.trackHeight.m,
+    dotExpanded: STYLE.tracks.trackHeight.xl,
   };
 
   const chromSizes = api.getChromSizes();
@@ -229,7 +229,7 @@ async function initialize(
   sampleIds: string[],
   inputControls: InputControls,
   tracks: TracksManager,
-  settingsPage: SettingsPage,
+  settingsPage: SettingsMenu,
   api: API,
   onChromClick: (chrom: string) => void,
   getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,

@@ -40,8 +40,14 @@ export const ICONS = {
   zoomout: "fa-search-minus",
 }
 
+export const TRANSPARENCY = {
+  s: "CC",
+  m: "44",
+  l: "22",
+}
+
 export const COLORS = {
-  white: "#FFF",
+  white: "#FFFFFF",
   black: "#222",
   darkGray: "#555",
   lightGray: "#ccc",
@@ -55,6 +61,7 @@ export const COLORS = {
   gold: "#D4AF37",
   transparentYellow: "#dcd16f44",
   transparentBlue: "#55667722",
+  transparentWhite: "rgba(255,255,255,0.8)",
 };
 
 export const SIZES = {
@@ -68,12 +75,12 @@ export const SIZES = {
 const font = "12px sans-serif";
 
 const TRACK_HEIGHTS = {
-  thick: 240,
-  medium: 120,
-  thin: 45,
-  thinner: 30,
-  extraThin: 20,
-  thinnest: 10,
+  xl: 240,
+  l: 120,
+  m: 45,
+  s: 30,
+  xs: 20,
+  xxs: 10,
 }
 
 // FIXME: First step is to gather all constants here
@@ -109,7 +116,7 @@ export const STYLE = {
     minBandWidth: 2,
     dynamicPadThreshold: 40,
     dynamicPadFraction: 8,
-    trackViewHeight: TRACK_HEIGHTS.thinner,
+    trackViewHeight: TRACK_HEIGHTS.s,
   },
   dotTrack: {
     dotSize: 2,

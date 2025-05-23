@@ -181,7 +181,7 @@ function addAnnotTracks(
       session,
       (_track) => {},
       {
-        height: STYLE.tracks.trackHeight.thinnest,
+        height: STYLE.tracks.trackHeight.xxs,
         showLabelWhenCollapsed: false,
         yPadBands: false,
       },

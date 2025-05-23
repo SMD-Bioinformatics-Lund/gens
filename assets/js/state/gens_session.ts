@@ -1,7 +1,7 @@
 import {
-  SettingsPage,
+  SettingsMenu,
   TrackHeights,
-} from "../components/side_menu/settings_page";
+} from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COLORS } from "../constants";
 import { generateID } from "../util/utils";
@@ -31,7 +31,7 @@ export class GensSession {
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
   private scoutBaseURL: string;
-  private settings: SettingsPage;
+  private settings: SettingsMenu;
 
   constructor(
     // FIXME: This does not belong here I think
@@ -43,7 +43,7 @@ export class GensSession {
     trackHeights: TrackHeights,
     scoutBaseURL: string,
     // FIXME: Unsure if the full settings should be stored
-    settings: SettingsPage,
+    settings: SettingsMenu,
   ) {
     this.render = render;
     this.sideMenu = sideMenu;

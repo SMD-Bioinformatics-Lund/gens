@@ -17,12 +17,12 @@ import { getLinearScale } from "../../draw/render_utils";
 import { OverviewTrack } from "../tracks/overview_track";
 import { IdeogramTrack } from "../tracks/ideogram_track";
 import { BAF_Y_RANGE, COV_Y_RANGE } from "./tracks_manager";
-import { TrackPage } from "../side_menu/track_page";
+import { TrackMenu } from "../side_menu/track_menu";
 import { DotTrack } from "../tracks/dot_track";
 import { keyLogger } from "../util/keylogger";
 import { zoomOut } from "../../util/navigation";
 import { BandTrack } from "../tracks/band_track";
-import { TrackHeights } from "../side_menu/settings_page";
+import { TrackHeights } from "../side_menu/settings_menu";
 import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne } from "../../util/utils";
@@ -77,7 +77,7 @@ export class TrackView extends ShadowBaseElement {
   private overviewTracks: OverviewTrack[] = [];
 
   private openTrackContextMenu: (track: DataTrack) => void;
-  private trackPages: Record<string, TrackPage> = {};
+  private trackPages: Record<string, TrackMenu> = {};
 
   private sampleToTracks: Record<
     string,
@@ -147,7 +147,7 @@ export class TrackView extends ShadowBaseElement {
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
       "Ideogram",
-      { height: trackHeight.extraThin },
+      { height: trackHeight.xs },
       async () => {
         return {
           xRange: session.getXRange(),
@@ -276,7 +276,7 @@ export class TrackView extends ShadowBaseElement {
       const isDotTrack = track instanceof DotTrack;
 
       if (this.trackPages[track.id] == null) {
-        const trackPage = new TrackPage();
+        const trackPage = new TrackMenu();
         const trackSettings = {
           showYAxis: isDotTrack,
           showColor: true,
