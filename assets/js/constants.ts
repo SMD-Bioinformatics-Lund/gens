@@ -61,7 +61,6 @@ export const COLORS = {
   gold: "#D4AF37",
   transparentYellow: "#dcd16f44",
   transparentBlue: "#55667722",
-  transparentWhite: "rgba(255,255,255,0.8)",
 };
 
 export const SIZES = {
