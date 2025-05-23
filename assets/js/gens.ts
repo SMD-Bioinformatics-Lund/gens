@@ -117,6 +117,7 @@ export async function initCanvases({
     scoutBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
     settingsPage,
+    genomeBuild,
   );
 
   const renderDataSource = getRenderDataSource(

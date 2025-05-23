@@ -53,7 +53,6 @@ export class API {
 
     const details = get(new URL(`search/result`, this.apiURI), params).then(
       (result) => {
-        console.log("Finding result", result);
         if (result["chromosome"] != null) {
           return result;
         } else {

@@ -1,6 +1,5 @@
 import { CHROMOSOMES, COLORS, ICONS, SIZES } from "../constants";
 import { GensSession } from "../state/gens_session";
-import { keyLogger } from "../unused/_navigation";
 import { getPan, zoomIn, zoomOut } from "../util/navigation";
 
 const template = document.createElement("template");
@@ -181,7 +180,7 @@ export class InputControls extends HTMLElement {
       // console.log("Search", currentValue);
       queryRegionOrGene(
         currentValue,
-        38,
+        this.session.getGenomeBuild(),
         (chrom: string, range?: Rng) => {
           this.session.setChromosome(chrom, range);
           this.onChange({ dataUpdated: true, positionOnly: true });
