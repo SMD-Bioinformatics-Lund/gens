@@ -32,6 +32,7 @@ import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
 import { IconButton } from "./components/util/icon_button";
+import { setupShortcuts } from "./shortcuts";
 
 export async function samplesListInit(
   samples: SampleInfo[],
@@ -39,13 +40,11 @@ export async function samplesListInit(
   gensBaseURL: string,
   genomeBuild: number,
 ) {
-
   console.log("Obtaining samples", samples);
 
   const gens_home = document.querySelector("#gens-home") as GensHome;
 
   const getGensURL = (caseId: string, sampleIds: string[]) => {
-
     const subpath = `app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
 
     return new URL(subpath, gensBaseURL).href;
@@ -76,11 +75,10 @@ export async function initCanvases({
   allSampleIds: string[];
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
-
   const sideMenu = document.getElementById("side-menu") as SideMenu;
   const settingsPage = document.createElement("settings-page") as SettingsMenu;
-
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
+
   headerInfo.initialize(
     caseId,
     sampleIds,
@@ -131,9 +129,6 @@ export async function initCanvases({
     render({ dataUpdated: true });
   };
 
-  const getChromInfo = async (chromosome: string): Promise<ChromosomeInfo> => {
-    return await api.getChromData(chromosome);
-  };
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
@@ -172,7 +167,11 @@ export async function initCanvases({
     // why is the trackview looping to itself?
     (sampleId: string) => {
       const isTrackView = true;
-      gensTracks.trackView.addSample(sampleId, session.getChromosome(), isTrackView);
+      gensTracks.trackView.addSample(
+        sampleId,
+        session.getChromosome(),
+        isTrackView,
+      );
       session.addSample(sampleId);
       render({ dataUpdated: true, samplesUpdated: true });
     },
@@ -189,64 +188,26 @@ export async function initCanvases({
     },
   );
 
-  initialize(
+  inputControls.initialize(
     session,
-    render,
-    sampleIds,
-    inputControls,
-    gensTracks,
-    settingsPage,
-    api,
-    onChromClick,
-    getChromInfo,
-    renderDataSource,
+    async (range) => {
+      session.setViewRange(range);
+      render({ dataUpdated: true, positionOnly: true });
+    },
+    () => {
+      sideMenu.showContent("Settings", [settingsPage]);
+
+      if (!settingsPage.isInitialized) {
+        settingsPage.initialize();
+      }
+    },
+    () => {
+      session.toggleChromViewActive();
+      render({});
+    },
   );
 
-  const settingsButton = document.getElementById(
-    "settings-button",
-  ) as IconButton;
-  settingsButton.addEventListener("click", () => {
-    sideMenu.showContent("Settings", [settingsPage]);
-
-    if (!settingsPage.isInitialized) {
-      settingsPage.initialize();
-    }
-  });
-
-  const chromViewButton = document.getElementById(
-    "chromosome-view-button",
-  ) as IconButton;
-  chromViewButton.addEventListener("click", () => {
-    session.toggleChromViewActive();
-    render({});
-  });
-}
-
-// FIXME: Remove this subfunction? Move it to the main function above
-async function initialize(
-  session: GensSession,
-  render: (settings: RenderSettings) => void,
-  sampleIds: string[],
-  inputControls: InputControls,
-  tracks: TracksManager,
-  settingsPage: SettingsMenu,
-  api: API,
-  onChromClick: (chrom: string) => void,
-  getChromInfo: (chrom: string) => Promise<ChromosomeInfo>,
-  renderDataSource: RenderDataSource,
-) {
-  const chromSizes = {};
-  for (const chromosome of CHROMOSOMES) {
-    const chromInfo = await getChromInfo(chromosome);
-    chromSizes[chromosome] = chromInfo.size;
-  }
-
-  inputControls.initialize(session, async (range) => {
-    session.setViewRange(range);
-    render({ dataUpdated: true, positionOnly: true });
-  });
-
-  await tracks.initialize(
+  await gensTracks.initialize(
     render,
     sampleIds,
     chromSizes,
@@ -258,60 +219,3 @@ async function initialize(
   render({ dataUpdated: true, resized: true });
 }
 
-function setupShortcuts(
-  session: GensSession,
-  sideMenu: SideMenu,
-  inputControls: InputControls,
-  onChromClick: (chrom: string) => void,
-) {
-  // Rebuild the keyboard shortcuts
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      if (session.getMarkerModeOn()) {
-        inputControls.toggleMarkerMode();
-        return;
-      }
-      sideMenu.close();
-    }
-    if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      if (e.ctrlKey || e.metaKey) {
-        const currChrom = session.getChromosome();
-        const currIndex = CHROMOSOMES.indexOf(currChrom);
-        if (currIndex > 0) {
-          const newChrom = CHROMOSOMES[currIndex - 1];
-          onChromClick(newChrom);
-        }
-      } else {
-        inputControls.panLeft();
-      }
-    }
-    if (e.key === "ArrowRight") {
-      e.preventDefault();
-      if (e.ctrlKey || e.metaKey) {
-        const currChrom = session.getChromosome();
-        const currIndex = CHROMOSOMES.indexOf(currChrom);
-        if (currIndex < CHROMOSOMES.length - 1) {
-          const newChrom = CHROMOSOMES[currIndex + 1];
-          onChromClick(newChrom);
-        }
-      } else {
-        inputControls.panRight();
-      }
-    }
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      inputControls.zoomIn();
-    }
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      inputControls.zoomOut();
-    }
-    if (e.key === "r") {
-      inputControls.resetZoom();
-    }
-    if (e.key === "m") {
-      inputControls.toggleMarkerMode();
-    }
-  });
-}

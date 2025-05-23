@@ -43,24 +43,9 @@
   <side-menu id="side-menu"></side-menu>
   <div class="header">
 
-    <div style="display: flex; flex-direction: row;">
-      <a href="{{ url_for('home.home') }}">
-        <div id="logo-container">
-          <span class='logo'></span>
-        </div>
-      </a>
-      <header-info id="header-info" style="padding-left: 4px"></header-info>
-    </div>
-    <input-controls id="input-controls"></input-controls>
-    <div>
 
-      <button title="Toggle chromosome view" id="chromosome-view-button" class='button'>
-        <span class="fas fa-chart-bar"></span>
-      </button>
-      <button title="Open settings menu" id="settings-button" class='button'>
-        <span class="fas fa-cog"></span>
-      </button>
-    </div>
+    <input-controls id="input-controls"></input-controls>
+
   </div>
 
   <gens-tracks id="gens-tracks" style="display: block; width: 100%;"></gens-tracks>

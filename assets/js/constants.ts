@@ -33,6 +33,7 @@ export const ICONS = {
   reset: "fa-rotate-right",
   right: "fa-arrow-right",
   search: "fa-search",
+  settings: "fa-cog",
   show: "fa-eye",
   trash: "fa-trash",
   up: "fa-arrow-up",
