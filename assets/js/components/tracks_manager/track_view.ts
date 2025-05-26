@@ -219,7 +219,7 @@ export class TrackView extends ShadowBaseElement {
     const genesTrack = createGeneTrack(
       "genes",
       "Genes",
-      () => dataSources.getTranscriptBands(chrom),
+      (chrom: string) => dataSources.getTranscriptBands(chrom),
       (id: string) => dataSources.getTranscriptDetails(id),
       session,
       openTrackContextMenu,
