@@ -124,8 +124,6 @@ export class TrackView extends ShadowBaseElement {
     this.dataSource = dataSources;
     this.session = session;
 
-    const chrom = session.getChromosome();
-
     const openTrackContextMenu = this.createOpenTrackContextMenu(render);
     this.openTrackContextMenu = openTrackContextMenu;
 
