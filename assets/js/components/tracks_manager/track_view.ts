@@ -124,8 +124,6 @@ export class TrackView extends ShadowBaseElement {
     this.dataSource = dataSources;
     this.session = session;
 
-    const chrom = session.getChromosome();
-
     const openTrackContextMenu = this.createOpenTrackContextMenu(render);
     this.openTrackContextMenu = openTrackContextMenu;
 
@@ -219,7 +217,7 @@ export class TrackView extends ShadowBaseElement {
     const genesTrack = createGeneTrack(
       "genes",
       "Genes",
-      () => dataSources.getTranscriptBands(chrom),
+      (chrom: string) => dataSources.getTranscriptBands(chrom),
       (id: string) => dataSources.getTranscriptDetails(id),
       session,
       openTrackContextMenu,

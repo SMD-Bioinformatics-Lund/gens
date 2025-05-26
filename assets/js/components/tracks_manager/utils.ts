@@ -195,7 +195,7 @@ export function getTrackInfo(
 export function createGeneTrack(
   id: string,
   label: string,
-  getBands: () => Promise<RenderBand[]>,
+  getBands: (chrom: string) => Promise<RenderBand[]>,
   getDetails: (id: string) => Promise<ApiGeneDetails>,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
@@ -220,7 +220,7 @@ export function createGeneTrack(
     async () => {
       return {
         xRange: session.getXRange(),
-        bands: await getBands(),
+        bands: await getBands(session.getChromosome()),
       };
     },
     async (id) => {
