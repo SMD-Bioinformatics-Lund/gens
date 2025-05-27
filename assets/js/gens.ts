@@ -217,7 +217,7 @@ export async function initCanvases({
 
   await gensTracks.initialize(
     render,
-    sampleIds,
+    samples,
     chromSizes,
     onChromClick,
     renderDataSource,

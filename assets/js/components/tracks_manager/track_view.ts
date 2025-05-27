@@ -115,7 +115,7 @@ export class TrackView extends ShadowBaseElement {
 
   public initialize(
     render: (settings: RenderSettings) => void,
-    sampleIds: string[],
+    samples: Sample[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
     dataSources: RenderDataSource,
@@ -175,7 +175,7 @@ export class TrackView extends ShadowBaseElement {
     const overviewTrackCov = createOverviewTrack(
       "overview_cov",
       "Overview (cov)",
-      () => dataSources.getOverviewCovData(sampleIds[0]),
+      () => dataSources.getOverviewCovData(samples[0]),
       COV_Y_RANGE,
       chromSizes,
       chromClick,
@@ -185,7 +185,7 @@ export class TrackView extends ShadowBaseElement {
     const overviewTrackBaf = createOverviewTrack(
       "overview_baf",
       "Overview (baf)",
-      () => dataSources.getOverviewBafData(sampleIds[0]),
+      () => dataSources.getOverviewBafData(samples[0]),
       BAF_Y_RANGE,
       chromSizes,
       chromClick,
@@ -194,11 +194,11 @@ export class TrackView extends ShadowBaseElement {
 
     this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
 
-    for (const sampleId of sampleIds) {
-      const startExpanded = sampleIds.length == 1 ? true : false;
+    for (const sample of samples) {
+      const startExpanded = samples.length == 1 ? true : false;
 
       const sampleTracks = createSampleTracks(
-        sampleId,
+        sample,
         dataSources,
         startExpanded,
         session,
@@ -206,7 +206,7 @@ export class TrackView extends ShadowBaseElement {
         openTrackContextMenu,
       );
 
-      this.sampleToTracks[sampleId] = sampleTracks;
+      this.sampleToTracks[sample.sampleId] = sampleTracks;
 
       covTracks.push(sampleTracks.cov);
       bafTracks.push(sampleTracks.baf);
@@ -509,8 +509,7 @@ function createSampleTracks(
     sample,
     (sample: Sample) =>
       dataSources.getCovData(
-        sample.caseId,
-        sample.sampleId,
+        sample,
         session.getChromosome(),
       ),
     {
@@ -532,7 +531,7 @@ function createSampleTracks(
     `${sample.sampleId} baf`,
     sample,
     (sample: Sample) =>
-      dataSources.getBafData(sample.caseId, sample.sampleId, session.getChromosome()),
+      dataSources.getBafData(sample, session.getChromosome()),
     {
       startExpanded,
       yAxis: {
@@ -549,12 +548,12 @@ function createSampleTracks(
   );
 
   const variantTrack = createVariantTrack(
-    `${sampleId}_variants`,
-    `${sampleId} Variants`,
-    () => dataSources.getVariantBands(sampleId, session.getChromosome()),
+    `${sample.sampleId}_variants`,
+    `${sample.sampleId} Variants`,
+    () => dataSources.getVariantBands(sample, session.getChromosome()),
     (variantId: string) =>
       dataSources.getVariantDetails(
-        sampleId,
+        sample,
         variantId,
         session.getChromosome(),
       ),
@@ -563,9 +562,9 @@ function createSampleTracks(
     openTrackContextMenu,
   );
   return {
-    cov: getTrack(coverageTrack, sampleId),
-    baf: getTrack(bafTrack, sampleId),
-    variant: getTrack(variantTrack, sampleId),
+    cov: getTrack(coverageTrack, sample),
+    baf: getTrack(bafTrack, sample),
+    variant: getTrack(variantTrack, sample),
   };
 }
 
