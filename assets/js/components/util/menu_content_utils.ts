@@ -28,7 +28,6 @@ export function getVariantContextMenuContent(
       key: "Genotype quality",
       value: details.sample.genotype_quality.toString()
     },
-    // FIXME: Not relevant for SNVs?
     {
       key: "Split read",
       value: details.sample.split_read.toString(),

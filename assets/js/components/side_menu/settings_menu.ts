@@ -65,7 +65,7 @@ template.innerHTML = String.raw`
     }
     #sample-select {
       min-width: 150px;
-      padding-right: ${SIZES.m}px;
+      padding-right: ${SIZES.l}px;
     }
   </style>
   <div class="header-row">

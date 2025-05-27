@@ -39,7 +39,7 @@ export class TracksManager extends ShadowBaseElement {
 
   connectedCallback() {
     window.addEventListener("resize", () => {
-      // Not yet initialized
+      // If null, then tracks_manager is not yet initialized
       if (this.onChange == null) {
         return;
       }
