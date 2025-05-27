@@ -75,8 +75,8 @@ def display_samples(case_id: str) -> str:
     for case_samples in samples_per_case.values():
         for sample in case_samples:
             sample_info = {
-                "case_id": sample["case_id"],
-                "sample_id": sample["sample_id"]
+                "caseId": sample["case_id"],
+                "sampleId": sample["sample_id"]
             }
             all_samples.append(sample_info)
 

@@ -64,7 +64,7 @@ template.innerHTML = String.raw`
       gap: ${SIZES.s}px;
     }
     #sample-select {
-      min-width: 100px;
+      min-width: 200px;
       padding-right: 10px;
     }
   </style>
@@ -197,8 +197,9 @@ export class SettingsMenu extends ShadowBaseElement {
     this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
-      const sampleId = this.sampleSelect.getValue().value;
-      this.onAddSample(sampleId);
+      const caseId_sampleId = this.sampleSelect.getValue().value;
+      const [caseId, sampleId] = caseId_sampleId.split("_");
+      this.onAddSample({caseId, sampleId});
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
@@ -244,12 +245,17 @@ export class SettingsMenu extends ShadowBaseElement {
   }
 
   private setupSampleSelect() {
-    const allSamples = this.getAllSamples().map((s) => {
+
+    const rawSamples = this.getAllSamples();
+    console.log("Raw samples", rawSamples);
+
+    const allSamples = rawSamples.map((s) => {
       return {
-        label: `${s.sampleId} (${s.caseId})`,
+        label: s.sampleId,
         value: `${s.caseId}_${s.sampleId}`,
       };
     });
+    console.log("Values", allSamples);
     this.sampleSelect.setValues(allSamples);
   }
 

@@ -158,8 +158,14 @@ export async function initCanvases({
     (trackId: string, direction: "up" | "down") =>
       gensTracks.trackView.moveTrack(trackId, direction),
     () => {
+      console.log("Getting all samples")
       const samples = session.getSamples();
-      return allSamples.filter((s) => !samples.includes(s));
+      console.log("Result: ", samples);
+      const currSampleIds = samples.map((sample) => sample.sampleId);
+      console.log("All samples", allSamples);
+      const filtered = allSamples.filter((s) => !currSampleIds.includes(s.sampleId));
+      console.log("Filtered", filtered);
+      return filtered;
     },
     (region: Region) => {
       const positionOnly = region.chrom == session.getChromosome();
