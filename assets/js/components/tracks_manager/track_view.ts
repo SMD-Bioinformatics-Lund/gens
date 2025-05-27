@@ -394,6 +394,7 @@ export class TrackView extends ShadowBaseElement {
 
   public removeSample(sample: Sample) {
     const trackMatches = (trackInfo: TrackViewTrackInfo) =>
+      trackInfo.sample != null &&
       trackInfo.sample.sampleId === sample.sampleId &&
       trackInfo.sample.caseId === sample.caseId;
 
@@ -507,11 +508,7 @@ function createSampleTracks(
     `${sample.sampleId}_log2_cov`,
     `${sample.sampleId} cov`,
     sample,
-    (sample: Sample) =>
-      dataSources.getCovData(
-        sample,
-        session.getChromosome(),
-      ),
+    (sample: Sample) => dataSources.getCovData(sample, session.getChromosome()),
     {
       startExpanded,
       yAxis: {
@@ -530,8 +527,7 @@ function createSampleTracks(
     `${sample.sampleId}_log2_baf`,
     `${sample.sampleId} baf`,
     sample,
-    (sample: Sample) =>
-      dataSources.getBafData(sample, session.getChromosome()),
+    (sample: Sample) => dataSources.getBafData(sample, session.getChromosome()),
     {
       startExpanded,
       yAxis: {
@@ -552,11 +548,7 @@ function createSampleTracks(
     `${sample.sampleId} Variants`,
     () => dataSources.getVariantBands(sample, session.getChromosome()),
     (variantId: string) =>
-      dataSources.getVariantDetails(
-        sample,
-        variantId,
-        session.getChromosome(),
-      ),
+      dataSources.getVariantDetails(sample, variantId, session.getChromosome()),
     (variantId: string) => session.getVariantURL(variantId),
     session,
     openTrackContextMenu,

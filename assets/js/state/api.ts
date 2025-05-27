@@ -261,7 +261,6 @@ export class API {
       const url = new URL("tracks/variants", this.apiURI).href;
       const variants = get(url, query).then((variants) => {
         const typedVariants = variants as ApiVariantDetails[];
-        console.log("Variants", typedVariants);
         const filteredVariants = typedVariants
           .map((variant) => {
             const sampleCallInfo = variant.samples.find(
@@ -279,7 +278,6 @@ export class API {
               sample.genotype_call != "./."
             );
           });
-        console.log("Filtered variants", filteredVariants);
         return filteredVariants;
       });
       // FIXME: Temporary fix until backend is in place
