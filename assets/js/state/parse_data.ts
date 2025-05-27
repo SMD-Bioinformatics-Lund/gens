@@ -33,19 +33,31 @@ export function getRenderDataSource(
     return parseAnnotations(annotData, chrom);
   };
 
-  const getCovData = async (sampleId: string, chrom: string) => {
+  const getCovData = async (sample: Sample, chrom: string) => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    const covRaw = await api.getCov(sampleId, chrom, zoom, xRange);
+    const covRaw = await api.getCov(
+      sample.caseId,
+      sample.sampleId,
+      chrom,
+      zoom,
+      xRange,
+    );
     return parseCoverageDot(covRaw, STYLE.colors.darkGray);
   };
 
-  const getBafData = async (sampleId: string, chrom: string) => {
+  const getBafData = async (sample: Sample, chrom: string) => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    const bafRaw = await api.getBaf(sampleId, chrom, zoom, xRange);
+    const bafRaw = await api.getBaf(
+      sample.caseId,
+      sample.sampleId,
+      chrom,
+      zoom,
+      xRange,
+    );
     return parseCoverageDot(bafRaw, STYLE.colors.darkGray);
   };
 
@@ -55,21 +67,31 @@ export function getRenderDataSource(
     return parseTranscripts(transcriptsRaw);
   };
 
-  const getVariantData = async (sampleId: string, chrom: string) => {
-    const variantsRaw = await api.getVariants(sampleId, chrom);
+  const getVariantBands = async (sample: Sample, chrom: string) => {
+    const variantsRaw = await api.getVariants(
+      sample.caseId,
+      sample.sampleId,
+      chrom,
+    );
     return parseVariants(variantsRaw, STYLE.variantColors);
   };
 
-  const getOverviewCovData = async (sampleId: string) => {
-    const overviewCovRaw = await api.getOverviewCovData(sampleId);
+  const getOverviewCovData = async (sample: Sample) => {
+    const overviewCovRaw = await api.getOverviewCovData(
+      sample.caseId,
+      sample.sampleId,
+    );
     const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
       parseCoverageDot(cov, STYLE.colors.darkGray),
     );
     return overviewCovRender;
   };
 
-  const getOverviewBafData = async (sampleId: string) => {
-    const overviewBafRaw = await api.getOverviewBafData(sampleId);
+  const getOverviewBafData = async (sample: Sample) => {
+    const overviewBafRaw = await api.getOverviewBafData(
+      sample.caseId,
+      sample.sampleId,
+    );
     const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
       parseCoverageDot(cov, STYLE.colors.darkGray),
     );
@@ -84,9 +106,9 @@ export function getRenderDataSource(
     getBafData,
     getTranscriptBands,
     getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
-    getVariantBands: getVariantData,
-    getVariantDetails: (sampleId: string, variantId: string, chrom: string) =>
-      api.getVariantDetails(sampleId, variantId, chrom),
+    getVariantBands,
+    getVariantDetails: (sample: Sample, variantId: string, chrom: string) =>
+      api.getVariantDetails(sample.caseId, sample.sampleId, variantId, chrom),
     getOverviewCovData,
     getOverviewBafData,
   };

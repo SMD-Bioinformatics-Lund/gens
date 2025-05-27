@@ -81,10 +81,10 @@ export function createAnnotTrack(
 }
 
 export function createDotTrack(
-  id: string,
+  trackId: string,
   label: string,
-  sampleId: string,
-  dataFn: (sampleId: string) => Promise<RenderDot[]>,
+  sample: Sample,
+  dataFn: (sample: Sample) => Promise<RenderDot[]>,
   settings: { startExpanded: boolean; yAxis: Axis; hasLabel: boolean },
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
@@ -102,14 +102,14 @@ export function createDotTrack(
   };
 
   const dotTrack = new DotTrack(
-    id,
+    trackId,
     label,
     "dot",
     () => fnSettings,
     (settings) => (fnSettings = settings),
     () => session.getXRange(),
     async () => {
-      const data = await dataFn(sampleId);
+      const data = await dataFn(sample);
       // const data = await this.dataSource.getCovData(sampleId);
       return {
         xRange: session.getXRange(),
@@ -182,13 +182,13 @@ export function createVariantTrack(
 
 export function getTrackInfo(
   track: DataTrack,
-  sampleId: string | null,
+  sample: Sample | null,
 ): TrackViewTrackInfo {
   const wrapper = createDataTrackWrapper(track);
   return {
     track,
     container: wrapper,
-    sampleId,
+    sample,
   };
 }
 

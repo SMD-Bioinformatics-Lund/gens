@@ -72,7 +72,7 @@ template.innerHTML = String.raw`
 export interface TrackViewTrackInfo {
   track: DataTrack;
   container: HTMLDivElement;
-  sampleId: string | null;
+  sample: Sample | null;
 }
 
 export class TrackView extends ShadowBaseElement {
@@ -115,7 +115,7 @@ export class TrackView extends ShadowBaseElement {
 
   public initialize(
     render: (settings: RenderSettings) => void,
-    sampleIds: string[],
+    samples: Sample[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
     dataSources: RenderDataSource,
@@ -131,7 +131,6 @@ export class TrackView extends ShadowBaseElement {
       animation: ANIM_TIME.medium,
       handle: `.${TRACK_HANDLE_CLASS}`,
       onEnd: (evt: SortableEvent) => {
-
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
@@ -176,7 +175,7 @@ export class TrackView extends ShadowBaseElement {
     const overviewTrackCov = createOverviewTrack(
       "overview_cov",
       "Overview (cov)",
-      () => dataSources.getOverviewCovData(sampleIds[0]),
+      () => dataSources.getOverviewCovData(samples[0]),
       COV_Y_RANGE,
       chromSizes,
       chromClick,
@@ -186,7 +185,7 @@ export class TrackView extends ShadowBaseElement {
     const overviewTrackBaf = createOverviewTrack(
       "overview_baf",
       "Overview (baf)",
-      () => dataSources.getOverviewBafData(sampleIds[0]),
+      () => dataSources.getOverviewBafData(samples[0]),
       BAF_Y_RANGE,
       chromSizes,
       chromClick,
@@ -195,11 +194,11 @@ export class TrackView extends ShadowBaseElement {
 
     this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
 
-    for (const sampleId of sampleIds) {
-      const startExpanded = sampleIds.length == 1 ? true : false;
+    for (const sample of samples) {
+      const startExpanded = samples.length == 1 ? true : false;
 
       const sampleTracks = createSampleTracks(
-        sampleId,
+        sample,
         dataSources,
         startExpanded,
         session,
@@ -207,7 +206,7 @@ export class TrackView extends ShadowBaseElement {
         openTrackContextMenu,
       );
 
-      this.sampleToTracks[sampleId] = sampleTracks;
+      this.sampleToTracks[sample.sampleId] = sampleTracks;
 
       covTracks.push(sampleTracks.cov);
       bafTracks.push(sampleTracks.baf);
@@ -370,9 +369,9 @@ export class TrackView extends ShadowBaseElement {
     moveElement(this.dataTracks, trackInfoIndex, shift, true);
   }
 
-  public addSample(sampleId: string, chrom: string, isTrackViewTrack: boolean) {
+  public addSample(sample: Sample, isTrackViewTrack: boolean) {
     const sampleTracks = createSampleTracks(
-      sampleId,
+      sample,
       this.dataSource,
       false,
       this.session,
@@ -393,13 +392,18 @@ export class TrackView extends ShadowBaseElement {
     Object.values(sampleTracks).map(({ track }) => track.initialize());
   }
 
-  public removeSample(sampleId: string) {
-    const removeInfos = this.dataTracks.filter(
-      (info) => info.sampleId === sampleId,
+  public removeSample(sample: Sample) {
+    const trackMatches = (trackInfo: TrackViewTrackInfo) =>
+      trackInfo.sample != null &&
+      trackInfo.sample.sampleId === sample.sampleId &&
+      trackInfo.sample.caseId === sample.caseId;
+
+    const removeInfos = this.dataTracks.filter((track: TrackViewTrackInfo) =>
+      trackMatches(track),
     );
 
     this.dataTracks = this.dataTracks.filter(
-      (info) => info.sampleId !== sampleId,
+      (track: TrackViewTrackInfo) => !trackMatches(track),
     );
 
     for (const removeInfo of removeInfos) {
@@ -489,7 +493,7 @@ function getDataTrackInfoById(
 }
 
 function createSampleTracks(
-  sampleId: string,
+  sample: Sample,
   dataSources: RenderDataSource,
   startExpanded: boolean,
   session: GensSession,
@@ -501,10 +505,10 @@ function createSampleTracks(
   variant: TrackViewTrackInfo;
 } {
   const coverageTrack = createDotTrack(
-    `${sampleId}_log2_cov`,
-    `${sampleId} cov`,
-    sampleId,
-    (sampleId: string) => dataSources.getCovData(sampleId, session.getChromosome()),
+    `${sample.sampleId}_log2_cov`,
+    `${sample.sampleId} cov`,
+    sample,
+    (sample: Sample) => dataSources.getCovData(sample, session.getChromosome()),
     {
       startExpanded,
       yAxis: {
@@ -520,10 +524,10 @@ function createSampleTracks(
     openTrackContextMenu,
   );
   const bafTrack = createDotTrack(
-    `${sampleId}_log2_baf`,
-    `${sampleId} baf`,
-    sampleId,
-    (sampleId: string) => dataSources.getBafData(sampleId, session.getChromosome()),
+    `${sample.sampleId}_log2_baf`,
+    `${sample.sampleId} baf`,
+    sample,
+    (sample: Sample) => dataSources.getBafData(sample, session.getChromosome()),
     {
       startExpanded,
       yAxis: {
@@ -540,19 +544,19 @@ function createSampleTracks(
   );
 
   const variantTrack = createVariantTrack(
-    `${sampleId}_variants`,
-    `${sampleId} Variants`,
-    () => dataSources.getVariantBands(sampleId, session.getChromosome()),
+    `${sample.sampleId}_variants`,
+    `${sample.sampleId} Variants`,
+    () => dataSources.getVariantBands(sample, session.getChromosome()),
     (variantId: string) =>
-      dataSources.getVariantDetails(sampleId, variantId, session.getChromosome()),
+      dataSources.getVariantDetails(sample, variantId, session.getChromosome()),
     (variantId: string) => session.getVariantURL(variantId),
     session,
     openTrackContextMenu,
   );
   return {
-    cov: getTrack(coverageTrack, sampleId),
-    baf: getTrack(bafTrack, sampleId),
-    variant: getTrack(variantTrack, sampleId),
+    cov: getTrack(coverageTrack, sample),
+    baf: getTrack(bafTrack, sample),
+    variant: getTrack(variantTrack, sample),
   };
 }
 
@@ -591,7 +595,10 @@ function updateAnnotationTracks(
       (bandId: string) => getAnnotationDetails(bandId),
       session,
       openTrackContextMenu,
-      { height: STYLE.bandTrack.trackViewHeight, showLabelWhenCollapsed: hasLabel },
+      {
+        height: STYLE.bandTrack.trackViewHeight,
+        showLabelWhenCollapsed: hasLabel,
+      },
     );
     addTrack(newTrack);
   });

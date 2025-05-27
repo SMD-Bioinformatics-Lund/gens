@@ -64,8 +64,8 @@ template.innerHTML = String.raw`
       gap: ${SIZES.s}px;
     }
     #sample-select {
-      min-width: 100px;
-      padding-right: 10px;
+      min-width: 150px;
+      padding-right: ${SIZES.l}px;
     }
   </style>
   <div class="header-row">
@@ -119,16 +119,15 @@ export class SettingsMenu extends ShadowBaseElement {
   private onChange: () => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private defaultAnnots: { id: string; label: string }[];
-  private onAnnotationChanged: (sources: string[]) => void;
   private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
-  private getCurrentSamples: () => string[];
-  private getAllSamples: () => string[];
+  private getCurrentSamples: () => Sample[];
+  private getAllSamples: () => Sample[];
   private getHighlights: () => RangeHighlight[];
   private gotoHighlight: (region: Region) => void;
   private removeHighlight: (id: string) => void;
-  private onAddSample: (id: string) => void;
-  private onRemoveSample: (id: string) => void;
+  private onAddSample: (sample: Sample) => void;
+  private onRemoveSample: (sample: Sample) => void;
   private getTrackHeights: () => TrackHeights;
   private setTrackHeights: (sizes: TrackHeights) => void;
 
@@ -143,19 +142,17 @@ export class SettingsMenu extends ShadowBaseElement {
     onChange: () => void,
     allAnnotationSources: ApiAnnotationTrack[],
     defaultAnnots: { id: string; label: string }[],
-    onAnnotationChanged: (sources: string[]) => void,
     getDataTracks: () => DataTrack[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
-    getAllSamples: () => string[],
+    getAllSamples: () => Sample[],
     gotoHighlight: (region: Region) => void,
-    onAddSample: (id: string) => void,
-    onRemoveSample: (id: string) => void,
+    onAddSample: (sample: Sample) => void,
+    onRemoveSample: (sample: Sample) => void,
     setTrackHeights: (trackHeights: TrackHeights) => void,
   ) {
     this.onChange = onChange;
     this.allAnnotationSources = allAnnotationSources;
     this.defaultAnnots = defaultAnnots;
-    this.onAnnotationChanged = onAnnotationChanged;
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
 
@@ -200,8 +197,9 @@ export class SettingsMenu extends ShadowBaseElement {
     this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
-      const sampleId = this.sampleSelect.getValue().value;
-      this.onAddSample(sampleId);
+      const caseId_sampleId = this.sampleSelect.getValue().value;
+      const [caseId, sampleId] = caseId_sampleId.split("_");
+      this.onAddSample({caseId, sampleId});
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
@@ -247,10 +245,11 @@ export class SettingsMenu extends ShadowBaseElement {
   }
 
   private setupSampleSelect() {
-    const allSamples = this.getAllSamples().map((s) => {
+    const rawSamples = this.getAllSamples();
+    const allSamples = rawSamples.map((s) => {
       return {
-        label: s,
-        value: s,
+        label: s.sampleId,
+        value: `${s.caseId}_${s.sampleId}`,
       };
     });
     this.sampleSelect.setValues(allSamples);
@@ -288,8 +287,8 @@ export class SettingsMenu extends ShadowBaseElement {
 
     const samples = this.getCurrentSamples();
     removeChildren(this.samplesOverview);
-    const samplesSection = getSamplesSection(samples, (sampleId: string) =>
-      this.onRemoveSample(sampleId),
+    const samplesSection = getSamplesSection(samples, (sample: Sample) =>
+      this.onRemoveSample(sample),
     );
     this.samplesOverview.appendChild(samplesSection);
 
@@ -353,17 +352,17 @@ function getAnnotationChoices(
 }
 
 function getSamplesSection(
-  sampleIds: string[],
-  removeSample: (id: string) => void,
+  samples: Sample[],
+  removeSample: (sample: Sample) => void,
 ): HTMLDivElement {
   const container = document.createElement("div");
   container.style.display = "flex";
   container.style.flexDirection = "column";
   container.style.gap = `${SIZES.xs}px`;
 
-  for (const sampleId of sampleIds) {
+  for (const sample of samples) {
     const sampleRow = new SampleRow();
-    sampleRow.initialize(sampleId, removeSample);
+    sampleRow.initialize(sample, removeSample);
     container.appendChild(sampleRow);
   }
 

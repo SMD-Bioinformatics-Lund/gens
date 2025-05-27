@@ -95,10 +95,11 @@ export class ChromosomeView extends ShadowBaseElement {
       .filter((track) => track.chromosome === "1" && track.type == "coverage")
       .map((track) => track.sampleId);
     const settingSamples = this.session.getSamples();
-    const sampleDiff = getDiff(trackSampleIds, settingSamples);
+    const settingSampleIds = settingSamples.map((sample) => sample.sampleId);
+    const sampleDiff = getDiff(trackSampleIds, settingSampleIds);
 
-    const getCovData = (sampleId: string, chrom: string) =>
-      this.dataSource.getCovData(sampleId, chrom);
+    const getCovData = (sample: Sample, chrom: string) =>
+      this.dataSource.getCovData(sample, chrom);
 
     // Adding new tracks per chromosome
     for (const chrom of CHROMOSOMES) {
@@ -119,9 +120,11 @@ export class ChromosomeView extends ShadowBaseElement {
 
       addSampleTracks(
         this.session,
-        sampleDiff.new,
+        settingSamples.filter((sample) =>
+          sampleDiff.new.includes(sample.sampleId),
+        ),
         chrom,
-        (sampleId: string) => getCovData(sampleId, chrom),
+        (sample: Sample) => getCovData(sample, chrom),
         (trackInfo: ChromViewTrackInfo) => {
           this.onAddTrack(chromGroup.samples, trackInfo);
         },
@@ -215,19 +218,19 @@ function getDiff(
 
 function addSampleTracks(
   session: GensSession,
-  sampleIds: string[],
+  samples: Sample[],
   chrom: string,
-  getCovData: (sampleId: string, chrom: string) => Promise<RenderDot[]>,
+  getCovData: (sample: Sample, chrom: string) => Promise<RenderDot[]>,
   onAddTrack: (track: ChromViewTrackInfo) => void,
 ) {
-  for (const sampleId of sampleIds) {
-    const trackId = `${sampleId}_${chrom}`;
-    const trackLabel = sampleId;
+  for (const sample of samples) {
+    const trackId = `${sample.sampleId}_${chrom}`;
+    const trackLabel = sample.sampleId;
     const dotTrack = createDotTrack(
       trackId,
       trackLabel,
-      sampleId,
-      () => getCovData(sampleId, chrom),
+      sample,
+      () => getCovData(sample, chrom),
       {
         startExpanded: false,
         yAxis: {
@@ -248,7 +251,7 @@ function addSampleTracks(
     const trackInfo: ChromViewTrackInfo = {
       track: dotTrack,
       container: trackWrapper,
-      sampleId,
+      sampleId: sample.sampleId,
       chromosome: chrom,
       sourceId: null,
       type: "coverage",

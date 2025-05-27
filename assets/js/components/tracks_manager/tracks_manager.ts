@@ -39,6 +39,10 @@ export class TracksManager extends ShadowBaseElement {
 
   connectedCallback() {
     window.addEventListener("resize", () => {
+      // If null, then tracks_manager is not yet initialized
+      if (this.onChange == null) {
+        return;
+      }
       this.onChange({ resized: true });
     });
 
@@ -48,7 +52,7 @@ export class TracksManager extends ShadowBaseElement {
 
   async initialize(
     render: (settings: RenderSettings) => void,
-    sampleIds: string[],
+    samples: Sample[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
     dataSource: RenderDataSource,
@@ -59,7 +63,7 @@ export class TracksManager extends ShadowBaseElement {
 
     this.trackView.initialize(
       render,
-      sampleIds,
+      samples,
       chromSizes,
       chromClick,
       dataSource,

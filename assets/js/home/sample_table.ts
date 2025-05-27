@@ -11,6 +11,11 @@ export interface SampleInfo {
 
 const tableTemplate = document.createElement("template");
 tableTemplate.innerHTML = String.raw`
+<style>
+  .wide-cell {
+    min-width: 100px;
+  }
+</style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" />
 <table id="my-table">
   <thead>
@@ -20,7 +25,7 @@ tableTemplate.innerHTML = String.raw`
       <th>Genome build</th>
       <th>Overview file(s)</th>
       <th>BAM/BAF(s) found</th>
-      <th>Import date</th>
+      <th class="wide-cell">Import date</th>
     </tr>
   </thead>
   <tbody>

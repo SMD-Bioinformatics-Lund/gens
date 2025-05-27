@@ -88,7 +88,7 @@
         // FIXME: This should come from the backend
         gensApiURL: '{{ gens_api_url }}',
         version: '{{ version }}',
-        allSampleIds: {{ all_sample_ids | tojson | safe }}
+        allSamples: {{ all_case_sample_ids | tojson | safe }}
     })
     // draw statis content
     const visualizationContainer = document.getElementById('visualization-container');
