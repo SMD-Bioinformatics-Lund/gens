@@ -261,12 +261,15 @@ export class API {
       const url = new URL("tracks/variants", this.apiURI).href;
       const variants = get(url, query).then((variants) => {
         const typedVariants = variants as ApiVariantDetails[];
-        return typedVariants.filter((variant) => {
+        console.log("Variants", typedVariants);
+        const filteredVariants = typedVariants.filter((variant) => {
           const sampleCallInfo = variant.samples.find(
             (sample) => sample.sample_id == sampleId,
           );
           return sampleCallInfo.genotype_call != "0/0";
         });
+        console.log("Filtered variants", filteredVariants);
+        return filteredVariants;
       });
       // FIXME: Temporary fix until backend is in place
       this.variantsSampleChromCache[sampleId][chrom] = variants;
