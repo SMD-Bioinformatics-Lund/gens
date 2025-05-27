@@ -39,6 +39,10 @@ export class TracksManager extends ShadowBaseElement {
 
   connectedCallback() {
     window.addEventListener("resize", () => {
+      // Not yet initialized
+      if (this.onChange == null) {
+        return;
+      }
       this.onChange({ resized: true });
     });
 

@@ -247,7 +247,6 @@ export class SettingsMenu extends ShadowBaseElement {
   private setupSampleSelect() {
 
     const rawSamples = this.getAllSamples();
-    console.log("Raw samples", rawSamples);
 
     const allSamples = rawSamples.map((s) => {
       return {

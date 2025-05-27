@@ -89,6 +89,14 @@ interface ApiGeneDetails {
   genome_build: number;
 }
 
+interface ApiSample {
+  allele_depth: [number, number],
+  alt_frequency: number,
+  display_name: string,
+  genotype_call: string,
+  sample_id: string,
+}
+
 interface ApiVariantDetails {
   alternative: string;
   cadd_score: string;
@@ -117,6 +125,7 @@ interface ApiVariantDetails {
   rank_score: number;
   rank_score_results: { category: string; score: number }[];
   reference: string;
+  samples: ApiSample[];
   simple_id: string;
   sub_category: string;
   variant_id: string;
