@@ -64,8 +64,8 @@ template.innerHTML = String.raw`
       gap: ${SIZES.s}px;
     }
     #sample-select {
-      min-width: 200px;
-      padding-right: 10px;
+      min-width: 150px;
+      padding-right: ${SIZES.m}px;
     }
   </style>
   <div class="header-row">
@@ -245,16 +245,13 @@ export class SettingsMenu extends ShadowBaseElement {
   }
 
   private setupSampleSelect() {
-
     const rawSamples = this.getAllSamples();
-
     const allSamples = rawSamples.map((s) => {
       return {
         label: s.sampleId,
         value: `${s.caseId}_${s.sampleId}`,
       };
     });
-    console.log("Values", allSamples);
     this.sampleSelect.setValues(allSamples);
   }
 

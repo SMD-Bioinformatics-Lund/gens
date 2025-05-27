@@ -28,7 +28,7 @@ export class GensSession {
   private highlights: Record<string, RangeHighlight>;
   private chromSizes: Record<string, number>;
   private chromInfo: Record<string, ChromosomeInfo>;
-  private samples: {caseId: string, sampleId: string}[];
+  private samples: Sample[];
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
   private scoutBaseURL: string;
@@ -102,7 +102,7 @@ export class GensSession {
     this.trackHeights = heights;
   }
 
-  public getSamples(): {sampleId: string, caseId: string}[] {
+  public getSamples(): Sample[] {
     return this.samples;
   }
 

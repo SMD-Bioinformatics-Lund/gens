@@ -94,10 +94,8 @@ export class ChromosomeView extends ShadowBaseElement {
     const trackSampleIds = this.tracks
       .filter((track) => track.chromosome === "1" && track.type == "coverage")
       .map((track) => track.sampleId);
-    const settingSamples = this.session
-      .getSamples()
-    const settingSampleIds = settingSamples
-      .map((sample) => sample.sampleId);
+    const settingSamples = this.session.getSamples();
+    const settingSampleIds = settingSamples.map((sample) => sample.sampleId);
     const sampleDiff = getDiff(trackSampleIds, settingSampleIds);
 
     const getCovData = (sample: Sample, chrom: string) =>
@@ -122,10 +120,11 @@ export class ChromosomeView extends ShadowBaseElement {
 
       addSampleTracks(
         this.session,
-        settingSamples.filter((sample) => sampleDiff.new.includes(sample.sampleId)),
+        settingSamples.filter((sample) =>
+          sampleDiff.new.includes(sample.sampleId),
+        ),
         chrom,
-        (sample: Sample) =>
-          getCovData(sample, chrom),
+        (sample: Sample) => getCovData(sample, chrom),
         (trackInfo: ChromViewTrackInfo) => {
           this.onAddTrack(chromGroup.samples, trackInfo);
         },
@@ -221,10 +220,7 @@ function addSampleTracks(
   session: GensSession,
   samples: Sample[],
   chrom: string,
-  getCovData: (
-    sample: Sample,
-    chrom: string,
-  ) => Promise<RenderDot[]>,
+  getCovData: (sample: Sample, chrom: string) => Promise<RenderDot[]>,
   onAddTrack: (track: ChromViewTrackInfo) => void,
 ) {
   for (const sample of samples) {

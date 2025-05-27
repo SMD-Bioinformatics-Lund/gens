@@ -40,7 +40,7 @@ export class SampleRow extends ShadowBaseElement {
     this.labelElem = this.root.querySelector("#label");
     this.removeElem = this.root.querySelector("#remove");
 
-    this.labelElem.innerHTML = `${this.sample.caseId}_${this.sample.sampleId}`;
+    this.labelElem.innerHTML = `${this.sample.sampleId} (case: ${this.sample.caseId})`;
     this.removeElem.addEventListener(
       "click",
       (_e) => {
