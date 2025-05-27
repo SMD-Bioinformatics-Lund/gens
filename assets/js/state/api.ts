@@ -262,12 +262,23 @@ export class API {
       const variants = get(url, query).then((variants) => {
         const typedVariants = variants as ApiVariantDetails[];
         console.log("Variants", typedVariants);
-        const filteredVariants = typedVariants.filter((variant) => {
-          const sampleCallInfo = variant.samples.find(
-            (sample) => sample.sample_id == sampleId,
-          );
-          return sampleCallInfo.genotype_call != "0/0";
-        });
+        const filteredVariants = typedVariants
+          .map((variant) => {
+            const sampleCallInfo = variant.samples.find(
+              (sample) => sample.sample_id == sampleId,
+            );
+            variant.sample = sampleCallInfo;
+            return variant;
+          })
+          .filter((variant) => {
+            const sample = variant.sample;
+
+            return (
+              sample != null &&
+              sample.genotype_call != "0/0" &&
+              sample.genotype_call != "./."
+            );
+          });
         console.log("Filtered variants", filteredVariants);
         return filteredVariants;
       });

@@ -12,6 +12,27 @@ export function getVariantContextMenuContent(
       key: "Length",
       value: prefixNts(details.length),
     },
+    {
+      key: "Genotype call",
+      value: details.sample.genotype_call,
+    },
+    {
+      key: "Allele depths",
+      value: details.sample.allele_depths.join(", ")
+    },
+    {
+      key: "Read depth",
+      value: details.sample.read_depth.toString()
+    },
+    {
+      key: "Genotype quality",
+      value: details.sample.genotype_quality.toString()
+    },
+    // FIXME: Not relevant for SNVs?
+    {
+      key: "Split read",
+      value: details.sample.split_read.toString(),
+    },
     { key: "Variant URL", value: variantUrl, url: variantUrl },
     { key: "CADD score", value: details.cadd_score },
     {

@@ -90,11 +90,14 @@ interface ApiGeneDetails {
 }
 
 interface ApiSample {
-  allele_depth: [number, number],
+  allele_depths: [number, number],
   alt_frequency: number,
   display_name: string,
   genotype_call: string,
   sample_id: string,
+  read_depth: number,
+  split_read: number,
+  genotype_quality: number,
 }
 
 interface ApiVariantDetails {
@@ -125,6 +128,7 @@ interface ApiVariantDetails {
   rank_score: number;
   rank_score_results: { category: string; score: number }[];
   reference: string;
+  sample?: ApiSample;
   samples: ApiSample[];
   simple_id: string;
   sub_category: string;
