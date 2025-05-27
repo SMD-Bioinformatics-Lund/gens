@@ -72,7 +72,7 @@ template.innerHTML = String.raw`
 export interface TrackViewTrackInfo {
   track: DataTrack;
   container: HTMLDivElement;
-  sampleId: string | null;
+  sample: Sample | null;
 }
 
 export class TrackView extends ShadowBaseElement {
@@ -131,7 +131,6 @@ export class TrackView extends ShadowBaseElement {
       animation: ANIM_TIME.medium,
       handle: `.${TRACK_HANDLE_CLASS}`,
       onEnd: (evt: SortableEvent) => {
-
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
@@ -370,9 +369,9 @@ export class TrackView extends ShadowBaseElement {
     moveElement(this.dataTracks, trackInfoIndex, shift, true);
   }
 
-  public addSample(sampleId: string, chrom: string, isTrackViewTrack: boolean) {
+  public addSample(sample: Sample, isTrackViewTrack: boolean) {
     const sampleTracks = createSampleTracks(
-      sampleId,
+      sample,
       this.dataSource,
       false,
       this.session,
@@ -393,13 +392,17 @@ export class TrackView extends ShadowBaseElement {
     Object.values(sampleTracks).map(({ track }) => track.initialize());
   }
 
-  public removeSample(sampleId: string) {
-    const removeInfos = this.dataTracks.filter(
-      (info) => info.sampleId === sampleId,
+  public removeSample(sample: Sample) {
+    const trackMatches = (trackInfo: TrackViewTrackInfo) =>
+      trackInfo.sample.sampleId === sample.sampleId &&
+      trackInfo.sample.caseId === sample.caseId;
+
+    const removeInfos = this.dataTracks.filter((track: TrackViewTrackInfo) =>
+      trackMatches(track),
     );
 
     this.dataTracks = this.dataTracks.filter(
-      (info) => info.sampleId !== sampleId,
+      (track: TrackViewTrackInfo) => !trackMatches(track),
     );
 
     for (const removeInfo of removeInfos) {
@@ -489,7 +492,7 @@ function getDataTrackInfoById(
 }
 
 function createSampleTracks(
-  sampleId: string,
+  sample: Sample,
   dataSources: RenderDataSource,
   startExpanded: boolean,
   session: GensSession,
@@ -501,10 +504,15 @@ function createSampleTracks(
   variant: TrackViewTrackInfo;
 } {
   const coverageTrack = createDotTrack(
-    `${sampleId}_log2_cov`,
-    `${sampleId} cov`,
-    sampleId,
-    (sampleId: string) => dataSources.getCovData(sampleId, session.getChromosome()),
+    `${sample.sampleId}_log2_cov`,
+    `${sample.sampleId} cov`,
+    sample,
+    (sample: Sample) =>
+      dataSources.getCovData(
+        sample.caseId,
+        sample.sampleId,
+        session.getChromosome(),
+      ),
     {
       startExpanded,
       yAxis: {
@@ -520,10 +528,11 @@ function createSampleTracks(
     openTrackContextMenu,
   );
   const bafTrack = createDotTrack(
-    `${sampleId}_log2_baf`,
-    `${sampleId} baf`,
-    sampleId,
-    (sampleId: string) => dataSources.getBafData(sampleId, session.getChromosome()),
+    `${sample.sampleId}_log2_baf`,
+    `${sample.sampleId} baf`,
+    sample,
+    (sample: Sample) =>
+      dataSources.getBafData(sample.caseId, sample.sampleId, session.getChromosome()),
     {
       startExpanded,
       yAxis: {
@@ -544,7 +553,11 @@ function createSampleTracks(
     `${sampleId} Variants`,
     () => dataSources.getVariantBands(sampleId, session.getChromosome()),
     (variantId: string) =>
-      dataSources.getVariantDetails(sampleId, variantId, session.getChromosome()),
+      dataSources.getVariantDetails(
+        sampleId,
+        variantId,
+        session.getChromosome(),
+      ),
     (variantId: string) => session.getVariantURL(variantId),
     session,
     openTrackContextMenu,
@@ -591,7 +604,10 @@ function updateAnnotationTracks(
       (bandId: string) => getAnnotationDetails(bandId),
       session,
       openTrackContextMenu,
-      { height: STYLE.bandTrack.trackViewHeight, showLabelWhenCollapsed: hasLabel },
+      {
+        height: STYLE.bandTrack.trackViewHeight,
+        showLabelWhenCollapsed: hasLabel,
+      },
     );
     addTrack(newTrack);
   });

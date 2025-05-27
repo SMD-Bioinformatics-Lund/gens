@@ -28,7 +28,7 @@ export class GensSession {
   private highlights: Record<string, RangeHighlight>;
   private chromSizes: Record<string, number>;
   private chromInfo: Record<string, ChromosomeInfo>;
-  private samples: string[];
+  private samples: {caseId: string, sampleId: string}[];
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
   private scoutBaseURL: string;
@@ -43,7 +43,7 @@ export class GensSession {
     region: Region,
     chromInfo: Record<string, ChromosomeInfo>,
     chromSizes: Record<string, number>,
-    samples: string[],
+    samples: Sample[],
     trackHeights: TrackHeights,
     scoutBaseURL: string,
     gensBaseURL: string,
@@ -102,16 +102,16 @@ export class GensSession {
     this.trackHeights = heights;
   }
 
-  public getSamples(): string[] {
+  public getSamples(): {sampleId: string, caseId: string}[] {
     return this.samples;
   }
 
-  public addSample(sampleId: string) {
-    this.samples.push(sampleId);
+  public addSample(sample: Sample) {
+    this.samples.push(sample);
   }
 
-  public removeSample(sampleId: string): void {
-    const pos = this.samples.indexOf(sampleId);
+  public removeSample(sample: Sample): void {
+    const pos = this.samples.indexOf(sample);
     this.samples.splice(pos, 1);
   }
 

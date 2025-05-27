@@ -5,7 +5,6 @@ import { zip } from "../util/utils";
 const CACHED_ZOOM_LEVELS = ["o", "a", "b"];
 
 export class API {
-  caseId: string;
   genomeBuild: number;
   apiURI: string;
   // Data for these are loaded up front for the full chromosome
@@ -31,8 +30,7 @@ export class API {
     return this.allChromData;
   }
 
-  constructor(caseId: string, genomeBuild: number, gensApiURL: string) {
-    this.caseId = caseId;
+  constructor(genomeBuild: number, gensApiURL: string) {
     this.genomeBuild = genomeBuild;
     this.apiURI = gensApiURL;
   }
@@ -82,11 +80,12 @@ export class API {
   // FIXME: This is a temporary solution. Should really be a detail endpoint in the
   // backend similarly to the transcripts and the annotations
   async getVariantDetails(
+    caseId: string,
     sampleId: string,
     variantId: string,
     currChrom: string,
   ): Promise<ApiVariantDetails> {
-    const variants = await this.getVariants(sampleId, currChrom);
+    const variants = await this.getVariants(caseId, sampleId, currChrom);
     const targets = variants.filter((v) => v.variant_id === variantId);
     if (targets.length != 1) {
       console.error("Expected a single variant, found: ", targets);
@@ -128,6 +127,7 @@ export class API {
     Record<string, Record<string, Promise<ApiCoverageDot[]>>>
   > = {};
   getCov(
+    caseId: string,
     sampleId: string,
     chrom: string,
     zoom: string,
@@ -148,7 +148,7 @@ export class API {
           CACHED_ZOOM_LEVELS,
           endpoint,
           sampleId,
-          this.caseId,
+          caseId,
           this.apiURI,
           this.getChromSizes(),
         );
@@ -159,7 +159,7 @@ export class API {
         this.apiURI,
         endpoint,
         sampleId,
-        this.caseId,
+        caseId,
         chrom,
         zoom,
         xRange,
@@ -172,6 +172,7 @@ export class API {
     Record<string, Record<string, Promise<ApiCoverageDot[]>>>
   > = {};
   getBaf(
+    caseId: string,
     sampleId: string,
     chrom: string,
     zoom: string,
@@ -192,7 +193,7 @@ export class API {
           CACHED_ZOOM_LEVELS,
           endpoint,
           sampleId,
-          this.caseId,
+          caseId,
           this.apiURI,
           this.getChromSizes(),
         );
@@ -203,7 +204,7 @@ export class API {
         this.apiURI,
         endpoint,
         sampleId,
-        this.caseId,
+        caseId,
         chrom,
         zoom,
         xRange,
@@ -238,16 +239,20 @@ export class API {
     string,
     Record<string, Promise<ApiVariantDetails[]>>
   > = {};
-  getVariants(sampleId: string, chrom: string): Promise<ApiVariantDetails[]> {
+  getVariants(
+    caseId: string,
+    sampleId: string,
+    chrom: string,
+  ): Promise<ApiVariantDetails[]> {
     if (this.variantsSampleChromCache[sampleId] == null) {
       this.variantsSampleChromCache[sampleId] = {};
     }
 
-    const isCached = this.variantsSampleChromCache[chrom] !== undefined;
+    const isCached = this.variantsSampleChromCache[sampleId][chrom] !== undefined;
     if (!isCached) {
       const query = {
         sample_id: sampleId,
-        case_id: this.caseId,
+        case_id: caseId,
         chromosome: chrom,
         category: "sv",
         start: 1,
@@ -280,12 +285,13 @@ export class API {
     Promise<Record<string, ApiCoverageDot[]>>
   > = {};
   getOverviewCovData(
+    caseId: string,
     sampleId: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
     if (this.overviewSampleCovCache[sampleId] == null) {
       this.overviewSampleCovCache[sampleId] = getOverviewData(
         sampleId,
-        this.caseId,
+        caseId,
         "cov",
         this.apiURI,
       );
@@ -298,11 +304,14 @@ export class API {
     string,
     Promise<Record<string, ApiCoverageDot[]>>
   > = {};
-  getOverviewBafData(sampleId): Promise<Record<string, ApiCoverageDot[]>> {
+  getOverviewBafData(
+    caseId: string,
+    sampleId: string,
+  ): Promise<Record<string, ApiCoverageDot[]>> {
     if (this.overviewBafCache[sampleId] == null) {
       this.overviewBafCache[sampleId] = getOverviewData(
         sampleId,
-        this.caseId,
+        caseId,
         "baf",
         this.apiURI,
       );

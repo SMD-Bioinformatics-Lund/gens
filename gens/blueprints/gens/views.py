@@ -71,10 +71,14 @@ def display_samples(case_id: str) -> str:
 
     samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
 
-    all_samples = set()
+    all_samples: list[dict[str, str]] = []
     for case_samples in samples_per_case.values():
         for sample in case_samples:
-            all_samples.add(sample["sample_id"])
+            sample_info = {
+                "case_id": sample["case_id"],
+                "sample_id": sample["sample_id"]
+            }
+            all_samples.append(sample_info)
 
     return render_template(
         "gens.html",
@@ -85,7 +89,7 @@ def display_samples(case_id: str) -> str:
         end=parsed_region.end,
         case_id=case_id,
         sample_ids=sample_ids,
-        all_sample_ids=list(all_samples),
+        all_case_sample_ids=list(all_samples),
         genome_build=genome_build.value,
         print_page=print_page,
         annotation=annotation,

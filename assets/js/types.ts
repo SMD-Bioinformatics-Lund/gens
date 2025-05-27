@@ -247,29 +247,28 @@ type GetAnnotSources = (settings: {
 interface RenderDataSource {
   getChromInfo: () => Promise<ChromosomeInfo>;
 
-  getAnnotationBands: (id: string, chrom: string) => Promise<RenderBand[]>;
+  getAnnotationBands: (
+    sourceId: string,
+    chrom: string,
+  ) => Promise<RenderBand[]>;
   getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>;
 
-  getCovData: (sampleId: string, chrom: string) => Promise<RenderDot[]>;
-  getBafData: (sampleId: string, chrom: string) => Promise<RenderDot[]>;
+  getCovData: (sample: Sample, chrom: string) => Promise<RenderDot[]>;
+  getBafData: (sample: Sample, chrom: string) => Promise<RenderDot[]>;
 
   getTranscriptBands: (chrom: string) => Promise<RenderBand[]>;
   getTranscriptDetails: (geneId: string) => Promise<ApiGeneDetails>;
 
-  getVariantBands: (sampleId: string, chrom: string) => Promise<RenderBand[]>;
+  getVariantBands: (sample: Sample, chrom: string) => Promise<RenderBand[]>;
   getVariantDetails: (
-    sampleId: string,
+    sample: Sample,
     variantId: string,
     // FIXME: Temporary workaround due to lacking backend point requires chrom also here
     chrom: string,
   ) => Promise<ApiVariantDetails>;
 
-  getOverviewCovData: (
-    sampleId: string,
-  ) => Promise<Record<string, RenderDot[]>>;
-  getOverviewBafData: (
-    sampleId: string,
-  ) => Promise<Record<string, RenderDot[]>>;
+  getOverviewCovData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
+  getOverviewBafData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
 }
 
 type Rng = [number, number];
@@ -507,6 +506,11 @@ interface RangeHighlight {
   chromosome: string;
   range: Rng;
   color: string;
+}
+
+interface Sample {
+  caseId: string;
+  sampleId: string;
 }
 
 type TrackType = "annotation" | "variant" | "dot" | "gene";

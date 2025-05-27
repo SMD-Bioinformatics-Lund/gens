@@ -22,15 +22,15 @@ export class SampleRow extends ShadowBaseElement {
   private labelElem: HTMLDivElement;
   private removeElem: IconButton;
 
-  private sampleId: string;
-  private onRemoveSample: (sampleId: string) => void;
+  private sample: Sample;
+  private onRemoveSample: (sample: Sample) => void;
 
   constructor() {
     super(template);
   }
 
-  initialize(sampleId: string, onRemoveSample: (sampleId: string) => void) {
-    this.sampleId = sampleId;
+  initialize(sample: Sample, onRemoveSample: (sample: Sample) => void) {
+    this.sample = sample;
     this.onRemoveSample = onRemoveSample;
   }
 
@@ -40,11 +40,11 @@ export class SampleRow extends ShadowBaseElement {
     this.labelElem = this.root.querySelector("#label");
     this.removeElem = this.root.querySelector("#remove");
 
-    this.labelElem.innerHTML = this.sampleId;
+    this.labelElem.innerHTML = `${this.sample.caseId}_${this.sample.sampleId}`;
     this.removeElem.addEventListener(
       "click",
       (_e) => {
-        this.onRemoveSample(this.sampleId);
+        this.onRemoveSample(this.sample);
       },
       { signal: this.getListenerAbortSignal() },
     );
