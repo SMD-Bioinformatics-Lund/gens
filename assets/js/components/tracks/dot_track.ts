@@ -62,24 +62,15 @@ export class DotTrack extends DataTrack {
 
     const dotsTruncatedY = dotsInRange.map((dot) => {
       const yRange = this.getYRange();
+      const copy = { ...dot, color: STYLE.colors.black };
       if (dot.y < yRange[0]) {
-        return {
-          x: dot.x,
-          y: yRange[0],
-          color: STYLE.colors.red,
-        };
+        copy.y = yRange[0];
+        copy.color = STYLE.colors.red;
       } else if (dot.y > yRange[1]) {
-        return {
-          x: dot.x,
-          y: yRange[1],
-          color: STYLE.colors.red,
-        };
+        copy.y = yRange[1];
+        copy.color = STYLE.colors.red;
       }
-      return {
-        x: dot.x,
-        y: dot.y,
-        color: STYLE.colors.black,
-      };
+      return copy;
     });
 
     drawDotsScaled(this.ctx, dotsTruncatedY, xScale, yScale, {

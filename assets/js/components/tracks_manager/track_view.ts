@@ -513,7 +513,6 @@ function createSampleTracks(
       startExpanded,
       yAxis: {
         range: COV_Y_RANGE,
-        reverse: true,
         label: "Log2 Ratio",
         hideLabelOnCollapse: true,
         hideTicksOnCollapse: true,
@@ -532,7 +531,6 @@ function createSampleTracks(
       startExpanded,
       yAxis: {
         range: BAF_Y_RANGE,
-        reverse: true,
         label: "B Allele Freq",
         hideLabelOnCollapse: true,
         hideTicksOnCollapse: true,

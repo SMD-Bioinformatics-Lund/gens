@@ -4,6 +4,7 @@ import { COLORS, STYLE } from "../../constants";
 import { CanvasTrack, CanvasTrackSettings } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,
+  getLinearScale,
   linearScale,
   renderBackground,
 } from "../../draw/render_utils";
@@ -182,9 +183,8 @@ function calculateMetrics(
   ];
 
   const yPadding = drawLabels ? STYLE.overviewTrack.titleSpace : 0;
-  const yScale = (pos: number) => {
-    return linearScale(pos, yRange, [yPadding, dim.height]);
-  };
+  const reversed = true;
+  const yScale = getLinearScale(yRange, [yPadding, dim.height], reversed);
 
   return {
     xRange,
@@ -244,21 +244,17 @@ function renderOverviewPlot(
 
     // FIXME: The coloring should probably be done here directly
     // Not in the data generation step
-    const coloredDotsInRange = dotData
-      .map((dot) => {
-        const copyDot = Object.create(dot);
-        copyDot.color = STYLE.colors.black;
-
-        if (copyDot.y < yRange[0]) {
-          copyDot.y = yRange[0]
-          copyDot.color = STYLE.colors.red;
-        }
-        else if (copyDot.y > yRange[1]) {
-          copyDot.y = yRange[1]
-          copyDot.color = STYLE.colors.red;
-        }
-        return copyDot;
-      });
+    const coloredDotsInRange = dotData.map((dot) => {
+      const copy = { ...dot, color: STYLE.colors.black };
+      if (dot.y < yRange[0]) {
+        copy.y = yRange[0];
+        copy.color = STYLE.colors.red;
+      } else if (dot.y > yRange[1]) {
+        copy.y = yRange[1];
+        copy.color = STYLE.colors.red;
+      }
+      return copy;
+    });
     drawDotsScaled(ctx, coloredDotsInRange, chromXScale, yScale, {
       size: DOT_SIZE,
     });
