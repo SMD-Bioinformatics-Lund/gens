@@ -199,7 +199,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
       const [caseId, sampleId] = caseId_sampleId.split("_");
-      this.onAddSample({caseId, sampleId});
+      this.onAddSample({ caseId, sampleId });
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
@@ -238,6 +238,8 @@ export class SettingsMenu extends ShadowBaseElement {
       getAnnotationChoices(
         this.allAnnotationSources,
         this.defaultAnnots.map((a) => a.id),
+      ).sort((source1, source2) =>
+        source1.label.toString().localeCompare(source2.label.toString()),
       ),
     );
     this.setupSampleSelect();
@@ -256,7 +258,6 @@ export class SettingsMenu extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
-
     if (this.tracksOverview == null) {
       return;
     }
