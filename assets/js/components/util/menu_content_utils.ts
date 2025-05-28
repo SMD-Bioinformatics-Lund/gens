@@ -1,12 +1,19 @@
 import { prefixNts, prettyRange } from "../../util/utils";
 import { getContainer, getEntry, getSection, getURLRow } from "./menu_utils";
 
+export interface InfoField {
+  key: string;
+  value: string | number | null;
+  url?: string,
+}
+
 export function getVariantContextMenuContent(
   id: string,
   details: ApiVariantDetails,
   variantUrl: string,
 ): HTMLDivElement[] {
-  const info: { key: string; value: string; url?: string }[] = [
+
+  const info: InfoField[] = [
     { key: "Range", value: `${details.position} - ${details.end}` },
     {
       key: "Length",
@@ -14,23 +21,25 @@ export function getVariantContextMenuContent(
     },
     {
       key: "Genotype call",
-      value: details.sample.genotype_call,
+      value: details.sample?.genotype_call,
     },
     {
       key: "Allele depths",
-      value: details.sample.allele_depths.join(", ")
+      value: details.sample?.allele_depths
+        ? details.sample.allele_depths.join(", ")
+        : null,
     },
     {
       key: "Read depth",
-      value: details.sample.read_depth.toString()
+      value: details.sample?.read_depth,
     },
     {
       key: "Genotype quality",
-      value: details.sample.genotype_quality.toString()
+      value: details.sample?.genotype_quality,
     },
     {
       key: "Split read",
-      value: details.sample.split_read.toString(),
+      value: details.sample?.split_read,
     },
     { key: "Variant URL", value: variantUrl, url: variantUrl },
     { key: "CADD score", value: details.cadd_score },
@@ -42,7 +51,7 @@ export function getVariantContextMenuContent(
       key: "Cytoband",
       value: `${details.cytoband_start} - ${details.cytoband_end}`,
     },
-    { key: "Rank score", value: details.rank_score.toString() },
+    { key: "Rank score", value: details.rank_score },
     { key: "BNF ID", value: id },
   ];
 
