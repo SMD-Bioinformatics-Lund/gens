@@ -48,21 +48,7 @@ export async function samplesListInit(
     return new URL(subpath, gensBaseURL).href;
   };
 
-  const dummySamples = [];
-  for (let i = 1; i <= 10000; i++) {
-    const dummySample: SampleInfo = {
-      sample_ids: ["S1", "S2", "S3"],
-      case_id: `Case ${i}`,
-      genome_build: 38,
-      has_overview_file: true,
-      files_present: true,
-      created_at: "",
-    }
-    dummySamples.push(dummySample);
-  }
-  const final = [...samples, ...dummySamples];
-
-  gens_home.initialize(final, scoutBaseURL, getGensURL);
+  gens_home.initialize(samples, scoutBaseURL, getGensURL);
 }
 
 export async function initCanvases({
