@@ -166,12 +166,12 @@ export function drawDotsScaled(
   dots: RenderDot[],
   xScale: Scale,
   yScale: Scale,
-  settings: { size: number; color: string },
+  settings: { size: number },
 ) {
-  const { color, size } = settings;
+  const { size } = settings;
 
   dots.forEach((dot) => {
-    ctx.fillStyle = color;
+    ctx.fillStyle = dot.color;
     const xPixel = xScale(dot.x);
     const yPixel = yScale(dot.y);
 

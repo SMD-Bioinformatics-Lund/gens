@@ -89,7 +89,6 @@ export class OverviewTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-
     const firstTime = this.renderData == null;
     const dataChanged = firstTime || settings.dataUpdated;
     const sizeChanged = firstTime || settings.resized;
@@ -121,6 +120,7 @@ export class OverviewTrack extends CanvasTrack {
         this.staticCtx,
         this.pxRanges,
         metrics.yScale,
+        this.yRange,
         this.renderData.dotsPerChrom,
         this.chromSizes,
         this.drawLabels,
@@ -201,6 +201,7 @@ function renderOverviewPlot(
   ctx: CanvasRenderingContext2D,
   pxRanges: Record<string, Rng>,
   yScale: Scale,
+  yRange: Rng,
   dotsPerChrom: Record<string, RenderDot[]>,
   chromSizes: Record<string, number>,
   drawLabels: boolean,
@@ -243,14 +244,23 @@ function renderOverviewPlot(
 
     // FIXME: The coloring should probably be done here directly
     // Not in the data generation step
-    const coloredDots = dotData.map((dot) => {
-      const copyDot = Object.create(dot);
-      copyDot.color = STYLE.colors.darkGray;
-      return copyDot;
-    });
-    drawDotsScaled(ctx, coloredDots, chromXScale, yScale, {
+    const coloredDotsInRange = dotData
+      .map((dot) => {
+        const copyDot = Object.create(dot);
+        copyDot.color = STYLE.colors.black;
+
+        if (copyDot.y < yRange[0]) {
+          copyDot.y = yRange[0]
+          copyDot.color = STYLE.colors.red;
+        }
+        else if (copyDot.y > yRange[1]) {
+          copyDot.y = yRange[1]
+          copyDot.color = STYLE.colors.red;
+        }
+        return copyDot;
+      });
+    drawDotsScaled(ctx, coloredDotsInRange, chromXScale, yScale, {
       size: DOT_SIZE,
-      color: COLORS.black,
     });
   });
 }

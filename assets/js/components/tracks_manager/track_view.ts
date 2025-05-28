@@ -192,7 +192,7 @@ export class TrackView extends ShadowBaseElement {
       session,
     );
 
-    this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
+    this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
     for (const sample of samples) {
       const startExpanded = samples.length == 1 ? true : false;
@@ -223,8 +223,8 @@ export class TrackView extends ShadowBaseElement {
     );
 
     const tracks: TrackViewTrackInfo[] = [
-      ...covTracks,
       ...bafTracks,
+      ...covTracks,
       ...variantTracks,
       genesTrack,
     ];
