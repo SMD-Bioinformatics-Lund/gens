@@ -5,7 +5,6 @@ Query individual annotaions or transcript to get the full info.
 """
 
 from http import HTTPStatus
-from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from gens.constants import MANE_PLUS_CLINICAL, MANE_SELECT
@@ -15,7 +14,9 @@ from gens.models.annotation import (
     AnnotationTrackInDb,
     SimplifiedTrackInfo,
     SimplifiedTranscriptInfo,
+    SimplifiedVariantRecord,
     TranscriptRecord,
+    VariantRecord,
 )
 from gens.models.genomic import (
     ChromInfo,
@@ -28,7 +29,7 @@ from gens.models.genomic import (
 from gens.models.base import PydanticObjectId
 from gens.crud.genomic import get_chromosome_info, get_chromosomes
 from gens.crud.transcripts import get_transcript, get_transcripts as crud_get_transcripts
-from gens.crud.scout import get_variants as get_variants_from_scout
+from gens.crud.scout import VariantNotFoundError, VariantValidaitonError, get_variant, get_variants as get_variants_from_scout
 
 from .utils import ApiTags, GensDb, ScoutDb
 
@@ -50,7 +51,7 @@ async def get_annotation_track(track_id: PydanticObjectId, db: GensDb) -> list[S
     return get_annotations_for_track(track_id=track_id, db=db)
 
 
-@router.get("/annotations/annotation/{record_id}", tags=[ApiTags.ANNOT])
+@router.get("/annotations/{record_id}", tags=[ApiTags.ANNOT])
 async def get_annotation_with_id(record_id: PydanticObjectId, db: GensDb) -> AnnotationRecord:
     """Get annotations for a region."""
     result = get_annotation(record_id, db)
@@ -68,9 +69,9 @@ async def get_transcripts(
     end: int | None = None,
     only_mane: bool = False,
 ) -> list[SimplifiedTranscriptInfo]:
-    """Get all transcripts for a sample.
+    """Get all transcripts for a genomic region.
 
-    Return reduced information.
+    Returns a list of simplified transcript records. Use query parameters to filter by region or type.
     """
     # lookup end of chromosome if no end is defined and calculate zoom level
     start = start if start is not None else 1
@@ -92,9 +93,12 @@ async def get_transcripts(
     return transcripts
 
 
-@router.get("/transcripts/transcript/{transcript_id}", tags=[ApiTags.TRANSC])
+@router.get("/transcripts/{transcript_id}", tags=[ApiTags.TRANSC])
 async def get_transcript_with_id(transcript_id: PydanticObjectId, db: GensDb) -> TranscriptRecord:
-    """Query the database for a transcript and return the full info."""
+    """Get a single transcript by its unique ID.
+
+    Returns the full transcript record with all available details.
+    """
     result = get_transcript(transcript_id, db)
     if result is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
