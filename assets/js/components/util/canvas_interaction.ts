@@ -40,33 +40,57 @@ export function setCanvasPointerCursor(
   markerArea: Rng,
   abortSignal: AbortSignal,
 ) {
-  canvas.addEventListener(
-    "mousemove",
-    (event) => {
-      if (markerModeOn()) {
-        if (event.offsetX < markerArea[0] || event.offsetX > markerArea[1]) {
-          // FIXME: CSS based instead here
-          canvas.style.cursor = "crosshair";
-        } else {
-          canvas.style.cursor = "";
-        }
-      } else if (keyLogger.heldKeys.Shift) {
-        canvas.style.cursor = "zoom-in";
-      } else {
-        const hoverTargets = getHoverTargets();
+  let lastOffset = { x: -1, y: -1 };
 
-        if (!hoverTargets) {
-          return;
-        }
-        const hovered = hoverTargets.some((target) =>
-          eventInBox(event, target.box),
-        );
-        // FIXME: Use CSS class here
-        canvas.style.cursor = hovered ? "pointer" : "";
-      }
+  document.addEventListener(
+    "keyup",
+    (_event) => {
+      updateCursor(lastOffset);
     },
     { signal: abortSignal },
   );
+
+  canvas.addEventListener(
+    "mousemove",
+    (event) => {
+      lastOffset = {
+        x: event.offsetX,
+        y: event.offsetY,
+      };
+      updateCursor(lastOffset);
+    },
+    { signal: abortSignal },
+  );
+
+  function updateCursor(
+    offset: {
+      x: number;
+      y: number;
+    } | null,
+  ) {
+    if (markerModeOn()) {
+      if (offset.x < markerArea[0] || offset.y > markerArea[1]) {
+        // FIXME: CSS based instead here
+        canvas.style.cursor = "crosshair";
+      } else {
+        canvas.style.cursor = "";
+      }
+    } else if (keyLogger.heldKeys.Shift) {
+      canvas.style.cursor = "zoom-in";
+    } else {
+      const hoverTargets = getHoverTargets();
+
+      if (!hoverTargets) {
+        canvas.style.cursor = "";
+        return;
+      }
+      const hovered = hoverTargets.some((target) =>
+        eventInBox({ offsetX: offset.x, offsetY: offset.y }, target.box),
+      );
+      // FIXME: Use CSS class here
+      canvas.style.cursor = hovered ? "pointer" : "";
+    }
+  }
 }
 
 export function getCanvasHover(
