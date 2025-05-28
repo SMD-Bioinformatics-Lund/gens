@@ -11,11 +11,6 @@ export interface SampleInfo {
 
 const tableTemplate = document.createElement("template");
 tableTemplate.innerHTML = String.raw`
-<style>
-  .wide-cell {
-    min-width: 100px;
-  }
-</style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" />
 <table id="my-table">
   <thead>
@@ -44,6 +39,17 @@ const d = new Date(isoString);
   return `${Y}-${M}-${D} ${h}:${m}`;
 }
 
+// DataTable.prototype. = function() {
+//   // return an array of equal widths so the library thinks it's done
+//   // you could also return zeros: this.headings.map(() => 0)
+
+//   console.log("Monkey patching");
+//   const total = this.table.clientWidth;
+//   const count = this.headings.length;
+//   const each = Math.floor(total / count);
+//   return Array(count).fill(each);
+// };
+
 export class SamplesTable extends HTMLElement {
   private table: HTMLTableElement;
   private dataTable: DataTable;
@@ -56,6 +62,7 @@ export class SamplesTable extends HTMLElement {
       fixedHeight: true,
       perPage: 20,
       labels: { noRows: "Loading..." },
+      fixedColumns: true,
     });
   }
 

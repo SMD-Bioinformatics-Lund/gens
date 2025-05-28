@@ -76,7 +76,7 @@ export const SIZES = {
 const font = "12px sans-serif";
 
 const TRACK_HEIGHTS = {
-  xl: 240,
+  xl: 200,
   l: 120,
   m: 45,
   s: 30,

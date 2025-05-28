@@ -1,4 +1,5 @@
 import { STYLE } from "../../constants";
+import { InfoField } from "./menu_content_utils";
 
 const style = STYLE.menu;
 
@@ -11,7 +12,10 @@ export function getAHref(label: string, href: string): HTMLAnchorElement {
   return a;
 }
 
-export function getSimpleButton(text: string, onClick: () => void): HTMLDivElement {
+export function getSimpleButton(
+  text: string,
+  onClick: () => void,
+): HTMLDivElement {
   const button = document.createElement("div") as HTMLDivElement;
 
   button.innerHTML = text;
@@ -25,24 +29,28 @@ export function getSimpleButton(text: string, onClick: () => void): HTMLDivEleme
   return button;
 }
 
-export function getIconButton(icon: string, title: string, onClick: () => void): HTMLDivElement {
+export function getIconButton(
+  icon: string,
+  title: string,
+  onClick: () => void,
+): HTMLDivElement {
   const button = getSimpleButton("", onClick);
   button.title = title;
   button.className = "icon-button";
 
   const iconElem = document.createElement("span") as HTMLSpanElement;
-  iconElem.classList = `fas ${icon} fa-fw`
+  iconElem.classList = `fas ${icon} fa-fw`;
   button.appendChild(iconElem);
-  
+
   return button;
 }
 
 export function getURLRow(text: string) {
-
   const row = getContainer("row");
   const span = document.createElement("span");
 
-  const pmid_regex = /(PMID: \s*(\d+))|(https?:\/\/[^\s)]+)|(www\.[^\s)]+)|(OMIM #(\d+))|(ORPHA:\s*(\d+))/g;
+  const pmid_regex =
+    /(PMID: \s*(\d+))|(https?:\/\/[^\s)]+)|(www\.[^\s)]+)|(OMIM #(\d+))|(ORPHA:\s*(\d+))/g;
 
   const groups = {
     pmid: 1,
@@ -53,7 +61,7 @@ export function getURLRow(text: string) {
     omimId: 6,
     orpha: 7,
     orphaId: 8,
-  }
+  };
 
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -67,12 +75,12 @@ export function getURLRow(text: string) {
     const pmid_match = match[groups.pmid];
     let url: string;
     let label: string;
-    let prefix: string|null = null;
+    let prefix: string | null = null;
     if (pmid_match) {
       const pmid = match[groups.pmidId];
       prefix = "PMID: ";
       label = pmid;
-      url = `https://pubmed.ncbi.nlm.nih.gov/${pmid}`
+      url = `https://pubmed.ncbi.nlm.nih.gov/${pmid}`;
     } else if (match[groups.http] || match[groups.www]) {
       url = match[groups.http] || match[groups.www];
 
@@ -179,11 +187,7 @@ export function getSection(
   return container;
 }
 
-export function getEntry(infoEntry: {
-  key: string;
-  url?: string;
-  value: string;
-}): HTMLDivElement {
+export function getEntry(infoEntry: InfoField): HTMLDivElement {
   const { key, url, value } = infoEntry;
 
   const row = getContainer("row");
@@ -198,7 +202,7 @@ export function getEntry(infoEntry: {
     valueEl.target = "_blank";
     valueEl.rel = "noopener noreferrer";
   }
-  valueEl.textContent = value;
+  valueEl.textContent = value == null ? "N/A" : value.toString();
 
   row.appendChild(label);
   row.appendChild(valueEl);

@@ -70,7 +70,7 @@ export function getOverlapInfo(
 
   return {
     bandOverlaps,
-    numberLanes,
+    numberLanes: numberLanes > 0 ? numberLanes : 1,
   };
 }
 

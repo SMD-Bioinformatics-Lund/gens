@@ -4,6 +4,7 @@ import { COLORS, STYLE } from "../../constants";
 import { CanvasTrack, CanvasTrackSettings } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,
+  getLinearScale,
   linearScale,
   renderBackground,
 } from "../../draw/render_utils";
@@ -89,7 +90,6 @@ export class OverviewTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-
     const firstTime = this.renderData == null;
     const dataChanged = firstTime || settings.dataUpdated;
     const sizeChanged = firstTime || settings.resized;
@@ -121,6 +121,7 @@ export class OverviewTrack extends CanvasTrack {
         this.staticCtx,
         this.pxRanges,
         metrics.yScale,
+        this.yRange,
         this.renderData.dotsPerChrom,
         this.chromSizes,
         this.drawLabels,
@@ -182,9 +183,8 @@ function calculateMetrics(
   ];
 
   const yPadding = drawLabels ? STYLE.overviewTrack.titleSpace : 0;
-  const yScale = (pos: number) => {
-    return linearScale(pos, yRange, [yPadding, dim.height]);
-  };
+  const reversed = true;
+  const yScale = getLinearScale(yRange, [yPadding, dim.height], reversed);
 
   return {
     xRange,
@@ -201,6 +201,7 @@ function renderOverviewPlot(
   ctx: CanvasRenderingContext2D,
   pxRanges: Record<string, Rng>,
   yScale: Scale,
+  yRange: Rng,
   dotsPerChrom: Record<string, RenderDot[]>,
   chromSizes: Record<string, number>,
   drawLabels: boolean,
@@ -243,14 +244,19 @@ function renderOverviewPlot(
 
     // FIXME: The coloring should probably be done here directly
     // Not in the data generation step
-    const coloredDots = dotData.map((dot) => {
-      const copyDot = Object.create(dot);
-      copyDot.color = STYLE.colors.darkGray;
-      return copyDot;
+    const coloredDotsInRange = dotData.map((dot) => {
+      const copy = { ...dot, color: STYLE.colors.black };
+      if (dot.y < yRange[0]) {
+        copy.y = yRange[0];
+        copy.color = STYLE.colors.red;
+      } else if (dot.y > yRange[1]) {
+        copy.y = yRange[1];
+        copy.color = STYLE.colors.red;
+      }
+      return copy;
     });
-    drawDotsScaled(ctx, coloredDots, chromXScale, yScale, {
+    drawDotsScaled(ctx, coloredDotsInRange, chromXScale, yScale, {
       size: DOT_SIZE,
-      color: COLORS.black,
     });
   });
 }

@@ -165,10 +165,12 @@ export abstract class DataTrack extends CanvasTrack {
     };
     this.getYScale = () => {
       const yRange = this.getYRange();
+      // Screen coordinates starts from the top
+      const reverse = true;
       const yScale = getLinearScale(
         yRange,
         this.getYDim(),
-        getSettings().yAxis.reverse,
+        reverse,
       );
       return yScale;
     };
