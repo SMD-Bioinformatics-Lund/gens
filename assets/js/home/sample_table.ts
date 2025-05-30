@@ -134,10 +134,11 @@ export class SamplesTable extends HTMLElement {
   // });
 
   private servePage(dtParams: DTData, callback: (data: any) => void) {
-
     if (this.sampleInfo == null) {
       return;
     }
+
+    console.log("Server side updated");
 
     const { start, length, search, order } = dtParams;
     let data = this.sampleInfo;
