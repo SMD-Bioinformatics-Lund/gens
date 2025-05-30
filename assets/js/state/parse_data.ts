@@ -107,8 +107,8 @@ export function getRenderDataSource(
     getTranscriptBands,
     getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
     getVariantBands,
-    getVariantDetails: (sample: Sample, variantId: string, chrom: string) =>
-      api.getVariantDetails(sample.caseId, sample.sampleId, variantId, chrom),
+    getVariantDetails: (id: string) =>
+      api.getVariantDetails(id),
     getOverviewCovData,
     getOverviewBafData,
   };
@@ -186,16 +186,17 @@ export function parseTranscripts(
 }
 
 export function parseVariants(
-  variants: ApiVariantDetails[],
+  variants: ApiSimplifiedVariant[],
   variantColorMap: VariantColors,
 ): RenderBand[] {
   return variants.map((variant) => {
     const id = variant.variant_id;
+    const length = variant.end - variant.start;
     return {
       id,
-      start: variant.position,
+      start: variant.start,
       end: variant.end,
-      hoverInfo: `${variant.sub_category} (${prefixNts(variant.length)})`,
+      hoverInfo: `${variant.sub_category} (${prefixNts(length)})`,
       label: `${variant.variant_type} ${variant.sub_category}`,
       color:
         variantColorMap[variant.sub_category] != undefined

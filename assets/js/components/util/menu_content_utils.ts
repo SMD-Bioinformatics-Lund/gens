@@ -2,12 +2,14 @@ import { prefixNts, prettyRange } from "../../util/utils";
 import { getContainer, getEntry, getSection, getURLRow } from "./menu_utils";
 
 export function getVariantContextMenuContent(
-  id: string,
+  trackId: string,
+  sampleId: string,
   details: ApiVariantDetails,
   variantUrl: string,
 ): HTMLDivElement[] {
+  details.sample = details.samples.filter(s => s.sample_id === sampleId)[0]
   const info: { key: string; value: string; url?: string }[] = [
-    { key: "Range", value: `${details.position} - ${details.end}` },
+    { key: "Range", value: `${details.start} - ${details.end}` },
     {
       key: "Length",
       value: prefixNts(details.length),
@@ -43,7 +45,7 @@ export function getVariantContextMenuContent(
       value: `${details.cytoband_start} - ${details.cytoband_end}`,
     },
     { key: "Rank score", value: details.rank_score.toString() },
-    { key: "BNF ID", value: id },
+    { key: "BNF ID", value: trackId },
   ];
 
   const entries: HTMLDivElement[] = info.map((i) => getEntry(i));
