@@ -126,8 +126,8 @@ export function createVariantTrack(
   id: string,
   label: string,
   dataFn: () => Promise<RenderBand[]>,
-  getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>,
-  getVariantURL: (variantId: string) => string,
+  getVariantDetails: (documentId: string) => Promise<ApiVariantDetails>,
+  getVariantURL: (documentId: string) => string,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): BandTrack {
@@ -154,9 +154,10 @@ export function createVariantTrack(
         bands: await dataFn(),
       };
     },
-    async (entryId: string) => {
-      const details = await getVariantDetails(entryId);
-      const scoutUrl = getVariantURL(details.variant_id);
+    async (documentId: string) => {
+      const details = await getVariantDetails(documentId);
+
+      const scoutUrl = getVariantURL(details.document_id);
 
       const button = getSimpleButton("Set highlight", () => {
         session.addHighlight([details.position, details.end]);
@@ -165,7 +166,7 @@ export function createVariantTrack(
       container.appendChild(button);
 
       const entries = getVariantContextMenuContent(
-        entryId,
+        documentId,
         details,
         scoutUrl,
       );
