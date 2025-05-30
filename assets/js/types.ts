@@ -1,3 +1,22 @@
+enum VariantCategory {
+  SV = "sv",
+  SNV = "snv",
+  STR = "str",
+}
+
+enum VariantSubCategory {
+  SNV = "snv",
+  INDEL = "indel",
+  DEL = "del",
+  INS = "ins",
+  DUP = "dup",
+  INV = "inv",
+  CNV = "cnv",
+  BND = "bnd",
+  STR = "str",
+  MEI = "mei",
+}
+
 interface ApiAnnotationTrack {
   track_id: string;
   name: string;
@@ -100,11 +119,20 @@ interface ApiSample {
   genotype_quality: number,
 }
 
+interface ApiSimplifiedVariant {
+  variant_id: string;
+  start: number;
+  end: number;
+  variant_type: string;  // e.g. research, clinical
+  category: VariantCategory;
+  sub_category: VariantSubCategory;
+}
+
 interface ApiVariantDetails {
   alternative: string;
   cadd_score: string;
   case_id: string;
-  category: string;
+  category: VariantCategory;
   chromosome: string;
   cytoband_start: string;
   cytoband_end: string;
@@ -123,7 +151,7 @@ interface ApiVariantDetails {
   panels: string[];
   phast_conservation: string[];
   phylop_conservation: string[];
-  position: number;
+  start: number;
   quality: number;
   rank_score: number;
   rank_score_results: { category: string; score: number }[];
@@ -131,7 +159,7 @@ interface ApiVariantDetails {
   sample?: ApiSample;
   samples: ApiSample[];
   simple_id: string;
-  sub_category: string;
+  sub_category: VariantSubCategory;
   variant_id: string;
   variant_rank: number;
   variant_type: string;
@@ -273,12 +301,7 @@ interface RenderDataSource {
   getTranscriptDetails: (geneId: string) => Promise<ApiGeneDetails>;
 
   getVariantBands: (sample: Sample, chrom: string) => Promise<RenderBand[]>;
-  getVariantDetails: (
-    sample: Sample,
-    variantId: string,
-    // FIXME: Temporary workaround due to lacking backend point requires chrom also here
-    chrom: string,
-  ) => Promise<ApiVariantDetails>;
+  getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>;
 
   getOverviewCovData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
   getOverviewBafData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;

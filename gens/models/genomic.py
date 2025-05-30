@@ -3,7 +3,7 @@
 import re
 from enum import Enum, IntEnum, StrEnum
 
-from pydantic import TypeAdapter, computed_field, field_validator
+from pydantic import computed_field, field_validator
 from pydantic.types import PositiveFloat, PositiveInt
 
 from .base import RWModel

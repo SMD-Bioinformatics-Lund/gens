@@ -63,7 +63,7 @@ export class API {
 
   getAnnotationDetails(id: string): Promise<ApiAnnotationDetails> {
     const details = get(
-      new URL(`tracks/annotations/annotation/${id}`, this.apiURI).href,
+      new URL(`tracks/annotations/${id}`, this.apiURI).href,
       {},
     ) as Promise<ApiAnnotationDetails>;
     return details;
@@ -71,29 +71,20 @@ export class API {
 
   getTranscriptDetails(id: string): Promise<ApiGeneDetails> {
     const details = get(
-      new URL(`tracks/transcripts/transcript/${id}`, this.apiURI).href,
+      new URL(`tracks/transcripts/${id}`, this.apiURI).href,
       {},
     ) as Promise<ApiGeneDetails>;
     return details;
   }
 
-  // FIXME: This is a temporary solution. Should really be a detail endpoint in the
-  // backend similarly to the transcripts and the annotations
   async getVariantDetails(
-    caseId: string,
-    sampleId: string,
-    documentId: string,
-    currChrom: string,
+    id: string,
   ): Promise<ApiVariantDetails> {
-    const variants = await this.getVariants(caseId, sampleId, currChrom);
-    const targets = variants.filter((v) => v.document_id === documentId);
-    if (targets.length != 1) {
-      console.error("Expected a single variant, found: ", targets);
-      if (targets.length === 0) {
-        throw Error("No variant found");
-      }
-    }
-    return targets[0];
+    const details = get(
+      new URL(`tracks/variants/${id}`, this.apiURI).href, 
+      {},
+    ) as Promise<ApiVariantDetails>;
+    return details;
   }
 
   getAnnotationSources(): Promise<ApiAnnotationTrack[]> {
@@ -252,13 +243,13 @@ export class API {
 
   private variantsSampleChromCache: Record<
     string,
-    Record<string, Promise<ApiVariantDetails[]>>
+    Record<string, Promise<ApiSimplifiedVariant[]>>
   > = {};
   getVariants(
     caseId: string,
     sampleId: string,
     chrom: string,
-  ): Promise<ApiVariantDetails[]> {
+  ): Promise<ApiSimplifiedVariant[]> {
     if (this.variantsSampleChromCache[sampleId] == null) {
       this.variantsSampleChromCache[sampleId] = {};
     }
@@ -274,28 +265,7 @@ export class API {
         start: 1,
       };
       const url = new URL("tracks/variants", this.apiURI).href;
-      const variants = get(url, query).then((variants) => {
-        const typedVariants = variants as ApiVariantDetails[];
-        const filteredVariants = typedVariants
-          .map((variant) => {
-            const sampleCallInfo = variant.samples.find(
-              (sample) => sample.sample_id == sampleId,
-            );
-            variant.sample = sampleCallInfo;
-            return variant;
-          })
-          .filter((variant) => {
-            const sample = variant.sample;
-
-            return (
-              sample != null &&
-              sample.genotype_call != "0/0" &&
-              sample.genotype_call != "./."
-            );
-          });
-        return filteredVariants;
-      });
-      // FIXME: Temporary fix until backend is in place
+      const variants = get(url, query) as Promise<ApiSimplifiedVariant[]>;
       this.variantsSampleChromCache[sampleId][chrom] = variants;
     }
     return this.variantsSampleChromCache[sampleId][chrom];

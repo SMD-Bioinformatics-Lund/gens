@@ -123,7 +123,8 @@ export function createDotTrack(
 }
 
 export function createVariantTrack(
-  id: string,
+  sampleId: string,
+  trackId: string,
   label: string,
   dataFn: () => Promise<RenderBand[]>,
   getVariantDetails: (documentId: string) => Promise<ApiVariantDetails>,
@@ -142,7 +143,7 @@ export function createVariantTrack(
   };
 
   const variantTrack = new BandTrack(
-    id,
+    trackId,
     label,
     "variant",
     () => fnSettings,
@@ -154,18 +155,18 @@ export function createVariantTrack(
         bands: await dataFn(),
       };
     },
-    async (documentId: string) => {
-      const details = await getVariantDetails(documentId);
+    async (variantId: string) => {
+      const details = await getVariantDetails(variantId);
       const scoutUrl = getVariantURL(details.document_id);
 
       const button = getSimpleButton("Set highlight", () => {
-        session.addHighlight([details.position, details.end]);
+        session.addHighlight([details.start, details.end]);
       });
       const container = document.createElement("div");
       container.appendChild(button);
 
       const entries = getVariantContextMenuContent(
-        documentId,
+        sampleId,
         details,
         scoutUrl,
       );
