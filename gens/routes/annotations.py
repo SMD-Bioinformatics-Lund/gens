@@ -29,7 +29,7 @@ from gens.models.genomic import (
 from gens.models.base import PydanticObjectId
 from gens.crud.genomic import get_chromosome_info, get_chromosomes
 from gens.crud.transcripts import get_transcript, get_transcripts as crud_get_transcripts
-from gens.crud.scout import VariantNotFoundError, VariantValidationError, get_variant, get_variants as get_variants_from_scout
+from gens.crud.scout import VariantNotFoundError, VariantValidaitonError, get_variant, get_variants as get_variants_from_scout
 
 from .utils import ApiTags, GensDb, ScoutDb
 
@@ -134,6 +134,7 @@ async def get_variants(
     db: ScoutDb,
     start: int = 1,
     end: int | None = None,
+    gt: str | None = None,
 ) -> list[SimplifiedVariantRecord]:
     """Get all variants for a genomic region.
 
@@ -142,9 +143,9 @@ async def get_variants(
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
     try:
         variants = get_variants_from_scout(
-            sample_name=sample_id, case_id=case_id, region=region, variant_category=category, db=db
+            sample_name=sample_id, case_id=case_id, region=region, variant_category=category, gt=gt, db=db
         )
-    except VariantValidationError as e:
+    except VariantValidaitonError as e:
         raise HTTPException(
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e)
         )

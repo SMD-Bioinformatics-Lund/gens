@@ -11,7 +11,7 @@ from gens.models.genomic import GenomicRegion, VariantCategory
 
 LOG = logging.getLogger(__name__)
 
-class VariantValidationError(Exception):
+class VariantValidaitonError(Exception):
     ...
 
 class VariantNotFoundError(Exception):
@@ -22,6 +22,7 @@ def get_variants(
     sample_name: str,
     region: GenomicRegion,
     variant_category: VariantCategory,
+    gt: str | None,
     db: Database[Any],
 ) -> list[SimplifiedVariantRecord]:
     """Search the scout database for variants associated with a case.
@@ -40,9 +41,11 @@ def get_variants(
             {"samples.sample_id": sample_name},
             {"samples.display_name": sample_name},
         ],
+        "chromosome": region.chromosome,  # type: ignore
     }
-    # add chromosome
-    query["chromosome"] = region.chromosome  # type: ignore
+    # add filter for genotype calls if provided
+    if gt is not None:
+        query["samples.genotype_call"] = gt
     # add start, end position to query
     if all(param is not None for param in [region.start, region.end]):
         query = {
@@ -58,7 +61,7 @@ def get_variants(
             db.get_collection("variant").find(query, projection)]
     except ValidationError as e:
         LOG.error("Failed to validate variant data: %s", e)
-        raise VariantValidationError("Invalid variant data in Scout database")
+        raise VariantValidaitonError("Invalid variant data in Scout database")
     return result
 
 
@@ -72,5 +75,5 @@ def get_variant(variant_id: str, db: Database[Any]) -> VariantRecord:
         variant = VariantRecord.model_validate(raw_variant)
     except ValidationError as e:
         LOG.error("Failed to validate variant %s: %s", variant_id, e)
-        raise VariantValidationError(f"Invalid variant data for ID {variant_id}")
+        raise VariantValidaitonError(f"Invalid variant data for ID {variant_id}")
     return variant
