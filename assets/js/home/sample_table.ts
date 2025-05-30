@@ -59,6 +59,9 @@ export class SamplesTable extends HTMLElement {
       deferRender: true,
       paging: true,
       pageLength: 50,
+
+      autoWidth: false,
+
       searching: true,
       ordering: true,
       info: true,
