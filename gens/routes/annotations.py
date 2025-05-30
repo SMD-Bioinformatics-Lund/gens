@@ -5,7 +5,7 @@ Query individual annotaions or transcript to get the full info.
 """
 
 from http import HTTPStatus
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
 from gens.constants import MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import get_annotation, get_annotation_tracks, get_annotations_for_track
@@ -134,7 +134,7 @@ async def get_variants(
     db: ScoutDb,
     start: int = 1,
     end: int | None = None,
-    gt: str | None = None,
+    gt: list[str] = Query([], description="Genotype calls to filter by, e.g. ['1/1', '1/1']"),
 ) -> list[SimplifiedVariantRecord]:
     """Get all variants for a genomic region.
 

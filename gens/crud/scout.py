@@ -22,7 +22,7 @@ def get_variants(
     sample_name: str,
     region: GenomicRegion,
     variant_category: VariantCategory,
-    gt: str | None,
+    gt: list[str],
     db: Database[Any],
 ) -> list[SimplifiedVariantRecord]:
     """Search the scout database for variants associated with a case.
@@ -44,8 +44,8 @@ def get_variants(
         "chromosome": region.chromosome,  # type: ignore
     }
     # add filter for genotype calls if provided
-    if gt is not None:
-        query["samples.genotype_call"] = gt
+    if len(gt) > 0:
+        query["samples.genotype_call"] = {'$in': gt}
     # add start, end position to query
     if all(param is not None for param in [region.start, region.end]):
         query = {
