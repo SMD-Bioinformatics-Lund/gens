@@ -25,7 +25,7 @@ export class BandTrack extends DataTrack {
     getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
-    openTrackContextMenu: (track: DataTrack) => void,
+    openTrackContextMenu: ((track: DataTrack) => void) | null,
     session: GensSession,
   ) {
     super(

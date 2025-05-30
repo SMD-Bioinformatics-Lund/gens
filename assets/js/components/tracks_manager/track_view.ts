@@ -135,7 +135,6 @@ export class TrackView extends ShadowBaseElement {
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
 
-        console.log("Drag end");
         render({});
       },
     });
@@ -437,10 +436,10 @@ export class TrackView extends ShadowBaseElement {
 
   public setTrackHeights(trackHeights: TrackHeights) {
     for (const track of this.dataTracks) {
-      if (track instanceof BandTrack) {
-        track.setHeights(trackHeights.bandCollapsed);
-      } else if (track instanceof DotTrack) {
-        track.setHeights(trackHeights.dotCollapsed, trackHeights.dotExpanded);
+      if (track.track instanceof BandTrack) {
+        track.track.setHeights(trackHeights.bandCollapsed);
+      } else if (track.track instanceof DotTrack) {
+        track.track.setHeights(trackHeights.dotCollapsed, trackHeights.dotExpanded);
       } else {
         console.error("Track of unknown DataTrack category:", track);
       }

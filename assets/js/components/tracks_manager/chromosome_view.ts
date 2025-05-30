@@ -182,7 +182,7 @@ function addAnnotTracks(
       () => dataSource.getAnnotationBands(annotId, chrom),
       (bandId: string) => dataSource.getAnnotationDetails(bandId),
       session,
-      (_track) => {},
+      null,
       {
         height: STYLE.tracks.trackHeight.xxs,
         showLabelWhenCollapsed: false,
@@ -242,9 +242,7 @@ function addSampleTracks(
         hasLabel: true,
       },
       session,
-      (_track: DataTrack) => {
-        console.error("Should this one be activated?");
-      },
+      null,
     );
     const trackWrapper = createDataTrackWrapper(dotTrack);
     const trackInfo: ChromViewTrackInfo = {
