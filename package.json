@@ -3,6 +3,7 @@
     "@floating-ui/dom": "^1.6.13",
     "@popperjs/core": "^2.11.8",
     "choices.js": "^11.1.0",
+    "datatables.net-dt": "^2.3.1",
     "lodash.debounce": "^4.0.8",
     "npm": "^11.2.0",
     "simple-datatables": "^10.0.0",

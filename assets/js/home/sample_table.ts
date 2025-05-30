@@ -1,4 +1,6 @@
-import { DataTable } from "simple-datatables";
+// import { DataTable } from "simple-datatables";
+
+import DataTable from "datatables.net-dt";
 
 export interface SampleInfo {
   case_id: string;
@@ -17,6 +19,7 @@ tableTemplate.innerHTML = String.raw`
   }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.1/css/dataTables.dataTables.min.css" />
 <table id="my-table">
   <thead>
     <tr>
@@ -34,7 +37,7 @@ tableTemplate.innerHTML = String.raw`
 `;
 
 function prettyDate(isoString: string): string {
-const d = new Date(isoString);
+  const d = new Date(isoString);
   const pad = (n) => String(n).padStart(2, "0");
   const Y = d.getFullYear();
   const M = pad(d.getMonth() + 1);
@@ -46,17 +49,25 @@ const d = new Date(isoString);
 
 export class SamplesTable extends HTMLElement {
   private table: HTMLTableElement;
-  private dataTable: DataTable;
+  private dataTable: any;
 
   connectedCallback(): void {
     this.appendChild(tableTemplate.content.cloneNode(true));
 
-    this.dataTable = new DataTable("#my-table", {
-      searchable: true,
-      fixedHeight: true,
-      perPage: 20,
-      labels: { noRows: "Loading..." },
-    });
+    
+    // new DataTables(this.table)({
+    //   searchable: true,
+    //   fixedHeight: true,
+    //   perPage: 20,
+    //   labels: { noRows: "Loading..." },
+    // });
+
+    // this.dataTable = new DataTable("#my-table", {
+    //   searchable: true,
+    //   fixedHeight: true,
+    //   perPage: 20,
+    //   labels: { noRows: "Loading..." },
+    // });
   }
 
   initialize(
@@ -81,7 +92,10 @@ export class SamplesTable extends HTMLElement {
       prettyDate(s.created_at),
     ]);
 
-    this.dataTable.insert({ data: newRows });
+
+    this.dataTable = new DataTable("#my-table", { data: newRows });
+
+    // this.dataTable.insert({ data: newRows });
   }
 }
 
