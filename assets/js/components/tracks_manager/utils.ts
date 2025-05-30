@@ -11,6 +11,7 @@ import {
 } from "../util/menu_content_utils";
 import { getSimpleButton } from "../util/menu_utils";
 import { TrackViewTrackInfo } from "./track_view";
+import { BAF_Y_RANGE, COV_Y_RANGE } from "./tracks_manager";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -249,11 +250,14 @@ export function createOverviewTrack(
   chromSizes: Record<string, number>,
   chromClick: (chrom: string) => void,
   session: GensSession,
+  yAxis: Axis,
 ): OverviewTrack {
+
+
   const overviewTrack = new OverviewTrack(
     id,
     label,
-    { height: trackHeight.l },
+    { height: trackHeight.xl },
     chromSizes,
     chromClick,
     yRange,
@@ -274,6 +278,7 @@ export function createOverviewTrack(
       };
     },
     true,
+    yAxis,
   );
   return overviewTrack;
 }
