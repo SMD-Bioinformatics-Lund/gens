@@ -54,7 +54,18 @@ export class SamplesTable extends HTMLElement {
   connectedCallback(): void {
     this.appendChild(tableTemplate.content.cloneNode(true));
 
-    
+    this.dataTable = new DataTable("#my-table", {
+      data: [],
+      deferRender: true,
+      paging: true,
+      pageLength: 50,
+      searching: true,
+      ordering: true,
+      info: true,
+      lengthChange: false,
+      language: { emptyTable: "Loading..." },
+    });
+
     // new DataTables(this.table)({
     //   searchable: true,
     //   fixedHeight: true,
@@ -81,7 +92,7 @@ export class SamplesTable extends HTMLElement {
       );
     }
 
-    const newRows = sampleInfo.map((s) => [
+    const rows = sampleInfo.map((s) => [
       `<a href="${getGensURL(s.case_id, s.sample_ids)}">${s.case_id}</a> (<a href="${scoutBaseURL}/${s.case_id}">Scout</a>)`,
       s.sample_ids
         .map((id) => `<a href="${getGensURL(s.case_id, [id])}">${id}</a>`)
@@ -92,8 +103,9 @@ export class SamplesTable extends HTMLElement {
       prettyDate(s.created_at),
     ]);
 
-
-    this.dataTable = new DataTable("#my-table", { data: newRows });
+    this.dataTable.clear();
+    this.dataTable.rows.add(rows);
+    this.dataTable.draw();
 
     // this.dataTable.insert({ data: newRows });
   }
