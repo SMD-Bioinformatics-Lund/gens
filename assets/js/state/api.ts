@@ -392,33 +392,6 @@ async function getCovData(
   return parsedResult;
 }
 
-// function getDataPerZoom(
-//   chrom: string,
-//   zoomLevels: string[],
-//   endpoint: string,
-//   sampleId: string,
-//   caseId: string,
-//   apiURI: string,
-//   chromSizes: Record<string, number>,
-// ): Record<string, Promise<ApiCoverageDot[]>> {
-//   const dataPerZoom: Record<string, Promise<ApiCoverageDot[]>> = {};
-
-//   for (const zoom of zoomLevels) {
-//     const parsedResult = getCovData(
-//       apiURI,
-//       endpoint,
-//       sampleId,
-//       caseId,
-//       chrom,
-//       zoom,
-//       [1, chromSizes[chrom]],
-//     );
-//     dataPerZoom[zoom] = parsedResult;
-//   }
-
-//   return dataPerZoom;
-// }
-
 async function getOverviewData(
   sampleId: string,
   caseId: string,
