@@ -140,17 +140,25 @@ export class API {
     }
 
     if (CACHED_ZOOM_LEVELS.includes(zoom)) {
-      const chrIsCached =
+      const chromIsCached =
         this.covSampleChrZoomCache[sampleId][chrom] !== undefined;
-      if (!chrIsCached) {
-        this.covSampleChrZoomCache[sampleId][chrom] = getDataPerZoom(
-          chrom,
-          CACHED_ZOOM_LEVELS,
+
+      if (!chromIsCached) {
+        this.covSampleChrZoomCache[sampleId][chrom] = {};
+      }
+
+      const zoomIsCached =
+        this.covSampleChrZoomCache[sampleId][chrom][zoom] !== undefined;
+
+      if (!zoomIsCached) {
+        this.covSampleChrZoomCache[sampleId][chrom][zoom] = getCovData(
+          this.apiURI,
           endpoint,
           sampleId,
           caseId,
-          this.apiURI,
-          this.getChromSizes(),
+          chrom,
+          zoom,
+          [1, this.getChromSizes()[chrom]],
         );
       }
       return this.covSampleChrZoomCache[sampleId][chrom][zoom];
@@ -188,14 +196,21 @@ export class API {
       const chrIsCached =
         this.bafSampleZoomChrCache[sampleId][chrom] !== undefined;
       if (!chrIsCached) {
-        this.bafSampleZoomChrCache[sampleId][chrom] = getDataPerZoom(
-          chrom,
-          CACHED_ZOOM_LEVELS,
+        this.bafSampleZoomChrCache[sampleId][chrom] = {};
+      }
+
+      const zoomIsCached =
+        this.bafSampleZoomChrCache[sampleId][chrom][zoom] !== undefined;
+
+      if (!zoomIsCached) {
+        this.bafSampleZoomChrCache[sampleId][chrom][zoom] = getCovData(
+          this.apiURI,
           endpoint,
           sampleId,
           caseId,
-          this.apiURI,
-          this.getChromSizes(),
+          chrom,
+          zoom,
+          [1, this.getChromSizes()[chrom]],
         );
       }
       return this.bafSampleZoomChrCache[sampleId][chrom][zoom];
@@ -377,32 +392,32 @@ async function getCovData(
   return parsedResult;
 }
 
-function getDataPerZoom(
-  chrom: string,
-  zoomLevels: string[],
-  endpoint: string,
-  sampleId: string,
-  caseId: string,
-  apiURI: string,
-  chromSizes: Record<string, number>,
-): Record<string, Promise<ApiCoverageDot[]>> {
-  const dataPerZoom: Record<string, Promise<ApiCoverageDot[]>> = {};
+// function getDataPerZoom(
+//   chrom: string,
+//   zoomLevels: string[],
+//   endpoint: string,
+//   sampleId: string,
+//   caseId: string,
+//   apiURI: string,
+//   chromSizes: Record<string, number>,
+// ): Record<string, Promise<ApiCoverageDot[]>> {
+//   const dataPerZoom: Record<string, Promise<ApiCoverageDot[]>> = {};
 
-  for (const zoom of zoomLevels) {
-    const parsedResult = getCovData(
-      apiURI,
-      endpoint,
-      sampleId,
-      caseId,
-      chrom,
-      zoom,
-      [1, chromSizes[chrom]],
-    );
-    dataPerZoom[zoom] = parsedResult;
-  }
+//   for (const zoom of zoomLevels) {
+//     const parsedResult = getCovData(
+//       apiURI,
+//       endpoint,
+//       sampleId,
+//       caseId,
+//       chrom,
+//       zoom,
+//       [1, chromSizes[chrom]],
+//     );
+//     dataPerZoom[zoom] = parsedResult;
+//   }
 
-  return dataPerZoom;
-}
+//   return dataPerZoom;
+// }
 
 async function getOverviewData(
   sampleId: string,
