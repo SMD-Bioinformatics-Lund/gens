@@ -21,7 +21,7 @@ import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/parse_data";
-import { CHROMOSOMES, STYLE } from "./constants";
+import { STYLE } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
 import {
   SettingsMenu,
@@ -31,7 +31,6 @@ import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
-import { IconButton } from "./components/util/icon_button";
 import { setupShortcuts } from "./shortcuts";
 
 export async function samplesListInit(

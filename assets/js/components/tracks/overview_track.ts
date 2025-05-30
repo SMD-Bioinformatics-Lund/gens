@@ -15,16 +15,6 @@ const X_PAD = 5;
 const DOT_SIZE = 2;
 const PIXEL_RATIO = 2;
 
-interface Metrics {
-  xRange: Rng;
-  xScale: Scale;
-  yScale: Scale;
-  chromRanges: Record<string, Rng>;
-  viewPxRange: Rng;
-  chromStartPos: number;
-  pxRanges: Record<string, Rng>;
-}
-
 export class OverviewTrack extends CanvasTrack {
   totalChromSize: number;
   chromSizes: Record<string, number>;
