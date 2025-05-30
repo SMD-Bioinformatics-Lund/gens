@@ -166,7 +166,6 @@ export function createVariantTrack(
       container.appendChild(button);
 
       const entries = getVariantContextMenuContent(
-        variantId,
         sampleId,
         details,
         scoutUrl,

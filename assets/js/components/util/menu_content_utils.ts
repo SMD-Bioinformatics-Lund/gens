@@ -8,13 +8,12 @@ export interface InfoField {
 }
 
 export function getVariantContextMenuContent(
-  trackId: string,
   sampleId: string,
   details: ApiVariantDetails,
   variantUrl: string,
 ): HTMLDivElement[] {
   const sample = details.samples.filter(s => s.sample_id === sampleId)[0]
-  const info: { key: string; value: string; url?: string }[] = [
+  const info: InfoField[] = [
     { key: "Range", value: `${details.start} - ${details.end}` },
     {
       key: "Length",
