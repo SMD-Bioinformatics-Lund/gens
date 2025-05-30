@@ -48,6 +48,7 @@ export class DotTrack extends DataTrack {
   }
 
   override draw(renderData: DotTrackData) {
+    super.syncDimensions();
     super.drawStart();
 
     const { dots } = renderData;

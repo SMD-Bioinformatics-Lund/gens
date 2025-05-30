@@ -2,7 +2,7 @@ import { CHROMOSOMES } from "../constants";
 import { get } from "../util/fetch";
 import { zip } from "../util/utils";
 
-const CACHED_ZOOM_LEVELS = ["o", "a", "b"];
+const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 
 export class API {
   genomeBuild: number;
