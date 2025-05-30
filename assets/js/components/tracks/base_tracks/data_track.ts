@@ -237,7 +237,6 @@ export abstract class DataTrack extends CanvasTrack {
   abstract draw(renderData: DotTrackData | BandTrackData): void;
 
   protected drawStart() {
-    // super.syncDimensions();
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
@@ -334,7 +333,6 @@ export function renderYAxis(
     });
   }
 
-  // const settings = this.getSettings();
   const hideLabel = yAxis.hideLabelOnCollapse && !settings.isExpanded;
   const hideTicks = yAxis.hideTicksOnCollapse && !settings.isExpanded;
 

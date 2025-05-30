@@ -11,7 +11,6 @@ import {
 } from "../util/menu_content_utils";
 import { getSimpleButton } from "../util/menu_utils";
 import { TrackViewTrackInfo } from "./track_view";
-import { BAF_Y_RANGE, COV_Y_RANGE } from "./tracks_manager";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -252,8 +251,6 @@ export function createOverviewTrack(
   session: GensSession,
   yAxis: Axis,
 ): OverviewTrack {
-
-
   const overviewTrack = new OverviewTrack(
     id,
     label,

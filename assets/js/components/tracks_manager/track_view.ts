@@ -178,13 +178,6 @@ export class TrackView extends ShadowBaseElement {
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
     };
-    const yAxisBaf = {
-      range: BAF_Y_RANGE,
-      label: "B Allele Freq",
-      hideLabelOnCollapse: false,
-      hideTicksOnCollapse: false,
-    };
-
     const overviewTrackCov = createOverviewTrack(
       "overview_cov",
       "Overview (cov)",
@@ -196,6 +189,12 @@ export class TrackView extends ShadowBaseElement {
       yAxisCov,
     );
 
+    const yAxisBaf = {
+      range: BAF_Y_RANGE,
+      label: "B Allele Freq",
+      hideLabelOnCollapse: false,
+      hideTicksOnCollapse: false,
+    };
     const overviewTrackBaf = createOverviewTrack(
       "overview_baf",
       "Overview (baf)",

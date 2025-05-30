@@ -9,7 +9,6 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { GensMarker } from "../../movements/marker";
-import { COV_Y_RANGE } from "../tracks_manager/tracks_manager";
 import { renderYAxis } from "./base_tracks/data_track";
 
 const X_PAD = 5;
