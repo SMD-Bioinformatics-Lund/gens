@@ -173,7 +173,7 @@ class SimplifiedVariantRecord(RWModel):
     """Simplified variant info for rendering variant track."""
     
     variant_id: str
-    start: PositiveInt
+    position: PositiveInt = Field(..., description="Start position of the variant", alias="start")
     end: PositiveInt
     variant_type: str
     sub_category: str | None = None
@@ -196,7 +196,7 @@ class VariantRecord(RWModel):
     mate_id: str | None = None # For SVs this identifies the other end
     case_id: str  # case_id is a string like owner_caseid
     chromosome: str  # required
-    position: int  # required
+    position: PositiveInt = Field(..., description="Start position of the variant", alias="start")  
     end: int  # required
     length: int  # required
     reference: str  # required
@@ -213,7 +213,7 @@ class VariantRecord(RWModel):
     genetic_models: list[str] = []  # list of strings choices=GENETIC_MODELS
     compounds: list[dict[str, Any]] = [] # sorted list of <compound> ordering='combined_score'
     genes: list[dict[str, Any]] = [] # list with <gene>
-    dbsnp_id: str
+    dbsnp_id: str | None = None  # dbsnp id, if available
     # Gene ids:
     hgnc_ids: list[int] = [] # list of hgnc ids (int)
     hgnc_symbols: list[str] = [] # list of hgnc symbols (str)
