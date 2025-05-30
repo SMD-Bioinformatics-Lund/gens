@@ -156,7 +156,6 @@ export function createVariantTrack(
     },
     async (documentId: string) => {
       const details = await getVariantDetails(documentId);
-
       const scoutUrl = getVariantURL(details.document_id);
 
       const button = getSimpleButton("Set highlight", () => {
