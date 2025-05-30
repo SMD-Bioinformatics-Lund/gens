@@ -213,6 +213,7 @@ export abstract class DataTrack extends CanvasTrack {
       async () => {
         this.renderSeq = this.renderSeq + 1;
         const mySeq = this.renderSeq;
+        this.renderLoading();
         this.renderData = await this.getRenderData();
         if (mySeq !== this.renderSeq) {
           return;
