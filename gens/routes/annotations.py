@@ -29,7 +29,7 @@ from gens.models.genomic import (
 from gens.models.base import PydanticObjectId
 from gens.crud.genomic import get_chromosome_info, get_chromosomes
 from gens.crud.transcripts import get_transcript, get_transcripts as crud_get_transcripts
-from gens.crud.scout import VariantNotFoundError, VariantValidaitonError, get_variant, get_variants as get_variants_from_scout
+from gens.crud.scout import VariantNotFoundError, VariantValidationError, get_variant, get_variants as get_variants_from_scout
 
 from .utils import ApiTags, GensDb, ScoutDb
 
@@ -144,7 +144,7 @@ async def get_variants(
         variants = get_variants_from_scout(
             sample_name=sample_id, case_id=case_id, region=region, variant_category=category, db=db
         )
-    except VariantValidaitonError as e:
+    except VariantValidationError as e:
         raise HTTPException(
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e)
         )
@@ -162,7 +162,7 @@ async def get_variant_with_id(
     """
     try:
         variant = get_variant(variant_id, db=db)
-    except VariantValidaitonError as e:
+    except VariantValidationError as e:
         raise HTTPException(
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e)
         )

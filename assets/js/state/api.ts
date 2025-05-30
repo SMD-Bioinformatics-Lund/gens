@@ -251,28 +251,6 @@ export class API {
       };
       const url = new URL("tracks/variants", this.apiURI).href;
       const variants = get(url, query) as Promise<ApiSimplifiedVariant[]>;
-      // const variants = get(url, query).then((variants) => {
-      //   const typedVariants = variants as ApiSimplifiedVariant[];
-      //   const filteredVariants = typedVariants
-      //     .map(variant => {
-      //       const sampleCallInfo = variant.samples.find(
-      //         (sample) => sample.sample_id == sampleId,
-      //       );
-      //       variant.sample = sampleCallInfo;
-      //       return variant;
-      //     })
-      //     .filter((variant) => {
-      //       const sample = variant.sample;
-
-      //       return (
-      //         sample != null &&
-      //         sample.genotype_call != "0/0" &&
-      //         sample.genotype_call != "./."
-      //       );
-      //     });
-      //   return filteredVariants;
-      // });
-      // FIXME: Temporary fix until backend is in place
       this.variantsSampleChromCache[sampleId][chrom] = variants;
     }
     return this.variantsSampleChromCache[sampleId][chrom];

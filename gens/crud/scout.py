@@ -11,7 +11,7 @@ from gens.models.genomic import GenomicRegion, VariantCategory
 
 LOG = logging.getLogger(__name__)
 
-class VariantValidaitonError(Exception):
+class VariantValidationError(Exception):
     ...
 
 class VariantNotFoundError(Exception):
@@ -58,7 +58,7 @@ def get_variants(
             db.get_collection("variant").find(query, projection)]
     except ValidationError as e:
         LOG.error("Failed to validate variant data: %s", e)
-        raise VariantValidaitonError("Invalid variant data in Scout database")
+        raise VariantValidationError("Invalid variant data in Scout database")
     return result
 
 
@@ -72,5 +72,5 @@ def get_variant(variant_id: str, db: Database[Any]) -> VariantRecord:
         variant = VariantRecord.model_validate(raw_variant)
     except ValidationError as e:
         LOG.error("Failed to validate variant %s: %s", variant_id, e)
-        raise VariantValidaitonError(f"Invalid variant data for ID {variant_id}")
+        raise VariantValidationError(f"Invalid variant data for ID {variant_id}")
     return variant

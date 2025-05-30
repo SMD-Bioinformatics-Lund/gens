@@ -13,8 +13,8 @@ export function getVariantContextMenuContent(
   details: ApiVariantDetails,
   variantUrl: string,
 ): HTMLDivElement[] {
-
-  const info: InfoField[] = [
+  const sample = details.samples.filter(s => s.sample_id === sampleId)[0]
+  const info: { key: string; value: string; url?: string }[] = [
     { key: "Range", value: `${details.start} - ${details.end}` },
     {
       key: "Length",
@@ -22,7 +22,7 @@ export function getVariantContextMenuContent(
     },
     {
       key: "Genotype call",
-      value: details.sample?.genotype_call,
+      value: sample.genotype_call,
     },
     {
       key: "Allele depths",
@@ -32,15 +32,15 @@ export function getVariantContextMenuContent(
     },
     {
       key: "Read depth",
-      value: details.sample?.read_depth,
+      value: sample.read_depth,
     },
     {
       key: "Genotype quality",
-      value: details.sample?.genotype_quality,
+      value: sample.genotype_quality,
     },
     {
       key: "Split read",
-      value: details.sample?.split_read,
+      value: sample.split_read,
     },
     { key: "Variant URL", value: variantUrl, url: variantUrl },
     { key: "CADD score", value: details.cadd_score },
@@ -52,7 +52,7 @@ export function getVariantContextMenuContent(
       key: "Cytoband",
       value: `${details.cytoband_start} - ${details.cytoband_end}`,
     },
-    { key: "Rank score", value: details.rank_score },
+    { key: "Rank score", value: details.rank_score.toString() },
     { key: "BNF ID", value: details.document_id },
   ];
 
