@@ -63,7 +63,7 @@ export class API {
 
   getAnnotationDetails(id: string): Promise<ApiAnnotationDetails> {
     const details = get(
-      new URL(`tracks/annotations/annotation/${id}`, this.apiURI).href,
+      new URL(`tracks/annotations/${id}`, this.apiURI).href,
       {},
     ) as Promise<ApiAnnotationDetails>;
     return details;
@@ -71,7 +71,7 @@ export class API {
 
   getTranscriptDetails(id: string): Promise<ApiGeneDetails> {
     const details = get(
-      new URL(`tracks/transcripts/transcript/${id}`, this.apiURI).href,
+      new URL(`tracks/transcripts/${id}`, this.apiURI).href,
       {},
     ) as Promise<ApiGeneDetails>;
     return details;
