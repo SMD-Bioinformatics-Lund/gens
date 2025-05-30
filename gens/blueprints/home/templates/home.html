@@ -18,7 +18,7 @@
 {% block body %}
   {{ navbar('home', version, current_user) }}
   {{ super() }}
-  <div id="data" data-samples="{{ samples | tojson }}"></div>
+  <!-- <div id="data" data-samples="{{ samples | tojson }}"></div> -->
   <script>
     const samplesJSON = JSON.parse(`{{ samples | tojson }}`);
     // FIXME: Get from the backend
