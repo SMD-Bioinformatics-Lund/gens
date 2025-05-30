@@ -48,6 +48,7 @@ export class DotTrack extends DataTrack {
   }
 
   override draw(renderData: DotTrackData) {
+    super.syncDimensions();
     super.drawStart();
 
     const { dots } = renderData;
@@ -57,12 +58,24 @@ export class DotTrack extends DataTrack {
     const yScale = this.getYScale();
 
     const dotsInRange = dots.filter(
-      (dot) => dot.x >= xRange[0] && dot.y <= xRange[1],
+      (dot) => dot.x >= xRange[0] && dot.x <= xRange[1],
     );
 
-    drawDotsScaled(this.ctx, dotsInRange, xScale, yScale, {
+    const dotsTruncatedY = dotsInRange.map((dot) => {
+      const yRange = this.getYRange();
+      const copy = { ...dot, color: STYLE.colors.black };
+      if (dot.y < yRange[0]) {
+        copy.y = yRange[0];
+        copy.color = STYLE.colors.red;
+      } else if (dot.y > yRange[1]) {
+        copy.y = yRange[1];
+        copy.color = STYLE.colors.red;
+      }
+      return copy;
+    });
+
+    drawDotsScaled(this.ctx, dotsTruncatedY, xScale, yScale, {
       size: STYLE.dotTrack.dotSize,
-      color: STYLE.dotTrack.dotColor,
     });
 
     super.drawEnd();

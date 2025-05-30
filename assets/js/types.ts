@@ -524,7 +524,6 @@ interface DragCallbacks {
 
 interface Axis {
   range: Rng;
-  reverse: boolean;
   label: string;
   hideLabelOnCollapse: boolean;
   hideTicksOnCollapse: boolean;

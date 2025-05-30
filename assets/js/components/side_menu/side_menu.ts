@@ -84,7 +84,7 @@ template.innerHTML = String.raw`
     #entries {
       display: flex;
       flex-direction: column;
-      gap: ${SIZES.l}px;
+      gap: ${SIZES.s}px;
       font-weight: ${FONT_WEIGHT.bold};
       font-size: ${FONT_SIZE.medium}px;
     }

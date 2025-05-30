@@ -1,27 +1,19 @@
-import { drawLabel, drawLine } from "../../draw/shapes";
+import { drawBox, drawLabel, drawLine } from "../../draw/shapes";
 import { transformMap, padRange, generateID } from "../../util/utils";
 import { COLORS, STYLE } from "../../constants";
 import { CanvasTrack, CanvasTrackSettings } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,
+  getLinearScale,
   linearScale,
   renderBackground,
 } from "../../draw/render_utils";
 import { GensMarker } from "../../movements/marker";
+import { renderYAxis } from "./base_tracks/data_track";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;
 const PIXEL_RATIO = 2;
-
-interface Metrics {
-  xRange: Rng;
-  xScale: Scale;
-  yScale: Scale;
-  chromRanges: Record<string, Rng>;
-  viewPxRange: Rng;
-  chromStartPos: number;
-  pxRanges: Record<string, Rng>;
-}
 
 export class OverviewTrack extends CanvasTrack {
   totalChromSize: number;
@@ -29,6 +21,7 @@ export class OverviewTrack extends CanvasTrack {
   marker: GensMarker;
   onChromosomeClick: (chrom: string) => void;
   yRange: Rng;
+  yAxis: Axis;
 
   pxRanges: Record<string, Rng> = {};
 
@@ -52,6 +45,7 @@ export class OverviewTrack extends CanvasTrack {
     getRenderData: () => Promise<OverviewTrackData>,
     getRegion: () => Region,
     drawLabels: boolean,
+    yAxis: Axis,
   ) {
     super(id, label, settings);
 
@@ -61,6 +55,7 @@ export class OverviewTrack extends CanvasTrack {
     this.getRegion = getRegion;
     this.onChromosomeClick = onChromosomeClick;
     this.drawLabels = drawLabels;
+    this.yAxis = yAxis;
 
     this.staticBuffer = document.createElement("canvas");
     this.staticCtx = this.staticBuffer.getContext("2d");
@@ -82,14 +77,23 @@ export class OverviewTrack extends CanvasTrack {
     this.canvas.addEventListener("mousedown", (event) => {
       event.stopPropagation();
       const chrom = pixelToChrom(event.offsetX, this.pxRanges);
+      if (chrom == null) {
+        return;
+      }
       this.onChromosomeClick(chrom);
     });
 
-    this.trackContainer.style.cursor = "pointer";
+    this.addElementListener(
+      this.trackContainer,
+      "mousemove",
+      (event: MouseEvent) => {
+        this.trackContainer.style.cursor =
+          event.offsetX > STYLE.yAxis.width ? "pointer" : "";
+      },
+    );
   }
 
   async render(settings: RenderSettings) {
-
     const firstTime = this.renderData == null;
     const dataChanged = firstTime || settings.dataUpdated;
     const sizeChanged = firstTime || settings.resized;
@@ -121,10 +125,12 @@ export class OverviewTrack extends CanvasTrack {
         this.staticCtx,
         this.pxRanges,
         metrics.yScale,
+        this.yRange,
         this.renderData.dotsPerChrom,
         this.chromSizes,
         this.drawLabels,
-        this.dimensions.height,
+        this.dimensions,
+        this.yAxis,
       );
     }
 
@@ -165,7 +171,11 @@ function calculateMetrics(
     0,
   );
   const xScale = (pos: number) => {
-    return linearScale(pos, [0, totalChromSize], [0, dim.width]);
+    return linearScale(
+      pos,
+      [0, totalChromSize],
+      [STYLE.yAxis.width, dim.width],
+    );
   };
   const chromRanges = getChromRanges(chromSizes);
   const pxRanges: Record<string, Rng> = transformMap(
@@ -182,9 +192,8 @@ function calculateMetrics(
   ];
 
   const yPadding = drawLabels ? STYLE.overviewTrack.titleSpace : 0;
-  const yScale = (pos: number) => {
-    return linearScale(pos, yRange, [yPadding, dim.height]);
-  };
+  const reversed = true;
+  const yScale = getLinearScale(yRange, [yPadding, dim.height], reversed);
 
   return {
     xRange,
@@ -201,16 +210,26 @@ function renderOverviewPlot(
   ctx: CanvasRenderingContext2D,
   pxRanges: Record<string, Rng>,
   yScale: Scale,
+  yRange: Rng,
   dotsPerChrom: Record<string, RenderDot[]>,
   chromSizes: Record<string, number>,
   drawLabels: boolean,
-  height: number,
+  dimensions: Dimensions,
+  yAxis: Axis,
 ) {
+  // Draw the y axis
+  drawBox(
+    ctx,
+    { x1: 0, x2: STYLE.yAxis.width, y1: 0, y2: dimensions.height },
+    { fillColor: COLORS.extraLightGray },
+  );
+  renderYAxis(ctx, yAxis, yScale, dimensions, { isExpanded: true });
+
   // Draw the initial lines
   Object.values(pxRanges).forEach(([_chromPxStart, chromPxEnd]) => {
     drawLine(
       ctx,
-      { x1: chromPxEnd, x2: chromPxEnd, y1: 0, y2: height },
+      { x1: chromPxEnd, x2: chromPxEnd, y1: 0, y2: dimensions.height },
       { color: COLORS.lightGray },
     );
   });
@@ -243,24 +262,36 @@ function renderOverviewPlot(
 
     // FIXME: The coloring should probably be done here directly
     // Not in the data generation step
-    const coloredDots = dotData.map((dot) => {
-      const copyDot = Object.create(dot);
-      copyDot.color = STYLE.colors.darkGray;
-      return copyDot;
+    const coloredDotsInRange = dotData.map((dot) => {
+      const copy = { ...dot, color: STYLE.colors.black };
+      if (dot.y < yRange[0]) {
+        copy.y = yRange[0];
+        copy.color = STYLE.colors.red;
+      } else if (dot.y > yRange[1]) {
+        copy.y = yRange[1];
+        copy.color = STYLE.colors.red;
+      }
+      return copy;
     });
-    drawDotsScaled(ctx, coloredDots, chromXScale, yScale, {
+    drawDotsScaled(ctx, coloredDotsInRange, chromXScale, yScale, {
       size: DOT_SIZE,
-      color: COLORS.black,
     });
   });
 }
 
-function pixelToChrom(xPixel: number, pxRanges: Record<string, Rng>): string {
+function pixelToChrom(
+  xPixel: number,
+  pxRanges: Record<string, Rng>,
+): string | null {
+  if (xPixel < pxRanges["1"][0]) {
+    return null;
+  }
   for (const [chrom, range] of Object.entries(pxRanges)) {
     if (xPixel >= range[0] && xPixel < range[1]) {
       return chrom;
     }
   }
+
   throw Error(
     `Something went wrong, no chromosome range matched position: ${xPixel}`,
   );

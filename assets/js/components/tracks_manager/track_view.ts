@@ -172,6 +172,12 @@ export class TrackView extends ShadowBaseElement {
       },
     );
 
+    const yAxisCov = {
+      range: COV_Y_RANGE,
+      label: "Log2 Ratio",
+      hideLabelOnCollapse: false,
+      hideTicksOnCollapse: false,
+    };
     const overviewTrackCov = createOverviewTrack(
       "overview_cov",
       "Overview (cov)",
@@ -180,8 +186,15 @@ export class TrackView extends ShadowBaseElement {
       chromSizes,
       chromClick,
       session,
+      yAxisCov,
     );
 
+    const yAxisBaf = {
+      range: BAF_Y_RANGE,
+      label: "B Allele Freq",
+      hideLabelOnCollapse: false,
+      hideTicksOnCollapse: false,
+    };
     const overviewTrackBaf = createOverviewTrack(
       "overview_baf",
       "Overview (baf)",
@@ -190,9 +203,10 @@ export class TrackView extends ShadowBaseElement {
       chromSizes,
       chromClick,
       session,
+      yAxisBaf,
     );
 
-    this.overviewTracks = [overviewTrackCov, overviewTrackBaf];
+    this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
     for (const sample of samples) {
       const startExpanded = samples.length == 1 ? true : false;
@@ -223,8 +237,8 @@ export class TrackView extends ShadowBaseElement {
     );
 
     const tracks: TrackViewTrackInfo[] = [
-      ...covTracks,
       ...bafTracks,
+      ...covTracks,
       ...variantTracks,
       genesTrack,
     ];
@@ -513,7 +527,6 @@ function createSampleTracks(
       startExpanded,
       yAxis: {
         range: COV_Y_RANGE,
-        reverse: true,
         label: "Log2 Ratio",
         hideLabelOnCollapse: true,
         hideTicksOnCollapse: true,
@@ -532,7 +545,6 @@ function createSampleTracks(
       startExpanded,
       yAxis: {
         range: BAF_Y_RANGE,
-        reverse: true,
         label: "B Allele Freq",
         hideLabelOnCollapse: true,
         hideTicksOnCollapse: true,

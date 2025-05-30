@@ -1,5 +1,5 @@
 import { ShadowBaseElement } from "../components/util/shadowbaseelement";
-import { COLORS, SIZES, STYLE } from "../constants";
+import { COLORS, SIZES, STYLE, ZINDICES } from "../constants";
 import { rangeSize, sortRange } from "../util/utils";
 
 const style = STYLE.menu;
@@ -13,7 +13,7 @@ template.innerHTML = String.raw`
       top: 0;
       display: flex;
       pointer-events: none;
-      z-index: 10000;
+      z-index: ${ZINDICES.trackMarkers};
       background-color: ${COLORS.transparentYellow};
     }
     #close {

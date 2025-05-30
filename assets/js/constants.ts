@@ -2,6 +2,7 @@
 // Component specific info goes into the STYLE constant
 
 export const ZINDICES = {
+  trackMarkers: 1000,
   sideMenu: 2000,
 }
 
@@ -76,7 +77,7 @@ export const SIZES = {
 const font = "12px sans-serif";
 
 const TRACK_HEIGHTS = {
-  xl: 240,
+  xl: 200,
   l: 120,
   m: 45,
   s: 30,

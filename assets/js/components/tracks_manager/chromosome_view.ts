@@ -235,7 +235,6 @@ function addSampleTracks(
         startExpanded: false,
         yAxis: {
           range: COV_Y_RANGE,
-          reverse: true,
           label: "Log2 ratio",
           hideLabelOnCollapse: true,
           hideTicksOnCollapse: true,

@@ -72,6 +72,8 @@ export class BandTrack extends DataTrack {
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
+    this.syncDimensions();
+
     const xScale = getLinearScale(xRange, [
       LEFT_PX_EDGE,
       this.dimensions.width,

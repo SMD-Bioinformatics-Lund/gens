@@ -99,7 +99,6 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   public toggleExpanded() {
-
     const settings = this.getSettings();
     settings.isExpanded = !settings.isExpanded;
     this.updateSettings(settings);
@@ -152,7 +151,6 @@ export abstract class DataTrack extends CanvasTrack {
       height,
     });
 
-    
     this.trackType = trackType;
     this.getSettings = getSettings;
     this.getXRange = getXRange;
@@ -165,11 +163,9 @@ export abstract class DataTrack extends CanvasTrack {
     };
     this.getYScale = () => {
       const yRange = this.getYRange();
-      const yScale = getLinearScale(
-        yRange,
-        this.getYDim(),
-        getSettings().yAxis.reverse,
-      );
+      // Screen coordinates starts from the top
+      const reverse = true;
+      const yScale = getLinearScale(yRange, this.getYDim(), reverse);
       return yScale;
     };
 
@@ -217,6 +213,7 @@ export abstract class DataTrack extends CanvasTrack {
       async () => {
         this.renderSeq = this.renderSeq + 1;
         const mySeq = this.renderSeq;
+        this.renderLoading();
         this.renderData = await this.getRenderData();
         if (mySeq !== this.renderSeq) {
           return;
@@ -240,7 +237,6 @@ export abstract class DataTrack extends CanvasTrack {
   abstract draw(renderData: DotTrackData | BandTrackData): void;
 
   protected drawStart() {
-    super.syncDimensions();
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
@@ -264,7 +260,13 @@ export abstract class DataTrack extends CanvasTrack {
     );
 
     if (this.getSettings().yAxis != null) {
-      this.renderYAxis(this.getSettings().yAxis);
+      renderYAxis(
+        this.ctx,
+        this.getSettings().yAxis,
+        this.getYScale(),
+        this.dimensions,
+        this.getSettings(),
+      );
     }
   }
 
@@ -290,44 +292,52 @@ export abstract class DataTrack extends CanvasTrack {
     }
   }
 
-  renderYAxis(yAxis: Axis) {
-    const yScale = this.getYScale();
-    const tickSize = getTickSize(yAxis.range);
-    const ticks = generateTicks(yAxis.range, tickSize);
-
-    for (const yTick of ticks) {
-      const yPx = yScale(yTick);
-
-      const lineDims = {
-        x1: STYLE.yAxis.width,
-        x2: this.dimensions.width,
-        y1: yPx,
-        y2: yPx,
-      };
-
-      drawLine(this.ctx, lineDims, {
-        color: STYLE.colors.lighterGray,
-        dashed: false,
-      });
-    }
-
-    const settings = this.getSettings();
-    const hideLabel = yAxis.hideLabelOnCollapse && !settings.isExpanded;
-    const hideTicks = yAxis.hideTicksOnCollapse && !settings.isExpanded;
-
-    const label = hideLabel ? "" : yAxis.label;
-    const renderTicks = hideTicks ? [] : ticks;
-
-    drawYAxis(this.ctx, renderTicks, yScale, yAxis.range, label);
-  }
-
   drawTrackLabel(shiftRight: number = 0): Box {
     return drawLabel(
       this.ctx,
       this.label,
       STYLE.tracks.textPadding + shiftRight,
       STYLE.tracks.textPadding,
-      { textBaseline: "top", boxStyle: { fillColor: `${COLORS.white}${TRANSPARENCY.s}` } },
+      {
+        textBaseline: "top",
+        boxStyle: { fillColor: `${COLORS.white}${TRANSPARENCY.s}` },
+      },
     );
   }
+}
+
+export function renderYAxis(
+  ctx: CanvasRenderingContext2D,
+  yAxis: Axis,
+  yScale: Scale,
+  dimensions: Dimensions,
+  settings: { isExpanded?: boolean },
+) {
+  // const yScale = this.getYScale();
+  const tickSize = getTickSize(yAxis.range);
+  const ticks = generateTicks(yAxis.range, tickSize);
+
+  for (const yTick of ticks) {
+    const yPx = yScale(yTick);
+
+    const lineDims = {
+      x1: STYLE.yAxis.width,
+      x2: dimensions.width,
+      y1: yPx,
+      y2: yPx,
+    };
+
+    drawLine(ctx, lineDims, {
+      color: STYLE.colors.lighterGray,
+      dashed: false,
+    });
+  }
+
+  const hideLabel = yAxis.hideLabelOnCollapse && !settings.isExpanded;
+  const hideTicks = yAxis.hideTicksOnCollapse && !settings.isExpanded;
+
+  const label = hideLabel ? "" : yAxis.label;
+  const renderTicks = hideTicks ? [] : ticks;
+
+  drawYAxis(ctx, renderTicks, yScale, yAxis.range, label);
 }

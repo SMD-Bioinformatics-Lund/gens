@@ -127,8 +127,8 @@ export function createVariantTrack(
   trackId: string,
   label: string,
   dataFn: () => Promise<RenderBand[]>,
-  getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>,
-  getVariantURL: (variantId: string) => string,
+  getVariantDetails: (documentId: string) => Promise<ApiVariantDetails>,
+  getVariantURL: (documentId: string) => string,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): BandTrack {
@@ -157,7 +157,7 @@ export function createVariantTrack(
     },
     async (variantId: string) => {
       const details = await getVariantDetails(variantId);
-      const scoutUrl = getVariantURL(variantId);
+      const scoutUrl = getVariantURL(details.document_id);
 
       const button = getSimpleButton("Set highlight", () => {
         session.addHighlight([details.start, details.end]);
@@ -251,11 +251,12 @@ export function createOverviewTrack(
   chromSizes: Record<string, number>,
   chromClick: (chrom: string) => void,
   session: GensSession,
+  yAxis: Axis,
 ): OverviewTrack {
   const overviewTrack = new OverviewTrack(
     id,
     label,
-    { height: trackHeight.l },
+    { height: trackHeight.xl },
     chromSizes,
     chromClick,
     yRange,
@@ -276,6 +277,7 @@ export function createOverviewTrack(
       };
     },
     true,
+    yAxis,
   );
   return overviewTrack;
 }
