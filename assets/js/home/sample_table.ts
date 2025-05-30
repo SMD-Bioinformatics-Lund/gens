@@ -54,7 +54,8 @@ export class SamplesTable extends HTMLElement {
     this.dataTable = new DataTable("#my-table", {
       searchable: true,
       fixedHeight: true,
-      perPage: 20,
+      perPage: 50,
+      perPageSelect: false,      
       labels: { noRows: "Loading..." },
     });
   }
