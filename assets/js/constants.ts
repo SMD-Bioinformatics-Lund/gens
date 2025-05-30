@@ -2,6 +2,7 @@
 // Component specific info goes into the STYLE constant
 
 export const ZINDICES = {
+  trackMarkers: 1000,
   sideMenu: 2000,
 }
 
