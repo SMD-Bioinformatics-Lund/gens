@@ -1,4 +1,4 @@
-import { SIZES, STYLE } from "../../constants";
+import { SIZES } from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
 import { GensSession } from "../../state/gens_session";

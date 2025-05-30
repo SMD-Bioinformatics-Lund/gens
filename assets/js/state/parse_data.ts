@@ -107,8 +107,8 @@ export function getRenderDataSource(
     getTranscriptBands,
     getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
     getVariantBands,
-    getVariantDetails: (sample: Sample, variantId: string, chrom: string) =>
-      api.getVariantDetails(sample.caseId, sample.sampleId, variantId, chrom),
+    getVariantDetails: (sample: Sample, documentId: string, chrom: string) =>
+      api.getVariantDetails(sample.caseId, sample.sampleId, documentId, chrom),
     getOverviewCovData,
     getOverviewBafData,
   };
@@ -190,7 +190,7 @@ export function parseVariants(
   variantColorMap: VariantColors,
 ): RenderBand[] {
   return variants.map((variant) => {
-    const id = variant.variant_id;
+    const id = variant.document_id;
     return {
       id,
       start: variant.position,

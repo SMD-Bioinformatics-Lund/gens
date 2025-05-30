@@ -82,11 +82,11 @@ export class API {
   async getVariantDetails(
     caseId: string,
     sampleId: string,
-    variantId: string,
+    documentId: string,
     currChrom: string,
   ): Promise<ApiVariantDetails> {
     const variants = await this.getVariants(caseId, sampleId, currChrom);
-    const targets = variants.filter((v) => v.variant_id === variantId);
+    const targets = variants.filter((v) => v.document_id === documentId);
     if (targets.length != 1) {
       console.error("Expected a single variant, found: ", targets);
       if (targets.length === 0) {

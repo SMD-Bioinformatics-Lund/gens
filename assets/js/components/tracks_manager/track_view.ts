@@ -559,8 +559,12 @@ function createSampleTracks(
     `${sample.sampleId}_variants`,
     `${sample.sampleId} Variants`,
     () => dataSources.getVariantBands(sample, session.getChromosome()),
-    (variantId: string) =>
-      dataSources.getVariantDetails(sample, variantId, session.getChromosome()),
+    (documentId: string) =>
+      dataSources.getVariantDetails(
+        sample,
+        documentId,
+        session.getChromosome(),
+      ),
     (variantId: string) => session.getVariantURL(variantId),
     session,
     openTrackContextMenu,
