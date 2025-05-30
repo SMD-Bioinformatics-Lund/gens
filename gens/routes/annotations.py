@@ -134,7 +134,6 @@ async def get_variants(
     db: ScoutDb,
     start: int = 1,
     end: int | None = None,
-    gt: list[str] = Query([], description="Genotype calls to filter by, e.g. ['1/1', '1/1']"),
 ) -> list[SimplifiedVariantRecord]:
     """Get all variants for a genomic region.
 
