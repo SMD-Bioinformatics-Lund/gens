@@ -1,4 +1,4 @@
-import { COLORS, SIZES, STYLE, TRANSPARENCY } from "../../../constants";
+import { COLORS, SIZES, STYLE, TRACK_HEIGHTS, TRANSPARENCY } from "../../../constants";
 import {
   drawYAxis,
   getLinearScale,
@@ -58,7 +58,7 @@ export abstract class DataTrack extends CanvasTrack {
   protected getXScale: () => Scale;
   protected getYRange: () => Rng;
   protected getYScale: () => Scale;
-  protected openTrackContextMenu: (track: DataTrack) => void;
+  protected openTrackContextMenu: ((track: DataTrack) => void) | null;
 
   public getYDim(): Rng {
     return [Y_PAD, this.dimensions.height - Y_PAD];
@@ -135,18 +135,19 @@ export abstract class DataTrack extends CanvasTrack {
     trackType: TrackType,
     getXRange: () => Rng,
     getXScale: () => Scale,
-    openTrackContextMenu: (track: DataTrack) => void,
+    openTrackContextMenu: ((track: DataTrack) => void) | null,
     getSettings: () => DataTrackSettings,
     updateSettings: (settings: DataTrackSettings) => void,
     session: GensSession,
   ) {
     const heightConf = getSettings != null ? getSettings().height : null;
+    const fallbackHeight = TRACK_HEIGHTS.xxs;
     const height =
       heightConf != null
         ? heightConf.startExpanded
           ? heightConf.expandedHeight
           : heightConf.collapsedHeight
-        : 10;
+        : fallbackHeight;
     super(id, label, {
       height,
     });
@@ -285,10 +286,14 @@ export abstract class DataTrack extends CanvasTrack {
     if (settings.isExpanded || settings.showLabelWhenCollapsed) {
       const yAxisWidth = STYLE.yAxis.width;
       const labelBox = this.drawTrackLabel(yAxisWidth);
-      this.labelBox = {
-        label: this.label,
-        box: labelBox,
-      };
+
+
+      if (this.openTrackContextMenu  != null) {
+        this.labelBox = {
+          label: this.label,
+          box: labelBox,
+        };
+      }
     }
   }
 

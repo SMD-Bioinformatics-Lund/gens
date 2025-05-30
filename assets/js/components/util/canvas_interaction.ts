@@ -69,7 +69,7 @@ export function setCanvasPointerCursor(
     } | null,
   ) {
     if (markerModeOn()) {
-      if (offset.x < markerArea[0] || offset.y > markerArea[1]) {
+      if (offset.x < markerArea[0] || offset.x > markerArea[1]) {
         // FIXME: CSS based instead here
         canvas.style.cursor = "crosshair";
       } else {

@@ -198,7 +198,7 @@ export function createGeneTrack(
   getBands: (chrom: string) => Promise<RenderBand[]>,
   getDetails: (id: string) => Promise<ApiGeneDetails>,
   session: GensSession,
-  openTrackContextMenu: (track: DataTrack) => void,
+  openTrackContextMenu: ((track: DataTrack) => void) | null,
 ): TrackViewTrackInfo {
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
