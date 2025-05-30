@@ -68,9 +68,13 @@ export class BandTrack extends DataTrack {
 
   override draw(renderData: BandTrackData) {
 
+    console.log("New band draw with dimensions", this.dimensions);
+
     const { bands, xRange } = renderData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
+
+    this.syncDimensions();
 
     const xScale = getLinearScale(xRange, [
       LEFT_PX_EDGE,

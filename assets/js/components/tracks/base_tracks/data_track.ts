@@ -236,7 +236,7 @@ export abstract class DataTrack extends CanvasTrack {
   abstract draw(renderData: DotTrackData | BandTrackData): void;
 
   protected drawStart() {
-    super.syncDimensions();
+    // super.syncDimensions();
     const dimensions = this.dimensions;
     renderBackground(this.ctx, dimensions, STYLE.tracks.edgeColor);
 
