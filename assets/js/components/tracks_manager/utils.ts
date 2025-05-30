@@ -154,9 +154,9 @@ export function createVariantTrack(
         bands: await dataFn(),
       };
     },
-    async (variantId: string) => {
-      const details = await getVariantDetails(variantId);
-      const scoutUrl = getVariantURL(variantId);
+    async (entryId: string) => {
+      const details = await getVariantDetails(entryId);
+      const scoutUrl = getVariantURL(details.variant_id);
 
       const button = getSimpleButton("Set highlight", () => {
         session.addHighlight([details.position, details.end]);
@@ -165,7 +165,7 @@ export function createVariantTrack(
       container.appendChild(button);
 
       const entries = getVariantContextMenuContent(
-        variantId,
+        entryId,
         details,
         scoutUrl,
       );
