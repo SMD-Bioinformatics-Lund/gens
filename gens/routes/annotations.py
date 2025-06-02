@@ -5,7 +5,7 @@ Query individual annotaions or transcript to get the full info.
 """
 
 from http import HTTPStatus
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 
 from gens.constants import MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import get_annotation, get_annotation_tracks, get_annotations_for_track
@@ -162,7 +162,7 @@ async def get_variant_with_id(
     """
     try:
         variant = get_variant(variant_id, db=db)
-    except VariantValidationError as e:
+    except VariantValidaitonError as e:
         raise HTTPException(
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e)
         )
