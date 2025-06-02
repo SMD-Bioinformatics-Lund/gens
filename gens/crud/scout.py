@@ -33,6 +33,7 @@ def get_variants(
     Kwargs are optional search parameters that are passed to db.find().
     """
     # build query
+    valid_genotype_calls = ["0/1", "1/1"]  # only include unphased calls, different from the reference genome
     query: dict[str, Any] = {
         "case_id": case_id,
         "category": variant_category,
@@ -41,7 +42,7 @@ def get_variants(
             {"samples.display_name": sample_name},
         ],
         "chromosome": region.chromosome,  # type: ignore
-        "samples.genotype_call": {'$in': ["0/1", "1/1"]},
+        "samples.genotype_call": {'$in': valid_genotype_calls},
     }
     # add start, end position to query
     if all(param is not None for param in [region.start, region.end]):
