@@ -60,12 +60,29 @@ class Chromosome(StrEnum):
     MT = "MT"
 
 
+class VariantType(StrEnum):
+    CLIN = "clinical"
+    RESEARCH = "research"
+
 class VariantCategory(StrEnum):
     """Valid categories for variants."""
 
     STRUCTURAL = "str"
     SINGLE_VAR = "sv"
     SINGLE_NT_VAR = "snv"
+
+
+class VariantSubCategory(StrEnum):
+    SNV = "snv"
+    INDEL = "indel"
+    DEL = "del"
+    INS = "ins"
+    DUP = "dup"
+    INV = "inv"
+    CNV = "cnv"
+    BND = "bnd"
+    STR = "str"
+    MEI = "mei"
 
 
 class GenomePosition(RWModel):
