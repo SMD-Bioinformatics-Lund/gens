@@ -142,7 +142,7 @@ async def get_variants(
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
     try:
         variants = get_variants_from_scout(
-            sample_name=sample_id, case_id=case_id, region=region, variant_category=category, gt=gt, db=db
+            sample_name=sample_id, case_id=case_id, region=region, variant_category=category, db=db
         )
     except VariantValidaitonError as e:
         raise HTTPException(
