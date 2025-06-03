@@ -8,20 +8,20 @@ export interface InfoField {
 }
 
 export function getVariantContextMenuContent(
-  id: string,
+  sampleId: string,
   details: ApiVariantDetails,
   variantUrl: string,
 ): HTMLDivElement[] {
-
+  const sample = details.samples.filter(s => s.sample_id === sampleId)[0]
   const info: InfoField[] = [
-    { key: "Range", value: `${details.position} - ${details.end}` },
+    { key: "Range", value: `${details.start} - ${details.end}` },
     {
       key: "Length",
       value: prefixNts(details.length),
     },
     {
       key: "Genotype call",
-      value: details.sample?.genotype_call,
+      value: sample.genotype_call,
     },
     {
       key: "Allele depths",
@@ -31,15 +31,15 @@ export function getVariantContextMenuContent(
     },
     {
       key: "Read depth",
-      value: details.sample?.read_depth,
+      value: sample.read_depth,
     },
     {
       key: "Genotype quality",
-      value: details.sample?.genotype_quality,
+      value: sample.genotype_quality,
     },
     {
       key: "Split read",
-      value: details.sample?.split_read,
+      value: sample.split_read,
     },
     { key: "Variant URL", value: variantUrl, url: variantUrl },
     { key: "CADD score", value: details.cadd_score },
@@ -51,8 +51,8 @@ export function getVariantContextMenuContent(
       key: "Cytoband",
       value: `${details.cytoband_start} - ${details.cytoband_end}`,
     },
-    { key: "Rank score", value: details.rank_score },
-    { key: "BNF ID", value: id },
+    { key: "Rank score", value: details.rank_score.toString() },
+    { key: "BNF ID", value: details.document_id },
   ];
 
   const entries: HTMLDivElement[] = info.map((i) => getEntry(i));

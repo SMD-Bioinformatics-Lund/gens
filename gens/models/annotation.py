@@ -3,11 +3,11 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import AnyUrl, Field, HttpUrl, PositiveInt, field_serializer
+from pydantic import AnyUrl, ConfigDict, Field, PositiveInt, field_serializer
 from pydantic_extra_types.color import Color
 
 from .base import CreatedAtModel, ModifiedAtModel, PydanticObjectId, RWModel
-from .genomic import Chromosome, DnaStrand, GenomeBuild, GenomePosition
+from .genomic import Chromosome, DnaStrand, GenomeBuild, GenomePosition, VariantCategory, VariantSubCategory, VariantType
 
 
 class Comment(
@@ -167,3 +167,61 @@ class TranscriptRecord(RWModel):
     genome_build: GenomeBuild
     # render info
     height_order: PositiveInt
+
+
+class SimplifiedVariantRecord(RWModel):
+    """Simplified variant info for rendering variant track."""
+    
+    variant_id: str
+    position: PositiveInt = Field(..., description="Start position of the variant", alias="start")
+    end: PositiveInt
+    variant_type: str
+    sub_category: str | None = None
+
+class VariantRecord(RWModel):
+    """Detailed variant info for rendering variant tooltips.
+    
+    Reference: https://github.com/Clinical-Genomics/scout/blob/main/scout/models/variant/variant.py
+    """
+    document_id: str = Field(..., description="Same as _id.")
+    variant_id: str = Field(..., description="A md5 string created by [ chrom, pos, ref, alt, variant_type]")
+    display_name: str = Field(..., description="no md5. chrom_pos_ref_alt_variant_type")
+    simple_id: str = Field(..., description="A string created by chrom_pos_ref_alt")
+    variant_type: VariantType = Field(..., description="Scout uses variant type to determine what information to display.")
+    category: VariantCategory
+    sub_category: VariantSubCategory
+    mate_id: str | None = Field(default=None, description="For SVs this identifies the other end")
+    case_id: str
+    chromosome: str
+    position: PositiveInt = Field(..., description="Start position of the variant", alias="start")  
+    end: int
+    length: int
+    reference: str
+    alternative: str
+    rank_score: float
+    variant_rank: int
+    rank_score_results: list[dict[str, str | int]]
+    institute: str = Field(..., description="institute id")
+    sanger_ordered: bool = False
+    validation: str | None = Field(None, description="Sanger validation result, choices=('True positive', 'False positive')")
+    quality: float
+    filters: list[str]
+    samples: list[dict[str, Any]] = Field([], description="Contain <gt_calls> objects")
+    genetic_models: list[str] = Field([], description="List of genetic models enum")
+    compounds: list[dict[str, Any]] = Field([], description="sorted list of <compound> ordering=combined_score")
+    genes: list[dict[str, Any]] = Field([], description="List of gene objects.")
+    dbsnp_id: str | None = None
+    # Gene ids:
+    hgnc_ids: list[int] = []
+    hgnc_symbols: list[str] = []
+    panels: list[str] = Field([], description="list of panel names that the variant overlaps")
+    # Database options:
+    gene_lists: list[Any] = []
+    manual_rank: int | None = Field(None, description="choices=[0, 1, 2, 3, 4, 5]")
+    dismiss_variant: list[Any] = []
+    acmg_classification: str | None = Field(None, description="Manual ACMG classification of variant, choices=ACMG_TERMS")
+    ccv_classification: str | None = Field(None, description="Manual CCV classification of variant, choices=CCV_TERMS")
+
+    model_config = ConfigDict(
+        extra='allow',
+    )

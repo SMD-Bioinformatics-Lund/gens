@@ -3,7 +3,7 @@
 import re
 from enum import Enum, IntEnum, StrEnum
 
-from pydantic import TypeAdapter, computed_field, field_validator
+from pydantic import computed_field, field_validator
 from pydantic.types import PositiveFloat, PositiveInt
 
 from .base import RWModel
@@ -60,12 +60,29 @@ class Chromosome(StrEnum):
     MT = "MT"
 
 
+class VariantType(StrEnum):
+    CLIN = "clinical"
+    RESEARCH = "research"
+
 class VariantCategory(StrEnum):
     """Valid categories for variants."""
 
     STRUCTURAL = "str"
     SINGLE_VAR = "sv"
     SINGLE_NT_VAR = "snv"
+
+
+class VariantSubCategory(StrEnum):
+    SNV = "snv"
+    INDEL = "indel"
+    DEL = "del"
+    INS = "ins"
+    DUP = "dup"
+    INV = "inv"
+    CNV = "cnv"
+    BND = "bnd"
+    STR = "str"
+    MEI = "mei"
 
 
 class GenomePosition(RWModel):
