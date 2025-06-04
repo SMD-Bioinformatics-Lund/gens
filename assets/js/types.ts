@@ -212,7 +212,6 @@ interface RenderDot {
 }
 
 interface DotTrackData {
-  // xRange: Rng;
   dots: RenderDot[];
 }
 

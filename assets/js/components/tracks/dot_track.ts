@@ -54,7 +54,6 @@ export class DotTrack extends DataTrack {
     const { dots } = renderData;
 
     const xRange = this.getXRange();
-
     const xScale = this.getXScale();
     const yScale = this.getYScale();
 

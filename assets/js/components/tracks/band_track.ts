@@ -35,7 +35,6 @@ export class BandTrack extends DataTrack {
       getXRange,
       // FIXME: Supply xScale directly?
       () => {
-        // const xRange = this.renderData.xRange;
         const xRange = getXRange();
         const xScale = getLinearScale(xRange, [
           LEFT_PX_EDGE,
@@ -71,7 +70,6 @@ export class BandTrack extends DataTrack {
 
     const { bands } = renderData;
     const xRange = this.getXRange();
-    // const { bands, xRange } = renderData;
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 

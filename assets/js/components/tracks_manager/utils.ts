@@ -31,12 +31,10 @@ export function createAnnotTrack(
 ): BandTrack {
   // FIXME: Seems the x range should be separated from the annotations or?
   async function getAnnotTrackData(
-    _getXRange: () => Rng,
     getAnnotation: () => Promise<RenderBand[]>,
   ): Promise<BandTrackData> {
     const bands = await getAnnotation();
     return {
-      // xRange: getXRange(),
       bands,
     };
   }
@@ -72,7 +70,7 @@ export function createAnnotTrack(
       fnSettings = settings;
     },
     () => session.getXRange(),
-    () => getAnnotTrackData(() => session.getXRange(), getAnnotationBands),
+    () => getAnnotTrackData(getAnnotationBands),
     openContextMenuId,
     openTrackContextMenu,
     session,
@@ -120,10 +118,6 @@ export function createDotTrack(
       const data = await dataFn(sample);
       // const data = await this.dataSource.getCovData(sampleId);
       return {
-        // xRange:
-        //   settings.fixedChrom != null
-        //     ? [1, session.getChromSize(settings.fixedChrom)]
-        //     : session.getXRange(),
         dots: data,
       };
     },

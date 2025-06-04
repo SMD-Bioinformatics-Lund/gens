@@ -6,8 +6,6 @@ import { SideMenu } from "../components/side_menu/side_menu";
 import { COLORS } from "../constants";
 import { generateID } from "../util/utils";
 
-
-
 /**
  * The purpose of this class is to keep track of the web session,
  * i.e. state of Gens unrelated to the data.
@@ -170,6 +168,7 @@ export class GensSession {
     return [startBand.id, endBand.id];
   }
 
+  // FIXME: Should be in data sources instead perhaps?
   public getChromSize(chrom: string): number {
     return this.chromSizes[chrom];
   }
