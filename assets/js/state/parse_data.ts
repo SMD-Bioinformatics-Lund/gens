@@ -33,8 +33,7 @@ export function getRenderDataSource(
     return parseAnnotations(annotData, chrom);
   };
 
-  const getCovData = async (sample: Sample, chrom: string) => {
-    const xRange = getXRange();
+  const getCovData = async (sample: Sample, chrom: string, xRange: Rng) => {
     const zoom = calculateZoom(xRange);
 
     const covRaw = await api.getCov(

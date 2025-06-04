@@ -181,7 +181,7 @@ export class InputControls extends HTMLElement {
       queryRegionOrGene(
         currentValue,
         this.session.getGenomeBuild(),
-        (chrom: string, range?: Rng) => {
+        (chrom: Chromosome, range?: Rng) => {
           this.session.setChromosome(chrom, range);
           this.onChange({ dataUpdated: true, positionOnly: true });
         },
@@ -259,7 +259,7 @@ async function queryRegionOrGene(
     const [chrom, rangeStr] = query.split(":");
     const range = rangeStr.split("-").map((val) => parseInt(val)) as Rng;
     onChangePosition(chrom, range);
-  } else if (CHROMOSOMES.includes(query)) {
+  } else if (CHROMOSOMES.includes(query as Chromosome)) {
     onChangePosition(query);
   } else {
     const searchResult = await getSearchResult(query);

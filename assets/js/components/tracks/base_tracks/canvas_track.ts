@@ -5,6 +5,7 @@ import {
   setupCanvasClick,
   getCanvasHover,
 } from "../../util/canvas_interaction";
+import { COLORS } from "../../../constants";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -17,6 +18,7 @@ template.innerHTML = String.raw`
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
+      border-bottom: 2px solid ${COLORS.lightGray};
     }
     canvas {
       display: block;

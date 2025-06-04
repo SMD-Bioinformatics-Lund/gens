@@ -11,14 +11,17 @@ export class API {
   // Remaining zoom levels (up to "d") are loaded dynamically and
   // only for the points currently in view
 
-  private allChromData: Record<string, ChromosomeInfo> = {};
+  private allChromData: Record<Chromosome, ChromosomeInfo> = {} as Record<
+    Chromosome,
+    ChromosomeInfo
+  >;
 
-  getChromSizes(): Record<string, number> {
+  getChromSizes(): Record<Chromosome, number> {
     if (this.allChromData == null) {
       throw Error("Must initialize before accessing the chromosome sizes");
     }
 
-    const allChromSizes = {};
+    const allChromSizes = {} as Record<Chromosome, number>;
     for (const chrom of CHROMOSOMES) {
       const chromLength = this.allChromData[chrom].size;
       allChromSizes[chrom] = chromLength;
@@ -77,11 +80,9 @@ export class API {
     return details;
   }
 
-  async getVariantDetails(
-    id: string,
-  ): Promise<ApiVariantDetails> {
+  async getVariantDetails(id: string): Promise<ApiVariantDetails> {
     const details = get(
-      new URL(`tracks/variants/${id}`, this.apiURI).href, 
+      new URL(`tracks/variants/${id}`, this.apiURI).href,
       {},
     ) as Promise<ApiVariantDetails>;
     return details;

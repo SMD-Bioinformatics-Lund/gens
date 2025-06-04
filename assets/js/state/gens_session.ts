@@ -19,15 +19,15 @@ import { generateID } from "../util/utils";
  * it should probably be kept here as well.
  */
 export class GensSession {
-  private chromosome: string;
+  private chromosome: Chromosome;
   private start: number;
   private end: number;
   private render: (settings: RenderSettings) => void;
   private sideMenu: SideMenu;
   private markerModeOn: boolean = false;
   private highlights: Record<string, RangeHighlight>;
-  private chromSizes: Record<string, number>;
-  private chromInfo: Record<string, ChromosomeInfo>;
+  private chromSizes: Record<Chromosome, number>;
+  private chromInfo: Record<Chromosome, ChromosomeInfo>;
   private samples: Sample[];
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
@@ -128,7 +128,7 @@ export class GensSession {
     };
   }
 
-  public setChromosome(chrom: string, range: Rng = null) {
+  public setChromosome(chrom: Chromosome, range: Rng = null) {
     this.chromosome = chrom;
 
     const start = range != null ? range[0] : 1;
@@ -143,7 +143,7 @@ export class GensSession {
     this.end = range[1];
   }
 
-  public getChromosome(): string {
+  public getChromosome(): Chromosome {
     return this.chromosome;
   }
 
@@ -166,6 +166,11 @@ export class GensSession {
     );
 
     return [startBand.id, endBand.id];
+  }
+
+  // FIXME: Should be in data sources instead perhaps?
+  public getChromSize(chrom: string): number {
+    return this.chromSizes[chrom];
   }
 
   public getCurrentChromSize(): number {
