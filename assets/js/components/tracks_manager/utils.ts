@@ -112,15 +112,18 @@ export function createDotTrack(
     "dot",
     () => fnSettings,
     (settings) => (fnSettings = settings),
-    () => session.getXRange(),
+    () =>
+      settings.fixedChrom != null
+        ? [1, session.getChromSize(settings.fixedChrom)]
+        : session.getXRange(),
     async () => {
       const data = await dataFn(sample);
       // const data = await this.dataSource.getCovData(sampleId);
       return {
-        xRange:
-          settings.fixedChrom != null
-            ? [1, session.getChromSize(settings.fixedChrom)]
-            : session.getXRange(),
+        // xRange:
+        //   settings.fixedChrom != null
+        //     ? [1, session.getChromSize(settings.fixedChrom)]
+        //     : session.getXRange(),
         dots: data,
       };
     },

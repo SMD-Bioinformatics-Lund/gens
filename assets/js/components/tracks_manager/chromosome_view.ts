@@ -99,7 +99,10 @@ export class ChromosomeView extends ShadowBaseElement {
     const sampleDiff = getDiff(trackSampleIds, settingSampleIds);
 
     const getCovData = (sample: Sample, chrom: string) =>
-      this.dataSource.getCovData(sample, chrom);
+      this.dataSource.getCovData(sample, chrom, [
+        1,
+        this.session.getChromSize(chrom),
+      ]);
 
     // Adding new tracks per chromosome
     for (const chrom of CHROMOSOMES) {

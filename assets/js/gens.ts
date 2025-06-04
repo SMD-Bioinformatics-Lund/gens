@@ -105,7 +105,7 @@ export async function initCanvases({
 
   const chromInfo = api.getChromInfo();
   const chromSizes = api.getChromSizes();
-  const defaultRegion = { chrom: "1", start: 1, end: chromSizes["1"] };
+  const defaultRegion = { chrom: "1" as Chromosome, start: 1, end: chromSizes["1"] };
   const samples = sampleIds.map((sampleId) => {
     return {
       caseId,

@@ -162,7 +162,7 @@ export class TrackView extends ShadowBaseElement {
       async () => {
         return {
           xRange: session.getXRange(),
-          chromInfo: await dataSources.getChromInfo(),
+          chromInfo: await dataSources.getChromInfo(session.getChromosome()),
         };
       },
       (band: RenderBand) => {
@@ -439,7 +439,10 @@ export class TrackView extends ShadowBaseElement {
       if (track.track instanceof BandTrack) {
         track.track.setHeights(trackHeights.bandCollapsed);
       } else if (track.track instanceof DotTrack) {
-        track.track.setHeights(trackHeights.dotCollapsed, trackHeights.dotExpanded);
+        track.track.setHeights(
+          trackHeights.dotCollapsed,
+          trackHeights.dotExpanded,
+        );
       } else {
         console.error("Track of unknown DataTrack category:", track);
       }
@@ -521,7 +524,12 @@ function createSampleTracks(
     `${sample.sampleId}_log2_cov`,
     `${sample.sampleId} cov`,
     sample,
-    (sample: Sample) => dataSources.getCovData(sample, session.getChromosome()),
+    (sample: Sample) =>
+      dataSources.getCovData(
+        sample,
+        session.getChromosome(),
+        session.getXRange(),
+      ),
     {
       startExpanded,
       yAxis: {
@@ -540,7 +548,12 @@ function createSampleTracks(
     `${sample.sampleId}_log2_baf`,
     `${sample.sampleId} baf`,
     sample,
-    (sample: Sample) => dataSources.getBafData(sample, session.getChromosome()),
+    (sample: Sample) =>
+      dataSources.getBafData(
+        sample,
+        session.getChromosome(),
+        session.getXRange(),
+      ),
     {
       startExpanded,
       yAxis: {
@@ -561,8 +574,7 @@ function createSampleTracks(
     `${sample.sampleId}_variants`,
     `${sample.sampleId} Variants`,
     () => dataSources.getVariantBands(sample, session.getChromosome()),
-    (variantId: string) =>
-      dataSources.getVariantDetails(variantId),
+    (variantId: string) => dataSources.getVariantDetails(variantId),
     (variantId: string) => session.getVariantURL(variantId),
     session,
     openTrackContextMenu,

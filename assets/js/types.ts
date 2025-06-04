@@ -288,7 +288,7 @@ type GetAnnotSources = (settings: {
 }) => { id: string; label: string }[];
 
 interface RenderDataSource {
-  getChromInfo: () => Promise<ChromosomeInfo>;
+  getChromInfo: (chrom: Chromosome) => Promise<ChromosomeInfo>;
 
   getAnnotationBands: (
     sourceId: string,
@@ -296,8 +296,8 @@ interface RenderDataSource {
   ) => Promise<RenderBand[]>;
   getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>;
 
-  getCovData: (sample: Sample, chrom: string) => Promise<RenderDot[]>;
-  getBafData: (sample: Sample, chrom: string) => Promise<RenderDot[]>;
+  getCovData: (sample: Sample, chrom: string, xRange: Rng) => Promise<RenderDot[]>;
+  getBafData: (sample: Sample, chrom: string, xRange: Rng) => Promise<RenderDot[]>;
 
   getTranscriptBands: (chrom: string) => Promise<RenderBand[]>;
   getTranscriptDetails: (geneId: string) => Promise<ApiGeneDetails>;
