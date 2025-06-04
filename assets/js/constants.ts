@@ -182,7 +182,7 @@ export const STYLE = {
   colors: COLORS,
 };
 
-export const CHROMOSOMES = [
+export const CHROMOSOMES: Chromosome[] = [
   "1",
   "2",
   "3",

@@ -104,19 +104,21 @@ export class ChromosomeView extends ShadowBaseElement {
     // Adding new tracks per chromosome
     for (const chrom of CHROMOSOMES) {
       const chromGroup = this.chromosomeGroups[chrom];
-      addAnnotTracks(
-        annotDiff.new,
-        (id: string) => {
-          return this.session
-            .getAnnotationSources({ selectedOnly: true })
-            .find((source) => source.id == id).label;
-        },
-        this.session,
-        chrom,
-        this.dataSource,
-        (trackInfo: ChromViewTrackInfo) =>
-          this.onAddTrack(chromGroup.annotations, trackInfo),
-      );
+
+      // FIXME: Paused for now, bring back when UPD tracks are in place
+      // addAnnotTracks(
+      //   annotDiff.new,
+      //   (id: string) => {
+      //     return this.session
+      //       .getAnnotationSources({ selectedOnly: true })
+      //       .find((source) => source.id == id).label;
+      //   },
+      //   this.session,
+      //   chrom,
+      //   this.dataSource,
+      //   (trackInfo: ChromViewTrackInfo) =>
+      //     this.onAddTrack(chromGroup.annotations, trackInfo),
+      // );
 
       addSampleTracks(
         this.session,
@@ -219,8 +221,8 @@ function getDiff(
 function addSampleTracks(
   session: GensSession,
   samples: Sample[],
-  chrom: string,
-  getCovData: (sample: Sample, chrom: string) => Promise<RenderDot[]>,
+  chrom: Chromosome,
+  getCovData: (sample: Sample, chrom: Chromosome) => Promise<RenderDot[]>,
   onAddTrack: (track: ChromViewTrackInfo) => void,
 ) {
   for (const sample of samples) {
@@ -240,6 +242,7 @@ function addSampleTracks(
           hideTicksOnCollapse: true,
         },
         hasLabel: true,
+        fixedChrom: chrom,
       },
       session,
       null,

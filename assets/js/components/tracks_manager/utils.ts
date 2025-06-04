@@ -31,12 +31,12 @@ export function createAnnotTrack(
 ): BandTrack {
   // FIXME: Seems the x range should be separated from the annotations or?
   async function getAnnotTrackData(
-    getXRange: () => Rng,
+    _getXRange: () => Rng,
     getAnnotation: () => Promise<RenderBand[]>,
   ): Promise<BandTrackData> {
     const bands = await getAnnotation();
     return {
-      xRange: getXRange(),
+      // xRange: getXRange(),
       bands,
     };
   }
@@ -85,7 +85,12 @@ export function createDotTrack(
   label: string,
   sample: Sample,
   dataFn: (sample: Sample) => Promise<RenderDot[]>,
-  settings: { startExpanded: boolean; yAxis: Axis; hasLabel: boolean },
+  settings: {
+    startExpanded: boolean;
+    yAxis: Axis;
+    hasLabel: boolean;
+    fixedChrom: Chromosome | null;
+  },
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
 ): DotTrack {
@@ -112,7 +117,10 @@ export function createDotTrack(
       const data = await dataFn(sample);
       // const data = await this.dataSource.getCovData(sampleId);
       return {
-        xRange: session.getXRange(),
+        xRange:
+          settings.fixedChrom != null
+            ? [1, session.getChromSize(settings.fixedChrom)]
+            : session.getXRange(),
         dots: data,
       };
     },
@@ -165,11 +173,7 @@ export function createVariantTrack(
       const container = document.createElement("div");
       container.appendChild(button);
 
-      const entries = getVariantContextMenuContent(
-        sampleId,
-        details,
-        scoutUrl,
-      );
+      const entries = getVariantContextMenuContent(sampleId, details, scoutUrl);
       const content = [container];
       content.push(...entries);
 

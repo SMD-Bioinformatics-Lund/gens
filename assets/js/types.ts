@@ -212,7 +212,7 @@ interface RenderDot {
 }
 
 interface DotTrackData {
-  xRange: Rng;
+  // xRange: Rng;
   dots: RenderDot[];
 }
 
@@ -221,8 +221,10 @@ interface AnnotationTrackData {
   annotation: { source: string; bands: RenderBand[] };
 }
 
+type Chromosome = "1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12"|"13"|"14"|"15"|"16"|"17"|"18"|"19"|"20"|"21"|"22"|"X"|"Y"
+
 interface BandTrackData {
-  xRange: Rng;
+  // xRange: Rng;
   bands: RenderBand[];
 }
 
@@ -310,7 +312,7 @@ interface RenderDataSource {
 type Rng = [number, number];
 
 interface Region {
-  chrom: string;
+  chrom: Chromosome;
   start: number;
   end: number;
 }
@@ -538,7 +540,7 @@ interface RenderSettings {
 
 interface RangeHighlight {
   id: string;
-  chromosome: string;
+  chromosome: Chromosome;
   range: Rng;
   color: string;
 }
