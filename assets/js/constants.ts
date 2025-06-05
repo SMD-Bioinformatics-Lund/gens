@@ -157,6 +157,11 @@ export const STYLE = {
     frameLineWidth: 2,
     trackHeight: TRACK_HEIGHTS,
   },
+  positionTrack: {
+    sizePadFraction: 0.02,
+    tickCount: 12,
+    tickHeight: 4,
+  },
   ideogramTrack: {
     endBevelProportion: 0.05,
     centromereIndentProportion: 0.3,

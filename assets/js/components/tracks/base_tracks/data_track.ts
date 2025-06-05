@@ -1,4 +1,10 @@
-import { COLORS, SIZES, STYLE, TRACK_HEIGHTS, TRANSPARENCY } from "../../../constants";
+import {
+  COLORS,
+  SIZES,
+  STYLE,
+  TRACK_HEIGHTS,
+  TRANSPARENCY,
+} from "../../../constants";
 import {
   drawYAxis,
   getLinearScale,
@@ -53,7 +59,7 @@ export abstract class DataTrack extends CanvasTrack {
   private labelBox: HoverBox | null;
   private renderSeq = 0;
 
-  protected getRenderData: () => Promise<BandTrackData | DotTrackData>;
+  protected getRenderData: (() => Promise<BandTrackData | DotTrackData>) | null;
   protected getXRange: () => Rng;
   protected getXScale: () => Scale;
   protected getYRange: () => Rng;
@@ -152,6 +158,7 @@ export abstract class DataTrack extends CanvasTrack {
       height,
     });
 
+
     this.trackType = trackType;
     this.getSettings = getSettings;
     this.getXRange = getXRange;
@@ -175,6 +182,8 @@ export abstract class DataTrack extends CanvasTrack {
 
   connectedCallback(): void {
     super.connectedCallback();
+
+    this.trackContainer.style.borderBottom = `${SIZES.xxs}px solid ${COLORS.lightGray}`;
 
     // Label click
     setupCanvasClick(
@@ -225,7 +234,12 @@ export abstract class DataTrack extends CanvasTrack {
       { leading: false, trailing: true },
     );
 
-    if (settings.dataUpdated || this.renderData == null) {
+    // this.renderData is null here for components not requiring
+    // accessing any data through API (i.e. position track)
+    if (
+      (settings.dataUpdated || this.renderData == null) &&
+      this.getRenderData != null
+    ) {
       if (!settings.positionOnly) {
         this.renderLoading();
       }
@@ -287,8 +301,7 @@ export abstract class DataTrack extends CanvasTrack {
       const yAxisWidth = STYLE.yAxis.width;
       const labelBox = this.drawTrackLabel(yAxisWidth);
 
-
-      if (this.openTrackContextMenu  != null) {
+      if (this.openTrackContextMenu != null) {
         this.labelBox = {
           label: this.label,
           box: labelBox,

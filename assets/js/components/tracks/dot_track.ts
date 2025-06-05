@@ -9,7 +9,6 @@ export class DotTrack extends DataTrack {
   constructor(
     id: string,
     label: string,
-    trackType: TrackType,
     getSettings: () => DataTrackSettings,
     updateSettings: (settings: DataTrackSettings) => void,
     getXRange: () => Rng,
@@ -20,7 +19,7 @@ export class DotTrack extends DataTrack {
     super(
       id,
       label,
-      trackType,
+      "dot" as TrackType,
       getXRange,
       () => {
         // const xRange = this.renderData.xRange;
