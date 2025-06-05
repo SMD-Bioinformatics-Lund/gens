@@ -349,7 +349,7 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public getDataTracks(): DataTrack[] {
-    return this.dataTracks.filter((track) => track instanceof DataTrack);
+    return this.dataTracks.map((info) => info.track);
   }
 
   public moveTrack(trackId: string, direction: "up" | "down") {

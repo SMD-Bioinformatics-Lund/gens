@@ -38,5 +38,5 @@ def test_load_annotation(fixture_name: str, genome_build: int, request):
     # run cli command
     result = runner.invoke(annotations, args)
 
-    # Test that the command finished sucessfully
+    # Test that the command finished successfully
     assert result.exit_code == 0
