@@ -54,7 +54,7 @@ template.innerHTML = String.raw`
     }
     #top-container {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       align-items: center;
     }
     #position-label {
@@ -63,12 +63,13 @@ template.innerHTML = String.raw`
       width: 100px;
     }
   </style>
-  <div id="top-container">
-    <div id="position-label"></div>
-  </div>
+  <div id="top-container"></div>
   <div id="tracks-container"></div>
   <div id="bottom-container"></div>
 `;
+
+    // <div id="position-label"></div>
+
 
 export interface TrackViewTrackInfo {
   track: DataTrack;
@@ -261,7 +262,14 @@ export class TrackView extends ShadowBaseElement {
       session,
     );
 
-    this.topContainer.appendChild(this.ideogramTrack);
+    // FIXME: Setup top container?
+    const chromosomeRow = document.createElement("div");
+    this.positionLabel = document.createElement("div");
+    this.positionLabel.id = "position-label";
+    chromosomeRow.appendChild(this.positionLabel);
+    chromosomeRow.appendChild(this.ideogramTrack);
+
+    this.topContainer.appendChild(chromosomeRow);
     this.topContainer.appendChild(this.positionTrack);
     this.ideogramTrack.initialize();
     this.ideogramTrack.renderLoading();
