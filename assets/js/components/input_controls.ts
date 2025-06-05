@@ -180,7 +180,6 @@ export class InputControls extends HTMLElement {
       // console.log("Search", currentValue);
       queryRegionOrGene(
         currentValue,
-        this.session.getGenomeBuild(),
         (chrom: Chromosome, range?: Rng) => {
           this.session.setChromosome(chrom, range);
           this.onChange({ dataUpdated: true, positionOnly: true });
@@ -251,23 +250,24 @@ export class InputControls extends HTMLElement {
 
 async function queryRegionOrGene(
   query: string,
-  genomeBuild: number,
   onChangePosition: (chrom: string, range?: Rng) => void,
   getSearchResult: (string) => Promise<ApiSearchResult | null>,
 ) {
+  let chrom: Chromosome;
+  let range: Rng | undefined = undefined;
   if (query.includes(":")) {
-    const [chrom, rangeStr] = query.split(":");
-    const range = rangeStr.split("-").map((val) => parseInt(val)) as Rng;
-    onChangePosition(chrom, range);
+    const parts = query.split(":");
+    chrom = parts[0] as Chromosome;
+    range = parts[1].split("-").map((val) => parseInt(val)) as Rng;
   } else if (CHROMOSOMES.includes(query as Chromosome)) {
-    onChangePosition(query);
+    chrom = query as Chromosome;
   } else {
     const searchResult = await getSearchResult(query);
-    onChangePosition(searchResult.chromosome, [
-      searchResult.start,
-      searchResult.end,
-    ]);
+    chrom = searchResult.chromosome as Chromosome;
+    range = [searchResult.start, searchResult.end];
   }
+  console.log("Navigating to:", chrom, range);
+  onChangePosition(chrom, range);
 }
 
 customElements.define("input-controls", InputControls);

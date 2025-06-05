@@ -45,18 +45,20 @@ async def get_annotations_tracks(
     return tracks
 
 
-@router.get("/annotations/{track_id}", tags=[ApiTags.ANNOT])
+@router.get("/annotations/track/{track_id}", tags=[ApiTags.ANNOT])
 async def get_annotation_track(track_id: PydanticObjectId, db: GensDb) -> list[SimplifiedTrackInfo]:
     """Get annotations for a region."""
+    print("Hitting the track")
     return get_annotations_for_track(track_id=track_id, db=db)
 
 
-@router.get("/annotations/{record_id}", tags=[ApiTags.ANNOT])
+@router.get("/annotations/record/{record_id}", tags=[ApiTags.ANNOT])
 async def get_annotation_with_id(record_id: PydanticObjectId, db: GensDb) -> AnnotationRecord:
     """Get annotations for a region."""
     result = get_annotation(record_id, db)
     if result is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+    print("Hitting the record")
     return result
 
 

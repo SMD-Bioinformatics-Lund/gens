@@ -66,7 +66,7 @@ export class API {
 
   getAnnotationDetails(id: string): Promise<ApiAnnotationDetails> {
     const details = get(
-      new URL(`tracks/annotations/${id}`, this.apiURI).href,
+      new URL(`tracks/annotations/record/${id}`, this.apiURI).href,
       {},
     ) as Promise<ApiAnnotationDetails>;
     return details;
@@ -100,7 +100,7 @@ export class API {
     if (this.annotsCache[trackId] === undefined) {
       const query = {};
       const annotations = get(
-        new URL(`tracks/annotations/${trackId}`, this.apiURI).href,
+        new URL(`tracks/annotations/track/${trackId}`, this.apiURI).href,
         query,
       ) as Promise<ApiSimplifiedAnnotation[]>;
 
