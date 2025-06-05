@@ -208,17 +208,17 @@ export function eventInBox(
 
 /**
  * @param nts 
- * @param prefixNumber Optional number to set size. 
+ * @param sizeNumber Optional number to set size. 
  * Useful if you want the same prefix for a collection of values.
  * @returns 
  */
-export function prefixNts(nts: number, prefixNumber?: number): string {
-  if (prefixNumber == null) {
-    prefixNumber = nts;
+export function prefixNts(nts: number, sizeNumber?: number): string {
+  if (sizeNumber == null) {
+    sizeNumber = nts;
   }
-  if (prefixNumber < 10 ** 4) {
+  if (sizeNumber < 10 ** 4) {
     return `${nts} bp`;
-  } else if (prefixNumber < 10 ** 7) {
+  } else if (sizeNumber < 10 ** 7) {
     return `${Math.round(nts / 10 ** 3)} kb`;
   } else {
     return `${Math.round(nts / 10 ** 6)} mb`;

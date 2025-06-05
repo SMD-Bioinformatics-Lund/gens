@@ -40,6 +40,7 @@ template.innerHTML = String.raw`
     .track.dragging .track-handle {
       cursor: grabbing;
     }
+
     #tracks-container {
       position: relative;
       width: 100%;
@@ -67,9 +68,6 @@ template.innerHTML = String.raw`
   <div id="tracks-container"></div>
   <div id="bottom-container"></div>
 `;
-
-    // <div id="position-label"></div>
-
 
 export interface TrackViewTrackInfo {
   track: DataTrack;
@@ -263,10 +261,7 @@ export class TrackView extends ShadowBaseElement {
     );
 
     // FIXME: Setup top container?
-    const chromosomeRow = document.createElement("div");
-    chromosomeRow.style.display = "flex";
-    chromosomeRow.style.flexDirection = "row";
-    chromosomeRow.style.alignItems = "center";
+    const chromosomeRow = document.createElement("flex-row");
     this.positionLabel = document.createElement("div");
     this.positionLabel.id = "position-label";
     chromosomeRow.appendChild(this.positionLabel);

@@ -1,8 +1,8 @@
-import { STYLE } from "../../constants";
+import { SIZES, STYLE } from "../../constants";
 import { drawLabel, drawLine } from "../../draw/shapes";
 import { getLinearScale } from "../../draw/render_utils";
 import { GensSession } from "../../state/gens_session";
-import { padRange, prefixNts, prettyRange } from "../../util/utils";
+import { padRange, prefixNts } from "../../util/utils";
 import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
 
 export class PositionTrack extends DataTrack {
@@ -36,7 +36,6 @@ export class PositionTrack extends DataTrack {
     super.connectedCallback();
   }
 
-  // Unused but required by abstract class
   draw(_renderData: any): void {
     super.syncDimensions();
     this.drawStart();
@@ -45,16 +44,22 @@ export class PositionTrack extends DataTrack {
 
     const size = posEnd - posStart;
 
-    const [start, end] = padRange([posStart, posEnd] as Rng, size / 50);
+    const style = STYLE.positionTrack;
+
+    const [start, end] = padRange(
+      [posStart, posEnd] as Rng,
+      size * style.sizePadFraction,
+    );
 
     const xScale = this.getXScale();
-    const tickCount = 12;
+    const tickCount = style.tickCount;
     const step = (end - start) / (tickCount - 1);
-    const tickHeight = 4;
+    const tickHeight = style.tickHeight;
 
     for (let i = 0; i < tickCount; i++) {
       const pos = start + step * i;
       const x = xScale(pos);
+      console.log("Drawing line at", pos, x);
       drawLine(
         this.ctx,
         {
@@ -66,20 +71,17 @@ export class PositionTrack extends DataTrack {
         { color: STYLE.colors.darkGray },
       );
       const label = prefixNts(Math.round(pos), end);
-      drawLabel(this.ctx, label, x, this.dimensions.height - tickHeight - 2, {
-        textBaseline: "bottom",
-        textAlign: "center",
-      });
+      drawLabel(
+        this.ctx,
+        label,
+        x,
+        this.dimensions.height - tickHeight - SIZES.xxs,
+        {
+          textBaseline: "bottom",
+          textAlign: "center",
+        },
+      );
     }
-
-    // const label = prettyRange(start, end);
-    // drawLabel(
-    //   this.ctx,
-    //   label,
-    //   STYLE.yAxis.width + STYLE.tracks.textPadding,
-    //   this.dimensions.height / 2,
-    //   { textBaseline: "middle" },
-    // );
 
     this.drawEnd();
   }

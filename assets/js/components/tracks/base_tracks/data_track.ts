@@ -158,6 +158,7 @@ export abstract class DataTrack extends CanvasTrack {
       height,
     });
 
+
     this.trackType = trackType;
     this.getSettings = getSettings;
     this.getXRange = getXRange;
@@ -181,6 +182,8 @@ export abstract class DataTrack extends CanvasTrack {
 
   connectedCallback(): void {
     super.connectedCallback();
+
+    this.trackContainer.style.borderBottom = `2px solid ${COLORS.lightGray}`;
 
     // Label click
     setupCanvasClick(
@@ -231,6 +234,8 @@ export abstract class DataTrack extends CanvasTrack {
       { leading: false, trailing: true },
     );
 
+    // this.renderData is null here for components not requiring
+    // accessing any data through API (i.e. position track)
     if (
       (settings.dataUpdated || this.renderData == null) &&
       this.getRenderData != null
