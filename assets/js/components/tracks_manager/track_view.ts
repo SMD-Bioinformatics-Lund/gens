@@ -260,7 +260,6 @@ export class TrackView extends ShadowBaseElement {
       session,
     );
 
-    // FIXME: Setup top container?
     const chromosomeRow = document.createElement("flex-row");
     this.positionLabel = document.createElement("div");
     this.positionLabel.id = "position-label";

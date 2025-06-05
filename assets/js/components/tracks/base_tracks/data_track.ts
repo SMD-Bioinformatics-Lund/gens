@@ -183,7 +183,7 @@ export abstract class DataTrack extends CanvasTrack {
   connectedCallback(): void {
     super.connectedCallback();
 
-    this.trackContainer.style.borderBottom = `2px solid ${COLORS.lightGray}`;
+    this.trackContainer.style.borderBottom = `${SIZES.xxs}px solid ${COLORS.lightGray}`;
 
     // Label click
     setupCanvasClick(
