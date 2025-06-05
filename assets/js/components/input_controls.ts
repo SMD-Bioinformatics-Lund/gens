@@ -266,7 +266,6 @@ async function queryRegionOrGene(
     chrom = searchResult.chromosome as Chromosome;
     range = [searchResult.start, searchResult.end];
   }
-  console.log("Navigating to:", chrom, range);
   onChangePosition(chrom, range);
 }
 
