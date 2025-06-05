@@ -549,4 +549,4 @@ interface Sample {
   sampleId: string;
 }
 
-type TrackType = "annotation" | "variant" | "dot" | "gene";
+type TrackType = "annotation" | "variant" | "dot" | "gene" | "position";

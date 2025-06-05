@@ -10,7 +10,7 @@ import {
   getTrackInfo as getTrack,
   TRACK_HANDLE_CLASS,
 } from "./utils";
-import { DataTrack } from "../tracks/base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { setupDrag, setupDragging } from "../../movements/dragging";
 import { GensSession } from "../../state/gens_session";
 import { getLinearScale } from "../../draw/render_utils";
@@ -26,6 +26,7 @@ import { TrackHeights } from "../side_menu/settings_menu";
 import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne } from "../../util/utils";
+import { PositionTrack } from "../tracks/position_track";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -86,6 +87,7 @@ export class TrackView extends ShadowBaseElement {
 
   private dataTracks: TrackViewTrackInfo[] = [];
   private ideogramTrack: IdeogramTrack;
+  private positionTrack: PositionTrack;
   private overviewTracks: OverviewTrack[] = [];
 
   private openTrackContextMenu: (track: DataTrack) => void;
@@ -242,9 +244,29 @@ export class TrackView extends ShadowBaseElement {
       genesTrack,
     ];
 
+    let positionTrackSettings: DataTrackSettings = {
+      height: {
+        collapsedHeight: STYLE.tracks.trackHeight.xs,
+        startExpanded: false,
+      },
+      showLabelWhenCollapsed: false,
+      isExpanded: false,
+    };
+
+    this.positionTrack = new PositionTrack(
+      "position",
+      "Position",
+      () => positionTrackSettings,
+      (settings) => (positionTrackSettings = settings),
+      session,
+    );
+
     this.topContainer.appendChild(this.ideogramTrack);
+    this.topContainer.appendChild(this.positionTrack);
     this.ideogramTrack.initialize();
     this.ideogramTrack.renderLoading();
+    this.positionTrack.initialize();
+    this.positionTrack.renderLoading();
 
     tracks.forEach(({ track, container }) => {
       this.tracksContainer.appendChild(container);
@@ -486,6 +508,7 @@ export class TrackView extends ShadowBaseElement {
     );
 
     this.ideogramTrack.render(settings);
+    this.positionTrack.render(settings);
     this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
     this.overviewTracks.forEach((track) => track.render(settings));
 
