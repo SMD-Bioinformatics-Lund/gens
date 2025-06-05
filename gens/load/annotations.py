@@ -132,9 +132,6 @@ def fmt_bed_to_annotation(
             annotation[new_colname] = format_bed_data(new_colname, value)
         except ValueError as err:
             LOG.debug("Bad line: %s", entry)
-            import pdb
-
-            pdb.set_trace()
             raise ParserError(str(err)) from err
 
     return AnnotationRecord(
