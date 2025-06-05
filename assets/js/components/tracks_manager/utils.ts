@@ -107,7 +107,6 @@ export function createDotTrack(
   const dotTrack = new DotTrack(
     trackId,
     label,
-    "dot",
     () => fnSettings,
     (settings) => (fnSettings = settings),
     () =>
