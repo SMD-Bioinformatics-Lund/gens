@@ -46,7 +46,7 @@ def get_gens_db() -> Generator[Database[Any], None, None]:
 def get_scout_db() -> Generator[Database[Any], None, None]:
     """Connect to the Scout database."""
     try:
-        client: MongoClient[Any] = MongoClient(str(settings.gens_db.connection))
+        client: MongoClient[Any] = MongoClient(str(settings.scout_db.connection))
         yield client.get_database(settings.scout_db.database)
     finally:
         client.close()
