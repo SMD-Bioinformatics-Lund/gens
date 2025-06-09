@@ -52,6 +52,8 @@ export const TRANSPARENCY = {
 export const COLORS = {
   white: "#FFFFFF",
   black: "#222",
+  green: "#71bd71",
+  // darkGreen: "#315231",
   darkGray: "#555",
   lightGray: "#ccc",
   lighterGray: "#eee",

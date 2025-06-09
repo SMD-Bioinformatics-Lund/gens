@@ -187,6 +187,7 @@ type RenderElement = RenderBand | RenderDot;
 interface SimpleRenderBand {
   start: number;
   end: number;
+  exonNumber?: number;
 }
 
 // FIXME: This should be looked over
@@ -203,6 +204,7 @@ interface RenderBand {
   y1?: number;
   y2?: number;
   subBands?: SimpleRenderBand[];
+  exonCount?: number;
 }
 
 interface RenderDot {

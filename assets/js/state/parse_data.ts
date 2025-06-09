@@ -143,8 +143,9 @@ function parseExons(
       id: `${geneId}_exon${i + 1}_${part.start}_${part.end}`,
       start: part.start,
       end: part.end,
-      color: STYLE.colors.teal,
+      color: STYLE.colors.green,
       label: `${i + 1} ${part.start}-${part.end}`,
+      exonNumber: i + 1,
     };
     return renderBand;
   });
@@ -155,15 +156,17 @@ export function parseTranscripts(
 ): RenderBand[] {
   const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
     const exons = parseExons(transcript.record_id, transcript.features);
+    const exonCount = exons.length;
     const renderBand: RenderBand = {
       id: transcript.record_id,
       start: transcript.start,
       end: transcript.end,
       label: transcript.name,
-      color: STYLE.colors.lightGray,
+      color: STYLE.colors.green,
       hoverInfo: `${transcript.name}`,
       direction: transcript.strand as "+" | "-",
       subBands: exons,
+      exonCount,
     };
     return renderBand;
   });

@@ -4,9 +4,9 @@ import {
   rangeInRange,
   rangeSurroundsRange,
 } from "../../util/utils";
-import { STYLE } from "../../constants";
-import { drawArrow, getLinearScale } from "../../draw/render_utils";
-import { drawLabel } from "../../draw/shapes";
+import { COLORS, STYLE } from "../../constants";
+import { getLinearScale } from "../../draw/render_utils";
+import { drawLabel, drawLine, drawArrow } from "../../draw/shapes";
 import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
 import { GensSession } from "../../state/gens_session";
 
@@ -67,7 +67,6 @@ export class BandTrack extends DataTrack {
   }
 
   override draw(renderData: BandTrackData) {
-
     const { bands } = renderData;
     const xRange = this.getXRange();
     const ntsPerPx = this.getNtsPerPixel(xRange);
@@ -96,7 +95,7 @@ export class BandTrack extends DataTrack {
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
 
-    // FIXME: Investigate why background coloring disappears if doing this before 
+    // FIXME: Investigate why background coloring disappears if doing this before
     // settings expanded track height
     super.drawStart();
 
@@ -175,7 +174,7 @@ function drawBand(
 
   const hoverBoxes: HoverBox[] = [];
 
-  const detailColor = STYLE.colors.darkGray;
+  // const detailColor = STYLE.colors.darkGray;
 
   // Body
   const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
@@ -189,38 +188,159 @@ function drawBand(
       xPxEnd = screenRange[1];
     }
   }
-  ctx.fillStyle = band.color;
+  // ctx.fillStyle = band.color;
   const width = Math.max(xPxEnd - xPxStart, STYLE.bandTrack.minBandWidth);
-  ctx.fillRect(xPxStart, y1, width, height);
+  // ctx.fillRect(xPxStart, y1, width, height);
 
-  const box = { x1: xPxStart, x2: xPxStart + width, y1, y2 };
-  const hoverBox: HoverBox = { box, label: band.hoverInfo, element: band };
-  hoverBoxes.push(hoverBox);
+  // const box = { x1: xPxStart, x2: xPxStart + width, y1, y2 };
+  // const hoverBox: HoverBox = { box, label: band.hoverInfo, element: band };
+  // hoverBoxes.push(hoverBox);
 
-  if (showDetails) {
-    if (band.subBands != null) {
-      band.subBands.forEach((subBand) => {
-        const xPxStart = xScale(subBand.start);
-        const xPxEnd = xScale(subBand.end);
-        ctx.fillStyle = detailColor;
-        const width = xPxEnd - xPxStart;
-        ctx.fillRect(xPxStart, y1, width, height);
-      });
-    }
+  const isTranscript = band.subBands != null && band.subBands.length > 0;
+
+  // FIXME: Transcripts show this one as well when not zoomed in isn't it
+  if (!isTranscript || !showDetails) {
+    ctx.fillStyle = band.color;
+    ctx.fillRect(xPxStart, y1, width, height);
+    const box = { x1: xPxStart, x2: xPxStart + width, y1, y2 };
+    const hoverBox: HoverBox = { box, label: band.hoverInfo, element: band };
+    hoverBoxes.push(hoverBox);
+  }
+
+  // const detailColor = COLORS.green;
+
+  if (showDetails && isTranscript) {
+    const midY = y1 + height / 2;
+    drawLine(
+      ctx,
+      { x1: xPxStart, x2: xPxEnd, y1: midY, y2: midY },
+      { color: band.color, lineWidth: 2, transpose_05: false },
+    );
 
     if (band.direction != null) {
-      const isForward = band.direction == "+";
-      drawArrow(ctx, height, y1, isForward, xPxRange, detailColor);
+      drawDirectionArrows(ctx, band, height, xPxRange, midY, band.color);
     }
 
+    console.log(band);
+
+    band.subBands.forEach((subBand) => {
+      const box = drawExon(
+        ctx,
+        band,
+        subBand,
+        xScale,
+        band.color,
+        y1,
+        y2,
+        height,
+      );
+      hoverBoxes.push(box);
+    });
+
+    hoverBoxes.push(...getIntronHoverBoxes(band, midY, xScale));
+
     if (isExpanded && band.label != null) {
-      drawLabel(ctx, band.label, (xPxRange[0] + xPxRange[1]) / 2, y2, {
-        textAlign: "center",
-        textBaseline: "top",
-      });
+      drawTrackLabel(ctx, screenRange, xPxRange, band, y2);
     }
   }
 
+  return hoverBoxes;
+}
+
+function drawDirectionArrows(
+  ctx: CanvasRenderingContext2D,
+  band: RenderBand,
+  height: number,
+  xRange: Rng,
+  midY: number,
+  detailColor: string,
+) {
+  const [xPxStart, xPxEnd] = xRange;
+  const isForward = band.direction == "+";
+  const spacing = 30;
+  const arrowHeight = height * 0.3;
+  let pos = isForward ? xPxStart + spacing : xPxEnd - spacing;
+  while (
+    isForward ? pos < xPxEnd - spacing / 2 : pos > xPxStart + spacing / 2
+  ) {
+    const arrowLength = 3;
+    drawArrow(ctx, pos, midY, isForward ? 1 : -1, arrowLength, arrowHeight, {
+      lineWidth: 2,
+      color: detailColor,
+    });
+    pos += isForward ? spacing : -spacing;
+  }
+}
+
+function drawExon(
+  ctx: CanvasRenderingContext2D,
+  band: RenderBand,
+  subBand: SimpleRenderBand,
+  xScale: Scale,
+  detailColor: string,
+  y1: number,
+  y2: number,
+  height: number,
+): HoverBox {
+  const xPxStart = xScale(subBand.start);
+  const xPxEnd = xScale(subBand.end);
+  ctx.fillStyle = detailColor;
+  const width = Math.max(xPxEnd - xPxStart, STYLE.bandTrack.minBandWidth);
+  ctx.fillRect(xPxStart, y1, width, height);
+  const hoverBox = {
+    box: { x1: xPxStart, x2: xPxEnd, y1, y2 },
+    label: `Exon: ${subBand.exonNumber}/${band.exonCount}`,
+    element: band,
+  };
+  return hoverBox;
+}
+
+function drawTrackLabel(
+  ctx: CanvasRenderingContext2D,
+  screenRange: Rng,
+  pxRange: Rng,
+  band: RenderBand,
+  y2: number,
+) {
+  const [xPxStart, xPxEnd] = pxRange;
+  const labelRangeStart = screenRange
+    ? Math.max(xPxStart, screenRange[0])
+    : xPxStart;
+  const labelRangeEnd = screenRange ? Math.min(xPxEnd, screenRange[1]) : xPxEnd;
+  const mid = (labelRangeStart + labelRangeEnd) / 2;
+  drawLabel(ctx, band.label, mid, y2, {
+    textAlign: "center",
+    textBaseline: "top",
+  });
+}
+
+function getIntronHoverBoxes(
+  band: RenderBand,
+  midY: number,
+  xScale: Scale,
+): HoverBox[] {
+  const exons = band.subBands;
+  const introns: { start: number; end: number }[] = [];
+  let prev = band.start;
+  exons.forEach((e) => {
+    if (e.start > prev) {
+      introns.push({ start: prev, end: e.start });
+    }
+    prev = e.end;
+  });
+  if (band.end > prev) {
+    introns.push({ start: prev, end: band.end });
+  }
+
+  const hoverBoxes = introns.map((intron, i) => {
+    const x1 = xScale(intron.start);
+    const x2 = xScale(intron.end);
+    return {
+      box: { x1, x2, y1: midY - 2, y2: midY + 2 },
+      label: `Intron ${i + 1}/${Math.max(band.exonCount - 1, 1)}`,
+      element: band,
+    };
+  });
   return hoverBoxes;
 }
 

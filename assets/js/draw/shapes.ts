@@ -96,25 +96,31 @@ export function drawLine(
   ctx.restore();
 }
 
+// FIXME: Duplicate functions with different signature
+// Look over
 export async function drawArrow(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   dir: number,
-  height: number,
+  length: number,
+  headWidth: number,
   style: LineStyle = {},
 ) {
   const { lineWidth = 2, color = "black" } = style;
 
-  const width = dir * lineWidth;
+  const halfW = headWidth / 2;
+  const tipX = x + dir * headWidth;
+
+  // const width = dir * lineWidth;
+  const width = dir * headWidth;
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;
   ctx.beginPath();
-  ctx.moveTo(x - width / 2, y - height / 2);
-  ctx.lineTo(x + width / 2, y);
-  ctx.moveTo(x + width / 2, y);
-  ctx.lineTo(x - width / 2, y + height / 2);
+  ctx.moveTo(x, y - halfW);
+  ctx.lineTo(tipX, y);
+  ctx.lineTo(x, y + halfW);
   ctx.stroke();
   ctx.restore();
 }
