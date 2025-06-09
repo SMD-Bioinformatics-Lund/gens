@@ -148,7 +148,20 @@ async def get_variants(
         raise HTTPException(
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e)
         )
-    return variants
+    
+    # FIXME: Default parameters, optionally grab from frontend
+    # FIXME: Cleanup, skip the settings
+    keep_types = {"del", "dup", "tdup"}
+    threshold = 12
+
+    filtered = [
+        var
+        for var in variants
+        if var.sub_category in keep_types
+        and (var.rank_score is None or var.rank_score >= threshold)
+    ]
+
+    return filtered
 
 
 @router.get("/variants/{variant_id}", tags=[ApiTags.VAR])

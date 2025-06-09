@@ -1,4 +1,4 @@
-import { STYLE } from "../constants";
+import { STYLE, VARIANT_COLORS } from "../constants";
 import { prefixNts, transformMap } from "../util/utils";
 import { API } from "./api";
 
@@ -72,7 +72,7 @@ export function getRenderDataSource(
       sample.sampleId,
       chrom,
     );
-    return parseVariants(variantsRaw, STYLE.variantColors);
+    return parseVariants(variantsRaw);
   };
 
   const getOverviewCovData = async (sample: Sample) => {
@@ -106,8 +106,7 @@ export function getRenderDataSource(
     getTranscriptBands,
     getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
     getVariantBands,
-    getVariantDetails: (id: string) =>
-      api.getVariantDetails(id),
+    getVariantDetails: (id: string) => api.getVariantDetails(id),
     getOverviewCovData,
     getOverviewBafData,
   };
@@ -184,10 +183,7 @@ export function parseTranscripts(
   return filteredDuplicates;
 }
 
-export function parseVariants(
-  variants: ApiSimplifiedVariant[],
-  variantColorMap: VariantColors,
-): RenderBand[] {
+export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
   return variants.map((variant) => {
     const id = variant.variant_id;
     const length = variant.end - variant.start;
@@ -198,9 +194,9 @@ export function parseVariants(
       hoverInfo: `${variant.sub_category} (${prefixNts(length)})`,
       label: `${variant.variant_type} ${variant.sub_category}`,
       color:
-        variantColorMap[variant.sub_category] != undefined
-          ? variantColorMap[variant.sub_category]
-          : variantColorMap.default,
+        VARIANT_COLORS[variant.sub_category] != undefined
+          ? VARIANT_COLORS[variant.sub_category]
+          : VARIANT_COLORS.default,
     };
   });
 }

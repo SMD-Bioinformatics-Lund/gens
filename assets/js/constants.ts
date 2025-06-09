@@ -85,6 +85,13 @@ export const TRACK_HEIGHTS = {
   xxs: 10,
 }
 
+export const VARIANT_COLORS = {
+    del: "rgb(102,0,0)",
+    dup: "rgb(0,0,102)",
+    tdup: "rgb(0,0,102)",
+    default: "gray",
+  }
+
 // FIXME: First step is to gather all constants here
 // FIXME: Then, the content below should be homogenized
 export const STYLE = {
@@ -103,13 +110,6 @@ export const STYLE = {
     breadFontWeight: FONT_WEIGHT.bold,
     shadowSize: 2,
     transitionTime: "0.3s",
-  },
-  variantColors: {
-    del: COLORS.orange,
-    dup: COLORS.teal,
-    inv: COLORS.purple,
-    ins: COLORS.gold,
-    default: "gray",
   },
   bandTrack: {
     trackPadding: SIZES.l,

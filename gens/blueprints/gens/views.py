@@ -85,7 +85,6 @@ def display_samples(case_id: str) -> str:
 
     return render_template(
         "gens.html",
-        ui_colors=UI_COLORS,
         scout_base_url=settings.scout_url,
         chrom=parsed_region.chromosome,
         start=parsed_region.start,

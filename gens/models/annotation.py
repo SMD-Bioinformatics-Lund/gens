@@ -177,6 +177,7 @@ class SimplifiedVariantRecord(RWModel):
     end: PositiveInt
     variant_type: str
     sub_category: str | None = None
+    rank_score: float | None = None
 
 class VariantRecord(RWModel):
     """Detailed variant info for rendering variant tooltips.

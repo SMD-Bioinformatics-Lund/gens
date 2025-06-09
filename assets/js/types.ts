@@ -508,13 +508,6 @@ type _InteractiveFeature = {
   color: string;
 };
 
-type VariantColors = {
-  del: string;
-  dup: string;
-  inv: string;
-  default: string;
-};
-
 interface DragCallbacks {
   onZoomIn: (xRange: Rng) => void;
   onZoomOut: () => void;
