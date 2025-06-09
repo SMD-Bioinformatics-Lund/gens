@@ -33,10 +33,11 @@ def update_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
         upsert=True,
     )
     if result.modified_count == 1:
-        LOG.error(
-            'Sample with sample_id="%s" and case_id="%s" was overwritten.',
+        LOG.info(
+            'Sample with sample_id="%s", case_id="%s", genome_build="%s" was overwritten.',
             sample_obj.sample_id,
             sample_obj.case_id,
+            sample_obj.genome_build,
         )
     if result.modified_count > 1:
         raise NonUniqueIndexError(
