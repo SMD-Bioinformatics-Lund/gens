@@ -10,6 +10,7 @@ export class DotTrack extends DataTrack {
     id: string,
     label: string,
     getSettings: () => DataTrackSettings,
+    // FIXME: Is this one even used? Can probably be removed?
     updateSettings: (settings: DataTrackSettings) => void,
     getXRange: () => Rng,
     getRenderData: () => Promise<DotTrackData>,
