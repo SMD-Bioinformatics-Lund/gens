@@ -264,6 +264,8 @@ export class API {
         chromosome: chrom,
         category: "sv",
         start: 1,
+        rank_score_threshold: 12,
+        sub_categories: ["del", "dup", "tdup"],
       };
       const url = new URL("tracks/variants", this.apiURI).href;
       const variants = get(url, query) as Promise<ApiSimplifiedVariant[]>;

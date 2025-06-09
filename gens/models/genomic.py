@@ -78,6 +78,7 @@ class VariantSubCategory(StrEnum):
     DEL = "del"
     INS = "ins"
     DUP = "dup"
+    TDUP = "tdup"
     INV = "inv"
     CNV = "cnv"
     BND = "bnd"

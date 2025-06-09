@@ -145,8 +145,8 @@ async def get_variants(
         None,
         description="Minimum allowed rank score for returned variants. Variants with no rank score are returned.",
     ),
-    sub_categories: List[VariantSubCategory] | None = Query(
-        None, description="Variant sub-categories return"
+    sub_categories: str | None = Query(
+        None, description="Comma-separated SV sub-categories to retain"
     ),
 ) -> list[SimplifiedVariantRecord]:
     """Get all variants for a genomic region.
@@ -166,10 +166,12 @@ async def get_variants(
     # keep_types = {"del", "dup", "tdup"}
     # threshold = 12
 
+    sub_categories_values = sub_categories.split(",") if sub_categories else None
+
     filtered = [
         var
         for var in variants
-        if (sub_categories is None or var.sub_category in sub_categories)
+        if (sub_categories_values is None or var.sub_category in sub_categories_values)
         and (
             var.rank_score is None
             or rank_score_threshold is None
