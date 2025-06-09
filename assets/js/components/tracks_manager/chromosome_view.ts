@@ -75,59 +75,22 @@ export class ChromosomeView extends ShadowBaseElement {
         annotations: annotGroup,
       };
     }
-  }
-
-  public render(settings: RenderSettings) {
-    const currentBandTracks = this.tracks
-      .filter(
-        (track) => track.chromosome === "1" && track.type === "annotation",
-      )
-      .map((track) => track.sourceId);
-
-    const trackIds = currentBandTracks;
-    const sourceIds = this.session
-      .getAnnotationSources({ selectedOnly: true })
-      .map((source) => source.id);
-
-    const annotDiff = getDiff(trackIds, sourceIds);
-
-    const trackSampleIds = this.tracks
-      .filter((track) => track.chromosome === "1" && track.type == "coverage")
-      .map((track) => track.sampleId);
-    const settingSamples = this.session.getSamples();
-    const settingSampleIds = settingSamples.map((sample) => sample.sampleId);
-    const sampleDiff = getDiff(trackSampleIds, settingSampleIds);
-
-    const getCovData = (sample: Sample, chrom: string) =>
-      this.dataSource.getCovData(sample, chrom, [
-        1,
-        this.session.getChromSize(chrom),
-      ]);
 
     // Adding new tracks per chromosome
     for (const chrom of CHROMOSOMES) {
       const chromGroup = this.chromosomeGroups[chrom];
 
-      // FIXME: Paused for now, bring back when UPD tracks are in place
-      // addAnnotTracks(
-      //   annotDiff.new,
-      //   (id: string) => {
-      //     return this.session
-      //       .getAnnotationSources({ selectedOnly: true })
-      //       .find((source) => source.id == id).label;
-      //   },
-      //   this.session,
-      //   chrom,
-      //   this.dataSource,
-      //   (trackInfo: ChromViewTrackInfo) =>
-      //     this.onAddTrack(chromGroup.annotations, trackInfo),
-      // );
+      const settingSamples = this.session.getSamples()[0];
+
+      const getCovData = (sample: Sample, chrom: string) =>
+        this.dataSource.getCovData(sample, chrom, [
+          1,
+          this.session.getChromSize(chrom),
+        ]);
 
       addSampleTracks(
         this.session,
-        settingSamples.filter((sample) =>
-          sampleDiff.new.includes(sample.sampleId),
-        ),
+        settingSamples,
         chrom,
         (sample: Sample) => getCovData(sample, chrom),
         (trackInfo: ChromViewTrackInfo) => {
@@ -135,14 +98,10 @@ export class ChromosomeView extends ShadowBaseElement {
         },
       );
     }
+  }
 
-    annotDiff.removed.forEach((sourceId) => {
-      this.onRemoveTrack(sourceId, "annotations");
-    });
+  public render(settings: RenderSettings) {
 
-    sampleDiff.removed.forEach((id) => {
-      this.onRemoveTrack(id, "samples");
-    });
 
     for (const track of this.tracks) {
       track.track.render(settings);
@@ -192,6 +151,7 @@ function addAnnotTracks(
         height: STYLE.tracks.trackHeight.xxs,
         showLabelWhenCollapsed: false,
         yPadBands: false,
+        startExpanded: false,
       },
     );
     const annotTrackWrapper = createDataTrackWrapper(annotTrack);
@@ -223,44 +183,42 @@ function getDiff(
 
 function addSampleTracks(
   session: GensSession,
-  samples: Sample[],
+  sample: Sample,
   chrom: Chromosome,
   getCovData: (sample: Sample, chrom: Chromosome) => Promise<RenderDot[]>,
   onAddTrack: (track: ChromViewTrackInfo) => void,
 ) {
-  for (const sample of samples) {
-    const trackId = `${sample.sampleId}_${chrom}`;
-    const trackLabel = sample.sampleId;
-    const dotTrack = createDotTrack(
-      trackId,
-      trackLabel,
-      sample,
-      () => getCovData(sample, chrom),
-      {
-        startExpanded: false,
-        yAxis: {
-          range: COV_Y_RANGE,
-          label: "Log2 ratio",
-          hideLabelOnCollapse: true,
-          hideTicksOnCollapse: true,
-        },
-        hasLabel: true,
-        fixedChrom: chrom,
+  const trackId = `${sample.sampleId}_${chrom}`;
+  const trackLabel = sample.sampleId;
+  const dotTrack = createDotTrack(
+    trackId,
+    trackLabel,
+    sample,
+    () => getCovData(sample, chrom),
+    {
+      startExpanded: false,
+      yAxis: {
+        range: COV_Y_RANGE,
+        label: "Log2 ratio",
+        hideLabelOnCollapse: true,
+        hideTicksOnCollapse: true,
       },
-      session,
-      null,
-    );
-    const trackWrapper = createDataTrackWrapper(dotTrack);
-    const trackInfo: ChromViewTrackInfo = {
-      track: dotTrack,
-      container: trackWrapper,
-      sampleId: sample.sampleId,
-      chromosome: chrom,
-      sourceId: null,
-      type: "coverage",
-    };
-    onAddTrack(trackInfo);
-  }
+      hasLabel: true,
+      fixedChrom: chrom,
+    },
+    session,
+    null,
+  );
+  const trackWrapper = createDataTrackWrapper(dotTrack);
+  const trackInfo: ChromViewTrackInfo = {
+    track: dotTrack,
+    container: trackWrapper,
+    sampleId: sample.sampleId,
+    chromosome: chrom,
+    sourceId: null,
+    type: "coverage",
+  };
+  onAddTrack(trackInfo);
 }
 
 function getGroupElement(chrom: string): {

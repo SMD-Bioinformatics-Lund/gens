@@ -5,7 +5,8 @@ Query individual annotaions or transcript to get the full info.
 """
 
 from http import HTTPStatus
-from fastapi import APIRouter, HTTPException
+from typing import List
+from fastapi import APIRouter, HTTPException, Query
 
 from gens.constants import MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import get_annotation, get_annotation_tracks, get_annotations_for_track
@@ -25,11 +26,17 @@ from gens.models.genomic import (
     GenomicRegion,
     ReducedChromInfo,
     VariantCategory,
+    VariantSubCategory,
 )
 from gens.models.base import PydanticObjectId
 from gens.crud.genomic import get_chromosome_info, get_chromosomes
 from gens.crud.transcripts import get_transcript, get_transcripts as crud_get_transcripts
-from gens.crud.scout import VariantNotFoundError, VariantValidaitonError, get_variant, get_variants as get_variants_from_scout
+from gens.crud.scout import (
+    VariantNotFoundError,
+    VariantValidaitonError,
+    get_variant,
+    get_variants as get_variants_from_scout,
+)
 
 from .utils import ApiTags, GensDb, ScoutDb
 
@@ -134,6 +141,13 @@ async def get_variants(
     db: ScoutDb,
     start: int = 1,
     end: int | None = None,
+    rank_score_threshold: float | None = Query(
+        None,
+        description="Minimum allowed rank score for returned variants. Variants with no rank score are returned.",
+    ),
+    sub_categories: str | None = Query(
+        None, description="Comma-separated SV sub-categories to retain"
+    ),
 ) -> list[SimplifiedVariantRecord]:
     """Get all variants for a genomic region.
 
@@ -145,10 +159,22 @@ async def get_variants(
             sample_name=sample_id, case_id=case_id, region=region, variant_category=category, db=db
         )
     except VariantValidaitonError as e:
-        raise HTTPException(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e)
+        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
+
+    sub_categories_values = sub_categories.split(",") if sub_categories else None
+
+    filtered = [
+        var
+        for var in variants
+        if (sub_categories_values is None or var.sub_category in sub_categories_values)
+        and (
+            var.rank_score is None
+            or rank_score_threshold is None
+            or var.rank_score >= rank_score_threshold
         )
-    return variants
+    ]
+
+    return filtered
 
 
 @router.get("/variants/{variant_id}", tags=[ApiTags.VAR])
@@ -163,9 +189,9 @@ async def get_variant_with_id(
     try:
         variant = get_variant(variant_id, db=db)
     except VariantValidaitonError as e:
-        raise HTTPException(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
     except VariantNotFoundError:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"Variant {variant_id} not found")
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail=f"Variant {variant_id} not found"
+        )
     return variant

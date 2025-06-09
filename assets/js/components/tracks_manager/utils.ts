@@ -27,6 +27,7 @@ export function createAnnotTrack(
     height: number;
     showLabelWhenCollapsed: boolean;
     yPadBands?: boolean;
+    startExpanded: boolean;
   },
 ): BandTrack {
   // FIXME: Seems the x range should be separated from the annotations or?
@@ -55,10 +56,11 @@ export function createAnnotTrack(
 
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
-    height: { collapsedHeight: settings.height, startExpanded: false },
+    height: { collapsedHeight: settings.height },
     showLabelWhenCollapsed: settings.showLabelWhenCollapsed,
     yPadBands: settings.yPadBands,
-    isExpanded: false,
+    isExpanded: settings.startExpanded,
+    isHidden: false,
   };
 
   const track = new BandTrack(
@@ -97,11 +99,11 @@ export function createDotTrack(
     height: {
       collapsedHeight: trackHeight.m,
       expandedHeight: trackHeight.xl,
-      startExpanded: settings.startExpanded,
     },
     yAxis: settings.yAxis,
     showLabelWhenCollapsed: settings.hasLabel,
     isExpanded: settings.startExpanded,
+    isHidden: false,
   };
 
   const dotTrack = new DotTrack(
@@ -135,16 +137,10 @@ export function createVariantTrack(
   getVariantURL: (documentId: string) => string,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
+  fnSettings: DataTrackSettings
 ): BandTrack {
   // FIXME: Move to session
-  let fnSettings: DataTrackSettings = {
-    height: {
-      collapsedHeight: STYLE.bandTrack.trackViewHeight,
-      startExpanded: false,
-    },
-    showLabelWhenCollapsed: true,
-    isExpanded: false,
-  };
+
 
   const variantTrack = new BandTrack(
     trackId,
@@ -181,7 +177,7 @@ export function createVariantTrack(
   return variantTrack;
 }
 
-export function getTrackInfo(
+export function makeTrackContainer(
   track: DataTrack,
   sample: Sample | null,
 ): TrackViewTrackInfo {
@@ -205,10 +201,10 @@ export function createGeneTrack(
   let fnSettings: DataTrackSettings = {
     height: {
       collapsedHeight: STYLE.bandTrack.trackViewHeight,
-      startExpanded: false,
     },
     showLabelWhenCollapsed: true,
     isExpanded: false,
+    isHidden: false,
   };
 
   const genesTrack = new BandTrack(
@@ -239,7 +235,7 @@ export function createGeneTrack(
     openTrackContextMenu,
     session,
   );
-  return getTrackInfo(genesTrack, null);
+  return makeTrackContainer(genesTrack, null);
 }
 
 export function createOverviewTrack(
@@ -283,7 +279,7 @@ export function createOverviewTrack(
 
 export function createDataTrackWrapper(track: DataTrack) {
   const wrapper = document.createElement("div");
-  wrapper.classList.add("track-wrapper");
+  // wrapper.classList.add("track-wrapper");
   wrapper.style.position = "relative";
   wrapper.appendChild(track);
 

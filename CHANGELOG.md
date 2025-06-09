@@ -24,6 +24,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Track heights are customizable
  - Multiple-chromosomes view
  - Parsing AED files can deal with " surrounded comments split across multiple rows
+ - Optional sample type introduced (tumor/normal, proband/mother/father, other). Used in multi-sample views to display only proband-relevant tracks.
 
 ### Changed
  - Resolution increased 2x for tracks.

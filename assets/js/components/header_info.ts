@@ -60,13 +60,11 @@ export class HeaderInfo extends ShadowBaseElement {
 
   initialize(
     caseId: string,
-    _sampleIds: string[],
     caseURL: string,
     version: string,
   ) {
     this.caseIdElem.innerHTML = caseId;
     this.caseIdElem.href = caseURL;
-    // this.sampleIdsElem.innerHTML = sampleIds.join(", ");
     this.versionElem.innerHTML = version;
   }
 }

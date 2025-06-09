@@ -35,6 +35,16 @@ class ZoomLevel(StrEnum):
     O = "o"
 
 
+class SampleType(StrEnum):
+    """Valid sample types"""
+    TUMOR = "tumor"
+    NORMAL = "normal"
+    PROBAND = "proband"
+    MOTHER = "mother"
+    FATHER = "father"
+    OTHER = "other"
+
+
 class SampleInfo(RWModel, CreatedAtModel):
     """Sample record stored in the database."""
 
@@ -44,6 +54,7 @@ class SampleInfo(RWModel, CreatedAtModel):
     baf_file: FilePath
     coverage_file: FilePath
     overview_file: FilePath | None
+    sample_type: SampleType | None = None
 
     @computed_field()  # type: ignore
     @property

@@ -24,7 +24,6 @@ import debounce from "lodash.debounce";
 export interface ExpandedTrackHeight {
   collapsedHeight: number;
   expandedHeight?: number;
-  startExpanded: boolean;
 }
 
 export interface DataTrackSettings {
@@ -33,6 +32,7 @@ export interface DataTrackSettings {
   yAxis?: Axis;
   yPadBands?: boolean;
   isExpanded: boolean;
+  isHidden: boolean;
 }
 
 const DEBOUNCE_DELAY = 50;
@@ -54,8 +54,6 @@ export abstract class DataTrack extends CanvasTrack {
   protected renderData: BandTrackData | DotTrackData | null;
 
   private colorBands: RenderBand[] = [];
-  private isHidden: boolean = false;
-  // private isExpanded: boolean;
   private labelBox: HoverBox | null;
   private renderSeq = 0;
 
@@ -91,17 +89,26 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   public toggleHidden() {
-    this.isHidden = !this.isHidden;
+    this.getSettings().isHidden = !this.getSettings().isHidden;
     // FIXME: Consider using a CSS class for this
-    if (this.isHidden) {
+    this.updateHidden();
+  }
+
+  public getIsHidden() {
+    return this.getSettings().isHidden;
+  }
+
+  public hide() {
+    this.getSettings().isHidden = true;
+    this.updateHidden();
+  }
+
+  private updateHidden() {
+    if (this.getSettings().isHidden) {
       this.trackContainer.style.display = "none";
     } else {
       this.trackContainer.style.display = "block";
     }
-  }
-
-  public getIsHidden() {
-    return this.isHidden;
   }
 
   public toggleExpanded() {
@@ -146,18 +153,18 @@ export abstract class DataTrack extends CanvasTrack {
     updateSettings: (settings: DataTrackSettings) => void,
     session: GensSession,
   ) {
-    const heightConf = getSettings != null ? getSettings().height : null;
+    const settings = getSettings != null ? getSettings() : null;
+    const heightConf = settings != null ? settings.height : null;
     const fallbackHeight = TRACK_HEIGHTS.xxs;
     const height =
       heightConf != null
-        ? heightConf.startExpanded
+        ? settings.isExpanded
           ? heightConf.expandedHeight
           : heightConf.collapsedHeight
         : fallbackHeight;
     super(id, label, {
       height,
     });
-
 
     this.trackType = trackType;
     this.getSettings = getSettings;
@@ -209,6 +216,8 @@ export abstract class DataTrack extends CanvasTrack {
       [0, STYLE.yAxis.width],
       this.getListenerAbortSignal(),
     );
+
+    this.updateHidden();
   }
 
   disconnectedCallback(): void {

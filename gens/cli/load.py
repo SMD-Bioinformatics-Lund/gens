@@ -43,7 +43,7 @@ from gens.load.annotations import (
 )
 from gens.models.annotation import AnnotationRecord, AnnotationTrack
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleInfo
+from gens.models.sample import SampleInfo, SampleType
 
 LOG = logging.getLogger(__name__)
 
@@ -96,6 +96,13 @@ def load() -> None:
     type=click.Path(exists=True),
     help="Json file that contains preprocessed overview coverage",
 )
+@click.option(
+    "-t",
+    "--sample-type",
+    type=ChoiceType(SampleType),
+    required=False,
+    help="Type of the sample (tumor/normal, proband/mother/father, other)"
+)
 def sample(
     sample_id: str,
     genome_build: GenomeBuild,
@@ -103,6 +110,7 @@ def sample(
     coverage: Path,
     case_id: str,
     overview_json: Path,
+    sample_type: SampleType | None,
 ) -> None:
     """Load a sample into Gens database."""
     gens_db_name = settings.gens_db.database
@@ -123,6 +131,7 @@ def sample(
             "baf_file": baf,
             "coverage_file": coverage,
             "overview_file": overview_json,
+            "sample_type": sample_type,
         }
     )
     create_sample(db, sample_obj)

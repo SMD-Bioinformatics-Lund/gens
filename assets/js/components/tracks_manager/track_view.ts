@@ -7,7 +7,7 @@ import {
   createGeneTrack,
   createOverviewTrack,
   createVariantTrack,
-  getTrackInfo as getTrack,
+  makeTrackContainer,
   TRACK_HANDLE_CLASS,
 } from "./utils";
 import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
@@ -25,7 +25,7 @@ import { BandTrack } from "../tracks/band_track";
 import { TrackHeights } from "../side_menu/settings_menu";
 import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
-import { removeOne } from "../../util/utils";
+import { getMainSample, isNonMainSample, removeOne } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 
 const trackHeight = STYLE.tracks.trackHeight;
@@ -181,7 +181,7 @@ export class TrackView extends ShadowBaseElement {
     const overviewTrackCov = createOverviewTrack(
       "overview_cov",
       "Overview (cov)",
-      () => dataSources.getOverviewCovData(samples[0]),
+      () => dataSources.getOverviewCovData(getMainSample(samples)),
       COV_Y_RANGE,
       chromSizes,
       chromClick,
@@ -198,7 +198,7 @@ export class TrackView extends ShadowBaseElement {
     const overviewTrackBaf = createOverviewTrack(
       "overview_baf",
       "Overview (baf)",
-      () => dataSources.getOverviewBafData(samples[0]),
+      () => dataSources.getOverviewBafData(getMainSample(samples)),
       BAF_Y_RANGE,
       chromSizes,
       chromClick,
@@ -246,10 +246,10 @@ export class TrackView extends ShadowBaseElement {
     let positionTrackSettings: DataTrackSettings = {
       height: {
         collapsedHeight: STYLE.tracks.trackHeight.xs,
-        startExpanded: false,
       },
       showLabelWhenCollapsed: false,
       isExpanded: false,
+      isHidden: false,
     };
 
     this.positionTrack = new PositionTrack(
@@ -493,7 +493,7 @@ export class TrackView extends ShadowBaseElement {
       this.session,
       this.openTrackContextMenu,
       (track: DataTrack) => {
-        const annotTrack = getTrack(track, null);
+        const annotTrack = makeTrackContainer(track, null);
         this.dataTracks.push(annotTrack);
         this.tracksContainer.appendChild(annotTrack.container);
         annotTrack.track.initialize();
@@ -606,11 +606,24 @@ function createSampleTracks(
     (variantId: string) => session.getVariantURL(variantId),
     session,
     openTrackContextMenu,
+    {
+      height: {
+        collapsedHeight: STYLE.bandTrack.trackViewHeight,
+      },
+      showLabelWhenCollapsed: true,
+      isExpanded: false,
+      isHidden: isNonMainSample(sample),
+    },
   );
+
+  const cov = makeTrackContainer(coverageTrack, sample);
+  const baf = makeTrackContainer(bafTrack, sample);
+  const variant = makeTrackContainer(variantTrack, sample);
+
   return {
-    cov: getTrack(coverageTrack, sample),
-    baf: getTrack(bafTrack, sample),
-    variant: getTrack(variantTrack, sample),
+    cov,
+    baf,
+    variant,
   };
 }
 
@@ -652,6 +665,7 @@ function updateAnnotationTracks(
       {
         height: STYLE.bandTrack.trackViewHeight,
         showLabelWhenCollapsed: hasLabel,
+        startExpanded: true,
       },
     );
     addTrack(newTrack);

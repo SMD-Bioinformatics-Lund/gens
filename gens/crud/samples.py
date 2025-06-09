@@ -33,10 +33,11 @@ def update_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
         upsert=True,
     )
     if result.modified_count == 1:
-        LOG.error(
-            'Sample with sample_id="%s" and case_id="%s" was overwritten.',
+        LOG.info(
+            'Sample with sample_id="%s", case_id="%s", genome_build="%s" was overwritten.',
             sample_obj.sample_id,
             sample_obj.case_id,
+            sample_obj.genome_build,
         )
     if result.modified_count > 1:
         raise NonUniqueIndexError(
@@ -117,6 +118,7 @@ def get_samples_per_case(
         sample_obj = {
             "case_id": sample["case_id"],
             "sample_id": sample["sample_id"],
+            "sample_type": sample.get("sample_type"),
             "genome_build": sample["genome_build"],
             "has_overview_file": sample["overview_file"] is not None,
             "files_present": bool(sample["baf_file"] and sample["coverage_file"]),
@@ -147,6 +149,7 @@ def get_sample(
         baf_file=result["baf_file"],
         coverage_file=result["coverage_file"],
         overview_file=result["overview_file"],
+        sample_type=result.get("sample_type"),
         created_at=result["created_at"],
     )
 
