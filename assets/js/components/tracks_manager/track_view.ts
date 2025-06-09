@@ -7,7 +7,7 @@ import {
   createGeneTrack,
   createOverviewTrack,
   createVariantTrack,
-  getTrackInfo as getTrack,
+  getTrackInfo as makeTrackContainer,
   TRACK_HANDLE_CLASS,
 } from "./utils";
 import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
@@ -246,10 +246,10 @@ export class TrackView extends ShadowBaseElement {
     let positionTrackSettings: DataTrackSettings = {
       height: {
         collapsedHeight: STYLE.tracks.trackHeight.xs,
-        startExpanded: false,
       },
       showLabelWhenCollapsed: false,
       isExpanded: false,
+      isHidden: false,
     };
 
     this.positionTrack = new PositionTrack(
@@ -493,7 +493,7 @@ export class TrackView extends ShadowBaseElement {
       this.session,
       this.openTrackContextMenu,
       (track: DataTrack) => {
-        const annotTrack = getTrack(track, null);
+        const annotTrack = makeTrackContainer(track, null);
         this.dataTracks.push(annotTrack);
         this.tracksContainer.appendChild(annotTrack.container);
         annotTrack.track.initialize();
@@ -597,6 +597,11 @@ function createSampleTracks(
     openTrackContextMenu,
   );
 
+  // FIXME: Small util
+  const isNotMainSample =
+    sample.sampleType != null &&
+    !["proband", "tumor"].includes(sample.sampleType);
+
   const variantTrack = createVariantTrack(
     sample.sampleId,
     `${sample.sampleId}_variants`,
@@ -606,11 +611,30 @@ function createSampleTracks(
     (variantId: string) => session.getVariantURL(variantId),
     session,
     openTrackContextMenu,
+    {
+      height: {
+        collapsedHeight: STYLE.bandTrack.trackViewHeight,
+      },
+      showLabelWhenCollapsed: true,
+      isExpanded: false,
+      isHidden: isNotMainSample,
+      // isHidden: isNotMainSample
+    },
   );
+
+  const cov = makeTrackContainer(coverageTrack, sample);
+  const baf = makeTrackContainer(bafTrack, sample);
+  const variant = makeTrackContainer(variantTrack, sample);
+
+  // if (isNotMainSample) {
+  //   variant.track.hide();
+  //   // sampleTracks.variant.track.hide();
+  // }
+
   return {
-    cov: getTrack(coverageTrack, sample),
-    baf: getTrack(bafTrack, sample),
-    variant: getTrack(variantTrack, sample),
+    cov,
+    baf,
+    variant,
   };
 }
 
