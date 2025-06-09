@@ -7,7 +7,7 @@ import {
   createGeneTrack,
   createOverviewTrack,
   createVariantTrack,
-  getTrackInfo as makeTrackContainer,
+  makeTrackContainer,
   TRACK_HANDLE_CLASS,
 } from "./utils";
 import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
@@ -596,11 +596,6 @@ function createSampleTracks(
     session,
     openTrackContextMenu,
   );
-
-  // // FIXME: Small util
-  // const isNotMainSample =
-  //   sample.sampleType != null &&
-  //   !["proband", "tumor"].includes(sample.sampleType);
 
   const variantTrack = createVariantTrack(
     sample.sampleId,

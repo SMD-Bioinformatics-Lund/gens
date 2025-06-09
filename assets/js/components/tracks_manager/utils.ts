@@ -177,7 +177,7 @@ export function createVariantTrack(
   return variantTrack;
 }
 
-export function getTrackInfo(
+export function makeTrackContainer(
   track: DataTrack,
   sample: Sample | null,
 ): TrackViewTrackInfo {
@@ -235,7 +235,7 @@ export function createGeneTrack(
     openTrackContextMenu,
     session,
   );
-  return getTrackInfo(genesTrack, null);
+  return makeTrackContainer(genesTrack, null);
 }
 
 export function createOverviewTrack(

@@ -60,9 +60,6 @@ class Settings(BaseSettings):
     # Annotation
     default_annotation_track: str | None = None
 
-    # Filter options
-    variant_rank_score_threshold: float = 12.0
-
     # Authentication options
     authentication: AuthMethod = AuthMethod.DISABLED
 
@@ -84,7 +81,6 @@ class Settings(BaseSettings):
             "default_annotation_track": self.default_annotation_track,
             "authentication": self.authentication.value,
             "oauth": self.oauth,
-            "variant_rank_score_threshold": self.variant_rank_score_threshold,
         }
 
     @model_validator(mode="after")

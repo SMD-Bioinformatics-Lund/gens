@@ -146,14 +146,6 @@ export async function initCanvases({
     return matches[0];
   });
   const samples = orderSamples(unorderedSamples);
-  // const samples = orderSamples(sampleIds.map((sampleId) => {
-  //   return {
-  //     caseId,
-  //     sampleId,
-  //   };
-  // }));
-  console.log(unorderedSamples);
-  console.log(samples);
   const session = new GensSession(
     render,
     sideMenu,

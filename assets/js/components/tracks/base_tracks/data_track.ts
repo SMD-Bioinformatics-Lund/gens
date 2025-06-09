@@ -24,7 +24,6 @@ import debounce from "lodash.debounce";
 export interface ExpandedTrackHeight {
   collapsedHeight: number;
   expandedHeight?: number;
-  // startExpanded: boolean;
 }
 
 export interface DataTrackSettings {
@@ -55,8 +54,6 @@ export abstract class DataTrack extends CanvasTrack {
   protected renderData: BandTrackData | DotTrackData | null;
 
   private colorBands: RenderBand[] = [];
-  // private isHidden: boolean = false;
-  // private isExpanded: boolean;
   private labelBox: HoverBox | null;
   private renderSeq = 0;
 
@@ -92,7 +89,6 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   public toggleHidden() {
-    console.log("Toggling, before", this.getSettings().isHidden);
     this.getSettings().isHidden = !this.getSettings().isHidden;
     // FIXME: Consider using a CSS class for this
     this.updateHidden();
@@ -109,10 +105,8 @@ export abstract class DataTrack extends CanvasTrack {
 
   private updateHidden() {
     if (this.getSettings().isHidden) {
-      console.log("Hiding track", this.label);
       this.trackContainer.style.display = "none";
     } else {
-      console.log("Showing track", this.label);
       this.trackContainer.style.display = "block";
     }
   }

@@ -80,21 +80,6 @@ export class ChromosomeView extends ShadowBaseElement {
     for (const chrom of CHROMOSOMES) {
       const chromGroup = this.chromosomeGroups[chrom];
 
-      // FIXME: Paused for now, bring back when UPD tracks are in place
-      // addAnnotTracks(
-      //   annotDiff.new,
-      //   (id: string) => {
-      //     return this.session
-      //       .getAnnotationSources({ selectedOnly: true })
-      //       .find((source) => source.id == id).label;
-      //   },
-      //   this.session,
-      //   chrom,
-      //   this.dataSource,
-      //   (trackInfo: ChromViewTrackInfo) =>
-      //     this.onAddTrack(chromGroup.annotations, trackInfo),
-      // );
-
       const settingSamples = this.session.getSamples()[0];
 
       const getCovData = (sample: Sample, chrom: string) =>
@@ -106,9 +91,6 @@ export class ChromosomeView extends ShadowBaseElement {
       addSampleTracks(
         this.session,
         settingSamples,
-        // settingSamples.filter((sample) =>
-        //   sampleDiff.new.includes(sample.sampleId),
-        // ),
         chrom,
         (sample: Sample) => getCovData(sample, chrom),
         (trackInfo: ChromViewTrackInfo) => {
@@ -119,67 +101,7 @@ export class ChromosomeView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
-    // FIXME: Some parts of this might be needed later when UPD is introduced
 
-    // const currentBandTracks = this.tracks
-    //   .filter(
-    //     (track) => track.chromosome === "1" && track.type === "annotation",
-    //   )
-    //   .map((track) => track.sourceId);
-
-    // const trackIds = currentBandTracks;
-    // const sourceIds = this.session
-    //   .getAnnotationSources({ selectedOnly: true })
-    //   .map((source) => source.id);
-
-    // const annotDiff = getDiff(trackIds, sourceIds);
-
-    // const trackSampleIds = this.tracks
-    //   .filter((track) => track.chromosome === "1" && track.type == "coverage")
-    //   .map((track) => track.sampleId);
-    // const settingSamples = this.session.getSamples()[0];
-    // const settingSampleIds = settingSamples.map((sample) => sample.sampleId);
-    // const sampleDiff = getDiff(trackSampleIds, settingSampleIds);
-
-    // // Adding new tracks per chromosome
-    // for (const chrom of CHROMOSOMES) {
-    //   const chromGroup = this.chromosomeGroups[chrom];
-
-    //   // FIXME: Paused for now, bring back when UPD tracks are in place
-    //   // addAnnotTracks(
-    //   //   annotDiff.new,
-    //   //   (id: string) => {
-    //   //     return this.session
-    //   //       .getAnnotationSources({ selectedOnly: true })
-    //   //       .find((source) => source.id == id).label;
-    //   //   },
-    //   //   this.session,
-    //   //   chrom,
-    //   //   this.dataSource,
-    //   //   (trackInfo: ChromViewTrackInfo) =>
-    //   //     this.onAddTrack(chromGroup.annotations, trackInfo),
-    //   // );
-
-    //   addSampleTracks(
-    //     this.session,
-    //     settingSamples.filter((sample) =>
-    //       sampleDiff.new.includes(sample.sampleId),
-    //     ),
-    //     chrom,
-    //     (sample: Sample) => getCovData(sample, chrom),
-    //     (trackInfo: ChromViewTrackInfo) => {
-    //       this.onAddTrack(chromGroup.samples, trackInfo);
-    //     },
-    //   );
-    // }
-
-    // annotDiff.removed.forEach((sourceId) => {
-    //   this.onRemoveTrack(sourceId, "annotations");
-    // });
-
-    // sampleDiff.removed.forEach((id) => {
-    //   this.onRemoveTrack(id, "samples");
-    // });
 
     for (const track of this.tracks) {
       track.track.render(settings);
