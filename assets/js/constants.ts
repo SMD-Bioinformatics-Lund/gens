@@ -121,6 +121,10 @@ export const STYLE = {
     dynamicPadThreshold: 40,
     dynamicPadFraction: 8,
     trackViewHeight: TRACK_HEIGHTS.s,
+    arrowSpacing: 30,
+    arrowHeightFraction: 0.3,
+    arrowLength: 3,
+    arrowLineWidth: 2,
   },
   dotTrack: {
     dotSize: 2,

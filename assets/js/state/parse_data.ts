@@ -134,20 +134,21 @@ export function parseAnnotations(
   return results;
 }
 
-function parseExons(
-  geneId: string,
-  exons: { start: number; end: number }[],
-): RenderBand[] {
-  return exons.map((part, i) => {
-    const renderBand = {
-      id: `${geneId}_exon${i + 1}_${part.start}_${part.end}`,
+function parseTranscriptFeatures(
+  features: {
+    feature: string;
+    start: number;
+    end: number;
+    exon_number?: number;
+  }[],
+): TranscriptFeature[] {
+  return features.map((part, i) => {
+    return {
       start: part.start,
       end: part.end,
-      color: STYLE.colors.green,
-      label: `${i + 1} ${part.start}-${part.end}`,
-      exonNumber: i + 1,
+      exonNumber: part.exon_number,
+      feature: part.feature,
     };
-    return renderBand;
   });
 }
 
@@ -155,8 +156,8 @@ export function parseTranscripts(
   transcripts: ApiSimplifiedTranscript[],
 ): RenderBand[] {
   const transcriptsToRender: RenderBand[] = transcripts.map((transcript) => {
-    const exons = parseExons(transcript.record_id, transcript.features);
-    const exonCount = exons.length;
+    const exons = parseTranscriptFeatures(transcript.features);
+    const exonCount = exons.filter((f) => f.feature === "exon").length;
     const renderBand: RenderBand = {
       id: transcript.record_id,
       start: transcript.start,
@@ -165,7 +166,7 @@ export function parseTranscripts(
       color: STYLE.colors.green,
       hoverInfo: `${transcript.name}`,
       direction: transcript.strand as "+" | "-",
-      subBands: exons,
+      subFeatures: exons,
       exonCount,
     };
     return renderBand;

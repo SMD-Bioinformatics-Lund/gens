@@ -97,13 +97,11 @@ export function drawLine(
 }
 
 // FIXME: Duplicate functions with different signature
-// Look over
 export async function drawArrow(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   dir: number,
-  length: number,
   headWidth: number,
   style: LineStyle = {},
 ) {
@@ -111,9 +109,6 @@ export async function drawArrow(
 
   const halfW = headWidth / 2;
   const tipX = x + dir * headWidth;
-
-  // const width = dir * lineWidth;
-  const width = dir * headWidth;
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;

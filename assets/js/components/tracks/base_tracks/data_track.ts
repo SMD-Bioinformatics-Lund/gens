@@ -292,6 +292,19 @@ export abstract class DataTrack extends CanvasTrack {
         this.getSettings(),
       );
     }
+
+    this.startClip();
+  }
+
+  private startClip() {
+    const clipX = STYLE.yAxis.width;
+    const clipY = 0;
+    const clipWidth = this.dimensions.width - STYLE.yAxis.width;
+    const clipHeight = this.dimensions.height;
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.rect(clipX, clipY, clipWidth, clipHeight);
+    this.ctx.clip();
   }
 
   setExpandedHeight(height: number) {
@@ -305,6 +318,10 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected drawEnd() {
+
+    // Restore the clipping
+    this.ctx.restore();
+
     const settings = this.getSettings();
     if (settings.isExpanded || settings.showLabelWhenCollapsed) {
       const yAxisWidth = STYLE.yAxis.width;

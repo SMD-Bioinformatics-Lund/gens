@@ -50,7 +50,12 @@ interface ApiSimplifiedTranscript {
   end: number;
   strand: string;
   color: number[] | null;
-  features: { start: number; end: number }[];
+  features: {
+    feature: string;
+    start: number;
+    end: number;
+    exon_number?: number;
+  }[];
 }
 
 interface ApiComment {
@@ -109,21 +114,21 @@ interface ApiGeneDetails {
 }
 
 interface ApiSample {
-  allele_depths: [number, number],
-  alt_frequency: number,
-  display_name: string,
-  genotype_call: string,
-  sample_id: string,
-  read_depth: number,
-  split_read: number,
-  genotype_quality: number,
+  allele_depths: [number, number];
+  alt_frequency: number;
+  display_name: string;
+  genotype_call: string;
+  sample_id: string;
+  read_depth: number;
+  split_read: number;
+  genotype_quality: number;
 }
 
 interface ApiSimplifiedVariant {
   variant_id: string;
   start: number;
   end: number;
-  variant_type: string;  // e.g. research, clinical
+  variant_type: string; // e.g. research, clinical
   category: VariantCategory;
   sub_category: VariantSubCategory;
 }
@@ -184,13 +189,13 @@ interface PopupContent {
 
 type RenderElement = RenderBand | RenderDot;
 
-interface SimpleRenderBand {
+interface TranscriptFeature {
   start: number;
   end: number;
+  feature: string;
   exonNumber?: number;
 }
 
-// FIXME: This should be looked over
 interface RenderBand {
   id: string;
   start: number;
@@ -203,7 +208,7 @@ interface RenderBand {
   direction?: "+" | "-";
   y1?: number;
   y2?: number;
-  subBands?: SimpleRenderBand[];
+  subFeatures?: TranscriptFeature[];
   exonCount?: number;
 }
 
@@ -222,7 +227,31 @@ interface AnnotationTrackData {
   annotation: { source: string; bands: RenderBand[] };
 }
 
-type Chromosome = "1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12"|"13"|"14"|"15"|"16"|"17"|"18"|"19"|"20"|"21"|"22"|"X"|"Y"
+type Chromosome =
+  | "1"
+  | "2"
+  | "3"
+  | "4"
+  | "5"
+  | "6"
+  | "7"
+  | "8"
+  | "9"
+  | "10"
+  | "11"
+  | "12"
+  | "13"
+  | "14"
+  | "15"
+  | "16"
+  | "17"
+  | "18"
+  | "19"
+  | "20"
+  | "21"
+  | "22"
+  | "X"
+  | "Y";
 
 interface BandTrackData {
   // xRange: Rng;
@@ -297,8 +326,16 @@ interface RenderDataSource {
   ) => Promise<RenderBand[]>;
   getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>;
 
-  getCovData: (sample: Sample, chrom: string, xRange: Rng) => Promise<RenderDot[]>;
-  getBafData: (sample: Sample, chrom: string, xRange: Rng) => Promise<RenderDot[]>;
+  getCovData: (
+    sample: Sample,
+    chrom: string,
+    xRange: Rng,
+  ) => Promise<RenderDot[]>;
+  getBafData: (
+    sample: Sample,
+    chrom: string,
+    xRange: Rng,
+  ) => Promise<RenderDot[]>;
 
   getTranscriptBands: (chrom: string) => Promise<RenderBand[]>;
   getTranscriptDetails: (geneId: string) => Promise<ApiGeneDetails>;
