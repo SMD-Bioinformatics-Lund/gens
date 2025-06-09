@@ -7,7 +7,12 @@ from pymongo.database import Database
 
 from gens.crud.annotations import register_data_update
 from gens.db.collections import TRANSCRIPTS_COLLECTION
-from gens.models.annotation import SimplifiedTranscriptInfo, TranscriptRecord
+from gens.models.annotation import (
+    ExonFeature,
+    SimplifiedTranscriptInfo,
+    TranscriptRecord,
+    UtrFeature,
+)
 from gens.models.base import PydanticObjectId
 from gens.models.genomic import GenomeBuild, GenomePosition, GenomicRegion
 
@@ -16,9 +21,26 @@ from .utils import query_genomic_region
 LOG = logging.getLogger(__name__)
 
 
-def _format_features(features: list[dict[str, Any]]) -> list[GenomePosition]:
-    """Format a transcript features."""
-    return [GenomePosition(start=int(feat["start"]), end=int(feat["end"])) for feat in features]
+def _format_features(features: list[dict[str, Any]]) -> list[ExonFeature | UtrFeature]:
+    """Format a transcript features to simplified models."""
+
+    formatted: list[ExonFeature | UtrFeature] = []
+    for feat in features:
+        start = int(feat["start"])
+        end = int(feat["end"])
+        if feat["feature"] == "exon":
+            formatted.append(
+                ExonFeature(
+                    feature="exon",
+                    exon_number=int(feat["exon_number"]),
+                    start=start,
+                    end=end,
+                )
+            )
+        else:
+            formatted.append(UtrFeature(feature=feat["feature"], start=start, end=end))
+
+    return formatted
 
 
 def get_transcripts(
