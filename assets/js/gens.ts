@@ -77,9 +77,17 @@ export async function initCanvases({
   const settingsPage = document.createElement("settings-page") as SettingsMenu;
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
 
+  const caseSamplesMap: Record<string, Sample[]> = {};
+  for (const sample of allSamples) {
+    const caseId = sample.caseId;
+    if (caseSamplesMap[caseId] == null) {
+      caseSamplesMap[caseId] = [];
+    }
+    caseSamplesMap[caseId].push(sample);
+  }
+
   headerInfo.initialize(
     caseId,
-    sampleIds,
     `${scoutBaseURL}/case/case_id/${caseId}`,
     version,
   );
@@ -103,15 +111,49 @@ export async function initCanvases({
     dotExpanded: STYLE.tracks.trackHeight.xl,
   };
 
+  const orderSamples = (samples: Sample[]): Sample[] => {
+    const mainSample = samples.find((s) =>
+      ["proband", "tumor"].includes(s.sampleType),
+    );
+    if (mainSample != null) {
+      const index = samples.indexOf(mainSample);
+      const remaining = samples
+        .filter((_, i) => i != index)
+        .sort((s1, s2) => s1.sampleId.localeCompare(s2.sampleId));
+      return [mainSample, ...remaining];
+    }
+    return samples.sort((s1, s2) => s1.sampleId.localeCompare(s2.sampleId));
+  };
+
   const chromInfo = api.getChromInfo();
   const chromSizes = api.getChromSizes();
-  const defaultRegion = { chrom: "1" as Chromosome, start: 1, end: chromSizes["1"] };
-  const samples = sampleIds.map((sampleId) => {
-    return {
-      caseId,
-      sampleId
+  const defaultRegion = {
+    chrom: "1" as Chromosome,
+    start: 1,
+    end: chromSizes["1"],
+  };
+
+  const unorderedSamples = sampleIds.map((sampleId) => {
+    const caseSamples = caseSamplesMap[caseId];
+
+    const matches = caseSamples.filter((s) => s.sampleId == sampleId);
+    if (matches.length != 1) {
+      console.error(
+        "Expected to find one object with matching sample ID, found",
+        matches,
+      );
     }
-  })
+    return matches[0];
+  });
+  const samples = orderSamples(unorderedSamples);
+  // const samples = orderSamples(sampleIds.map((sampleId) => {
+  //   return {
+  //     caseId,
+  //     sampleId,
+  //   };
+  // }));
+  console.log(unorderedSamples);
+  console.log(samples);
   const session = new GensSession(
     render,
     sideMenu,
@@ -160,7 +202,9 @@ export async function initCanvases({
     () => {
       const samples = session.getSamples();
       const currSampleIds = samples.map((sample) => sample.sampleId);
-      const filtered = allSamples.filter((s) => !currSampleIds.includes(s.sampleId));
+      const filtered = allSamples.filter(
+        (s) => !currSampleIds.includes(s.sampleId),
+      );
       return filtered;
     },
     (region: Region) => {
@@ -172,10 +216,7 @@ export async function initCanvases({
     // why is the trackview looping to itself?
     (sample: Sample) => {
       const isTrackView = true;
-      gensTracks.trackView.addSample(
-        sample,
-        isTrackView,
-      );
+      gensTracks.trackView.addSample(sample, isTrackView);
       session.addSample(sample);
       render({ dataUpdated: true, samplesUpdated: true });
     },
@@ -214,7 +255,7 @@ export async function initCanvases({
     },
     (settings: RenderSettings) => {
       render(settings);
-    }
+    },
   );
 
   await gensTracks.initialize(

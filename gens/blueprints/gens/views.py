@@ -69,6 +69,7 @@ def display_samples(case_id: str) -> str:
             raise ValueError(f"Chromosome {parsed_region.chromosome} is not found in the database")
         parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})
 
+    # FIXME: Some thing to think about here. Is this initial dict enough actually?
     samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
 
     all_samples: list[dict[str, str]] = []
@@ -76,7 +77,9 @@ def display_samples(case_id: str) -> str:
         for sample in case_samples:
             sample_info = {
                 "caseId": sample["case_id"],
-                "sampleId": sample["sample_id"]
+                "sampleId": sample["sample_id"],
+                "sampleType": sample.get("sample_type"),
+                "genomeBuild": sample["genome_build"],
             }
             all_samples.append(sample_info)
 
@@ -89,7 +92,7 @@ def display_samples(case_id: str) -> str:
         end=parsed_region.end,
         case_id=case_id,
         sample_ids=sample_ids,
-        all_case_sample_ids=list(all_samples),
+        all_samples=list(all_samples),
         genome_build=genome_build.value,
         print_page=print_page,
         annotation=annotation,

@@ -59,7 +59,6 @@ export class PositionTrack extends DataTrack {
     for (let i = 0; i < tickCount; i++) {
       const pos = start + step * i;
       const x = xScale(pos);
-      console.log("Drawing line at", pos, x);
       drawLine(
         this.ctx,
         {

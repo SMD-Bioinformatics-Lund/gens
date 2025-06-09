@@ -118,6 +118,7 @@ def get_samples_per_case(
         sample_obj = {
             "case_id": sample["case_id"],
             "sample_id": sample["sample_id"],
+            "sample_type": sample.get("sample_type"),
             "genome_build": sample["genome_build"],
             "has_overview_file": sample["overview_file"] is not None,
             "files_present": bool(sample["baf_file"] and sample["coverage_file"]),

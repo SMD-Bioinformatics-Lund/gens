@@ -547,6 +547,7 @@ interface RangeHighlight {
 interface Sample {
   caseId: string;
   sampleId: string;
+  sampleType?: string;
 }
 
 type TrackType = "annotation" | "variant" | "dot" | "gene" | "position";

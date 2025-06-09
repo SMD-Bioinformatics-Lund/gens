@@ -213,3 +213,11 @@ export const CHROMOSOMES: Chromosome[] = [
   "X",
   "Y",
 ];
+
+export const SAMPLE_TYPES = [
+  "proband",
+  "mother",
+  "father",
+  "tumor",
+  "normal",
+];
