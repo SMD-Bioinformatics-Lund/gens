@@ -161,11 +161,6 @@ async def get_variants(
     except VariantValidaitonError as e:
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
 
-    # FIXME: Default parameters, optionally grab from frontend
-    # FIXME: Cleanup, skip the settings
-    # keep_types = {"del", "dup", "tdup"}
-    # threshold = 12
-
     sub_categories_values = sub_categories.split(",") if sub_categories else None
 
     filtered = [

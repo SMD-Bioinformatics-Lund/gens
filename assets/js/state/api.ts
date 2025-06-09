@@ -4,6 +4,10 @@ import { zip } from "../util/utils";
 
 const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 
+// FIXME: This will need to be made configurable eventually
+const DEFAULT_RANK_SCORE_FILTER = 12;
+const DEFAULT_VARIANT_TYPES = ["del", "dup", "tdup"];
+
 export class API {
   genomeBuild: number;
   apiURI: string;
@@ -264,8 +268,8 @@ export class API {
         chromosome: chrom,
         category: "sv",
         start: 1,
-        rank_score_threshold: 12,
-        sub_categories: ["del", "dup", "tdup"],
+        rank_score_threshold: DEFAULT_RANK_SCORE_FILTER,
+        sub_categories: DEFAULT_VARIANT_TYPES,
       };
       const url = new URL("tracks/variants", this.apiURI).href;
       const variants = get(url, query) as Promise<ApiSimplifiedVariant[]>;
@@ -298,7 +302,6 @@ export class API {
     caseId: string,
     sampleId: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
-
     console.log("Getting overview data for", sampleId);
 
     if (this.overviewSampleCovCache[sampleId] == null) {
