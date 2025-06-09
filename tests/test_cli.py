@@ -40,3 +40,4 @@ def test_load_annotation(fixture_name: str, genome_build: int, request):
 
     # Test that the command finished successfully
     assert result.exit_code == 0
+

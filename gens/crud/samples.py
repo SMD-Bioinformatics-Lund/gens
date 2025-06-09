@@ -147,6 +147,7 @@ def get_sample(
         baf_file=result["baf_file"],
         coverage_file=result["coverage_file"],
         overview_file=result["overview_file"],
+        sample_type=result.get("sample_type"),
         created_at=result["created_at"],
     )
 
