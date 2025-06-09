@@ -192,6 +192,7 @@ function addAnnotTracks(
         height: STYLE.tracks.trackHeight.xxs,
         showLabelWhenCollapsed: false,
         yPadBands: false,
+        startExpanded: false,
       },
     );
     const annotTrackWrapper = createDataTrackWrapper(annotTrack);

@@ -25,7 +25,7 @@ import { BandTrack } from "../tracks/band_track";
 import { TrackHeights } from "../side_menu/settings_menu";
 import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
-import { removeOne } from "../../util/utils";
+import { getMainSample, isNonMainSample, removeOne } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 
 const trackHeight = STYLE.tracks.trackHeight;
@@ -181,7 +181,7 @@ export class TrackView extends ShadowBaseElement {
     const overviewTrackCov = createOverviewTrack(
       "overview_cov",
       "Overview (cov)",
-      () => dataSources.getOverviewCovData(samples[0]),
+      () => dataSources.getOverviewCovData(getMainSample(samples)),
       COV_Y_RANGE,
       chromSizes,
       chromClick,
@@ -198,7 +198,7 @@ export class TrackView extends ShadowBaseElement {
     const overviewTrackBaf = createOverviewTrack(
       "overview_baf",
       "Overview (baf)",
-      () => dataSources.getOverviewBafData(samples[0]),
+      () => dataSources.getOverviewBafData(getMainSample(samples)),
       BAF_Y_RANGE,
       chromSizes,
       chromClick,
@@ -597,10 +597,10 @@ function createSampleTracks(
     openTrackContextMenu,
   );
 
-  // FIXME: Small util
-  const isNotMainSample =
-    sample.sampleType != null &&
-    !["proband", "tumor"].includes(sample.sampleType);
+  // // FIXME: Small util
+  // const isNotMainSample =
+  //   sample.sampleType != null &&
+  //   !["proband", "tumor"].includes(sample.sampleType);
 
   const variantTrack = createVariantTrack(
     sample.sampleId,
@@ -617,19 +617,13 @@ function createSampleTracks(
       },
       showLabelWhenCollapsed: true,
       isExpanded: false,
-      isHidden: isNotMainSample,
-      // isHidden: isNotMainSample
+      isHidden: isNonMainSample(sample),
     },
   );
 
   const cov = makeTrackContainer(coverageTrack, sample);
   const baf = makeTrackContainer(bafTrack, sample);
   const variant = makeTrackContainer(variantTrack, sample);
-
-  // if (isNotMainSample) {
-  //   variant.track.hide();
-  //   // sampleTracks.variant.track.hide();
-  // }
 
   return {
     cov,
@@ -676,6 +670,7 @@ function updateAnnotationTracks(
       {
         height: STYLE.bandTrack.trackViewHeight,
         showLabelWhenCollapsed: hasLabel,
+        startExpanded: true,
       },
     );
     addTrack(newTrack);

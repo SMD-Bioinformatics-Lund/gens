@@ -27,6 +27,7 @@ export function createAnnotTrack(
     height: number;
     showLabelWhenCollapsed: boolean;
     yPadBands?: boolean;
+    startExpanded: boolean;
   },
 ): BandTrack {
   // FIXME: Seems the x range should be separated from the annotations or?
@@ -58,7 +59,7 @@ export function createAnnotTrack(
     height: { collapsedHeight: settings.height },
     showLabelWhenCollapsed: settings.showLabelWhenCollapsed,
     yPadBands: settings.yPadBands,
-    isExpanded: false,
+    isExpanded: settings.startExpanded,
     isHidden: false,
   };
 

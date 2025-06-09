@@ -296,6 +296,9 @@ export class API {
     caseId: string,
     sampleId: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
+
+    console.log("Getting overview data for", sampleId);
+
     if (this.overviewSampleCovCache[sampleId] == null) {
       this.overviewSampleCovCache[sampleId] = getOverviewData(
         sampleId,

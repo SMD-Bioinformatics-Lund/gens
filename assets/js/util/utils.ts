@@ -197,7 +197,6 @@ export function eventInBox(
   point: { offsetX: number; offsetY: number },
   box: Box,
 ): boolean {
-
   return (
     point.offsetX >= box.x1 &&
     point.offsetX <= box.x2 &&
@@ -207,10 +206,10 @@ export function eventInBox(
 }
 
 /**
- * @param nts 
- * @param sizeNumber Optional number to set size. 
+ * @param nts
+ * @param sizeNumber Optional number to set size.
  * Useful if you want the same prefix for a collection of values.
- * @returns 
+ * @returns
  */
 export function prefixNts(nts: number, sizeNumber?: number): string {
   if (sizeNumber == null) {
@@ -319,7 +318,6 @@ export function spliceMany<T>(arr: T[], inds: number[]) {
 }
 
 export function removeOne<T>(arr: T[], matchFn: (arg: T) => boolean): T {
-
   let foundIndex = -1;
   let count = 0;
 
@@ -334,7 +332,9 @@ export function removeOne<T>(arr: T[], matchFn: (arg: T) => boolean): T {
   }
 
   if (count !== 1) {
-    throw new Error(`${count} matches found. This function expects strictly one.`);
+    throw new Error(
+      `${count} matches found. This function expects strictly one.`,
+    );
   }
 
   const [removed] = arr.splice(foundIndex, 1);
@@ -343,4 +343,21 @@ export function removeOne<T>(arr: T[], matchFn: (arg: T) => boolean): T {
 
 export function div(): HTMLDivElement {
   return document.createElement("div") as HTMLDivElement;
+}
+
+export function isNonMainSample(sample: Sample): boolean {
+  const isNotMainSample =
+    sample.sampleType == null ||
+    ["proband", "tumor"].includes(sample.sampleType);
+  return !isNotMainSample;
+}
+
+export function getMainSample(samples: Sample[]): Sample {
+  const mainSample = samples.find((s) =>
+    ["proband", "tumor"].includes(s.sampleType),
+  );
+  if (mainSample != null) {
+    return mainSample;
+  }
+  return samples[0];
 }
