@@ -25,6 +25,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Multiple-chromosomes view
  - Parsing AED files can deal with " surrounded comments split across multiple rows
  - Optional sample type introduced (tumor/normal, proband/mother/father, other). Used in multi-sample views to display only proband-relevant tracks.
+ - Pydantic validation of loaded transcripts
 
 ### Changed
  - Resolution increased 2x for tracks.
@@ -32,6 +33,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Migrated from Connexion to FastAPI.
  - Changed API routes and the underlying data structure for samples, annotations and transcripts.
  - Updated CLI command for loading annotations.
+ - Remove height order from backend.
 
 ### Fixed
 

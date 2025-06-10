@@ -1,7 +1,7 @@
 """Transcript related CRUD functions."""
 
 import logging
-from typing import Any
+from typing import Any, Iterable
 
 from pymongo.database import Database
 
@@ -94,7 +94,7 @@ def get_transcript(transcript_id: PydanticObjectId, db: Database[Any]) -> Transc
     return None
 
 
-def create_transcripts(transcripts: list[TranscriptRecord], db: Database[Any]):
+def create_transcripts(transcripts: Iterable[TranscriptRecord], db: Database[Any]):
     """Insert many transcripts in the database."""
 
     LOG.info("Add transcripts to database")

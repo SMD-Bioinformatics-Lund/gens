@@ -41,7 +41,7 @@ from gens.load.annotations import (
     parse_bed_file,
     parse_tsv_file,
 )
-from gens.models.annotation import AnnotationRecord, AnnotationTrack
+from gens.models.annotation import AnnotationRecord, AnnotationTrack, TranscriptRecord
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleType
 
@@ -101,7 +101,7 @@ def load() -> None:
     "--sample-type",
     type=ChoiceType(SampleType),
     required=False,
-    help="Type of the sample (tumor/normal, proband/mother/father, other)"
+    help="Type of the sample (tumor/normal, proband/mother/father, other)",
 )
 def sample(
     sample_id: str,
@@ -115,9 +115,7 @@ def sample(
     """Load a sample into Gens database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
+        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
@@ -166,15 +164,13 @@ def sample(
     "--ignore-errors",
     "ignore_errors",
     is_flag=True,
-    help="Proceed with parsing AED files even if some entries fail."
+    help="Proceed with parsing AED files even if some entries fail.",
 )
 def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_errors: bool) -> None:
     """Load annotations from file into the database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
+        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, ANNOTATIONS_COLLECTION)) == 0:
@@ -190,15 +186,11 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
         LOG.info("Processing %s", annot_file)
         # get the track name from the filename
         annotation_name = annot_file.name[: -len(annot_file.suffix)]
-        track_in_db = get_annotation_track(
-            name=annotation_name, genome_build=genome_build, db=db
-        )
+        track_in_db = get_annotation_track(name=annotation_name, genome_build=genome_build, db=db)
 
         # create a new record if it has not been added to the database
         if track_in_db is None:
-            track = AnnotationTrack(
-                name=annotation_name, description="", genome_build=genome_build
-            )
+            track = AnnotationTrack(name=annotation_name, description="", genome_build=genome_build)
             track_id = create_annotation_track(track, db)
         else:
             track_id = track_in_db.track_id
@@ -209,13 +201,17 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
         records: list[AnnotationRecord] = []
         if file_format == "tsv" or is_tsv:
             records = [
-                AnnotationRecord.model_validate({"track_id": track_id, "genome_build": genome_build,**rec})
+                AnnotationRecord.model_validate(
+                    {"track_id": track_id, "genome_build": genome_build, **rec}
+                )
                 for rec in parse_tsv_file(file)
             ]
         elif file_format == "bed":
             try:
                 bed_records = parse_bed_file(file)
-                records = [fmt_bed_to_annotation(rec, track_id, genome_build) for rec in bed_records]
+                records = [
+                    fmt_bed_to_annotation(rec, track_id, genome_build) for rec in bed_records
+                ]
             except ValueError as err:
                 click.secho(
                     f"An error occured when creating loading annotation: {err}",
@@ -285,19 +281,15 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     """Load transcripts into the database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
+        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) == 0:
         create_index(db, TRANSCRIPTS_COLLECTION)
     LOG.info("Building transcript object")
-    try:
-        with open_text_or_gzip(file) as file_fh, open_text_or_gzip(mane) as mane_fh:
-            transcripts_obj = build_transcripts(file_fh, mane_fh, genome_build)
-    except Exception as err:
-        raise click.UsageError(str(err))
+    with open_text_or_gzip(file) as file_fh, open_text_or_gzip(mane) as mane_fh:
+        transcripts_obj = build_transcripts(file_fh, mane_fh, genome_build)
+        LOG.info("Validating transcript format")
 
     # FIXME build transcripts
     create_transcripts(transcripts_obj, db)
@@ -323,9 +315,7 @@ def chromosomes(genome_build: GenomeBuild, timeout: int) -> None:
     """Load chromosome size information into the database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
+        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, CHROMSIZES_COLLECTION)) == 0:
@@ -349,14 +339,10 @@ def chromosomes(genome_build: GenomeBuild, timeout: int) -> None:
 
     # remove old entries
     res = db[CHROMSIZES_COLLECTION].delete_many({"genome_build": int(genome_build)})
-    LOG.info(
-        "Removed %d old entries with genome build: %s", res.deleted_count, genome_build
-    )
+    LOG.info("Removed %d old entries with genome build: %s", res.deleted_count, genome_build)
     # insert collection
     LOG.info("Add chromosome info to database")
-    db[CHROMSIZES_COLLECTION].insert_many(
-        [chr.model_dump() for chr in chromosomes_data]
-    )
+    db[CHROMSIZES_COLLECTION].insert_many([chr.model_dump() for chr in chromosomes_data])
     register_data_update(db, CHROMSIZES_COLLECTION)
     # build cytogenetic data
     click.secho("Finished updating chromosome sizes ✔", fg="green")

@@ -72,7 +72,7 @@ export class SamplesTable extends HTMLElement {
   initialize(
     sampleInfo: SampleInfo[],
     scoutBaseURL: string,
-    getGensURL: (caseId: string, sampleIds: string[]) => void,
+    getGensURL: (caseId: string, sampleIds: string[]) => string,
   ) {
     if (!this.isConnected) {
       throw Error(
