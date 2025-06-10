@@ -15,7 +15,7 @@ from gens.models.search import SearchSuggestions, Suggestion
 LOG = logging.getLogger(__name__)
 
 
-def search_annotations(
+def search_annotations_and_transcripts(
     query: str, genome_build: GenomeBuild, db: Database[Any]
 ) -> GenomicRegion | None:
     """Simple search for annotations and transcripts."""
@@ -29,13 +29,22 @@ def search_annotations(
             db.get_collection(col).find(db_query, sort=[("start", 1), ("chrom", 1)])
         )
         if len(elements) > 0:
-            start_elem = elements[0]
-            end_elem = max(elements[0:], key=lambda elem: elem.get("end"))
+            LOG.error("Found elements", elements)
+
+            elements_with_mane = [elem for elem in elements if elem.get("mane") is not None]
+
+            target = elements[0]
+            if len(elements_with_mane) > 0:
+                target = elements_with_mane[0]
+
+
+            # start_elem = elements[0]
+            # end_elem = max(elements[0:], key=lambda elem: elem.get("end"))
             return GenomicRegion.model_validate(
                 {
-                    "chromosome": start_elem.get("chrom"),
-                    "start": start_elem.get("start"),
-                    "end": end_elem.get("end"),
+                    "chromosome": target.get("chrom"),
+                    "start": target.get("start"),
+                    "end": target.get("end"),
                 }
             )
     return None

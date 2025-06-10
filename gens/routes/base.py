@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
 
 from gens import version
-from gens.crud.search import search_annotations, text_search_suggestion
+from gens.crud.search import search_annotations_and_transcripts, text_search_suggestion
 from gens.crud.user import create_user as crud_create_user
 from gens.crud.user import get_user as crud_get_user
 from gens.crud.user import get_users as crud_get_users
@@ -38,7 +38,7 @@ def search(
 ) -> GenomicRegion:
     """Search for a annotation."""
 
-    result = search_annotations(query=query, genome_build=genome_build, db=db)
+    result = search_annotations_and_transcripts(query=query, genome_build=genome_build, db=db)
     if result is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No result found!")
     return result
