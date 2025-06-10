@@ -176,7 +176,7 @@ function drawBand(
 
   // Body
   const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
-  let [xPxStart, xPxEnd] = xPxRange;
+  const [xPxStart, xPxEnd] = xPxRange;
   const width = Math.max(xPxEnd - xPxStart, STYLE.bandTrack.minBandWidth);
   const isTranscript = band.subFeatures != null && band.subFeatures.length > 0;
 
@@ -244,7 +244,6 @@ function drawDirectionArrows(
   while (
     isForward ? pos < xPxEnd - spacing / 2 : pos > xPxStart + spacing / 2
   ) {
-    const arrowLength = STYLE.bandTrack.arrowLength;
     drawArrow(ctx, pos, midY, isForward ? 1 : -1, arrowHeight, {
       lineWidth: STYLE.bandTrack.arrowLineWidth,
       color: detailColor,
@@ -267,9 +266,9 @@ function drawExon(
   ctx.fillStyle = detailColor;
   const width = Math.max(xPxEnd - xPxStart, STYLE.bandTrack.minBandWidth);
 
-  let drawHeight = height;
-  let yStart = y1;
-  let label = `Exon: ${subBand.exonNumber}/${band.exonCount}`;
+  const drawHeight = height;
+  const yStart = y1;
+  const label = `Exon: ${subBand.exonNumber}/${band.exonCount}`;
   if (subBand.feature != null && subBand.feature !== "exon") {
     ctx.fillStyle = COLORS.lightGray;
   }

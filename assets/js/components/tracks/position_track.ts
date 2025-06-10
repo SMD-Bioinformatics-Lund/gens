@@ -36,7 +36,7 @@ export class PositionTrack extends DataTrack {
     super.connectedCallback();
   }
 
-  draw(_renderData: any): void {
+  draw(_renderData): void {
     super.syncDimensions();
     this.drawStart();
 
