@@ -1,13 +1,14 @@
 """Routes for getting coverage information."""
 
 from http import HTTPStatus
+from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException
 
 from gens.crud import samples
 from gens.db.collections import SAMPLES_COLLECTION
-from gens.io import get_overview_data, get_scatter_data
+from gens.io import get_overview_data, get_overview_from_tabix, get_scatter_data
 from gens.models.genomic import Chromosome, GenomicRegion
 from gens.models.sample import (
     GenomeCoverage,
@@ -85,4 +86,7 @@ async def get_cov_overview(
             detail="Sample doest not have an overview file!",
         )
 
-    return get_overview_data(sample_info.overview_file, data_type)
+    if sample_info.overview_file is not None and Path(sample_info.overview_file).is_file():
+        return get_overview_data(sample_info.overview_file, data_type)
+
+    return get_overview_from_tabix(sample_info, data_type)
