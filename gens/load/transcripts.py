@@ -75,6 +75,7 @@ def build_transcripts(
             elif transc["feature"] in ["exon", "three_prime_utr", "five_prime_utr"]:
                 # add features to existing transcript
                 if transcript_id in transc_index:
+                    feature: ExonFeature | UtrFeature
                     if transc["feature"] == "exon":
                         feature = ExonFeature.model_validate(
                             {
