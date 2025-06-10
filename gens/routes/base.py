@@ -35,7 +35,10 @@ async def read_root():
 
 @router.get("/search/result", tags=[ApiTags.SEARCH])
 def search(
-    query: SearchQueryParam, genome_build: GenomeBuild, db: GensDb, annotation_track_ids: str | None = Query(None)
+    query: SearchQueryParam,
+    genome_build: GenomeBuild,
+    db: GensDb,
+    annotation_track_ids: str | None = Query(None),
 ) -> GenomicRegion:
     """Search for a annotation."""
 
@@ -43,7 +46,9 @@ def search(
     if annotation_track_ids:
         track_ids = [ObjectId(tid) for tid in annotation_track_ids.split(",") if tid]
 
-    result = search_annotations_and_transcripts(query=query, genome_build=genome_build, db=db, annotation_track_ids=track_ids)
+    result = search_annotations_and_transcripts(
+        query=query, genome_build=genome_build, db=db, annotation_track_ids=track_ids
+    )
     if result is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No result found!")
     return result

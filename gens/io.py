@@ -48,6 +48,7 @@ def tabix_query(
 
     return [r.split("\t") for r in records]
 
+
 def parse_raw_tabix(tabix_result: list[list[str]]) -> GenomeCoverage:
     zoom: str | None = None
     region: str | None = None
@@ -143,7 +144,7 @@ def get_overview_from_tabix(sample: SampleInfo, data_type: ScatterDataType) -> l
         except ValueError as err:
             LOG.error(err)
             continue
-        
+
         results.append(parse_raw_tabix([r.split("\t") for r in records]))
-    
+
     return results

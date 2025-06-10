@@ -34,9 +34,7 @@ def search_annotations_and_transcripts(
             transcript_query, sort=[("start", 1), ("chrom", 1)]
         )
     )
-    LOG.info(">>> Direct matched elements %s", transcripts)
     if len(transcripts) > 0:
-        LOG.info(">>> Inside the if")
 
         elements_with_mane = [elem for elem in transcripts if elem.get("mane") is not None]
 
@@ -52,8 +50,6 @@ def search_annotations_and_transcripts(
             }
         )
 
-    LOG.info(">>> After the if")
-
     annotation_query: dict[str, Any] = {
         "name": {"$regex": re.escape(query), "$options": "i"},
         "genome_build": genome_build,
@@ -68,7 +64,6 @@ def search_annotations_and_transcripts(
         )
     )
 
-    LOG.info(">>> Found annotations %s", annotations)
     if len(annotations) > 0:
         target = annotations[0]
 
