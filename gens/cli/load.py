@@ -41,7 +41,7 @@ from gens.load.annotations import (
     parse_bed_file,
     parse_tsv_file,
 )
-from gens.models.annotation import AnnotationRecord, AnnotationTrack
+from gens.models.annotation import AnnotationRecord, AnnotationTrack, TranscriptRecord
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleType
 
@@ -293,11 +293,9 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) == 0:
         create_index(db, TRANSCRIPTS_COLLECTION)
     LOG.info("Building transcript object")
-    try:
-        with open_text_or_gzip(file) as file_fh, open_text_or_gzip(mane) as mane_fh:
-            transcripts_obj = build_transcripts(file_fh, mane_fh, genome_build)
-    except Exception as err:
-        raise click.UsageError(str(err))
+    with open_text_or_gzip(file) as file_fh, open_text_or_gzip(mane) as mane_fh:
+        transcripts_obj = build_transcripts(file_fh, mane_fh, genome_build)
+        LOG.info("Validating transcript format")
 
     # FIXME build transcripts
     create_transcripts(transcripts_obj, db)

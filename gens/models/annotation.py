@@ -166,7 +166,7 @@ class TranscriptRecord(RWModel):
     strand: DnaStrand
     genome_build: GenomeBuild
     # render info
-    height_order: PositiveInt
+    # height_order: PositiveInt
 
 
 class SimplifiedVariantRecord(RWModel):

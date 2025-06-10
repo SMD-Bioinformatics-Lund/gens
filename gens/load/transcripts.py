@@ -4,11 +4,13 @@ import csv
 import logging
 from collections import defaultdict
 from itertools import chain
-from typing import Any, Generator, Iterable, Optional, TextIO, TypedDict
+from typing import Any, Generator, Iterable, Iterator, Optional, TextIO, TypedDict
 
 import click
+from pydantic import ValidationError
 
 from gens.constants import MANE_PLUS_CLINICAL, MANE_SELECT
+from gens.models.annotation import ExonFeature, TranscriptRecord, UtrFeature
 from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
@@ -32,14 +34,16 @@ class TranscriptEntry(TypedDict):
     features: list
 
 
-def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild):
+def build_transcripts(
+    transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild
+) -> Iterable[TranscriptRecord]:
     """Build transcript object from transcript and mane file."""
     mane_info = _parse_mane_transc(mane_file)
 
     LOG.info("%s MANE entries loaded", len(mane_info))
 
-    annotated_mane_transc: dict[str, list[Any]] = defaultdict(list)
-    transc_index = {}
+    annotated_mane_transc: dict[str, list[TranscriptRecord]] = defaultdict(list)
+    transc_index: dict[str, TranscriptRecord] = {}
     n_lines = _count_file_len(transc_file)
     with click.progressbar(
         transc_file, length=n_lines, label="Processing transcripts"
@@ -59,39 +63,45 @@ def build_transcripts(transc_file: TextIO, mane_file: TextIO, genome_build: Geno
                     skipped_no_gene_name += 1
                     continue
 
-                transcript_entry = _make_transcript_entry(
-                    transcript_id, selected_mane, transc, attribs, genome_build
-                )
+                try:
+                    transcript_entry = _make_transcript_entry(
+                        transcript_id, selected_mane, transc, attribs, genome_build
+                    )
+                except ValidationError as e:
+                    LOG.warning("Skipping transcript %r: validation failed: %s", transcript_id, e)
+                    continue
                 transc_index[transcript_id] = transcript_entry
                 annotated_mane_transc[attribs["gene_name"]].append(transcript_entry)
             elif transc["feature"] in ["exon", "three_prime_utr", "five_prime_utr"]:
                 # add features to existing transcript
                 if transcript_id in transc_index:
-                    specific_params = {}
                     if transc["feature"] == "exon":
-                        specific_params["exon_number"] = int(attribs["exon_number"])
-                    transc_index[transcript_id]["features"].append(
-                        {
-                            **{
+                        feature = ExonFeature.model_validate(
+                            {
                                 "feature": transc["feature"],
                                 "start": int(transc["start"]),
                                 "end": int(transc["end"]),
-                            },
-                            **specific_params,
-                        }
-                    )
+                                "exon_number": int(attribs["exon_number"]),
+                            }
+                        )
+                    else:
+                        feature = UtrFeature.model_validate(
+                            {
+                                "feature": transc["feature"],
+                                "start": int(transc["start"]),
+                                "end": int(transc["end"]),
+                            }
+                        )
+                    transcript_obj = transc_index[transcript_id]
+                    transcript_obj.features.append(feature)
 
     LOG.info(
         "%s transcripts skipped due to missing gene symbol ('gene_name' in the loaded GTF)",
         skipped_no_gene_name,
     )
 
-    LOG.info("Assign height order values and sort features")
-    for transcripts in annotated_mane_transc.values():
-        _assign_height_order(transcripts)
-        _sort_transcript_features(transcripts)
-
-    return chain(*annotated_mane_transc.values())
+    flat_transcripts = chain.from_iterable(annotated_mane_transc.values())
+    return flat_transcripts
 
 
 def _make_transcript_entry(
@@ -103,23 +113,25 @@ def _make_transcript_entry(
     transc: dict[str, str],
     attribs: dict[str, str],
     genome_build: GenomeBuild,
-) -> TranscriptEntry:
+) -> TranscriptRecord:
 
-    return {
-        "chrom": transc["seqname"],
-        "genome_build": genome_build.value,
-        "gene_name": attribs["gene_name"],
-        "start": int(transc["start"]),
-        "end": int(transc["end"]),
-        "strand": transc["strand"],
-        "height_order": None,  # will be set later
-        "transcript_id": transcript_id,
-        "transcript_biotype": attribs["transcript_biotype"],
-        "mane": selected_name.get("mane_status"),
-        "hgnc_id": selected_name.get("hgnc_id"),
-        "refseq_id": selected_name.get("refseq_id"),
-        "features": [],
-    }
+    return TranscriptRecord.model_validate(
+        {
+            "chrom": transc["seqname"],
+            "genome_build": genome_build.value,
+            "gene_name": attribs["gene_name"],
+            "start": int(transc["start"]),
+            "end": int(transc["end"]),
+            "strand": transc["strand"],
+            "height_order": None,  # will be set later
+            "transcript_id": transcript_id,
+            "transcript_biotype": attribs["transcript_biotype"],
+            "mane": selected_name.get("mane_status"),
+            "hgnc_id": selected_name.get("hgnc_id"),
+            "refseq_id": selected_name.get("refseq_id"),
+            "features": [],
+        }
+    )
 
 
 def _parse_mane_transc(mane_file: Iterable[str]) -> dict[str, dict[str, str]]:
@@ -203,36 +215,37 @@ def _parse_transcript_gtf(
             yield row, attribs
 
 
-def _assign_height_order(transcripts: list[dict[str, Any]]) -> None:
-    """Assign height order for an list or transcripts.
+# def _assign_height_order(transcripts: list[dict[str, Any]]) -> None:
+#     """Assign height order for an list or transcripts.
 
-    MANE transcript always have height order == 1
-    Rest are assigned height order depending on their start position
-    """
-    # assign height order to name transcripts
-    mane_transcript = [tr for tr in transcripts if tr["mane"] is not None]
-    if len(mane_transcript) == 1:
-        mane_transcript[0]["height_order"] = 1
-    elif len(mane_transcript) > 1:
-        # FIXME: I don't think the height order is used anymore
-        # This could / should probably be removed
-        sorted_mane = [
-            *[tr for tr in mane_transcript if tr["mane"] == MANE_SELECT],
-            *[tr for tr in mane_transcript if tr["mane"] == MANE_PLUS_CLINICAL],
-            *[tr for tr in mane_transcript if not tr["mane"] in {MANE_SELECT, MANE_PLUS_CLINICAL}],
-        ]
-        for order, tr in enumerate(sorted_mane, 1):
-            tr["height_order"] = order
+#     MANE transcript always have height order == 1
+#     Rest are assigned height order depending on their start position
+#     """
+#     # assign height order to name transcripts
+#     mane_transcript = [tr for tr in transcripts if tr["mane"] is not None]
+#     if len(mane_transcript) == 1:
+#         mane_transcript[0]["height_order"] = 1
+#     elif len(mane_transcript) > 1:
+#         # FIXME: I don't think the height order is used anymore
+#         # This could / should probably be removed
+#         sorted_mane = [
+#             *[tr for tr in mane_transcript if tr["mane"] == MANE_SELECT],
+#             *[tr for tr in mane_transcript if tr["mane"] == MANE_PLUS_CLINICAL],
+#             *[tr for tr in mane_transcript if not tr["mane"] in {MANE_SELECT, MANE_PLUS_CLINICAL}],
+#         ]
+#         for order, tr in enumerate(sorted_mane, 1):
+#             tr["height_order"] = order
 
-    # assign height order to the rest of the transcripts
-    rest = (tr for tr in transcripts if tr["mane"] is None)
-    for order, tr in enumerate(
-        sorted(rest, key=lambda x: int(x["start"])), start=len(mane_transcript) + 1
-    ):
-        tr["height_order"] = order
+#     # assign height order to the rest of the transcripts
+#     rest = (tr for tr in transcripts if tr["mane"] is None)
+#     for order, tr in enumerate(
+#         sorted(rest, key=lambda x: int(x["start"])), start=len(mane_transcript) + 1
+#     ):
+#         tr["height_order"] = order
 
 
-def _sort_transcript_features(transcripts: list[dict[str, Any]]) -> None:
-    """Sort transcript features on start coordinate."""
-    for tr in transcripts:
-        tr["features"] = sorted(tr["features"], key=lambda x: x["start"])
+# def _sort_transcript_features(transcripts: list[TranscriptRecord]) -> None:
+#     """Sort transcript features on start coordinate."""
+#     for tr in transcripts:
+#         tr
+#         tr.features = sorted(tr.features, key=lambda x: x["start"])
