@@ -4,7 +4,7 @@ from http import HTTPStatus
 from pathlib import Path
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from gens.crud import samples
 from gens.db.collections import SAMPLES_COLLECTION
@@ -80,11 +80,6 @@ async def get_cov_overview(
     sample_info: SampleInfo = samples.get_sample(
         db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id
     )
-    if sample_info.overview_file is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail="Sample doest not have an overview file!",
-        )
 
     if sample_info.overview_file is not None and Path(sample_info.overview_file).is_file():
         return get_overview_data(sample_info.overview_file, data_type)
