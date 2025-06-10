@@ -245,7 +245,7 @@ function drawDirectionArrows(
     isForward ? pos < xPxEnd - spacing / 2 : pos > xPxStart + spacing / 2
   ) {
     const arrowLength = STYLE.bandTrack.arrowLength;
-    drawArrow(ctx, pos, midY, isForward ? 1 : -1, arrowLength, arrowHeight, {
+    drawArrow(ctx, pos, midY, isForward ? 1 : -1, arrowHeight, {
       lineWidth: STYLE.bandTrack.arrowLineWidth,
       color: detailColor,
     });

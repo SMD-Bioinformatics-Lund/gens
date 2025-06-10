@@ -17,24 +17,27 @@ tableTemplate.innerHTML = String.raw`
   }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" />
-<table id="my-table">
-  <thead>
-    <tr>
-      <th>Case id</th>
-      <th>Sample id(s)</th>
-      <th>Genome build</th>
-      <th>Overview file(s)</th>
-      <th>BAM/BAF(s) found</th>
-      <th class="wide-cell">Import date</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
+<div id="loading-placeholder">Loading ...</div>
+<div id="table-container" hidden>
+  <table id="table-content">
+    <thead>
+      <tr>
+        <th>Case id</th>
+        <th>Sample id(s)</th>
+        <th>Genome build</th>
+        <th>Overview file(s)</th>
+        <th>BAM/BAF(s) found</th>
+        <th class="wide-cell">Import date</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
 `;
 
 function prettyDate(isoString: string): string {
-const d = new Date(isoString);
+  const d = new Date(isoString);
   const pad = (n) => String(n).padStart(2, "0");
   const Y = d.getFullYear();
   const M = pad(d.getMonth() + 1);
@@ -45,18 +48,24 @@ const d = new Date(isoString);
 }
 
 export class SamplesTable extends HTMLElement {
-  private table: HTMLTableElement;
   private dataTable: DataTable;
+  private tableContainer: HTMLDivElement;
+  private loadingPlaceholder: HTMLDivElement;
 
   connectedCallback(): void {
     this.appendChild(tableTemplate.content.cloneNode(true));
 
-    this.dataTable = new DataTable("#my-table", {
+    this.tableContainer = this.querySelector("#table-container");
+    this.loadingPlaceholder = this.querySelector(
+      "#loading-placeholder",
+    );
+
+    this.dataTable = new DataTable("#table-content", {
       searchable: true,
       fixedHeight: true,
       perPage: 50,
-      perPageSelect: false,      
-      labels: { noRows: "Loading..." },
+      perPageSelect: false,
+      labels: { noRows: "No samples found" },
     });
   }
 
@@ -70,6 +79,9 @@ export class SamplesTable extends HTMLElement {
         "The component needs to be connected before being initialized",
       );
     }
+
+    this.loadingPlaceholder.hidden = true;
+    this.tableContainer.hidden = false;
 
     const newRows = sampleInfo.map((s) => [
       `<a href="${getGensURL(s.case_id, s.sample_ids)}">${s.case_id}</a> (<a href="${scoutBaseURL}/${s.case_id}">Scout</a>)`,
