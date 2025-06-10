@@ -243,7 +243,8 @@ export async function initCanvases({
       render({});
     },
     (query: string) => {
-      return api.getSearchResult(query);
+      const annotIds = session.getAnnotationSources({selectedOnly: true}).map((annot) => annot.id);
+      return api.getSearchResult(query, annotIds);
     },
     (settings: RenderSettings) => {
       render(settings);
