@@ -36,6 +36,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Remove height order from backend.
 
 ### Fixed
+ - If no overview file is supplied, Gens will fall back to o level zoom in the cov/baf files
 
 ## 3.1.0
 
