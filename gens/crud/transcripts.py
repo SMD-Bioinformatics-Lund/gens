@@ -98,6 +98,5 @@ def create_transcripts(transcripts: Iterable[TranscriptRecord], db: Database[Any
     """Insert many transcripts in the database."""
 
     LOG.info("Add transcripts to database")
-    # db.get_collection(TRANSCRIPTS_COLLECTION).insert_many([tr for tr in transcripts])
     db.get_collection(TRANSCRIPTS_COLLECTION).insert_many([tr.model_dump() for tr in transcripts])
     register_data_update(db, TRANSCRIPTS_COLLECTION)

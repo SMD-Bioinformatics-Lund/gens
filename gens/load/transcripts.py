@@ -215,37 +215,3 @@ def _parse_transcript_gtf(
             yield row, attribs
 
 
-# def _assign_height_order(transcripts: list[dict[str, Any]]) -> None:
-#     """Assign height order for an list or transcripts.
-
-#     MANE transcript always have height order == 1
-#     Rest are assigned height order depending on their start position
-#     """
-#     # assign height order to name transcripts
-#     mane_transcript = [tr for tr in transcripts if tr["mane"] is not None]
-#     if len(mane_transcript) == 1:
-#         mane_transcript[0]["height_order"] = 1
-#     elif len(mane_transcript) > 1:
-#         # FIXME: I don't think the height order is used anymore
-#         # This could / should probably be removed
-#         sorted_mane = [
-#             *[tr for tr in mane_transcript if tr["mane"] == MANE_SELECT],
-#             *[tr for tr in mane_transcript if tr["mane"] == MANE_PLUS_CLINICAL],
-#             *[tr for tr in mane_transcript if not tr["mane"] in {MANE_SELECT, MANE_PLUS_CLINICAL}],
-#         ]
-#         for order, tr in enumerate(sorted_mane, 1):
-#             tr["height_order"] = order
-
-#     # assign height order to the rest of the transcripts
-#     rest = (tr for tr in transcripts if tr["mane"] is None)
-#     for order, tr in enumerate(
-#         sorted(rest, key=lambda x: int(x["start"])), start=len(mane_transcript) + 1
-#     ):
-#         tr["height_order"] = order
-
-
-# def _sort_transcript_features(transcripts: list[TranscriptRecord]) -> None:
-#     """Sort transcript features on start coordinate."""
-#     for tr in transcripts:
-#         tr
-#         tr.features = sorted(tr.features, key=lambda x: x["start"])
