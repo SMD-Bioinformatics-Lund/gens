@@ -142,7 +142,7 @@ function parseTranscriptFeatures(
     exon_number?: number;
   }[],
 ): TranscriptFeature[] {
-  return features.map((part, i) => {
+  return features.map((part) => {
     return {
       start: part.start,
       end: part.end,

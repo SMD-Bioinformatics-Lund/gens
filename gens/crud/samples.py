@@ -142,13 +142,18 @@ def get_sample(
 
     if result is None:
         raise SampleNotFoundError(f'No sample with id: "{sample_id}" in database', sample_id)
+    
+    overview_file = result.get("overview_file")
+    if overview_file == "None":
+        overview_file = None
+
     return SampleInfo(
         sample_id=result["sample_id"],
         case_id=result["case_id"],
         genome_build=GenomeBuild(int(result["genome_build"])),
         baf_file=result["baf_file"],
         coverage_file=result["coverage_file"],
-        overview_file=result["overview_file"],
+        overview_file=overview_file,
         sample_type=result.get("sample_type"),
         created_at=result["created_at"],
     )

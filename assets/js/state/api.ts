@@ -49,20 +49,26 @@ export class API {
     }
   }
 
-  getSearchResult(query: string): Promise<ApiSearchResult | null> {
+  getSearchResult(
+    query: string,
+    annotationTrackIds: string[],
+  ): Promise<ApiSearchResult | null> {
     console.log(this.apiURI);
     const params = {
       q: query,
       genome_build: this.genomeBuild,
+      annotation_track_ids: annotationTrackIds.join(","),
     };
 
     const details = get(new URL(`search/result`, this.apiURI), params).then(
       (result) => {
-        if (result["chromosome"] != null) {
-          return result;
-        } else {
+        if (result === null) {
           return null;
         }
+        if (result["chromosome"] != null) {
+          return result;
+        }
+        return null;
       },
     );
     return details;

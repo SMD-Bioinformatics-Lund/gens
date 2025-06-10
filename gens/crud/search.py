@@ -2,8 +2,9 @@
 
 import logging
 import re
-from typing import Any
+from typing import Any, Iterable
 
+from bson import ObjectId
 from pymongo.database import Database
 from pymongo.collection import Collection
 from pymongo.cursor import Cursor
@@ -15,29 +16,65 @@ from gens.models.search import SearchSuggestions, Suggestion
 LOG = logging.getLogger(__name__)
 
 
-def search_annotations(
-    query: str, genome_build: GenomeBuild, db: Database[Any]
+def search_annotations_and_transcripts(
+    query: str,
+    genome_build: GenomeBuild,
+    db: Database[Any],
+    annotation_track_ids: Iterable[ObjectId] | None = None,
 ) -> GenomicRegion | None:
     """Simple search for annotations and transcripts."""
-    db_query: dict[str, Any] = {
+    transcript_query: dict[str, Any] = {
         "gene_name": re.compile(r"^" + re.escape(query) + r"$", re.IGNORECASE),
         "genome_build": genome_build,
     }
 
-    for col in [TRANSCRIPTS_COLLECTION, ANNOTATIONS_COLLECTION]:
-        elements = list(
-            db.get_collection(col).find(db_query, sort=[("start", 1), ("chrom", 1)])
+    # Transcripts
+    transcripts = list(
+        db.get_collection(TRANSCRIPTS_COLLECTION).find(
+            transcript_query, sort=[("start", 1), ("chrom", 1)]
         )
-        if len(elements) > 0:
-            start_elem = elements[0]
-            end_elem = max(elements[0:], key=lambda elem: elem.get("end"))
-            return GenomicRegion.model_validate(
-                {
-                    "chromosome": start_elem.get("chrom"),
-                    "start": start_elem.get("start"),
-                    "end": end_elem.get("end"),
-                }
-            )
+    )
+    if len(transcripts) > 0:
+
+        elements_with_mane = [elem for elem in transcripts if elem.get("mane") is not None]
+
+        target = transcripts[0]
+        if len(elements_with_mane) > 0:
+            target = elements_with_mane[0]
+
+        return GenomicRegion.model_validate(
+            {
+                "chromosome": target.get("chrom"),
+                "start": target.get("start"),
+                "end": target.get("end"),
+            }
+        )
+
+    annotation_query: dict[str, Any] = {
+        "name": {"$regex": re.escape(query), "$options": "i"},
+        "genome_build": genome_build,
+    }
+
+    if annotation_track_ids:
+        annotation_query["track_id"] = {"$in": list(annotation_track_ids)}
+
+    annotations = list(
+        db.get_collection(ANNOTATIONS_COLLECTION).find(
+            annotation_query, sort=[("start", 1), ("chrom", 1)]
+        )
+    )
+
+    if len(annotations) > 0:
+        target = annotations[0]
+
+        return GenomicRegion.model_validate(
+            {
+                "chromosome": target.get("chrom"),
+                "start": target.get("start"),
+                "end": target.get("end"),
+            }
+        )
+
     return None
 
 
@@ -50,17 +87,16 @@ def text_search_suggestion(
         query=query,
         genome_build=genome_build,
         collection=db.get_collection(ANNOTATIONS_COLLECTION),
-        projection={"name": True}
+        projection={"name": True},
     )
     annotations = [
-        Suggestion(text=hit["name"], record_id=hit["_id"], score=hit["score"])
-        for hit in annot_hits
+        Suggestion(text=hit["name"], record_id=hit["_id"], score=hit["score"]) for hit in annot_hits
     ]
     transc_hits = generic_text_search(
         query=query,
         genome_build=genome_build,
         collection=db.get_collection(TRANSCRIPTS_COLLECTION),
-        projection={"gene_name": True}
+        projection={"gene_name": True},
     )
     transc = [
         Suggestion(text=hit["gene_name"], record_id=hit["_id"], score=hit["score"])
@@ -73,16 +109,19 @@ def text_search_suggestion(
 
 
 def generic_text_search(
-    query: str, genome_build: GenomeBuild, collection: Collection[Any],
-    limit: int = 10, projection: dict[str, bool] = {}
+    query: str,
+    genome_build: GenomeBuild,
+    collection: Collection[Any],
+    limit: int = 10,
+    projection: dict[str, bool] = {},
 ) -> Cursor[dict[str, Any]]:
     """Make a text search against a generic collection."""
-    result_projection: dict[str, Any] = {
-        "score": {"$meta": "textScore"},
-        **projection
-    }
-    results = collection.find(
-        {"genome_build": genome_build, "$text": {"$search": query}},
-        result_projection
-    ).sort({"score": {"$meta": "textScore"}}).limit(limit)
+    result_projection: dict[str, Any] = {"score": {"$meta": "textScore"}, **projection}
+    results = (
+        collection.find(
+            {"genome_build": genome_build, "$text": {"$search": query}}, result_projection
+        )
+        .sort({"score": {"$meta": "textScore"}})
+        .limit(limit)
+    )
     return results

@@ -58,7 +58,7 @@ export async function initCanvases({
   gensApiURL,
   annotationFile: defaultAnnotationName,
   // FIXME: Will be needed for link with external software, going directly to location
-  startRegion,
+  _startRegion,
   version,
   allSamples,
 }: {
@@ -68,7 +68,7 @@ export async function initCanvases({
   scoutBaseURL: string;
   gensApiURL: string;
   annotationFile: string;
-  startRegion: Region;
+  _startRegion: Region;
   version: string;
   allSamples: Sample[];
 }) {
@@ -243,7 +243,10 @@ export async function initCanvases({
       render({});
     },
     (query: string) => {
-      return api.getSearchResult(query);
+      const annotIds = session
+        .getAnnotationSources({ selectedOnly: true })
+        .map((annot) => annot.id);
+      return api.getSearchResult(query, annotIds);
     },
     (settings: RenderSettings) => {
       render(settings);

@@ -1,13 +1,14 @@
 """Routes for getting coverage information."""
 
 from http import HTTPStatus
+from pathlib import Path
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from gens.crud import samples
 from gens.db.collections import SAMPLES_COLLECTION
-from gens.io import get_overview_data, get_scatter_data
+from gens.io import get_overview_data, get_overview_from_tabix, get_scatter_data
 from gens.models.genomic import Chromosome, GenomicRegion
 from gens.models.sample import (
     GenomeCoverage,
@@ -51,7 +52,7 @@ async def get_genome_coverage(
     db: GensDb,
     start: int = 1,
     end: int | None = None,
-    zoom_level: Literal['o', 'a', 'b', 'c', 'd'] = 'a',
+    zoom_level: Literal["o", "a", "b", "c", "d"] = "a",
 ) -> GenomeCoverage:
     """Get genome coverage information."""
 
@@ -63,7 +64,7 @@ async def get_genome_coverage(
         case_id=case_id,
         region=region,
         data_type=data_type,
-        zoom_level=zoom_level
+        zoom_level=zoom_level,
     )
 
 
@@ -79,10 +80,8 @@ async def get_cov_overview(
     sample_info: SampleInfo = samples.get_sample(
         db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id
     )
-    if sample_info.overview_file is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail="Sample doest not have an overview file!",
-        )
 
-    return get_overview_data(sample_info.overview_file, data_type)
+    if sample_info.overview_file is not None and Path(sample_info.overview_file).is_file():
+        return get_overview_data(sample_info.overview_file, data_type)
+
+    return get_overview_from_tabix(sample_info, data_type)

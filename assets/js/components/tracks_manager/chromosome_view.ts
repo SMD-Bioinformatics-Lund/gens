@@ -1,13 +1,9 @@
-import { CHROMOSOMES, SIZES, STYLE } from "../../constants";
+import { CHROMOSOMES, SIZES } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { div, removeOne } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
-import {
-  createAnnotTrack,
-  createDataTrackWrapper,
-  createDotTrack,
-} from "./utils";
+import { createDataTrackWrapper, createDotTrack } from "./utils";
 
 const COV_Y_RANGE: [number, number] = [-2, 2];
 
@@ -101,8 +97,6 @@ export class ChromosomeView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
-
-
     for (const track of this.tracks) {
       track.track.render(settings);
     }
@@ -126,59 +120,6 @@ export class ChromosomeView extends ShadowBaseElement {
       subgroup.removeChild(removedTrack.container);
     }
   }
-}
-
-function addAnnotTracks(
-  annotIds: string[],
-  getLabel: (id: string) => string,
-  session: GensSession,
-  chrom: string,
-  dataSource: RenderDataSource,
-  addTrack: (trackInfo: ChromViewTrackInfo) => void,
-) {
-  for (const annotId of annotIds) {
-    const trackId = `${annotId}_${chrom}`;
-    const trackLabel = getLabel(annotId);
-
-    const annotTrack = createAnnotTrack(
-      trackId,
-      trackLabel,
-      () => dataSource.getAnnotationBands(annotId, chrom),
-      (bandId: string) => dataSource.getAnnotationDetails(bandId),
-      session,
-      null,
-      {
-        height: STYLE.tracks.trackHeight.xxs,
-        showLabelWhenCollapsed: false,
-        yPadBands: false,
-        startExpanded: false,
-      },
-    );
-    const annotTrackWrapper = createDataTrackWrapper(annotTrack);
-    const trackInfo: ChromViewTrackInfo = {
-      track: annotTrack,
-      container: annotTrackWrapper,
-      sampleId: null,
-      chromosome: chrom,
-      sourceId: annotId,
-      type: "annotation",
-    };
-    addTrack(trackInfo);
-  }
-}
-
-function getDiff(
-  previousIds: string[],
-  updatedIds: string[],
-): { new: string[]; removed: string[] } {
-  const newIds = updatedIds.filter(
-    (sampleId) => !previousIds.includes(sampleId),
-  );
-  const removedIds = previousIds.filter((id) => !updatedIds.includes(id));
-  return {
-    new: newIds,
-    removed: removedIds,
-  };
 }
 
 function addSampleTracks(
