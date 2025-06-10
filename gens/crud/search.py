@@ -19,17 +19,20 @@ def search_annotations_and_transcripts(
     query: str, genome_build: GenomeBuild, db: Database[Any]
 ) -> GenomicRegion | None:
     """Simple search for annotations and transcripts."""
-    db_query: dict[str, Any] = {
+    transcript_query: dict[str, Any] = {
         "gene_name": re.compile(r"^" + re.escape(query) + r"$", re.IGNORECASE),
         "genome_build": genome_build,
     }
 
+    LOG.info(">>> Starting")
+
     # Transcripts
     elements = list(
-        db.get_collection(TRANSCRIPTS_COLLECTION).find(db_query, sort=[("start", 1), ("chrom", 1)])
+        db.get_collection(TRANSCRIPTS_COLLECTION).find(transcript_query, sort=[("start", 1), ("chrom", 1)])
     )
+    LOG.info(">>> Direct matched elements %s", elements)
     if len(elements) > 0:
-        LOG.info("Found elements", elements)
+        LOG.info(">>> Inside the if")
 
         elements_with_mane = [elem for elem in elements if elem.get("mane") is not None]
 
@@ -46,21 +49,21 @@ def search_annotations_and_transcripts(
             }
         )
 
-    LOG.info(">>> No gene matches, proceeding")
+    LOG.info(">>> After the if")
+
+    annotation_query: dict[str, Any] = {
+        "name": {"$regex": re.escape(query), "$options": "i"},
+        "genome_build": genome_build
+    }
 
     # Transcripts
     elements = list(
-        db.get_collection(ANNOTATIONS_COLLECTION).find(db_query, sort=[("start", 1), ("chrom", 1)])
+        db.get_collection(ANNOTATIONS_COLLECTION).find(annotation_query, sort=[("start", 1), ("chrom", 1)])
     )
 
-    LOG.info("Elements %s", elements)
-
+    LOG.info(">>> Found annotations %s", elements)
     if len(elements) > 0:
-        LOG.info(">>> Annotation matches", elements)
-
         target = elements[0]
-
-        LOG.info(">>> Annotation target", target)
 
         return GenomicRegion.model_validate(
             {
@@ -70,28 +73,6 @@ def search_annotations_and_transcripts(
             }
         )
 
-    # # FIXME: Refactor a bit. These can be two separate searches?
-    # for col in [TRANSCRIPTS_COLLECTION, ANNOTATIONS_COLLECTION]:
-    #     elements = list(
-    #         db.get_collection(col).find(db_query, sort=[("start", 1), ("chrom", 1)])
-    #     )
-    #     if len(elements) > 0:
-    #         LOG.error("Found elements", elements)
-
-    #         elements_with_mane = [elem for elem in elements if elem.get("mane") is not None]
-
-    #         target = elements[0]
-    #         if len(elements_with_mane) > 0:
-    #             target = elements_with_mane[0]
-
-
-    #         return GenomicRegion.model_validate(
-    #             {
-    #                 "chromosome": target.get("chrom"),
-    #                 "start": target.get("start"),
-    #                 "end": target.get("end"),
-    #             }
-    #         )
     return None
 
 

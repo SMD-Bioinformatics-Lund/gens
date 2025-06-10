@@ -58,11 +58,13 @@ export class API {
 
     const details = get(new URL(`search/result`, this.apiURI), params).then(
       (result) => {
-        if (result["chromosome"] != null) {
-          return result;
-        } else {
+        if (result === null) {
           return null;
         }
+        if (result["chromosome"] != null) {
+          return result;
+        }
+        return null;
       },
     );
     return details;

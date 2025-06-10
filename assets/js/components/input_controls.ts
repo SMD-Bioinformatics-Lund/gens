@@ -263,6 +263,9 @@ async function queryRegionOrGene(
     chrom = query as Chromosome;
   } else {
     const searchResult = await getSearchResult(query);
+    if (searchResult == null) {
+      return;
+    }
     chrom = searchResult.chromosome as Chromosome;
     range = [searchResult.start, searchResult.end];
   }

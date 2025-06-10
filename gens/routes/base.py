@@ -33,16 +33,15 @@ async def read_root():
 
 
 @router.get("/search/result", tags=[ApiTags.SEARCH])
-def search(query: SearchQueryParam, genome_build: GenomeBuild, db: GensDb) -> GenomicRegion:
+def search(
+    query: SearchQueryParam, genome_build: GenomeBuild, db: GensDb
+) -> GenomicRegion:
     """Search for a annotation."""
 
     result = search_annotations_and_transcripts(query=query, genome_build=genome_build, db=db)
-    # if result is None:
-    #     raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No result found!")
-    if result is not None:
-        return result
-    else:
-        # FIXME: Deal with this situation
+    if result is None:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No result found!")
+    return result
 
 
 @router.get("/search/assistant", tags=[ApiTags.SEARCH])

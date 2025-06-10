@@ -21,11 +21,15 @@ async function request(url: string, params: string, method: RequestType = "GET")
   // fetch returns a promise
   const response = await fetch(url, options);
 
-  if (response.status !== 200) {
-    throw generateErrorResponse(
-      "The server responded with an unexpected status.",
-    );
+  if (response.status === 404) {
+    return null;
   }
+
+  if (response.status !== 200) {
+    const text = await response.text();
+    throw new Error(`HTTP ${response.status}: ${text}`);
+  }
+
   const result = await response.json();
 
   // returns a single Promise object
@@ -38,15 +42,6 @@ export function objectToQueryString(obj) {
   return Object.keys(obj)
     .map((key) => key + "=" + obj[key])
     .join("&");
-}
-
-//  A generic error handler that just returns an object with status=error and message
-function generateErrorResponse(message: string): Error {
-  // @ts-expect-error - FIXME: This should not take two arguments or?
-  return new Error({
-    status: "error",
-    message,
-  });
 }
 
 export function get(url, params) {
