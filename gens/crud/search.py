@@ -24,29 +24,74 @@ def search_annotations_and_transcripts(
         "genome_build": genome_build,
     }
 
-    for col in [TRANSCRIPTS_COLLECTION, ANNOTATIONS_COLLECTION]:
-        elements = list(
-            db.get_collection(col).find(db_query, sort=[("start", 1), ("chrom", 1)])
+    # Transcripts
+    elements = list(
+        db.get_collection(TRANSCRIPTS_COLLECTION).find(db_query, sort=[("start", 1), ("chrom", 1)])
+    )
+    if len(elements) > 0:
+        LOG.info("Found elements", elements)
+
+        elements_with_mane = [elem for elem in elements if elem.get("mane") is not None]
+
+        target = elements[0]
+        if len(elements_with_mane) > 0:
+            target = elements_with_mane[0]
+
+
+        return GenomicRegion.model_validate(
+            {
+                "chromosome": target.get("chrom"),
+                "start": target.get("start"),
+                "end": target.get("end"),
+            }
         )
-        if len(elements) > 0:
-            LOG.error("Found elements", elements)
 
-            elements_with_mane = [elem for elem in elements if elem.get("mane") is not None]
+    LOG.info(">>> No gene matches, proceeding")
 
-            target = elements[0]
-            if len(elements_with_mane) > 0:
-                target = elements_with_mane[0]
+    # Transcripts
+    elements = list(
+        db.get_collection(ANNOTATIONS_COLLECTION).find(db_query, sort=[("start", 1), ("chrom", 1)])
+    )
+
+    LOG.info("Elements %s", elements)
+
+    if len(elements) > 0:
+        LOG.info(">>> Annotation matches", elements)
+
+        target = elements[0]
+
+        LOG.info(">>> Annotation target", target)
+
+        return GenomicRegion.model_validate(
+            {
+                "chromosome": target.get("chrom"),
+                "start": target.get("start"),
+                "end": target.get("end"),
+            }
+        )
+
+    # # FIXME: Refactor a bit. These can be two separate searches?
+    # for col in [TRANSCRIPTS_COLLECTION, ANNOTATIONS_COLLECTION]:
+    #     elements = list(
+    #         db.get_collection(col).find(db_query, sort=[("start", 1), ("chrom", 1)])
+    #     )
+    #     if len(elements) > 0:
+    #         LOG.error("Found elements", elements)
+
+    #         elements_with_mane = [elem for elem in elements if elem.get("mane") is not None]
+
+    #         target = elements[0]
+    #         if len(elements_with_mane) > 0:
+    #             target = elements_with_mane[0]
 
 
-            # start_elem = elements[0]
-            # end_elem = max(elements[0:], key=lambda elem: elem.get("end"))
-            return GenomicRegion.model_validate(
-                {
-                    "chromosome": target.get("chrom"),
-                    "start": target.get("start"),
-                    "end": target.get("end"),
-                }
-            )
+    #         return GenomicRegion.model_validate(
+    #             {
+    #                 "chromosome": target.get("chrom"),
+    #                 "start": target.get("start"),
+    #                 "end": target.get("end"),
+    #             }
+    #         )
     return None
 
 
