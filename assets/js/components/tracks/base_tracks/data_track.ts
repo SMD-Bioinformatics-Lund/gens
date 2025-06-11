@@ -33,6 +33,7 @@ export interface DataTrackSettings {
   yPadBands?: boolean;
   isExpanded: boolean;
   isHidden: boolean;
+  minBandSize?: boolean;
 }
 
 const DEBOUNCE_DELAY = 50;

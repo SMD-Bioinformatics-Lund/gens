@@ -177,6 +177,7 @@ export function parseAnnotations(
   return results;
 }
 
+// FIXME: Move to pipeline script
 const MIN_LENGTH = 200000;
 
 export function parseSampleAnnotations(

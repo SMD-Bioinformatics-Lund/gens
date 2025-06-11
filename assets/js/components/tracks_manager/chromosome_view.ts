@@ -1,4 +1,4 @@
-import { CHROMOSOMES, SIZES, STYLE } from "../../constants";
+import { CHROMOSOMES, SIZES, TRACK_HEIGHTS } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { div, removeOne } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
@@ -206,9 +206,10 @@ function addSampleAnnotationTracks(
       session,
       null,
       {
-        height: STYLE.bandTrack.trackViewHeight,
-        showLabelWhenCollapsed: true,
-        startExpanded: true,
+        height: TRACK_HEIGHTS.xxs,
+        showLabelWhenCollapsed: false,
+        startExpanded: false,
+        minBandSize: false,
       },
     );
     const wrapper = createDataTrackWrapper(bandTrack);
