@@ -174,6 +174,13 @@ export async function initCanvases({
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
   const allAnnotSources = await api.getAnnotationSources();
+  const sampleAnnotSources: Record<string, ApiSampleAnnotationTrack[]> = {};
+  for (const sample of samples) {
+    sampleAnnotSources[sample.sampleId] = await api.getSampleAnnotationSources(
+      sample.caseId,
+      sample.sampleId,
+    );
+  }
   const defaultAnnot = allAnnotSources
     .filter((track) => track.name === defaultAnnotationName)
     .map((track) => {
@@ -260,6 +267,7 @@ export async function initCanvases({
     onChromClick,
     renderDataSource,
     session,
+    sampleAnnotSources,
   );
 
   render({ dataUpdated: true, resized: true });

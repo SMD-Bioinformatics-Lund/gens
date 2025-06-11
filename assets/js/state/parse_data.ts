@@ -97,10 +97,26 @@ export function getRenderDataSource(
     return overviewBafRender;
   };
 
+  const getSampleAnnotationSources = async(caseId: string, sampleId: string) => {
+    return api.getSampleAnnotationSources(caseId, sampleId);
+  }
+
+  const getSampleAnnotationBands = async (trackId: string, chrom: string) => {
+    const annotsRaw = await api.getSampleAnnotations(trackId);
+    return parseAnnotations(annotsRaw, chrom);
+  }
+
+  const getSampleAnnotationDetails = async (recordId: string) => {
+    return api.getSampleAnnotationDetails(recordId);
+  }
+
   const renderDataSource: RenderDataSource = {
     getChromInfo,
     getAnnotationBands: getAnnotation,
     getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
+    getSampleAnnotationSources,
+    getSampleAnnotationBands,
+    getSampleAnnotationDetails,
     getCovData,
     getBafData,
     getTranscriptBands,

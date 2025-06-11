@@ -341,6 +341,10 @@ interface RenderDataSource {
   ) => Promise<RenderBand[]>;
   getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>;
 
+  getSampleAnnotationSources: (caseId: string, sampleId: string) => Promise<ApiSampleAnnotationTrack[]>;
+  getSampleAnnotationBands: (trackId: string, chrom: string) => Promise<RenderBand[]>;
+  getSampleAnnotationDetails: (recordId: string) => Promise<ApiSampleAnnotationDetails>;
+
   getCovData: (
     sample: Sample,
     chrom: string,

@@ -91,6 +91,7 @@ export class TrackView extends ShadowBaseElement {
 
   private openTrackContextMenu: (track: DataTrack) => void;
   private trackPages: Record<string, TrackMenu> = {};
+  private sampleAnnotSources: Record<string, ApiSampleAnnotationTrack[]> = {};
 
   private sampleToTracks: Record<
     string,
@@ -121,9 +122,11 @@ export class TrackView extends ShadowBaseElement {
     chromClick: (chrom: string) => void,
     dataSources: RenderDataSource,
     session: GensSession,
+    sampleAnnotSources: Record<string, ApiSampleAnnotationTrack[]>,
   ) {
     this.dataSource = dataSources;
     this.session = session;
+    this.sampleAnnotSources = sampleAnnotSources;
 
     const openTrackContextMenu = this.createOpenTrackContextMenu(render);
     this.openTrackContextMenu = openTrackContextMenu;
@@ -155,6 +158,7 @@ export class TrackView extends ShadowBaseElement {
     const covTracks: TrackViewTrackInfo[] = [];
     const bafTracks: TrackViewTrackInfo[] = [];
     const variantTracks: TrackViewTrackInfo[] = [];
+    const sampleAnnotTracks: TrackViewTrackInfo[] = [];
 
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -225,6 +229,31 @@ export class TrackView extends ShadowBaseElement {
       covTracks.push(sampleTracks.cov);
       bafTracks.push(sampleTracks.baf);
       variantTracks.push(sampleTracks.variant);
+
+      // FIXME: Refactor into subfunction
+      const annots = this.sampleAnnotSources[sample.sampleId] || [];
+      for (const annot of annots) {
+        const annotTrack = createAnnotTrack(
+          annot.track_id,
+          annot.name,
+          () => {
+            return dataSources.getSampleAnnotationBands(
+              annot.track_id,
+              session.getChromosome(),
+            );
+          },
+          (id: string) => dataSources.getSampleAnnotationDetails(id),
+          session,
+          openTrackContextMenu,
+          {
+            height: STYLE.bandTrack.trackViewHeight,
+            showLabelWhenCollapsed: true,
+            startExpanded: true,
+          },
+        );
+        const annotInfo = makeTrackContainer(annotTrack, sample);
+        sampleAnnotTracks.push(annotInfo);
+      }
     }
 
     const genesTrack = createGeneTrack(
@@ -240,6 +269,7 @@ export class TrackView extends ShadowBaseElement {
       ...bafTracks,
       ...covTracks,
       ...variantTracks,
+      ...sampleAnnotTracks,
       genesTrack,
     ];
 
@@ -425,11 +455,40 @@ export class TrackView extends ShadowBaseElement {
       sampleTracks.variant,
     );
 
+    const annots = this.sampleAnnotSources[sample.sampleId] || [];
+    const annotInfos: TrackViewTrackInfo[] = [];
+    for (const annot of annots) {
+      const annotTrack = createAnnotTrack(
+        annot.track_id,
+        annot.name,
+        () =>
+          this.dataSource.getSampleAnnotationBands(
+            annot.track_id,
+            this.session.getChromosome(),
+          ),
+        (id: string) => this.dataSource.getSampleAnnotationDetails(id),
+        this.session,
+        this.openTrackContextMenu,
+        {
+          height: STYLE.bandTrack.trackViewHeight,
+          showLabelWhenCollapsed: true,
+          startExpanded: true,
+        },
+      );
+      const info = makeTrackContainer(annotTrack, sample);
+      annotInfos.push(info);
+      this.dataTracks.push(info);
+    }
+
     this.tracksContainer.appendChild(sampleTracks.cov.container);
     this.tracksContainer.appendChild(sampleTracks.baf.container);
     this.tracksContainer.appendChild(sampleTracks.variant.container);
+    annotInfos.forEach((info) => {
+      this.tracksContainer.appendChild(info.container);
+    });
 
     Object.values(sampleTracks).map(({ track }) => track.initialize());
+    annotInfos.forEach(({ track }) => track.initialize());
   }
 
   public removeSample(sample: Sample) {

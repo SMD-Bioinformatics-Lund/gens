@@ -57,6 +57,7 @@ export class TracksManager extends ShadowBaseElement {
     chromClick: (chrom: string) => void,
     dataSource: RenderDataSource,
     session: GensSession,
+    sampleAnnots: Record<string, ApiSampleAnnotationTrack[]>,
   ) {
     this.session = session;
     this.onChange = render;
@@ -68,11 +69,13 @@ export class TracksManager extends ShadowBaseElement {
       chromClick,
       dataSource,
       session,
+      sampleAnnots,
     );
 
     this.chromosomeView.initialize(
       session,
       dataSource,
+      sampleAnnots,
     );
   }
 
