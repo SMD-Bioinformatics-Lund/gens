@@ -129,17 +129,24 @@ export class API {
 
   private sampleAnnotsCache: Record<
     string,
-    Promise<ApiSimplifiedAnnotation[]>
+    Record<string, Promise<ApiSimplifiedAnnotation[]>>
   > = {};
-  getSampleAnnotations(trackId: string): Promise<ApiSimplifiedAnnotation[]> {
+  getSampleAnnotations(
+    trackId: string,
+    chromosome: string,
+  ): Promise<ApiSimplifiedAnnotation[]> {
     if (this.sampleAnnotsCache[trackId] === undefined) {
+      this.sampleAnnotsCache[trackId] = {};
+    }
+
+    if (this.sampleAnnotsCache[trackId][chromosome] === undefined) {
       const annotations = get(
         new URL(`sample-tracks/annotations/track/${trackId}`, this.apiURI).href,
-        {},
+        { chromosome },
       ) as Promise<ApiSimplifiedAnnotation[]>;
-      this.sampleAnnotsCache[trackId] = annotations;
+      this.sampleAnnotsCache[trackId][chromosome] = annotations;
     }
-    return this.sampleAnnotsCache[trackId];
+    return this.sampleAnnotsCache[trackId][chromosome];
   }
 
   getSampleAnnotationDetails(id: string): Promise<ApiSampleAnnotationDetails> {

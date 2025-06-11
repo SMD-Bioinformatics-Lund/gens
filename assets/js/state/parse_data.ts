@@ -28,12 +28,19 @@ export function getRenderDataSource(
     return api.getChromData(getChrom());
   };
 
-  const getAnnotation = async (recordId: string, chrom: string): Promise<RenderBand[]> => {
+  const getAnnotation = async (
+    recordId: string,
+    chrom: string,
+  ): Promise<RenderBand[]> => {
     const annotData = await api.getAnnotations(recordId);
     return parseAnnotations(annotData, chrom);
   };
 
-  const getCovData = async (sample: Sample, chrom: string, xRange: Rng): Promise<RenderDot[]> => {
+  const getCovData = async (
+    sample: Sample,
+    chrom: string,
+    xRange: Rng,
+  ): Promise<RenderDot[]> => {
     const zoom = calculateZoom(xRange);
 
     const covRaw = await api.getCov(
@@ -46,7 +53,10 @@ export function getRenderDataSource(
     return parseCoverageDot(covRaw, STYLE.colors.darkGray);
   };
 
-  const getBafData = async (sample: Sample, chrom: string): Promise<RenderDot[]> => {
+  const getBafData = async (
+    sample: Sample,
+    chrom: string,
+  ): Promise<RenderDot[]> => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
@@ -66,7 +76,10 @@ export function getRenderDataSource(
     return parseTranscripts(transcriptsRaw);
   };
 
-  const getVariantBands = async (sample: Sample, chrom: string): Promise<RenderBand[]> => {
+  const getVariantBands = async (
+    sample: Sample,
+    chrom: string,
+  ): Promise<RenderBand[]> => {
     const variantsRaw = await api.getVariants(
       sample.caseId,
       sample.sampleId,
@@ -75,7 +88,9 @@ export function getRenderDataSource(
     return parseVariants(variantsRaw);
   };
 
-  const getOverviewCovData = async (sample: Sample): Promise<Record<string, RenderDot[]>> => {
+  const getOverviewCovData = async (
+    sample: Sample,
+  ): Promise<Record<string, RenderDot[]>> => {
     const overviewCovRaw = await api.getOverviewCovData(
       sample.caseId,
       sample.sampleId,
@@ -86,7 +101,9 @@ export function getRenderDataSource(
     return overviewCovRender;
   };
 
-  const getOverviewBafData = async (sample: Sample): Promise<Record<string, RenderDot[]>> => {
+  const getOverviewBafData = async (
+    sample: Sample,
+  ): Promise<Record<string, RenderDot[]>> => {
     const overviewBafRaw = await api.getOverviewBafData(
       sample.caseId,
       sample.sampleId,
@@ -107,14 +124,19 @@ export function getRenderDataSource(
   //   return sources
   // }
 
-  const getSampleAnnotationBands = async (trackId: string, chrom: string): Promise<RenderBand[]> => {
-    const annotsRaw = await api.getSampleAnnotations(trackId);
+  const getSampleAnnotationBands = async (
+    trackId: string,
+    chrom: string,
+  ): Promise<RenderBand[]> => {
+    const annotsRaw = await api.getSampleAnnotations(trackId, chrom);
     return parseAnnotations(annotsRaw, chrom);
-  }
+  };
 
-  const getSampleAnnotationDetails = async (recordId: string): Promise<ApiSampleAnnotationDetails> => {
+  const getSampleAnnotationDetails = async (
+    recordId: string,
+  ): Promise<ApiSampleAnnotationDetails> => {
     return api.getSampleAnnotationDetails(recordId);
-  }
+  };
 
   const renderDataSource: RenderDataSource = {
     getChromInfo,

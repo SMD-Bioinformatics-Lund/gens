@@ -234,12 +234,12 @@ export class TrackView extends ShadowBaseElement {
       const annots = this.sampleAnnotSources[sample.sampleId] || [];
       console.log("Outside loop with ", annots);
       for (const annot of annots) {
-        console.log("Creating an annot track for ", annot)
+        console.log("Creating an annot track for ", annot);
         const annotTrack = createAnnotTrack(
           annot.track_id,
           annot.name,
           () => {
-            console.log("Getting the annotation bands")
+            console.log("Getting the annotation bands");
             const bands = dataSources.getSampleAnnotationBands(
               annot.track_id,
               session.getChromosome(),
@@ -551,7 +551,9 @@ export class TrackView extends ShadowBaseElement {
     );
 
     updateAnnotationTracks(
-      this.dataTracks.filter((info) => info.track.trackType == "annotation"),
+      this.dataTracks.filter(
+        (info) => info.track.trackType == "annotation" && info.sample == null,
+      ),
       (sourceId: string, chrom: string) =>
         this.dataSource.getAnnotationBands(sourceId, chrom),
       (bandId: string) => this.dataSource.getAnnotationDetails(bandId),

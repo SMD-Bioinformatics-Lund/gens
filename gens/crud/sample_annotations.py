@@ -6,11 +6,19 @@ from pymongo import DESCENDING
 
 from pymongo.cursor import Cursor
 
-from gens.db.collections import SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION, UPDATES_COLLECTION
+from gens.db.collections import (
+    SAMPLE_ANNOTATION_TRACKS_COLLECTION,
+    SAMPLE_ANNOTATIONS_COLLECTION,
+    UPDATES_COLLECTION,
+)
 from gens.models.annotation import SimplifiedTrackInfo
 from gens.models.base import PydanticObjectId
-from gens.models.genomic import GenomeBuild
-from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrack, SampleAnnotationTrackInDb
+from gens.models.genomic import Chromosome, GenomeBuild
+from gens.models.sample_annotation import (
+    SampleAnnotationRecord,
+    SampleAnnotationTrack,
+    SampleAnnotationTrackInDb,
+)
 from gens.utils import get_timestamp
 
 
@@ -83,17 +91,17 @@ def get_sample_annotation_tracks(
 
 
 def get_sample_annotations_for_track(
-    track_id: PydanticObjectId, db: Database[Any]
+    track_id: PydanticObjectId, chromosome: Chromosome, db: Database[Any]
 ) -> list[SimplifiedTrackInfo]:
     projection = {
         "name": True,
         "start": True,
         "end": True,
         "chrom": True,
-        "color": True
+        "color": True,
     }
     cursor: Cursor = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).find(
-        {"track_id": track_id}, projection
+        {"track_id": track_id, "chrom": chromosome}, projection
     )
     return [
         SimplifiedTrackInfo.model_validate(
@@ -104,13 +112,16 @@ def get_sample_annotations_for_track(
                 "start": doc["start"],
                 "end": doc["end"],
                 "color": doc["color"],
-                "type": "annotation"
+                "type": "annotation",
             }
-        ) for doc in cursor
+        )
+        for doc in cursor
     ]
 
 
-def get_sample_annotations(record_id: PydanticObjectId, db: Database[Any]) -> SampleAnnotationRecord | None:
+def get_sample_annotations(
+    record_id: PydanticObjectId, db: Database[Any]
+) -> SampleAnnotationRecord | None:
     """Get single sample annotation record by its ID."""
     record = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).find_one({"_id": record_id})
     if record is not None:
@@ -118,9 +129,7 @@ def get_sample_annotations(record_id: PydanticObjectId, db: Database[Any]) -> Sa
     return None
 
 
-def delete_sample_annotations_for_track(
-    track_id: PydanticObjectId, db: Database[Any]
-) -> bool:
+def delete_sample_annotations_for_track(track_id: PydanticObjectId, db: Database[Any]) -> bool:
     resp = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).delete_many({"track_id": track_id})
     if resp.deleted_count > 0:
         db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION).update_one(
