@@ -26,6 +26,16 @@ interface ApiAnnotationTrack {
   genome_build: number;
 }
 
+interface ApiSampleAnnotationTrack {
+  track_id: string;
+  sample_id: string;
+  case_id: string;
+  name: string;
+  description: string | null;
+  metadata: { key: string; value: string }[];
+  genome_build: number;
+}
+
 interface ApiSearchResult {
   chromosome: string;
   start: number;
@@ -89,6 +99,11 @@ interface ApiAnnotationDetails {
   comments: ApiComment[];
   references: ApiReference[];
   metadata: ApiMetadata[];
+}
+
+interface ApiSampleAnnotationDetails extends ApiAnnotationDetails {
+  sample_id: string;
+  case_id: string;
 }
 
 interface ApiTranscriptFeature {

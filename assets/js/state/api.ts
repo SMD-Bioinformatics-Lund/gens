@@ -105,6 +105,42 @@ export class API {
     return annotSources;
   }
 
+  getSampleAnnotationSources(
+    caseId: string,
+    sampleId: string,
+  ): Promise<ApiSampleAnnotationTrack[]> {
+    const query = {
+      case_id: caseId,
+      sample_id: sampleId,
+      genome_build: this.genomeBuild,
+    };
+    const sources = get(
+      new URL("sample-tracks/annotations", this.apiURI).href,
+      query,
+    ) as Promise<ApiSampleAnnotationTrack[]>;
+    return sources;
+  }
+
+  private sampleAnnotsCache: Record<string, Promise<ApiSimplifiedAnnotation[]>> = {};
+  getSampleAnnotations(trackId: string): Promise<ApiSimplifiedAnnotation[]> {
+    if (this.sampleAnnotsCache[trackId] === undefined) {
+      const annotations = get(
+        new URL(`sample-tracks/annotations/track/${trackId}`, this.apiURI).href,
+        {},
+      ) as Promise<ApiSimplifiedAnnotation[]>;
+      this.sampleAnnotsCache[trackId] = annotations;
+    }
+    return this.sampleAnnotsCache[trackId];
+  }
+
+  getSampleAnnotationDetails(id: string): Promise<ApiSampleAnnotationDetails> {
+    const details = get(
+      new URL(`sample-tracks/annotations/record/${id}`, this.apiURI).href,
+      {},
+    ) as Promise<ApiSampleAnnotationDetails>;
+    return details;
+  }
+
   private annotsCache: Record<string, Promise<ApiSimplifiedAnnotation[]>> = {};
   getAnnotations(trackId: string): Promise<ApiSimplifiedAnnotation[]> {
     if (this.annotsCache[trackId] === undefined) {

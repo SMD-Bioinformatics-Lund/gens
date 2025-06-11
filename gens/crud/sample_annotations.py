@@ -110,6 +110,14 @@ def get_sample_annotations_for_track(
     ]
 
 
+def get_sample_annotations(record_id: PydanticObjectId, db: Database[Any]) -> SampleAnnotationRecord | None:
+    """Get single sample annotation record by its ID."""
+    record = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).find_one({"_id": record_id})
+    if record is not None:
+        return SampleAnnotationRecord.model_validate(record)
+    return None
+
+
 def delete_sample_annotations_for_track(
     track_id: PydanticObjectId, db: Database[Any]
 ) -> bool:
