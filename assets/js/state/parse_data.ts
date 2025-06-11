@@ -129,7 +129,7 @@ export function getRenderDataSource(
     chrom: string,
   ): Promise<RenderBand[]> => {
     const annotsRaw = await api.getSampleAnnotations(trackId, chrom);
-    return parseAnnotations(annotsRaw, chrom);
+    return parseSampleAnnotations(annotsRaw, chrom);
   };
 
   const getSampleAnnotationDetails = async (
@@ -177,10 +177,14 @@ export function parseAnnotations(
   return results;
 }
 
+const MIN_LENGTH = 200000;
+
 export function parseSampleAnnotations(
   annotations: ApiSimplifiedAnnotation[],
   chromosome: string,
 ): RenderBand[] {
+  console.log("Hitting the function");
+
   const results = annotations
     .filter((annot) => annot.chrom == chromosome)
     .map((annot) => {
@@ -194,7 +198,12 @@ export function parseSampleAnnotations(
         label,
         hoverInfo: `${annot.name}`,
       };
+    })
+    .filter((annot) => {
+      const length = annot.end - annot.start;
+      return length >= MIN_LENGTH;
     });
+  console.log(results);
   return results;
 }
 
