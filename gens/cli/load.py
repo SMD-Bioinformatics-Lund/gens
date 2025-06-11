@@ -24,6 +24,8 @@ from gens.crud.transcripts import create_transcripts
 from gens.db.collections import (
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
+    SAMPLE_ANNOTATION_TRACKS_COLLECTION,
+    SAMPLE_ANNOTATIONS_COLLECTION,
     SAMPLES_COLLECTION,
     TRANSCRIPTS_COLLECTION,
 )
@@ -134,6 +136,33 @@ def sample(
     )
     create_sample(db, sample_obj)
     click.secho("Finished adding a new sample to database ✔", fg="green")
+
+
+@load.command("sample-annotation")
+@click.option("--sample-id", required=True, help="Sample ID")
+@click.option("--case-id", required=True, help="Case ID")
+@click.option("--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build")
+@click.option("--file", required=True, type=click.Path(exists=True, path_type=Path))
+@click.option("--name", required=True, help="Name of the annotation track")
+def sample_annotation(
+    sample_id: str,
+    case_id: str,
+    genome_build: GenomeBuild,
+    file: Path,
+    name: str,
+) -> None:
+    
+    gens_db_name = settings.gens_db.database
+    if gens_db_name is None:
+        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
+
+    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
+    if len(get_indexes(db, SAMPLE_ANNOTATION_TRACKS_COLLECTION)) == 0:
+        create_index(db, SAMPLE_ANNOTATION_TRACKS_COLLECTION)
+    if len(get_indexes(db, SAMPLE_ANNOTATIONS_COLLECTION)) == 0:
+        create_index(db, SAMPLE_ANNOTATIONS_COLLECTION)
+    
+    track_in_db = get_sample_annotation_track()
 
 
 @load.command()

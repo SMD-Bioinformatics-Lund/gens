@@ -11,6 +11,8 @@ from gens.db.collections import SAMPLES_COLLECTION
 from .collections import (
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
+    SAMPLE_ANNOTATION_TRACKS_COLLECTION,
+    SAMPLE_ANNOTATIONS_COLLECTION,
     TRANSCRIPTS_COLLECTION,
 )
 
@@ -104,6 +106,31 @@ INDEXES = {
             name="sample__creation_date",
             background=True,
         ),
+    ],
+    SAMPLE_ANNOTATIONS_COLLECTION: [
+        IndexModel(
+            [
+                ("sample_id", ASCENDING),
+                ("case_id", ASCENDING),
+                ("chrom", ASCENDING),
+                ("start", ASCENDING),
+                ("end", ASCENDING),
+            ],
+            name="sample_chrom_position",
+            background=True,
+        ),
+        IndexModel([("track_id", ASCENDING)], name="track_id", background=True),
+        IndexModel([("genome_build", ASCENDING)], name="genome_build", background=True),
+    ],
+    SAMPLE_ANNOTATION_TRACKS_COLLECTION: [
+        IndexModel(
+            [
+                ("sample_id", ASCENDING),
+                ("case_id", ASCENDING),
+                ("genome_build", ASCENDING),
+                ("name", ASCENDING),
+            ]
+        )
     ],
 }
 
