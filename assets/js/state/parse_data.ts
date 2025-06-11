@@ -28,12 +28,12 @@ export function getRenderDataSource(
     return api.getChromData(getChrom());
   };
 
-  const getAnnotation = async (recordId: string, chrom: string) => {
+  const getAnnotation = async (recordId: string, chrom: string): Promise<RenderBand[]> => {
     const annotData = await api.getAnnotations(recordId);
     return parseAnnotations(annotData, chrom);
   };
 
-  const getCovData = async (sample: Sample, chrom: string, xRange: Rng) => {
+  const getCovData = async (sample: Sample, chrom: string, xRange: Rng): Promise<RenderDot[]> => {
     const zoom = calculateZoom(xRange);
 
     const covRaw = await api.getCov(
@@ -46,7 +46,7 @@ export function getRenderDataSource(
     return parseCoverageDot(covRaw, STYLE.colors.darkGray);
   };
 
-  const getBafData = async (sample: Sample, chrom: string) => {
+  const getBafData = async (sample: Sample, chrom: string): Promise<RenderDot[]> => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
@@ -60,13 +60,13 @@ export function getRenderDataSource(
     return parseCoverageDot(bafRaw, STYLE.colors.darkGray);
   };
 
-  const getTranscriptBands = async (chrom: string) => {
+  const getTranscriptBands = async (chrom: string): Promise<RenderBand[]> => {
     const onlyMane = true;
     const transcriptsRaw = await api.getTranscripts(chrom, onlyMane);
     return parseTranscripts(transcriptsRaw);
   };
 
-  const getVariantBands = async (sample: Sample, chrom: string) => {
+  const getVariantBands = async (sample: Sample, chrom: string): Promise<RenderBand[]> => {
     const variantsRaw = await api.getVariants(
       sample.caseId,
       sample.sampleId,
@@ -75,7 +75,7 @@ export function getRenderDataSource(
     return parseVariants(variantsRaw);
   };
 
-  const getOverviewCovData = async (sample: Sample) => {
+  const getOverviewCovData = async (sample: Sample): Promise<Record<string, RenderDot[]>> => {
     const overviewCovRaw = await api.getOverviewCovData(
       sample.caseId,
       sample.sampleId,
@@ -86,7 +86,7 @@ export function getRenderDataSource(
     return overviewCovRender;
   };
 
-  const getOverviewBafData = async (sample: Sample) => {
+  const getOverviewBafData = async (sample: Sample): Promise<Record<string, RenderDot[]>> => {
     const overviewBafRaw = await api.getOverviewBafData(
       sample.caseId,
       sample.sampleId,
@@ -97,16 +97,22 @@ export function getRenderDataSource(
     return overviewBafRender;
   };
 
-  const getSampleAnnotationSources = async(caseId: string, sampleId: string) => {
-    return api.getSampleAnnotationSources(caseId, sampleId);
-  }
+  // const getSampleAnnotationSources = async(caseId: string, sampleId: string): Promise<ApiSampleAnnotationTrack[]> => {
+  //   const rawSources = await api.getSampleAnnotationSources(caseId, sampleId);
+  //   const sources = rawSources.map((source) => {
+  //     source.track_id = source._id;
+  //     return source;
+  //   })
+  //   console.log("Returning sources", sources);
+  //   return sources
+  // }
 
-  const getSampleAnnotationBands = async (trackId: string, chrom: string) => {
+  const getSampleAnnotationBands = async (trackId: string, chrom: string): Promise<RenderBand[]> => {
     const annotsRaw = await api.getSampleAnnotations(trackId);
     return parseAnnotations(annotsRaw, chrom);
   }
 
-  const getSampleAnnotationDetails = async (recordId: string) => {
+  const getSampleAnnotationDetails = async (recordId: string): Promise<ApiSampleAnnotationDetails> => {
     return api.getSampleAnnotationDetails(recordId);
   }
 
@@ -114,7 +120,6 @@ export function getRenderDataSource(
     getChromInfo,
     getAnnotationBands: getAnnotation,
     getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
-    getSampleAnnotationSources,
     getSampleAnnotationBands,
     getSampleAnnotationDetails,
     getCovData,
@@ -130,6 +135,27 @@ export function getRenderDataSource(
 }
 
 export function parseAnnotations(
+  annotations: ApiSimplifiedAnnotation[],
+  chromosome: string,
+): RenderBand[] {
+  const results = annotations
+    .filter((annot) => annot.chrom == chromosome)
+    .map((annot) => {
+      const label = annot.name;
+      return {
+        id: annot.record_id,
+        // id: `${annot.start}_${annot.end}_${annot.color}_${label}`,
+        start: annot.start,
+        end: annot.end,
+        color: annot.color,
+        label,
+        hoverInfo: `${annot.name}`,
+      };
+    });
+  return results;
+}
+
+export function parseSampleAnnotations(
   annotations: ApiSimplifiedAnnotation[],
   chromosome: string,
 ): RenderBand[] {

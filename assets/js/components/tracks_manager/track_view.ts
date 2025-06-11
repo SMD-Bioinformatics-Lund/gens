@@ -230,17 +230,22 @@ export class TrackView extends ShadowBaseElement {
       bafTracks.push(sampleTracks.baf);
       variantTracks.push(sampleTracks.variant);
 
-      // FIXME: Refactor into subfunction
+      // FIXME: Refactor into subfunction - Move into createSampleTracks maybe?
       const annots = this.sampleAnnotSources[sample.sampleId] || [];
+      console.log("Outside loop with ", annots);
       for (const annot of annots) {
+        console.log("Creating an annot track for ", annot)
         const annotTrack = createAnnotTrack(
           annot.track_id,
           annot.name,
           () => {
-            return dataSources.getSampleAnnotationBands(
+            console.log("Getting the annotation bands")
+            const bands = dataSources.getSampleAnnotationBands(
               annot.track_id,
               session.getChromosome(),
             );
+            console.log(bands);
+            return bands;
           },
           (id: string) => dataSources.getSampleAnnotationDetails(id),
           session,
@@ -265,6 +270,7 @@ export class TrackView extends ShadowBaseElement {
       openTrackContextMenu,
     );
 
+    console.log("Sample annot tracks before push", sampleAnnotTracks);
     const tracks: TrackViewTrackInfo[] = [
       ...bafTracks,
       ...covTracks,

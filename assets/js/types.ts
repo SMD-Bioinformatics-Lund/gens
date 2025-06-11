@@ -27,6 +27,8 @@ interface ApiAnnotationTrack {
 }
 
 interface ApiSampleAnnotationTrack {
+  // FIXME: What to do with this one
+  _id: string;
   track_id: string;
   sample_id: string;
   case_id: string;
@@ -341,7 +343,6 @@ interface RenderDataSource {
   ) => Promise<RenderBand[]>;
   getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>;
 
-  getSampleAnnotationSources: (caseId: string, sampleId: string) => Promise<ApiSampleAnnotationTrack[]>;
   getSampleAnnotationBands: (trackId: string, chrom: string) => Promise<RenderBand[]>;
   getSampleAnnotationDetails: (recordId: string) => Promise<ApiSampleAnnotationDetails>;
 

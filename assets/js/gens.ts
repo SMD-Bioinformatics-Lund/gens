@@ -173,6 +173,7 @@ export async function initCanvases({
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
+  // FIXME: Wrap these into the getDataSources object
   const allAnnotSources = await api.getAnnotationSources();
   const sampleAnnotSources: Record<string, ApiSampleAnnotationTrack[]> = {};
   for (const sample of samples) {

@@ -117,11 +117,20 @@ export class API {
     const sources = get(
       new URL("sample-tracks/annotations", this.apiURI).href,
       query,
-    ) as Promise<ApiSampleAnnotationTrack[]>;
+    ).then((result) => {
+      // FIXME: Temporary solution. Fix this backend.
+      return result.map((source) => {
+        source.track_id = source._id;
+        return source;
+      });
+    });
     return sources;
   }
 
-  private sampleAnnotsCache: Record<string, Promise<ApiSimplifiedAnnotation[]>> = {};
+  private sampleAnnotsCache: Record<
+    string,
+    Promise<ApiSimplifiedAnnotation[]>
+  > = {};
   getSampleAnnotations(trackId: string): Promise<ApiSimplifiedAnnotation[]> {
     if (this.sampleAnnotsCache[trackId] === undefined) {
       const annotations = get(

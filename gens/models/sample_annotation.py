@@ -23,5 +23,6 @@ class SampleAnnotationTrack(RWModel, CreatedAtModel, ModifiedAtModel):
     metadata: list[dict[str, Any]] = []
 
 
+# FIXME: Dig into this. Why is this one separate from the one above?
 class SampleAnnotationTrackInDb(SampleAnnotationTrack):
     track_id: PydanticObjectId = Field(alias="_id")
