@@ -6,7 +6,7 @@ from pymongo import DESCENDING
 
 from pymongo.cursor import Cursor
 
-from gens.db.collections import SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION
+from gens.db.collections import SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION, UPDATES_COLLECTION
 from gens.models.annotation import SimplifiedTrackInfo
 from gens.models.base import PydanticObjectId
 from gens.models.genomic import GenomeBuild
