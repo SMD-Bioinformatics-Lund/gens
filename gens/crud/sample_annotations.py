@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from mongomock import Database
+from pymongo.database import Database
 from pymongo import DESCENDING
 
 from pymongo.cursor import Cursor
@@ -113,7 +113,7 @@ def get_sample_annotations_for_track(
 def delete_sample_annotations_for_track(
     track_id: PydanticObjectId, db: Database[Any]
 ) -> bool:
-    resp = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).delete_many({"track_id", track_id})
+    resp = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).delete_many({"track_id": track_id})
     if resp.deleted_count > 0:
         db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION).update_one(
             {"_id": track_id}, {"$set": {"modified_at": get_timestamp()}}

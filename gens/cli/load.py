@@ -153,7 +153,7 @@ def sample_annotation(
     file: Path,
     name: str,
 ) -> None:
-
+    """Load a sample annotation into Gens database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
         raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
