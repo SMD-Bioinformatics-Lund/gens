@@ -191,9 +191,6 @@ export function parseAnnotations(
   return results;
 }
 
-// FIXME: Move to pipeline script
-const MIN_LENGTH = 200000;
-
 export function parseSampleAnnotations(
   annotations: ApiSimplifiedAnnotation[],
   chromosome: string,
@@ -206,7 +203,6 @@ export function parseSampleAnnotations(
       const label = annot.name;
       return {
         id: annot.record_id,
-        // id: `${annot.start}_${annot.end}_${annot.color}_${label}`,
         start: annot.start,
         end: annot.end,
         color: annot.color,
@@ -214,11 +210,6 @@ export function parseSampleAnnotations(
         hoverInfo: `${annot.name}`,
       };
     })
-    .filter((annot) => {
-      const length = annot.end - annot.start;
-      return length >= MIN_LENGTH;
-    });
-  console.log(results);
   return results;
 }
 

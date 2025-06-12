@@ -228,24 +228,6 @@ export class TrackView extends ShadowBaseElement {
       variantTracks.push(sampleTracks.variant);
 
       this.setupSampleAnnotationTracks(sample);
-
-      // getSampleAnnotationTracks(
-      //   sample,
-      //   this.dataSource,
-      //   this.session,
-      //   this.openTrackContextMenu,
-      // ).then((tracks: BandTrack[]) => {
-      //   console.log("Result:", tracks);
-      //   for (const track of tracks) {
-      //     const container = makeTrackContainer(track, sample);
-      //     this.dataTracks.push(container);
-      //     this.tracksContainer.appendChild(container.container);
-      //     track.initialize();
-      //     track.render({});
-      //   }
-      // });
-
-      // sampleAnnotTracks.push(...sampleTracks.annots);
     }
 
     const genesTrack = createGeneTrack(
@@ -445,23 +427,6 @@ export class TrackView extends ShadowBaseElement {
 
     this.setupSampleAnnotationTracks(sample);
 
-    console.log("Getting the annotation tracks ...");
-    // getSampleAnnotationTracks(
-    //   sample,
-    //   this.dataSource,
-    //   this.session,
-    //   this.openTrackContextMenu,
-    // ).then((tracks: BandTrack[]) => {
-    //   console.log("Result:", tracks);
-    //   for (const track of tracks) {
-    //     const container = makeTrackContainer(track, sample);
-    //     this.dataTracks.push(container);
-    //     this.tracksContainer.appendChild(container.container);
-    //     track.initialize();
-    //     track.render({});
-    //   }
-    // });
-
     this.dataTracks.push(
       sampleTracks.cov,
       sampleTracks.baf,
@@ -576,7 +541,6 @@ export class TrackView extends ShadowBaseElement {
       this.session,
       this.openTrackContextMenu,
     ).then((tracks: BandTrack[]) => {
-      console.log("Result:", tracks);
       for (const track of tracks) {
         const container = makeTrackContainer(track, sample);
         this.dataTracks.push(container);
