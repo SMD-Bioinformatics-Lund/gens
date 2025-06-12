@@ -118,6 +118,9 @@ export class API {
       new URL("sample-tracks/annotations", this.apiURI).href,
       query,
     ).then((result) => {
+      if (result == null) {
+        return [];
+      }
       // FIXME: Temporary solution. Fix this backend.
       return result.map((source) => {
         source.track_id = source._id;
