@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pydantic import Field, computed_field, field_serializer
 from pydantic.types import FilePath
+from pydantic_extra_types.color import Color
 
 from .base import CreatedAtModel, RWModel
 from .genomic import GenomeBuild
@@ -45,6 +46,19 @@ class SampleType(StrEnum):
     OTHER = "other"
 
 
+class MetaValue(RWModel):
+    type: str
+    value: str
+    row_name: str | None = None
+    color: Color = Color("#000000")
+
+
+class MetaEntry(RWModel):
+    id: str
+    file_name: str
+    data: list[MetaValue]
+
+
 class SampleInfo(RWModel, CreatedAtModel):
     """Sample record stored in the database."""
 
@@ -55,6 +69,7 @@ class SampleInfo(RWModel, CreatedAtModel):
     coverage_file: FilePath
     overview_file: FilePath | None = None
     sample_type: SampleType | None = None
+    meta: list[MetaEntry] = Field(default_factory=list)
 
     @computed_field()  # type: ignore
     @property

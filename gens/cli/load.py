@@ -44,6 +44,7 @@ from gens.load.annotations import (
     parse_bed_file,
     parse_tsv_file,
 )
+from gens.load.meta import parse_meta_file
 from gens.models.annotation import AnnotationRecord, AnnotationTrack, TranscriptRecord
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleType
@@ -101,6 +102,13 @@ def load() -> None:
     help="Json file that contains preprocessed overview coverage",
 )
 @click.option(
+    "--meta",
+    "meta_files",
+    type=click.Path(exists=True, path_type=Path),
+    multiple=True
+    help="TSV file with sample metadata"
+)
+@click.option(
     "-t",
     "--sample-type",
     type=ChoiceType(SampleType),
@@ -114,6 +122,7 @@ def sample(
     coverage: Path,
     case_id: str,
     overview_json: Path,
+    meta_files: tuple[Path, ...],
     sample_type: SampleType | None,
 ) -> None:
     """Load a sample into Gens database."""
@@ -134,6 +143,7 @@ def sample(
             "coverage_file": coverage,
             "overview_file": overview_json,
             "sample_type": sample_type,
+            "meta": [parse_meta_file(p) for p in meta_files]
         }
     )
     create_sample(db, sample_obj)
