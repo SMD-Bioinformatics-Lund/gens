@@ -1,15 +1,21 @@
 """CLI commands for updating entries in the database."""
 
 import logging
+from pathlib import Path
 
 import click
 
 from gens.cli.util import ChoiceType
 from gens.config import settings
 from gens.crud.samples import get_sample, update_sample
-from gens.db.collections import SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION, SAMPLES_COLLECTION
+from gens.db.collections import (
+    SAMPLE_ANNOTATION_TRACKS_COLLECTION,
+    SAMPLE_ANNOTATIONS_COLLECTION,
+    SAMPLES_COLLECTION,
+)
 from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
+from gens.load.meta import parse_meta_file
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleType
 
@@ -43,23 +49,35 @@ def update() -> None:
     required=True,
     help="New sample type",
 )
+@click.option(
+    "--meta",
+    "meta_files",
+    type=click.Path(exists=True, path_type=Path),
+    multiple=True,
+    help="TSV file with sample metadata",
+)
 def sample(
     sample_id: str,
     case_id: str,
     genome_build: GenomeBuild,
     sample_type: SampleType,
+    meta_files: tuple[Path, ...],
 ) -> None:
     """Update sample type for a sample."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
+        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
 
     sample_obj = get_sample(db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id)
-    sample_obj.sample_type = sample_type
+
+    if sample_type is not None:
+        sample_obj.sample_type = sample_type
+
+    if meta_files:
+        sample_obj.meta.extend([parse_meta_file(p) for p in meta_files])
+
     update_sample(db, sample_obj)
     click.secho("Finished updating sample ✔", fg="green")
