@@ -62,11 +62,9 @@ export class ChromosomeView extends ShadowBaseElement {
   initialize(
     session: GensSession,
     dataSource: RenderDataSource,
-    sampleAnnots: Record<string, ApiSampleAnnotationTrack[]>,
   ) {
     this.session = session;
     this.dataSource = dataSource;
-    this.sampleAnnotSources = sampleAnnots;
 
     for (const chrom of CHROMOSOMES) {
       const {

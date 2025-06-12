@@ -5,6 +5,7 @@ import {
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COLORS } from "../constants";
 import { generateID } from "../util/utils";
+import { API } from "./api";
 
 /**
  * The purpose of this class is to keep track of the web session,
@@ -35,14 +36,14 @@ export class GensSession {
   private gensBaseURL: string;
   private settings: SettingsMenu;
   private genomeBuild: number;
+  private caseSampleToAnnotSources: Record<
+    string,
+    Record<string, { id: string; name: string }[]>
+  > = {};
 
   constructor(
-    // FIXME: This does not belong here I think
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
-    region: Region,
-    chromInfo: Record<string, ChromosomeInfo>,
-    chromSizes: Record<string, number>,
     samples: Sample[],
     trackHeights: TrackHeights,
     scoutBaseURL: string,
@@ -54,11 +55,9 @@ export class GensSession {
     this.render = render;
     this.sideMenu = sideMenu;
     this.highlights = {};
-    this.chromosome = region.chrom;
-    this.start = region.start;
-    this.end = region.end;
-    this.chromInfo = chromInfo;
-    this.chromSizes = chromSizes;
+    this.chromosome = "1";
+    this.start = 1;
+    this.end = 1;
     this.samples = samples;
     this.trackHeights = trackHeights;
     this.scoutBaseURL = scoutBaseURL;
@@ -67,8 +66,34 @@ export class GensSession {
     this.genomeBuild = genomeBuild;
   }
 
+  async initialize(api: API) {
+
+    console.log("Initializing");
+
+    for (const sample of this.samples) {
+      const sampleAnnotTracks = await api.getSampleAnnotationSources(
+        sample.caseId,
+        sample.sampleId,
+      );
+      if (this.caseSampleToAnnotSources[sample.caseId] === undefined) {
+        this.caseSampleToAnnotSources[sample.caseId] = {};
+      }
+      this.caseSampleToAnnotSources[sample.caseId][sample.sampleId] =
+        sampleAnnotTracks.map((track) => {
+          return {
+            id: track.track_id,
+            name: track.name,
+          };
+        });
+    }
+
+    this.chromInfo = api.getChromInfo();
+    this.chromSizes = api.getChromSizes();
+    this.end = this.chromSizes[this.chromosome];
+  }
+
   public getGenomeBuild(): number {
-    return this.genomeBuild
+    return this.genomeBuild;
   }
 
   public getGensBaseURL(): string {
@@ -171,6 +196,18 @@ export class GensSession {
   // FIXME: Should be in data sources instead perhaps?
   public getChromSize(chrom: string): number {
     return this.chromSizes[chrom];
+  }
+
+  public getChromSizes(): Record<string, number> {
+    return this.chromSizes;
+  }
+
+  public getSampleAnnotIds(
+    caseId: string,
+    sampleId: string,
+  ): { id: string; name: string }[] {
+    console.log("Getting", caseId, sampleId);
+    return this.caseSampleToAnnotSources[caseId][sampleId];
   }
 
   public getCurrentChromSize(): number {

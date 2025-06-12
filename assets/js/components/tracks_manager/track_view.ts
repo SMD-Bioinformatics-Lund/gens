@@ -91,7 +91,6 @@ export class TrackView extends ShadowBaseElement {
 
   private openTrackContextMenu: (track: DataTrack) => void;
   private trackPages: Record<string, TrackMenu> = {};
-  private sampleAnnotSources: Record<string, ApiSampleAnnotationTrack[]> = {};
 
   private sampleToTracks: Record<
     string,
@@ -122,11 +121,9 @@ export class TrackView extends ShadowBaseElement {
     chromClick: (chrom: string) => void,
     dataSources: RenderDataSource,
     session: GensSession,
-    sampleAnnotSources: Record<string, ApiSampleAnnotationTrack[]>,
   ) {
     this.dataSource = dataSources;
     this.session = session;
-    this.sampleAnnotSources = sampleAnnotSources;
 
     const openTrackContextMenu = this.createOpenTrackContextMenu(render);
     this.openTrackContextMenu = openTrackContextMenu;
@@ -424,21 +421,20 @@ export class TrackView extends ShadowBaseElement {
       this.session,
       isTrackViewTrack,
       this.openTrackContextMenu,
-      this.sampleAnnotSources[sample.sampleId],
     );
 
     this.dataTracks.push(
       sampleTracks.cov,
       sampleTracks.baf,
       sampleTracks.variant,
-      ...sampleTracks.annots
+      ...sampleTracks.annots,
     );
 
     this.tracksContainer.appendChild(sampleTracks.cov.container);
     this.tracksContainer.appendChild(sampleTracks.baf.container);
     this.tracksContainer.appendChild(sampleTracks.variant.container);
     sampleTracks.annots.forEach((track) => {
-      this.tracksContainer.appendChild(track.container)
+      this.tracksContainer.appendChild(track.container);
     });
 
     this.dataTracks.forEach((track) => track.track.initialize());
@@ -557,7 +553,6 @@ function createSampleTracks(
   session: GensSession,
   isTrackViewTrack: boolean,
   openTrackContextMenu: (track: DataTrack) => void,
-  sampleAnnotSources: ApiSampleAnnotationTrack[],
 ): {
   cov: TrackViewTrackInfo;
   baf: TrackViewTrackInfo;
@@ -632,14 +627,18 @@ function createSampleTracks(
     },
   );
 
+  const sampleAnnotSources = session.getSampleAnnotIds(
+    sample.caseId,
+    sample.sampleId,
+  );
   const annotTracks = [];
   for (const annotSource of sampleAnnotSources) {
     const annotTrack = createAnnotTrack(
-      annotSource.track_id,
+      annotSource.id,
       annotSource.name,
       () => {
         const bands = dataSources.getSampleAnnotationBands(
-          annotSource.track_id,
+          annotSource.id,
           session.getChromosome(),
         );
         console.log(bands);
@@ -654,7 +653,7 @@ function createSampleTracks(
         startExpanded: true,
       },
     );
-    annotTracks.push(annotTrack)
+    annotTracks.push(annotTrack);
   }
 
   const cov = makeTrackContainer(coverageTrack, sample);

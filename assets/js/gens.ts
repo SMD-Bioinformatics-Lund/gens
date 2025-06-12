@@ -125,14 +125,6 @@ export async function initCanvases({
     return samples.sort((s1, s2) => s1.sampleId.localeCompare(s2.sampleId));
   };
 
-  const chromInfo = api.getChromInfo();
-  const chromSizes = api.getChromSizes();
-  const defaultRegion = {
-    chrom: "1" as Chromosome,
-    start: 1,
-    end: chromSizes["1"],
-  };
-
   const unorderedSamples = sampleIds.map((sampleId) => {
     const caseSamples = caseSamplesMap[caseId];
 
@@ -146,12 +138,11 @@ export async function initCanvases({
     return matches[0];
   });
   const samples = orderSamples(unorderedSamples);
+
+
   const session = new GensSession(
     render,
     sideMenu,
-    defaultRegion,
-    chromInfo,
-    chromSizes,
     samples,
     trackHeights,
     scoutBaseURL,
@@ -159,6 +150,8 @@ export async function initCanvases({
     settingsPage,
     genomeBuild,
   );
+
+  await session.initialize(api);
 
   const renderDataSource = getRenderDataSource(
     api,
@@ -173,15 +166,8 @@ export async function initCanvases({
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
-  // FIXME: Wrap these into the getDataSources object
   const allAnnotSources = await api.getAnnotationSources();
-  const sampleAnnotSources: Record<string, ApiSampleAnnotationTrack[]> = {};
-  for (const sample of samples) {
-    sampleAnnotSources[sample.sampleId] = await api.getSampleAnnotationSources(
-      sample.caseId,
-      sample.sampleId,
-    );
-  }
+
   const defaultAnnot = allAnnotSources
     .filter((track) => track.name === defaultAnnotationName)
     .map((track) => {
@@ -264,11 +250,10 @@ export async function initCanvases({
   await gensTracks.initialize(
     render,
     samples,
-    chromSizes,
+    session.getChromSizes(),
     onChromClick,
     renderDataSource,
     session,
-    sampleAnnotSources,
   );
 
   render({ dataUpdated: true, resized: true });
