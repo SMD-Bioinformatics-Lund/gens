@@ -37,38 +37,35 @@ export class GensSession {
   private genomeBuild: number;
 
   constructor(
-    // FIXME: This does not belong here I think
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
-    region: Region,
-    chromInfo: Record<string, ChromosomeInfo>,
-    chromSizes: Record<string, number>,
     samples: Sample[],
     trackHeights: TrackHeights,
     scoutBaseURL: string,
     gensBaseURL: string,
-    // FIXME: Unsure if the full settings should be stored
     settings: SettingsMenu,
     genomeBuild: number,
+    chromInfo: Record<Chromosome, ChromosomeInfo>,
+    chromSizes: Record<Chromosome, number>,
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
     this.highlights = {};
-    this.chromosome = region.chrom;
-    this.start = region.start;
-    this.end = region.end;
-    this.chromInfo = chromInfo;
-    this.chromSizes = chromSizes;
+    this.chromosome = "1";
+    this.start = 1;
+    this.end = chromSizes["1"];
     this.samples = samples;
     this.trackHeights = trackHeights;
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.settings = settings;
     this.genomeBuild = genomeBuild;
+    this.chromInfo = chromInfo;
+    this.chromSizes = chromSizes;
   }
 
   public getGenomeBuild(): number {
-    return this.genomeBuild
+    return this.genomeBuild;
   }
 
   public getGensBaseURL(): string {
@@ -171,6 +168,10 @@ export class GensSession {
   // FIXME: Should be in data sources instead perhaps?
   public getChromSize(chrom: string): number {
     return this.chromSizes[chrom];
+  }
+
+  public getChromSizes(): Record<string, number> {
+    return this.chromSizes;
   }
 
   public getCurrentChromSize(): number {

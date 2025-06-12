@@ -26,6 +26,18 @@ interface ApiAnnotationTrack {
   genome_build: number;
 }
 
+interface ApiSampleAnnotationTrack {
+  // FIXME: What to do with this one
+  _id: string;
+  track_id: string;
+  sample_id: string;
+  case_id: string;
+  name: string;
+  description: string | null;
+  metadata: { key: string; value: string }[];
+  genome_build: number;
+}
+
 interface ApiSearchResult {
   chromosome: string;
   start: number;
@@ -89,6 +101,11 @@ interface ApiAnnotationDetails {
   comments: ApiComment[];
   references: ApiReference[];
   metadata: ApiMetadata[];
+}
+
+interface ApiSampleAnnotationDetails extends ApiAnnotationDetails {
+  sample_id: string;
+  case_id: string;
 }
 
 interface ApiTranscriptFeature {
@@ -325,6 +342,18 @@ interface RenderDataSource {
     chrom: string,
   ) => Promise<RenderBand[]>;
   getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>;
+
+  getSampleAnnotSources: (
+    caseId: string,
+    sampleId: string,
+  ) => Promise<{ id: string; name: string }[]>;
+  getSampleAnnotationBands: (
+    trackId: string,
+    chrom: string,
+  ) => Promise<RenderBand[]>;
+  getSampleAnnotationDetails: (
+    recordId: string,
+  ) => Promise<ApiSampleAnnotationDetails>;
 
   getCovData: (
     sample: Sample,

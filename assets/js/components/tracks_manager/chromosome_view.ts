@@ -1,9 +1,13 @@
-import { CHROMOSOMES, SIZES } from "../../constants";
+import { CHROMOSOMES, SIZES, TRACK_HEIGHTS } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { div, removeOne } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
-import { createDataTrackWrapper, createDotTrack } from "./utils";
+import {
+  createAnnotTrack,
+  createDataTrackWrapper,
+  createDotTrack,
+} from "./utils";
 
 const COV_Y_RANGE: [number, number] = [-2, 2];
 
@@ -54,7 +58,7 @@ export class ChromosomeView extends ShadowBaseElement {
     );
   }
 
-  initialize(session: GensSession, dataSource: RenderDataSource) {
+  async initialize(session: GensSession, dataSource: RenderDataSource) {
     this.session = session;
     this.dataSource = dataSource;
 
@@ -72,11 +76,14 @@ export class ChromosomeView extends ShadowBaseElement {
       };
     }
 
-    // Adding new tracks per chromosome
+    const settingSample = this.session.getSamples()[0];
+    const sampleAnnots = await dataSource.getSampleAnnotSources(
+      settingSample.caseId,
+      settingSample.sampleId,
+    );
+
     for (const chrom of CHROMOSOMES) {
       const chromGroup = this.chromosomeGroups[chrom];
-
-      const settingSamples = this.session.getSamples()[0];
 
       const getCovData = (sample: Sample, chrom: string) =>
         this.dataSource.getCovData(sample, chrom, [
@@ -85,12 +92,26 @@ export class ChromosomeView extends ShadowBaseElement {
         ]);
 
       addSampleTracks(
-        this.session,
-        settingSamples,
+        settingSample,
         chrom,
         (sample: Sample) => getCovData(sample, chrom),
         (trackInfo: ChromViewTrackInfo) => {
           this.onAddTrack(chromGroup.samples, trackInfo);
+        },
+        () => session.getMarkerModeOn(),
+        () => [1, session.getChromSize("1")],
+      );
+
+      addSampleAnnotationTracks(
+        this.session,
+        settingSample,
+        chrom,
+        sampleAnnots,
+        (trackId: string, chrom: Chromosome) =>
+          this.dataSource.getSampleAnnotationBands(trackId, chrom),
+        (id: string) => this.dataSource.getSampleAnnotationDetails(id),
+        (trackInfo: ChromViewTrackInfo) => {
+          this.onAddTrack(chromGroup.annotations, trackInfo);
         },
       );
     }
@@ -123,11 +144,12 @@ export class ChromosomeView extends ShadowBaseElement {
 }
 
 function addSampleTracks(
-  session: GensSession,
   sample: Sample,
   chrom: Chromosome,
   getCovData: (sample: Sample, chrom: Chromosome) => Promise<RenderDot[]>,
   onAddTrack: (track: ChromViewTrackInfo) => void,
+  getMarkerModeOn: () => boolean,
+  getXRange: () => Rng,
 ) {
   const trackId = `${sample.sampleId}_${chrom}`;
   const trackLabel = sample.sampleId;
@@ -147,7 +169,8 @@ function addSampleTracks(
       hasLabel: true,
       fixedChrom: chrom,
     },
-    session,
+    getMarkerModeOn,
+    getXRange,
     null,
   );
   const trackWrapper = createDataTrackWrapper(dotTrack);
@@ -160,6 +183,43 @@ function addSampleTracks(
     type: "coverage",
   };
   onAddTrack(trackInfo);
+}
+
+function addSampleAnnotationTracks(
+  session: GensSession,
+  sample: Sample,
+  chrom: Chromosome,
+  annotTracks: {id: string, name: string}[],
+  getBands: (trackId: string, chrom: Chromosome) => Promise<RenderBand[]>,
+  getDetails: (id: string) => Promise<ApiSampleAnnotationDetails>,
+  onAddTrack: (track: ChromViewTrackInfo) => void,
+) {
+  for (const source of annotTracks) {
+    const trackId = `${source.id}_${chrom}`;
+    const bandTrack = createAnnotTrack(
+      trackId,
+      source.name,
+      () => getBands(source.id, chrom),
+      (id: string) => getDetails(id),
+      session,
+      null,
+      {
+        height: TRACK_HEIGHTS.xxs,
+        showLabelWhenCollapsed: false,
+        startExpanded: false,
+      },
+    );
+    const wrapper = createDataTrackWrapper(bandTrack);
+    const info: ChromViewTrackInfo = {
+      track: bandTrack,
+      container: wrapper,
+      chromosome: chrom,
+      sampleId: sample.sampleId,
+      sourceId: source.id,
+      type: "annotation",
+    };
+    onAddTrack(info);
+  }
 }
 
 function getGroupElement(chrom: string): {

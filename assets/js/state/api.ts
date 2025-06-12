@@ -105,6 +105,61 @@ export class API {
     return annotSources;
   }
 
+  getSampleAnnotationSources(
+    caseId: string,
+    sampleId: string,
+  ): Promise<ApiSampleAnnotationTrack[]> {
+    const query = {
+      case_id: caseId,
+      sample_id: sampleId,
+      genome_build: this.genomeBuild,
+    };
+    const sources = get(
+      new URL("sample-tracks/annotations", this.apiURI).href,
+      query,
+    ).then((result) => {
+      if (result == null) {
+        return [];
+      }
+      // FIXME: Temporary solution. Fix this backend.
+      return result.map((source) => {
+        source.track_id = source._id;
+        return source;
+      });
+    });
+    return sources;
+  }
+
+  private sampleAnnotsCache: Record<
+    string,
+    Record<string, Promise<ApiSimplifiedAnnotation[]>>
+  > = {};
+  getSampleAnnotations(
+    trackId: string,
+    chromosome: string,
+  ): Promise<ApiSimplifiedAnnotation[]> {
+    if (this.sampleAnnotsCache[trackId] === undefined) {
+      this.sampleAnnotsCache[trackId] = {};
+    }
+
+    if (this.sampleAnnotsCache[trackId][chromosome] === undefined) {
+      const annotations = get(
+        new URL(`sample-tracks/annotations/track/${trackId}`, this.apiURI).href,
+        { chromosome },
+      ) as Promise<ApiSimplifiedAnnotation[]>;
+      this.sampleAnnotsCache[trackId][chromosome] = annotations;
+    }
+    return this.sampleAnnotsCache[trackId][chromosome];
+  }
+
+  getSampleAnnotationDetails(id: string): Promise<ApiSampleAnnotationDetails> {
+    const details = get(
+      new URL(`sample-tracks/annotations/record/${id}`, this.apiURI).href,
+      {},
+    ) as Promise<ApiSampleAnnotationDetails>;
+    return details;
+  }
+
   private annotsCache: Record<string, Promise<ApiSimplifiedAnnotation[]>> = {};
   getAnnotations(trackId: string): Promise<ApiSimplifiedAnnotation[]> {
     if (this.annotsCache[trackId] === undefined) {

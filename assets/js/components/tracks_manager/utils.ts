@@ -75,7 +75,7 @@ export function createAnnotTrack(
     () => getAnnotTrackData(getAnnotationBands),
     openContextMenuId,
     openTrackContextMenu,
-    session,
+    () => session.getMarkerModeOn(),
   );
   return track;
 }
@@ -91,7 +91,8 @@ export function createDotTrack(
     hasLabel: boolean;
     fixedChrom: Chromosome | null;
   },
-  session: GensSession,
+  getMarkerModeOn: () => boolean,
+  getXRange: () => Rng,
   openTrackContextMenu: (track: DataTrack) => void,
 ): DotTrack {
   // FIXME: Move to session
@@ -111,10 +112,7 @@ export function createDotTrack(
     label,
     () => fnSettings,
     (settings) => (fnSettings = settings),
-    () =>
-      settings.fixedChrom != null
-        ? [1, session.getChromSize("1")]
-        : session.getXRange(),
+    () => getXRange(),
     async () => {
       const data = await dataFn(sample);
       return {
@@ -122,7 +120,7 @@ export function createDotTrack(
       };
     },
     openTrackContextMenu,
-    session,
+    getMarkerModeOn,
   );
   return dotTrack;
 }
@@ -171,7 +169,7 @@ export function createVariantTrack(
       session.showContent("Variant", content);
     },
     openTrackContextMenu,
-    session,
+    () => session.getMarkerModeOn(),
   );
   return variantTrack;
 }
@@ -232,7 +230,7 @@ export function createGeneTrack(
       session.showContent("Transcript", content);
     },
     openTrackContextMenu,
-    session,
+    () => session.getMarkerModeOn(),
   );
   return makeTrackContainer(genesTrack, null);
 }

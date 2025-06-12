@@ -126,7 +126,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private getHighlights: () => RangeHighlight[];
   private gotoHighlight: (region: Region) => void;
   private removeHighlight: (id: string) => void;
-  private onAddSample: (sample: Sample) => void;
+  private onAddSample: (sample: Sample) => Promise<void>;
   private onRemoveSample: (sample: Sample) => void;
   private getTrackHeights: () => TrackHeights;
   private setTrackHeights: (sizes: TrackHeights) => void;
@@ -146,7 +146,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
     getAllSamples: () => Sample[],
     gotoHighlight: (region: Region) => void,
-    onAddSample: (sample: Sample) => void,
+    onAddSample: (sample: Sample) => Promise<void>,
     onRemoveSample: (sample: Sample) => void,
     setTrackHeights: (trackHeights: TrackHeights) => void,
   ) {
@@ -250,7 +250,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const rawSamples = this.getAllSamples();
     const allSamples = rawSamples.map((s) => {
       return {
-        label: s.sampleId,
+        label: `${s.sampleId} (case: ${s.caseId})`,
         value: `${s.caseId}_${s.sampleId}`,
       };
     });

@@ -155,6 +155,7 @@ export class TrackView extends ShadowBaseElement {
     const covTracks: TrackViewTrackInfo[] = [];
     const bafTracks: TrackViewTrackInfo[] = [];
     const variantTracks: TrackViewTrackInfo[] = [];
+    const sampleAnnotTracks: TrackViewTrackInfo[] = [];
 
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -225,6 +226,8 @@ export class TrackView extends ShadowBaseElement {
       covTracks.push(sampleTracks.cov);
       bafTracks.push(sampleTracks.baf);
       variantTracks.push(sampleTracks.variant);
+
+      this.setupSampleAnnotationTracks(sample);
     }
 
     const genesTrack = createGeneTrack(
@@ -240,6 +243,7 @@ export class TrackView extends ShadowBaseElement {
       ...bafTracks,
       ...covTracks,
       ...variantTracks,
+      ...sampleAnnotTracks,
       genesTrack,
     ];
 
@@ -257,10 +261,12 @@ export class TrackView extends ShadowBaseElement {
       "Position",
       () => positionTrackSettings,
       (settings) => (positionTrackSettings = settings),
-      session,
+      () => session.getMarkerModeOn(),
+      () => session.getXRange(),
     );
 
     const chromosomeRow = document.createElement("flex-row");
+    chromosomeRow.style.width = "100%";
     this.positionLabel = document.createElement("div");
     this.positionLabel.id = "position-label";
     chromosomeRow.appendChild(this.positionLabel);
@@ -419,6 +425,8 @@ export class TrackView extends ShadowBaseElement {
       this.openTrackContextMenu,
     );
 
+    this.setupSampleAnnotationTracks(sample);
+
     this.dataTracks.push(
       sampleTracks.cov,
       sampleTracks.baf,
@@ -429,7 +437,9 @@ export class TrackView extends ShadowBaseElement {
     this.tracksContainer.appendChild(sampleTracks.baf.container);
     this.tracksContainer.appendChild(sampleTracks.variant.container);
 
-    Object.values(sampleTracks).map(({ track }) => track.initialize());
+    sampleTracks.cov.track.initialize();
+    sampleTracks.baf.track.initialize();
+    sampleTracks.variant.track.initialize();
   }
 
   public removeSample(sample: Sample) {
@@ -486,7 +496,9 @@ export class TrackView extends ShadowBaseElement {
     );
 
     updateAnnotationTracks(
-      this.dataTracks.filter((info) => info.track.trackType == "annotation"),
+      this.dataTracks.filter(
+        (info) => info.track.trackType == "annotation" && info.sample == null,
+      ),
       (sourceId: string, chrom: string) =>
         this.dataSource.getAnnotationBands(sourceId, chrom),
       (bandId: string) => this.dataSource.getAnnotationDetails(bandId),
@@ -520,6 +532,23 @@ export class TrackView extends ShadowBaseElement {
     const [startChrSeg, endChrSeg] = this.session.getChrSegments();
 
     this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
+  }
+
+  private setupSampleAnnotationTracks(sample: Sample) {
+    getSampleAnnotationTracks(
+      sample,
+      this.dataSource,
+      this.session,
+      this.openTrackContextMenu,
+    ).then((tracks: BandTrack[]) => {
+      for (const track of tracks) {
+        const container = makeTrackContainer(track, sample);
+        this.dataTracks.push(container);
+        this.tracksContainer.appendChild(container.container);
+        track.initialize();
+        track.render({});
+      }
+    });
   }
 }
 
@@ -569,7 +598,8 @@ function createSampleTracks(
       hasLabel: isTrackViewTrack,
       fixedChrom: null,
     },
-    session,
+    () => session.getMarkerModeOn(),
+    () => session.getXRange(),
     openTrackContextMenu,
   );
   const bafTrack = createDotTrack(
@@ -593,7 +623,8 @@ function createSampleTracks(
       hasLabel: isTrackViewTrack,
       fixedChrom: null,
     },
-    session,
+    () => session.getMarkerModeOn(),
+    () => session.getXRange(),
     openTrackContextMenu,
   );
 
@@ -674,6 +705,44 @@ function updateAnnotationTracks(
   removedSourceIds.forEach((id) => {
     removeTrack(id);
   });
+}
+
+async function getSampleAnnotationTracks(
+  sample: Sample,
+  dataSources: RenderDataSource,
+  session: GensSession,
+  openTrackContextMenu: (track: DataTrack) => void,
+): Promise<BandTrack[]> {
+  const sampleAnnotSources = await dataSources.getSampleAnnotSources(
+    sample.caseId,
+    sample.sampleId,
+  );
+
+  const sampleAnnotTracks = [];
+  for (const sampleAnnotSource of sampleAnnotSources) {
+    const annotTrack = createAnnotTrack(
+      sampleAnnotSource.id,
+      sampleAnnotSource.name,
+      () => {
+        const bands = dataSources.getSampleAnnotationBands(
+          sampleAnnotSource.id,
+          session.getChromosome(),
+        );
+        return bands;
+      },
+      (id: string) => dataSources.getSampleAnnotationDetails(id),
+      session,
+      openTrackContextMenu,
+      {
+        height: STYLE.bandTrack.trackViewHeight,
+        showLabelWhenCollapsed: true,
+        startExpanded: true,
+      },
+    );
+    sampleAnnotTracks.push(annotTrack);
+  }
+
+  return sampleAnnotTracks;
 }
 
 customElements.define("track-view", TrackView);

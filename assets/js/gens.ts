@@ -20,7 +20,7 @@ import "./components/tracks_manager/track_view";
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
-import { getRenderDataSource } from "./state/parse_data";
+import { getRenderDataSource } from "./state/data_source";
 import { STYLE } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
 import {
@@ -125,14 +125,6 @@ export async function initCanvases({
     return samples.sort((s1, s2) => s1.sampleId.localeCompare(s2.sampleId));
   };
 
-  const chromInfo = api.getChromInfo();
-  const chromSizes = api.getChromSizes();
-  const defaultRegion = {
-    chrom: "1" as Chromosome,
-    start: 1,
-    end: chromSizes["1"],
-  };
-
   const unorderedSamples = sampleIds.map((sampleId) => {
     const caseSamples = caseSamplesMap[caseId];
 
@@ -146,18 +138,18 @@ export async function initCanvases({
     return matches[0];
   });
   const samples = orderSamples(unorderedSamples);
+
   const session = new GensSession(
     render,
     sideMenu,
-    defaultRegion,
-    chromInfo,
-    chromSizes,
     samples,
     trackHeights,
     scoutBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
     settingsPage,
     genomeBuild,
+    api.getChromInfo(),
+    api.getChromSizes(),
   );
 
   const renderDataSource = getRenderDataSource(
@@ -174,6 +166,7 @@ export async function initCanvases({
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
   const allAnnotSources = await api.getAnnotationSources();
+
   const defaultAnnot = allAnnotSources
     .filter((track) => track.name === defaultAnnotationName)
     .map((track) => {
@@ -193,9 +186,11 @@ export async function initCanvases({
       gensTracks.trackView.moveTrack(trackId, direction),
     () => {
       const samples = session.getSamples();
-      const currSampleIds = samples.map((sample) => sample.sampleId);
+      const currSampleIds = samples.map(
+        (sample) => `${sample.caseId}_${sample.sampleId}`,
+      );
       const filtered = allSamples.filter(
-        (s) => !currSampleIds.includes(s.sampleId),
+        (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
       );
       return filtered;
     },
@@ -206,7 +201,8 @@ export async function initCanvases({
     },
     // FIXME: Something strange here in how things are organized,
     // why is the trackview looping to itself?
-    (sample: Sample) => {
+    async (sample: Sample) => {
+
       const isTrackView = true;
       gensTracks.trackView.addSample(sample, isTrackView);
       session.addSample(sample);
@@ -256,7 +252,7 @@ export async function initCanvases({
   await gensTracks.initialize(
     render,
     samples,
-    chromSizes,
+    session.getChromSizes(),
     onChromClick,
     renderDataSource,
     session,

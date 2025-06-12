@@ -8,7 +8,6 @@ import { COLORS, STYLE } from "../../constants";
 import { getLinearScale } from "../../draw/render_utils";
 import { drawLabel, drawLine, drawArrow } from "../../draw/shapes";
 import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
-import { GensSession } from "../../state/gens_session";
 
 const LEFT_PX_EDGE = STYLE.yAxis.width;
 
@@ -26,7 +25,7 @@ export class BandTrack extends DataTrack {
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
     openTrackContextMenu: ((track: DataTrack) => void) | null,
-    session: GensSession,
+    getMarkerModeOn: () => boolean,
   ) {
     super(
       id,
@@ -45,7 +44,7 @@ export class BandTrack extends DataTrack {
       openTrackContextMenu,
       getSettings,
       updateSettings,
-      session,
+      getMarkerModeOn,
     );
 
     this.getRenderData = getRenderData;

@@ -26,7 +26,6 @@ from gens.models.genomic import (
     GenomicRegion,
     ReducedChromInfo,
     VariantCategory,
-    VariantSubCategory,
 )
 from gens.models.base import PydanticObjectId
 from gens.crud.genomic import get_chromosome_info, get_chromosomes

@@ -19,11 +19,14 @@ from gens.crud.annotations import (
     register_data_update,
     update_annotation_track,
 )
+from gens.crud.sample_annotations import create_sample_annotation_track, create_sample_annotations_for_track, delete_sample_annotations_for_track, get_sample_annotation_track
 from gens.crud.samples import create_sample
 from gens.crud.transcripts import create_transcripts
 from gens.db.collections import (
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
+    SAMPLE_ANNOTATION_TRACKS_COLLECTION,
+    SAMPLE_ANNOTATIONS_COLLECTION,
     SAMPLES_COLLECTION,
     TRANSCRIPTS_COLLECTION,
 )
@@ -44,6 +47,7 @@ from gens.load.annotations import (
 from gens.models.annotation import AnnotationRecord, AnnotationTrack, TranscriptRecord
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleType
+from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrack
 
 LOG = logging.getLogger(__name__)
 
@@ -134,6 +138,68 @@ def sample(
     )
     create_sample(db, sample_obj)
     click.secho("Finished adding a new sample to database ✔", fg="green")
+
+
+@load.command("sample-annotation")
+@click.option("--sample-id", required=True, help="Sample ID")
+@click.option("--case-id", required=True, help="Case ID")
+@click.option("--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build")
+@click.option("--file", required=True, type=click.Path(exists=True, path_type=Path))
+@click.option("--name", required=True, help="Name of the annotation track")
+def sample_annotation(
+    sample_id: str,
+    case_id: str,
+    genome_build: GenomeBuild,
+    file: Path,
+    name: str,
+) -> None:
+    """Load a sample annotation into Gens database."""
+    gens_db_name = settings.gens_db.database
+    if gens_db_name is None:
+        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
+
+    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
+    if len(get_indexes(db, SAMPLE_ANNOTATION_TRACKS_COLLECTION)) == 0:
+        create_index(db, SAMPLE_ANNOTATION_TRACKS_COLLECTION)
+    if len(get_indexes(db, SAMPLE_ANNOTATIONS_COLLECTION)) == 0:
+        create_index(db, SAMPLE_ANNOTATIONS_COLLECTION)
+
+    track_in_db = get_sample_annotation_track(
+        genome_build=genome_build,
+        db=db,
+        sample_id=sample_id,
+        case_id=case_id,
+        name=name,
+    )
+    if track_in_db is None:
+        track = SampleAnnotationTrack(
+            sample_id=sample_id,
+            case_id=case_id,
+            name=name,
+            description="",
+            genome_build=genome_build,
+        )
+        track_id = create_sample_annotation_track(track, db)
+    else:
+        track_id = track_in_db.track_id
+
+    bed_records = parse_bed_file(file)
+    annotations = [
+        SampleAnnotationRecord.model_validate(
+            {
+                **fmt_bed_to_annotation(rec, track_id, genome_build).model_dump(),
+                "sample_id": sample_id,
+                "case_id": case_id,
+            }
+        )
+        for rec in bed_records
+    ]
+
+    if track_in_db is not None:
+        delete_sample_annotations_for_track(track_id, db)
+    
+    create_sample_annotations_for_track(annotations, db)
+    click.secho("Finished loading sample annotations ✔", fg="green")
 
 
 @load.command()

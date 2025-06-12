@@ -1,7 +1,6 @@
 import { SIZES, STYLE } from "../../constants";
 import { drawLabel, drawLine } from "../../draw/shapes";
 import { getLinearScale } from "../../draw/render_utils";
-import { GensSession } from "../../state/gens_session";
 import { padRange, prefixNts } from "../../util/utils";
 import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
 
@@ -11,11 +10,11 @@ export class PositionTrack extends DataTrack {
     label: string,
     getSettings: () => DataTrackSettings,
     updateSettings: (settings: DataTrackSettings) => void,
-    session: GensSession,
+    getMarkerModeOn: () => boolean,
+    getXRange: () => Rng,
   ) {
-    const getXRange = () => session.getXRange();
     const getXScale = () => {
-      const xRange = session.getXRange();
+      const xRange = getXRange();
       return getLinearScale(xRange, [STYLE.yAxis.width, this.dimensions.width]);
     };
     super(
@@ -27,9 +26,8 @@ export class PositionTrack extends DataTrack {
       null,
       getSettings,
       updateSettings,
-      session,
+      getMarkerModeOn,
     );
-    this.session = session;
   }
 
   connectedCallback(): void {
@@ -40,7 +38,7 @@ export class PositionTrack extends DataTrack {
     super.syncDimensions();
     this.drawStart();
 
-    const [posStart, posEnd] = this.session.getXRange();
+    const [posStart, posEnd] = this.getXRange();
 
     const size = posEnd - posStart;
 

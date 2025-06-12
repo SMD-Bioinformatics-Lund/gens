@@ -7,7 +7,7 @@ import click
 from gens.cli.util import ChoiceType
 from gens.config import settings
 from gens.crud.samples import get_sample, update_sample
-from gens.db.collections import SAMPLES_COLLECTION
+from gens.db.collections import SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION, SAMPLES_COLLECTION
 from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
 from gens.models.genomic import GenomeBuild

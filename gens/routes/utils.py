@@ -22,3 +22,4 @@ class ApiTags(StrEnum):
     SEARCH = "search"
     USER = "user"
     VAR = "variant"
+    SAMPLE_ANNOT = "sample-annotation"

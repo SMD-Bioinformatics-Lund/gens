@@ -11,7 +11,6 @@ import {
   renderBackground,
 } from "../../../draw/render_utils";
 import { drawBox, drawLabel, drawLine } from "../../../draw/shapes";
-import { GensSession } from "../../../state/gens_session";
 import { generateTicks, getTickSize } from "../../../util/utils";
 import {
   setupCanvasClick,
@@ -50,7 +49,6 @@ export abstract class DataTrack extends CanvasTrack {
   // Callback to allow multi-layered settings object
   protected getSettings: () => DataTrackSettings;
   protected updateSettings: (settings: DataTrackSettings) => void;
-  protected session: GensSession;
   protected renderData: BandTrackData | DotTrackData | null;
 
   private colorBands: RenderBand[] = [];
@@ -63,6 +61,7 @@ export abstract class DataTrack extends CanvasTrack {
   protected getYRange: () => Rng;
   protected getYScale: () => Scale;
   protected openTrackContextMenu: ((track: DataTrack) => void) | null;
+  protected getMarkerModeOn: () => boolean;
 
   public getYDim(): Rng {
     return [Y_PAD, this.dimensions.height - Y_PAD];
@@ -151,7 +150,7 @@ export abstract class DataTrack extends CanvasTrack {
     openTrackContextMenu: ((track: DataTrack) => void) | null,
     getSettings: () => DataTrackSettings,
     updateSettings: (settings: DataTrackSettings) => void,
-    session: GensSession,
+    getMarkerModeOn: () => boolean,
   ) {
     const settings = getSettings != null ? getSettings() : null;
     const heightConf = settings != null ? settings.height : null;
@@ -170,7 +169,7 @@ export abstract class DataTrack extends CanvasTrack {
     this.getSettings = getSettings;
     this.getXRange = getXRange;
     this.getXScale = getXScale;
-    this.session = session;
+    this.getMarkerModeOn = getMarkerModeOn;
     this.updateSettings = updateSettings;
 
     this.getYRange = () => {
@@ -212,7 +211,7 @@ export abstract class DataTrack extends CanvasTrack {
         }
         return targets;
       },
-      () => this.session.getMarkerModeOn(),
+      () => this.getMarkerModeOn(),
       [0, STYLE.yAxis.width],
       this.getListenerAbortSignal(),
     );
