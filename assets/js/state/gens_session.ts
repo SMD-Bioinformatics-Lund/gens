@@ -67,7 +67,6 @@ export class GensSession {
   }
 
   async initialize(api: API) {
-
     console.log("Initializing");
 
     for (const sample of this.samples) {
@@ -206,7 +205,12 @@ export class GensSession {
     caseId: string,
     sampleId: string,
   ): { id: string; name: string }[] {
-    console.log("Getting", caseId, sampleId);
+    if (
+      this.caseSampleToAnnotSources[caseId] == null ||
+      this.caseSampleToAnnotSources[caseId][sampleId] == null
+    ) {
+      return [];
+    }
     return this.caseSampleToAnnotSources[caseId][sampleId];
   }
 

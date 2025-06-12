@@ -442,18 +442,6 @@ export class TrackView extends ShadowBaseElement {
       track.renderLoading();
     });
 
-    
-
-    // this.dataTracks.push(...newTracks);
-
-    // this.tracksContainer.appendChild(sampleTracks.cov.container);
-    // this.tracksContainer.appendChild(sampleTracks.baf.container);
-    // this.tracksContainer.appendChild(sampleTracks.variant.container);
-    // sampleTracks.annots.forEach((track) => {
-    //   this.tracksContainer.appendChild(track.container);
-    // });
-
-    // this.dataTracks.forEach((track) => track.track.initialize());
   }
 
   public removeSample(sample: Sample) {
@@ -659,7 +647,6 @@ function createSampleTracks(
           annotSource.id,
           session.getChromosome(),
         );
-        console.log(bands);
         return bands;
       },
       (id: string) => dataSources.getSampleAnnotationDetails(id),
