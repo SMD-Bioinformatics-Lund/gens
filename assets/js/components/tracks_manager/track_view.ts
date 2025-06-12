@@ -155,6 +155,7 @@ export class TrackView extends ShadowBaseElement {
     const covTracks: TrackViewTrackInfo[] = [];
     const bafTracks: TrackViewTrackInfo[] = [];
     const variantTracks: TrackViewTrackInfo[] = [];
+    const sampleAnnotTracks: TrackViewTrackInfo[] = [];
 
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -209,25 +210,24 @@ export class TrackView extends ShadowBaseElement {
     this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
     for (const sample of samples) {
-      // const startExpanded = samples.length == 1 ? true : false;
-      this.addSample(sample, true);
+      const startExpanded = samples.length == 1 ? true : false;
 
-      // const sampleTracks = createSampleTracks(
-      //   sample,
-      //   dataSources,
-      //   startExpanded,
-      //   session,
-      //   true,
-      //   openTrackContextMenu,
-      //   this.sampleAnnotSources[sample.sampleId],
-      // );
+      const sampleTracks = createSampleTracks(
+        sample,
+        dataSources,
+        startExpanded,
+        session,
+        true,
+        openTrackContextMenu,
+        // this.sampleAnnotSources[sample.sampleId],
+      );
 
-      // this.sampleToTracks[sample.sampleId] = sampleTracks;
+      this.sampleToTracks[sample.sampleId] = sampleTracks;
 
-      // covTracks.push(sampleTracks.cov);
-      // bafTracks.push(sampleTracks.baf);
-      // variantTracks.push(sampleTracks.variant);
-      // sampleAnnotTracks.push(...sampleTracks.annots);
+      covTracks.push(sampleTracks.cov);
+      bafTracks.push(sampleTracks.baf);
+      variantTracks.push(sampleTracks.variant);
+      sampleAnnotTracks.push(...sampleTracks.annots);
     }
 
     const genesTrack = createGeneTrack(
@@ -243,6 +243,7 @@ export class TrackView extends ShadowBaseElement {
       ...bafTracks,
       ...covTracks,
       ...variantTracks,
+      ...sampleAnnotTracks,
       genesTrack,
     ];
 
@@ -433,13 +434,17 @@ export class TrackView extends ShadowBaseElement {
       ...sampleTracks.annots,
     ];
 
+    console.log("new tracks", newTracks);
+
     newTracks.forEach(({ track, container }) => {
       this.tracksContainer.appendChild(container);
       track.initialize();
       track.renderLoading();
     });
 
-    this.dataTracks.push(...newTracks);
+    
+
+    // this.dataTracks.push(...newTracks);
 
     // this.tracksContainer.appendChild(sampleTracks.cov.container);
     // this.tracksContainer.appendChild(sampleTracks.baf.container);
