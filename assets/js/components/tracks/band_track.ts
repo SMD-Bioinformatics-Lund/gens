@@ -136,7 +136,6 @@ export class BandTrack extends DataTrack {
         xScale,
         showDetails,
         this.getIsExpanded(),
-        this.getSettings().minBandSize,
         [LEFT_PX_EDGE, this.dimensions.width],
       );
       return bandHoverTargets;
@@ -167,7 +166,6 @@ function drawBand(
   xScale: (number) => number,
   showDetails: boolean,
   isExpanded: boolean,
-  minBandSize: boolean,
   screenRange?: Rng,
 ): HoverBox[] {
   const y1 = band.y1;
@@ -179,9 +177,7 @@ function drawBand(
   // Body
   const xPxRange: Rng = [xScale(band.start), xScale(band.end)];
   const [xPxStart, xPxEnd] = xPxRange;
-  const width = minBandSize
-    ? Math.max(xPxEnd - xPxStart, STYLE.bandTrack.minBandWidth)
-    : xPxEnd - xPxStart;
+  const width = Math.max(xPxEnd - xPxStart, STYLE.bandTrack.minBandWidth);
   const isTranscript = band.subFeatures != null && band.subFeatures.length > 0;
 
   if (!isTranscript || !showDetails) {

@@ -62,8 +62,6 @@ export function createAnnotTrack(
     yPadBands: settings.yPadBands,
     isExpanded: settings.startExpanded,
     isHidden: false,
-    // FIXME: This is actually a band track specific setting
-    minBandSize: settings.minBandSize,
   };
 
   const track = new BandTrack(
