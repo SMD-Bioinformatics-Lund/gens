@@ -139,7 +139,6 @@ export async function initCanvases({
   });
   const samples = orderSamples(unorderedSamples);
 
-
   const session = new GensSession(
     render,
     sideMenu,
@@ -187,9 +186,11 @@ export async function initCanvases({
       gensTracks.trackView.moveTrack(trackId, direction),
     () => {
       const samples = session.getSamples();
-      const currSampleIds = samples.map((sample) => sample.sampleId);
+      const currSampleIds = samples.map(
+        (sample) => `${sample.caseId}_${sample.sampleId}`,
+      );
       const filtered = allSamples.filter(
-        (s) => !currSampleIds.includes(s.sampleId),
+        (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
       );
       return filtered;
     },
@@ -200,7 +201,8 @@ export async function initCanvases({
     },
     // FIXME: Something strange here in how things are organized,
     // why is the trackview looping to itself?
-    (sample: Sample) => {
+    async (sample: Sample) => {
+
       const isTrackView = true;
       gensTracks.trackView.addSample(sample, isTrackView);
       session.addSample(sample);

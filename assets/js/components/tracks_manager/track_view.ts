@@ -155,7 +155,6 @@ export class TrackView extends ShadowBaseElement {
     const covTracks: TrackViewTrackInfo[] = [];
     const bafTracks: TrackViewTrackInfo[] = [];
     const variantTracks: TrackViewTrackInfo[] = [];
-    const sampleAnnotTracks: TrackViewTrackInfo[] = [];
 
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -261,7 +260,8 @@ export class TrackView extends ShadowBaseElement {
       "Position",
       () => positionTrackSettings,
       (settings) => (positionTrackSettings = settings),
-      session,
+      () => session.getMarkerModeOn(),
+      () => session.getXRange(),
     );
 
     const chromosomeRow = document.createElement("flex-row");
@@ -413,7 +413,10 @@ export class TrackView extends ShadowBaseElement {
     moveElement(this.dataTracks, trackInfoIndex, shift, true);
   }
 
-  public addSample(sample: Sample, isTrackViewTrack: boolean) {
+  public addSample(
+    sample: Sample,
+    isTrackViewTrack: boolean,
+  ) {
     const sampleTracks = createSampleTracks(
       sample,
       this.dataSource,
@@ -423,21 +426,29 @@ export class TrackView extends ShadowBaseElement {
       this.openTrackContextMenu,
     );
 
-    this.dataTracks.push(
+    const newTracks = [
       sampleTracks.cov,
       sampleTracks.baf,
       sampleTracks.variant,
       ...sampleTracks.annots,
-    );
+    ];
 
-    this.tracksContainer.appendChild(sampleTracks.cov.container);
-    this.tracksContainer.appendChild(sampleTracks.baf.container);
-    this.tracksContainer.appendChild(sampleTracks.variant.container);
-    sampleTracks.annots.forEach((track) => {
-      this.tracksContainer.appendChild(track.container);
+    newTracks.forEach(({ track, container }) => {
+      this.tracksContainer.appendChild(container);
+      track.initialize();
+      track.renderLoading();
     });
 
-    this.dataTracks.forEach((track) => track.track.initialize());
+    this.dataTracks.push(...newTracks);
+
+    // this.tracksContainer.appendChild(sampleTracks.cov.container);
+    // this.tracksContainer.appendChild(sampleTracks.baf.container);
+    // this.tracksContainer.appendChild(sampleTracks.variant.container);
+    // sampleTracks.annots.forEach((track) => {
+    //   this.tracksContainer.appendChild(track.container);
+    // });
+
+    // this.dataTracks.forEach((track) => track.track.initialize());
   }
 
   public removeSample(sample: Sample) {
@@ -580,7 +591,8 @@ function createSampleTracks(
       hasLabel: isTrackViewTrack,
       fixedChrom: null,
     },
-    session,
+    () => session.getMarkerModeOn(),
+    () => session.getXRange(),
     openTrackContextMenu,
   );
   const bafTrack = createDotTrack(
@@ -604,7 +616,8 @@ function createSampleTracks(
       hasLabel: isTrackViewTrack,
       fixedChrom: null,
     },
-    session,
+    () => session.getMarkerModeOn(),
+    () => session.getXRange(),
     openTrackContextMenu,
   );
 

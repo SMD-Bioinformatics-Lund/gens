@@ -59,10 +59,7 @@ export class ChromosomeView extends ShadowBaseElement {
     );
   }
 
-  initialize(
-    session: GensSession,
-    dataSource: RenderDataSource,
-  ) {
+  initialize(session: GensSession, dataSource: RenderDataSource) {
     this.session = session;
     this.dataSource = dataSource;
 
@@ -93,13 +90,14 @@ export class ChromosomeView extends ShadowBaseElement {
         ]);
 
       addSampleTracks(
-        this.session,
         settingSamples,
         chrom,
         (sample: Sample) => getCovData(sample, chrom),
         (trackInfo: ChromViewTrackInfo) => {
           this.onAddTrack(chromGroup.samples, trackInfo);
         },
+        () => session.getMarkerModeOn(),
+        () => [1, session.getChromSize("1")],
       );
 
       const sampleAnnots =
@@ -146,11 +144,12 @@ export class ChromosomeView extends ShadowBaseElement {
 }
 
 function addSampleTracks(
-  session: GensSession,
   sample: Sample,
   chrom: Chromosome,
   getCovData: (sample: Sample, chrom: Chromosome) => Promise<RenderDot[]>,
   onAddTrack: (track: ChromViewTrackInfo) => void,
+  getMarkerModeOn: () => boolean,
+  getXRange: () => Rng,
 ) {
   const trackId = `${sample.sampleId}_${chrom}`;
   const trackLabel = sample.sampleId;
@@ -170,7 +169,8 @@ function addSampleTracks(
       hasLabel: true,
       fixedChrom: chrom,
     },
-    session,
+    getMarkerModeOn,
+    getXRange,
     null,
   );
   const trackWrapper = createDataTrackWrapper(dotTrack);

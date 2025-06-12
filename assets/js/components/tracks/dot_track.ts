@@ -1,6 +1,5 @@
 import { STYLE } from "../../constants";
 import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
-import { GensSession } from "../../state/gens_session";
 import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {
@@ -15,7 +14,7 @@ export class DotTrack extends DataTrack {
     getXRange: () => Rng,
     getRenderData: () => Promise<DotTrackData>,
     openTrackContextMenu: (track: DataTrack) => void,
-    session: GensSession,
+    getMarkerModeOn: () => boolean,
   ) {
     super(
       id,
@@ -35,7 +34,7 @@ export class DotTrack extends DataTrack {
       openTrackContextMenu,
       getSettings,
       updateSettings,
-      session,
+      getMarkerModeOn,
     );
     this.getRenderData = getRenderData;
   }
