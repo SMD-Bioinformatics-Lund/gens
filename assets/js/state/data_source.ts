@@ -138,10 +138,24 @@ export function getRenderDataSource(
     return api.getSampleAnnotationDetails(recordId);
   };
 
+  const getSampleAnnotSources = async (
+    caseId: string,
+    sampleId: string,
+  ): Promise<{ id: string, name: string }[]> => {
+    const results = await api.getSampleAnnotationSources(caseId, sampleId)
+    return results.map((r) => {
+      return {
+        id: r.track_id,
+        name: r.name,
+      }
+    })
+  };
+
   const renderDataSource: RenderDataSource = {
     getChromInfo,
     getAnnotationBands: getAnnotation,
     getAnnotationDetails: (id: string) => api.getAnnotationDetails(id),
+    getSampleAnnotSources,
     getSampleAnnotationBands,
     getSampleAnnotationDetails,
     getCovData,

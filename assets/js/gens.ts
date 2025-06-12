@@ -20,7 +20,7 @@ import "./components/tracks_manager/track_view";
 import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
-import { getRenderDataSource } from "./state/parse_data";
+import { getRenderDataSource } from "./state/data_source";
 import { STYLE } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
 import {
@@ -148,9 +148,9 @@ export async function initCanvases({
     gensApiURL.replace(/\/$/, "") + "/app/",
     settingsPage,
     genomeBuild,
+    api.getChromInfo(),
+    api.getChromSizes(),
   );
-
-  await session.initialize(api);
 
   const renderDataSource = getRenderDataSource(
     api,

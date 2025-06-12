@@ -5,7 +5,6 @@ import {
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COLORS } from "../constants";
 import { generateID } from "../util/utils";
-import { API } from "./api";
 
 /**
  * The purpose of this class is to keep track of the web session,
@@ -36,10 +35,6 @@ export class GensSession {
   private gensBaseURL: string;
   private settings: SettingsMenu;
   private genomeBuild: number;
-  private caseSampleToAnnotSources: Record<
-    string,
-    Record<string, { id: string; name: string }[]>
-  > = {};
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -48,47 +43,25 @@ export class GensSession {
     trackHeights: TrackHeights,
     scoutBaseURL: string,
     gensBaseURL: string,
-    // FIXME: Unsure if the full settings should be stored
     settings: SettingsMenu,
     genomeBuild: number,
+    chromInfo: Record<Chromosome, ChromosomeInfo>,
+    chromSizes: Record<Chromosome, number>,
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
     this.highlights = {};
     this.chromosome = "1";
     this.start = 1;
-    this.end = 1;
+    this.end = chromSizes["1"];
     this.samples = samples;
     this.trackHeights = trackHeights;
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.settings = settings;
     this.genomeBuild = genomeBuild;
-  }
-
-  async initialize(api: API) {
-    console.log("Initializing");
-
-    for (const sample of this.samples) {
-      const sampleAnnotTracks = await api.getSampleAnnotationSources(
-        sample.caseId,
-        sample.sampleId,
-      );
-      if (this.caseSampleToAnnotSources[sample.caseId] === undefined) {
-        this.caseSampleToAnnotSources[sample.caseId] = {};
-      }
-      this.caseSampleToAnnotSources[sample.caseId][sample.sampleId] =
-        sampleAnnotTracks.map((track) => {
-          return {
-            id: track.track_id,
-            name: track.name,
-          };
-        });
-    }
-
-    this.chromInfo = api.getChromInfo();
-    this.chromSizes = api.getChromSizes();
-    this.end = this.chromSizes[this.chromosome];
+    this.chromInfo = chromInfo;
+    this.chromSizes = chromSizes;
   }
 
   public getGenomeBuild(): number {
@@ -199,19 +172,6 @@ export class GensSession {
 
   public getChromSizes(): Record<string, number> {
     return this.chromSizes;
-  }
-
-  public getSampleAnnotIds(
-    caseId: string,
-    sampleId: string,
-  ): { id: string; name: string }[] {
-    if (
-      this.caseSampleToAnnotSources[caseId] == null ||
-      this.caseSampleToAnnotSources[caseId][sampleId] == null
-    ) {
-      return [];
-    }
-    return this.caseSampleToAnnotSources[caseId][sampleId];
   }
 
   public getCurrentChromSize(): number {
