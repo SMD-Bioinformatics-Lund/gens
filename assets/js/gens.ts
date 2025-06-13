@@ -6,6 +6,7 @@ import "./components/util/choice_select";
 import "./components/side_menu/settings_menu";
 import "./components/side_menu/track_row";
 import "./components/side_menu/side_menu";
+import "./components/side_menu/info_menu";
 import "./components/header_info";
 import "./movements/marker";
 import "./components/side_menu/track_menu";
@@ -27,6 +28,7 @@ import {
   SettingsMenu,
   TrackHeights,
 } from "./components/side_menu/settings_menu";
+import { InfoMenu } from "./components/side_menu/info_menu";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
@@ -75,6 +77,7 @@ export async function initCanvases({
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
   const sideMenu = document.getElementById("side-menu") as SideMenu;
   const settingsPage = document.createElement("settings-page") as SettingsMenu;
+  const infoPage = document.createElement("info-page") as InfoMenu;
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
 
   const caseSamplesMap: Record<string, Sample[]> = {};
@@ -102,6 +105,7 @@ export async function initCanvases({
   const render = (settings: RenderSettings) => {
     gensTracks.render(settings);
     settingsPage.render(settings);
+    infoPage.render();
     inputControls.render(settings);
   };
 
@@ -221,6 +225,8 @@ export async function initCanvases({
     },
   );
 
+  infoPage.setSources(() => session.getSamples());
+
   inputControls.initialize(
     session,
     async (range) => {
@@ -233,6 +239,10 @@ export async function initCanvases({
       if (!settingsPage.isInitialized) {
         settingsPage.initialize();
       }
+    },
+    () => {
+      sideMenu.showContent("Sample info", [infoPage]);
+      infoPage.render();
     },
     () => {
       session.toggleChromViewActive();
