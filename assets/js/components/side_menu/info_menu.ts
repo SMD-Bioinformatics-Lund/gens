@@ -1,6 +1,6 @@
 import { COLORS, FONT_WEIGHT, SIZES } from "../../constants";
-import { createTable, formatValue } from "../../util/table";
-import { removeChildren } from "../../util/utils";
+import { createTable, CreateTableOptions, formatValue, TableCell } from "../../util/table";
+import { removeChildren, stringToHash } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
@@ -103,8 +103,6 @@ export class InfoMenu extends ShadowBaseElement {
       }
       const metas = sample.meta;
 
-      console.log(metas);
-
       if (metas != null) {
         const simple_metas = metas.filter(
           (meta) => meta.row_name_header == null,
@@ -112,6 +110,9 @@ export class InfoMenu extends ShadowBaseElement {
 
         // FIXME: Extract utility
         for (const meta of simple_metas) {
+
+
+
           for (const entry of meta.data) {
             this.entries.appendChild(
               getEntry({
@@ -128,11 +129,65 @@ export class InfoMenu extends ShadowBaseElement {
         );
 
         for (const meta of table_metas) {
-          this.entries.appendChild(createTable(meta));
+
+          const tableData = parseTableData(meta);
+
+          console.log("Table data", tableData);
+
+          this.entries.appendChild(createTable(tableData));
         }
       }
     }
   }
+}
+
+function parseTableData(meta: SampleMetaEntry): CreateTableOptions {
+
+  const rowNames: Set<string> = new Set();
+  const colNames: Set<string> = new Set();
+
+  const rowEntries: Record<string, SampleMetaValue[]> = {};
+
+  for (const cell of meta.data) {
+
+    const rowName = cell.row_name;
+    if (rowName == null) {
+      continue;
+    }
+
+    rowNames.add(cell.row_name);
+    colNames.add(cell.type);
+
+    if (rowEntries[rowName] == null) {
+      rowEntries[rowName] = [];
+    }
+
+    rowEntries[rowName].push(cell);
+  }
+
+  const tableRows: TableCell[][] = [];
+
+  console.log("Iterating", rowNames);
+
+  for (const rowName of rowNames) {
+    const tableRow = [];
+    for (const cell of rowEntries[rowName]) {
+      const tableCell: TableCell = {
+        value: cell.value,
+        color: cell.color,
+      }
+      tableRow.push(tableCell);
+    }
+    tableRows.push(tableRow);
+  }
+
+  const tableData: CreateTableOptions = {
+    header: [],
+    columns: [],
+    rows: tableRows,
+  }
+
+  return tableData;
 }
 
 customElements.define("info-page", InfoMenu);

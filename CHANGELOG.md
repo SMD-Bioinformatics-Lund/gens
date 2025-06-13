@@ -26,6 +26,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Parsing AED files can deal with " surrounded comments split across multiple rows
  - Optional sample type introduced (tumor/normal, proband/mother/father, other). Used in multi-sample views to display only proband-relevant tracks.
  - Optional sample sex attribute (M/F) for samples.
+ - Load and display meta data in right hand table.
  - Pydantic validation of loaded transcripts
  - Add optional sample annotations. These can be loaded using CLI and displays additional band annotation linked to a sample.
 
