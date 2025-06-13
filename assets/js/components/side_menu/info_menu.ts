@@ -20,6 +20,21 @@ template.innerHTML = String.raw`
       font-weight: ${FONT_WEIGHT.bold};
       margin-top: ${SIZES.xs}px;
     }
+    .menu-row {
+      align-items: center;
+      padding: ${SIZES.xs}px 0px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+    .menu-row-value {
+      flex-shrink: 1;
+      min-width: 0;
+      white-space: normal;
+      word-break: break-word;
+      text-align: right;
+      text-decoration: none;
+    }
     table.meta-table {
       border-collapse: collapse;
       width: 100%;
@@ -46,6 +61,11 @@ export class InfoMenu extends ShadowBaseElement {
 
   constructor() {
     super(template);
+  }
+
+  private formatValue(value: string): string {
+    const num = parseFloat(value);
+    return Number.isNaN(num) ? value : num.toFixed(2);
   }
 
   // FIXME: Look over this. Can this be a general utility?
@@ -87,7 +107,7 @@ export class InfoMenu extends ShadowBaseElement {
         const td = document.createElement("td");
         const entry = data.find((d) => d.row_name === r && d.type === t);
         if (entry) {
-          td.textContent = entry.value;
+          td.textContent = this.formatValue(entry.value);
           if (entry.color) {
             td.style.color = entry.color;
           }
