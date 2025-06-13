@@ -43,6 +43,9 @@ export class InfoMenu extends ShadowBaseElement {
     }
     removeChildren(this.entries);
     const samples = this.getSamples ? this.getSamples() : [];
+
+    console.log(samples);
+
     for (const sample of samples) {
       const header = document.createElement("div");
       header.className = "header";
@@ -62,11 +65,13 @@ export class InfoMenu extends ShadowBaseElement {
       if (sex != null) {
         this.entries.appendChild(getEntry({ key: "Sex", value: sex }));
       }
-      const meta = sample.meta;
-      if (meta != null && Array.isArray(meta)) {
-        for (const m of meta) {
-          for (const d of m.data) {
-            this.entries.appendChild(getEntry({ key: d.type, value: d.value }));
+      const metas = sample.meta;
+      if (metas != null && Array.isArray(metas)) {
+        for (const meta of metas) {
+          for (const entry of meta.data) {
+            this.entries.appendChild(
+              getEntry({ key: entry.type, value: entry.value }),
+            );
           }
         }
       }

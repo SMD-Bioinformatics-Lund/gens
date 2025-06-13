@@ -80,14 +80,14 @@ export async function initCanvases({
   const infoPage = document.createElement("info-page") as InfoMenu;
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
 
-  const caseSamplesMap: Record<string, Sample[]> = {};
-  for (const sample of allSamples) {
-    const caseId = sample.caseId;
-    if (caseSamplesMap[caseId] == null) {
-      caseSamplesMap[caseId] = [];
-    }
-    caseSamplesMap[caseId].push(sample);
-  }
+  // const caseSamplesMap: Record<string, Sample[]> = {};
+  // for (const sample of allSamples) {
+  //   const caseId = sample.caseId;
+  //   if (caseSamplesMap[caseId] == null) {
+  //     caseSamplesMap[caseId] = [];
+  //   }
+  //   caseSamplesMap[caseId].push(sample);
+  // }
 
   headerInfo.initialize(
     caseId,
@@ -129,18 +129,21 @@ export async function initCanvases({
     return samples.sort((s1, s2) => s1.sampleId.localeCompare(s2.sampleId));
   };
 
-  const unorderedSamples = sampleIds.map((sampleId) => {
-    const caseSamples = caseSamplesMap[caseId];
+  // const unorderedSamples = sampleIds.map((sampleId) => {
+  //   const caseSamples = caseSamplesMap[caseId];
 
-    const matches = caseSamples.filter((s) => s.sampleId == sampleId);
-    if (matches.length != 1) {
-      console.error(
-        "Expected to find one object with matching sample ID, found",
-        matches,
-      );
-    }
-    return matches[0];
-  });
+  //   const matches = caseSamples.filter((s) => s.sampleId == sampleId);
+  //   if (matches.length != 1) {
+  //     console.error(
+  //       "Expected to find one object with matching sample ID, found",
+  //       matches,
+  //     );
+  //   }
+  //   return matches[0];
+  // });
+  const unorderedSamples = await Promise.all(
+    sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
+  );
   const samples = orderSamples(unorderedSamples);
 
   const session = new GensSession(
@@ -206,7 +209,6 @@ export async function initCanvases({
     // FIXME: Something strange here in how things are organized,
     // why is the trackview looping to itself?
     async (sample: Sample) => {
-
       const isTrackView = true;
       gensTracks.trackView.addSample(sample, isTrackView);
       session.addSample(sample);
