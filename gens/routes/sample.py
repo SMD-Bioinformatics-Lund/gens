@@ -9,7 +9,7 @@ from fastapi import APIRouter
 from gens.crud import samples
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.io import get_overview_data, get_overview_from_tabix, get_scatter_data
-from gens.models.genomic import Chromosome, GenomicRegion
+from gens.models.genomic import Chromosome, GenomeBuild, GenomicRegion
 from gens.models.sample import (
     GenomeCoverage,
     MultipleSamples,
@@ -38,6 +38,15 @@ async def get_multiple_samples(
     """
     resp = samples.get_samples(samples_c=db[SAMPLES_COLLECTION], limit=limit, skip=skip)
     return resp
+
+
+async def get_sample_route(
+    sample_id: str, case_id: str, genome_build: GenomeBuild, db: GensDb
+) -> SampleInfo:
+    sample_info: SampleInfo = samples.get_sample(
+        db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id
+    )
+    return sample_info
 
 
 @router.get(

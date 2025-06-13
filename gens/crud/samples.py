@@ -132,18 +132,21 @@ def get_samples_per_case(
 
 
 def get_sample(
-    samples_c: Collection[dict[str, Any]], sample_id: str, case_id: str | None
+    samples_c: Collection[dict[str, Any]],
+    sample_id: str,
+    case_id: str,
 ) -> SampleInfo:
     """Get a sample with id."""
-    result = None
-    if case_id is None:
-        result = samples_c.find_one({"sample_id": sample_id})
-    else:
-        result = samples_c.find_one({"sample_id": sample_id, "case_id": case_id})
+    sample_filter: dict[str, Any] = {
+        "sample_id": sample_id,
+        "case_id": case_id,
+    }
+
+    result = samples_c.find_one(sample_filter)
 
     if result is None:
         raise SampleNotFoundError(f'No sample with id: "{sample_id}" in database', sample_id)
-    
+
     overview_file = result.get("overview_file")
     if overview_file == "None":
         overview_file = None
@@ -157,10 +160,7 @@ def get_sample(
         overview_file=overview_file,
         sample_type=result.get("sample_type"),
         sex=result.get("sex"),
-        meta=[
-            MetaEntry.model_validate(m)
-            for m in result.get("metadata", [])
-        ],
+        meta=[MetaEntry.model_validate(m) for m in result.get("metadata", [])],
         created_at=result["created_at"],
     )
 

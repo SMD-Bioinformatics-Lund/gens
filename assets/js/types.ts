@@ -141,6 +141,19 @@ interface ApiSample {
   genotype_quality: number;
 }
 
+interface SampleMetaValue {
+  type: string;
+  value: string;
+  row_name?: string;
+  color: string;
+}
+
+interface SampleMetaEntry {
+  id: string;
+  file_name: string;
+  data: SampleMetaValue[];
+}
+
 interface ApiSimplifiedVariant {
   variant_id: string;
   start: number;
@@ -610,6 +623,7 @@ interface Sample {
   sampleId: string;
   sampleType?: string;
   sex?: string;
+  meta?: SampleMetaEntry[];
 }
 
 type TrackType = "annotation" | "variant" | "dot" | "gene" | "position";
