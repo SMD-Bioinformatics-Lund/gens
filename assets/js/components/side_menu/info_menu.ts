@@ -38,6 +38,9 @@ export class InfoMenu extends ShadowBaseElement {
   }
 
   render() {
+    if (!this.isConnected) {
+      return;
+    }
     removeChildren(this.entries);
     const samples = this.getSamples ? this.getSamples() : [];
     for (const sample of samples) {
@@ -70,3 +73,5 @@ export class InfoMenu extends ShadowBaseElement {
     }
   }
 }
+
+customElements.define("info-page", InfoMenu);
