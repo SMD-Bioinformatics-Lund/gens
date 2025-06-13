@@ -1,8 +1,10 @@
 import csv
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 from gens.models.sample import MetaEntry, MetaValue
+from pydantic_extra_types.color import Color
 
 def value_exists(value: str | None) -> bool:
     return value is not None and value != "" and value != "."
@@ -14,7 +16,7 @@ def parse_meta_file(file: Path) -> MetaEntry:
     with open(file, encoding="utf-8") as meta_fh:
         reader = csv.DictReader(meta_fh, delimiter="\t")
         for row in reader:
-            entry: dict[str, str] = {
+            entry: dict[str, Any] = {
                 "type": row.get("type", ""),
                 "value": row.get("value", ""),
             }

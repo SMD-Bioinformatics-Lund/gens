@@ -32,11 +32,6 @@ from gens.db.collections import (
 )
 from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
-from gens.load import (
-    build_chromosomes_obj,
-    build_transcripts,
-    get_assembly_info,
-)
 from gens.load.annotations import (
     fmt_aed_to_annotation,
     fmt_bed_to_annotation,
@@ -44,7 +39,9 @@ from gens.load.annotations import (
     parse_bed_file,
     parse_tsv_file,
 )
+from gens.load.chromosomes import build_chromosomes_obj, get_assembly_info
 from gens.load.meta import parse_meta_file
+from gens.load.transcripts import build_transcripts
 from gens.models.annotation import AnnotationRecord, AnnotationTrack, TranscriptRecord
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleType
@@ -105,7 +102,7 @@ def load() -> None:
     "--meta",
     "meta_files",
     type=click.Path(exists=True, path_type=Path),
-    multiple=True
+    multiple=True,
     help="TSV file with sample metadata"
 )
 @click.option(

@@ -9,8 +9,6 @@ from gens.cli.util import ChoiceType
 from gens.config import settings
 from gens.crud.samples import get_sample, update_sample
 from gens.db.collections import (
-    SAMPLE_ANNOTATION_TRACKS_COLLECTION,
-    SAMPLE_ANNOTATIONS_COLLECTION,
     SAMPLES_COLLECTION,
 )
 from gens.db.db import get_db_connection
@@ -46,7 +44,6 @@ def update() -> None:
     "-t",
     "--sample-type",
     type=ChoiceType(SampleType),
-    required=True,
     help="New sample type",
 )
 @click.option(
@@ -77,7 +74,12 @@ def sample(
         sample_obj.sample_type = sample_type
 
     if meta_files:
-        sample_obj.meta.extend([parse_meta_file(p) for p in meta_files])
+        meta_results = [parse_meta_file(p) for p in meta_files]
+        LOG.info(meta_results)
+        sample_obj.meta.extend(meta_results)
+
+    LOG.info("TEST")
+    LOG.info(sample_obj)
 
     update_sample(db, sample_obj)
     click.secho("Finished updating sample ✔", fg="green")

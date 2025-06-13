@@ -5,7 +5,6 @@ from pathlib import Path
 
 from pydantic import Field, computed_field, field_serializer
 from pydantic.types import FilePath
-from pydantic_extra_types.color import Color
 
 from .base import CreatedAtModel, RWModel
 from .genomic import GenomeBuild
@@ -50,7 +49,7 @@ class MetaValue(RWModel):
     type: str
     value: str
     row_name: str | None = None
-    color: Color = Color("#000000")
+    color: str = "rgb(0,0,0)"
 
 
 class MetaEntry(RWModel):

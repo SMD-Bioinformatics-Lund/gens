@@ -13,7 +13,7 @@ from pymongo.errors import DuplicateKeyError
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.exceptions import NonUniqueIndexError, SampleNotFoundError
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import MultipleSamples, SampleInfo, SampleMetaEntry
+from gens.models.sample import MetaEntry, MultipleSamples, SampleInfo
 
 LOG = logging.getLogger(__name__)
 
@@ -156,7 +156,7 @@ def get_sample(
         overview_file=overview_file,
         sample_type=result.get("sample_type"),
         meta=[
-            SampleMetaEntry.model_validate(m)
+            MetaEntry.model_validate(m)
             for m in result.get("metadata", [])
         ],
         created_at=result["created_at"],
