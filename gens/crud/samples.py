@@ -151,6 +151,8 @@ def get_sample(
     if overview_file == "None":
         overview_file = None
 
+    sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
+
     return SampleInfo(
         sample_id=result["sample_id"],
         case_id=result["case_id"],
@@ -160,7 +162,7 @@ def get_sample(
         overview_file=overview_file,
         sample_type=result.get("sample_type"),
         sex=result.get("sex"),
-        meta=[MetaEntry.model_validate(m) for m in result.get("metadata", [])],
+        meta=sample_meta,
         created_at=result["created_at"],
     )
 

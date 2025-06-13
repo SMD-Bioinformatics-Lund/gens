@@ -46,6 +46,8 @@ async def get_sample_route(
     sample_info: SampleInfo = samples.get_sample(
         db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id
     )
+    print("in route")
+    print(sample_info)
     return sample_info
 
 
