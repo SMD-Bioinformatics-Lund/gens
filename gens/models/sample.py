@@ -45,6 +45,13 @@ class SampleType(StrEnum):
     OTHER = "other"
 
 
+class SampleSex(StrEnum):
+    """Valid sample sexes."""
+
+    MALE = "M"
+    FEMALE = "F"
+
+
 class MetaValue(RWModel):
     type: str
     value: str
@@ -68,6 +75,7 @@ class SampleInfo(RWModel, CreatedAtModel):
     coverage_file: FilePath
     overview_file: FilePath | None = None
     sample_type: SampleType | None = None
+    sex: SampleSex | None = None
     meta: list[MetaEntry] = Field(default_factory=list)
 
     @computed_field()  # type: ignore

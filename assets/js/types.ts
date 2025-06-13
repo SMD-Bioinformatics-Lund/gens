@@ -609,6 +609,7 @@ interface Sample {
   caseId: string;
   sampleId: string;
   sampleType?: string;
+  sex?: string;
 }
 
 type TrackType = "annotation" | "variant" | "dot" | "gene" | "position";

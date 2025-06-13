@@ -15,7 +15,7 @@ from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
 from gens.load.meta import parse_meta_file
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleType
+from gens.models.sample import SampleSex, SampleType
 
 LOG = logging.getLogger(__name__)
 
@@ -47,6 +47,12 @@ def update() -> None:
     help="New sample type",
 )
 @click.option(
+    "--sex",
+    type=ChoiceType(SampleSex),
+    required=False,
+    help="Update sample sex",
+)
+@click.option(
     "--meta",
     "meta_files",
     type=click.Path(exists=True, path_type=Path),
@@ -58,6 +64,7 @@ def sample(
     case_id: str,
     genome_build: GenomeBuild,
     sample_type: SampleType,
+    sex: SampleSex | None,
     meta_files: tuple[Path, ...],
 ) -> None:
     """Update sample type for a sample."""
@@ -72,14 +79,13 @@ def sample(
 
     if sample_type is not None:
         sample_obj.sample_type = sample_type
+    if sex is not None:
+        sample_obj.sex = sex
 
     if meta_files:
         meta_results = [parse_meta_file(p) for p in meta_files]
         LOG.info(meta_results)
         sample_obj.meta.extend(meta_results)
-
-    LOG.info("TEST")
-    LOG.info(sample_obj)
 
     update_sample(db, sample_obj)
     click.secho("Finished updating sample ✔", fg="green")

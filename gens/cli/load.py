@@ -44,7 +44,7 @@ from gens.load.meta import parse_meta_file
 from gens.load.transcripts import build_transcripts
 from gens.models.annotation import AnnotationRecord, AnnotationTrack, TranscriptRecord
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleInfo, SampleType
+from gens.models.sample import SampleInfo, SampleSex, SampleType
 from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrack
 
 LOG = logging.getLogger(__name__)
@@ -112,6 +112,12 @@ def load() -> None:
     required=False,
     help="Type of the sample (tumor/normal, proband/mother/father, other)",
 )
+@click.option(
+    "--sex",
+    type=ChoiceType(SampleSex),
+    required=False,
+    help="Sex of the sample",
+)
 def sample(
     sample_id: str,
     genome_build: GenomeBuild,
@@ -121,6 +127,7 @@ def sample(
     overview_json: Path,
     meta_files: tuple[Path, ...],
     sample_type: SampleType | None,
+    sex: SampleSex | None,
 ) -> None:
     """Load a sample into Gens database."""
     gens_db_name = settings.gens_db.database
@@ -140,6 +147,7 @@ def sample(
             "coverage_file": coverage,
             "overview_file": overview_json,
             "sample_type": sample_type,
+            "sex": sex,
             "meta": [parse_meta_file(p) for p in meta_files]
         }
     )

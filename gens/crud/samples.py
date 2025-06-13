@@ -119,6 +119,7 @@ def get_samples_per_case(
             "case_id": sample["case_id"],
             "sample_id": sample["sample_id"],
             "sample_type": sample.get("sample_type"),
+            "sex": sample.get("sex"),
             "genome_build": sample["genome_build"],
             "has_overview_file": sample["overview_file"] is not None,
             "files_present": bool(sample["baf_file"] and sample["coverage_file"]),
@@ -155,6 +156,7 @@ def get_sample(
         coverage_file=result["coverage_file"],
         overview_file=overview_file,
         sample_type=result.get("sample_type"),
+        sex=result.get("sex"),
         meta=[
             MetaEntry.model_validate(m)
             for m in result.get("metadata", [])
