@@ -115,18 +115,19 @@ export async function initCanvases({
     dotExpanded: STYLE.tracks.trackHeight.xl,
   };
 
-  const orderSamples = (samples: Sample[]): Sample[] => {
+  // FIXME: Think about how to organize. Get data sources?
+  const orderSamples = (samples: ApiSample[]): ApiSample[] => {
     const mainSample = samples.find((s) =>
-      ["proband", "tumor"].includes(s.sampleType),
+      ["proband", "tumor"].includes(s.sample_type),
     );
     if (mainSample != null) {
       const index = samples.indexOf(mainSample);
       const remaining = samples
         .filter((_, i) => i != index)
-        .sort((s1, s2) => s1.sampleId.localeCompare(s2.sampleId));
+        .sort((s1, s2) => s1.sample_id.localeCompare(s2.sample_id));
       return [mainSample, ...remaining];
     }
-    return samples.sort((s1, s2) => s1.sampleId.localeCompare(s2.sampleId));
+    return samples.sort((s1, s2) => s1.sample_id.localeCompare(s2.sample_id));
   };
 
   // const unorderedSamples = sampleIds.map((sampleId) => {
@@ -144,7 +145,16 @@ export async function initCanvases({
   const unorderedSamples = await Promise.all(
     sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
   );
-  const samples = orderSamples(unorderedSamples);
+  const samples = orderSamples(unorderedSamples).map((sample) => {
+    const result: Sample = {
+      caseId: sample.case_id,
+      sampleId: sample.sample_id,
+      sampleType: sample.sample_type,
+      sex: sample.sex,
+      meta: sample.meta
+    };
+    return result
+  });
 
   const session = new GensSession(
     render,

@@ -130,7 +130,7 @@ interface ApiGeneDetails {
   genome_build: number;
 }
 
-interface ApiSample {
+interface ApiScoutSample {
   allele_depths: [number, number];
   alt_frequency: number;
   display_name: string;
@@ -191,8 +191,8 @@ interface ApiVariantDetails {
   rank_score: number;
   rank_score_results: { category: string; score: number }[];
   reference: string;
-  sample?: ApiSample;
-  samples: ApiSample[];
+  sample?: ApiScoutSample;
+  samples: ApiScoutSample[];
   simple_id: string;
   sub_category: VariantSubCategory;
   variant_id: string;
@@ -616,6 +616,21 @@ interface RangeHighlight {
   chromosome: Chromosome;
   range: Rng;
   color: string;
+}
+
+interface ApiSample {
+  baf_file: string;
+  baf_index: string,
+  case_id: string;
+  coverage_file: string;
+  coverage_index: string;
+  created_at: string;
+  genome_build: number;
+  overview_file: string;
+  sample_id: string;
+  sample_type?: string;
+  sex?: string;
+  meta: SampleMetaEntry[];
 }
 
 interface Sample {

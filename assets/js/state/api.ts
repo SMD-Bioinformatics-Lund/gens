@@ -394,7 +394,7 @@ export class API {
     return this.overviewBafCache[sampleId];
   }
 
-  getSample(caseId: string, sampleId: string): Promise<Sample> {
+  getSample(caseId: string, sampleId: string): Promise<ApiSample> {
     const query = {
       sample_id: sampleId,
       case_id: caseId,
@@ -403,7 +403,7 @@ export class API {
     return get(
       new URL("samples/sample", this.apiURI).href,
       query,
-    ) as Promise<Sample>;
+    ) as Promise<ApiSample>;
   }
 }
 
