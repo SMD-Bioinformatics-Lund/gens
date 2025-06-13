@@ -62,6 +62,7 @@ class MetaValue(RWModel):
 class MetaEntry(RWModel):
     id: str
     file_name: str
+    row_name_header: str | None = None
     data: list[MetaValue]
 
 

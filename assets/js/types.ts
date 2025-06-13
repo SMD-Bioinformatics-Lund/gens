@@ -151,6 +151,7 @@ interface SampleMetaValue {
 interface SampleMetaEntry {
   id: string;
   file_name: string;
+  row_name_header?: string;
   data: SampleMetaValue[];
 }
 

@@ -37,9 +37,11 @@ template.innerHTML = String.raw`
     }
     table.meta-table {
       border-collapse: collapse;
-      width: 100%;
+      width: auto;
+      max-width: 100%;
       margin-bottom: ${SIZES.s}px;
       font-size: 12px;
+      table-layout: auto;
     }
     table.meta-table th,
     table.meta-table td {
@@ -87,8 +89,9 @@ export class InfoMenu extends ShadowBaseElement {
 
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
-    const empty = document.createElement("th");
-    headRow.appendChild(empty);
+    const firstHead = document.createElement("th");
+    firstHead.textContent = meta.row_name_header ?? "";
+    headRow.appendChild(firstHead);
     for (const t of types) {
       const th = document.createElement("th");
       th.textContent = t;
