@@ -1,4 +1,4 @@
-function formatValue(value: string): string {
+export function formatValue(value: string): string {
   const num = parseFloat(value);
   return Number.isNaN(num) ? value : num.toFixed(2);
 }

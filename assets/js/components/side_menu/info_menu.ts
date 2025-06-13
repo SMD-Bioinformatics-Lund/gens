@@ -1,5 +1,5 @@
 import { COLORS, FONT_WEIGHT, SIZES } from "../../constants";
-import { createTable } from "../../util/table";
+import { createTable, formatValue } from "../../util/table";
 import { removeChildren } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
@@ -66,7 +66,6 @@ export class InfoMenu extends ShadowBaseElement {
     super(template);
   }
 
-
   setSources(getSamples: () => Sample[]) {
     this.getSamples = getSamples;
   }
@@ -82,8 +81,6 @@ export class InfoMenu extends ShadowBaseElement {
     }
     removeChildren(this.entries);
     const samples = this.getSamples ? this.getSamples() : [];
-
-    console.log(samples);
 
     for (const sample of samples) {
       const header = document.createElement("div");
@@ -105,25 +102,33 @@ export class InfoMenu extends ShadowBaseElement {
         this.entries.appendChild(getEntry({ key: "Sex", value: sex }));
       }
       const metas = sample.meta;
-      if (metas != null && Array.isArray(metas)) {
-        for (const meta of metas) {
-          const hasRowName = meta.data.every((d) => d.row_name != null);
 
-          if (hasRowName) {
-            this.entries.appendChild(createTable(meta));
-          } else {
-            for (const entry of meta.data) {
-              if (entry.row_name == null) {
-                this.entries.appendChild(
-                  getEntry({
-                    key: entry.type,
-                    value: entry.value,
-                    color: entry.color,
-                  }),
-                );
-              }
-            }
+      console.log(metas);
+
+      if (metas != null) {
+        const simple_metas = metas.filter(
+          (meta) => meta.row_name_header == null,
+        );
+
+        // FIXME: Extract utility
+        for (const meta of simple_metas) {
+          for (const entry of meta.data) {
+            this.entries.appendChild(
+              getEntry({
+                key: entry.type,
+                value: formatValue(entry.value),
+                color: entry.color,
+              }),
+            );
           }
+        }
+
+        const table_metas = metas.filter(
+          (meta) => meta.row_name_header != null,
+        );
+
+        for (const meta of table_metas) {
+          this.entries.appendChild(createTable(meta));
         }
       }
     }
