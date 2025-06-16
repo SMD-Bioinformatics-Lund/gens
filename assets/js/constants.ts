@@ -35,6 +35,7 @@ export const ICONS = {
   right: "fa-arrow-right",
   search: "fa-search",
   settings: "fa-cog",
+  info: "fa-circle-info",
   show: "fa-eye",
   trash: "fa-trash",
   up: "fa-arrow-up",
@@ -112,6 +113,7 @@ export const STYLE = {
     breadFontWeight: FONT_WEIGHT.bold,
     shadowSize: 2,
     transitionTime: "0.3s",
+    width: 450,
   },
   bandTrack: {
     trackPadding: SIZES.l,

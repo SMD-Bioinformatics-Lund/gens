@@ -72,6 +72,9 @@ template.innerHTML = String.raw`
       <button title="Toggle chromosome view" id="chromosome-view-button" class='button'>
         <span class="fas ${ICONS.chromosomes}"></span>
       </button>
+      <button title="Open info menu" id="info-button" class="button">
+        <span class="fas ${ICONS.info}"></span>
+      </button>
       <button title="Open settings menu" id="settings-button" class='button'>
         <span class="fas ${ICONS.settings}"></span>
       </button>
@@ -89,6 +92,7 @@ export class InputControls extends HTMLElement {
   private removeHighlights: HTMLButtonElement;
   private toggleMarkerButton: HTMLButtonElement;
   private chromosomeViewButton: HTMLButtonElement;
+  private infoButton: HTMLButtonElement;
   private settingsButton: HTMLButtonElement;
 
   private searchButton: HTMLButtonElement;
@@ -99,6 +103,7 @@ export class InputControls extends HTMLElement {
   private getMarkerOn: () => boolean;
   private onToggleMarker: () => void;
   private onOpenSettings: () => void;
+  private onOpenInfo: () => void;
   private onToggleChromView: () => void;
   private onSearch: (query: string) => Promise<ApiSearchResult | null>;
   private onChange: (settings: RenderSettings) => void;
@@ -109,12 +114,14 @@ export class InputControls extends HTMLElement {
     session: GensSession,
     onPositionChange: (newXRange: [number, number]) => void,
     onOpenSettings: () => void,
+    onOpenInfo: () => void,
     onToggleChromView: () => void,
     onSearch: (query: string) => Promise<ApiSearchResult | null>,
     onChange: (settings: RenderSettings) => void,
   ) {
     this.session = session;
     this.onOpenSettings = onOpenSettings;
+    this.onOpenInfo = onOpenInfo;
     this.onToggleChromView = onToggleChromView;
     this.getMarkerOn = () => this.session.getMarkerModeOn();
     this.onToggleMarker = () => this.session.toggleMarkerMode();
@@ -162,6 +169,7 @@ export class InputControls extends HTMLElement {
     this.gensHomeLink = this.querySelector("#gens-home-link");
 
     this.chromosomeViewButton = this.querySelector("#chromosome-view-button");
+    this.infoButton = this.querySelector("#info-button");
     this.settingsButton = this.querySelector("#settings-button");
 
     this.searchButton = this.querySelector("#search");
@@ -173,6 +181,10 @@ export class InputControls extends HTMLElement {
     this.settingsButton.addEventListener("click", () => {
       this.onOpenSettings();
     });
+
+    this.infoButton.addEventListener("click", () => {
+      this.onOpenInfo();
+    })
 
     // FIXME: Also enter when inside the input?
     this.searchButton.addEventListener("click", () => {

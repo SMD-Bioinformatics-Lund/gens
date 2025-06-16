@@ -393,6 +393,18 @@ export class API {
     }
     return this.overviewBafCache[sampleId];
   }
+
+  getSample(caseId: string, sampleId: string): Promise<ApiSample> {
+    const query = {
+      sample_id: sampleId,
+      case_id: caseId,
+      genome_build: this.genomeBuild,
+    };
+    return get(
+      new URL("samples/sample", this.apiURI).href,
+      query,
+    ) as Promise<ApiSample>;
+  }
 }
 
 async function getCovData(

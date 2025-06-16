@@ -31,3 +31,14 @@ def standard_bed_file_path(data_path: Path) -> Path:
 def stockholm_bed_file_path(data_path: Path) -> Path:
     """Get path a bed file used by Stockholm."""
     return data_path.joinpath("stockholm.bed")
+
+@pytest.fixture()
+def meta_file_path(data_path: Path) -> Path:
+    """Get path to a metadata TSV file with row names."""
+    return data_path.joinpath("meta.tsv")
+
+@pytest.fixture()
+def meta_norow_file_path(data_path: Path) -> Path:
+    """Get path to a metadata TSV file without row name column."""
+    return data_path.joinpath("meta_norow.tsv")
+

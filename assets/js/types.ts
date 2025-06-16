@@ -130,7 +130,7 @@ interface ApiGeneDetails {
   genome_build: number;
 }
 
-interface ApiSample {
+interface ApiScoutSample {
   allele_depths: [number, number];
   alt_frequency: number;
   display_name: string;
@@ -139,6 +139,20 @@ interface ApiSample {
   read_depth: number;
   split_read: number;
   genotype_quality: number;
+}
+
+interface SampleMetaValue {
+  type: string;
+  value: string;
+  row_name?: string;
+  color: string;
+}
+
+interface SampleMetaEntry {
+  id: string;
+  file_name: string;
+  row_name_header?: string;
+  data: SampleMetaValue[];
 }
 
 interface ApiSimplifiedVariant {
@@ -178,8 +192,8 @@ interface ApiVariantDetails {
   rank_score: number;
   rank_score_results: { category: string; score: number }[];
   reference: string;
-  sample?: ApiSample;
-  samples: ApiSample[];
+  sample?: ApiScoutSample;
+  samples: ApiScoutSample[];
   simple_id: string;
   sub_category: VariantSubCategory;
   variant_id: string;
@@ -605,10 +619,27 @@ interface RangeHighlight {
   color: string;
 }
 
+interface ApiSample {
+  baf_file: string;
+  baf_index: string,
+  case_id: string;
+  coverage_file: string;
+  coverage_index: string;
+  created_at: string;
+  genome_build: number;
+  overview_file: string;
+  sample_id: string;
+  sample_type?: string;
+  sex?: string;
+  meta: SampleMetaEntry[];
+}
+
 interface Sample {
   caseId: string;
   sampleId: string;
   sampleType?: string;
+  sex?: string;
+  meta?: SampleMetaEntry[];
 }
 
 type TrackType = "annotation" | "variant" | "dot" | "gene" | "position";

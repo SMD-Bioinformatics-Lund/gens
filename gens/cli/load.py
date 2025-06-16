@@ -32,11 +32,6 @@ from gens.db.collections import (
 )
 from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
-from gens.load import (
-    build_chromosomes_obj,
-    build_transcripts,
-    get_assembly_info,
-)
 from gens.load.annotations import (
     fmt_aed_to_annotation,
     fmt_bed_to_annotation,
@@ -44,9 +39,12 @@ from gens.load.annotations import (
     parse_bed_file,
     parse_tsv_file,
 )
+from gens.load.chromosomes import build_chromosomes_obj, get_assembly_info
+from gens.load.meta import parse_meta_file
+from gens.load.transcripts import build_transcripts
 from gens.models.annotation import AnnotationRecord, AnnotationTrack, TranscriptRecord
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleInfo, SampleType
+from gens.models.sample import SampleInfo, SampleSex, SampleType
 from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrack
 
 LOG = logging.getLogger(__name__)
@@ -101,11 +99,24 @@ def load() -> None:
     help="Json file that contains preprocessed overview coverage",
 )
 @click.option(
+    "--meta",
+    "meta_files",
+    type=click.Path(exists=True, path_type=Path),
+    multiple=True,
+    help="TSV file with sample metadata"
+)
+@click.option(
     "-t",
     "--sample-type",
     type=ChoiceType(SampleType),
     required=False,
     help="Type of the sample (tumor/normal, proband/mother/father, other)",
+)
+@click.option(
+    "--sex",
+    type=ChoiceType(SampleSex),
+    required=False,
+    help="Sex of the sample",
 )
 def sample(
     sample_id: str,
@@ -114,7 +125,9 @@ def sample(
     coverage: Path,
     case_id: str,
     overview_json: Path,
+    meta_files: tuple[Path, ...],
     sample_type: SampleType | None,
+    sex: SampleSex | None,
 ) -> None:
     """Load a sample into Gens database."""
     gens_db_name = settings.gens_db.database
@@ -134,6 +147,8 @@ def sample(
             "coverage_file": coverage,
             "overview_file": overview_json,
             "sample_type": sample_type,
+            "sex": sex,
+            "meta": [parse_meta_file(p) for p in meta_files]
         }
     )
     create_sample(db, sample_obj)

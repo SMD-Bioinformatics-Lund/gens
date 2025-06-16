@@ -5,6 +5,7 @@ export interface InfoField {
   key: string;
   value: string | number | null;
   url?: string,
+  color?: string;
 }
 
 export function getVariantContextMenuContent(

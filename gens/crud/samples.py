@@ -13,7 +13,7 @@ from pymongo.errors import DuplicateKeyError
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.exceptions import NonUniqueIndexError, SampleNotFoundError
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import MultipleSamples, SampleInfo
+from gens.models.sample import MetaEntry, MultipleSamples, SampleInfo
 
 LOG = logging.getLogger(__name__)
 
@@ -119,6 +119,7 @@ def get_samples_per_case(
             "case_id": sample["case_id"],
             "sample_id": sample["sample_id"],
             "sample_type": sample.get("sample_type"),
+            "sex": sample.get("sex"),
             "genome_build": sample["genome_build"],
             "has_overview_file": sample["overview_file"] is not None,
             "files_present": bool(sample["baf_file"] and sample["coverage_file"]),
@@ -131,21 +132,26 @@ def get_samples_per_case(
 
 
 def get_sample(
-    samples_c: Collection[dict[str, Any]], sample_id: str, case_id: str | None
+    samples_c: Collection[dict[str, Any]],
+    sample_id: str,
+    case_id: str,
 ) -> SampleInfo:
     """Get a sample with id."""
-    result = None
-    if case_id is None:
-        result = samples_c.find_one({"sample_id": sample_id})
-    else:
-        result = samples_c.find_one({"sample_id": sample_id, "case_id": case_id})
+    sample_filter: dict[str, Any] = {
+        "sample_id": sample_id,
+        "case_id": case_id,
+    }
+
+    result = samples_c.find_one(sample_filter)
 
     if result is None:
         raise SampleNotFoundError(f'No sample with id: "{sample_id}" in database', sample_id)
-    
+
     overview_file = result.get("overview_file")
     if overview_file == "None":
         overview_file = None
+
+    sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
 
     return SampleInfo(
         sample_id=result["sample_id"],
@@ -155,6 +161,8 @@ def get_sample(
         coverage_file=result["coverage_file"],
         overview_file=overview_file,
         sample_type=result.get("sample_type"),
+        sex=result.get("sex"),
+        meta=sample_meta,
         created_at=result["created_at"],
     )
 

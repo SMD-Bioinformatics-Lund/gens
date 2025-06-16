@@ -188,7 +188,7 @@ export function getSection(
 }
 
 export function getEntry(infoEntry: InfoField): HTMLDivElement {
-  const { key, url, value } = infoEntry;
+  const { key, url, value, color } = infoEntry;
 
   const row = getContainer("row");
 
@@ -203,6 +203,9 @@ export function getEntry(infoEntry: InfoField): HTMLDivElement {
     valueEl.rel = "noopener noreferrer";
   }
   valueEl.textContent = value == null ? "N/A" : value.toString();
+  if (color) {
+    valueEl.style.color = color;
+  }
 
   row.appendChild(label);
   row.appendChild(valueEl);

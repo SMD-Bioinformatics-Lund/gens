@@ -26,7 +26,8 @@
     "watch": "gulp watch",
     "test": "jest",
     "typecheck": "npx tsc --noEmit",
-    "sync": "npm run typecheck && npm run eslint && npm run buildcp"
+    "sync": "npm run typecheck && npm run buildcp",
+    "syncl": "npm run typecheck && npm run eslint && npm run buildcp"
   },
   "repository": {
     "type": "git",
