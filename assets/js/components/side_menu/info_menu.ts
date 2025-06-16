@@ -163,6 +163,7 @@ function parseTableData(meta: SampleMetaEntry): TableData {
     if (rowName == null) {
       continue;
     }
+    colSet.add(cell.type);
 
     let rowMap = grid.get(rowName);
     if (!rowMap) {
