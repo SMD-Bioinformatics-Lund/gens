@@ -71,7 +71,7 @@ class MetaValue(RWModel):
         try:
             Color(value)
         except ValueError as err:
-            raise ValueError(f"Invalid color: {value}" from err)
+            raise ValueError(f"Invalid color: {value}") from err
         return value
 
 
