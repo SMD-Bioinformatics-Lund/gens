@@ -3,7 +3,7 @@
 from enum import StrEnum
 from pathlib import Path
 
-from pydantic import Field, computed_field, field_serializer
+from pydantic import Field, computed_field, field_serializer, field_validator
 from pydantic.types import FilePath
 from pydantic_extra_types.color import Color
 
@@ -65,7 +65,7 @@ class MetaValue(RWModel):
     row_name: str | None = None
     color: str = "rgb(0,0,0)"
 
-    @field_validator("color")   # type: ignore
+    @field_validator("color")
     @classmethod
     def validate_color(cls, value: str) -> str:
         try:
