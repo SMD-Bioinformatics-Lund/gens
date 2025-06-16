@@ -1,6 +1,11 @@
 import { COLORS, FONT_WEIGHT, SIZES } from "../../constants";
-import { createTable, TableOptions as TableData, formatValue, TableCell } from "../../util/table";
-import { removeChildren, stringToHash } from "../../util/utils";
+import {
+  createTable,
+  TableOptions as TableData,
+  formatValue,
+  TableCell,
+} from "../../util/table";
+import { removeChildren } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
@@ -107,50 +112,51 @@ export class InfoMenu extends ShadowBaseElement {
       const metas = sample.meta;
 
       if (metas != null) {
-        const simple_metas = metas.filter(
-          (meta) => meta.row_name_header == null,
-        );
-
-        // FIXME: Extract utility
-        for (const meta of simple_metas) {
-
-
-
-          for (const entry of meta.data) {
-            this.entries.appendChild(
-              getEntry({
-                key: entry.type,
-                value: formatValue(entry.value),
-                color: entry.color,
-              }),
-            );
-          }
-        }
-
-        const table_metas = metas.filter(
-          (meta) => meta.row_name_header != null,
-        );
-
-        for (const meta of table_metas) {
-
-          const tableData = parseTableData(meta);
-
-          console.log("Table data", tableData);
-
-          this.entries.appendChild(createTable(tableData));
+        const metaElements = getMetaElements(metas);
+        for (const elem of metaElements) {
+          this.entries.appendChild(elem);
         }
       }
     }
   }
 }
 
-// Can we assume linear data here? Then we can just layer out
-// the data which each new row
+function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
+  const simple_metas = metas.filter((meta) => meta.row_name_header == null);
+
+  const htmlEntries = [];
+  for (const meta of simple_metas) {
+    for (const entry of meta.data) {
+      const htmlEntry = getEntry({
+        key: entry.type,
+        value: formatValue(entry.value),
+        color: entry.color,
+      });
+      htmlEntries.push(htmlEntry);
+    }
+  }
+
+  const table_metas = metas.filter((meta) => meta.row_name_header != null);
+  for (const meta of table_metas) {
+    const tableData = parseTableData(meta);
+    htmlEntries.push(createTable(tableData));
+  }
+
+  return htmlEntries;
+}
+
+/**
+ * This function takes long-format meta data and pivots it to wide-form data
+ * I.e. to start with, each value lives on its own row
+ * At the end, each data type has its own column, similar to how it is displayed
+ *
+ * @param meta
+ * @returns
+ */
 function parseTableData(meta: SampleMetaEntry): TableData {
 
-  const rowNames: string[] = [];
-  const colNames: string[] = [];
-  const rowEntries: Record<string, SampleMetaValue[]> = {};
+  const grid = new Map<string, Map<string, TableCell>>();
+  const colSet = new Set<string>();
 
   for (const cell of meta.data) {
     const rowName = cell.row_name;
@@ -158,40 +164,31 @@ function parseTableData(meta: SampleMetaEntry): TableData {
       continue;
     }
 
-    if (!rowEntries[rowName]) {
-      rowEntries[rowName] = [];
-      rowNames.push(rowName)
+    let rowMap = grid.get(rowName);
+    if (!rowMap) {
+      rowMap = new Map<string, TableCell>();
+      grid.set(rowName, rowMap);
     }
 
-    if (!colNames.includes(cell.type)) {
-      console.log("Adding the col name", cell.type);
-      colNames.push(cell.type)
-    }
-    rowEntries[rowName].push(cell);
+    rowMap.set(cell.type, { value: cell.value, color: cell.color });
   }
 
-  const tableRows: TableCell[][] = [];
+  const rowNames = Array.from(grid.keys());
+  const colNames = Array.from(colSet);
 
-  console.log("Iterating", rowNames);
-
-  for (const rowName of rowNames) {
-    const tableRow = [];
-    for (const cell of rowEntries[rowName]) {
-      const tableCell: TableCell = {
-        value: cell.value,
-        color: cell.color,
-      }
-      tableRow.push(tableCell);
-    }
-    tableRows.push(tableRow);
-  }
+  const rows: TableCell[][] = rowNames.map((rowName) => {
+    const rowMap = grid.get(rowName);
+    return colNames.map((colName) => {
+      return rowMap.get(colName) ?? { value: "", color: "" };
+    });
+  });
 
   const tableData: TableData = {
     columns: colNames,
     rowNames: rowNames,
     rowNameHeader: meta.row_name_header ?? "",
-    rows: tableRows,
-  }
+    rows: rows,
+  };
 
   return tableData;
 }

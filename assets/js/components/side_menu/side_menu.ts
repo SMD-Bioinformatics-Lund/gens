@@ -52,8 +52,7 @@ template.innerHTML = String.raw`
       position: fixed;
       top: 0;
       right: 0;
-      /* FIXME: Constants */
-      width: 450px;
+      width: ${STYLE.menu.width}px;
       height: 100vh;
       background: white;
       box-shadow: 0 ${style.shadowSize}px ${style.shadowSize}px rgba(0, 0, 0, 0.2);

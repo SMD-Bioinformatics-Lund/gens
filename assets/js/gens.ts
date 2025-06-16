@@ -80,14 +80,6 @@ export async function initCanvases({
   const infoPage = document.createElement("info-page") as InfoMenu;
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
 
-  // const caseSamplesMap: Record<string, Sample[]> = {};
-  // for (const sample of allSamples) {
-  //   const caseId = sample.caseId;
-  //   if (caseSamplesMap[caseId] == null) {
-  //     caseSamplesMap[caseId] = [];
-  //   }
-  //   caseSamplesMap[caseId].push(sample);
-  // }
 
   headerInfo.initialize(
     caseId,

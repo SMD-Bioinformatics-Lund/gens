@@ -113,6 +113,7 @@ export const STYLE = {
     breadFontWeight: FONT_WEIGHT.bold,
     shadowSize: 2,
     transitionTime: "0.3s",
+    width: 450,
   },
   bandTrack: {
     trackPadding: SIZES.l,

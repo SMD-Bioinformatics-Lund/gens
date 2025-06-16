@@ -44,10 +44,6 @@ export function createTable(options: TableOptions): HTMLDivElement {
     const rowElem = createRow(rowNames[index] ?? "", row);
     tbody.appendChild(rowElem);
   })
-  // for (const row of rows) {
-  //   const rowElem = createRow(row);
-  //   tbody.appendChild(rowElem);
-  // }
   table.appendChild(tbody);
   container.appendChild(table);
   return container;
@@ -60,9 +56,7 @@ function createRow(rowName: string, row: TableCell[]): HTMLTableRowElement {
   rowElem.appendChild(nameTd);
   for (const cell of row) {
     const td = document.createElement("td");
-    // const entry = data.find((d) => d.row === r && d.column === col);
     td.textContent = cell.value;
-    // td.textContent = formatValue(cell.value);
     if (cell.color) {
         td.style.color = cell.color;
     }
