@@ -84,7 +84,6 @@ def sample(
 
     if meta_files:
         meta_results = [parse_meta_file(p) for p in meta_files]
-        LOG.info(meta_results)
         sample_obj.meta.extend(meta_results)
 
     update_sample(db, sample_obj)

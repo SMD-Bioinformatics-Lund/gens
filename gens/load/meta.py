@@ -3,8 +3,14 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from pydantic import ValidationError
+
 from gens.models.sample import MetaEntry, MetaValue
 from pydantic_extra_types.color import Color
+
+import logging
+
+LOG = logging.getLogger(__name__)
 
 
 def value_exists(value: str | None) -> bool:
@@ -32,8 +38,21 @@ def parse_meta_file(file: Path) -> MetaEntry:
 
             color = row.get("color")
             if color and color != ".":
+                try:
+                    Color(color)
+                except ValueError as err:
+                    line_no = reader.line_num
+                    LOG.error("Invalid color '%s' on line %s in %s", color, line_no, file)
+                    raise ValueError(f"Invalid color '{color}' on line {line_no}") from err
                 entry["color"] = color
-            data.append(MetaValue.model_validate(entry))
+            
+            try:
+                validated_meta = MetaValue.model_validate(entry)
+            except ValidationError as err:
+                line_no = reader.line_num
+                LOG.error("Invalid metadata entry on line %s in %s: %s", line_no, file, err)
+                raise ValueError(f"Failed to parse metadata on file {line_no}: {err}")
+            data.append(validated_meta)
     return MetaEntry(
         id=uuid4().hex, file_name=file.name, row_name_header=row_name_header, data=data
     )

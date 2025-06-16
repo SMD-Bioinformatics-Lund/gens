@@ -11,6 +11,7 @@ from gens.cli.load import annotations
 MONGO_HOST = "mongodb"
 MONGO_PORT = 27017
 
+# FIXME: These tests are not configured in a way that works when running mongo on localhost, nor in the GitHub setup
 
 @mongomock.patch(servers=((MONGO_HOST, MONGO_PORT),))
 @pytest.mark.parametrize(
@@ -36,7 +37,7 @@ def test_load_annotation(fixture_name: str, genome_build: int, request):
         args.append("--tsv")
 
     # run cli command
-    result = runner.invoke(annotations, args)
+    result = runner.invoke(annotations, args, catch_exceptions=False)
 
     # Test that the command finished successfully
     assert result.exit_code == 0

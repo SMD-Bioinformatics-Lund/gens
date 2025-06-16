@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pydantic import Field, computed_field, field_serializer
 from pydantic.types import FilePath
+from pydantic_extra_types.color import Color
 
 from .base import CreatedAtModel, RWModel
 from .genomic import GenomeBuild
@@ -53,10 +54,25 @@ class SampleSex(StrEnum):
 
 
 class MetaValue(RWModel):
+    """
+    The meta value can be key-value pairs or part of a table
+    They always need a type. This is the key, or the column name.
+    For a table, a row name needs to be present.
+    Tables are stored in long format, i.e. one row represents one cell with a row and col name.
+    """
     type: str
     value: str
     row_name: str | None = None
     color: str = "rgb(0,0,0)"
+
+    @field_validator("color")   # type: ignore
+    @classmethod
+    def validate_color(cls, value: str) -> str:
+        try:
+            Color(value)
+        except ValueError as err:
+            raise ValueError(f"Invalid color: {value}" from err)
+        return value
 
 
 class MetaEntry(RWModel):
