@@ -130,18 +130,6 @@ export async function initCanvases({
     return samples.sort((s1, s2) => s1.sample_id.localeCompare(s2.sample_id));
   };
 
-  // const unorderedSamples = sampleIds.map((sampleId) => {
-  //   const caseSamples = caseSamplesMap[caseId];
-
-  //   const matches = caseSamples.filter((s) => s.sampleId == sampleId);
-  //   if (matches.length != 1) {
-  //     console.error(
-  //       "Expected to find one object with matching sample ID, found",
-  //       matches,
-  //     );
-  //   }
-  //   return matches[0];
-  // });
   const unorderedSamples = await Promise.all(
     sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
   );

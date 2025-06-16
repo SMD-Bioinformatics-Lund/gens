@@ -1,5 +1,5 @@
 import { COLORS, FONT_WEIGHT, SIZES } from "../../constants";
-import { createTable, CreateTableOptions, formatValue, TableCell } from "../../util/table";
+import { createTable, CreateTableOptions as TableData, formatValue, TableCell } from "../../util/table";
 import { removeChildren, stringToHash } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
@@ -141,27 +141,29 @@ export class InfoMenu extends ShadowBaseElement {
   }
 }
 
-function parseTableData(meta: SampleMetaEntry): CreateTableOptions {
+// Can we assume linear data here? Then we can just layer out
+// the data which each new row
+function parseTableData(meta: SampleMetaEntry): TableData {
 
-  const rowNames: Set<string> = new Set();
-  const colNames: Set<string> = new Set();
-
+  const rowNames: string[] = [];
+  const colNames: string[] = [];
   const rowEntries: Record<string, SampleMetaValue[]> = {};
 
   for (const cell of meta.data) {
-
     const rowName = cell.row_name;
     if (rowName == null) {
       continue;
     }
 
-    rowNames.add(cell.row_name);
-    colNames.add(cell.type);
-
-    if (rowEntries[rowName] == null) {
+    if (!rowEntries[rowName]) {
       rowEntries[rowName] = [];
+      rowNames.push(rowName)
     }
 
+    if (!colNames.includes(cell.type)) {
+      console.log("Adding the col name", cell.type);
+      colNames.push(cell.type)
+    }
     rowEntries[rowName].push(cell);
   }
 
@@ -181,11 +183,12 @@ function parseTableData(meta: SampleMetaEntry): CreateTableOptions {
     tableRows.push(tableRow);
   }
 
-  const tableData: CreateTableOptions = {
-    header: [],
-    columns: [],
+  const tableData: TableData = {
+    columns: colNames,
     rows: tableRows,
   }
+
+  console.log(tableData);
 
   return tableData;
 }

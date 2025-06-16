@@ -9,7 +9,6 @@ export interface TableCell {
 }
 
 export interface CreateTableOptions {
-  header: string[];
   columns: string[];
   rows: TableCell[][];
 }
@@ -17,7 +16,7 @@ export interface CreateTableOptions {
 export function createTable(options: CreateTableOptions): HTMLDivElement {
   const container = document.createElement("div");
 
-  const { header, rows, columns } = options;
+  const { rows, columns } = options;
 
   const table = document.createElement("table");
   table.className = "meta-table";
@@ -53,7 +52,8 @@ function createRow(row: TableCell[]): HTMLTableRowElement {
   for (const cell of row) {
     const td = document.createElement("td");
     // const entry = data.find((d) => d.row === r && d.column === col);
-    td.textContent = formatValue(cell.value);
+    td.textContent = cell.value;
+    // td.textContent = formatValue(cell.value);
     if (cell.color) {
         td.style.color = cell.color;
     }
