@@ -195,7 +195,6 @@ export function parseSampleAnnotations(
   annotations: ApiSimplifiedAnnotation[],
   chromosome: string,
 ): RenderBand[] {
-  console.log("Hitting the function");
 
   const results = annotations
     .filter((annot) => annot.chrom == chromosome)
