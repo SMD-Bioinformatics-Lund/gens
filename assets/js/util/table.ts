@@ -8,15 +8,20 @@ export interface TableCell {
   color?: string;
 }
 
-export interface CreateTableOptions {
+export interface TableOptions {
   columns: string[];
   rows: TableCell[][];
+  rowNames: string[];
+  rowNameHeader?: string;
 }
 
-export function createTable(options: CreateTableOptions): HTMLDivElement {
+export function createTable(options: TableOptions): HTMLDivElement {
   const container = document.createElement("div");
 
-  const { rows, columns } = options;
+  container.className = "table-wrapper";
+  container.style.overflowX = "auto";
+
+  const { rows, columns, rowNames, rowNameHeader } = options;
 
   const table = document.createElement("table");
   table.className = "meta-table";
@@ -24,7 +29,7 @@ export function createTable(options: CreateTableOptions): HTMLDivElement {
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
   const firstHead = document.createElement("th");
-//   firstHead.textContent = rowHeader ?? "";
+  firstHead.textContent = rowNameHeader ?? "";
   headRow.appendChild(firstHead);
   for (const col of columns) {
     const th = document.createElement("th");
@@ -35,19 +40,23 @@ export function createTable(options: CreateTableOptions): HTMLDivElement {
   table.appendChild(thead);
 
   const tbody = document.createElement("tbody");
-  for (const row of rows) {
-    const rowElem = createRow(row);
+  rows.forEach((row, index) => {
+    const rowElem = createRow(rowNames[index] ?? "", row);
     tbody.appendChild(rowElem);
-  }
+  })
+  // for (const row of rows) {
+  //   const rowElem = createRow(row);
+  //   tbody.appendChild(rowElem);
+  // }
   table.appendChild(tbody);
   container.appendChild(table);
   return container;
 }
 
-function createRow(row: TableCell[]): HTMLTableRowElement {
+function createRow(rowName: string, row: TableCell[]): HTMLTableRowElement {
   const rowElem = document.createElement("tr");
   const nameTd = document.createElement("td");
-//   nameTd.textContent = row;
+  nameTd.textContent = rowName;
   rowElem.appendChild(nameTd);
   for (const cell of row) {
     const td = document.createElement("td");

@@ -1,5 +1,5 @@
 import { COLORS, FONT_WEIGHT, SIZES } from "../../constants";
-import { createTable, CreateTableOptions as TableData, formatValue, TableCell } from "../../util/table";
+import { createTable, TableOptions as TableData, formatValue, TableCell } from "../../util/table";
 import { removeChildren, stringToHash } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
@@ -35,6 +35,9 @@ template.innerHTML = String.raw`
       word-break: break-word;
       text-align: right;
       text-decoration: none;
+    }
+    .table-wrapper {
+      overflow-x: auto;
     }
     table.meta-table {
       border-collapse: collapse;
@@ -185,10 +188,10 @@ function parseTableData(meta: SampleMetaEntry): TableData {
 
   const tableData: TableData = {
     columns: colNames,
+    rowNames: rowNames,
+    rowNameHeader: meta.row_name_header ?? "",
     rows: tableRows,
   }
-
-  console.log(tableData);
 
   return tableData;
 }
