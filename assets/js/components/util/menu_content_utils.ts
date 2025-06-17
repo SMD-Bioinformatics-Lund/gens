@@ -4,7 +4,7 @@ import { getContainer, getEntry, getSection, getURLRow } from "./menu_utils";
 export interface InfoField {
   key: string;
   value: string | number | null;
-  url?: string,
+  url?: string;
   color?: string;
 }
 
@@ -13,7 +13,7 @@ export function getVariantContextMenuContent(
   details: ApiVariantDetails,
   variantUrl: string,
 ): HTMLDivElement[] {
-  const sample = details.samples.filter(s => s.sample_id === sampleId)[0]
+  const sample = details.samples.filter((s) => s.sample_id === sampleId)[0];
   const info: InfoField[] = [
     { key: "Range", value: `${details.start} - ${details.end}` },
     {
@@ -53,10 +53,13 @@ export function getVariantContextMenuContent(
       value: `${details.cytoband_start} - ${details.cytoband_end}`,
     },
     { key: "Rank score", value: details.rank_score.toString() },
-    { key: "BNF ID", value: details.document_id },
+    // { key: "BNF ID", value: details.document_id },
   ];
 
-  const entries: HTMLDivElement[] = info.map((i) => getEntry(i));
+  const entries: HTMLDivElement[] = info
+    .sort((a, b) => a.key.localeCompare(b.key))
+    .map((i) => getEntry(i));
+
   const rankScoreParts = getSection(
     "Rank score parts",
     details.rank_score_results.map((part) => {
@@ -85,10 +88,12 @@ export function getGenesContextMenuContent(
     { key: "HGNC ID", value: details.hgnc_id },
     { key: "Refseq ID", value: details.refseq_id },
     { key: "Strand", value: details.strand },
-    { key: "BNF ID", value: id },
+    // { key: "BNF ID", value: id },
   ];
 
-  const entries = info.map((i) => getEntry(i));
+  const entries = info
+    .sort((a, b) => a.key.localeCompare(b.key))
+    .map((i) => getEntry(i));
   return entries;
 }
 
@@ -107,10 +112,12 @@ export function getAnnotationContextMenuContent(
     },
     { key: "Name", value: details.name },
     { key: "Description", value: details.description || "-" },
-    { key: "BNF ID", value: id },
+    // { key: "BNF ID", value: id },
   ];
 
-  const infoDivs = info.map((i) => getEntry(i));
+  const infoDivs = info
+    .sort((a, b) => a.key.localeCompare(b.key))
+    .map((i) => getEntry(i));
 
   const commentSection = getSection(
     "Comments",

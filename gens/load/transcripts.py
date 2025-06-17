@@ -212,7 +212,7 @@ def _parse_transcript_gtf(
 
         attribs = _parse_attribs(row["attribute"])
         # skip non protein coding genes
-        if attribs.get("gene_biotype") == "protein_coding":
-            yield row, attribs
+        # if attribs.get("gene_biotype") == "protein_coding":
+        yield row, attribs
 
 

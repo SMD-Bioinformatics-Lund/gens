@@ -92,6 +92,8 @@ export class TrackView extends ShadowBaseElement {
   private openTrackContextMenu: (track: DataTrack) => void;
   private trackPages: Record<string, TrackMenu> = {};
 
+  private colorAnnotationId: string | null = null;
+
   private sampleToTracks: Record<
     string,
     {
@@ -337,7 +339,7 @@ export class TrackView extends ShadowBaseElement {
         const trackPage = new TrackMenu();
         const trackSettings = {
           showYAxis: isDotTrack,
-          showColor: true,
+          showColor: false,
         };
         trackPage.configure(track.id, trackSettings);
         this.trackPages[track.id] = trackPage;
@@ -383,6 +385,24 @@ export class TrackView extends ShadowBaseElement {
 
   public getDataTracks(): DataTrack[] {
     return this.dataTracks.map((info) => info.track);
+  }
+
+  public async setColorAnnotation(annotId: string | null) {
+    this.colorAnnotationId = annotId;
+    await this.updateColorBands();
+  }
+
+  private async updateColorBands() {
+    let colorBands: RenderBand[] = [];
+    if (this.colorAnnotationId != null) {
+      colorBands = await this.dataSource.getAnnotationBands(
+        this.colorAnnotationId,
+        this.session.getChromosome(),
+      );
+    }
+    for (const info of this.dataTracks) {
+      info.track.setColorBands(colorBands);
+    }
   }
 
   public moveTrack(trackId: string, direction: "up" | "down") {
@@ -487,6 +507,11 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
+
+    if (settings.dataUpdated) {
+      this.updateColorBands();
+    }
+
     renderHighlights(
       this.tracksContainer,
       this.session.getCurrentHighlights(),

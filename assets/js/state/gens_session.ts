@@ -35,6 +35,7 @@ export class GensSession {
   private gensBaseURL: string;
   private settings: SettingsMenu;
   private genomeBuild: number;
+  private colorAnnotationId: string | null = null;
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -89,6 +90,14 @@ export class GensSession {
 
   public toggleChromViewActive() {
     this.chromViewActive = !this.chromViewActive;
+  }
+
+  public setColorAnnotation(id: string | null) {
+    this.colorAnnotationId = id;
+  }
+
+  public getColorAnnotation(): string | null {
+    return this.colorAnnotationId;
   }
 
   public getTrackHeights(): TrackHeights {

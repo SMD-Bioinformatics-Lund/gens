@@ -215,6 +215,11 @@ export async function initCanvases({
       gensTracks.trackView.setTrackHeights(trackHeights);
       render({});
     },
+    async (annotId: string | null) => {
+      session.setColorAnnotation(annotId);
+      await gensTracks.trackView.setColorAnnotation(annotId);
+      render({});
+    }
   );
 
   infoPage.setSources(() => session.getSamples());
