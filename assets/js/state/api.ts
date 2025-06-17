@@ -7,6 +7,7 @@ const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 // FIXME: This will need to be made configurable eventually
 const DEFAULT_RANK_SCORE_FILTER = 12;
 const DEFAULT_VARIANT_TYPES = ["del", "dup", "tdup"];
+const ZOOM_WINDOW_MULTIPLIER = 5;
 
 export class API {
   genomeBuild: number;
@@ -183,6 +184,10 @@ export class API {
     string,
     Record<string, Record<string, Promise<ApiCoverageDot[]>>>
   > = {};
+  private covSampleDWindowCache: Record<
+    string,
+    Record<string, { range: Rng; promise: Promise<ApiCoverageDot[]> }>
+  > = {};
   getCov(
     caseId: string,
     sampleId: string,
@@ -220,21 +225,54 @@ export class API {
       }
       return this.covSampleChrZoomCache[sampleId][chrom][zoom];
     } else {
-      return getCovData(
+      // Zoom D level
+
+      if (this.covSampleDWindowCache[sampleId] == null) {
+        this.covSampleDWindowCache[sampleId] = {};
+      }
+
+      const cached = this.covSampleDWindowCache[sampleId][chrom];
+      const withinCache =
+        cached !== undefined &&
+        xRange[0] >= cached.range[0] &&
+        xRange[1] <= cached.range[1];
+
+      if (withinCache) {
+        return cached.promise.then((data) => filterRange(data, xRange));
+      }
+
+      const extended = expandRange(
+        xRange,
+        ZOOM_WINDOW_MULTIPLIER,
+        this.getChromSizes()[chrom],
+      );
+
+      const promise = getCovData(
         this.apiURI,
         endpoint,
         sampleId,
         caseId,
         chrom,
         zoom,
-        xRange,
+        extended,
       );
+
+      this.covSampleDWindowCache[sampleId][chrom] = {
+        range: extended,
+        promise,
+      };
+
+      return promise.then((data) => filterRange(data, xRange));
     }
   }
 
   private bafSampleZoomChrCache: Record<
     string,
     Record<string, Record<string, Promise<ApiCoverageDot[]>>>
+  > = {};
+  private bafSampleDWindowCache: Record<
+    string,
+    Record<string, { range: Rng; promise: Promise<ApiCoverageDot[]> }>
   > = {};
   getBaf(
     caseId: string,
@@ -272,15 +310,41 @@ export class API {
       }
       return this.bafSampleZoomChrCache[sampleId][chrom][zoom];
     } else {
-      return getCovData(
+      if (this.bafSampleDWindowCache[sampleId] == null) {
+        this.bafSampleDWindowCache[sampleId] = {};
+      }
+
+      const cached = this.bafSampleDWindowCache[sampleId][chrom];
+      const withinCache =
+        cached !== undefined &&
+        xRange[0] >= cached.range[0] &&
+        xRange[1] <= cached.range[1];
+
+      if (withinCache) {
+        return cached.promise.then((data) => filterRange(data, xRange));
+      }
+
+      const extended = expandRange(
+        xRange,
+        ZOOM_WINDOW_MULTIPLIER,
+        this.getChromSizes()[chrom],
+      );
+
+      const promise = getCovData(
         this.apiURI,
         endpoint,
         sampleId,
         caseId,
         chrom,
         zoom,
-        xRange,
+        extended,
       );
+
+      this.bafSampleDWindowCache[sampleId][chrom] = {
+        range: extended,
+        promise,
+      };
+      return promise.then((data) => filterRange(data, xRange));
     }
   }
 
@@ -405,6 +469,18 @@ export class API {
       query,
     ) as Promise<ApiSample>;
   }
+}
+
+function expandRange(range: Rng, factor: number, chromSize: number): Rng {
+  const width = range[1] - range[0];
+  const halfExtra = Math.floor((width * factor - width) / 2);
+  const start = Math.max(1, range[0] - halfExtra);
+  const end = Math.min(chromSize, range[1] + halfExtra);
+  return [start, end];
+}
+
+function filterRange(data: ApiCoverageDot[], range: Rng): ApiCoverageDot[] {
+  return data.filter((d) => d.pos >= range[0] && d.pos <= range[1]);
 }
 
 async function getCovData(
