@@ -9,7 +9,6 @@ import { SampleRow } from "./sample_row";
 import { HighlightRow } from "./highlight_row";
 import { IconButton } from "../util/icon_button";
 import { GensSession } from "../../state/gens_session";
-import { stopCoverage } from "v8";
 
 export interface TrackHeights {
   bandCollapsed: number;
@@ -169,7 +168,7 @@ export class SettingsMenu extends ShadowBaseElement {
     gotoHighlight: (region: Region) => void,
     onAddSample: (sample: Sample) => Promise<void>,
     onRemoveSample: (sample: Sample) => void,
-    setTrackHeights: (trackHeights: TrackHeights) => void,
+    setTrackInfo: (trackHeights: TrackHeights) => void,
     onColorByChange: (annotId: string | null) => void,
   ) {
     this.session = session;
@@ -197,7 +196,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onRemoveSample = onRemoveSample;
 
     this.getTrackHeights = () => session.getTrackHeights();
-    this.setTrackHeights = setTrackHeights;
+    this.setTrackHeights = setTrackInfo;
     this.onColorByChange = onColorByChange;
     this.getColorAnnotation = () => session.getColorAnnotation();
   }
@@ -266,6 +265,11 @@ export class SettingsMenu extends ShadowBaseElement {
       };
     };
 
+    const getCovRange = (): [number, number] => [
+      parseFloat(this.coverageYStartElem.value),
+      parseFloat(this.coverageYEndElem.value),
+    ];
+
     this.addElementListener(this.bandTrackCollapsedHeightElem, "change", () => {
       this.setTrackHeights(myGetTrackHeights());
       this.render({});
@@ -278,17 +282,14 @@ export class SettingsMenu extends ShadowBaseElement {
       this.setTrackHeights(myGetTrackHeights());
       this.render({});
     });
-    const getCovRange = (): [number, number] => [
-      parseFloat(this.coverageYStartElem.value),
-      parseFloat(this.coverageYEndElem.value),
-    ];
+
     this.addElementListener(this.coverageYStartElem, "change", () => {
-      console.log("FIXME: Reflect this over to the track heights");
+      // this.setTrackHeights(myGetTrackHeights(), getCovRange());
       this.session.setCoverageRange(getCovRange());
     });
     this.addElementListener(this.coverageYEndElem, "change", () => {
-      console.log("FIXME: Reflect this over to the track heights");
       this.session.setCoverageRange(getCovRange());
+      // this.setTrackHeights(myGetTrackHeights(), getCovRange());
     });
   }
 
