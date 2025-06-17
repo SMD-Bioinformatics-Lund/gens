@@ -4,6 +4,7 @@ import {
 } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COLORS } from "../constants";
+import { loadAnnotationSelections, saveAnnotationSelections } from "../util/storage";
 import { generateID } from "../util/utils";
 
 /**
@@ -36,6 +37,7 @@ export class GensSession {
   private settings: SettingsMenu;
   private genomeBuild: number;
   private colorAnnotationId: string | null = null;
+  private annotationSelections: string[] = [];
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -64,6 +66,7 @@ export class GensSession {
     this.genomeBuild = genomeBuild;
     this.chromInfo = chromInfo;
     this.chromSizes = chromSizes;
+    this.annotationSelections = loadAnnotationSelections() || [];
   }
 
   public getGenomeBuild(): number {
@@ -99,6 +102,15 @@ export class GensSession {
 
   public getColorAnnotation(): string | null {
     return this.colorAnnotationId;
+  }
+
+  public getAnnotationSelections(): string[] {
+    return this.annotationSelections;
+  }
+
+  public setAnnotationSelections(ids: string[]): void {
+    this.annotationSelections = ids;
+    saveAnnotationSelections(ids);
   }
 
   public getTrackHeights(): TrackHeights {

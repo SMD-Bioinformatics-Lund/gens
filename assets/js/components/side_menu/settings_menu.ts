@@ -9,6 +9,7 @@ import { SampleRow } from "./sample_row";
 import { HighlightRow } from "./highlight_row";
 import { IconButton } from "../util/icon_button";
 import { GensSession } from "../../state/gens_session";
+import { stopCoverage } from "v8";
 
 export interface TrackHeights {
   bandCollapsed: number;
@@ -123,6 +124,8 @@ export class SettingsMenu extends ShadowBaseElement {
   private dotTrackCollapsedHeightElem: HTMLInputElement;
   private dotTrackExpandedHeightElem: HTMLInputElement;
 
+  private session: GensSession;
+
   private onChange: () => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private defaultAnnots: { id: string; label: string }[];
@@ -160,8 +163,15 @@ export class SettingsMenu extends ShadowBaseElement {
     setTrackHeights: (trackHeights: TrackHeights) => void,
     onColorByChange: (annotId: string | null) => void,
   ) {
+    this.session = session;
     this.onChange = onChange;
     this.allAnnotationSources = allAnnotationSources;
+    const stored = session.getAnnotationSelections();
+    if (stored && stored.length > 0) {
+      defaultAnnots = allAnnotationSources
+        .filter((src) => stored.includes(src.track_id))
+        .map((src) => ({ id: src.track_id, label: src.name }))
+    }
     this.defaultAnnots = defaultAnnots;
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
@@ -216,6 +226,10 @@ export class SettingsMenu extends ShadowBaseElement {
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
+      const ids = this.annotSelect
+        .getValues()
+        .map((obj) => obj.value as string);
+        this.session.setAnnotationSelections(ids);
       this.onChange();
     });
 
@@ -270,6 +284,7 @@ export class SettingsMenu extends ShadowBaseElement {
     ]
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
+    this.session.setAnnotationSelections(this.defaultAnnots.map((a) => a.id));
     this.onChange();
   }
 
