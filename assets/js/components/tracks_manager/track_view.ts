@@ -93,8 +93,6 @@ export class TrackView extends ShadowBaseElement {
   private openTrackContextMenu: (track: DataTrack) => void;
   private trackPages: Record<string, TrackMenu> = {};
 
-  // private colorAnnotationId: string | null = null;
-
   private sampleToTracks: Record<
     string,
     {
@@ -389,7 +387,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public async setColorAnnotation(annotId: string | null) {
-    // this.colorAnnotationId = annotId;
     this.session.setColorAnnotation(annotId);
     await this.updateColorBands();
   }

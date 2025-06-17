@@ -195,7 +195,6 @@ export function createGeneTrack(
   session: GensSession,
   openTrackContextMenu: ((track: DataTrack) => void) | null,
 ): TrackViewTrackInfo {
-  // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     height: {
       collapsedHeight: session.getTrackHeights().bandCollapsed,

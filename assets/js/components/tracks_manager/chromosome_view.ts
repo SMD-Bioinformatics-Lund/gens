@@ -10,8 +10,6 @@ import {
   createDotTrack,
 } from "./utils";
 
-const COV_Y_RANGE: [number, number] = [-2, 2];
-
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>

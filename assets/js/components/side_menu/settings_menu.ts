@@ -284,12 +284,10 @@ export class SettingsMenu extends ShadowBaseElement {
     });
 
     this.addElementListener(this.coverageYStartElem, "change", () => {
-      // this.setTrackHeights(myGetTrackHeights(), getCovRange());
       this.session.setCoverageRange(getCovRange());
     });
     this.addElementListener(this.coverageYEndElem, "change", () => {
       this.session.setCoverageRange(getCovRange());
-      // this.setTrackHeights(myGetTrackHeights(), getCovRange());
     });
   }
 
