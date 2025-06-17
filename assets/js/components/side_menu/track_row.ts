@@ -53,8 +53,6 @@ export class TrackRow extends ShadowBaseElement {
     getIsHidden: () => boolean,
     getIsExpanded: () => boolean,
   ) {
-    console.log("Initialized");
-
     this.track = track;
     this.onMove = onMove;
     this.onToggleShow = onToggleShow;

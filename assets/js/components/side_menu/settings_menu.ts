@@ -3,7 +3,7 @@ import { removeChildren } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ChoiceSelect } from "../util/choice_select";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
-import Choices, { InputChoice } from "choices.js";
+import { InputChoice } from "choices.js";
 import { TrackRow } from "./track_row";
 import { SampleRow } from "./sample_row";
 import { HighlightRow } from "./highlight_row";
@@ -221,7 +221,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.colorBySelect, "change", () => {
       const val = this.colorBySelect.getValue();
-      const id = val ? val.value : null;
+      const id = (val && val.value != "") ? val.value : null;
       this.onColorByChange(id);
     })
 

@@ -507,7 +507,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
-
     if (settings.dataUpdated) {
       this.updateColorBands();
     }
