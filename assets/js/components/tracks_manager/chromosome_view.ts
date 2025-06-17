@@ -1,6 +1,7 @@
 import { CHROMOSOMES, COLORS, SIZES, TRACK_HEIGHTS } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { div, removeOne } from "../../util/utils";
+import { TrackHeights } from "../side_menu/settings_menu";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import {
@@ -102,6 +103,7 @@ export class ChromosomeView extends ShadowBaseElement {
         () => session.getMarkerModeOn(),
         () => [1, session.getChromSize("1")],
         () => session.getCoverageRange(),
+        () => session.getTrackHeights(),
       );
 
       addSampleAnnotationTracks(
@@ -153,6 +155,7 @@ function addSampleTracks(
   getMarkerModeOn: () => boolean,
   getXRange: () => Rng,
   getCoverageRange: () => Rng,
+  getTrackHeights: () => TrackHeights,
 ) {
   const trackId = `${sample.sampleId}_${chrom}`;
   const trackLabel = sample.sampleId;
@@ -175,6 +178,7 @@ function addSampleTracks(
     getMarkerModeOn,
     getXRange,
     null,
+    () => getTrackHeights(),
   );
   const trackWrapper = createDataTrackWrapper(dotTrack);
   const trackInfo: ChromViewTrackInfo = {

@@ -110,7 +110,7 @@ template.innerHTML = String.raw`
     </flex-row>
   </flex-row>
   <flex-row class="height-row">
-    <div>Coverage y-range</div>
+    <div>Default cov y-range</div>
     <flex-row class="height-inputs">
       <input id="coverage-y-start" class="height-input" type="number" step="0.1">
       <input id="coverage-y-end" class="height-input" type="number" step="0.1">
@@ -283,9 +283,11 @@ export class SettingsMenu extends ShadowBaseElement {
       parseFloat(this.coverageYEndElem.value),
     ];
     this.addElementListener(this.coverageYStartElem, "change", () => {
+      console.log("FIXME: Reflect this over to the track heights");
       this.session.setCoverageRange(getCovRange());
     });
     this.addElementListener(this.coverageYEndElem, "change", () => {
+      console.log("FIXME: Reflect this over to the track heights");
       this.session.setCoverageRange(getCovRange());
     });
   }
