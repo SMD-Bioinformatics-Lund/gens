@@ -53,7 +53,6 @@ export function getVariantContextMenuContent(
       value: `${details.cytoband_start} - ${details.cytoband_end}`,
     },
     { key: "Rank score", value: details.rank_score.toString() },
-    // { key: "BNF ID", value: details.document_id },
   ];
 
   const entries: HTMLDivElement[] = info
@@ -88,7 +87,6 @@ export function getGenesContextMenuContent(
     { key: "HGNC ID", value: details.hgnc_id },
     { key: "Refseq ID", value: details.refseq_id },
     { key: "Strand", value: details.strand },
-    // { key: "BNF ID", value: id },
   ];
 
   const entries = info
@@ -112,7 +110,6 @@ export function getAnnotationContextMenuContent(
     },
     { key: "Name", value: details.name },
     { key: "Description", value: details.description || "-" },
-    // { key: "BNF ID", value: id },
   ];
 
   const infoDivs = info

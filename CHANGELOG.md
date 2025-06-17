@@ -17,7 +17,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Tracks can be shown / hidden, collapsed and moved
  - Tracks menu and customize Y-axis
  - Drag and drop of tracks
- - Color backgrounds in any data track by any annotation track
+ - Color background of all data tracks based on bands from an annotation track
  - Simple data table to display sample list, allowing search and sorting
  - Navigate to position by clicking ideogram bands
  - Add any additional sample to an ongoing session

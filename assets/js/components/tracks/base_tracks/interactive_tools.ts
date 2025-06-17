@@ -65,11 +65,6 @@ export function initializeDragSelect(
 
     const pos = getLocalPos(event);
 
-    // let currX = event.offsetX;
-
-    // if (currX < STYLE.yAxis.width) {
-    //   currX = STYLE.yAxis.width;
-    // }
 
     const xRange = sortRange([dragStart.x, pos.x]);
 
