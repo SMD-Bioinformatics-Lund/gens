@@ -3,8 +3,9 @@ import {
   TrackHeights,
 } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
+import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { COLORS } from "../constants";
-import { loadAnnotationSelections, saveAnnotationSelections } from "../util/storage";
+import { loadAnnotationSelections, loadColorAnnotation, loadCoverageRange, loadTrackHeights, saveAnnotationSelections, saveColorAnnotation, saveCoverageRange, saveTrackHeights } from "../util/storage";
 import { generateID } from "../util/utils";
 
 /**
@@ -38,6 +39,7 @@ export class GensSession {
   private genomeBuild: number;
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
+  private coverageRange: [number, number] = COV_Y_RANGE;
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -59,7 +61,7 @@ export class GensSession {
     this.start = startRegion?.start ? startRegion.start : 1;
     this.end = startRegion?.end ? startRegion.end : chromSizes["1"];
     this.samples = samples;
-    this.trackHeights = trackHeights;
+    this.trackHeights = loadTrackHeights() || trackHeights;
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.settings = settings;
@@ -67,6 +69,8 @@ export class GensSession {
     this.chromInfo = chromInfo;
     this.chromSizes = chromSizes;
     this.annotationSelections = loadAnnotationSelections() || [];
+    this.colorAnnotationId = loadColorAnnotation();
+    this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
   }
 
   public getGenomeBuild(): number {
@@ -98,6 +102,7 @@ export class GensSession {
 
   public setColorAnnotation(id: string | null) {
     this.colorAnnotationId = id;
+    saveColorAnnotation(id);
   }
 
   public getColorAnnotation(): string | null {
@@ -119,6 +124,16 @@ export class GensSession {
 
   public setTrackHeights(heights: TrackHeights) {
     this.trackHeights = heights;
+    saveTrackHeights(heights);
+  }
+
+  public getCoverageRange(): [number, number] {
+    return this.coverageRange;
+  }
+
+  public setCoverageRange(range: [number, number]) {
+    this.coverageRange = range;
+    saveCoverageRange(range);
   }
 
   public getSamples(): Sample[] {
