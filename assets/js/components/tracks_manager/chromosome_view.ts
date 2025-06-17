@@ -101,6 +101,7 @@ export class ChromosomeView extends ShadowBaseElement {
         },
         () => session.getMarkerModeOn(),
         () => [1, session.getChromSize("1")],
+        () => session.getCoverageRange(),
       );
 
       addSampleAnnotationTracks(
@@ -151,6 +152,7 @@ function addSampleTracks(
   onAddTrack: (track: ChromViewTrackInfo) => void,
   getMarkerModeOn: () => boolean,
   getXRange: () => Rng,
+  getCoverageRange: () => Rng,
 ) {
   const trackId = `${sample.sampleId}_${chrom}`;
   const trackLabel = sample.sampleId;
@@ -162,7 +164,7 @@ function addSampleTracks(
     {
       startExpanded: false,
       yAxis: {
-        range: COV_Y_RANGE,
+        range: getCoverageRange(),
         label: "Log2 ratio",
         hideLabelOnCollapse: true,
         hideTicksOnCollapse: true,

@@ -177,7 +177,7 @@ export class TrackView extends ShadowBaseElement {
     );
 
     const yAxisCov = {
-      range: COV_Y_RANGE,
+      range: session.getCoverageRange(),
       label: "Log2 Ratio",
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
@@ -186,7 +186,7 @@ export class TrackView extends ShadowBaseElement {
       "overview_cov",
       "Overview (cov)",
       () => dataSources.getOverviewCovData(getMainSample(samples)),
-      COV_Y_RANGE,
+      session.getCoverageRange(),
       chromSizes,
       chromClick,
       session,
@@ -615,7 +615,7 @@ function createSampleTracks(
     {
       startExpanded,
       yAxis: {
-        range: COV_Y_RANGE,
+        range: session.getCoverageRange(),
         label: "Log2 Ratio",
         hideLabelOnCollapse: true,
         hideTicksOnCollapse: true,
