@@ -141,14 +141,14 @@ export function getRenderDataSource(
   const getSampleAnnotSources = async (
     caseId: string,
     sampleId: string,
-  ): Promise<{ id: string, name: string }[]> => {
-    const results = await api.getSampleAnnotationSources(caseId, sampleId)
+  ): Promise<{ id: string; name: string }[]> => {
+    const results = await api.getSampleAnnotationSources(caseId, sampleId);
     return results.map((r) => {
       return {
         id: r.track_id,
         name: r.name,
-      }
-    })
+      };
+    });
   };
 
   const renderDataSource: RenderDataSource = {
@@ -195,7 +195,6 @@ export function parseSampleAnnotations(
   annotations: ApiSimplifiedAnnotation[],
   chromosome: string,
 ): RenderBand[] {
-
   const results = annotations
     .filter((annot) => annot.chrom == chromosome)
     .map((annot) => {
@@ -208,7 +207,7 @@ export function parseSampleAnnotations(
         label,
         hoverInfo: `${annot.name}`,
       };
-    })
+    });
   return results;
 }
 
@@ -241,7 +240,9 @@ export function parseTranscripts(
       start: transcript.start,
       end: transcript.end,
       label: transcript.name,
-      color: STYLE.colors.green,
+      color: transcript.is_protein_coding
+        ? STYLE.colors.green
+        : STYLE.colors.blue,
       hoverInfo: `${transcript.name}`,
       direction: transcript.strand as "+" | "-",
       subFeatures: exons,

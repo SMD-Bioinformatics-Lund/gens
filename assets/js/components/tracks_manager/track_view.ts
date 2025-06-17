@@ -1,4 +1,4 @@
-import { ANIM_TIME, STYLE } from "../../constants";
+import { ANIM_TIME, COLORS, SIZES, STYLE } from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import Sortable, { SortableEvent } from "sortablejs";
 import {
@@ -46,6 +46,7 @@ template.innerHTML = String.raw`
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
+      border-right: ${SIZES.one}px solid ${COLORS.lightGray};
     }
     #tracks-container.grabbable {
       cursor: grab;

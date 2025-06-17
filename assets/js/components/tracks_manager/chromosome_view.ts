@@ -1,4 +1,4 @@
-import { CHROMOSOMES, SIZES, TRACK_HEIGHTS } from "../../constants";
+import { CHROMOSOMES, COLORS, SIZES, TRACK_HEIGHTS } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { div, removeOne } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
@@ -20,6 +20,7 @@ template.innerHTML = String.raw`
       width: 100%;
       height: 100%;
       box-sizing: border-box;
+      border-right: ${SIZES.one}px solid ${COLORS.lightGray};
     }
   </style>
   <div id="chromosome-tracks-container"></div>

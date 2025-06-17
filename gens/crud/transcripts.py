@@ -67,6 +67,7 @@ def get_transcripts(
         "end": True,
         "mane": True,
         "strand": True,
+        "transcript_biotype": True,
         "features": True,
     }
     cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(query, projection, sort=sort_order)
@@ -79,6 +80,7 @@ def get_transcripts(
                 "end": doc["end"],
                 "type": doc["mane"] if doc["mane"] is not None else "non-mane",
                 "strand": doc["strand"],
+                "is_protein_coding": doc["transcript_biotype"] == "protein_coding",
                 "features": _format_features(doc["features"]),
             }
         )
