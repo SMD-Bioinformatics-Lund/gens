@@ -59,8 +59,7 @@ export async function initCanvases({
   scoutBaseURL,
   gensApiURL,
   annotationFile: defaultAnnotationName,
-  // FIXME: Will be needed for link with external software, going directly to location
-  _startRegion,
+  startRegion,
   version,
   allSamples,
 }: {
@@ -70,7 +69,7 @@ export async function initCanvases({
   scoutBaseURL: string;
   gensApiURL: string;
   annotationFile: string;
-  _startRegion: Region;
+  startRegion: { chrom: Chromosome; start?: number; end?: number } | null;
   version: string;
   allSamples: Sample[];
 }) {
@@ -79,7 +78,6 @@ export async function initCanvases({
   const settingsPage = document.createElement("settings-page") as SettingsMenu;
   const infoPage = document.createElement("info-page") as InfoMenu;
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
-
 
   headerInfo.initialize(
     caseId,
@@ -131,9 +129,9 @@ export async function initCanvases({
       sampleId: sample.sample_id,
       sampleType: sample.sample_type,
       sex: sample.sex,
-      meta: sample.meta
+      meta: sample.meta,
     };
-    return result
+    return result;
   });
 
   const session = new GensSession(
@@ -147,6 +145,7 @@ export async function initCanvases({
     genomeBuild,
     api.getChromInfo(),
     api.getChromSizes(),
+    startRegion,
   );
 
   const renderDataSource = getRenderDataSource(
@@ -219,7 +218,7 @@ export async function initCanvases({
       session.setColorAnnotation(annotId);
       await gensTracks.trackView.setColorAnnotation(annotId);
       render({});
-    }
+    },
   );
 
   infoPage.setSources(() => session.getSamples());
