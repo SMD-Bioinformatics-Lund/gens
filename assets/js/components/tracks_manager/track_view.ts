@@ -16,7 +16,7 @@ import { GensSession } from "../../state/gens_session";
 import { getLinearScale } from "../../draw/render_utils";
 import { OverviewTrack } from "../tracks/overview_track";
 import { IdeogramTrack } from "../tracks/ideogram_track";
-import { BAF_Y_RANGE, COV_Y_RANGE } from "./tracks_manager";
+import { BAF_Y_RANGE } from "./tracks_manager";
 import { TrackMenu } from "../side_menu/track_menu";
 import { DotTrack } from "../tracks/dot_track";
 import { keyLogger } from "../util/keylogger";
@@ -92,8 +92,6 @@ export class TrackView extends ShadowBaseElement {
 
   private openTrackContextMenu: (track: DataTrack) => void;
   private trackPages: Record<string, TrackMenu> = {};
-
-  private colorAnnotationId: string | null = null;
 
   private sampleToTracks: Record<
     string,
@@ -177,7 +175,7 @@ export class TrackView extends ShadowBaseElement {
     );
 
     const yAxisCov = {
-      range: COV_Y_RANGE,
+      range: session.getCoverageRange(),
       label: "Log2 Ratio",
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
@@ -186,7 +184,7 @@ export class TrackView extends ShadowBaseElement {
       "overview_cov",
       "Overview (cov)",
       () => dataSources.getOverviewCovData(getMainSample(samples)),
-      COV_Y_RANGE,
+      session.getCoverageRange(),
       chromSizes,
       chromClick,
       session,
@@ -389,15 +387,15 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public async setColorAnnotation(annotId: string | null) {
-    this.colorAnnotationId = annotId;
+    this.session.setColorAnnotation(annotId);
     await this.updateColorBands();
   }
 
   private async updateColorBands() {
     let colorBands: RenderBand[] = [];
-    if (this.colorAnnotationId != null) {
+    if (this.session.getColorAnnotation() != null) {
       colorBands = await this.dataSource.getAnnotationBands(
-        this.colorAnnotationId,
+        this.session.getColorAnnotation(),
         this.session.getChromosome(),
       );
     }
@@ -615,7 +613,7 @@ function createSampleTracks(
     {
       startExpanded,
       yAxis: {
-        range: COV_Y_RANGE,
+        range: session.getCoverageRange(),
         label: "Log2 Ratio",
         hideLabelOnCollapse: true,
         hideTicksOnCollapse: true,
@@ -626,6 +624,7 @@ function createSampleTracks(
     () => session.getMarkerModeOn(),
     () => session.getXRange(),
     openTrackContextMenu,
+    () => session.getTrackHeights(),
   );
   const bafTrack = createDotTrack(
     `${sample.sampleId}_log2_baf`,
@@ -651,6 +650,7 @@ function createSampleTracks(
     () => session.getMarkerModeOn(),
     () => session.getXRange(),
     openTrackContextMenu,
+    () => session.getTrackHeights(),
   );
 
   const variantTrack = createVariantTrack(
@@ -664,7 +664,7 @@ function createSampleTracks(
     openTrackContextMenu,
     {
       height: {
-        collapsedHeight: STYLE.bandTrack.trackViewHeight,
+        collapsedHeight: session.getTrackHeights().bandCollapsed,
       },
       showLabelWhenCollapsed: true,
       isExpanded: false,
@@ -719,7 +719,7 @@ function updateAnnotationTracks(
       session,
       openTrackContextMenu,
       {
-        height: STYLE.bandTrack.trackViewHeight,
+        height: session.getTrackHeights().bandCollapsed,
         showLabelWhenCollapsed: hasLabel,
         startExpanded: true,
       },
@@ -759,7 +759,7 @@ async function getSampleAnnotationTracks(
       session,
       openTrackContextMenu,
       {
-        height: STYLE.bandTrack.trackViewHeight,
+        height: session.getTrackHeights().bandCollapsed,
         showLabelWhenCollapsed: true,
         startExpanded: true,
       },

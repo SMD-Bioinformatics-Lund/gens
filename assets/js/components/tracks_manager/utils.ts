@@ -1,5 +1,6 @@
 import { STYLE } from "../../constants";
 import { GensSession } from "../../state/gens_session";
+import { TrackHeights } from "../side_menu/settings_menu";
 import { BandTrack } from "../tracks/band_track";
 import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { DotTrack } from "../tracks/dot_track";
@@ -94,12 +95,13 @@ export function createDotTrack(
   getMarkerModeOn: () => boolean,
   getXRange: () => Rng,
   openTrackContextMenu: (track: DataTrack) => void,
+  getTrackHeights: () => TrackHeights,
 ): DotTrack {
   // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     height: {
-      collapsedHeight: trackHeight.m,
-      expandedHeight: trackHeight.xl,
+      collapsedHeight: getTrackHeights().dotCollapsed,
+      expandedHeight: getTrackHeights().dotExpanded,
     },
     yAxis: settings.yAxis,
     showLabelWhenCollapsed: settings.hasLabel,
@@ -137,7 +139,6 @@ export function createVariantTrack(
   fnSettings: DataTrackSettings
 ): BandTrack {
   // FIXME: Move to session
-
 
   const variantTrack = new BandTrack(
     trackId,
@@ -194,10 +195,9 @@ export function createGeneTrack(
   session: GensSession,
   openTrackContextMenu: ((track: DataTrack) => void) | null,
 ): TrackViewTrackInfo {
-  // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     height: {
-      collapsedHeight: STYLE.bandTrack.trackViewHeight,
+      collapsedHeight: session.getTrackHeights().bandCollapsed,
     },
     showLabelWhenCollapsed: true,
     isExpanded: false,

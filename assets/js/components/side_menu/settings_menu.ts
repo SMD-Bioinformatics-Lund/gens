@@ -108,6 +108,13 @@ template.innerHTML = String.raw`
       <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
     </flex-row>
   </flex-row>
+  <flex-row class="height-row">
+    <div>Default cov y-range</div>
+    <flex-row class="height-inputs">
+      <input id="coverage-y-start" class="height-input" type="number" step="0.1">
+      <input id="coverage-y-end" class="height-input" type="number" step="0.1">
+    </flex-row>
+  </flex-row>
   <div id="tracks-overview"></div>
 `;
 
@@ -122,6 +129,10 @@ export class SettingsMenu extends ShadowBaseElement {
   private bandTrackCollapsedHeightElem: HTMLInputElement;
   private dotTrackCollapsedHeightElem: HTMLInputElement;
   private dotTrackExpandedHeightElem: HTMLInputElement;
+  private coverageYStartElem: HTMLInputElement;
+  private coverageYEndElem: HTMLInputElement;
+
+  private session: GensSession;
 
   private onChange: () => void;
   private allAnnotationSources: ApiAnnotationTrack[];
@@ -157,11 +168,18 @@ export class SettingsMenu extends ShadowBaseElement {
     gotoHighlight: (region: Region) => void,
     onAddSample: (sample: Sample) => Promise<void>,
     onRemoveSample: (sample: Sample) => void,
-    setTrackHeights: (trackHeights: TrackHeights) => void,
+    setTrackInfo: (trackHeights: TrackHeights) => void,
     onColorByChange: (annotId: string | null) => void,
   ) {
+    this.session = session;
     this.onChange = onChange;
     this.allAnnotationSources = allAnnotationSources;
+    const stored = session.getAnnotationSelections();
+    if (stored && stored.length > 0) {
+      defaultAnnots = allAnnotationSources
+        .filter((src) => stored.includes(src.track_id))
+        .map((src) => ({ id: src.track_id, label: src.name }));
+    }
     this.defaultAnnots = defaultAnnots;
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
@@ -178,7 +196,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onRemoveSample = onRemoveSample;
 
     this.getTrackHeights = () => session.getTrackHeights();
-    this.setTrackHeights = setTrackHeights;
+    this.setTrackHeights = setTrackInfo;
     this.onColorByChange = onColorByChange;
     this.getColorAnnotation = () => session.getColorAnnotation();
   }
@@ -202,12 +220,18 @@ export class SettingsMenu extends ShadowBaseElement {
     this.dotTrackExpandedHeightElem = this.root.querySelector(
       "#dot-expanded-height",
     );
+    this.coverageYStartElem = this.root.querySelector("#coverage-y-start");
+    this.coverageYEndElem = this.root.querySelector("#coverage-y-end");
 
     const trackSizes = this.getTrackHeights();
+
+    const coverageRange = this.session.getCoverageRange();
 
     this.bandTrackCollapsedHeightElem.value = `${trackSizes.bandCollapsed}`;
     this.dotTrackCollapsedHeightElem.value = `${trackSizes.dotCollapsed}`;
     this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
+    this.coverageYStartElem.value = `${coverageRange[0]}`;
+    this.coverageYEndElem.value = `${coverageRange[1]}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
@@ -216,14 +240,18 @@ export class SettingsMenu extends ShadowBaseElement {
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
+      const ids = this.annotSelect
+        .getValues()
+        .map((obj) => obj.value as string);
+      this.session.setAnnotationSelections(ids);
       this.onChange();
     });
 
     this.addElementListener(this.colorBySelect, "change", () => {
       const val = this.colorBySelect.getValue();
-      const id = (val && val.value != "") ? val.value : null;
+      const id = val && val.value != "" ? val.value : null;
       this.onColorByChange(id);
-    })
+    });
 
     this.addElementListener(this.sampleSelect, "change", () => {
       this.render({});
@@ -237,6 +265,11 @@ export class SettingsMenu extends ShadowBaseElement {
       };
     };
 
+    const getCovRange = (): [number, number] => [
+      parseFloat(this.coverageYStartElem.value),
+      parseFloat(this.coverageYEndElem.value),
+    ];
+
     this.addElementListener(this.bandTrackCollapsedHeightElem, "change", () => {
       this.setTrackHeights(myGetTrackHeights());
       this.render({});
@@ -248,6 +281,13 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addElementListener(this.dotTrackExpandedHeightElem, "change", () => {
       this.setTrackHeights(myGetTrackHeights());
       this.render({});
+    });
+
+    this.addElementListener(this.coverageYStartElem, "change", () => {
+      this.session.setCoverageRange(getCovRange());
+    });
+    this.addElementListener(this.coverageYEndElem, "change", () => {
+      this.session.setCoverageRange(getCovRange());
     });
   }
 
@@ -267,9 +307,10 @@ export class SettingsMenu extends ShadowBaseElement {
         ...c,
         selected: c.value === this.getColorAnnotation(),
       })),
-    ]
+    ];
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
+    this.session.setAnnotationSelections(this.defaultAnnots.map((a) => a.id));
     this.onChange();
   }
 
@@ -331,9 +372,12 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addSampleButton.disabled = this.sampleSelect.getValue() == null;
 
     const { bandCollapsed, dotCollapsed, dotExpanded } = this.getTrackHeights();
+    const [covStart, covEnd] = this.session.getCoverageRange();
     this.bandTrackCollapsedHeightElem.value = `${bandCollapsed}`;
     this.dotTrackCollapsedHeightElem.value = `${dotCollapsed}`;
     this.dotTrackExpandedHeightElem.value = `${dotExpanded}`;
+    this.coverageYStartElem.value = `${covStart}`;
+    this.coverageYEndElem.value = `${covEnd}`;
     if (this.colorBySelect) {
       const val = this.colorBySelect.getValue();
       const selectedId = val ? val.value : "";
@@ -342,9 +386,13 @@ export class SettingsMenu extends ShadowBaseElement {
           value: source.track_id,
           label: source.name,
           selected: source.track_id === selectedId,
-        }
-      })
-      choices.unshift({ label: "None", value: "", selected: selectedId === ""})
+        };
+      });
+      choices.unshift({
+        label: "None",
+        value: "",
+        selected: selectedId === "",
+      });
       this.colorBySelect.setValues(choices);
     }
   }
