@@ -48,13 +48,14 @@ export class GensSession {
     genomeBuild: number,
     chromInfo: Record<Chromosome, ChromosomeInfo>,
     chromSizes: Record<Chromosome, number>,
+    startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
     this.highlights = {};
-    this.chromosome = "1";
-    this.start = 1;
-    this.end = chromSizes["1"];
+    this.chromosome = startRegion ? startRegion.chrom : "1";
+    this.start = startRegion?.start ? startRegion.start : 1;
+    this.end = startRegion?.end ? startRegion.end : chromSizes["1"];
     this.samples = samples;
     this.trackHeights = trackHeights;
     this.scoutBaseURL = scoutBaseURL;
