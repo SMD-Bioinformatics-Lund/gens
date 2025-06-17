@@ -74,6 +74,12 @@ template.innerHTML = String.raw`
   <div>
     <choice-select id="annotation-select" multiple></choice-select>
   </div>
+  <div class="header-row">
+    <div class="header">Color tracks by</div>
+  </div>
+  <div>
+    <choice-select id="color-by-select"></choice-select>
+  </div>
   <flex-row class="header-row">
     <div class="header">Samples</div>
     <flex-row id="samples-header-row">
@@ -110,6 +116,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private tracksOverview: HTMLDivElement;
   private highlightsOverview: HTMLDivElement;
   private annotSelect: ChoiceSelect;
+  private colorBySelect: ChoiceSelect;
   private sampleSelect: ChoiceSelect;
   private addSampleButton: IconButton;
   private bandTrackCollapsedHeightElem: HTMLInputElement;
@@ -130,6 +137,8 @@ export class SettingsMenu extends ShadowBaseElement {
   private onRemoveSample: (sample: Sample) => void;
   private getTrackHeights: () => TrackHeights;
   private setTrackHeights: (sizes: TrackHeights) => void;
+  private onColorByChange: (annotId: string | null) => void;
+  private getColorAnnotation: () => string | null;
 
   public isInitialized: boolean = false;
 
@@ -149,6 +158,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onAddSample: (sample: Sample) => Promise<void>,
     onRemoveSample: (sample: Sample) => void,
     setTrackHeights: (trackHeights: TrackHeights) => void,
+    onColorByChange: (annotId: string | null) => void,
   ) {
     this.onChange = onChange;
     this.allAnnotationSources = allAnnotationSources;
@@ -169,11 +179,14 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.getTrackHeights = () => session.getTrackHeights();
     this.setTrackHeights = setTrackHeights;
+    this.onColorByChange = onColorByChange;
+    this.getColorAnnotation = () => session.getColorAnnotation();
   }
 
   connectedCallback() {
     super.connectedCallback();
     this.annotSelect = this.root.querySelector("#annotation-select");
+    this.colorBySelect = this.root.querySelector("#color-by-select");
     this.sampleSelect = this.root.querySelector("#sample-select");
     this.tracksOverview = this.root.querySelector("#tracks-overview");
     this.samplesOverview = this.root.querySelector("#samples-overview");
@@ -205,6 +218,12 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addElementListener(this.annotSelect, "change", () => {
       this.onChange();
     });
+
+    this.addElementListener(this.colorBySelect, "change", () => {
+      const val = this.colorBySelect.getValue();
+      const id = (val && val.value != "") ? val.value : null;
+      this.onColorByChange(id);
+    })
 
     this.addElementListener(this.sampleSelect, "change", () => {
       this.render({});
@@ -242,6 +261,14 @@ export class SettingsMenu extends ShadowBaseElement {
         source1.label.toString().localeCompare(source2.label.toString()),
       ),
     );
+    const colorChoices = [
+      { label: "None", value: "", selected: this.getColorAnnotation() == null },
+      ...getAnnotationChoices(this.allAnnotationSources, []).map((c) => ({
+        ...c,
+        selected: c.value === this.getColorAnnotation(),
+      })),
+    ]
+    this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
     this.onChange();
   }
@@ -307,6 +334,19 @@ export class SettingsMenu extends ShadowBaseElement {
     this.bandTrackCollapsedHeightElem.value = `${bandCollapsed}`;
     this.dotTrackCollapsedHeightElem.value = `${dotCollapsed}`;
     this.dotTrackExpandedHeightElem.value = `${dotExpanded}`;
+    if (this.colorBySelect) {
+      const val = this.colorBySelect.getValue();
+      const selectedId = val ? val.value : "";
+      const choices = this.allAnnotationSources.map((source) => {
+        return {
+          value: source.track_id,
+          label: source.name,
+          selected: source.track_id === selectedId,
+        }
+      })
+      choices.unshift({ label: "None", value: "", selected: selectedId === ""})
+      this.colorBySelect.setValues(choices);
+    }
   }
 
   getAnnotSources(settings: {

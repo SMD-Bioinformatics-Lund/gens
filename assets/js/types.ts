@@ -62,6 +62,7 @@ interface ApiSimplifiedTranscript {
   end: number;
   strand: string;
   color: number[] | null;
+  is_protein_coding: boolean;
   features: {
     feature: string;
     start: number;

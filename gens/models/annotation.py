@@ -145,6 +145,7 @@ class SimplifiedTrackInfo(GenomePosition, RWModel):
 class SimplifiedTranscriptInfo(SimplifiedTrackInfo):
     """Simplified transcript annotation."""
 
+    is_protein_coding: bool
     features: list[ExonFeature | UtrFeature]
     strand: DnaStrand
 

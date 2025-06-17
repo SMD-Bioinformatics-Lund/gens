@@ -14,14 +14,27 @@ export function initializeDragSelect(
   let dragStart: { x: number; y: number };
   let marker: GensMarker | null = null;
 
+  function getLocalPos(event: MouseEvent) {
+    const rect = element.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    return {
+      x: Math.max(STYLE.yAxis.width, Math.min(x, rect.width)),
+      y: Math.max(0, Math.min(y, rect.height)),
+    };
+  }
+
   element.addEventListener("mousedown", (event) => {
     isDragging = true;
     isMoved = false;
 
-    dragStart = { x: event.offsetX, y: event.offsetY };
+    const pos = getLocalPos(event);
+    dragStart = { x: pos.x, y: pos.y };
+    // dragStart = { x: event.offsetX, y: event.offsetY };
 
     // FIXME: Deal with the yAxis width in a more robust way
-    if (event.offsetX < STYLE.yAxis.width) {
+    if (pos.x < STYLE.yAxis.width) {
       return;
     }
 
@@ -49,30 +62,22 @@ export function initializeDragSelect(
     }
 
     isMoved = true;
-    let currX = event.offsetX;
 
-    if (currX < STYLE.yAxis.width) {
-      currX = STYLE.yAxis.width;
-    }
+    const pos = getLocalPos(event);
 
-    const xRange = sortRange([dragStart.x, currX]);
+
+    const xRange = sortRange([dragStart.x, pos.x]);
 
     marker.render(xRange);
   });
 
   document.addEventListener("mouseup", (event) => {
     if (isDragging && isMoved) {
-      // FIXME: How to avoid the hard-coding here?
-      const sortedX = sortRange([
-        Math.max(dragStart.x, STYLE.yAxis.width),
-        Math.max(event.offsetX, STYLE.yAxis.width),
-      ]);
+      const pos = getLocalPos(event);
+      const sortedX = sortRange([dragStart.x, pos.x]);
+      const sortedY = sortRange([dragStart.y, pos.y]);
 
-      onDragRelease(
-        sortedX,
-        sortRange([dragStart.y, event.y]),
-        keyLogger.heldKeys.Shift,
-      );
+      onDragRelease(sortedX, sortedY, keyLogger.heldKeys.Shift);
     }
     if (marker) {
       marker.remove();
@@ -107,9 +112,9 @@ export function renderHighlights(
     const marker = document.createElement("gens-marker") as GensMarker;
     marker.initialize(
       id,
-      container.offsetHeight, 
+      container.offsetHeight,
       { color, isCreated: true },
-      onMarkerRemove
+      onMarkerRemove,
     );
     container.appendChild(marker);
 

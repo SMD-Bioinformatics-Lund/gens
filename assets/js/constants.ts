@@ -62,6 +62,7 @@ export const COLORS = {
   yellow: "#dcd16f",
   red: "#f00",
   teal: "#008080",
+  blue: "#4C6D94",
   orange: "#954000",
   purple: "#5E4B8B",
   gold: "#D4AF37",
@@ -70,6 +71,7 @@ export const COLORS = {
 };
 
 export const SIZES = {
+  one: 1,
   xxs: 2,
   xs: 4,
   s: 6,

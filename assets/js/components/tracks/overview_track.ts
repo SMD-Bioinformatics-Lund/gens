@@ -1,6 +1,6 @@
 import { drawBox, drawLabel, drawLine } from "../../draw/shapes";
 import { transformMap, padRange, generateID } from "../../util/utils";
-import { COLORS, STYLE } from "../../constants";
+import { COLORS, SIZES, STYLE } from "../../constants";
 import { CanvasTrack, CanvasTrackSettings } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,
@@ -91,6 +91,8 @@ export class OverviewTrack extends CanvasTrack {
           event.offsetX > STYLE.yAxis.width ? "pointer" : "";
       },
     );
+
+    this.trackContainer.style.borderRight = `${SIZES.one}px solid ${COLORS.lightGray}`;
   }
 
   async render(settings: RenderSettings) {
