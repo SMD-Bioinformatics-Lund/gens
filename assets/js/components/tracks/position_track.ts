@@ -67,7 +67,7 @@ export class PositionTrack extends DataTrack {
         },
         { color: STYLE.colors.darkGray },
       );
-      const label = prefixNts(Math.round(pos), end);
+      const label = prefixNts(Math.round(pos), size);
       drawLabel(
         this.ctx,
         label,
