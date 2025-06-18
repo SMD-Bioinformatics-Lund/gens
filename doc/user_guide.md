@@ -3,11 +3,14 @@
 * [Samples page](#the-sample-viewer)
 * [The sample viewer](#sample-viewer)
     * [Tracks view](#tracks-view)
+    * [Tracks view](./sample_viewer/tracks_view.md)
+    * [Chromosome view](#the-chromosome-page)
     * [Settings](#the-settings-page)
     * [Track actions](#track-actions)
     * [Highlights](#highlights)
-    * [Chromosome view](#the-chromosome-page)
     * [Meta data](#meta-data)
+
+
 
 ## The samples page
 
