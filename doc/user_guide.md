@@ -1,40 +1,74 @@
 # User guide
 
-How to run Gens and interpret the output.
-
 ## The samples page
 
-The start page lists all samples found in the database. From here you can open a single sample or an entire case.
-A search field helps locating specific entries. Each row includes a link to open the sample in an external software when such
+The start page lists all samples found in the database. From here you can open a single sample or all samples within a case. A search field helps locating specific entries. Each row includes a link to open the sample in an external software when such
 integration is configured.
 
 ![Samples page](img/samples.PNG)
 
+FIXME
+
+* Adding / removing samples
+* Change Y-axis range
+
 ## The sample viewer
+
+After clicking a sample on the samples page, its tracks are opened in the sample viewer.
+
+### The main views
+
+The view of a single sample.
+
+The tracks are:
+
+* hg002 baf: B Allele Frequency
+* hg002 cov: Log2 coverage ratio
+* hg002 Variants: Filtered SV variants from external software (here from Scout)
+* Mimisbrunnr: Annotation track. Multiple annotation tracks can be selected through the settings page (FIXME: see more below)
+* UPD & ROH: Custom sample track, here with UPDs and ROHs calculated for the sample outside Gens and loaded together with the sample.
 
 ![Single](img/single.PNG)
 
+Red dots in the coverage plot are outside the specified Y-range. To not hide this data, they are included in red at the edge of the plot.
+
+![Red dots](img/red_dots.PNG)
+
+When opening a full case, the view is similar, but will display BAF and coverage tracks for all included samples. Variant tracks for non-proband (i.e. mother / father) are available but hidden by default. Then can be shown in the settings menu (FIXME: see below).
+
 ![Trio](img/trio.PNG)
 
-![Chromosome view](img/chromosome_view.PNG)
+Clicking the chromosome tracks button in the top right (dark gray in the screenshot below) opens the chromosome view. Here, coverage information is shown for all chromosomes in the main sample. If additional sample tracks are available, these are shown as well.
 
-![Annotations](img/annotations.PNG)
-
-![Highlights](img/highlighs.PNG)
-
-![Sample info](img/sample_info_after.PNG)
-
-![Settings](img/settings.PNG)
-
-![Color by](img/color_by.PNG)
-
-![Multiple annotations](img/multiple_annotations.PNG)
+Tracks can be expanded by right-clicking on them. For dot-tracks this simply expands the screen size. For band tracks, it expands such that there are no overlaps among the bands.
 
 ![Before expansion](img/before_expansion.PNG)
 
 ![After expansion](img/after_expansion.PNG)
 
-![Red dots](img/red_dots.PNG)
+![Chromosome view](img/chromosome_view.PNG)
+
+Clicking any bands in the band tracks opens additional information. Here, a band in the annotation track is clicked.
+
+![Annotations](img/annotations.PNG)
+
+Clicking the info button in the top right corner opens available meta information for the sample. This is basic information on sample IDs, sample type and sex. If additional meta data has been loaded, this is also shown.
+
+![Sample info](img/sample_info_after.PNG)
+
+Much of the configurations of Gens can be done through the settings page. More details are shown below (FIXME).
+
+![Settings](img/settings.PNG)
+
+#### The settings page
+
+Multiple annotations can be selected.
+
+![Multiple annotations](img/multiple_annotations.PNG)
+
+The track backgrounds can be colored based on one of the annotation tracks.
+
+![Color by](img/color_by.PNG)
 
 ### The track page
 
