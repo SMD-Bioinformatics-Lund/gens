@@ -68,11 +68,10 @@ You can at any point reset the zoom to the current chromosome using "R" or press
 
 ![External gif](https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/navigation.gif)
 
-<GIF>
-
 #### Annotation tracks
 
 You can select annotation tracks to display in the settings menu.
+
 
 <GIF>
 
@@ -86,18 +85,32 @@ These settings persist when refreshing the page.
 
 Highlights can be placed in several way.
 
-1. Enter highlight mode (shortcut M or the ... button)
+1. Enter highlight mode (shortcut M or the pencil button)
 2. Click and drag
 
-<GIFS>
+![Add highlights](https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/add_highlights.gif)
 
 Highlights can be removed by hovering over and pressing the "X", or by the settings menu.
 
-<GIFS>
+![Remove highlights](https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/remove_highlights.gif)
 
 You can quickly navigate to any highlight through the settings menu.
 
-<GIF>
+![Navigate highlights](https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/navigate_highlights.gif)
+
+You can hide tracks though the track menu or the settings page.
+
+You can unhide tracks through the settings page.
+
+![Hide and unhide tracks](https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/hide_unhide.gif)
+
+Selecting annotations
+
+![Multiple annotation tracks](https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/multiple_annotation_tracks.gif)
+
+Color track by annotation
+
+![Color track by annotation](https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/mimisbrunnr.gif)
 
 #### Band actions
 
