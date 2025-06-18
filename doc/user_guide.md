@@ -119,7 +119,11 @@ Color track by annotation
 
 ### The chromosome page
 
+![Chromosome view](./img/chromosome_view.PNG)
+
 ### The meta data view
+
+![Meta data view](./img/)
 
 ### Settings menu
 
