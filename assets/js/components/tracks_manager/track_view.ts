@@ -132,6 +132,7 @@ export class TrackView extends ShadowBaseElement {
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
       handle: `.${TRACK_HANDLE_CLASS}`,
+      swapThreshold: 0.5,
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
         const [moved] = this.dataTracks.splice(oldIndex, 1);
