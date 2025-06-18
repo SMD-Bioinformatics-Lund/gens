@@ -1,5 +1,14 @@
 # User guide
 
+* [Samples page](#the-sample-viewer)
+* [The sample viewer](#sample-viewer)
+    * [Tracks view](#tracks-view)
+    * [Settings](#the-settings-page)
+    * [Track actions](#track-actions)
+    * [Highlights](#highlights)
+    * [Chromosome view](#the-chromosome-page)
+    * [Meta data](#meta-data)
+
 ## The samples page
 
 The start page lists all samples found in the database. From here you can open a single sample or all samples within a case. A search field helps locating specific entries. Each row includes a link to open the sample in an external software when such
@@ -12,11 +21,11 @@ FIXME
 * Adding / removing samples
 * Change Y-axis range
 
-## The sample viewer
+## Sample viewer
 
 After clicking a sample on the samples page, its tracks are opened in the sample viewer.
 
-### The main views
+### Tracks view
 
 The view of a single sample.
 
@@ -32,21 +41,19 @@ The tracks are:
 
 Red dots in the coverage plot are outside the specified Y-range. To not hide this data, they are included in red at the edge of the plot.
 
-![Red dots](img/red_dots.PNG)
-
 When opening a full case, the view is similar, but will display BAF and coverage tracks for all included samples. Variant tracks for non-proband (i.e. mother / father) are available but hidden by default. Then can be shown in the settings menu (FIXME: see below).
 
 ![Trio](img/trio.PNG)
 
 Clicking the chromosome tracks button in the top right (dark gray in the screenshot below) opens the chromosome view. Here, coverage information is shown for all chromosomes in the main sample. If additional sample tracks are available, these are shown as well.
 
+![Chromosome view](img/chromosome_view.PNG)
+
 Tracks can be expanded by right-clicking on them. For dot-tracks this simply expands the screen size. For band tracks, it expands such that there are no overlaps among the bands.
 
 ![Before expansion](img/before_expansion.PNG)
 
 ![After expansion](img/after_expansion.PNG)
-
-![Chromosome view](img/chromosome_view.PNG)
 
 Clicking any bands in the band tracks opens additional information. Here, a band in the annotation track is clicked.
 
@@ -70,15 +77,13 @@ The track backgrounds can be colored based on one of the annotation tracks.
 
 ![Color by](img/color_by.PNG)
 
-### The track page
-
-#### Tracks
-
-Displayed tracks include log2 coverage ratio, B-allele frequency, genes, variants and optional sample tracks.
-
-An overview row summarises the data and a chromosome track indicates the current position.
-
-Coverage values outside the selected Y-range are drawn in red at the max/min Y-value to highlight extreme values.
+ * Annotation sources
+ * Color tracks by
+ * View, add and remove samples
+ * Highlights
+ * Track settings
+ * Setting persistance
+ * Move, show, collapse tracks
 
 #### Track actions
 
@@ -115,7 +120,7 @@ You can select one annotation track to color the backgrounds of other tracks.
 
 These settings persist when refreshing the page.
 
-#### Highlighting areas
+#### Highlights
 
 Highlights can be placed in several way.
 
@@ -151,20 +156,9 @@ Color track by annotation
  * Click to open context menu
  * Set highlight
 
-### The chromosome page
+### Chromosome view
 
 ![Chromosome view](./img/chromosome_view.PNG)
 
-### The meta data view
+### Meta data
 
-![Meta data view](./img/)
-
-### Settings menu
-
- * Annotation sources
- * Color tracks by
- * View, add and remove samples
- * Highlights
- * Track settings
- * Setting persistance
- * Move, show, collapse tracks
