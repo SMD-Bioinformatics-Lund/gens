@@ -4,10 +4,10 @@ The documentation is being reorganized.
 
 ## Contents
 
-- [Project overview](doc/overview.md)
-- [Installation](doc/installation.md)
-- [User guide](doc/user_guide.md)
-- [Admin guide](doc/admin_guide.md)
-- [Developer guide](doc/developer_guide.md)
-- [Previous REAMDE](doc/old_README.md) 
+- [Project overview](docs/overview.md)
+- [Installation](docs/installation.md)
+- [User guide](docs/user_guide.md)
+- [Admin guide](docs/admin_guide.md)
+- [Developer guide](docs/developer_guide.md)
+- [Previous REAMDE](docs/old_README.md) 
 
