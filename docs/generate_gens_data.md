@@ -1,44 +1,12 @@
-## Data generation
+# Generate Gens input data
 
-Gens uses a custom tabix-indexed bed file format to hold the plot data. This file can be generated in any way, as long as the format of the file is according to the specification (see the section "Data format"). This section describes the method we're using to create the data.
+Gens uses a custom tabix-indexed bed file format to hold the coverage data used for plotting. This file can be generated in any way, as long as the format of the file is according to the specification. This section describes the method we're using to create the data.
 
-We are using the GATK4 workflow for normalizing the read depth data. It is described in detail here: https://gatk.broadinstitute.org/hc/en-us/articles/360035531092?id=11682. But here is a short summary of what we're doing:
-
-### Create PON
-
-Create targets file:
-``` bash
-gatk PreprocessIntervals                            \
-     --reference GRCh38.fa                          \
-     --bin-length 100                               \
-     --interval-merging-rule OVERLAPPING_ONLY       \
-     -O targets_preprocessed_100bp.interval_list
-```
-
-Build a panel of normals (PON). First run this command for all bam files that you want to include in the PON. We have one PON for males and one for females. We have approx. 100 individuals of each sex in the PONs, but less should be fine.
-``` bash
-gatk CollectReadCounts                                  \
-    -I sample1.bam                                      \
-    -L targets_preprocessed_100bp_bins.interval_list    \
-    --interval-merging-rule OVERLAPPING_ONLY            \
-    -O hdf5/sample1.hdf5
-```
-
-Then build the PON. This is fairly memory intensive, so make sure you have enough memory and adjust the -Xmx if necessary.
-``` bash
-gatk --java-options "-Xmx120000m" CreateReadCountPanelOfNormals \
-     --minimum-interval-median-percentile 10.0                  \
-     --maximum-chunk-size 29349635                              \
-     -O male_pon_100bp.hdf5                                     \
-     -I hdf5/sample1.hdf5                                       \
-     -I hdf5/sample2.hdf5                                       \
-     ...
-     -I hdf5/sample99.hdf5
-```
+We are using the GATK4 workflow for normalizing the read depth data. It is described in detail [here](https://gatk.broadinstitute.org/hc/en-us/articles/360035531092?id=11682). 
 
 ### Calculate normalized read depth data
 
-Then in your pipeline. Use these commands to count and normalize the data of a sample:
+Use these commands to count and normalize the data of a sample.
 
 ``` bash
 gatk CollectReadCounts                                              \
@@ -53,7 +21,7 @@ gatk --java-options "-Xmx30g" DenoiseReadCounts                     \
 
 ### Generate BAF data
 
-It is possible to use the GATK tools to create BAF data as well, but we've found it to be very slow and since we are already doing (germline) variant calling, we extract the BAF data from the gVCF using the script provided in the **utils** directory.
+It is possible to use the GATK tools to create BAF data as well, but we've found it to be very slow and since we are already doing (germline) variant calling, we extract the BAF data from the gVCF.
 
 ### Reformatting the data for Gens
 
@@ -67,17 +35,15 @@ The script requires that **bgzip** and **tabix** are installed in a $PATH direct
 
 The final output should be two files named: **SAMPLE_ID.baf.bed.gz** and **SAMPLE_ID.cov.bed.gz**
 
-## Loading data into Gens
-
-Load a sample into gens with the command `gens load sample` where you need to specify the sample id, genome build and the generated data files. **Note** that there sample id/ genome build combination needs to be unique. To use Gens simply navigate to the URL **hostname.com:5000/** to view a list of all samples loaded into Gens. To directly open a specific sample go to the URL **hostname.com:5000/<sample id>**.
-
 ## Data format
+
+**Note:** We are considering updating this to a standardized format, such as the BigWig format. ([GitHub issue](https://github.com/SMD-Bioinformatics-Lund/gens/issues/182))
 
 If you want to generate the data in some other way than described above you need to make sure the data conforms to these standards.
 
-Two data files for each sample are needed by Gens. One file for normalized read depth data, and one for B-allele frequencies (BAF). Both are normal bed files, with the exception that they have 5 different precalculatad levels of resolution. The different resolutions are represented in the bed-file by prefixing the chromosome names with **o**, **a**, **b**, **c**, **d** followed by an underscore. Over represents the data for the static overview, where **a** represent the lowest interactive resolution and **d** the highest.
+Two data files for each sample are needed by Gens. One file for normalized read depth data, and one for B-allele frequencies (BAF). Both are bed files, with the exception that they have 5 different precalculatad levels of resolution. The different resolutions are represented in the bed-file by prefixing the chromosome names with **o**, **a**, **b**, **c**, **d** followed by an underscore. **o** represents the data for the static overview, where **a** represent the lowest interactive resolution and **d** the highest.
 
-Each region in the bed file represents a single point in the plot (so it should be only 1 bp wide). The distance between the data points is what differs between the different resolutions. To create the data for lower resolutions we use a midpoint mean for read depth data, and simply take every Xth value for BAF.
+I.e. `b_2` means "zoom level B for chromosome 2".
 
 ```
 o_1    1383799    1383800    -0.081
@@ -111,42 +77,7 @@ The bin size for each resolution could be anything, but the if they are too smal
 
 The **o** resolution is used only for the whole genome overview plot. The number of data points in this resolution really affects the time it takes to initially load a sample into Gens.
 
-### Selection of SNPs for BAF data
+## Selection of SNPs for BAF data
 
 We're using all SNPs in gnomAD with an total allele frequency > 5%, which in gnomAD 2.1 is approximately 7.5 million SNPs.
 
-### Loading reference tracks
-
-Gens allows adding multiple tracks, most easily provided in one directory. As an illustration, here is how to format a UCSC DGV bb track for Gens display.
-
-Download the DGV bb track from [UCSC](https://genome.ucsc.edu/cgi-bin/hgTables?db=hg19&hgta_group=varRep&hgta_track=dgvPlus&hgta_table=dgvMerged&hgta_doSchema=describe+table+schema).
-Convert bigBed to Bed, cut relevant columns and name them according to Gens standard.
-```
-./bigBedToBed /home/proj/stage/rare-disease/gens-tracks/dgvMerged.bb dgvMerged.bed
-cut -f1,2,3,4,9 dgvMerged.bed > dgvMerged.fivecol.bed
-cat > header
-Chromosome	Start	Stop	Name	Color
-cat header dgvMerged.fivecol.bed > /home/proj/stage/rare-disease/gens-tracks/DGV_UCSC_2023-03-09.bed
-```
-
-```
-us
-conda activate S_gens
-gens load annotations -b 37 -f /home/proj/stage/rare-disease/gens-tracks
-```
-
-This should result in something like:
-```
-[2023-12-15 14:45:06,959] INFO in app: Using default Gens configuration
-[2023-12-15 14:45:06,959] INFO in db: Initialize db connection
-[2023-12-15 14:45:07,111] INFO in load: Processing files
-[2023-12-15 14:45:07,112] INFO in load: Processing /home/proj/stage/rare-disease/gens-tracks/Final_common_CNV_clusters_0.bed
-[2023-12-15 14:45:07,144] INFO in load: Remove old entry in the database
-[2023-12-15 14:45:07,230] INFO in load: Load annotations in the database
-[2023-12-15 14:45:07,309] INFO in load: Update height order
-[2023-12-15 14:45:10,792] INFO in load: Processing /home/proj/stage/rare-disease/gens-tracks/DGV_UCSC_2023-03-09.bed
-[2023-12-15 14:45:16,170] INFO in load: Remove old entry in the database
-[2023-12-15 14:45:16,173] INFO in load: Load annotations in the database
-[2023-12-15 14:45:41,873] INFO in load: Update height order
-Finished loading annotations ✔
-```
