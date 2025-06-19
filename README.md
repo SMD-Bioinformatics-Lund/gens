@@ -6,12 +6,9 @@
 
 **Gens** is a web-based interactive tool to visualize genomic copy number profiles from WGS data. It plots the normalized read depth and alternative allele frequency. It currently does not attempt to visualize breakpoint information. Gens is suitable for visualizing CNVs of sizes down to a couple Kbp.
 
-This screenshot shows a deletion in the GIAB trio.
+This screenshot shows a >200kb deletion in the GIAB trio. It is present in the mother and proband. 
 
-[FIXME: Better variant?]
-
-<!-- <img src="images/gens_screenshot.png"> -->
-<img src="docs/img/trio_deletion.PNG">
+<img src="docs/img/giab_trio_upd.PNG">
 
 ## Contents
 
