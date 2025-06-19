@@ -6,11 +6,12 @@
 
 **Gens** is a web-based interactive tool to visualize genomic copy number profiles from WGS data. It plots the normalized read depth and alternative allele frequency. It currently does not attempt to visualize breakpoint information. Gens is suitable for visualizing CNVs of sizes down to a couple Kbp.
 
-This screenshot shows an 8 Kbp deletion (known polymorphism).
+This screenshot shows a deletion in the GIAB trio.
 
-[FIXME: Updated gens]
+[FIXME: Better variant?]
 
-<img src="images/gens_screenshot.png">
+<!-- <img src="images/gens_screenshot.png"> -->
+<img src="docs/img/trio_deletion.PNG">
 
 ## Contents
 
