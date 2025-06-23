@@ -715,6 +715,7 @@ function updateAnnotationTracks(
     const newTrack = createAnnotTrack(
       source.id,
       source.label,
+      () => session.getXRange(),
       () => getAnnotationBands(source.id, session.getChromosome()),
       (bandId: string) => getAnnotationDetails(bandId),
       session,
@@ -749,6 +750,7 @@ async function getSampleAnnotationTracks(
     const annotTrack = createAnnotTrack(
       sampleAnnotSource.id,
       sampleAnnotSource.name,
+      () => session.getXRange(),
       () => {
         const bands = dataSources.getSampleAnnotationBands(
           sampleAnnotSource.id,
