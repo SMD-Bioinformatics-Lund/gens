@@ -204,6 +204,7 @@ function addSampleAnnotationTracks(
     const bandTrack = createAnnotTrack(
       trackId,
       source.name,
+      () => [1, session.getChromSize("1")],
       () => getBands(source.id, chrom),
       (id: string) => getDetails(id),
       session,

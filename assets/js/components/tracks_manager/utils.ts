@@ -20,6 +20,7 @@ export const TRACK_HANDLE_CLASS = "track-handle";
 export function createAnnotTrack(
   trackId: string,
   label: string,
+  getXRange: () => Rng,
   getAnnotationBands: () => Promise<RenderBand[]>,
   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
   session: GensSession,
@@ -72,7 +73,7 @@ export function createAnnotTrack(
     (settings) => {
       fnSettings = settings;
     },
-    () => session.getXRange(),
+    () => getXRange(),
     () => getAnnotTrackData(getAnnotationBands),
     openContextMenuId,
     openTrackContextMenu,
