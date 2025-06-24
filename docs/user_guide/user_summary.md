@@ -1,15 +1,4 @@
-# User guide
-
-## Table of contents
-
-* [Quick summary](#quick-summary)
-* [Samples page](./user_guide/samples_page.md)
-* [Tracks view](./user_guide/tracks_view.md)
-* [Chromosome view](./user_guide/chromosome_view.md)
-* [Settings](./user_guide/settings.md)
-* [Meta data](./user_guide/meta-data.md)
-
-## Quick summary
+# Quick summary
 
 When opening Gens consists of a sample page, listing all available samples, and a viewer where tracks can be inspected.
 

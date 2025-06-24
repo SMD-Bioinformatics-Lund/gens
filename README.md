@@ -12,11 +12,19 @@ This screenshot shows a ~200kb deletion in the GIAB trio. It is present in the m
 
 ## Contents
 
-- [Installation](docs/installation.md)
-- [Load data](docs/load_gens_data.md)
-- [Generate input data](docs/generate_gens_data.md)
-- [Panel of normals](docs/panel_of_normals.md)
-- [Configurations](docs/configure_gens.md)
-- [Admin guide](docs/admin_guide.md)
+User instructions
 
+* [User summary](docs/user_guide/user_summary.md)
+* [Samples page](docs/user_guide/samples_page.md)
+* [Tracks view](docs/user_guide/tracks_view.md)
+* [Chromosome view](docs/user_guide/chromosome_view.md)
+* [Settings](docs/user_guide/settings.md)
+* [Meta data](docs/user_guide/meta_data.md)
 
+Admin instructions
+
+- [Installation](docs/admin_guide/installation.md)
+- [Load data](docs/admin_guide/load_gens_data.md)
+- [Generate input data](docs/admin_guide/generate_gens_data.md)
+- [Panel of normals](docs/admin_guide/panel_of_normals.md)
+- [Configurations](docs/admin_guide/configure_gens.md)
