@@ -12,13 +12,13 @@ This screenshot shows a ~200kb deletion in the GIAB trio. It is present in the m
 
 ## Contents
 
-User instructions
+User guide
 
 * [Summary](docs/user_guide/user_summary.md)
 * [Tracks view](docs/user_guide/tracks_view.md)
 * [Settings](docs/user_guide/settings.md)
 
-Admin instructions
+Admin guide
 
 - [Installation](docs/admin_guide/installation.md)
 - [Load data](docs/admin_guide/load_gens_data.md)
