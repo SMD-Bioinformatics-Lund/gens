@@ -14,12 +14,9 @@ This screenshot shows a ~200kb deletion in the GIAB trio. It is present in the m
 
 User instructions
 
-* [User summary](docs/user_guide/user_summary.md)
-* [Samples page](docs/user_guide/samples_page.md)
+* [Summary](docs/user_guide/user_summary.md)
 * [Tracks view](docs/user_guide/tracks_view.md)
-* [Chromosome view](docs/user_guide/chromosome_view.md)
 * [Settings](docs/user_guide/settings.md)
-* [Meta data](docs/user_guide/meta_data.md)
 
 Admin instructions
 
