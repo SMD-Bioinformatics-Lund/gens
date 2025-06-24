@@ -110,7 +110,7 @@ def load() -> None:
     "--sample-type",
     type=ChoiceType(SampleType),
     required=False,
-    help="Type of the sample (tumor/normal, proband/mother/father, other)",
+    help="Type of the sample (for instance, tumor/normal, proband/mother/father/relative, other)",
 )
 @click.option(
     "--sex",

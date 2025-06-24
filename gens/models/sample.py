@@ -36,16 +36,6 @@ class ZoomLevel(StrEnum):
     O = "o"
 
 
-class SampleType(StrEnum):
-    """Valid sample types"""
-    TUMOR = "tumor"
-    NORMAL = "normal"
-    PROBAND = "proband"
-    MOTHER = "mother"
-    FATHER = "father"
-    OTHER = "other"
-
-
 class SampleSex(StrEnum):
     """Valid sample sexes."""
 
@@ -91,7 +81,7 @@ class SampleInfo(RWModel, CreatedAtModel):
     baf_file: FilePath
     coverage_file: FilePath
     overview_file: FilePath | None = None
-    sample_type: SampleType | None = None
+    sample_type: str | None = None
     sex: SampleSex | None = None
     meta: list[MetaEntry] = Field(default_factory=list)
 

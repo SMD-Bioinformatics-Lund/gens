@@ -345,6 +345,7 @@ export function div(): HTMLDivElement {
   return document.createElement("div") as HTMLDivElement;
 }
 
+// FIXME: These should be replaced with config based deciding of "main" sample
 export function isNonMainSample(sample: Sample): boolean {
   const isNotMainSample =
     sample.sampleType == null ||
