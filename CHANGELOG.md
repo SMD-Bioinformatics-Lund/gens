@@ -38,6 +38,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Changed API routes and the underlying data structure for samples, annotations and transcripts.
  - Updated CLI command for loading annotations.
  - Remove height order from backend.
+ - Gens usage documentation added. Admin documentation also updated.
 
 ### Fixed
  - If no overview file is supplied, Gens will fall back to o level zoom in the cov/baf files
