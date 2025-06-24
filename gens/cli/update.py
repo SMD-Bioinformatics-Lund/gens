@@ -44,7 +44,7 @@ def update() -> None:
     "-t",
     "--sample-type",
     type=ChoiceType(SampleType),
-    help="New sample type",
+    help="New sample type (for instance, tumor/normal, proband/mother/father/relative, other)",
 )
 @click.option(
     "--sex",

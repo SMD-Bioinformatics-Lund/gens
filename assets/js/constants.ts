@@ -224,10 +224,3 @@ export const CHROMOSOMES: Chromosome[] = [
   "Y",
 ];
 
-export const SAMPLE_TYPES = [
-  "proband",
-  "mother",
-  "father",
-  "tumor",
-  "normal",
-];
