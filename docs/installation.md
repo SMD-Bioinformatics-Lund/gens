@@ -1,24 +1,5 @@
 # Installation
 
-## Prerequisites
-
-Gens requires Python 3.11 or later and access to a MongoDB instance.
-
-## Using pip
-
-```bash
-pip install gens
-```
-
-## Docker
-
-A Docker file is provided and can be set up using the provided docker compose file.
-
-```
-docker compose up -d
-```
-
-
 ## Installation
 
 Gens requires python 3.11 or later and mongodb. For testing/development purposes the easiest way to install it is to create a virtual environment:
@@ -28,7 +9,7 @@ git clone https://github.com/Clinical-Genomics-Lund/Gens.git
 cd Gens
 virtualenv -p python3 venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install .
 ```
 
 You also need to build the javacript and css files and put them into the directory `gens/static/js` and `gens/static/css` respectively. To build the assets you need to have node installed on your system.
@@ -46,11 +27,11 @@ export FLASK_APP=gens.py && flask run
 
 Make sure the application is running by loading http://localhost:5000/ in your web browser.
 
-Finally you need to populate the databases with chromosome sizes and gene/transcript data. (FIXME: refer to commands?)
+Finally you need to populate the databases with chromosome sizes and gene/transcript data. (See more under section [Load data](./load_gens_data.md))
 
 ### Docker image
 
-Using docker, a simple demo and development instance of Gens can be launched with the command `docker compose run -d`. The first time you start Gens run `make init` to populate the database with chromosome size and transcripts (FIXME: Should we keep this?).
+Using docker, a simple demo and development instance of Gens can be launched with the command `docker compose run -d`.
 
 Gens requires access to a directory where the `xxx.baf.bed.gz` and `xxx.cov.bed.gz` files are stored. This can be achived by mounting the directory. See sample docker-compose below.
 
@@ -63,6 +44,6 @@ services:
 
 The dockerized app consists of 2 containers, the Gens app and a lightweight mongodb instance.
 
-Once the server has started you can open the app in your web browser at [http://localhost:5003](http://localhost:5003).
+Once the server has started you can open the app in your web browser at [http://localhost:8080](http://localhost:8080).
 
 To stop the instance use the command `docker-compose down`.

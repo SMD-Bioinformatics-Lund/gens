@@ -1,14 +1,4 @@
-# Chromosomes
-
-# Genes
-
-# Annotations
-
-# Samples
-
-# Sample annotations
-
-# Sample meta data
+# Loading data into Gens
 
 Once installed you can load annotation data into Gens database using the included command line interface. 
 
@@ -16,9 +6,19 @@ Once installed you can load annotation data into Gens database using the include
 gens load --help
 ```
 
-Gens requires the chromosome sizes to be loaded into the database. The repository includes the sizes for grch37 and grch38 in the utils folder.
+## Chromosome sizes
 
-To display transcripts these need to be loaded into the database.
+Gens requires the chromosome sizes to be loaded into the database. Running the load command automatically retrieves the chromosome sizes. The data is downloaded from Ensembl.
+
+```bash
+gens load chromosomes --genome-build 38
+```
+
+This will fetch the karyotype for the selected build and replace any previous entries.
+
+## Gene information
+
+Genes and transcripts are loaded from a reference GTF together with a MANE summary. Download the files for the genome build you plan to use and run the loader.
 
 ``` bash
 # download reference files
@@ -30,29 +30,105 @@ gens load transcripts --file Homo_sapiens.GRCh38.113.gtf.gz --mane MANE.GRCh38.v
 
 Annotated regions can be loaded into the database in either `bed` or `aed` format.
 
+## Loading samples into Gens
 
+Each sample requires a coverage file and BAF file (both tabix indexed). Provide a sample ID, case ID and genome build when loading. 
 
-## Loading data into Gens
+Sample type (proband/mother/father, tumor/normal) is needed when for Gens to understand what samples belong where in a case with multiple samples. 
 
-Load a sample into gens with the command `gens load sample` where you need to specify the sample id, genome build and the generated data files. **Note** that there sample id/ genome build combination needs to be unique. To use Gens simply navigate to the URL **hostname.com:5000/** to view a list of all samples loaded into Gens. To directly open a specific sample go to the URL **hostname.com:5000/<sample id>**.
+Sex is not required but might enable optional functionalities in the future (such as adjusting sex chromosome coverage).
 
-## Loading reference tracks
+Input files can be generated from the standardized coverage output and the gVCF using `utils/generate_gens_data.pl`. The script creates a pair of tabix indexed fiels named `<SAMPLE_ID>.cov.bed.gz` and `<SAMPLE_ID>.baf.bed.gz` which can be loaded into Gens.
 
-FIXME: Walk through these steps
+```bash
+gens load sample \
+    --sample-id hg002 \
+    --case-id giab-trio \
+    --genome-build 38 \
+    --baf /path/to/baf.bed.gz \
+    --coverage /path/to/coverage.bed.gz \
+    --overview-json /path/to/overview.json.gz \
+    --sample-type proband \
+    --sex M
+```
+
+### Sample meta data
+
+Additionally, meta data can be loaded from long-format tsv files using the `--meta` flag.
+
+Metadata files are TSV formatted. Currently, the data is expected in long format, i.e. one entry per row.
+
+They must contain at least the columns `type` and `value`. A column not named `type`, `value` or `color` is treated as the row name header.
+
+Example with row names:
+
+```tsv
+sample type value color
+first  A    valA  rgb(1,2,3)
+second B    valB  .
+.      C    valC  rgb(4,5,6)
+```
+
+Example without row names (displayed as key-value pairs):
+
+```tsv
+type     value
+gender   female
+library  PCR-free
+```
+
+For example, to add metadata stoed in `SAMPLE1_meta.tsv`, run:
+
+```bash
+gens load sample \
+    --sample-id SAMPLE1 \
+    --case-id CASE1 \
+    --genome-build 38 \
+    --baf SAMPLE1.baf.bed.gz \
+    --coverage SAMPLE1.cov.bed.gz \
+    --meta SAMPLE1_meta.tsv
+```
+
+### Loading extra sample tracks
+
+Additional tracks linked to a sample can be loaded similarly to the annotation tracks.
+
+```bash
+gens load sample-annotation \
+    --sample-id SAMPLE1 \
+    --case-id CASE1 \
+    --genome-build 38 \
+    --file extra_track.bed \
+    --name "CNV calls"
+```
+
+## Loading annotation tracks
+
+FIXME: Try this out
+
+Annotation tracks are stored in the database and can be provided as BED, AED or TSV files.
+
+```bash
+gens load annotations -b 38 -f /path/to/annotation_files
+```
+
+If a track with the same name already exists in the database, its annotations are removed and the track metadata is updated with the new information.
+
+### Loading annotations from UCSC
 
 Download the DGV bb track from [UCSC](https://genome.ucsc.edu/cgi-bin/hgTables?db=hg19&hgta_group=varRep&hgta_track=dgvPlus&hgta_table=dgvMerged&hgta_doSchema=describe+table+schema).
-Convert bigBed to Bed, cut relevant columns and name them according to Gens standard.
+
+Convert bigBed to Bed, cut relevant columns and name them according to Gens standard. (bigBedToBed can be downloaded from [here](https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v479/bigBedToBed)).
 
 ```
-./bigBedToBed /home/proj/stage/rare-disease/gens-tracks/dgvMerged.bb dgvMerged.bed
+./bigBedToBed dgvMerged.bb dgvMerged.bed
 cut -f1,2,3,4,9 dgvMerged.bed > dgvMerged.fivecol.bed
-cat > header
-Chromosome	Start	Stop	Name	Color
-cat header dgvMerged.fivecol.bed > /home/proj/stage/rare-disease/gens-tracks/DGV_UCSC_2023-03-09.bed
+echo "Chromosome	Start	Stop	Name	Color" > header
+cat header dgvMerged.fivecol.bed > DGV_UCSC_2023-03-09.bed
 ```
 
-```
-gens load annotations -b 37 -f /sources/gens-tracks/
+```bash
+gens load annotations -b 37 -f /sources/gens-tracks/ --tsv
 ```
 
 This should result in something like:
@@ -70,3 +146,8 @@ This should result in something like:
 [2023-12-15 14:45:41,873] INFO in load: Update height order
 Finished loading annotations ✔
 ```
+
+## Sample annotations
+
+## Sample meta data
+

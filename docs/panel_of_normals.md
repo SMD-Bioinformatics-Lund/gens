@@ -1,8 +1,6 @@
-# Create panel of normals
+# Creating panel of normals
 
-## Nf-core pipeline
-
-The nf-core pipeline [createpanelrefs](https://github.com/nf-core/createpanelrefs) can be used to prepare a panel of normals. (Disclaimer: In the moment of writing, we haven't tried it out).
+The panel of normals is used when calculating the coverage ratio for the samples as outlined in the section on [generating Gens data](./generate_gens_data.md).
 
 ## Command line
 
@@ -38,3 +36,7 @@ gatk --java-options "-Xmx120000m" CreateReadCountPanelOfNormals \
      ...
      -I hdf5/sample99.hdf5
 ```
+
+## Nf-core pipeline
+
+The nf-core pipeline [createpanelrefs](https://github.com/nf-core/createpanelrefs) can be used to prepare a panel of normals. (Disclaimer: We have not tried this out yet).

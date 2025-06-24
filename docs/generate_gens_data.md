@@ -1,12 +1,14 @@
-# Generate Gens input data
+# Generate Gens sample data
 
-Gens uses a custom tabix-indexed bed file format to hold the coverage data used for plotting. This file can be generated in any way, as long as the format of the file is according to the specification. This section describes the method we're using to create the data.
+Gens uses a custom tabix-indexed bed file format to hold the coverage data used for plotting. This file can be generated in any way, as long as the format of the file is according to the specification. This section describes the method we use to create the data.
 
 We are using the GATK4 workflow for normalizing the read depth data. It is described in detail [here](https://gatk.broadinstitute.org/hc/en-us/articles/360035531092?id=11682). 
 
-### Calculate normalized read depth data
+## Calculate normalized read depth data
 
-Use these commands to count and normalize the data of a sample.
+Use these commands to count and normalize the data of a sample, starting with a BAM file.
+
+Instructions on creating the panel of normals (`male_pon_100bp.hdf5` in the command below) is found [here](./panel_of_normals.md).
 
 ``` bash
 gatk CollectReadCounts                                              \
@@ -19,11 +21,11 @@ gatk --java-options "-Xmx30g" DenoiseReadCounts                     \
     --denoised-copy-ratios subject.denoisedCR.tsv
 ```
 
-### Generate BAF data
+## Generate BAF data
 
-It is possible to use the GATK tools to create BAF data as well, but we've found it to be very slow and since we are already doing (germline) variant calling, we extract the BAF data from the gVCF.
+It is possible to use the GATK tools to create BAF data as well, but we have found it to be very slow and since we are already doing (germline) variant calling, we extract the BAF data from the gVCF.
 
-### Reformatting the data for Gens
+## Reformatting the data for Gens
 
 Once you have the standardized coverage file from GATK and a gVCF you can create Gens formatted data files using the command below. The script should accept any properly formatted gVCF but only output from GATK HaplotypeCaller and Sentieon DNAscope have been tested.
 
@@ -36,8 +38,6 @@ The script requires that **bgzip** and **tabix** are installed in a $PATH direct
 The final output should be two files named: **SAMPLE_ID.baf.bed.gz** and **SAMPLE_ID.cov.bed.gz**
 
 ## Data format
-
-**Note:** We are considering updating this to a standardized format, such as the BigWig format. ([GitHub issue](https://github.com/SMD-Bioinformatics-Lund/gens/issues/182))
 
 If you want to generate the data in some other way than described above you need to make sure the data conforms to these standards.
 
@@ -79,5 +79,5 @@ The **o** resolution is used only for the whole genome overview plot. The number
 
 ## Selection of SNPs for BAF data
 
-We're using all SNPs in gnomAD with an total allele frequency > 5%, which in gnomAD 2.1 is approximately 7.5 million SNPs.
+We are using all SNPs in gnomAD with an total allele frequency > 5%, which in gnomAD 2.1 is approximately 7.5 million SNPs.
 
