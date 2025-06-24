@@ -25,3 +25,6 @@ Admin guide
 - [Generate input data](docs/admin_guide/generate_gens_data.md)
 - [Panel of normals](docs/admin_guide/panel_of_normals.md)
 - [Configurations](docs/admin_guide/configure_gens.md)
+
+![Demo](https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/demo.gif)
+
