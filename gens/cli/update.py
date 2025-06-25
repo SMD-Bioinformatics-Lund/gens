@@ -15,7 +15,7 @@ from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
 from gens.load.meta import parse_meta_file
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleSex, SampleType
+from gens.models.sample import SampleSex
 
 LOG = logging.getLogger(__name__)
 
