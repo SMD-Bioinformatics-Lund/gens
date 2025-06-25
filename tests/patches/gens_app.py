@@ -5,32 +5,6 @@ import sys
 import types
 from typing import Any
 
-# bson stub for ObjectId
-bson_stub: Any = types.ModuleType("bson")
-class _ObjectId:  # pragma: no cover
-    def __init__(self, *a, **k):
-        pass
-bson_stub.ObjectId = _ObjectId
-sys.modules.setdefault("bson", bson_stub)
-
-# Minimal requests stub for modules that expect it
-requests_stub: Any = types.ModuleType("requests")
-def _dummy_get(*a, **kw):  # pragma: no cover
-    class Resp:
-        status_code = 200
-        def json(self):
-            return {}
-    return Resp()
-requests_stub.get = _dummy_get
-sys.modules.setdefault("requests", requests_stub)
-
-# Stub for email_validator required by pydantic EmailStr
-sys.modules.setdefault("email_validator", types.ModuleType("email_validator"))
-
-# ---------------------------------------------------------------------------
-# Stub gens application factory to avoid heavy dependencies when importing the
-# package during tests.
-# ---------------------------------------------------------------------------
 gens_app_stub: Any = types.ModuleType("gens.app")
 def _create_app():  # pragma: no cover
     return None
@@ -56,11 +30,10 @@ base_stub: Any = types.ModuleType("gens.cli.base")
 base_stub.cli = None
 sys.modules.setdefault("gens.cli.base", base_stub)
 
-# Simplified chromosomes builder used by CLI tests
+# FIXME: Move this part to chromosome test?
 class _DummyChrom:
     def model_dump(self) -> dict[str, str]:  # pragma: no cover - simple stub
         return {"chrom": "1"}
-
 
 def _fake_build_chromosomes_obj(*args, **kwargs):  # pragma: no cover - simple stub
     return [_DummyChrom()]

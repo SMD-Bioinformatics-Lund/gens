@@ -8,6 +8,22 @@ from gens.cli.load import chromosomes as load_chromosomes_cmd, CHROMSIZES_COLLEC
 from gens.models.genomic import GenomeBuild
 
 
+# class _DummyChrom:
+#     def model_dump(self) -> dict[str, str]:  # pragma: no cover - simple stub
+#         return {"chrom": "1"}
+
+# def _fake_build_chromosomes_obj(*args, **kwargs):  # pragma: no cover - simple stub
+#     return [_DummyChrom()]
+
+# try:
+#     import gens.load.chromosomes as chrom_mod
+
+#     chrom_mod.build_chromosomes_obj = _fake_build_chromosomes_obj
+# except Exception:
+#     pass
+
+
+
 def test_load_chromosomes_from_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, db, patch_cli):
     assembly_data = {
         "top_level_region": [

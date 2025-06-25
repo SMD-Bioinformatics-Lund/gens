@@ -38,7 +38,7 @@ def _build_transcript():
 
 
 def test_load_transcripts_invokes_crud(
-    load_transcripts_cmd, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, db: Database, patch_cli: Callable
+    load_transcripts_cmd: Any, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, db: Database, patch_cli: Callable
 ):     
 
     patch_cli(load_transcripts_cmd)

@@ -1,4 +1,7 @@
 import logging
+import math
+import random
+from typing import Any
 LOG = logging.getLogger(__name__)
 
 class UpdateResult:
@@ -17,8 +20,13 @@ class Collection:
     def _match(self, doc, filt):
         return all(doc.get(k) == v for k, v in filt.items())
 
-    def insert_one(self, document):
+    def insert_one(self, document: Any):
+        id = f"id-{random.random()}"
+        document["_id"] = id
         self._docs.append(document)
+        return {
+            "inserted_id": id
+        }
 
     def update_one(self, filt, update, upsert=False):
         for doc in self._docs:
