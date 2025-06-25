@@ -15,7 +15,7 @@ from tests.utils import my_mongomock
 
 def test_delete_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch):
 
-    # FIXME: Generalize this stubbing?
+    # FIXME: Generalize this stubbing - fixture?
     client = my_mongomock.MongoClient()
     db = client.get_database("test")
 

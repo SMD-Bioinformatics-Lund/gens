@@ -2,8 +2,9 @@ import logging
 LOG = logging.getLogger(__name__)
 
 class UpdateResult:
-    def __init__(self, modified_count: int):
+    def __init__(self, modified_count: int, matched_count: int = 0):
         self.modified_count = modified_count
+        self.matched_count = matched_count
 
 class DeleteResult:
     def __init__(self, deleted_count: int):
@@ -23,11 +24,11 @@ class Collection:
         for doc in self._docs:
             if self._match(doc, filt):
                 doc.update(update.get('$set', {}))
-                return UpdateResult(1)
+                return UpdateResult(modified_count=1)
         if upsert:
             new_doc = {**filt, **update.get('$set', {})}
             self._docs.append(new_doc)
-        return UpdateResult(0)
+        return UpdateResult(modified_count=0)
 
     def find_one(self, filt):
         for doc in self._docs:
