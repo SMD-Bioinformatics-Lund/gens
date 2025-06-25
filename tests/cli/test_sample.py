@@ -5,9 +5,13 @@ import pytest
 
 from gens.cli.delete import sample as delete_sample_cmd
 from gens.cli.update import sample as update_sample_cmd
+from gens.crud.samples import delete_sample, update_sample
+from gens.db.collections import SAMPLES_COLLECTION
+from gens.exceptions import SampleNotFoundError
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleSex
+from gens.models.sample import SampleInfo, SampleSex
 from tests.conftest import DummyDB
+from tests.utils import mongomock
 
 
 def test_delete_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, dummy_db: DummyDB):
@@ -75,3 +79,51 @@ def test_update_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, tmp_path: P
     sex_value = getattr(captured["obj"].sex, "value", captured["obj"].sex)
     assert sex_value == "M"
     assert "META" in captured["obj"].meta
+
+
+def _build_sample() -> SampleInfo:
+    return SampleInfo(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(38),
+        baf_file=Path(__file__),
+        coverage_file=Path(__file__),
+    )
+
+
+def test_update_sample_modifies_collection() -> None:
+    client = mongomock.MongoClient()
+    db = client.get_database("test")
+
+    sample_obj = _build_sample()
+    update_sample(db, sample_obj)
+
+    coll = db.get_collection(SAMPLES_COLLECTION)
+    doc = coll.find_one(
+        {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(38)}
+    )
+
+    assert doc is not None
+
+    sample_obj.sample_type = "tumor"
+    update_sample(db, sample_obj)
+    updated = coll.find_one(
+        {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(38)}
+    )
+    assert updated["sample_type"] == "tumor"
+
+
+def test_delete_sample_removes_document() -> None:
+    client = mongomock.MongoClient()
+    db = client.get_database("test")
+
+    sample_obj = _build_sample()
+    update_sample(db, sample_obj)
+    coll = db.get_collection(SAMPLES_COLLECTION)
+    assert coll.count_documents({}) == 1
+
+    delete_sample(db, sample_id="sample1", case_id="caseA", genome_build=GenomeBuild(38))
+    assert coll.find_one({"sample_id": "sample1"}) is None
+
+    with pytest.raises(SampleNotFoundError):
+        delete_sample(db, sample_id="sample1", case_id="caseA", genome_build=GenomeBuild(38))
