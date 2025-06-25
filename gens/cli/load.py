@@ -391,6 +391,7 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     "--file",
     type=click.Path(exists=True, path_type=Path),
     required=False,
+    default=None,
     help="JSON file with assembly info (optional)"
 )
 @click.option(
@@ -400,7 +401,7 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     default=10,
     help="Timeout for queries when downloading",
 )
-def chromosomes(genome_build: GenomeBuild, assembly_info_file: Path | None, timeout: int) -> None:
+def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> None:
     """Load chromosome size information into the database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
@@ -412,9 +413,9 @@ def chromosomes(genome_build: GenomeBuild, assembly_info_file: Path | None, time
     # get chromosome info from ensemble
     # if file is given, use sizes from file else download chromsizes from ebi
 
-    if assembly_info_file is not None:
-        LOG.info("Load assembly from %s", assembly_info_file)
-        with open_text_or_gzip(str(assembly_info_file)) as fh:
+    if file is not None:
+        LOG.info("Load assembly from %s", file)
+        with open_text_or_gzip(str(file)) as fh:
             assembly_info = json.load(fh)
     else:
         LOG.info("Query ensembl for assembly info for %s", genome_build)

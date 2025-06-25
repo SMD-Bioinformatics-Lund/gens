@@ -290,3 +290,9 @@ class DummyDB(dict):
 @pytest.fixture
 def dummy_db() -> DummyDB:
     return DummyDB()
+
+import json as pyjson
+
+flask_mod = sys.modules.get("flask")
+if flask_mod is not None and not hasattr(flask_mod, "json"):
+    setattr(flask_mod, "json", pyjson)
