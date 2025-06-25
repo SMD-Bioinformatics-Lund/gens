@@ -198,14 +198,14 @@ class _TomlConfigSettingsSource:  # pragma: no cover
 pydantic_settings_stub.TomlConfigSettingsSource = _TomlConfigSettingsSource
 sys.modules.setdefault("pydantic_settings", pydantic_settings_stub)
 
-# pydantic_extra_types stub
-pydantic_extra_stub: Any = types.ModuleType("pydantic_extra_types.color")
-class _Color:  # pragma: no cover
-    def __init__(self, *a, **k):
-        pass
-pydantic_extra_stub.Color = _Color
-sys.modules.setdefault("pydantic_extra_types", types.ModuleType("pydantic_extra_types"))
-sys.modules.setdefault("pydantic_extra_types.color", pydantic_extra_stub)
+# # pydantic_extra_types stub
+# pydantic_extra_stub: Any = types.ModuleType("pydantic_extra_types.color")
+# class _Color:  # pragma: no cover
+#     def __init__(self, *a, **k):
+#         pass
+# pydantic_extra_stub.Color = _Color
+# sys.modules.setdefault("pydantic_extra_types", types.ModuleType("pydantic_extra_types"))
+# sys.modules.setdefault("pydantic_extra_types.color", pydantic_extra_stub)
 
 # bson stub for ObjectId
 bson_stub: Any = types.ModuleType("bson")
@@ -276,7 +276,7 @@ from .fixtures import *  # noqa: F401,F403
 
 # FIXME: Should this be imported in a shared location
 # Stub heavy CLI components before importing individual commands
-sys.modules.setdefault("gens.cli.load", types.ModuleType("gens.cli.load"))
+# sys.modules.setdefault("gens.cli.load", types.ModuleType("gens.cli.load"))
 base_stub: Any = types.ModuleType("gens.cli.base")
 base_stub.cli = None
 sys.modules.setdefault("gens.cli.base", base_stub)
