@@ -268,7 +268,7 @@ export function parseTranscripts(
 
 export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
   return variants.map((variant) => {
-    const id = variant.variant_id;
+    const id = variant.document_id;
     const length = variant.end - variant.start;
     return {
       id,

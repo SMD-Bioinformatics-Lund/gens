@@ -176,9 +176,9 @@ async def get_variants(
     return filtered
 
 
-@router.get("/variants/{variant_id}", tags=[ApiTags.VAR])
+@router.get("/variants/{document_id}", tags=[ApiTags.VAR])
 async def get_variant_with_id(
-    variant_id: str,
+    document_id: str,
     db: ScoutDb,
 ) -> VariantRecord:
     """Get a single variant by its unique ID.
@@ -186,11 +186,11 @@ async def get_variant_with_id(
     Returns the full variant record from Scout with all available details.
     """
     try:
-        variant = get_variant(variant_id, db=db)
+        variant = get_variant(document_id, db=db)
     except VariantValidaitonError as e:
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
     except VariantNotFoundError:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail=f"Variant {variant_id} not found"
+            status_code=HTTPStatus.NOT_FOUND, detail=f"Variant {document_id} not found"
         )
     return variant
