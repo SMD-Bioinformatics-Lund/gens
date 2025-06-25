@@ -108,7 +108,7 @@ def load() -> None:
 @click.option(
     "-t",
     "--sample-type",
-    type=ChoiceType(SampleType),
+    type=str,
     required=False,
     help="Type of the sample (for instance, tumor/normal, proband/mother/father/relative, other)",
 )
@@ -126,7 +126,7 @@ def sample(
     case_id: str,
     overview_json: Path,
     meta_files: tuple[Path, ...],
-    sample_type: SampleType | None,
+    sample_type: str | None,
     sex: SampleSex | None,
 ) -> None:
     """Load a sample into Gens database."""

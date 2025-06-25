@@ -157,7 +157,7 @@ interface SampleMetaEntry {
 }
 
 interface ApiSimplifiedVariant {
-  variant_id: string;
+  document_id: string;
   start: number;
   end: number;
   variant_type: string; // e.g. research, clinical

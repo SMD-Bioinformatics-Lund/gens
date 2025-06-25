@@ -63,15 +63,15 @@ def get_variants(
     return result
 
 
-def get_variant(variant_id: str, db: Database[Any]) -> VariantRecord:
+def get_variant(document_id: str, db: Database[Any]) -> VariantRecord:
     """Get detailed variant info for one variant from the scout database."""
-    raw_variant = db.get_collection("variant").find_one({"variant_id": variant_id}, {'_id': False})
+    raw_variant = db.get_collection("variant").find_one({"_id": document_id}, {'_id': False})
     if raw_variant is None:
-        LOG.warning("Variant with id %s not found in scout database", variant_id)
-        raise VariantNotFoundError(f"Variant with id {variant_id} is not found in Scout database")
+        LOG.warning("Variant with document_id %s not found in scout database", document_id)
+        raise VariantNotFoundError(f"Variant with id {document_id} is not found in Scout database")
     try:
         variant = VariantRecord.model_validate(raw_variant)
     except ValidationError as e:
-        LOG.error("Failed to validate variant %s: %s", variant_id, e)
-        raise VariantValidaitonError(f"Invalid variant data for ID {variant_id}")
+        LOG.error("Failed to validate variant %s: %s", document_id, e)
+        raise VariantValidaitonError(f"Invalid variant data for ID {document_id}")
     return variant

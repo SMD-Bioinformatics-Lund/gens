@@ -171,7 +171,7 @@ class TranscriptRecord(RWModel):
 class SimplifiedVariantRecord(RWModel):
     """Simplified variant info for rendering variant track."""
     
-    variant_id: str
+    document_id: str
     position: PositiveInt = Field(..., description="Start position of the variant", alias="start")
     end: PositiveInt
     variant_type: str
