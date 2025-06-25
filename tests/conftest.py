@@ -13,7 +13,7 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 # Flask and related utilities
-flask_stub = types.ModuleType("flask")
+flask_stub: Any = types.ModuleType("flask")
 
 class _Flask:  # pragma: no cover - placeholder class
     def __init__(self, *args, **kwargs) -> None:
@@ -36,7 +36,7 @@ flask_stub.redirect = _redirect
 flask_stub.request = _Request()
 flask_stub.url_for = _url_for
 sys.modules.setdefault("flask", flask_stub)
-flask_cli_stub = types.ModuleType("flask.cli")
+flask_cli_stub: Any = types.ModuleType("flask.cli")
 class _FlaskGroup:  # pragma: no cover
     def __init__(self, *a, **kw):
         pass
@@ -46,7 +46,7 @@ flask_cli_stub.FlaskGroup = _FlaskGroup
 sys.modules.setdefault("flask.cli", flask_cli_stub)
 
 # flask_compress
-compress_stub = types.ModuleType("flask_compress")
+compress_stub: Any = types.ModuleType("flask_compress")
 class _Compress:  # pragma: no cover
     def init_app(self, app) -> None:
         pass
@@ -54,7 +54,7 @@ compress_stub.Compress = _Compress
 sys.modules.setdefault("flask_compress", compress_stub)
 
 # flask_login
-flask_login_stub = types.ModuleType("flask_login")
+flask_login_stub: Any = types.ModuleType("flask_login")
 class _LoginManager:  # pragma: no cover
     def init_app(self, app) -> None:
         pass
@@ -64,7 +64,7 @@ flask_login_stub.UserMixin = object
 sys.modules.setdefault("flask_login", flask_login_stub)
 
 # authlib OAuth client
-authlib_fc_stub = types.ModuleType("authlib.integrations.flask_client")
+authlib_fc_stub: Any = types.ModuleType("authlib.integrations.flask_client")
 class _OAuth:  # pragma: no cover
     def init_app(self, app) -> None:
         pass
@@ -76,7 +76,7 @@ sys.modules.setdefault("authlib.integrations", types.ModuleType("authlib.integra
 sys.modules.setdefault("authlib.integrations.flask_client", authlib_fc_stub)
 
 # werkzeug response
-werk_resp_stub = types.ModuleType("werkzeug.wrappers.response")
+werk_resp_stub: Any = types.ModuleType("werkzeug.wrappers.response")
 class _Response:  # pragma: no cover
     pass
 werk_resp_stub.Response = _Response
@@ -85,7 +85,7 @@ sys.modules.setdefault("werkzeug.wrappers", types.ModuleType("werkzeug.wrappers"
 sys.modules.setdefault("werkzeug.wrappers.response", werk_resp_stub)
 
 # asgiref
-asgiref_wsgi_stub = types.ModuleType("asgiref.wsgi")
+asgiref_wsgi_stub: Any = types.ModuleType("asgiref.wsgi")
 class _WsgiToAsgi:  # pragma: no cover
     def __init__(self, app) -> None:
         self.app = app
@@ -94,7 +94,7 @@ sys.modules.setdefault("asgiref", types.ModuleType("asgiref"))
 sys.modules.setdefault("asgiref.wsgi", asgiref_wsgi_stub)
 
 # pymongo stubs
-pymongo_stub = types.ModuleType("pymongo")
+pymongo_stub: Any = types.ModuleType("pymongo")
 pymongo_stub.ASCENDING = 1
 pymongo_stub.DESCENDING = -1
 class _IndexModel:  # pragma: no cover
@@ -104,7 +104,7 @@ pymongo_stub.IndexModel = _IndexModel
 pymongo_stub.TEXT = "text"
 pymongo_stub.MongoClient = object
 sys.modules.setdefault("pymongo", pymongo_stub)
-pymongo_database_stub = types.ModuleType("pymongo.database")
+pymongo_database_stub: Any = types.ModuleType("pymongo.database")
 class _Database:
     @classmethod
     def __class_getitem__(cls, item):  # pragma: no cover
@@ -112,7 +112,7 @@ class _Database:
 
 pymongo_database_stub.Database = _Database
 sys.modules.setdefault("pymongo.database", pymongo_database_stub)
-pymongo_collection_stub = types.ModuleType("pymongo.collection")
+pymongo_collection_stub: Any = types.ModuleType("pymongo.collection")
 class _Collection:
     @classmethod
     def __class_getitem__(cls, item):  # pragma: no cover
@@ -120,18 +120,18 @@ class _Collection:
 
 pymongo_collection_stub.Collection = _Collection
 sys.modules.setdefault("pymongo.collection", pymongo_collection_stub)
-pymongo_cursor_stub = types.ModuleType("pymongo.cursor")
+pymongo_cursor_stub: Any = types.ModuleType("pymongo.cursor")
 class _Cursor:
     pass
 pymongo_cursor_stub.Cursor = _Cursor
 sys.modules.setdefault("pymongo.cursor", pymongo_cursor_stub)
-pymongo_errors_stub = types.ModuleType("pymongo.errors")
+pymongo_errors_stub: Any = types.ModuleType("pymongo.errors")
 class _DuplicateKeyError(Exception):
     pass
 pymongo_errors_stub.DuplicateKeyError = _DuplicateKeyError
 sys.modules.setdefault("pymongo.errors", pymongo_errors_stub)
 
-pymongo_uri_stub = types.ModuleType("pymongo.uri_parser")
+pymongo_uri_stub: Any = types.ModuleType("pymongo.uri_parser")
 def _parse_uri(uri: str) -> dict[str, str | None]:  # pragma: no cover
     return {"database": None}
 pymongo_uri_stub.parse_uri = _parse_uri
@@ -186,7 +186,7 @@ if not hasattr(pydantic.BaseModel, "model_dump"):
     pydantic.BaseModel.model_dump = model_dump  # type: ignore
 
 # pydantic_settings stub
-pydantic_settings_stub = types.ModuleType("pydantic_settings")
+pydantic_settings_stub: Any = types.ModuleType("pydantic_settings")
 pydantic_settings_stub.BaseSettings = object
 pydantic_settings_stub.PydanticBaseSettingsSource = object
 pydantic_settings_stub.SettingsConfigDict = dict
@@ -199,7 +199,7 @@ pydantic_settings_stub.TomlConfigSettingsSource = _TomlConfigSettingsSource
 sys.modules.setdefault("pydantic_settings", pydantic_settings_stub)
 
 # pydantic_extra_types stub
-pydantic_extra_stub = types.ModuleType("pydantic_extra_types.color")
+pydantic_extra_stub: Any = types.ModuleType("pydantic_extra_types.color")
 class _Color:  # pragma: no cover
     def __init__(self, *a, **k):
         pass
@@ -208,7 +208,7 @@ sys.modules.setdefault("pydantic_extra_types", types.ModuleType("pydantic_extra_
 sys.modules.setdefault("pydantic_extra_types.color", pydantic_extra_stub)
 
 # bson stub for ObjectId
-bson_stub = types.ModuleType("bson")
+bson_stub: Any = types.ModuleType("bson")
 class _ObjectId:  # pragma: no cover
     def __init__(self, *a, **k):
         pass
@@ -216,7 +216,7 @@ bson_stub.ObjectId = _ObjectId
 sys.modules.setdefault("bson", bson_stub)
 
 # pydantic_core stub for BaseModel support
-pydantic_core_stub = types.ModuleType("pydantic_core")
+pydantic_core_stub: Any = types.ModuleType("pydantic_core")
 core_schema_stub = types.SimpleNamespace(CoreSchema=object)
 def _union_schema(*args, **kwargs):
     return object
@@ -231,7 +231,7 @@ pydantic_core_stub.PydanticCustomError = _PydanticCustomError
 sys.modules.setdefault("pydantic_core", pydantic_core_stub)
 
 # Minimal requests stub for modules that expect it
-requests_stub = types.ModuleType("requests")
+requests_stub: Any = types.ModuleType("requests")
 def _dummy_get(*a, **kw):  # pragma: no cover
     class Resp:
         status_code = 200
@@ -248,14 +248,14 @@ sys.modules.setdefault("email_validator", types.ModuleType("email_validator"))
 # Stub gens application factory to avoid heavy dependencies when importing the
 # package during tests.
 # ---------------------------------------------------------------------------
-gens_app_stub = types.ModuleType("gens.app")
+gens_app_stub: Any = types.ModuleType("gens.app")
 def _create_app():  # pragma: no cover
     return None
 gens_app_stub.create_app = _create_app
 sys.modules.setdefault("gens.app", gens_app_stub)
 
 # Minimal settings object used by the CLI
-settings_module = types.ModuleType("gens.config")
+settings_module: Any = types.ModuleType("gens.config")
 class _DBConf:
     def __init__(self):
         self.connection = "mongodb://localhost:27017"
