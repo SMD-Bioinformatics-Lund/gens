@@ -7,17 +7,11 @@ from gens.cli.delete import sample as delete_sample_cmd
 from gens.cli.update import sample as update_sample_cmd
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleSex
+from tests.conftest import DummyDB
 
 
-class DummyDB(dict):
-    """Simple dictionary based dummy database used in CLI tests."""
-
-    def __getitem__(self, key):  # pragma: no cover - required for indexing
-        return self
-
-
-def test_delete_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch):
-    db = DummyDB()
+def test_delete_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, dummy_db: DummyDB):
+    db = dummy_db
 
     def fake_get_db(connection, db_name: str):
         return db
@@ -50,7 +44,9 @@ def test_update_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, tmp_path: P
     monkeypatch.setattr("gens.cli.update.get_indexes", lambda db, col: [])
     monkeypatch.setattr("gens.cli.update.create_index", lambda db, col: None)
 
-    sample_obj = SimpleNamespace(sample_id="sample1", case_id="caseA", genome_build=19, sample_type=None, sex=None, meta=[])
+    sample_obj = SimpleNamespace(
+        sample_id="sample1", case_id="caseA", genome_build=19, sample_type=None, sex=None, meta=[]
+    )
 
     monkeypatch.setattr("gens.cli.update.get_sample", lambda db, sample_id, case_id: sample_obj)
     captured = {}
