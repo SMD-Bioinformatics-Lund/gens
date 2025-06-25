@@ -346,7 +346,7 @@ export class TrackView extends ShadowBaseElement {
       }
 
       const trackPage = this.trackPages[track.id];
-      this.session.showContent(track.label, [trackPage]);
+      this.session.showContent(track.label, [trackPage], STYLE.menu.narrowWidth);
 
       trackPage.initialize(
         (settings: { selectedOnly: boolean }) =>

@@ -236,14 +236,14 @@ export async function initCanvases({
       render({ dataUpdated: true, positionOnly: true });
     },
     () => {
-      sideMenu.showContent("Settings", [settingsPage]);
+      sideMenu.showContent("Settings", [settingsPage], STYLE.menu.width);
 
       if (!settingsPage.isInitialized) {
         settingsPage.initialize();
       }
     },
     () => {
-      sideMenu.showContent("Sample info", [infoPage]);
+      sideMenu.showContent("Sample info", [infoPage], STYLE.menu.width);
       infoPage.render();
     },
     () => {

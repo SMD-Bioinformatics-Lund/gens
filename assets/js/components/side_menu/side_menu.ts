@@ -179,13 +179,13 @@ export class SideMenu extends ShadowBaseElement {
     }
   }
 
-  showContent(header: string, content: HTMLElement[]) {
+  showContent(header: string, content: HTMLElement[], width: number) {
     this.open();
 
+    this.drawer.style.width = `${width}px`;
+
     removeChildren(this.entries);
-
     this.header.textContent = header;
-
     for (const element of content) {
       this.entries.appendChild(element);
     }

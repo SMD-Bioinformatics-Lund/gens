@@ -244,8 +244,8 @@ export class GensSession {
     this.render({});
   }
 
-  public showContent(header: string, content: HTMLElement[]) {
-    this.sideMenu.showContent(header, content);
+  public showContent(header: string, content: HTMLElement[], width: number) {
+    this.sideMenu.showContent(header, content, width);
   }
 
   public getAllHighlights(): RangeHighlight[] {
