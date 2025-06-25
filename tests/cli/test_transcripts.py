@@ -5,8 +5,7 @@ from typing import Any
 import pytest
 
 from gens.models.genomic import GenomeBuild
-from tests.conftest import DummyDB
-from tests.utils import mongomock
+from tests.utils import my_mongomock
 from gens.db.collections import TRANSCRIPTS_COLLECTION
 
 
@@ -40,8 +39,9 @@ def _build_transcript():
 def test_load_transcripts_invokes_crud(
     load_transcripts_cmd, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ): 
-    db = DummyDB()
-
+    client = my_mongomock.MongoClient()
+    db = client.get_database("test")
+    
     monkeypatch.setattr(load_transcripts_cmd, "get_db_connection", lambda conn, db_name: db)    
     monkeypatch.setattr(load_transcripts_cmd, "get_indexes", lambda conn, col: [])
     monkeypatch.setattr(load_transcripts_cmd, "create_index", lambda conn, col: None)
@@ -77,7 +77,7 @@ def test_load_transcripts_invokes_crud(
 
 
 def test_create_transcripts_adds_documents(monkeypatch: pytest.MonkeyPatch) -> None:
-    client = mongomock.MongoClient()
+    client = my_mongomock.MongoClient()
     db = client.get_database("test")
 
     import gens.models.base as base_mod

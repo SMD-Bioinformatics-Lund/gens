@@ -10,12 +10,14 @@ from gens.db.collections import SAMPLES_COLLECTION
 from gens.exceptions import SampleNotFoundError
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
-from tests.conftest import DummyDB
-from tests.utils import mongomock
+from tests.utils import my_mongomock
 
 
-def test_delete_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, dummy_db: DummyDB):
-    db = dummy_db
+def test_delete_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch):
+
+    # FIXME: Generalize this stubbing?
+    client = my_mongomock.MongoClient()
+    db = client.get_database("test")
 
     def fake_get_db(connection, db_name: str):
         return db
@@ -39,7 +41,8 @@ def test_delete_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, dummy_db: D
 
 
 def test_update_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
-    db = DummyDB()
+    client = my_mongomock.MongoClient()
+    db = client.get_database("test")
 
     def fake_get_db(connection, db_name: str):
         return db
@@ -92,7 +95,7 @@ def _build_sample() -> SampleInfo:
 
 
 def test_update_sample_modifies_collection() -> None:
-    client = mongomock.MongoClient()
+    client = my_mongomock.MongoClient()
     db = client.get_database("test")
 
     sample_obj = _build_sample()
@@ -114,7 +117,7 @@ def test_update_sample_modifies_collection() -> None:
 
 
 def test_delete_sample_removes_document() -> None:
-    client = mongomock.MongoClient()
+    client = my_mongomock.MongoClient()
     db = client.get_database("test")
 
     sample_obj = _build_sample()

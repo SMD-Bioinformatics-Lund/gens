@@ -6,8 +6,7 @@ import pytest
 
 from gens.cli.load import chromosomes as load_chromosomes_cmd, CHROMSIZES_COLLECTION
 from gens.models.genomic import GenomeBuild
-from tests.conftest import DummyDB
-from tests.utils import mongomock
+from tests.utils import my_mongomock
 
 
 def test_load_chromosomes_from_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
@@ -19,13 +18,11 @@ def test_load_chromosomes_from_file(monkeypatch: pytest.MonkeyPatch, tmp_path: P
         "karyotype": ["1", "MT"],
     }
 
-    client = mongomock.MongoClient()
+    client = my_mongomock.MongoClient()
     db = client.get_database("test")
 
     asm_file = tmp_path / "assembly.json"
     asm_file.write_text(json.dumps(assembly_data))
-
-    # db: Any = DummyDB()
 
     monkeypatch.setattr(
         "gens.cli.load.get_db_connection",

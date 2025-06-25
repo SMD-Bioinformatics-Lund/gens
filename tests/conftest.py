@@ -7,6 +7,8 @@ import sys
 import types
 from typing import Any
 
+from tests.utils import my_mongomock
+
 # ---------------------------------------------------------------------------
 # Stub out optional third party modules that are not available in the
 # execution environment used for the tests.  Only minimal functionality
@@ -175,7 +177,6 @@ if not hasattr(pydantic, "field_serializer"):
     pydantic.field_serializer = field_serializer  # type: ignore
 
 if not hasattr(pydantic.BaseModel, "model_validate"):
-    @classmethod
     def model_validate(cls, obj):  # type: ignore
         return cls.parse_obj(obj)
 
@@ -313,13 +314,13 @@ try:
 except Exception:  # pragma: no cover - if models are unavailable
     pass
 
-class DummyDB(dict):
-    """Simple dictionary based dummy database used in CLI tests."""
+# class DummyDB(dict):
+#     """Simple dictionary based dummy database used in CLI tests."""
 
-    def __getitem__(self, key):  # pragma: no cover - required for indexing
-        return self
-        return dict.get(self, key, self)
+#     def __getitem__(self, key):  # pragma: no cover - required for indexing
+#         return self
+#         return dict.get(self, key, self)
 
-@pytest.fixture
-def dummy_db() -> DummyDB:
-    return DummyDB()
+# @pytest.fixture
+# def dummy_db() -> DummyDB:
+#     return DummyDB()

@@ -4,17 +4,20 @@ import importlib
 import sys
 import types
 from pathlib import Path
+from typing import Any
 
 import pytest
 from click.testing import CliRunner
 import logging
 
+from tests.utils import my_mongomock
+
 LOG = logging.getLogger()
 
 
-class DummyDB(dict):
-    def __getitem__(self, key):  # pragma: no cover
-        return self
+# class DummyDB(dict):
+#     def __getitem__(self, key):  # pragma: no cover
+#         return self
 
 
 @pytest.fixture()
@@ -26,7 +29,7 @@ def runner() -> CliRunner:
 def reload_cli(monkeypatch: pytest.MonkeyPatch):
     """Reload gens.cli.load after stubbing models."""
     # stub annotation models to avoid heavy dependencies
-    annot_mod = types.ModuleType("gens.models.annotation")
+    annot_mod: Any = types.ModuleType("gens.models.annotation")
 
     class AnnotationTrack:
         def __init__(self, name: str, description: str, genome_build):
@@ -62,11 +65,11 @@ def reload_cli(monkeypatch: pytest.MonkeyPatch):
 
     import gens.models.base as base_mod
 
-    monkeypatch.setattr(base_mod, "PydanticObjectId", str, raising=False)
-    if hasattr(base_mod.RWModel, "Config"):
-        monkeypatch.setattr(base_mod.RWModel.Config, "arbitrary_types_allowed", True, raising=False)
-    if hasattr(base_mod.RWModel, "__config__"):
-        base_mod.RWModel.__config__.arbitrary_types_allowed = True
+    # monkeypatch.setattr(base_mod, "PydanticObjectId", str, raising=False)
+    # if hasattr(base_mod.RWModel, "Config"):
+    #     monkeypatch.setattr(base_mod.RWModel.Config, "arbitrary_types_allowed", True, raising=False)
+    # if hasattr(base_mod.RWModel, "__config__"):
+    #     base_mod.RWModel.__config__.arbitrary_types_allowed = True
 
     yield importlib.reload(importlib.import_module("gens.cli.load"))
 
@@ -75,7 +78,8 @@ def test_load_annotations_invokes_crud(
     reload_cli, monkeypatch: pytest.MonkeyPatch, runner: CliRunner, tmp_path: Path, capsys
 ):
     load = reload_cli
-    db = DummyDB()
+    client = my_mongomock.MongoClient()
+    db = client.get_database("test")
 
     LOG.debug(">>> 1")
 
@@ -119,8 +123,6 @@ def test_load_annotations_invokes_crud(
 
     annots = {}
 
-    LOG.debug(">>> 5")
-
     def fake_create_annotations(recs, db):
         annots["records"] = recs
         return ["id1"]
@@ -130,8 +132,6 @@ def test_load_annotations_invokes_crud(
     bed_file = tmp_path / "my.bed"
     bed_file.write_text("dummy")
 
-    LOG.debug(">>> 6")
-
     load.annotations.callback(
         file=bed_file,
         genome_build=load.GenomeBuild(38),
@@ -139,19 +139,6 @@ def test_load_annotations_invokes_crud(
         ignore_errors=False,
     )
 
-    # result = runner.invoke(
-    #     load.annotations,
-    #     ["--file", str(bed_file), "--genome-build", "38"],
-    #     catch_exceptions=False,
-    #     standalone_mode=True,
-    # )
-    # # result = runner.invoke(load.annotations, ["--file", str(bed_file), "--genome-build", "19"])
-
-    # captured = capsys.readouterr()
-    # LOG.debug(captured)
-    # LOG.debug(">>> 7")
-
-    # assert result.exit_code == 0
     assert parse_called["path"] == str(bed_file)
     assert isinstance(created.get("track"), load.AnnotationTrack)
     assert annots["records"]
