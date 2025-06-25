@@ -16,6 +16,12 @@ gens load chromosomes --genome-build 38
 
 This will fetch the karyotype for the selected build and replace any previous entries.
 
+If you already have the assembly stored locally you can provide it with `--file`.
+
+```bash
+gens load chromosomes --genome-build 38 --file chromosomes_hg38.json
+```
+
 ## Gene information
 
 Genes and transcripts are loaded from a reference GTF together with a MANE summary. Download the files for the genome build you plan to use and run the loader.
