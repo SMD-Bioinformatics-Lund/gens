@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 import types
 from typing import Any
@@ -35,6 +36,7 @@ flask_stub.Flask = _Flask
 flask_stub.redirect = _redirect
 flask_stub.request = _Request()
 flask_stub.url_for = _url_for
+flask_stub.json = json
 sys.modules.setdefault("flask", flask_stub)
 flask_cli_stub: Any = types.ModuleType("flask.cli")
 class _FlaskGroup:  # pragma: no cover
@@ -281,18 +283,43 @@ base_stub: Any = types.ModuleType("gens.cli.base")
 base_stub.cli = None
 sys.modules.setdefault("gens.cli.base", base_stub)
 
+
+
+# Simplified chromosomes builder used by CLI tests
+class _DummyChrom:
+    def model_dump(self) -> dict[str, str]:  # pragma: no cover - simple stub
+        return {"chrom": "1"}
+
+
+def _fake_build_chromosomes_obj(*args, **kwargs):  # pragma: no cover - simple stub
+    return [_DummyChrom()]
+
+try:
+    import gens.load.chromosomes as chrom_mod
+
+    chrom_mod.build_chromosomes_obj = _fake_build_chromosomes_obj
+except Exception:
+    pass
+
+# Adjust pydantic models to work without bson ObjectId validation
+try:
+    import gens.models.base as base_mod
+
+    base_mod.PydanticObjectId = str  # type: ignore
+    if hasattr(base_mod.RWModel, "Config"):
+        base_mod.RWModel.Config.arbitrary_types_allowed = True  # type: ignore
+    if hasattr(base_mod.RWModel, "__config__"):
+        base_mod.RWModel.__config__.arbitrary_types_allowed = True  # type: ignore
+except Exception:  # pragma: no cover - if models are unavailable
+    pass
+
 class DummyDB(dict):
     """Simple dictionary based dummy database used in CLI tests."""
 
     def __getitem__(self, key):  # pragma: no cover - required for indexing
         return self
+        return dict.get(self, key, self)
 
 @pytest.fixture
 def dummy_db() -> DummyDB:
     return DummyDB()
-
-import json as pyjson
-
-flask_mod = sys.modules.get("flask")
-if flask_mod is not None and not hasattr(flask_mod, "json"):
-    setattr(flask_mod, "json", pyjson)

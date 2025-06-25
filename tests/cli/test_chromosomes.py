@@ -7,6 +7,7 @@ import pytest
 from gens.cli.load import chromosomes as load_chromosomes_cmd, CHROMSIZES_COLLECTION
 from gens.models.genomic import GenomeBuild
 from tests.conftest import DummyDB
+from tests.utils import mongomock
 
 
 def test_load_chromosomes_from_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
@@ -18,7 +19,8 @@ def test_load_chromosomes_from_file(monkeypatch: pytest.MonkeyPatch, tmp_path: P
         "karyotype": ["1", "MT"],
     }
 
-    dummy_db = DummyDB()
+    client = mongomock.MongoClient()
+    db = client.get_database("test")
 
     asm_file = tmp_path / "assembly.json"
     asm_file.write_text(json.dumps(assembly_data))
@@ -27,7 +29,7 @@ def test_load_chromosomes_from_file(monkeypatch: pytest.MonkeyPatch, tmp_path: P
 
     monkeypatch.setattr(
         "gens.cli.load.get_db_connection",
-        lambda conn, db_name: dummy_db
+        lambda conn, db_name: db
     )
     monkeypatch.setattr(
         "gens.cli.load.get_indexes",
@@ -55,7 +57,7 @@ def test_load_chromosomes_from_file(monkeypatch: pytest.MonkeyPatch, tmp_path: P
         def insert_many(self, records):
             called["inserted"] = records
     
-    dummy_db[CHROMSIZES_COLLECTION] = FakeColl()
+    db[CHROMSIZES_COLLECTION] = FakeColl()
 
     assert load_chromosomes_cmd.callback is not None
 
