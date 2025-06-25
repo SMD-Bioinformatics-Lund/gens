@@ -17,6 +17,11 @@ from tests.utils.stub import register_stub
 # Flask and related utilities
 # flask_stub = types.ModuleType("flask")
 
+stub_db: Any = types.ModuleType("gens.db.db")
+def fake_get_db_connection(connection, db_name: str):
+    return {"any": "dict"}
+stub_db.get_db_connection = fake_get_db_connection
+
 
 class _Flask:  # pragma: no cover - placeholder class
     def __init__(self, *args, **kwargs) -> None:
@@ -95,11 +100,11 @@ class _OAuth:  # pragma: no cover
 register_stub("authlib.integration.flask_client", {"OAuth": _OAuth})
 
 
-class _Response:
-    pass
+# class _Response:
+#     pass
 
 
-register_stub("werkzeug.wrappers.response", {"Response": _Response})
+# register_stub("werkzeug.wrappers.response", {"Response": _Response})
 
 
 class _WsgiToAsgi:
@@ -212,6 +217,9 @@ if not hasattr(pydantic.BaseModel, "model_dump"):
         return self.dict(*args, **kwargs)
 
     pydantic.BaseModel.model_dump = model_dump  # type: ignore
+
+if not hasattr(pydantic, "EmailStr"):
+    pydantic.EmailStr = str
 
 
 class _TomlConfigSettingsSource:  # pragma: no cover
