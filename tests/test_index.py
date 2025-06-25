@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -11,27 +12,15 @@ import logging
 
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleSex
+from tests.conftest import DummyDB
 
 LOG = logging.getLogger()
-
-# Stub heavy CLI components before importing individual commands
-sys.modules.setdefault("gens.cli.load", types.ModuleType("gens.cli.load"))
-base_stub = types.ModuleType("gens.cli.base")
-base_stub.cli = None
-sys.modules.setdefault("gens.cli.base", base_stub)
 
 from gens.cli.index import index as index_cmd
 
 
-class DummyDB(dict):
-    """Simple dictionary based dummy database used in CLI tests."""
-
-    def __getitem__(self, key):  # pragma: no cover - required for indexing
-        return self
-
-
-def test_index_creates_indexes(monkeypatch: pytest.MonkeyPatch):
-    db = DummyDB()
+def test_index_creates_indexes(monkeypatch: pytest.MonkeyPatch, dummy_db: DummyDB):
+    db = dummy_db
 
     def fake_get_db(connection, db_name: str):
         return db

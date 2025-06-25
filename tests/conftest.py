@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import types
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Stub out optional third party modules that are not available in the
@@ -272,3 +273,20 @@ sys.modules.setdefault("gens.config", settings_module)
 # Expose data fixture helpers
 # ---------------------------------------------------------------------------
 from .fixtures import *  # noqa: F401,F403
+
+# FIXME: Should this be imported in a shared location
+# Stub heavy CLI components before importing individual commands
+sys.modules.setdefault("gens.cli.load", types.ModuleType("gens.cli.load"))
+base_stub: Any = types.ModuleType("gens.cli.base")
+base_stub.cli = None
+sys.modules.setdefault("gens.cli.base", base_stub)
+
+class DummyDB(dict):
+    """Simple dictionary based dummy database used in CLI tests."""
+
+    def __getitem__(self, key):  # pragma: no cover - required for indexing
+        return self
+
+@pytest.fixture
+def dummy_db() -> DummyDB:
+    return DummyDB()
