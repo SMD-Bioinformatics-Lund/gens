@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from flask import Flask, redirect, request, url_for
 from flask_compress import Compress  # type: ignore
 from flask_login import current_user  # type: ignore
+from werkzeug.wrappers.response import Response
 
 from gens.db.db import init_database_connection
 from gens.exceptions import SampleNotFoundError

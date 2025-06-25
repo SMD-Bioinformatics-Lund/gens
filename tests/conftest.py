@@ -6,8 +6,6 @@ import sys
 import types
 from typing import Any
 
-from tests.utils.stub import register_stub
-
 # ---------------------------------------------------------------------------
 # Stub out optional third party modules that are not available in the
 # execution environment used for the tests.  Only minimal functionality
@@ -15,22 +13,14 @@ from tests.utils.stub import register_stub
 # ---------------------------------------------------------------------------
 
 # Flask and related utilities
-# flask_stub = types.ModuleType("flask")
-
-stub_db: Any = types.ModuleType("gens.db.db")
-def fake_get_db_connection(connection, db_name: str):
-    return {"any": "dict"}
-stub_db.get_db_connection = fake_get_db_connection
-
+flask_stub = types.ModuleType("flask")
 
 class _Flask:  # pragma: no cover - placeholder class
     def __init__(self, *args, **kwargs) -> None:
         pass
 
-
 def _redirect(*args, **kwargs) -> None:  # pragma: no cover
     return None
-
 
 class _Request:  # pragma: no cover
     endpoint: str | None = None
@@ -41,170 +31,148 @@ class _Request:  # pragma: no cover
 def _url_for(*args, **kwargs) -> str:  # pragma: no cover
     return ""
 
-
-register_stub(
-    "flask",
-    {
-        "Flask": _Flask,
-        "redirect": _redirect,
-        "request": _Request(),
-        "url_for": _url_for,
-    },
-)
-
-
+flask_stub.Flask = _Flask
+flask_stub.redirect = _redirect
+flask_stub.request = _Request()
+flask_stub.url_for = _url_for
+sys.modules.setdefault("flask", flask_stub)
+flask_cli_stub = types.ModuleType("flask.cli")
 class _FlaskGroup:  # pragma: no cover
     def __init__(self, *a, **kw):
         pass
-
     def add_command(self, *a, **kw):
         pass
-
-
-register_stub("flask.cli", {"FlaskGroup": _FlaskGroup})
-
+flask_cli_stub.FlaskGroup = _FlaskGroup
+sys.modules.setdefault("flask.cli", flask_cli_stub)
 
 # flask_compress
+compress_stub = types.ModuleType("flask_compress")
 class _Compress:  # pragma: no cover
     def init_app(self, app) -> None:
         pass
-
-
-register_stub("flask_compress", {"Compress": _Compress})
-
+compress_stub.Compress = _Compress
+sys.modules.setdefault("flask_compress", compress_stub)
 
 # flask_login
+flask_login_stub = types.ModuleType("flask_login")
 class _LoginManager:  # pragma: no cover
     def init_app(self, app) -> None:
         pass
+flask_login_stub.LoginManager = _LoginManager
+flask_login_stub.current_user = types.SimpleNamespace(is_authenticated=False)
+flask_login_stub.UserMixin = object
+sys.modules.setdefault("flask_login", flask_login_stub)
 
-
-register_stub(
-    "flask_login",
-    {
-        "LoginManager": _LoginManager,
-        "current_user": types.SimpleNamespace(is_authenticated=False),
-        "UserMixin": object,
-    },
-)
-
-
+# authlib OAuth client
+authlib_fc_stub = types.ModuleType("authlib.integrations.flask_client")
 class _OAuth:  # pragma: no cover
     def init_app(self, app) -> None:
         pass
-
     def register(self, *a, **kw) -> None:
         pass
+authlib_fc_stub.OAuth = _OAuth
+sys.modules.setdefault("authlib", types.ModuleType("authlib"))
+sys.modules.setdefault("authlib.integrations", types.ModuleType("authlib.integrations"))
+sys.modules.setdefault("authlib.integrations.flask_client", authlib_fc_stub)
 
+# werkzeug response
+werk_resp_stub = types.ModuleType("werkzeug.wrappers.response")
+class _Response:  # pragma: no cover
+    pass
+werk_resp_stub.Response = _Response
+sys.modules.setdefault("werkzeug", types.ModuleType("werkzeug"))
+sys.modules.setdefault("werkzeug.wrappers", types.ModuleType("werkzeug.wrappers"))
+sys.modules.setdefault("werkzeug.wrappers.response", werk_resp_stub)
 
-register_stub("authlib.integration.flask_client", {"OAuth": _OAuth})
-
-
-# class _Response:
-#     pass
-
-
-# register_stub("werkzeug.wrappers.response", {"Response": _Response})
-
-
-class _WsgiToAsgi:
+# asgiref
+asgiref_wsgi_stub = types.ModuleType("asgiref.wsgi")
+class _WsgiToAsgi:  # pragma: no cover
     def __init__(self, app) -> None:
         self.app = app
+asgiref_wsgi_stub.WsgiToAsgi = _WsgiToAsgi
+sys.modules.setdefault("asgiref", types.ModuleType("asgiref"))
+sys.modules.setdefault("asgiref.wsgi", asgiref_wsgi_stub)
 
-
-register_stub("asgiref.wsgi", {"WsgiToAsgi": _WsgiToAsgi})
-
-
-class _IndexModel:
+# pymongo stubs
+pymongo_stub = types.ModuleType("pymongo")
+pymongo_stub.ASCENDING = 1
+pymongo_stub.DESCENDING = -1
+class _IndexModel:  # pragma: no cover
     def __init__(self, *a, **kw) -> None:
         self.document = kw
-
-
+pymongo_stub.IndexModel = _IndexModel
+pymongo_stub.TEXT = "text"
+pymongo_stub.MongoClient = object
+sys.modules.setdefault("pymongo", pymongo_stub)
+pymongo_database_stub = types.ModuleType("pymongo.database")
 class _Database:
     @classmethod
-    def __class_getitem__(cls, item):
+    def __class_getitem__(cls, item):  # pragma: no cover
         return cls
 
-
+pymongo_database_stub.Database = _Database
+sys.modules.setdefault("pymongo.database", pymongo_database_stub)
+pymongo_collection_stub = types.ModuleType("pymongo.collection")
 class _Collection:
     @classmethod
     def __class_getitem__(cls, item):  # pragma: no cover
         return cls
 
-
+pymongo_collection_stub.Collection = _Collection
+sys.modules.setdefault("pymongo.collection", pymongo_collection_stub)
+pymongo_cursor_stub = types.ModuleType("pymongo.cursor")
 class _Cursor:
     pass
-
-
+pymongo_cursor_stub.Cursor = _Cursor
+sys.modules.setdefault("pymongo.cursor", pymongo_cursor_stub)
+pymongo_errors_stub = types.ModuleType("pymongo.errors")
 class _DuplicateKeyError(Exception):
     pass
+pymongo_errors_stub.DuplicateKeyError = _DuplicateKeyError
+sys.modules.setdefault("pymongo.errors", pymongo_errors_stub)
 
-
+pymongo_uri_stub = types.ModuleType("pymongo.uri_parser")
 def _parse_uri(uri: str) -> dict[str, str | None]:  # pragma: no cover
     return {"database": None}
-
-
-register_stub(
-    "pymongo",
-    {
-        "ASCENDING": 1,
-        "DESCENDING": -1,
-        "IndexModel": _IndexModel,
-        "TEXT": "text",
-        "MongoClient": object,
-    },
-)
-register_stub("pymongo.database", {"Database": _Database})
-register_stub("pymongo.collection", {"Collection": _Collection})
-register_stub("pymongo.cursor", {"Cursor": _Cursor})
-register_stub("pymongo.errors", {"DuplicateKeyError": _DuplicateKeyError})
-register_stub("pymongo.uri_parser", {"parse_uri": _parse_uri})
+pymongo_uri_stub.parse_uri = _parse_uri
+sys.modules.setdefault("pymongo.uri_parser", pymongo_uri_stub)
 
 # pydantic v2 compatibility helpers
 import pydantic
 
 if not hasattr(pydantic, "model_validator"):
-
     def model_validator(*args, **kwargs):  # type: ignore
         def decorator(fn):
             return fn
-
         return decorator
 
     pydantic.model_validator = model_validator  # type: ignore
 
 if not hasattr(pydantic, "computed_field"):
-
     def computed_field(*args, **kwargs):  # type: ignore
         def decorator(fn):
             return fn
-
         return decorator
 
     pydantic.computed_field = computed_field  # type: ignore
 
 if not hasattr(pydantic, "field_validator"):
-
     def field_validator(*args, **kwargs):  # type: ignore
         def decorator(fn):
             return fn
-
         return decorator
 
     pydantic.field_validator = field_validator  # type: ignore
 
 if not hasattr(pydantic, "field_serializer"):
-
     def field_serializer(*args, **kwargs):  # type: ignore
         def decorator(fn):
             return fn
-
         return decorator
 
     pydantic.field_serializer = field_serializer  # type: ignore
 
 if not hasattr(pydantic.BaseModel, "model_validate"):
-
     @classmethod
     def model_validate(cls, obj):  # type: ignore
         return cls.parse_obj(obj)
@@ -212,108 +180,94 @@ if not hasattr(pydantic.BaseModel, "model_validate"):
     pydantic.BaseModel.model_validate = model_validate  # type: ignore
 
 if not hasattr(pydantic.BaseModel, "model_dump"):
-
     def model_dump(self, *args, **kwargs):  # type: ignore
         return self.dict(*args, **kwargs)
 
     pydantic.BaseModel.model_dump = model_dump  # type: ignore
 
-if not hasattr(pydantic, "EmailStr"):
-    pydantic.EmailStr = str
-
+# pydantic_settings stub
+pydantic_settings_stub = types.ModuleType("pydantic_settings")
+pydantic_settings_stub.BaseSettings = object
+pydantic_settings_stub.PydanticBaseSettingsSource = object
+pydantic_settings_stub.SettingsConfigDict = dict
 
 class _TomlConfigSettingsSource:  # pragma: no cover
     def __init__(self, *a, **k):
         pass
 
+pydantic_settings_stub.TomlConfigSettingsSource = _TomlConfigSettingsSource
+sys.modules.setdefault("pydantic_settings", pydantic_settings_stub)
 
-register_stub(
-    "pydantic_settings",
-    {
-        "BaseSettings": object,
-        "PydanticBaseSettingsSource": object,
-        "SettingsConfigDict": dict,
-        "TomlConfigSettingsSource": _TomlConfigSettingsSource,
-    },
-)
-
-
+# pydantic_extra_types stub
+pydantic_extra_stub = types.ModuleType("pydantic_extra_types.color")
 class _Color:  # pragma: no cover
     def __init__(self, *a, **k):
         pass
+pydantic_extra_stub.Color = _Color
+sys.modules.setdefault("pydantic_extra_types", types.ModuleType("pydantic_extra_types"))
+sys.modules.setdefault("pydantic_extra_types.color", pydantic_extra_stub)
 
-
-register_stub("pydantic_extra_types.color", {"Color": _Color})
-
-
+# bson stub for ObjectId
+bson_stub = types.ModuleType("bson")
 class _ObjectId:  # pragma: no cover
     def __init__(self, *a, **k):
         pass
-
-
-register_stub("bson", {"ObjectId": _ObjectId})
+bson_stub.ObjectId = _ObjectId
+sys.modules.setdefault("bson", bson_stub)
 
 # pydantic_core stub for BaseModel support
 pydantic_core_stub = types.ModuleType("pydantic_core")
 core_schema_stub = types.SimpleNamespace(CoreSchema=object)
-
-
 def _union_schema(*args, **kwargs):
     return object
-
-
 def _to_string_ser_schema(*args, **kwargs):
     return object
+core_schema_stub.union_schema = _union_schema
+core_schema_stub.to_string_ser_schema = _to_string_ser_schema
+pydantic_core_stub.core_schema = core_schema_stub
+class _PydanticCustomError(Exception):
+    pass
+pydantic_core_stub.PydanticCustomError = _PydanticCustomError
+sys.modules.setdefault("pydantic_core", pydantic_core_stub)
 
-
-register_stub(
-    "pydantic_core",
-    {
-        "core_schema": types.SimpleNamespace(
-            union_schema=_union_schema,
-            to_string_ser_schema=_to_string_ser_schema,
-            CoreSchema=object,
-        ),
-        "PydanticCustomError": type("_PydanticCustomError", (Exception,), {}),
-    },
-)
-
-
+# Minimal requests stub for modules that expect it
+requests_stub = types.ModuleType("requests")
 def _dummy_get(*a, **kw):  # pragma: no cover
     class Resp:
         status_code = 200
-
         def json(self):
             return {}
-
     return Resp()
+requests_stub.get = _dummy_get
+sys.modules.setdefault("requests", requests_stub)
 
+# Stub for email_validator required by pydantic EmailStr
+sys.modules.setdefault("email_validator", types.ModuleType("email_validator"))
 
-register_stub("requests", {"get": _dummy_get})
-
-register_stub("email_validator")
-
-
+# ---------------------------------------------------------------------------
+# Stub gens application factory to avoid heavy dependencies when importing the
+# package during tests.
+# ---------------------------------------------------------------------------
+gens_app_stub = types.ModuleType("gens.app")
 def _create_app():  # pragma: no cover
     return None
+gens_app_stub.create_app = _create_app
+sys.modules.setdefault("gens.app", gens_app_stub)
 
-
-register_stub("gens.app", {"create_app": _create_app})
-
-
+# Minimal settings object used by the CLI
+settings_module = types.ModuleType("gens.config")
 class _DBConf:
     def __init__(self):
         self.connection = "mongodb://localhost:27017"
         self.database = "gens-test"
-
 
 class _Settings:
     def __init__(self):
         self.gens_db = _DBConf()
         self.scout_db = _DBConf()
 
-
-register_stub("gens.config", {"settings": _Settings()})
+settings_module.settings = _Settings()
+sys.modules.setdefault("gens.config", settings_module)
 
 # ---------------------------------------------------------------------------
 # Expose data fixture helpers
@@ -327,13 +281,11 @@ base_stub: Any = types.ModuleType("gens.cli.base")
 base_stub.cli = None
 sys.modules.setdefault("gens.cli.base", base_stub)
 
-
 class DummyDB(dict):
     """Simple dictionary based dummy database used in CLI tests."""
 
     def __getitem__(self, key):  # pragma: no cover - required for indexing
         return self
-
 
 @pytest.fixture
 def dummy_db() -> DummyDB:
