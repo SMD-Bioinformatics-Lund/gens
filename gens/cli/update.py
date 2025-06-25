@@ -43,7 +43,7 @@ def update() -> None:
 @click.option(
     "-t",
     "--sample-type",
-    type=ChoiceType(SampleType),
+    type=str,
     help="New sample type (for instance, tumor/normal, proband/mother/father/relative, other)",
 )
 @click.option(
@@ -63,7 +63,7 @@ def sample(
     sample_id: str,
     case_id: str,
     genome_build: GenomeBuild,
-    sample_type: SampleType,
+    sample_type: str,
     sex: SampleSex | None,
     meta_files: tuple[Path, ...],
 ) -> None:
