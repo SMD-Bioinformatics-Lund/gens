@@ -13,7 +13,7 @@ export function getVariantContextMenuContent(
   details: ApiVariantDetails,
   variantUrl: string,
 ): HTMLDivElement[] {
-  const sample = details.samples.filter((s) => s.sample_id === sampleId)[0];
+  const sample = details.samples.find((s) => s.sample_id === sampleId)
   const info: InfoField[] = [
     { key: "Range", value: `${details.start} - ${details.end}` },
     {
@@ -22,21 +22,21 @@ export function getVariantContextMenuContent(
     },
     {
       key: "Genotype call",
-      value: sample.genotype_call,
+      value: sample ? sample.genotype_call : "-",
     },
     {
       key: "Allele depths",
-      value: details.sample?.allele_depths
+      value: sample && details.sample?.allele_depths
         ? details.sample.allele_depths.join(", ")
         : null,
     },
     {
       key: "Read depth",
-      value: sample.read_depth,
+      value: sample?.read_depth ?? null,
     },
     {
       key: "Genotype quality",
-      value: sample.genotype_quality,
+      value: sample?.genotype_quality ?? null,
     },
     {
       key: "Split read",

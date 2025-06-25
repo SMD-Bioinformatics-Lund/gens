@@ -246,11 +246,7 @@ function renderOverviewPlot(
     };
 
     if (drawLabels) {
-      // FIXME: Something really strange is going on here for the "Y" letter.
-      // If exchanged for a different letter, this label is rendered, so is Y.
-      // If keeping the "Y", nothing is rendered specifically for the Y label
-      // More digging is needed here to understand this
-      const renderChrom = `${chrom}.`;
+      const renderChrom = `${chrom}`;
       drawLabel(
         ctx,
         renderChrom,
