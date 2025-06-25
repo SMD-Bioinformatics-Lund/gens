@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     scout_url: HttpUrl = Field(..., description="Base URL to Scout.")
     gens_api_url: HttpUrl = Field(..., description="Gens API URL")
 
+    main_sample_types: list[str] = Field(
+        default_factory=lambda: ["proband", "tumor"],
+        description="Sample types treated as main samples",
+    )
+
     # Annotation
     default_annotation_track: str | None = None
 
@@ -79,6 +84,7 @@ class Settings(BaseSettings):
             "scout_url": self.scout_url,
             "gens_api_url": self.gens_api_url,
             "default_annotation_track": self.default_annotation_track,
+            "main_sample_types": self.main_sample_types,
             "authentication": self.authentication.value,
             "oauth": self.oauth,
         }

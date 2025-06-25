@@ -25,7 +25,7 @@ import { BandTrack } from "../tracks/band_track";
 import { TrackHeights } from "../side_menu/settings_menu";
 import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
-import { getMainSample, isNonMainSample, removeOne } from "../../util/utils";
+import { removeOne } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 
 const trackHeight = STYLE.tracks.trackHeight;
@@ -184,7 +184,7 @@ export class TrackView extends ShadowBaseElement {
     const overviewTrackCov = createOverviewTrack(
       "overview_cov",
       "Overview (cov)",
-      () => dataSources.getOverviewCovData(getMainSample(samples)),
+      () => dataSources.getOverviewCovData(session.getMainSample()),
       session.getCoverageRange(),
       chromSizes,
       chromClick,
@@ -201,7 +201,7 @@ export class TrackView extends ShadowBaseElement {
     const overviewTrackBaf = createOverviewTrack(
       "overview_baf",
       "Overview (baf)",
-      () => dataSources.getOverviewBafData(getMainSample(samples)),
+      () => dataSources.getOverviewBafData(session.getMainSample()),
       BAF_Y_RANGE,
       chromSizes,
       chromClick,
@@ -669,7 +669,7 @@ function createSampleTracks(
       },
       showLabelWhenCollapsed: true,
       isExpanded: false,
-      isHidden: isNonMainSample(sample),
+      isHidden: sample.sampleId !== session.getMainSample().sampleId,
     },
   );
 

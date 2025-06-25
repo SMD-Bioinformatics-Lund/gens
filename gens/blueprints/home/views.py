@@ -57,6 +57,7 @@ def home() -> str:
         total_samples=len(samples_per_case),
         scout_base_url=str(settings.scout_url),
         gens_api_url=str(settings.gens_api_url),
+        main_sample_types=settings.main_sample_types,
         genome_build=genome_build.value,
         version=version,
     )

@@ -34,6 +34,7 @@ import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
 import { setupShortcuts } from "./shortcuts";
+import { getMainSample } from "./util/utils";
 
 export async function samplesListInit(
   samples: SampleInfo[],
@@ -58,6 +59,7 @@ export async function initCanvases({
   genomeBuild,
   scoutBaseURL,
   gensApiURL,
+  mainSampleTypes,
   annotationFile: defaultAnnotationName,
   startRegion,
   version,
@@ -68,6 +70,7 @@ export async function initCanvases({
   genomeBuild: number;
   scoutBaseURL: string;
   gensApiURL: string;
+  mainSampleTypes: string[];
   annotationFile: string;
   startRegion: { chrom: Chromosome; start?: number; end?: number } | null;
   version: string;
@@ -108,7 +111,7 @@ export async function initCanvases({
   // FIXME: Think about how to organize. Get data sources?
   const orderSamples = (samples: ApiSample[]): ApiSample[] => {
     const mainSample = samples.find((s) =>
-      ["proband", "tumor"].includes(s.sample_type),
+      mainSampleTypes.includes(s.sample_type),
     );
     if (mainSample != null) {
       const index = samples.indexOf(mainSample);
@@ -134,9 +137,12 @@ export async function initCanvases({
     return result;
   });
 
+  const mainSample = getMainSample(samples);
+
   const session = new GensSession(
     render,
     sideMenu,
+    mainSample,
     samples,
     trackHeights,
     scoutBaseURL,

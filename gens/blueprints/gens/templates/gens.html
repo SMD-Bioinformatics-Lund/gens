@@ -84,8 +84,8 @@
             start: startJs,
             end: endJs,
         },
-        // FIXME: This should come from the backend
         gensApiURL: '{{ gens_api_url }}',
+        mainSampleTypes: {{ main_sample_types | tojson | safe }},
         version: '{{ version }}',
         allSamples: {{ all_samples | tojson | safe }}
     })
