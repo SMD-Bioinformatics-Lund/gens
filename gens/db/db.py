@@ -3,7 +3,6 @@
 import logging
 from typing import Any, Generator
 
-import pymongo
 from flask import Flask
 from pydantic import MongoDsn
 from pymongo import MongoClient
