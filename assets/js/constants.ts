@@ -116,6 +116,7 @@ export const STYLE = {
     shadowSize: 2,
     transitionTime: "0.3s",
     width: 450,
+    narrowWidth: 300,
   },
   bandTrack: {
     trackPadding: SIZES.l,

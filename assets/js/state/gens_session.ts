@@ -30,6 +30,7 @@ export class GensSession {
   private highlights: Record<string, RangeHighlight>;
   private chromSizes: Record<Chromosome, number>;
   private chromInfo: Record<Chromosome, ChromosomeInfo>;
+  private mainSample: Sample;
   private samples: Sample[];
   private trackHeights: TrackHeights;
   private chromViewActive: boolean;
@@ -44,6 +45,7 @@ export class GensSession {
   constructor(
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
+    mainSample: Sample,
     samples: Sample[],
     trackHeights: TrackHeights,
     scoutBaseURL: string,
@@ -56,6 +58,7 @@ export class GensSession {
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
+    this.mainSample = mainSample;
     this.highlights = {};
     this.chromosome = startRegion ? startRegion.chrom : "1";
     this.start = startRegion?.start ? startRegion.start : 1;
@@ -71,6 +74,10 @@ export class GensSession {
     this.annotationSelections = loadAnnotationSelections() || [];
     this.colorAnnotationId = loadColorAnnotation();
     this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
+  }
+
+  public getMainSample(): Sample {
+    return this.mainSample;
   }
 
   public getGenomeBuild(): number {
@@ -237,8 +244,8 @@ export class GensSession {
     this.render({});
   }
 
-  public showContent(header: string, content: HTMLElement[]) {
-    this.sideMenu.showContent(header, content);
+  public showContent(header: string, content: HTMLElement[], width: number) {
+    this.sideMenu.showContent(header, content, width);
   }
 
   public getAllHighlights(): RangeHighlight[] {

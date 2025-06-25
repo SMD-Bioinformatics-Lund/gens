@@ -53,7 +53,7 @@ export function createAnnotTrack(
     const entries = getAnnotationContextMenuContent(id, details);
     const content = [container];
     content.push(...entries);
-    session.showContent("Annotations", content);
+    session.showContent("Annotations", content, STYLE.menu.narrowWidth);
   };
 
   // FIXME: Move to session
@@ -168,7 +168,7 @@ export function createVariantTrack(
       const content = [container];
       content.push(...entries);
 
-      session.showContent("Variant", content);
+      session.showContent("Variant", content, STYLE.menu.narrowWidth);
     },
     openTrackContextMenu,
     () => session.getMarkerModeOn(),
@@ -228,7 +228,7 @@ export function createGeneTrack(
       const entries = getGenesContextMenuContent(id, details);
       const content = [container];
       content.push(...entries);
-      session.showContent("Transcript", content);
+      session.showContent("Transcript", content, STYLE.menu.narrowWidth);
     },
     openTrackContextMenu,
     () => session.getMarkerModeOn(),

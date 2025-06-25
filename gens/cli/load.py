@@ -44,7 +44,7 @@ from gens.load.meta import parse_meta_file
 from gens.load.transcripts import build_transcripts
 from gens.models.annotation import AnnotationRecord, AnnotationTrack, TranscriptRecord
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleInfo, SampleSex, SampleType
+from gens.models.sample import SampleInfo, SampleSex
 from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrack
 
 LOG = logging.getLogger(__name__)

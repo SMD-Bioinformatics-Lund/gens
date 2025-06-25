@@ -25,6 +25,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Multiple-chromosomes view
  - Parsing AED files can deal with " surrounded comments split across multiple rows
  - Optional sample type introduced (tumor/normal, proband/mother/father, other). Used in multi-sample views to display only proband-relevant tracks.
+ - Configure the "main sample types" through `main_sample_types` settings in the config
  - Optional sample sex attribute (M/F) for samples.
  - Load and display meta data in right hand table.
  - Pydantic validation of loaded transcripts

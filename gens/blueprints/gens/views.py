@@ -99,4 +99,5 @@ def display_samples(case_id: str) -> str:
         todays_date=date.today(),
         version=version,
         gens_api_url=settings.gens_api_url,
+        main_sample_types=settings.main_sample_types,
     )
