@@ -1,3 +1,6 @@
+import logging
+LOG = logging.getLogger(__name__)
+
 class UpdateResult:
     def __init__(self, modified_count: int):
         self.modified_count = modified_count
@@ -39,12 +42,22 @@ class Collection:
                 return DeleteResult(1)
         return DeleteResult(0)
 
+    def delete_many(self, filt):
+        while True:
+            result = self.delete_one(filt)
+            if result.deleted_count == 0:
+                break
+            
+
     def count_documents(self, filt):
         return len([d for d in self._docs if self._match(d, filt)])
 
 class Database(dict):
     def get_collection(self, name):
         return self.setdefault(name, Collection())
+    
+    def __getitem__(self, name):
+        return self.get_collection(name)
 
 class MongoClient:
     def __init__(self, *args, **kwargs):
