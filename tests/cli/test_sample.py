@@ -1,5 +1,6 @@
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any, Callable
 import pytest
 
 
@@ -10,12 +11,12 @@ from gens.db.collections import SAMPLES_COLLECTION
 from gens.exceptions import SampleNotFoundError
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
-from tests.conftest import DummyDB
-from tests.utils import mongomock
+from tests.utils.my_mongomock import Database
 
 
-def test_delete_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, dummy_db: DummyDB):
-    db = dummy_db
+def test_delete_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, db: Database, patch_cli: Callable):
+
+    patch_cli("gens.cli.delete")
 
     def fake_get_db(connection, db_name: str):
         return db
@@ -38,15 +39,14 @@ def test_delete_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, dummy_db: D
     assert called == {"sample_id": "sample1", "case_id": "caseA", "genome_build": 19}
 
 
-def test_update_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
-    db = DummyDB()
+def test_update_sample_invokes_crud(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, db: Database, patch_cli: Callable):
 
     def fake_get_db(connection, db_name: str):
         return db
 
+    patch_cli("gens.cli.update")
+
     monkeypatch.setattr("gens.cli.update.get_db_connection", fake_get_db)
-    monkeypatch.setattr("gens.cli.update.get_indexes", lambda db, col: [])
-    monkeypatch.setattr("gens.cli.update.create_index", lambda db, col: None)
 
     sample_obj = SimpleNamespace(
         sample_id="sample1", case_id="caseA", genome_build=19, sample_type=None, sex=None, meta=[]
@@ -91,9 +91,7 @@ def _build_sample() -> SampleInfo:
     )
 
 
-def test_update_sample_modifies_collection() -> None:
-    client = mongomock.MongoClient()
-    db = client.get_database("test")
+def test_update_sample_modifies_collection(db: Any) -> None:
 
     sample_obj = _build_sample()
     update_sample(db, sample_obj)
@@ -113,9 +111,7 @@ def test_update_sample_modifies_collection() -> None:
     assert updated["sample_type"] == "tumor"
 
 
-def test_delete_sample_removes_document() -> None:
-    client = mongomock.MongoClient()
-    db = client.get_database("test")
+def test_delete_sample_removes_document(db: Any) -> None:
 
     sample_obj = _build_sample()
     update_sample(db, sample_obj)

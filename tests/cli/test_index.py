@@ -1,26 +1,12 @@
-from __future__ import annotations
-
-from pathlib import Path
-from types import SimpleNamespace
-from typing import Any
-
 import pytest
-
-import sys
-import types
-import logging
-
-from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleSex
-from tests.conftest import DummyDB
-
-LOG = logging.getLogger()
-
+from tests.utils import my_mongomock
 from gens.cli.index import index as index_cmd
 
 
-def test_index_creates_indexes(monkeypatch: pytest.MonkeyPatch, dummy_db: DummyDB):
-    db = dummy_db
+def test_index_creates_indexes(monkeypatch: pytest.MonkeyPatch, db):
+
+    client = my_mongomock.MongoClient()
+    db = client.get_database("test")
 
     def fake_get_db(connection, db_name: str):
         return db
@@ -41,9 +27,10 @@ def test_index_creates_indexes(monkeypatch: pytest.MonkeyPatch, dummy_db: DummyD
     assert called.get("created")
 
 
-def test_index_updates_indexes(monkeypatch: pytest.MonkeyPatch):
-    db = DummyDB()
-
+def test_index_updates_indexes(monkeypatch: pytest.MonkeyPatch, db):
+    client = my_mongomock.MongoClient()
+    db = client.get_database("test")
+    
     def fake_get_db(connection, db_name: str):
         return db
 
