@@ -3,7 +3,7 @@ import json
 import logging
 from types import ModuleType, SimpleNamespace
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import mongomock
 import pytest
@@ -24,7 +24,7 @@ def test_load_chromosomes_from_file(
     load_chromosomes_cmd: ModuleType,
     tmp_path: Path,
     db: mongomock.Database,
-    patch_cli,
+    patch_cli: Callable,
 ):
 
     patch_cli(load_chromosomes_cmd)

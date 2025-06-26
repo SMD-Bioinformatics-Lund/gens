@@ -14,6 +14,7 @@ from gens.db.collections import SAMPLES_COLLECTION
 from gens.exceptions import SampleNotFoundError
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
+
 # from tests.utils.my_mongomock import Database
 
 from gens.crud.samples import update_sample, delete_sample
@@ -26,10 +27,89 @@ def update_sample_cmd() -> ModuleType:
     module = importlib.import_module("gens.cli.update")
     return module
 
+
 @pytest.fixture
 def delete_sample_cmd() -> ModuleType:
     module = importlib.import_module("gens.cli.delete")
     return module
+
+
+@pytest.fixture
+def load_sample_cmd() -> ModuleType:
+    module = importlib.import_module("gens.cli.load")
+    return module
+
+
+def test_load_sample_cli(
+    load_sample_cmd: ModuleType,
+    db: mongomock.Database,
+    patch_cli: Callable,
+    tmp_path: Path,
+):
+    patch_cli(load_sample_cmd)
+
+    baf_file = tmp_path / "baf"
+    baf_file.write_text("baf")
+    cov_file = tmp_path / "cov"
+    cov_file.write_text("cov")
+    overview_file = tmp_path / "overview"
+    overview_file.write_text("{}")
+    meta_file_simple = tmp_path / "meta_simple.tsv"
+    meta_file_simple.write_text("type\tvalue\nA\t1\n")
+    meta_file_complex = tmp_path / "meta_complex.tsv"
+    meta_file_complex.write_text(
+        "chrom\ttype\tvalue\n"
+        "chr1\tavg_cov\t23.4\n"
+        "chr1\tavg_roh\t0.2\n"
+        "chr2\tavg_cov\t22.1\n"
+        "chr2\tavg_roh\t0.12\n"
+    )
+
+    load_sample_cmd.sample.callback(
+        sample_id="sample1",
+        genome_build=38,
+        baf=baf_file,
+        coverage=cov_file,
+        case_id="case1",
+        overview_json=overview_file,
+        meta_files=[meta_file_simple, meta_file_complex],
+        sample_type="proband",
+        sex="M",
+    )
+
+    coll = db.get_collection(SAMPLES_COLLECTION)
+    assert coll.count_documents({}) == 1
+    doc = coll.find_one({})
+    assert doc is not None
+    assert doc["sample_id"] == "sample1"
+    assert doc["case_id"] == "case1"
+    assert doc["genome_build"] == 38
+    assert Path(doc["baf_file"]) == baf_file
+    assert Path(doc["coverage_file"]) == cov_file
+    assert Path(doc["overview_file"]) == overview_file
+    assert doc["sample_type"] == "proband"
+    assert len(doc["meta"]) == 2
+
+    assert doc["meta"][0]["file_name"] == "meta_simple.tsv"
+    assert doc["meta"][0]["row_name_header"] == None
+    assert len(doc["meta"][0]["data"]) == 1
+    assert doc["meta"][0]["data"][0] == {
+        "type": "A",
+        "value": "1",
+        "row_name": None,
+        "color": "rgb(0,0,0)",
+    }
+
+    assert doc["meta"][1]["file_name"] == "meta_complex.tsv"
+    assert doc["meta"][1]["row_name_header"] == "chrom"
+    assert len(doc["meta"][1]["data"]) == 4
+    assert doc["meta"][1]["data"][0] == {
+        "type": "avg_cov",
+        "value": "23.4",
+        "row_name": "chr1",
+        "color": "rgb(0,0,0)",
+    }
+
 
 def test_delete_sample_cli_removes_document(
     delete_sample_cmd: ModuleType,
@@ -39,13 +119,7 @@ def test_delete_sample_cli_removes_document(
     patch_cli(delete_sample_cmd)
 
     coll = db.get_collection(SAMPLES_COLLECTION)
-    coll.insert_one(
-        {
-            "sample_id": "sample1",
-            "case_id": "caseA",
-            "genome_build": GenomeBuild(19)
-        }
-    )
+    coll.insert_one({"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(19)})
 
     assert delete_sample_cmd.sample.callback is not None
 
@@ -92,7 +166,9 @@ def test_update_sample_updates_document(
     )
 
     coll = db.get_collection(SAMPLES_COLLECTION)
-    doc = coll.find_one({"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(19)})
+    doc = coll.find_one(
+        {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(19)}
+    )
     assert doc is not None
     assert doc["sample_type"] == "tumor"
     assert doc.get("sex") in ("M", SampleSex("M"), SampleSex.MALE)
@@ -109,6 +185,7 @@ def test_update_sample_updates_document(
     assert meta[0]["data"][0]["value"] == "1"
     assert meta[0]["data"][0]["row_name"] == None
     assert meta[0]["data"][0]["color"] == "rgb(0,0,0)"
+
 
 def _build_sample() -> SampleInfo:
     return SampleInfo(
