@@ -287,12 +287,24 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
         file_meta: list[dict[str, Any]] = []
         records: list[AnnotationRecord] = []
         if file_format == "tsv" or is_tsv:
-            records = [
-                AnnotationRecord.model_validate(
+            parsed_content = parse_tsv_file(file)
+            # LOG.debug(list(parsed_content))
+
+            records = []
+            for rec in parsed_content:
+                LOG.debug(f"Processing {rec}")
+                validated_rec = AnnotationRecord.model_validate(
                     {"track_id": track_id, "genome_build": genome_build, **rec}
                 )
-                for rec in parse_tsv_file(file)
-            ]
+                LOG.debug(f"Result {validated_rec}")
+                records.append(validated_rec)
+            # records = [
+            #     AnnotationRecord.model_validate(
+            #         {"track_id": track_id, "genome_build": genome_build, **rec}
+            #     )
+            #     for rec in parsed_content
+            # ]
+            LOG.debug(records)
         elif file_format == "bed":
             try:
                 bed_records = list(parse_bed_file(file))

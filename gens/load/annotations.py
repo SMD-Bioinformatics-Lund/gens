@@ -235,8 +235,14 @@ def _parse_aed_header(
 
     Retrun definition of the columns and metadata on the track encoded in the header.
     """
+
+    LOG.debug("Parsing the aed header")
+
     # get column definition
     raw_header = fh.readline().rstrip().split("\t")
+
+    LOG.debug(f"Raw header: {raw_header}")
+
     col_def: dict[int, AedPropertyDefinition] = {
         col_no: _parse_aed_property(col) for col_no, col in enumerate(raw_header)
     }
@@ -284,10 +290,10 @@ def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
             else:
                 color = Color(DEFAULT_COLOUR)
             yield {
-                "name": row.get("Name", "The Nameless One"),
+                "name": row.get("Name", ""),
                 "chrom": row["Chromosome"],
-                "start": row["Start"],
-                "end": row["Stop"],
+                "start": int(row["Start"]) + 1,
+                "end": int(row["Stop"]),
                 "color": color,
             }
 
@@ -297,8 +303,15 @@ def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata
 
     Reference: https://assets.thermofisher.com/TFS-Assets/GSD/Handbooks/Chromosome_analysis_suite_v4.2_user-guide.pdf
     """
+    LOG.debug(f"Start aed parsing")
+
+
     with open(file, encoding="utf-8-sig") as aed_fh:
+
         column_definitions, file_metadata = _parse_aed_header(aed_fh)
+
+        LOG.debug(f"Col def {column_definitions}")
+        LOG.debug(f"File metadata {file_metadata}")
 
         # This can deal with quote surrounded comments containing line breaks
         reader = csv.reader(
@@ -380,11 +393,7 @@ def fmt_aed_to_annotation(
                             )
                         )
                     except ValidationError as err:
-                        LOG.warning(
-                            "Note could not be formatted as reference, '%s'; error: %s",
-                            note,
-                            err,
-                        )
+                        continue
             elif "http" in note or "www" in note:
                 match = re.search(AED_URL_REFERENCE_NOTE, note)
                 if match:
@@ -395,11 +404,7 @@ def fmt_aed_to_annotation(
                             )
                         )
                     except ValidationError as err:
-                        LOG.warning(
-                            "Note could not be formatted as reference, '%s'; error: %s",
-                            note,
-                            err,
-                        )
+                        continue
             else:
                 continue
         comments.append(Comment(comment=record["note"], username="parser"))
