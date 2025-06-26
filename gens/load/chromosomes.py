@@ -61,9 +61,10 @@ def build_chromosomes_obj(
             LOG.debug(f"Assembly ID was none {assembly_id}")
             raise ValueError("No assembly ID found for ...")
 
-        if not data.get("centromere") is None:
+        if data.get("centromere") is None:
+            LOG.debug("Centromere not found")
+            LOG.debug(data)
             embl_annot = get_assembly_annotation(assembly_id, timeout=timeout)
-            # embl_annot = "FIXME"
             start, end = parse_centromere_pos(embl_annot)
             centro_pos = {"start": start, "end": end}
         else:

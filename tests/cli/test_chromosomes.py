@@ -87,20 +87,18 @@ def test_load_chromosomes_from_file(
 
     assert chrom_coll.count_documents({}) == 2
 
-    rec = chrom_coll.find({})
-    LOG.debug(list(rec))
+    rec = chrom_coll.find_one({})
+    LOG.debug(rec)
 
-    assert False
+    assert rec is not None
+    assert rec["chrom"] == "1"
+    assert rec["genome_build"] == 38
+    assert rec["size"] == 10
+    assert rec["centromere"] == {"start": 3, "end": 5}
+    assert len(rec["bands"]) == 2
+    assert rec["bands"][0]["id"] == "p11.1"
+    assert rec["bands"][0]["stain"] == "acen"
+    assert rec["bands"][0]["start"] == 1
+    assert rec["bands"][0]["end"] == 2
 
-    # docs = list(db[CHROMSIZES_COLLECTION].find({}, {"_id": 0}))
-
-    # expected = [
-    #     {"chromosome": "1", "length": 10, "genome_build": 38},
-    #     {"chromosome": "MT","length":  5, "genome_build": 38}
-    # ]
-    # # adjust the keys to match exactly what build_chromosomes_obj emits:
-    # simplified = [
-    #     {"chromosome": d["name"], "length": d["length"], "genome_build": d["genome_build"]}
-    #     for d in docs
-    # ]
-    # assert sorted(simplified, key=lambda x: x["chromosome"]) == sorted(expected, key=lambda x: x["chromosome"])
+   
