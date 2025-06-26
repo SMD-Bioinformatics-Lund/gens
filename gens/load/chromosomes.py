@@ -45,32 +45,21 @@ def build_chromosomes_obj(
         scale = round(data["length"] / genome_size, 2)
 
         if name == "MT":
-            # centro_pos = None
-            # cyto_bands = None
             continue
-
-        # get centeromer position by querying assembly annotation from EBI
-
-        LOG.debug("Parsing the assembly")
 
         assembly_id = parse_assembly_id(data.get("synonyms", []))
 
-        LOG.debug(f"Found ID {assembly_id}")
-
         if not assembly_id:
-            LOG.debug(f"Assembly ID was none {assembly_id}")
             raise ValueError("No assembly ID found for ...")
 
         if data.get("centromere") is None:
-            LOG.debug("Centromere not found")
-            LOG.debug(data)
+            # get centeromer position by querying assembly annotation from EBI
             embl_annot = get_assembly_annotation(assembly_id, timeout=timeout)
             start, end = parse_centromere_pos(embl_annot)
             centro_pos = {"start": start, "end": end}
         else:
             centro_pos: dict[str, int] = data["centromere"]
 
-        # parse cytogenic bands
         cyto_bands = [
             ChromBand(
                 id=band["id"],

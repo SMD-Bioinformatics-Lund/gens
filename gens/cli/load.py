@@ -286,9 +286,6 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
         file_format = file.suffix[1:]
         file_meta: list[dict[str, Any]] = []
         records: list[AnnotationRecord] = []
-
-        LOG.debug(f"File format: {file_format}")
-
         if file_format == "tsv" or is_tsv:
             records = [
                 AnnotationRecord.model_validate(
@@ -299,15 +296,10 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
         elif file_format == "bed":
             try:
                 bed_records = list(parse_bed_file(file))
-                LOG.debug(f"Bed records: {bed_records}")
-
                 records = []
                 for rec in bed_records:
-                    LOG.debug(f"Iterating rec: {rec}")
                     parsed_rec = fmt_bed_to_annotation(rec, track_id, genome_build)
                     records.append(parsed_rec)
-
-                LOG.debug(f"Bed records parsed: {records}")
             except ValueError as err:
                 click.secho(
                     f"An error occured when creating loading annotation: {err}",
@@ -315,7 +307,6 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
                 )
                 raise click.Abort()
         elif file_format == "aed":
-            LOG.debug("Hitting the aed path")
             file_meta, aed_records = parse_aed_file(file, ignore_errors)
             records = []
             for rec in aed_records:
@@ -330,22 +321,16 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
                 if formatted_rec is not None:
                     records.append(formatted_rec)
 
-        LOG.debug("After")
-
         if len(file_meta) > 0:
-            LOG.debug("file_meta")
             # add metadata from file to the previously created track
             LOG.debug("Updating existing annotation track with metadata from file.")
             update_annotation_track(track_id=track_id, metadata=file_meta, db=db)
 
         if len(records) == 0:
-            LOG.debug(f"records {records}")
             delete_annotation_track(track_id, db)  # cleanup
             raise ValueError(
                 "Something went wrong parsing the annotations file, no valid annotations found."
             )
-
-        LOG.debug("after 2")
 
         # remove annotations and update track if track has already been added
         if track_in_db is not None:
@@ -424,9 +409,6 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
 )
 def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> None:
     """Load chromosome size information into the database."""
-
-    LOG.debug("Hi")
-
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
         raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
@@ -435,19 +417,13 @@ def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> N
     if len(get_indexes(db, CHROMSIZES_COLLECTION)) == 0:
         create_index(db, CHROMSIZES_COLLECTION)
 
-    # FIXME: Cleanup
     # Get chromosome info from ensemble
     # If file is given, use sizes from file else download chromsizes from ebi
-
     if file is not None:
-        LOG.info("Load assembly from %s", file)
         with open_text_or_gzip(str(file)) as fh:
             assembly_info = json.load(fh)
     else:
-        LOG.info("Query ensembl for assembly info for %s", genome_build)
         assembly_info = get_assembly_info(genome_build, timeout=timeout)
-
-    LOG.debug(f"Assembly info {assembly_info}")
 
     chrom_data = {
         elem["name"]: elem
@@ -455,20 +431,13 @@ def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> N
         if elem.get("coord_system") == "chromosome"
     }
 
-    LOG.debug(f"Chrom data before {chrom_data}")
-
     chrom_data = {chrom: chrom_data[chrom] for chrom in assembly_info["karyotype"]}
 
-    LOG.debug(f"Chrom data after {chrom_data}")
-
-    # try:
-    LOG.info("Build chromosome object")
-    chromosomes_data = build_chromosomes_obj(chrom_data, genome_build, timeout)
-    # except Exception as err:
-    #     raise click.UsageError(str(err))
-
-    LOG.debug(f"Chromosomes data {list(chromosomes_data)}")
-
+    try:
+        LOG.info("Build chromosome object")
+        chromosomes_data = build_chromosomes_obj(chrom_data, genome_build, timeout)
+    except Exception as err:
+        raise click.UsageError(str(err))
 
     # remove old entries
     res = db[CHROMSIZES_COLLECTION].delete_many({"genome_build": int(genome_build)})

@@ -16,7 +16,8 @@ gens load chromosomes --genome-build 38
 
 This will fetch the karyotype for the selected build and replace any previous entries.
 
-If you already have the assembly stored locally you can provide it with `--file`.
+If you already have the assembly stored locally you can provide it with `--file`. Note that centromere ranges
+needs to be added to the JSON compared to the one downloaded from the [REST API](http://rest.ensembl.org/info/assembly/homo_sapiens?bands=true&content-type=json&synonyms=true).
 
 ```bash
 gens load chromosomes --genome-build 38 --file chromosomes_hg38.json

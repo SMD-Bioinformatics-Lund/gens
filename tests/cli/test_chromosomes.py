@@ -8,7 +8,6 @@ from typing import Any
 import mongomock
 import pytest
 
-# from gens.cli.load import chromosomes as load_chromosomes_cmd, CHROMSIZES_COLLECTION
 from gens.db.collections import CHROMSIZES_COLLECTION
 from gens.models.genomic import GenomeBuild
 
@@ -23,7 +22,6 @@ def load_chromosomes_cmd() -> ModuleType:
 
 def test_load_chromosomes_from_file(
     load_chromosomes_cmd: ModuleType,
-    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     db: mongomock.Database,
     patch_cli,
@@ -31,7 +29,7 @@ def test_load_chromosomes_from_file(
 
     patch_cli(load_chromosomes_cmd)
 
-    # Retrieved from: http://rest.ensembl.org/info/assembly/homo_sapiens?bands=true&content-type=json&synonyms=true
+    # Assembly data retrieved from: http://rest.ensembl.org/info/assembly/homo_sapiens?bands=true&content-type=json&synonyms=true
     # The centromeres can be retrieved from: https://www.ebi.ac.uk/ena/browser/api/embl/CM000663
 
     assembly_data = {
@@ -98,5 +96,3 @@ def test_load_chromosomes_from_file(
     assert rec["bands"][0]["stain"] == "acen"
     assert rec["bands"][0]["start"] == 1
     assert rec["bands"][0]["end"] == 2
-
-   

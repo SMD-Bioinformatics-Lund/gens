@@ -45,7 +45,6 @@ def test_index_updates_indexes(monkeypatch: pytest.MonkeyPatch, db):
     monkeypatch.setattr("gens.cli.index.update_indexes", fake_update_indexes)
     monkeypatch.setattr("gens.cli.index.create_indexes", lambda db: None)
 
-    # result = runner.invoke(index_cmd, ["--update"])
     assert index_cmd.callback is not None
 
     index_cmd.callback(build=False, update=True)

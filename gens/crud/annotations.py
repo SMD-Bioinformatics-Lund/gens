@@ -60,7 +60,6 @@ def create_annotation_track(
     resp = db.get_collection(ANNOTATION_TRACKS_COLLECTION).insert_one(
         track.model_dump()
     )
-    LOG.debug(resp)
     return PydanticObjectId(resp.inserted_id)
 
 

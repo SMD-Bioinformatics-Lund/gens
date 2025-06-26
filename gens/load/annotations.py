@@ -77,33 +77,25 @@ def parse_bed_file(file: Path) -> Iterator[dict[str, str]]:
             "block_starts",
         ]
 
-        LOG.debug("Bed reader")
-
         bed_reader = csv.reader(bed, delimiter="\t")
         colnames: list[str] | None = None
         # Load in annotations
         for line in bed_reader:
 
-            LOG.debug(f"Reading line: {line}")
-
             # skip comments, lines starting with # sign
             if line[0].startswith("#"):
-                LOG.debug(f"Starting with #")
                 continue
             # define the header
             if colnames is None:
-                LOG.debug(f"Colname is None")
                 colnames = field_names[: len(line)]
 
             if len(line) != len(colnames):
-                LOG.debug(f"Different length")
                 raise ValueError(
                     (
                         f"Incorrect number of columns. Expected {len(colnames)}, "
                         f"got {len(line)}; line: {line}"
                     )
                 )
-            LOG.debug(f"Returning")
             yield dict(zip(colnames, line))
 
 
@@ -128,8 +120,6 @@ def fmt_bed_to_annotation(
 ) -> AnnotationRecord:
     """Parse a bed or aed entry"""
 
-    LOG.debug("Running fmt_bed_to_annotation")
-
     annotation: dict[str, Any] = {}
     # parse entry and format the values
     if len(entry) < len(BED_CORE_FIELDS):
@@ -145,8 +135,6 @@ def fmt_bed_to_annotation(
         except ValueError as err:
             LOG.debug("Bad line: %s", entry)
             raise ParserError(str(err)) from err
-
-    LOG.debug(annotation)
 
     return AnnotationRecord(
         track_id=track_id,
