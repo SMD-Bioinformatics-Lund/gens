@@ -2,6 +2,7 @@ import importlib
 from pathlib import Path
 from typing import Any, Callable
 
+import mongomock
 import pytest
 
 from gens.models.genomic import GenomeBuild
@@ -38,30 +39,37 @@ def _build_transcript():
 
 
 def test_load_transcripts_invokes_crud(
-    load_transcripts_cmd: Any, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, db: Database, patch_cli: Callable
-):     
+    load_transcripts_cmd: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    db: Database,
+    patch_cli: Callable,
+):
 
     patch_cli(load_transcripts_cmd)
-    monkeypatch.setattr(load_transcripts_cmd, "get_db_connection", lambda conn, db_name: db)
 
-    called: dict[str, Any] = {}
-
-    def fake_build(transc_fh, mane_fh, genome_build):
-        called["build"] = True
-        return [_build_transcript()]
-
-    monkeypatch.setattr(load_transcripts_cmd, "build_transcripts", fake_build)
-
-    def fake_create(transcripts, database):
-        called["create"] = list(transcripts)
-        called["db"] = database
-
-    monkeypatch.setattr(load_transcripts_cmd, "create_transcripts", fake_create)
-
-    gtf = tmp_path / "tr.gtf"
-    gtf.write_text("dummy")
+    gtf = tmp_path / "transcript.gtf"
+    gtf_content = (
+        "\t".join(
+            [
+                "1",
+                "ensembl",
+                "transcript",
+                "1",
+                "10",
+                ".",
+                "+",
+                ".",
+                'gene_id "G1"; gene_name "GENE1"; transcript_id "t1"; transcript_biotype "protein_coding";',
+            ]
+        )
+        + "\t"
+    )
+    gtf.write_text(gtf_content)
     mane = tmp_path / "mane.txt"
-    mane.write_text("mane")
+    mane.write_text(
+        "Ensembl_nuc\tHGNC_ID\tRefSeq_nuc\tMANE_status\n" "t1\tHGNC:1\trs1\tMANE Select\n"
+    )
 
     assert load_transcripts_cmd.transcripts.callback is not None
 
@@ -69,12 +77,19 @@ def test_load_transcripts_invokes_crud(
         file=str(gtf), mane=str(mane), genome_build=GenomeBuild(38)
     )
 
-    assert called.get("build")
-    assert called.get("db") is db
-    assert called.get("create")
+    coll = db.get_collection(TRANSCRIPTS_COLLECTION)
+
+    assert coll.count_documents({}) == 1
+    rec = coll.find_one({})
+    assert rec is not None
+    assert rec["transcript_id"] == "t1"
+    assert rec["gene_name"] == "GENE1"
+    assert rec["hgnc_id"] == "1"
+    assert rec["refseq_id"] == "rs1"
+    assert rec["mane"] == "MANE Select"
 
 
-def test_create_transcripts_adds_documents(monkeypatch: pytest.MonkeyPatch, db: Any) -> None:
+def test_create_transcripts_adds_documents(monkeypatch: pytest.MonkeyPatch, db: mongomock.Database) -> None:
 
     from gens.crud import transcripts as transcripts_mod
 
@@ -82,11 +97,6 @@ def test_create_transcripts_adds_documents(monkeypatch: pytest.MonkeyPatch, db: 
 
     coll = db.get_collection(TRANSCRIPTS_COLLECTION)
 
-    def insert_many(docs):
-        for d in docs:
-            coll.insert_one(d)
-
-    coll.insert_many = insert_many  # type: ignore[attr-defined]
 
     tr = _build_transcript()
     transcripts_mod.create_transcripts([tr], db)
