@@ -1,43 +1,106 @@
+import importlib
 import json
-from types import SimpleNamespace
+import logging
+from types import ModuleType, SimpleNamespace
 from pathlib import Path
+from typing import Any
 
 import mongomock
 import pytest
 
-from gens.cli.load import chromosomes as load_chromosomes_cmd, CHROMSIZES_COLLECTION
+# from gens.cli.load import chromosomes as load_chromosomes_cmd, CHROMSIZES_COLLECTION
+from gens.db.collections import CHROMSIZES_COLLECTION
 from gens.models.genomic import GenomeBuild
+
+LOG = logging.getLogger(__name__)
+
+
+@pytest.fixture
+def load_chromosomes_cmd() -> ModuleType:
+    module = importlib.import_module("gens.cli.load")
+    return module
 
 
 def test_load_chromosomes_from_file(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, db: mongomock.Database, patch_cli
+    load_chromosomes_cmd: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    db: mongomock.Database,
+    patch_cli,
 ):
+
+    patch_cli(load_chromosomes_cmd)
+
+    # Retrieved from: http://rest.ensembl.org/info/assembly/homo_sapiens?bands=true&content-type=json&synonyms=true
+    # The centromeres can be retrieved from: https://www.ebi.ac.uk/ena/browser/api/embl/CM000663
+
     assembly_data = {
         "top_level_region": [
-            {"name": "1", "length": 10, "coord_system": "chromosome"},
+            {
+                "name": "1",
+                "length": 10,
+                "coord_system": "chromosome",
+                "synonyms": [{"dbname": "INSDC", "name": "CM000663.2"}],
+                "centromere": {
+                    "start": 3,
+                    "end": 5,
+                },
+                "bands": [
+                    {"id": "p11.1", "stain": "acen", "start": 1, "end": 2, "strand": "0"},
+                    {"id": "p11.2", "stain": "gvar", "start": 4, "end": 5, "strand": "0"},
+                ],
+            },
+            {
+                "name": "X",
+                "length": 8,
+                "coord_system": "chromosome",
+                "synonyms": [
+                    {"dbname": "UCSC", "name": "chrX"},
+                    {"dbname": "INSDC", "name": "CM000685.2"},
+                ],
+                "centromere": {
+                    "start": 2,
+                    "end": 4,
+                },
+                "bands": [
+                    {"id": "p11.1", "stain": "acen", "start": 1, "end": 3, "strand": "0"},
+                    {"id": "p11.2", "stain": "gvar", "start": 4, "end": 6, "strand": "0"},
+                ],
+            },
             {"name": "MT", "length": 5, "coord_system": "chromosome"},
         ],
-        "karyotype": ["1", "MT"],
+        "karyotype": ["1", "X", "MT"],
     }
 
-    monkeypatch.setattr("gens.cli.load.get_assembly_info", lambda gb, timeout: assembly_data)
+    # monkeypatch.setattr("gens.cli.load.get_assembly_info", lambda gb, timeout: assembly_data)
 
-    assert load_chromosomes_cmd.callback is not None
+    json_file = tmp_path / "assembly.json"
+    json_file.write_text(json.dumps(assembly_data))
 
-    load_chromosomes_cmd.callback(
+    load_chromosomes_cmd.chromosomes.callback(
         genome_build=GenomeBuild(38),
+        file=json_file,
         timeout=1,
     )
 
-    docs = list(db[CHROMSIZES_COLLECTION].find({}, {"_id": 0}))
+    chrom_coll = db.get_collection(CHROMSIZES_COLLECTION)
 
-    expected = [
-        {"chromosome": "1", "length": 10, "genome_build": 38},
-        {"chromosome": "MT","length":  5, "genome_build": 38}
-    ]
-    # adjust the keys to match exactly what build_chromosomes_obj emits:
-    simplified = [
-        {"chromosome": d["name"], "length": d["length"], "genome_build": d["genome_build"]}
-        for d in docs
-    ]
-    assert sorted(simplified, key=lambda x: x["chromosome"]) == sorted(expected, key=lambda x: x["chromosome"])
+    assert chrom_coll.count_documents({}) == 2
+
+    rec = chrom_coll.find({})
+    LOG.debug(list(rec))
+
+    assert False
+
+    # docs = list(db[CHROMSIZES_COLLECTION].find({}, {"_id": 0}))
+
+    # expected = [
+    #     {"chromosome": "1", "length": 10, "genome_build": 38},
+    #     {"chromosome": "MT","length":  5, "genome_build": 38}
+    # ]
+    # # adjust the keys to match exactly what build_chromosomes_obj emits:
+    # simplified = [
+    #     {"chromosome": d["name"], "length": d["length"], "genome_build": d["genome_build"]}
+    #     for d in docs
+    # ]
+    # assert sorted(simplified, key=lambda x: x["chromosome"]) == sorted(expected, key=lambda x: x["chromosome"])

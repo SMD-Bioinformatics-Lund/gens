@@ -30,18 +30,18 @@ base_stub: Any = types.ModuleType("gens.cli.base")
 base_stub.cli = None
 sys.modules.setdefault("gens.cli.base", base_stub)
 
-# FIXME: Move this part to chromosome test?
-class _DummyChrom:
-    def model_dump(self) -> dict[str, str]:  # pragma: no cover - simple stub
-        return {"chrom": "1"}
+# # FIXME: Move this part to chromosome test?
+# class _DummyChrom:
+#     def model_dump(self) -> dict[str, str]:  # pragma: no cover - simple stub
+#         return {"chrom": "1"}
 
-def _fake_build_chromosomes_obj(*args, **kwargs):  # pragma: no cover - simple stub
-    return [_DummyChrom()]
+# def _fake_build_chromosomes_obj(*args, **kwargs):  # pragma: no cover - simple stub
+#     return [_DummyChrom()]
 
-try:
-    import gens.load.chromosomes as chrom_mod
+# try:
+#     import gens.load.chromosomes as chrom_mod
 
-    chrom_mod.build_chromosomes_obj = _fake_build_chromosomes_obj
-except Exception:
-    pass
+#     chrom_mod.build_chromosomes_obj = _fake_build_chromosomes_obj
+# except Exception:
+#     pass
 

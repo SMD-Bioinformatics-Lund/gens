@@ -20,7 +20,12 @@ from gens.crud.annotations import (
     register_data_update,
     update_annotation_track,
 )
-from gens.crud.sample_annotations import create_sample_annotation_track, create_sample_annotations_for_track, delete_sample_annotations_for_track, get_sample_annotation_track
+from gens.crud.sample_annotations import (
+    create_sample_annotation_track,
+    create_sample_annotations_for_track,
+    delete_sample_annotations_for_track,
+    get_sample_annotation_track,
+)
 from gens.crud.samples import create_sample
 from gens.crud.transcripts import create_transcripts
 from gens.db.collections import (
@@ -104,7 +109,7 @@ def load() -> None:
     "meta_files",
     type=click.Path(exists=True, path_type=Path),
     multiple=True,
-    help="TSV file with sample metadata"
+    help="TSV file with sample metadata",
 )
 @click.option(
     "-t",
@@ -149,7 +154,7 @@ def sample(
             "overview_file": overview_json,
             "sample_type": sample_type,
             "sex": sex,
-            "meta": [parse_meta_file(p) for p in meta_files]
+            "meta": [parse_meta_file(p) for p in meta_files],
         }
     )
     create_sample(db, sample_obj)
@@ -213,7 +218,7 @@ def sample_annotation(
 
     if track_in_db is not None:
         delete_sample_annotations_for_track(track_id, db)
-    
+
     create_sample_annotations_for_track(annotations, db)
     click.secho("Finished loading sample annotations ✔", fg="green")
 
@@ -408,7 +413,7 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     type=click.Path(exists=True, path_type=Path),
     required=False,
     default=None,
-    help="JSON file with assembly info (optional)"
+    help="JSON file with assembly info (optional)",
 )
 @click.option(
     "-t",
@@ -419,15 +424,20 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
 )
 def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> None:
     """Load chromosome size information into the database."""
+
+    LOG.debug("Hi")
+
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
         raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    # if collection is not indexed, create index
+
     if len(get_indexes(db, CHROMSIZES_COLLECTION)) == 0:
         create_index(db, CHROMSIZES_COLLECTION)
-    # get chromosome info from ensemble
-    # if file is given, use sizes from file else download chromsizes from ebi
+
+    # FIXME: Cleanup
+    # Get chromosome info from ensemble
+    # If file is given, use sizes from file else download chromsizes from ebi
 
     if file is not None:
         LOG.info("Load assembly from %s", file)
@@ -437,17 +447,28 @@ def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> N
         LOG.info("Query ensembl for assembly info for %s", genome_build)
         assembly_info = get_assembly_info(genome_build, timeout=timeout)
 
+    LOG.debug(f"Assembly info {assembly_info}")
+
     chrom_data = {
         elem["name"]: elem
         for elem in assembly_info["top_level_region"]
         if elem.get("coord_system") == "chromosome"
     }
+
+    LOG.debug(f"Chrom data before {chrom_data}")
+
     chrom_data = {chrom: chrom_data[chrom] for chrom in assembly_info["karyotype"]}
-    try:
-        LOG.info("Build chromosome object")
-        chromosomes_data = build_chromosomes_obj(chrom_data, genome_build, timeout)
-    except Exception as err:
-        raise click.UsageError(str(err))
+
+    LOG.debug(f"Chrom data after {chrom_data}")
+
+    # try:
+    LOG.info("Build chromosome object")
+    chromosomes_data = build_chromosomes_obj(chrom_data, genome_build, timeout)
+    # except Exception as err:
+    #     raise click.UsageError(str(err))
+
+    LOG.debug(f"Chromosomes data {list(chromosomes_data)}")
+
 
     # remove old entries
     res = db[CHROMSIZES_COLLECTION].delete_many({"genome_build": int(genome_build)})
