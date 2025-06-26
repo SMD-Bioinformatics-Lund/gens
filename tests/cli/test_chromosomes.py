@@ -72,8 +72,6 @@ def test_load_chromosomes_from_file(
         "karyotype": ["1", "X", "MT"],
     }
 
-    # monkeypatch.setattr("gens.cli.load.get_assembly_info", lambda gb, timeout: assembly_data)
-
     json_file = tmp_path / "assembly.json"
     json_file.write_text(json.dumps(assembly_data))
 

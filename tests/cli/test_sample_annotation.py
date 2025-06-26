@@ -2,200 +2,124 @@ import importlib
 import sys
 import types
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 from typing import Any, Callable
 
+import mongomock
 import pytest
 
+from gens.db.collections import SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION
 from gens.models.genomic import GenomeBuild
+from gens.models.sample_annotation import SampleAnnotationTrack
 from tests.utils import my_mongomock
 
+@pytest.fixture
+def load_sample_annotation_cmd() -> ModuleType:
+    module = importlib.import_module("gens.cli.load")
+    return module
 
-@pytest.fixture(autouse=True)
-def reload_cli(monkeypatch: pytest.MonkeyPatch):
-    """Reload ``gens.cli.load`` after ensuring ``flask.json`` exists."""
-    # import json as _json
-
-    # flask_mod = sys.modules.setdefault("flask", types.ModuleType("flask"))
-    # flask_mod.json = _json
-    # stub sample annotation models to avoid heavy pydantic dependencies
-    sa_mod: Any = types.ModuleType("gens.models.sample_annotation")
-
-    class SampleAnnotationTrack:
-        def __init__(self, **kwargs):
-            for k, v in kwargs.items():
-                setattr(self, k, v)
-
-        def model_dump(self):
-            return dict(vars(self))
-
-    class SampleAnnotationRecord(SampleAnnotationTrack):
-        @classmethod
-        def model_validate(cls, data):
-            return cls(**data)
-
-    sa_mod.SampleAnnotationTrack = SampleAnnotationTrack
-    sa_mod.SampleAnnotationRecord = SampleAnnotationRecord
-    sa_mod.SampleAnnotationTrackInDb = SampleAnnotationTrack
-    monkeypatch.setitem(sys.modules, "gens.models.sample_annotation", sa_mod)
-
-    # import gens.models.base as base_mod
-    # monkeypatch.setattr(base_mod, "PydanticObjectId", str, raising=False)
-    # if hasattr(base_mod.RWModel, "Config"):
-    #     monkeypatch.setattr(base_mod.RWModel.Config, "arbitrary_types_allowed", True, raising=False)
-    # if hasattr(base_mod.RWModel, "__config__"):
-    #     base_mod.RWModel.__config__.arbitrary_types_allowed = True
-
-    sys.modules.pop("gens.cli.load", None)
-    yield importlib.import_module("gens.cli.load")
+def _write_bed(path: Path, start: int, end: int) -> None:
+    bed_line = "\t".join([
+        "1",
+        str(start),
+        str(end),
+        "rec",
+        "0",
+        "+",
+        ".",
+        ".",
+        "rgb(0,0,255)"
+    ])
+    path.write_text(bed_line)
 
 
-def test_load_sample_annotation_invokes_crud(reload_cli, monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
-    load_mod = reload_cli
-    load_sample_annotation_cmd = load_mod.sample_annotation
-
-    client = my_mongomock.MongoClient()
-    db = client.get_database("test")
-
-
-    monkeypatch.setattr(load_mod, "get_db_connection", lambda conn, db_name: db)
-    monkeypatch.setattr(load_mod, "get_indexes", lambda db, col: [])
-    monkeypatch.setattr(load_mod, "create_index", lambda db, col: None)
-
-    monkeypatch.setattr(load_mod, "get_sample_annotation_track", lambda **kwargs: None)
-
-    created = {}
-
-    def fake_create_track(track, db):
-        created["track"] = track
-        return "tid"
-
-    monkeypatch.setattr(load_mod, "create_sample_annotation_track", fake_create_track)
-
-    parsed = {}
-
-    def fake_parse_bed(file: Path):
-        parsed["file"] = str(file)
-        return [{"name": "rec", "chrom": "1", "start": "1", "end": "2", "color": "c"}]
-
-    monkeypatch.setattr(load_mod, "parse_bed_file", fake_parse_bed)
-    monkeypatch.setattr(
-        load_mod,
-        "fmt_bed_to_annotation",
-        lambda rec, tid, gb: load_mod.SampleAnnotationRecord.model_validate(
-            {
-                "track_id": tid,
-                "name": rec["name"],
-                "genome_build": gb,
-                "chrom": "1",
-                "start": 1,
-                "end": 2,
-                "color": "c",
-                "sample_id": "sample1",
-                "case_id": "caseA",
-            }
-        ),
-    )
-
-    created_annots = {}
-
-    def fake_create_annots(records, db):
-        created_annots["records"] = records
-        return ["id1"]
-
-    monkeypatch.setattr(load_mod, "create_sample_annotations_for_track", fake_create_annots)
-    monkeypatch.setattr(load_mod, "delete_sample_annotations_for_track", lambda tid, db: None)
+def test_load_sample_annotation_creates_documents(
+    load_sample_annotation_cmd: ModuleType,
+    patch_cli: Callable,
+    tmp_path: Path,
+    db: mongomock.Database
+) -> None:
+    patch_cli(load_sample_annotation_cmd)
 
     bed_file = tmp_path / "track.bed"
-    bed_file.write_text("dummy")
+    _write_bed(bed_file, 0, 10)
 
-    assert load_sample_annotation_cmd.callback is not None
-
-    load_sample_annotation_cmd.callback(
+    load_sample_annotation_cmd.sample_annotation.callback(
         sample_id="sample1",
         case_id="caseA",
-        genome_build=load_mod.GenomeBuild(38),
+        genome_build=GenomeBuild(38),
         file=bed_file,
+        name="trackA"
+    )
+
+    track_coll = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION)
+    annot_coll = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION)
+
+    assert track_coll.count_documents({}) == 1
+    assert annot_coll.count_documents({}) == 1
+
+    rec = annot_coll.find_one({})
+    assert rec is not None
+    assert rec["sample_id"] == "sample1"
+    assert rec["case_id"] == "caseA"
+    assert rec["chrom"] == "1"
+    assert rec["start"] == 1
+    assert rec["end"] == 10
+
+
+def test_load_sample_annotation_updates_existing(
+    load_sample_annotation_cmd: ModuleType,
+    patch_cli: Callable,
+    tmp_path: Path,
+    db: mongomock.Database
+) -> None:
+    patch_cli(load_sample_annotation_cmd)
+
+    bed1 = tmp_path / "t1.bed"
+    _write_bed(bed1, 0, 10)
+    load_sample_annotation_cmd.sample_annotation.callback(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(38),
+        file=bed1,
         name="trackA",
     )
 
-    assert parsed["file"] == str(bed_file)
-    assert isinstance(created.get("track"), load_mod.SampleAnnotationTrack)
-    assert created_annots["records"]
+    track_coll = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION)
+    annot_coll = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION)
+    first_track = track_coll.find_one({})
 
+    assert first_track is not None
 
-def test_load_sample_annotation_updates_existing(reload_cli, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, db: my_mongomock.Database, patch_cli: Callable):
-    load_mod = reload_cli
-    load_sample_annotation_cmd = load_mod.sample_annotation
-
-    patch_cli(load_mod)
-
-    monkeypatch.setattr(
-        load_mod,
-        "get_sample_annotation_track",
-        lambda **kwargs: SimpleNamespace(track_id="tid1"),
-    )
-
-    del_called = {}
-
-    def fake_delete(tid, db):
-        del_called["track"] = tid
-        return True
-
-    monkeypatch.setattr(load_mod, "delete_sample_annotations_for_track", fake_delete)
-    monkeypatch.setattr(load_mod, "create_sample_annotation_track", lambda track, db: "tid2")
-
-    monkeypatch.setattr(load_mod, "parse_bed_file", lambda f: [{"name": "rec", "chrom": "1", "start": "1", "end": "2", "color": "c"}])
-    monkeypatch.setattr(
-        load_mod,
-        "fmt_bed_to_annotation",
-        lambda rec, tid, gb: load_mod.SampleAnnotationRecord.model_validate(
-            {
-                "track_id": tid,
-                "name": rec["name"],
-                "genome_build": gb,
-                "chrom": "1",
-                "start": 1,
-                "end": 2,
-                "color": "c",
-                "sample_id": "sample1",
-                "case_id": "caseA",
-            }
-        ),
-    )
-
-    monkeypatch.setattr(load_mod, "create_sample_annotations_for_track", lambda records, db: ["id1"])
-
-    bed_file = tmp_path / "ann.bed"
-    bed_file.write_text("dummy")
-
-    assert load_sample_annotation_cmd.callback is not None
-
-    load_sample_annotation_cmd.callback(
+    bed2 = tmp_path / "t2.bed"
+    _write_bed(bed2, 100, 200)
+    load_sample_annotation_cmd.sample_annotation.callback(
         sample_id="sample1",
         case_id="caseA",
-        genome_build=load_mod.GenomeBuild(38),
-        file=bed_file,
+        genome_build=GenomeBuild(38),
+        file=bed2,
         name="trackA",
     )
 
-    assert del_called.get("track") == "tid1"
+    assert track_coll.count_documents({}) == 1
+    updated_track = track_coll.find_one({})
+    assert updated_track is not None
+    assert updated_track["_id"] == first_track["_id"]
+
+    assert annot_coll.count_documents({}) == 1
+    updated_annot = annot_coll.find_one({})
+    assert updated_annot is not None
+    assert updated_annot["start"] == 101
+    assert updated_annot["end"] == 200
+    assert updated_annot["track_id"] == first_track["_id"]
 
 
-def _build_track(load_mod):
-    return load_mod.SampleAnnotationTrack(
-        sample_id="sample1",
-        case_id="caseA",
-        name="track1",
-        description="",
-        genome_build=load_mod.GenomeBuild(38),
-    )
-
-def test_update_sample_annotation_track_modifies_collection(db: my_mongomock.Database) -> None:
+def test_update_sample_annotation_track_modifies_collection(db: mongomock.Database) -> None:
     import importlib
+
     load_mod = importlib.import_module("gens.crud.sample_annotations")
 
-    track_obj = _build_track(load_mod)
+    track_obj = _build_track()
     coll = db.get_collection(load_mod.SAMPLE_ANNOTATION_TRACKS_COLLECTION)
     coll.insert_one({"_id": "tid", **track_obj.model_dump()})
 
@@ -205,13 +129,28 @@ def test_update_sample_annotation_track_modifies_collection(db: my_mongomock.Dat
     assert doc is not None
     assert doc["description"] == "new"
 
-def test_delete_sample_annotation_track_removes_document(db: my_mongomock.Database) -> None:
+
+def test_delete_sample_annotation_track_removes_document(db: mongomock.Database) -> None:
     import importlib
+
     load_mod = importlib.import_module("gens.crud.sample_annotations")
 
-    track_obj = _build_track(load_mod)
+    track_obj = _build_track()
     coll = db.get_collection(load_mod.SAMPLE_ANNOTATION_TRACKS_COLLECTION)
     coll.insert_one({"_id": "tid", **track_obj.model_dump()})
 
     load_mod.delete_sample_annotation_track("tid", db)
     assert coll.find_one({"_id": "tid"}) is None
+    assert coll.find_one({"_id": "tid"}) is None
+
+
+def _build_track() -> SampleAnnotationTrack:
+    from gens.models.sample_annotation import SampleAnnotationTrack
+
+    return SampleAnnotationTrack(
+        sample_id="sample1",
+        case_id="caseA",
+        name="track1",
+        description="",
+        genome_build=GenomeBuild(38),
+    )
