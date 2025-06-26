@@ -59,7 +59,7 @@ class AedPropertyDefinition(BaseModel):
 
 def parse_bed_file(file: Path) -> Iterator[dict[str, str]]:
     """
-    Read bed file. If header == True is the first data row used as header instead.
+    Read bed file. No header is expected.
     """
     with open(file, encoding="utf-8") as bed:
         field_names = [
@@ -76,25 +76,34 @@ def parse_bed_file(file: Path) -> Iterator[dict[str, str]]:
             "block_sizes",
             "block_starts",
         ]
+
+        LOG.debug("Bed reader")
+
         bed_reader = csv.reader(bed, delimiter="\t")
         colnames: list[str] | None = None
         # Load in annotations
         for line in bed_reader:
+
+            LOG.debug(f"Reading line: {line}")
+
             # skip comments, lines starting with # sign
             if line[0].startswith("#"):
+                LOG.debug(f"Starting with #")
                 continue
             # define the header
             if colnames is None:
+                LOG.debug(f"Colname is None")
                 colnames = field_names[: len(line)]
-                continue
 
             if len(line) != len(colnames):
+                LOG.debug(f"Different length")
                 raise ValueError(
                     (
                         f"Incorrect number of columns. Expected {len(colnames)}, "
                         f"got {len(line)}; line: {line}"
                     )
                 )
+            LOG.debug(f"Returning")
             yield dict(zip(colnames, line))
 
 
@@ -118,6 +127,9 @@ def fmt_bed_to_annotation(
     genome_build: GenomeBuild,
 ) -> AnnotationRecord:
     """Parse a bed or aed entry"""
+
+    LOG.debug("Running fmt_bed_to_annotation")
+
     annotation: dict[str, Any] = {}
     # parse entry and format the values
     if len(entry) < len(BED_CORE_FIELDS):
@@ -133,6 +145,8 @@ def fmt_bed_to_annotation(
         except ValueError as err:
             LOG.debug("Bad line: %s", entry)
             raise ParserError(str(err)) from err
+
+    LOG.debug(annotation)
 
     return AnnotationRecord(
         track_id=track_id,
@@ -359,7 +373,7 @@ def fmt_aed_to_annotation(
     genome_build: GenomeBuild,
     exclude_na: bool = True,
 ) -> AnnotationRecord | None:
-    """Format a AED record to the Gens anntoation format.
+    """Format a AED record to the Gens annotation format.
 
     This parser is a complement to the more general AED parser."""
 

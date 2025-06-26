@@ -4,9 +4,8 @@ from pathlib import Path
 import types
 from typing import Callable
 
+import mongomock
 import pytest
-
-from tests.utils import my_mongomock
 
 
 @pytest.fixture()
@@ -46,10 +45,9 @@ def meta_norow_file_path(data_path: Path) -> Path:
     """Get path to a metadata TSV file without row name column."""
     return data_path.joinpath("meta_norow.tsv")
 
-# FIXME: Move to separate fixture module
 @pytest.fixture()
-def db() -> my_mongomock.Database:
-    client = my_mongomock.MongoClient()
+def db() -> mongomock.Database:
+    client = mongomock.MongoClient()
     return client.get_database("test")
 
 
@@ -57,6 +55,8 @@ def db() -> my_mongomock.Database:
 def patch_cli(
     monkeypatch: pytest.MonkeyPatch, db
 ) -> Callable[[str | types.ModuleType], None]:
+    
+    # Patch out cli indexing commands
     def _patch(module: str | types.ModuleType) -> None:
         if isinstance(module, str):
             monkeypatch.setattr(

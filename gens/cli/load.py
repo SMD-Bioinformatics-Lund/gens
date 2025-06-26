@@ -281,6 +281,9 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
         file_format = file.suffix[1:]
         file_meta: list[dict[str, Any]] = []
         records: list[AnnotationRecord] = []
+
+        LOG.debug(f"File format: {file_format}")
+
         if file_format == "tsv" or is_tsv:
             records = [
                 AnnotationRecord.model_validate(
@@ -290,10 +293,16 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
             ]
         elif file_format == "bed":
             try:
-                bed_records = parse_bed_file(file)
-                records = [
-                    fmt_bed_to_annotation(rec, track_id, genome_build) for rec in bed_records
-                ]
+                bed_records = list(parse_bed_file(file))
+                LOG.debug(f"Bed records: {bed_records}")
+
+                records = []
+                for rec in bed_records:
+                    LOG.debug(f"Iterating rec: {rec}")
+                    parsed_rec = fmt_bed_to_annotation(rec, track_id, genome_build)
+                    records.append(parsed_rec)
+
+                LOG.debug(f"Bed records parsed: {records}")
             except ValueError as err:
                 click.secho(
                     f"An error occured when creating loading annotation: {err}",
@@ -301,6 +310,7 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
                 )
                 raise click.Abort()
         elif file_format == "aed":
+            LOG.debug("Hitting the aed path")
             file_meta, aed_records = parse_aed_file(file, ignore_errors)
             records = []
             for rec in aed_records:
@@ -315,16 +325,22 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
                 if formatted_rec is not None:
                     records.append(formatted_rec)
 
+        LOG.debug("After")
+
         if len(file_meta) > 0:
+            LOG.debug("file_meta")
             # add metadata from file to the previously created track
             LOG.debug("Updating existing annotation track with metadata from file.")
             update_annotation_track(track_id=track_id, metadata=file_meta, db=db)
 
         if len(records) == 0:
+            LOG.debug(f"records {records}")
             delete_annotation_track(track_id, db)  # cleanup
             raise ValueError(
-                "Something went wrong parsing the annotaions file, no valid annotations found."
+                "Something went wrong parsing the annotations file, no valid annotations found."
             )
+
+        LOG.debug("after 2")
 
         # remove annotations and update track if track has already been added
         if track_in_db is not None:
