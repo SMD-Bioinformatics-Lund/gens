@@ -57,7 +57,7 @@ def build_chromosomes_obj(
             start, end = parse_centromere_pos(embl_annot)
             centro_pos = {"start": start, "end": end}
         else:
-            centro_pos: dict[str, int] = data["centromere"]
+            centro_pos = data["centromere"]
 
         cyto_bands = [
             ChromBand(
