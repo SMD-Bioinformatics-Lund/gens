@@ -20,8 +20,6 @@ def value_exists(value: str | None) -> bool:
 def parse_meta_file(file: Path) -> MetaEntry:
     """Parse a metadata tsv file"""
 
-    LOG.debug("Hi")
-
     data: list[MetaValue] = []
     with open(file, encoding="utf-8") as meta_fh:
         reader = csv.DictReader(meta_fh, delimiter="\t")
@@ -29,9 +27,6 @@ def parse_meta_file(file: Path) -> MetaEntry:
         row_name_header = next(
             (name for name in fieldnames if name not in {"type", "value", "color"}), None
         )
-
-        LOG.debug(f"Hi: {row_name_header}")
-        LOG.debug(f"Hi: {fieldnames}")
 
         for row in reader:
             entry: dict[str, Any] = {
@@ -42,8 +37,6 @@ def parse_meta_file(file: Path) -> MetaEntry:
 
             if row_name and row_name != "." and row_name != "":
                 entry["row_name"] = row_name
-
-            LOG.debug(f"Entry: {entry}")
 
             color = row.get("color")
             if color and color != ".":
@@ -62,9 +55,6 @@ def parse_meta_file(file: Path) -> MetaEntry:
                 LOG.error("Invalid metadata entry on line %s in %s: %s", line_no, file, err)
                 raise ValueError(f"Failed to parse metadata on file {line_no}: {err}")
             data.append(validated_meta)
-
-    LOG.debug(f"Returning file {file}")
-
 
     return MetaEntry(
         id=uuid4().hex, file_name=file.name, row_name_header=row_name_header, data=data

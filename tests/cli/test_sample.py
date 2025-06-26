@@ -7,15 +7,10 @@ import mongomock
 import pytest
 
 
-# from gens.cli.delete import sample as delete_sample_cmd
-# from gens.cli.update import sample as update_sample_cmd
-# from gens.crud.samples import delete_sample, update_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.exceptions import SampleNotFoundError
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
-
-# from tests.utils.my_mongomock import Database
 
 from gens.crud.samples import update_sample, delete_sample
 

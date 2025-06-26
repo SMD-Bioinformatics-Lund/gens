@@ -7,7 +7,6 @@ import pytest
 
 from gens.models.genomic import GenomeBuild
 from gens.db.collections import TRANSCRIPTS_COLLECTION
-from tests.conftest import patch_cli
 from tests.utils.my_mongomock import Database
 
 

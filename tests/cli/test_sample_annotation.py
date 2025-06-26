@@ -1,6 +1,4 @@
 import importlib
-import sys
-import types
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Any, Callable
@@ -11,7 +9,6 @@ import pytest
 from gens.db.collections import SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION
 from gens.models.genomic import GenomeBuild
 from gens.models.sample_annotation import SampleAnnotationTrack
-from tests.utils import my_mongomock
 
 @pytest.fixture
 def load_sample_annotation_cmd() -> ModuleType:

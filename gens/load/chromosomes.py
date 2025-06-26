@@ -40,7 +40,6 @@ def build_chromosomes_obj(
 
     genome_size = sum(c["length"] for c in chromosome_data.values())
     for name, data in chromosome_data.items():
-        LOG.info("Processing chromosome %s %s", name, data)
 
         scale = round(data["length"] / genome_size, 2)
 

@@ -235,14 +235,8 @@ def _parse_aed_header(
 
     Retrun definition of the columns and metadata on the track encoded in the header.
     """
-
-    LOG.debug("Parsing the aed header")
-
     # get column definition
     raw_header = fh.readline().rstrip().split("\t")
-
-    LOG.debug(f"Raw header: {raw_header}")
-
     col_def: dict[int, AedPropertyDefinition] = {
         col_no: _parse_aed_property(col) for col_no, col in enumerate(raw_header)
     }
@@ -303,15 +297,9 @@ def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata
 
     Reference: https://assets.thermofisher.com/TFS-Assets/GSD/Handbooks/Chromosome_analysis_suite_v4.2_user-guide.pdf
     """
-    LOG.debug(f"Start aed parsing")
-
-
     with open(file, encoding="utf-8-sig") as aed_fh:
 
         column_definitions, file_metadata = _parse_aed_header(aed_fh)
-
-        LOG.debug(f"Col def {column_definitions}")
-        LOG.debug(f"File metadata {file_metadata}")
 
         # This can deal with quote surrounded comments containing line breaks
         reader = csv.reader(
