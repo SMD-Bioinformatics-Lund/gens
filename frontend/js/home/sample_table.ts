@@ -3,6 +3,7 @@ import { DataTable } from "simple-datatables";
 export interface SampleInfo {
   case_id: string;
   sample_ids: string[];
+  institute: string | null;
   genome_build: number;
   has_overview_file: boolean;
   files_present: boolean;
@@ -24,6 +25,7 @@ tableTemplate.innerHTML = String.raw`
       <tr>
         <th>Case id</th>
         <th>Sample id(s)</th>
+        <th>Institute
         <th>Genome build</th>
         <th>Overview file(s)</th>
         <th>BAM/BAF(s) found</th>
@@ -88,6 +90,7 @@ export class SamplesTable extends HTMLElement {
       s.sample_ids
         .map((id) => `<a href="${getGensURL(s.case_id, [id])}">${id}</a>`)
         .join(", "),
+      s.institute || "-",
       s.genome_build.toString(),
       s.has_overview_file ? "✓" : "✗",
       s.files_present ? "✓" : "✗",
