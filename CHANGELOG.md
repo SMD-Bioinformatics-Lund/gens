@@ -32,6 +32,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Add optional sample annotations. These can be loaded using CLI and displays additional band annotation linked to a sample.
  - Persistent session state for annotation selection, annotation color, track heights and coverage Y range.
  - Add end-to-end unit testing for CLI commands.
+ - Comments similar to those in aed format can be supplied in tsv format.
 
 ### Changed
  - Resolution increased 2x for tracks.

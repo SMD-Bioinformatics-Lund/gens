@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from gens.cli.util import ChoiceType
+from gens.cli.util.util import ChoiceType
 from gens.config import settings
 from gens.crud.samples import get_sample, update_sample
 from gens.db.collections import (

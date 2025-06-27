@@ -4,7 +4,7 @@ import logging
 
 import click
 
-from gens.cli.util import ChoiceType
+from gens.cli.util.util import ChoiceType
 from gens.config import settings
 from gens.crud.samples import delete_sample
 from gens.db.collections import SAMPLES_COLLECTION

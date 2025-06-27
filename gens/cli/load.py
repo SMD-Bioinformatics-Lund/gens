@@ -9,14 +9,13 @@ import click
 from flask import json
 from pymongo.database import Database
 
-from gens.cli.util import ChoiceType
+from gens.cli.util.util import ChoiceType
+from gens.cli.util.annotations import upsert_annotation_track, parse_raw_records
 from gens.config import settings
 from gens.crud.annotations import (
-    create_annotation_track,
     create_annotations_for_track,
     delete_annotation_track,
     delete_annotations_for_track,
-    get_annotation_track,
     register_data_update,
     update_annotation_track,
 )
@@ -259,92 +258,54 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
     if gens_db_name is None:
         raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    # if collection is not indexed, create index
+
     if len(get_indexes(db, ANNOTATIONS_COLLECTION)) == 0:
         create_index(db, ANNOTATIONS_COLLECTION)
     files = file.glob("*") if file.is_dir() else [file]
-    # get annotation tracks in database
 
     LOG.info("Processing files")
     for annot_file in files:
-        # verify file format
         if annot_file.suffix not in [".bed", ".aed", ".tsv"]:
             continue
         LOG.info("Processing %s", annot_file)
-        # get the track name from the filename
-        annotation_name = annot_file.name[: -len(annot_file.suffix)]
-        track_in_db = get_annotation_track(name=annotation_name, genome_build=genome_build, db=db)
 
-        # create a new record if it has not been added to the database
-        if track_in_db is None:
-            track = AnnotationTrack(name=annotation_name, description="", genome_build=genome_build)
-            track_id = create_annotation_track(track, db)
-        else:
-            track_id = track_in_db.track_id
+        track_result = upsert_annotation_track(db, annot_file, genome_build)
 
-        # read annotation file an get gens compatible annotation records
         file_format = file.suffix[1:]
-        file_meta: list[dict[str, Any]] = []
-        records: list[AnnotationRecord] = []
-        if file_format == "tsv" or is_tsv:
-            parsed_content = parse_tsv_file(file)
 
-            records = []
-            for rec in parsed_content:
-                LOG.debug(f"Processing {rec}")
-                validated_rec = AnnotationRecord.model_validate(
-                    {"track_id": track_id, "genome_build": genome_build, **rec}
-                )
-                LOG.debug(f"Result {validated_rec}")
-                records.append(validated_rec)
-        elif file_format == "bed":
-            try:
-                bed_records = list(parse_bed_file(file))
-                records = []
-                for rec in bed_records:
-                    parsed_rec = fmt_bed_to_annotation(rec, track_id, genome_build)
-                    records.append(parsed_rec)
-            except ValueError as err:
-                click.secho(
-                    f"An error occured when creating loading annotation: {err}",
-                    fg="red",
-                )
-                raise click.Abort()
-        elif file_format == "aed":
-            file_meta, aed_records = parse_aed_file(file, ignore_errors)
-            records = []
-            for rec in aed_records:
-                try:
-                    formatted_rec = fmt_aed_to_annotation(rec, track_id, genome_build)
-                except ValueError:
-                    LOG.warning("Failed to format rec to annotation: %s", rec)
-                    if not ignore_errors:
-                        raise
-                    continue
+        try:
+            parse_recs_res = parse_raw_records(
+                file_format,
+                is_tsv,
+                file,
+                ignore_errors,
+                track_result,
+                genome_build
+            )
+        except ValueError as err:
+            click.secho(
+                f"An error occured when creating loading annotation: {err}",
+                fg="red",
+            )
+            raise click.Abort()
 
-                if formatted_rec is not None:
-                    records.append(formatted_rec)
-
-        if len(file_meta) > 0:
-            # add metadata from file to the previously created track
+        if len(parse_recs_res.file_meta) > 0:
             LOG.debug("Updating existing annotation track with metadata from file.")
-            update_annotation_track(track_id=track_id, metadata=file_meta, db=db)
+            update_annotation_track(track_id=track_result.track_id, metadata=parse_recs_res.file_meta, db=db)
 
-        if len(records) == 0:
-            delete_annotation_track(track_id, db)  # cleanup
+        if len(parse_recs_res.records) == 0:
+            delete_annotation_track(track_result.track_id, db)  # cleanup
             raise ValueError(
                 "Something went wrong parsing the annotations file, no valid annotations found."
             )
 
-        # remove annotations and update track if track has already been added
-        if track_in_db is not None:
-            # remove existing annotations
-            LOG.info("Remove old entries from the database")
-            if not delete_annotations_for_track(track_in_db.track_id, db):
-                LOG.warning("No annotations were removed from the database")
+        if track_result.track_in_db is not None:
+            LOG.info("Removing old entries from the database")
+            if not delete_annotations_for_track(track_result.track_id, db):
+                LOG.info("No annotations were removed from the database")
 
         LOG.info("Load annotations in the database")
-        create_annotations_for_track(records, db)
+        create_annotations_for_track(parse_recs_res.records, db)
 
     click.secho("Finished loading annotations ✔", fg="green")
 

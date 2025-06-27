@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Iterator, Optional
 
 from pydantic import AnyHttpUrl, BaseModel, ValidationError
 from pydantic_core import PydanticCustomError
@@ -121,15 +121,11 @@ def fmt_bed_to_annotation(
     """Parse a bed or aed entry"""
 
     annotation: dict[str, Any] = {}
-    # parse entry and format the values
     if len(entry) < len(BED_CORE_FIELDS):
         fields_in_row = "\t".join(entry.values())
         raise ValueError(f"Malformad entry in BED file!, row: {fields_in_row}")
     for colname, value in entry.items():
-        # translate name, default to existing name if not in tr table
         new_colname = FIELD_TRANSLATIONS.get(colname, colname)
-
-        # cast values into expected type
         try:
             annotation[new_colname] = format_bed_data(new_colname, value)
         except ValueError as err:
@@ -260,36 +256,73 @@ def _parse_aed_header(
 
 
 def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
-    """Parse a TSV to annotations records.
+    """
+    Parse a TSV to annotations records.
 
-    It is assumed that the first line is the header.
+    It is assumed that the first line is the header with fields  (lower or upper)
+
+    Mandatory: chromosome, start, stop, name
+    Optional: color, comments
     """
     with open(file) as inpt:
         reader = csv.DictReader(inpt, delimiter="\t")
+
+        if reader.fieldnames is None:
+            raise ValueError("Something went wrong during reading, no header found")
+
+        reader.fieldnames = [name.lower() for name in reader.fieldnames]
         for row in reader:
-            # format color
-            if "Color" in row:
-                matches: list[str] = re.findall(r"\d+", row["Color"])
-                # check if color is rgba
-                if len(matches) == 3:
-                    vals = ",".join(matches)
-                    color = Color(f"rgb({vals})")
-                elif len(matches) == 4:
-                    # verify that opacity variable is within 0-1 else convert it
-                    opacity_value = str(int(matches[-1]) / 100)
-                    vals = ",".join([*matches[:-1], str(opacity_value)])
-                    color = Color(f"rgba({vals})")
-                else:
-                    raise ValueError(f"Invalid RGB designation, {row['Color']}")
+            if "color" in row:
+                color = _parse_color(row["color"])
             else:
                 color = Color(DEFAULT_COLOUR)
+
+            comment_val: Optional[str] = row.get("comments")
+            comments: list[Comment] = []
+            if comment_val is not None:
+
+                for part_text in comment_val.split(";"):
+                    part_text = part_text.strip()
+                    comment = Comment(comment=part_text, username="NA")
+                    comments.append(comment)
+
+            start = row.get("start")
+            end = row.get("stop") or row.get("end")
+            chromosome = row.get("chromosome")
+
+            if chromosome is None:
+                raise ValueError("Field chromosome must be present")
+
+            if start is None:
+                raise ValueError("Field start must be present")
+
+            if end is None:
+                raise ValueError("Field stop or end must be present")
+
             yield {
-                "name": row.get("Name", ""),
-                "chrom": row["Chromosome"],
-                "start": int(row["Start"]) + 1,
-                "end": int(row["Stop"]),
+                "name": row.get("name", ""),
+                "chrom": chromosome.upper() if not chromosome.startswith("chr") else chromosome,
+                "start": int(start) + 1,
+                "end": int(end),
                 "color": color,
+                "comments": comments,
             }
+
+
+def _parse_color(color_cell: str):
+    matches: list[str] = re.findall(r"\d+", color_cell)
+    # check if color is rgba
+    if len(matches) == 3:
+        vals = ",".join(matches)
+        color = Color(f"rgb({vals})")
+    elif len(matches) == 4:
+        # verify that opacity variable is within 0-1 else convert it
+        opacity_value = str(int(matches[-1]) / 100)
+        vals = ",".join([*matches[:-1], str(opacity_value)])
+        color = Color(f"rgba({vals})")
+    else:
+        raise ValueError(f"Invalid RGB designation, {color_cell}")
+    return color
 
 
 def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata, AedRecords]:
@@ -467,8 +500,6 @@ def fmt_aed_to_annotation(
     except ValueError as e:
         LOG.error(f"Failed to parse chromosome: {rec_sequence}, skipping")
         return None
-
-
 
     # build metadata
     return AnnotationRecord(
