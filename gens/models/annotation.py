@@ -14,7 +14,7 @@ class Comment(
     RWModel,
     CreatedAtModel,
 ):  # pylint: disable=too-few-public-methods
-    """Contianer for comments."""
+    """Container for comments."""
 
     username: str
     comment: str

@@ -111,8 +111,6 @@ gens load sample-annotation \
 
 ## Loading annotation tracks
 
-FIXME: Try this out
-
 Annotation tracks are stored in the database and can be provided as BED, AED or TSV files.
 
 ```bash
@@ -120,6 +118,14 @@ gens load annotations -b 38 -f /path/to/annotation_files
 ```
 
 If a track with the same name already exists in the database, its annotations are removed and the track metadata is updated with the new information.
+
+### File formats
+
+FIXME
+
+* bed
+* aed
+* tsv - Mandatory headers: chromosome, start, stop, name. Optional: color, comments. Comments are ; separated
 
 ### Loading annotations from UCSC
 

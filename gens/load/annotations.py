@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Iterator, Optional
 
 from pydantic import AnyHttpUrl, BaseModel, ValidationError
 from pydantic_core import PydanticCustomError
@@ -256,36 +256,62 @@ def _parse_aed_header(
 
 
 def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
-    """Parse a TSV to annotations records.
+    """
+    Parse a TSV to annotations records.
 
-    It is assumed that the first line is the header.
+    It is assumed that the first line is the header with fields  (lower or upper)
+
+    Mandatory: chromosome, start, stop, name
+    Optional: color, comments
     """
     with open(file) as inpt:
         reader = csv.DictReader(inpt, delimiter="\t")
+
+        if reader.fieldnames is None:
+            raise ValueError("Something went wrong during reading, no header found")
+
+        reader.fieldnames = [name.lower() for name in reader.fieldnames]
         for row in reader:
-            # format color
-            if "Color" in row:
-                matches: list[str] = re.findall(r"\d+", row["Color"])
-                # check if color is rgba
-                if len(matches) == 3:
-                    vals = ",".join(matches)
-                    color = Color(f"rgb({vals})")
-                elif len(matches) == 4:
-                    # verify that opacity variable is within 0-1 else convert it
-                    opacity_value = str(int(matches[-1]) / 100)
-                    vals = ",".join([*matches[:-1], str(opacity_value)])
-                    color = Color(f"rgba({vals})")
-                else:
-                    raise ValueError(f"Invalid RGB designation, {row['Color']}")
+            if "color" in row:
+                color = _parse_color(row["color"])
             else:
                 color = Color(DEFAULT_COLOUR)
+
+            comment_val: Optional[str] = row.get("comments")
+            comments: list[Comment] = []
+            if comment_val is not None:
+
+                # comments.append(Comment(comment=record["note"], username="parser"))
+
+                for part_text in comment_val.split(";"):
+                    part_text = part_text.strip()
+                    comment = Comment(comment=part_text, username="NA")
+                    comments.append(comment)
+
             yield {
-                "name": row.get("Name", ""),
-                "chrom": row["Chromosome"],
-                "start": int(row["Start"]) + 1,
-                "end": int(row["Stop"]),
+                "name": row.get("name", ""),
+                "chrom": row["chromosome"],
+                "start": int(row["start"]) + 1,
+                "end": int(row["stop"]),
                 "color": color,
+                "comments": comments,
             }
+
+
+def _parse_color(color_cell: str):
+    matches: list[str] = re.findall(r"\d+", color_cell)
+    # check if color is rgba
+    if len(matches) == 3:
+        vals = ",".join(matches)
+        color = Color(f"rgb({vals})")
+    elif len(matches) == 4:
+        # verify that opacity variable is within 0-1 else convert it
+        opacity_value = str(int(matches[-1]) / 100)
+        vals = ",".join([*matches[:-1], str(opacity_value)])
+        color = Color(f"rgba({vals})")
+    else:
+        raise ValueError(f"Invalid RGB designation, {color_cell}")
+    return color
 
 
 def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata, AedRecords]:

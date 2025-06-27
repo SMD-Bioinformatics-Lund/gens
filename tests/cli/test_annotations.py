@@ -148,6 +148,55 @@ def test_load_annotations_from_tsv(
     assert rec["name"] == annot_entry.label
     assert rec["color"] == [0, 0, 0]
 
+
+def test_load_annotations_from_tsv_with_comments(
+    load_annotations_cmd: types.ModuleType,
+    patch_cli: Callable,
+    tmp_path: Path,
+    db: mongomock.Database,
+    annot_entry: AnnotEntry,
+):
+    patch_cli(load_annotations_cmd)
+
+    header = "\t".join([
+        "Chromosome",
+        "Start",
+        "Stop",
+        "Name",
+        "Color",
+        "Comments",
+    ])
+    content = "\t".join(
+        [
+            annot_entry.chrom,
+            str(annot_entry.start_pos),
+            str(annot_entry.end_pos),
+            annot_entry.label,
+            annot_entry.color,
+            "a comment; another comment",
+        ]
+    )
+
+    file_content = "\n".join([header, content])
+
+    tsv_file = tmp_path / "track.tsv"
+    tsv_file.write_text(file_content)
+
+    load_annotations_cmd.annotations.callback(
+        file=tsv_file,
+        genome_build=38,
+        is_tsv=False,
+        ignore_errors=False,
+    )
+
+    annot_coll = db.get_collection(ANNOTATIONS_COLLECTION)
+    rec = annot_coll.find_one({})
+    assert rec is not None
+    assert len(rec["comments"]) == 2
+    assert rec["comments"][0]["comment"] == "a comment"
+    assert rec["comments"][1]["comment"] == "another comment"
+
+
 def test_load_annotations_parses_aed(
     load_annotations_cmd: types.ModuleType,
     patch_cli: Callable,

@@ -299,7 +299,6 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
                 "Something went wrong parsing the annotations file, no valid annotations found."
             )
 
-        # remove annotations and update track if track has already been added
         if track_result.track_in_db is not None:
             LOG.info("Remove old entries from the database")
             if not delete_annotations_for_track(track_result.track_id, db):
