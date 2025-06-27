@@ -85,7 +85,6 @@ def test_create_transcripts_adds_documents(monkeypatch: pytest.MonkeyPatch, db: 
 
     coll = db.get_collection(TRANSCRIPTS_COLLECTION)
 
-
     tr = _build_transcript()
     transcripts_mod.create_transcripts([tr], db)
 
