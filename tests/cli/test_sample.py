@@ -223,7 +223,7 @@ def test_update_sample_updates_document(
         case_id="caseA",
         genome_build=GenomeBuild(19),
         sample_type="tumor",
-        institute="constitutional"
+        institute="constitutional",
         sex=SampleSex("M"),
         meta_files=(meta_file,),
     )

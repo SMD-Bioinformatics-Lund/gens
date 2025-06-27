@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from gens.cli.util.util import ChoiceType
+from gens.cli.util.util import ChoiceType, db_setup
 from gens.config import settings
 from gens.crud.samples import get_sample, update_sample
 from gens.db.collections import (
@@ -74,12 +74,8 @@ def sample(
     meta_files: tuple[Path, ...],
 ) -> None:
     """Update sample type for a sample."""
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
-        create_index(db, SAMPLES_COLLECTION)
+
+    db = db_setup([SAMPLES_COLLECTION])
 
     sample_obj = get_sample(db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id)
 

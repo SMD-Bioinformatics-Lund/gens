@@ -9,7 +9,7 @@ import click
 from flask import json
 from pymongo.database import Database
 
-from gens.cli.util.util import ChoiceType
+from gens.cli.util.util import ChoiceType, db_setup
 from gens.cli.util.annotations import upsert_annotation_track, parse_raw_records
 from gens.config import settings
 from gens.crud.annotations import (
@@ -181,15 +181,8 @@ def sample_annotation(
     name: str,
 ) -> None:
     """Load a sample annotation into Gens database."""
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
 
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    if len(get_indexes(db, SAMPLE_ANNOTATION_TRACKS_COLLECTION)) == 0:
-        create_index(db, SAMPLE_ANNOTATION_TRACKS_COLLECTION)
-    if len(get_indexes(db, SAMPLE_ANNOTATIONS_COLLECTION)) == 0:
-        create_index(db, SAMPLE_ANNOTATIONS_COLLECTION)
+    db = db_setup([SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION])
 
     track_in_db = get_sample_annotation_track(
         genome_build=genome_build,
@@ -261,13 +254,9 @@ def sample_annotation(
 )
 def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_errors: bool) -> None:
     """Load annotations from file into the database."""
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
 
-    if len(get_indexes(db, ANNOTATIONS_COLLECTION)) == 0:
-        create_index(db, ANNOTATIONS_COLLECTION)
+    db = db_setup([ANNOTATIONS_COLLECTION])
+
     files = file.glob("*") if file.is_dir() else [file]
 
     LOG.info("Processing files")
@@ -382,15 +371,7 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
 def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> None:
     """Load chromosome size information into the database."""
 
-    LOG.info(f"Loading chromosomes for build {genome_build}")
-
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-
-    if len(get_indexes(db, CHROMSIZES_COLLECTION)) == 0:
-        create_index(db, CHROMSIZES_COLLECTION)
+    db = db_setup([CHROMSIZES_COLLECTION])
 
     # Get chromosome info from ensemble
     # If file is given, use sizes from file else download chromsizes from ebi
