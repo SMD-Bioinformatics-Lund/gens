@@ -4,6 +4,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable
 import mongomock
+from pydantic import ValidationError
 import pytest
 
 
@@ -15,6 +16,15 @@ from gens.models.sample import SampleInfo, SampleSex
 from gens.crud.samples import update_sample, delete_sample
 
 LOG = logging.getLogger(__name__)
+
+
+@pytest.fixture(autouse=True)
+def ensure_indexes(db: mongomock.Database):
+    coll = db.get_collection(SAMPLES_COLLECTION)
+    coll.create_index(
+        [("sample_id", 1), ("case_id", 1), ("genome_build", 1)],
+        unique=True
+    )
 
 
 @pytest.fixture
@@ -104,6 +114,58 @@ def test_load_sample_cli(
         "row_name": "chr1",
         "color": "rgb(0,0,0)",
     }
+
+
+def test_load_sample_cli_with_string_genome_build_fails(
+    load_sample_cmd: ModuleType,
+    patch_cli: Callable,
+    tmp_path: Path,
+    db: mongomock.Database,
+):
+    patch_cli(load_sample_cmd)
+
+    baf_file = tmp_path / "baf"
+    baf_file.write_text("baf")
+    cov_file = tmp_path / "cov"
+    cov_file.write_text("cov")
+    overview_file = tmp_path / "overview"
+    overview_file.write_text("{}")
+    meta_file = tmp_path / "meta.tsv"
+    meta_file.write_text("type\tvalue\nA\t1\n")
+
+    sample_coll = db.get_collection(SAMPLES_COLLECTION)
+
+    load_sample_cmd.sample.callback(
+        sample_id="sample1",
+        genome_build="38",
+        baf=baf_file,
+        coverage=cov_file,
+        case_id="case1",
+        overview_json=overview_file,
+        meta_files=[meta_file],
+        sample_type="proband",
+        sex="M",
+    )
+
+    assert sample_coll.count_documents({}) == 1
+    rec = sample_coll.find_one()
+
+    assert rec is not None
+    assert rec["genome_build"] == 38
+
+    load_sample_cmd.sample.callback(
+        sample_id="sample1",
+        genome_build=38,
+        baf=baf_file,
+        coverage=cov_file,
+        case_id="case1",
+        overview_json=overview_file,
+        meta_files=[meta_file],
+        sample_type="proband",
+        sex="M",
+    )
+
+    assert sample_coll.count_documents({}) == 1
 
 
 def test_delete_sample_cli_removes_document(

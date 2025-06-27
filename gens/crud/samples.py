@@ -63,10 +63,11 @@ def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
         LOG.error(
             (
                 "DuplicateKeyError while storing sample "
-                'with sample_id="%s" and case_id="%s" in database.'
+                'with sample_id="%s", case_id="%s" and genome_build="%s" in database.'
             ),
             sample_obj.sample_id,
             sample_obj.case_id,
+            sample_obj.genome_build,
         )
 
 
