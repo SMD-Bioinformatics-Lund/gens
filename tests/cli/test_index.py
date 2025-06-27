@@ -1,11 +1,11 @@
+import mongomock
 import pytest
-from tests.utils import my_mongomock
 from gens.cli.index import index as index_cmd
 
 
 def test_index_creates_indexes(monkeypatch: pytest.MonkeyPatch, db):
 
-    client = my_mongomock.MongoClient()
+    client = mongomock.MongoClient()
     db = client.get_database("test")
 
     def fake_get_db(connection, db_name: str):
@@ -28,7 +28,7 @@ def test_index_creates_indexes(monkeypatch: pytest.MonkeyPatch, db):
 
 
 def test_index_updates_indexes(monkeypatch: pytest.MonkeyPatch, db):
-    client = my_mongomock.MongoClient()
+    client = mongomock.MongoClient()
     db = client.get_database("test")
     
     def fake_get_db(connection, db_name: str):

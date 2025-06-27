@@ -7,7 +7,6 @@ import pytest
 
 from gens.models.genomic import GenomeBuild
 from gens.db.collections import TRANSCRIPTS_COLLECTION
-from tests.utils.my_mongomock import Database
 
 
 @pytest.fixture
@@ -41,7 +40,7 @@ def test_load_transcripts_invokes_crud(
     load_transcripts_cmd: Any,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-    db: Database,
+    db: mongomock.Database,
     patch_cli: Callable,
 ):
 

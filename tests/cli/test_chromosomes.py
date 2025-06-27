@@ -1,9 +1,9 @@
 import importlib
 import json
 import logging
-from types import ModuleType, SimpleNamespace
+from types import ModuleType
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 import mongomock
 import pytest
