@@ -281,18 +281,29 @@ def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
             comments: list[Comment] = []
             if comment_val is not None:
 
-                # comments.append(Comment(comment=record["note"], username="parser"))
-
                 for part_text in comment_val.split(";"):
                     part_text = part_text.strip()
                     comment = Comment(comment=part_text, username="NA")
                     comments.append(comment)
 
+            start = row.get("start")
+            end = row.get("stop") or row.get("end")
+            chromosome = row.get("chromosome")
+
+            if chromosome is None:
+                raise ValueError("Field chromosome must be present")
+
+            if start is None:
+                raise ValueError("Field start must be present")
+
+            if end is None:
+                raise ValueError("Field stop or end must be present")
+
             yield {
                 "name": row.get("name", ""),
-                "chrom": row["chromosome"],
-                "start": int(row["start"]) + 1,
-                "end": int(row["stop"]),
+                "chrom": chromosome.upper(),
+                "start": int(start) + 1,
+                "end": int(end),
                 "color": color,
                 "comments": comments,
             }

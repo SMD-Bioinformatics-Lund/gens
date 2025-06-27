@@ -2,8 +2,7 @@ from dataclasses import dataclass
 import logging
 from pathlib import Path
 from typing import Any
-
-from mongomock import Database
+from pymongo.database import Database
 
 from gens.crud.annotations import create_annotation_track, get_annotation_track
 from gens.load.annotations import (
@@ -68,7 +67,7 @@ def parse_raw_records(
                 {"track_id": track_result.track_id, "genome_build": genome_build, **rec}
             )
             records.append(validated_rec)
-            
+
     elif file_format == "bed":
         for rec in parse_bed_file(file):
             parsed_rec = fmt_bed_to_annotation(rec, track_result.track_id, genome_build)

@@ -300,9 +300,9 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
             )
 
         if track_result.track_in_db is not None:
-            LOG.info("Remove old entries from the database")
+            LOG.info("Removing old entries from the database")
             if not delete_annotations_for_track(track_result.track_id, db):
-                LOG.warning("No annotations were removed from the database")
+                LOG.info("No annotations were removed from the database")
 
         LOG.info("Load annotations in the database")
         create_annotations_for_track(parse_recs_res.records, db)
