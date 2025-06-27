@@ -18,10 +18,7 @@ LOG = logging.getLogger(__name__)
 @pytest.fixture(autouse=True)
 def ensure_indexes(db: mongomock.Database):
     coll = db.get_collection(SAMPLES_COLLECTION)
-    coll.create_index(
-        [("sample_id", 1), ("case_id", 1), ("genome_build", 1)],
-        unique=True
-    )
+    coll.create_index([("sample_id", 1), ("case_id", 1), ("genome_build", 1)], unique=True)
 
 
 def test_load_sample_cli(
@@ -223,7 +220,7 @@ def _build_sample() -> SampleInfo:
         genome_build=GenomeBuild(38),
         baf_file=Path(__file__),
         coverage_file=Path(__file__),
-        institute="constitutional"
+        institute="constitutional",
     )
 
 
