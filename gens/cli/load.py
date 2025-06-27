@@ -374,6 +374,9 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
 )
 def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> None:
     """Load chromosome size information into the database."""
+
+    LOG.info(f"Loading chromosomes for build {genome_build}")
+
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
         raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
@@ -385,9 +388,11 @@ def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> N
     # Get chromosome info from ensemble
     # If file is given, use sizes from file else download chromsizes from ebi
     if file is not None:
+        LOG.info(f"File is provided, loading from file")
         with open_text_or_gzip(str(file)) as fh:
             assembly_info = json.load(fh)
     else:
+        LOG.info(f"Retrieving online")
         assembly_info = get_assembly_info(genome_build, timeout=timeout)
 
     chrom_data = {
@@ -399,7 +404,7 @@ def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> N
     chrom_data = {chrom: chrom_data[chrom] for chrom in assembly_info["karyotype"]}
 
     try:
-        LOG.info("Build chromosome object")
+        LOG.info(f"Build chromosome object for build {genome_build}")
         chromosomes_data = build_chromosomes_obj(chrom_data, genome_build, timeout)
     except Exception as err:
         raise click.UsageError(str(err))
