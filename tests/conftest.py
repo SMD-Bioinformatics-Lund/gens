@@ -67,10 +67,12 @@ def patch_cli(
             )
             monkeypatch.setattr(f"{module}.get_indexes", lambda *a, **kw: [])
             monkeypatch.setattr(f"{module}.create_index", lambda *a, **kw: None)
+            monkeypatch.setattr(f"{module}.db_setup", lambda *a, **kw: db)
         else:
             monkeypatch.setattr(module, "get_db_connection", lambda *a, **kw: db)
             monkeypatch.setattr(module, "get_indexes", lambda *a, **kw: [])
             monkeypatch.setattr(module, "create_index", lambda *a, **kw: None)
+            monkeypatch.setattr(module, "db_setup", lambda *a, **kw: db)
     return _patch
 
 

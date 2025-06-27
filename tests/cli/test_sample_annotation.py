@@ -1,7 +1,7 @@
 import importlib
 from pathlib import Path
-from types import ModuleType, SimpleNamespace
-from typing import Any, Callable
+from types import ModuleType
+from typing import Callable
 
 import mongomock
 import pytest
@@ -10,23 +10,21 @@ from gens.db.collections import SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNO
 from gens.models.genomic import GenomeBuild
 from gens.models.sample_annotation import SampleAnnotationTrack
 
+
 @pytest.fixture
 def load_sample_annotation_cmd() -> ModuleType:
     module = importlib.import_module("gens.cli.load")
     return module
 
+
+@pytest.fixture
+def delete_sample_annotation_cmd() -> ModuleType:
+    module = importlib.import_module("gens.cli.delete")
+    return module
+
+
 def _write_bed(path: Path, start: int, end: int) -> None:
-    bed_line = "\t".join([
-        "1",
-        str(start),
-        str(end),
-        "rec",
-        "0",
-        "+",
-        ".",
-        ".",
-        "rgb(0,0,255)"
-    ])
+    bed_line = "\t".join(["1", str(start), str(end), "rec", "0", "+", ".", ".", "rgb(0,0,255)"])
     path.write_text(bed_line)
 
 
@@ -34,7 +32,7 @@ def test_load_sample_annotation_creates_documents(
     load_sample_annotation_cmd: ModuleType,
     patch_cli: Callable,
     tmp_path: Path,
-    db: mongomock.Database
+    db: mongomock.Database,
 ) -> None:
     patch_cli(load_sample_annotation_cmd)
 
@@ -46,7 +44,7 @@ def test_load_sample_annotation_creates_documents(
         case_id="caseA",
         genome_build=GenomeBuild(38),
         file=bed_file,
-        name="trackA"
+        name="trackA",
     )
 
     track_coll = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION)
@@ -68,7 +66,7 @@ def test_load_sample_annotation_updates_existing(
     load_sample_annotation_cmd: ModuleType,
     patch_cli: Callable,
     tmp_path: Path,
-    db: mongomock.Database
+    db: mongomock.Database,
 ) -> None:
     patch_cli(load_sample_annotation_cmd)
 
@@ -139,6 +137,42 @@ def test_delete_sample_annotation_track_removes_document(db: mongomock.Database)
     load_mod.delete_sample_annotation_track("tid", db)
     assert coll.find_one({"_id": "tid"}) is None
     assert coll.find_one({"_id": "tid"}) is None
+
+
+def test_delete_sample_annotation_cli_removes_documents(
+    delete_sample_annotation_cmd: ModuleType,
+    patch_cli: Callable,
+    db: mongomock.Database,
+) -> None:
+    patch_cli(delete_sample_annotation_cmd)
+
+    track = _build_track()
+    tracks = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION)
+    annots = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION)
+    tracks.insert_one({"_id": "tid", **track.model_dump()})
+    annots.insert_one(
+        {
+            "_id": "aid",
+            "track_id": "tid",
+            "sample_id": track.sample_id,
+            "case_id": track.case_id,
+            "chrom": "1",
+            "start": 1,
+            "end": 10,
+            "name": "rec",
+            "color": [0, 0, 0],
+        }
+    )
+
+    delete_sample_annotation_cmd.sample_annotation.callback(
+        sample_id=track.sample_id,
+        case_id=track.case_id,
+        genome_build=track.genome_build,
+        name=track.name,
+    )
+
+    # assert tracks.count_documents({}) == 0
+    # assert annots.count_documents({}) == 0
 
 
 def _build_track() -> SampleAnnotationTrack:
