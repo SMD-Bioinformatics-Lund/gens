@@ -5,14 +5,45 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 import statistics
 import subprocess
 from pathlib import Path
 from typing import Iterable, TextIO
 
+from utils.new.gvcfvaf import gvcfvaf_main
+
 COV_WINDOW_SIZES = [100000, 25000, 5000, 1000, 100]
 BAF_SKIP_N = [160, 40, 10, 4, 1]
 PREFIXES = ["o", "a", "b", "c", "d"]
+
+
+def main(sample_id: str, coverage: str, gvcf: str, gnomad: str) -> None:
+   
+    cov_output = f"{sample_id}.cov.bed"
+    baf_output = f"{sample_id}.baf.bed"
+    script_root = Path(__file__).resolve().parent
+
+    print("Calculating coverage data", file=sys.stderr)
+    with open(cov_output, "w", encoding="utf-8") as covout:
+        for win_size, prefix in zip(COV_WINDOW_SIZES, PREFIXES):
+            generate_cov_bed(coverage, win_size, prefix, covout)
+
+    print("Calculating BAFs from gvcf...", file=sys.stderr)
+    tmp_baf = f"{sample_id}.baf.tmp"
+    with open(tmp_baf, "w", encoding="utf-8") as tmpout:
+        gvcfvaf_main(gvcf, gnomad)
+        
+    with open(baf_output, "w", encoding="utf-8") as bafout:
+        for skip_n, prefix in zip(BAF_SKIP_N, PREFIXES):
+            print(f"Outputting BAF {prefix}...", file=sys.stderr)
+            generate_baf_bed(tmp_baf, skip_n, prefix, bafout)
+
+    subprocess.run(["bgzip", "-f", "-@10", baf_output], check=True)
+    subprocess.run(["tabix", "-f", "-p", "bed", baf_output + ".gz"], check=True)
+    subprocess.run(["bgzip", "-f", "-@10", cov_output], check=True)
+    subprocess.run(["tabix", "-f", "-p", "bed", cov_output + ".gz"], check=True)
+    os.unlink(tmp_baf)
 
 
 def mean(values: Iterable[float]) -> float:
@@ -83,43 +114,20 @@ def generate_cov_bed(fn: str, win_size: int, prefix: str, out_fh: TextIO) -> Non
                 force_end = False
 
 
-def main() -> None:
+
+
+
+def parse_arguments():
     parser = argparse.ArgumentParser(description="Generate Gens BAF and coverage data")
     parser.add_argument("coverage", help="Standardized coverage file")
     parser.add_argument("gvcf", help="Input gVCF file")
     parser.add_argument("sample_id", help="Sample identifier")
     parser.add_argument("gnomad", help="File with gnomAD SNP positions")
     args = parser.parse_args()
-
-    cov_output = f"{args.sample_id}.cov.bed"
-    baf_output = f"{args.sample_id}.baf.bed"
-    script_root = Path(__file__).resolve().parent
-
-    print("Calculating coverage data", file=os.sys.stderr)
-    with open(cov_output, "w", encoding="utf-8") as covout:
-        for win_size, prefix in zip(COV_WINDOW_SIZES, PREFIXES):
-            generate_cov_bed(args.coverage, win_size, prefix, covout)
-
-    print("Calculating BAFs from gvcf...", file=os.sys.stderr)
-    tmp_baf = f"{args.sample_id}.baf.tmp"
-    with open(tmp_baf, "w", encoding="utf-8") as tmpout:
-        subprocess.run([
-            str(script_root / "gvcfvaf.pl"),
-            args.gvcf,
-            args.gnomad,
-        ], stdout=tmpout, check=True)
-
-    with open(baf_output, "w", encoding="utf-8") as bafout:
-        for skip_n, prefix in zip(BAF_SKIP_N, PREFIXES):
-            print(f"Outputting BAF {prefix}...", file=os.sys.stderr)
-            generate_baf_bed(tmp_baf, skip_n, prefix, bafout)
-
-    subprocess.run(["bgzip", "-f", "-@10", baf_output], check=True)
-    subprocess.run(["tabix", "-f", "-p", "bed", baf_output + ".gz"], check=True)
-    subprocess.run(["bgzip", "-f", "-@10", cov_output], check=True)
-    subprocess.run(["tabix", "-f", "-p", "bed", cov_output + ".gz"], check=True)
-    os.unlink(tmp_baf)
+    return args
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_arguments()
+    main(args.sample_id, args.coverage, args.gvcf, args.gnomad)
+

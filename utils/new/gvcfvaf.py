@@ -12,6 +12,7 @@ import argparse
 import gzip
 import re
 import sys
+from typing import Optional
 
 CHR_ORDER = [
     "1",
@@ -43,6 +44,48 @@ CHR_ORDER = [
 CHR_ORDER_MAP = {c: i for i, c in enumerate(CHR_ORDER)}
 
 
+def gvcfvaf_main(gvcf_file: str, gnomad: str) -> None:
+    args = parse_args()
+
+    with gzip.open(gvcf_file, "rt") as gvcf_fh:
+        for line in gvcf_fh:
+            if not line.startswith("#"):
+                gvcf_line = line
+                break
+        else:
+            sys.exit("GVCF file contained no entries")
+
+        gvcf_pos: Optional[Position] = gvcf_position(gvcf_line)
+        gvcf_count = 0
+        match_count = 0
+
+        with open(gnomad) as gnomad_fh:
+            for entry in gnomad_fh:
+                chrom, pos_s = entry.rstrip().split("\t")
+                pos = int(pos_s)
+                while True:
+                    if chr_position_less(gvcf_pos.chrom, int(gvcf_pos.start), chrom, pos):
+                        line = gvcf_fh.readline()
+                        if not line:
+                            gvcf_pos = None
+                            break
+                        gvcf_line = line
+                        gvcf_pos = gvcf_position(gvcf_line)
+                        gvcf_count += 1
+                    else:
+                        break
+                if gvcf_pos is None:
+                    break
+                if chrom == gvcf_pos.chrom and pos == int(gvcf_pos.start):
+                    parsed = parse_gvcf_entry(gvcf_line)
+                    if "frq" in parsed:
+                        print(f"{chrom}\t{pos}\t{parsed.get('frq', 0)}")
+                    match_count += 1
+            skipped = gvcf_count - match_count
+            print(f"{skipped} variants skipped!", file=sys.stderr)
+
+
+
 def chr_less(chr1: str, chr2: str) -> bool:
     return CHR_ORDER_MAP.get(chr1, 1e9) < CHR_ORDER_MAP.get(chr2, 1e9)
 
@@ -53,12 +96,21 @@ def chr_position_less(chr1: str, pos1: int, chr2: str, pos2: int) -> bool:
     return chr_less(chr1, chr2)
 
 
-def gvcf_position(line: str) -> dict[str, int | str]:
+class Position:
+    def __init__(self, chrom: str, start: int, end: int):
+        self.chrom = chrom
+        self.start = start
+        self.end = end
+
+def gvcf_position(line: str) -> Position:
     cols = line.rstrip().split("\t")
-    data: dict[str, int | str] = {"chr": cols[0], "start": int(cols[1])}
     match = re.search(r"(?:^|;)END=(.*?)(?:;|$)", cols[7])
-    data["end"] = int(match.group(1)) if match else int(cols[1])
-    return data
+    end = int(match.group(1)) if match else int(cols[1])
+    return Position(
+        chrom=cols[0],
+        start=int(cols[1]),
+        end=end
+    )
 
 
 def parse_gvcf_entry(line: str) -> dict[str, int | str | float]:
@@ -128,46 +180,3 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
-
-    with gzip.open(args.gvcf, "rt") as gvcf_fh:
-        for line in gvcf_fh:
-            if not line.startswith("#"):
-                gvcf_line = line
-                break
-        else:
-            sys.exit("GVCF file contained no entries")
-
-        gvcf = gvcf_position(gvcf_line)
-        gvcf_count = 0
-        match_count = 0
-
-        with open(args.gnomad) as gnomad_fh:
-            for entry in gnomad_fh:
-                chrom, pos_s = entry.rstrip().split("\t")
-                pos = int(pos_s)
-                while True:
-                    if chr_position_less(gvcf["chr"], int(gvcf["start"]), chrom, pos):
-                        line = gvcf_fh.readline()
-                        if not line:
-                            gvcf = None
-                            break
-                        gvcf_line = line
-                        gvcf = gvcf_position(gvcf_line)
-                        gvcf_count += 1
-                    else:
-                        break
-                if gvcf is None:
-                    break
-                if chrom == gvcf["chr"] and pos == int(gvcf["start"]):
-                    parsed = parse_gvcf_entry(gvcf_line)
-                    if "frq" in parsed:
-                        print(f"{chrom}\t{pos}\t{parsed.get('frq', 0)}")
-                    match_count += 1
-            skipped = gvcf_count - match_count
-            print(f"{skipped} variants skipped!", file=sys.stderr)
-
-
-if __name__ == "__main__":
-    main()
