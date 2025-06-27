@@ -13,7 +13,7 @@ const sass = gulpSass(dartSass);
 
 // define paths
 const dest = "build";
-const assetPath = "assets";
+const assetPath = "frontend";
 const gensCss = [`${assetPath}/css/gens.scss`];
 
 // run webpack

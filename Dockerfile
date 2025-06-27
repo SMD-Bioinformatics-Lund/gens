@@ -30,7 +30,7 @@ RUN apt-get update &&                                                     \
 FROM node:20.8.1-alpine AS node-builder
 WORKDIR /usr/src/app
 COPY package.json package-lock.json webpack.config.cjs gulpfile.js tsconfig.json ./
-COPY assets assets
+COPY frontend frontend
 RUN npm install && npm run build
 
 #########
