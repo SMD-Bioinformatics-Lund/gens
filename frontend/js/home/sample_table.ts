@@ -71,6 +71,10 @@ export class SamplesTable extends HTMLElement {
     });
   }
 
+  filterByInstitute(inst: string) {
+    this.dataTable.search(inst);
+  }
+
   initialize(
     sampleInfo: SampleInfo[],
     scoutBaseURL: string,

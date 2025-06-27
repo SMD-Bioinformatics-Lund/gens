@@ -50,6 +50,8 @@ export async function samplesListInit(
     return new URL(subpath, gensBaseURL).href;
   };
 
+  console.log("Obtaining samples", samples);
+
   gens_home.initialize(samples, scoutBaseURL, getGensURL);
 }
 
