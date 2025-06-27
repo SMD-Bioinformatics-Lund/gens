@@ -9,12 +9,6 @@ from gens.models.genomic import GenomeBuild
 from gens.db.collections import TRANSCRIPTS_COLLECTION
 
 
-@pytest.fixture
-def load_transcripts_cmd() -> Any:
-    module = importlib.import_module("gens.cli.load")
-    return module
-
-
 def _build_transcript():
     from gens.models.annotation import TranscriptRecord
 
@@ -37,14 +31,10 @@ def _build_transcript():
 
 
 def test_load_transcripts_invokes_crud(
-    load_transcripts_cmd: Any,
-    monkeypatch: pytest.MonkeyPatch,
+    cli_load: Any,
     tmp_path: Path,
     db: mongomock.Database,
-    patch_cli: Callable,
 ):
-
-    patch_cli(load_transcripts_cmd)
 
     gtf = tmp_path / "transcript.gtf"
     gtf_content = (
@@ -69,9 +59,9 @@ def test_load_transcripts_invokes_crud(
         "Ensembl_nuc\tHGNC_ID\tRefSeq_nuc\tMANE_status\n" "t1\tHGNC:1\trs1\tMANE Select\n"
     )
 
-    assert load_transcripts_cmd.transcripts.callback is not None
+    assert cli_load.transcripts.callback is not None
 
-    load_transcripts_cmd.transcripts.callback(
+    cli_load.transcripts.callback(
         file=str(gtf), mane=str(mane), genome_build=GenomeBuild(38)
     )
 

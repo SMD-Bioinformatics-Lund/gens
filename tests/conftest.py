@@ -94,6 +94,13 @@ def cli_delete(patch_cli) -> types.ModuleType:
     return module
 
 
+@pytest.fixture
+def cli_update(patch_cli) -> types.ModuleType:
+    module = importlib.import_module("gens.cli.update")
+    patch_cli(module)
+    return module
+
+
 gens_app_stub: Any = types.ModuleType("gens.app")
 def _create_app():
     return None
