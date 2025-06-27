@@ -6,7 +6,6 @@ tags
 coverage
 *.aed
 dump/
-frontend/
 docker-compose.override.yml
 !tests/fixtures/*.aed
 !tests/fixtures/*.bed
