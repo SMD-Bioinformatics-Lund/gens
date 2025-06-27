@@ -121,15 +121,11 @@ def fmt_bed_to_annotation(
     """Parse a bed or aed entry"""
 
     annotation: dict[str, Any] = {}
-    # parse entry and format the values
     if len(entry) < len(BED_CORE_FIELDS):
         fields_in_row = "\t".join(entry.values())
         raise ValueError(f"Malformad entry in BED file!, row: {fields_in_row}")
     for colname, value in entry.items():
-        # translate name, default to existing name if not in tr table
         new_colname = FIELD_TRANSLATIONS.get(colname, colname)
-
-        # cast values into expected type
         try:
             annotation[new_colname] = format_bed_data(new_colname, value)
         except ValueError as err:
