@@ -5,9 +5,9 @@
 FROM node:20.8.1-alpine AS node-builder
 WORKDIR /usr/src/app
 
-# copy assets
+# copy frontend
 COPY package.json package-lock.json webpack.config.cjs gulpfile.js tsconfig.json ./
-COPY assets assets
+COPY frontend frontend
 
 # build js and css deps
 RUN npm install && npm run build
