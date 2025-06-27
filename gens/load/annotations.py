@@ -301,7 +301,7 @@ def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
 
             yield {
                 "name": row.get("name", ""),
-                "chrom": chromosome.upper(),
+                "chrom": chromosome.upper() if not chromosome.startswith("chr") else chromosome,
                 "start": int(start) + 1,
                 "end": int(end),
                 "color": color,
@@ -500,8 +500,6 @@ def fmt_aed_to_annotation(
     except ValueError as e:
         LOG.error(f"Failed to parse chromosome: {rec_sequence}, skipping")
         return None
-
-
 
     # build metadata
     return AnnotationRecord(
