@@ -149,11 +149,10 @@ def test_delete_sample_annotation_cli_removes_documents(
     track = _build_track()
     tracks = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION)
     annots = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION)
-    tracks.insert_one({"_id": "tid", **track.model_dump()})
+    res = tracks.insert_one(track.model_dump())
     annots.insert_one(
         {
-            "_id": "aid",
-            "track_id": "tid",
+            "track_id": res.inserted_id,
             "sample_id": track.sample_id,
             "case_id": track.case_id,
             "chrom": "1",
