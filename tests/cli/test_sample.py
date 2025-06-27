@@ -172,7 +172,7 @@ def test_update_sample_updates_document(
         meta=[],
     )
 
-    monkeypatch.setattr(cli_update, "get_sample", lambda db, sample_id, case_id: sample_obj)
+    monkeypatch.setattr(cli_update, "get_sample", lambda db, sample_id, case_id, genome_build: sample_obj)
     # monkeypatch.setattr(update_sample_cmd, "parse_meta_file", lambda p: "META")
 
     meta_file = tmp_path / "meta.tsv"
