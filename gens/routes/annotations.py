@@ -1,7 +1,7 @@
 """For get and modify genome annotation information.
 
 When querying multiple annotations or transcripts a subeset of information is returned.
-Query individual annotaions or transcript to get the full info.
+Query individual annotations or transcript to get the full info.
 """
 
 from http import HTTPStatus

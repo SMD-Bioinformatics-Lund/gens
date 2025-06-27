@@ -31,6 +31,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Pydantic validation of loaded transcripts
  - Add optional sample annotations. These can be loaded using CLI and displays additional band annotation linked to a sample.
  - Persistent session state for annotation selection, annotation color, track heights and coverage Y range.
+ - Add end-to-end unit testing for CLI commands.
 
 ### Changed
  - Resolution increased 2x for tracks.

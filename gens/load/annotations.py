@@ -59,7 +59,7 @@ class AedPropertyDefinition(BaseModel):
 
 def parse_bed_file(file: Path) -> Iterator[dict[str, str]]:
     """
-    Read bed file. If header == True is the first data row used as header instead.
+    Read bed file. No header is expected.
     """
     with open(file, encoding="utf-8") as bed:
         field_names = [
@@ -76,17 +76,18 @@ def parse_bed_file(file: Path) -> Iterator[dict[str, str]]:
             "block_sizes",
             "block_starts",
         ]
+
         bed_reader = csv.reader(bed, delimiter="\t")
         colnames: list[str] | None = None
         # Load in annotations
         for line in bed_reader:
+
             # skip comments, lines starting with # sign
             if line[0].startswith("#"):
                 continue
             # define the header
             if colnames is None:
                 colnames = field_names[: len(line)]
-                continue
 
             if len(line) != len(colnames):
                 raise ValueError(
@@ -118,6 +119,7 @@ def fmt_bed_to_annotation(
     genome_build: GenomeBuild,
 ) -> AnnotationRecord:
     """Parse a bed or aed entry"""
+
     annotation: dict[str, Any] = {}
     # parse entry and format the values
     if len(entry) < len(BED_CORE_FIELDS):
@@ -282,10 +284,10 @@ def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
             else:
                 color = Color(DEFAULT_COLOUR)
             yield {
-                "name": row.get("Name", "The Nameless One"),
+                "name": row.get("Name", ""),
                 "chrom": row["Chromosome"],
-                "start": row["Start"],
-                "end": row["Stop"],
+                "start": int(row["Start"]) + 1,
+                "end": int(row["Stop"]),
                 "color": color,
             }
 
@@ -296,6 +298,7 @@ def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata
     Reference: https://assets.thermofisher.com/TFS-Assets/GSD/Handbooks/Chromosome_analysis_suite_v4.2_user-guide.pdf
     """
     with open(file, encoding="utf-8-sig") as aed_fh:
+
         column_definitions, file_metadata = _parse_aed_header(aed_fh)
 
         # This can deal with quote surrounded comments containing line breaks
@@ -359,7 +362,7 @@ def fmt_aed_to_annotation(
     genome_build: GenomeBuild,
     exclude_na: bool = True,
 ) -> AnnotationRecord | None:
-    """Format a AED record to the Gens anntoation format.
+    """Format a AED record to the Gens annotation format.
 
     This parser is a complement to the more general AED parser."""
 
@@ -378,11 +381,7 @@ def fmt_aed_to_annotation(
                             )
                         )
                     except ValidationError as err:
-                        LOG.warning(
-                            "Note could not be formatted as reference, '%s'; error: %s",
-                            note,
-                            err,
-                        )
+                        continue
             elif "http" in note or "www" in note:
                 match = re.search(AED_URL_REFERENCE_NOTE, note)
                 if match:
@@ -393,11 +392,7 @@ def fmt_aed_to_annotation(
                             )
                         )
                     except ValidationError as err:
-                        LOG.warning(
-                            "Note could not be formatted as reference, '%s'; error: %s",
-                            note,
-                            err,
-                        )
+                        continue
             else:
                 continue
         comments.append(Comment(comment=record["note"], username="parser"))

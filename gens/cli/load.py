@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, TextIO
 
 import click
+from flask import json
 from pymongo.database import Database
 
 from gens.cli.util import ChoiceType
@@ -19,7 +20,12 @@ from gens.crud.annotations import (
     register_data_update,
     update_annotation_track,
 )
-from gens.crud.sample_annotations import create_sample_annotation_track, create_sample_annotations_for_track, delete_sample_annotations_for_track, get_sample_annotation_track
+from gens.crud.sample_annotations import (
+    create_sample_annotation_track,
+    create_sample_annotations_for_track,
+    delete_sample_annotations_for_track,
+    get_sample_annotation_track,
+)
 from gens.crud.samples import create_sample
 from gens.crud.transcripts import create_transcripts
 from gens.db.collections import (
@@ -103,7 +109,7 @@ def load() -> None:
     "meta_files",
     type=click.Path(exists=True, path_type=Path),
     multiple=True,
-    help="TSV file with sample metadata"
+    help="TSV file with sample metadata",
 )
 @click.option(
     "-t",
@@ -148,7 +154,7 @@ def sample(
             "overview_file": overview_json,
             "sample_type": sample_type,
             "sex": sex,
-            "meta": [parse_meta_file(p) for p in meta_files]
+            "meta": [parse_meta_file(p) for p in meta_files],
         }
     )
     create_sample(db, sample_obj)
@@ -212,7 +218,7 @@ def sample_annotation(
 
     if track_in_db is not None:
         delete_sample_annotations_for_track(track_id, db)
-    
+
     create_sample_annotations_for_track(annotations, db)
     click.secho("Finished loading sample annotations ✔", fg="green")
 
@@ -281,18 +287,23 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
         file_meta: list[dict[str, Any]] = []
         records: list[AnnotationRecord] = []
         if file_format == "tsv" or is_tsv:
-            records = [
-                AnnotationRecord.model_validate(
+            parsed_content = parse_tsv_file(file)
+
+            records = []
+            for rec in parsed_content:
+                LOG.debug(f"Processing {rec}")
+                validated_rec = AnnotationRecord.model_validate(
                     {"track_id": track_id, "genome_build": genome_build, **rec}
                 )
-                for rec in parse_tsv_file(file)
-            ]
+                LOG.debug(f"Result {validated_rec}")
+                records.append(validated_rec)
         elif file_format == "bed":
             try:
-                bed_records = parse_bed_file(file)
-                records = [
-                    fmt_bed_to_annotation(rec, track_id, genome_build) for rec in bed_records
-                ]
+                bed_records = list(parse_bed_file(file))
+                records = []
+                for rec in bed_records:
+                    parsed_rec = fmt_bed_to_annotation(rec, track_id, genome_build)
+                    records.append(parsed_rec)
             except ValueError as err:
                 click.secho(
                     f"An error occured when creating loading annotation: {err}",
@@ -322,7 +333,7 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
         if len(records) == 0:
             delete_annotation_track(track_id, db)  # cleanup
             raise ValueError(
-                "Something went wrong parsing the annotaions file, no valid annotations found."
+                "Something went wrong parsing the annotations file, no valid annotations found."
             )
 
         # remove annotations and update track if track has already been added
@@ -386,32 +397,46 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     help="Genome build",
 )
 @click.option(
+    "-f",
+    "--file",
+    type=click.Path(exists=True, path_type=Path),
+    required=False,
+    default=None,
+    help="JSON file with assembly info (optional)",
+)
+@click.option(
     "-t",
     "--timeout",
     type=int,
     default=10,
-    help="Timeout for queries.",
+    help="Timeout for queries when downloading",
 )
-def chromosomes(genome_build: GenomeBuild, timeout: int) -> None:
+def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> None:
     """Load chromosome size information into the database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
         raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    # if collection is not indexed, create index
+
     if len(get_indexes(db, CHROMSIZES_COLLECTION)) == 0:
         create_index(db, CHROMSIZES_COLLECTION)
-    # get chromosome info from ensemble
-    # if file is given, use sizes from file else download chromsizes from ebi
-    LOG.info("Query ensembl for assembly info for %s", genome_build)
-    assembly_info = get_assembly_info(genome_build, timeout=timeout)
-    # index chromosome on name
+
+    # Get chromosome info from ensemble
+    # If file is given, use sizes from file else download chromsizes from ebi
+    if file is not None:
+        with open_text_or_gzip(str(file)) as fh:
+            assembly_info = json.load(fh)
+    else:
+        assembly_info = get_assembly_info(genome_build, timeout=timeout)
+
     chrom_data = {
         elem["name"]: elem
         for elem in assembly_info["top_level_region"]
         if elem.get("coord_system") == "chromosome"
     }
+
     chrom_data = {chrom: chrom_data[chrom] for chrom in assembly_info["karyotype"]}
+
     try:
         LOG.info("Build chromosome object")
         chromosomes_data = build_chromosomes_obj(chrom_data, genome_build, timeout)
