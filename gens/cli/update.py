@@ -77,7 +77,9 @@ def sample(
 
     db = db_setup([SAMPLES_COLLECTION])
 
-    sample_obj = get_sample(db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id)
+    sample_obj = get_sample(
+        db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id, genome_build=genome_build
+    )
 
     if sample_type is not None:
         sample_obj.sample_type = sample_type

@@ -137,12 +137,15 @@ def get_sample(
     samples_c: Collection[dict[str, Any]],
     sample_id: str,
     case_id: str,
+    genome_build: GenomeBuild | None = None
 ) -> SampleInfo:
     """Get a sample with id."""
     sample_filter: dict[str, Any] = {
         "sample_id": sample_id,
         "case_id": case_id,
     }
+    if genome_build is not None:
+        sample_filter["genome_build"] = genome_build
 
     result = samples_c.find_one(sample_filter)
 
