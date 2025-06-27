@@ -104,7 +104,7 @@ def get_assembly_info(
     timeout: int = 2,
 ) -> Any:
     """Get assembly info from ensembl."""
-    base_rest_url = {"37": "grch37.rest.ensembl.org", "38": "rest.ensembl.org"}
+    base_rest_url = {"19": "grch37.rest.ensembl.org", "38": "rest.ensembl.org"}
     params: dict[str, str] = {
         "content-type": "application/json",
         "bands": str(bands),
