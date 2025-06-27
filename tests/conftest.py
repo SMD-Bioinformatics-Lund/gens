@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 import sys
 from typing import Any
 from pathlib import Path
@@ -54,6 +55,9 @@ def db() -> mongomock.Database:
     return client.get_database("test")
 
 
+
+
+
 @pytest.fixture()
 def patch_cli(
     monkeypatch: pytest.MonkeyPatch, db
@@ -67,11 +71,34 @@ def patch_cli(
             )
             monkeypatch.setattr(f"{module}.get_indexes", lambda *a, **kw: [])
             monkeypatch.setattr(f"{module}.create_index", lambda *a, **kw: None)
+            monkeypatch.setattr(f"{module}.db_setup", lambda *a, **kw: db)
         else:
             monkeypatch.setattr(module, "get_db_connection", lambda *a, **kw: db)
             monkeypatch.setattr(module, "get_indexes", lambda *a, **kw: [])
             monkeypatch.setattr(module, "create_index", lambda *a, **kw: None)
+            monkeypatch.setattr(module, "db_setup", lambda *a, **kw: db)
     return _patch
+
+
+@pytest.fixture
+def cli_load(patch_cli) -> types.ModuleType:
+    module = importlib.import_module("gens.cli.load")
+    patch_cli(module)
+    return module
+
+
+@pytest.fixture
+def cli_delete(patch_cli) -> types.ModuleType:
+    module = importlib.import_module("gens.cli.delete")
+    patch_cli(module)
+    return module
+
+
+@pytest.fixture
+def cli_update(patch_cli) -> types.ModuleType:
+    module = importlib.import_module("gens.cli.update")
+    patch_cli(module)
+    return module
 
 
 gens_app_stub: Any = types.ModuleType("gens.app")

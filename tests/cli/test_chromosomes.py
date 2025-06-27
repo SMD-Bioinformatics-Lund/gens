@@ -14,20 +14,11 @@ from gens.models.genomic import GenomeBuild
 LOG = logging.getLogger(__name__)
 
 
-@pytest.fixture
-def load_chromosomes_cmd() -> ModuleType:
-    module = importlib.import_module("gens.cli.load")
-    return module
-
-
 def test_load_chromosomes_from_file(
-    load_chromosomes_cmd: ModuleType,
+    cli_load: ModuleType,
     tmp_path: Path,
     db: mongomock.Database,
-    patch_cli: Callable,
 ):
-
-    patch_cli(load_chromosomes_cmd)
 
     # Assembly data retrieved from: http://rest.ensembl.org/info/assembly/homo_sapiens?bands=true&content-type=json&synonyms=true
     # The centromeres can be retrieved from: https://www.ebi.ac.uk/ena/browser/api/embl/CM000663
@@ -73,7 +64,7 @@ def test_load_chromosomes_from_file(
     json_file = tmp_path / "assembly.json"
     json_file.write_text(json.dumps(assembly_data))
 
-    load_chromosomes_cmd.chromosomes.callback(
+    cli_load.chromosomes.callback(
         genome_build=GenomeBuild(38),
         file=json_file,
         timeout=1,

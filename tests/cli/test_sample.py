@@ -4,12 +4,9 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable
 import mongomock
-from pydantic import ValidationError
 import pytest
 
-
 from gens.db.collections import SAMPLES_COLLECTION
-from gens.exceptions import SampleNotFoundError
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
 
@@ -27,32 +24,11 @@ def ensure_indexes(db: mongomock.Database):
     )
 
 
-@pytest.fixture
-def update_sample_cmd() -> ModuleType:
-    module = importlib.import_module("gens.cli.update")
-    return module
-
-
-@pytest.fixture
-def delete_sample_cmd() -> ModuleType:
-    module = importlib.import_module("gens.cli.delete")
-    return module
-
-
-@pytest.fixture
-def load_sample_cmd() -> ModuleType:
-    module = importlib.import_module("gens.cli.load")
-    return module
-
-
 def test_load_sample_cli(
-    load_sample_cmd: ModuleType,
+    cli_load: ModuleType,
     db: mongomock.Database,
-    patch_cli: Callable,
     tmp_path: Path,
 ):
-    patch_cli(load_sample_cmd)
-
     baf_file = tmp_path / "baf"
     baf_file.write_text("baf")
     cov_file = tmp_path / "cov"
@@ -70,12 +46,13 @@ def test_load_sample_cli(
         "chr2\tavg_roh\t0.12\n"
     )
 
-    load_sample_cmd.sample.callback(
+    cli_load.sample.callback(
         sample_id="sample1",
         genome_build=38,
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
+        institute="constitutional",
         overview_json=overview_file,
         meta_files=[meta_file_simple, meta_file_complex],
         sample_type="proband",
@@ -93,6 +70,7 @@ def test_load_sample_cli(
     assert Path(doc["coverage_file"]) == cov_file
     assert Path(doc["overview_file"]) == overview_file
     assert doc["sample_type"] == "proband"
+    assert doc["institute"] == "constitutional"
     assert len(doc["meta"]) == 2
 
     assert doc["meta"][0]["file_name"] == "meta_simple.tsv"
@@ -117,13 +95,10 @@ def test_load_sample_cli(
 
 
 def test_load_sample_cli_with_string_genome_build_fails(
-    load_sample_cmd: ModuleType,
-    patch_cli: Callable,
+    cli_load: ModuleType,
     tmp_path: Path,
     db: mongomock.Database,
 ):
-    patch_cli(load_sample_cmd)
-
     baf_file = tmp_path / "baf"
     baf_file.write_text("baf")
     cov_file = tmp_path / "cov"
@@ -135,12 +110,13 @@ def test_load_sample_cli_with_string_genome_build_fails(
 
     sample_coll = db.get_collection(SAMPLES_COLLECTION)
 
-    load_sample_cmd.sample.callback(
+    cli_load.sample.callback(
         sample_id="sample1",
         genome_build="38",
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
+        institute="institute",
         overview_json=overview_file,
         meta_files=[meta_file],
         sample_type="proband",
@@ -153,12 +129,13 @@ def test_load_sample_cli_with_string_genome_build_fails(
     assert rec is not None
     assert rec["genome_build"] == 38
 
-    load_sample_cmd.sample.callback(
+    cli_load.sample.callback(
         sample_id="sample1",
         genome_build=38,
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
+        institute="institute",
         overview_json=overview_file,
         meta_files=[meta_file],
         sample_type="proband",
@@ -169,31 +146,23 @@ def test_load_sample_cli_with_string_genome_build_fails(
 
 
 def test_delete_sample_cli_removes_document(
-    delete_sample_cmd: ModuleType,
-    patch_cli: Callable,
+    cli_delete: ModuleType,
     db: mongomock.Database,
 ) -> None:
-    patch_cli(delete_sample_cmd)
-
     coll = db.get_collection(SAMPLES_COLLECTION)
     coll.insert_one({"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(19)})
 
-    assert delete_sample_cmd.sample.callback is not None
-
-    delete_sample_cmd.sample.callback(sample_id="sample1", genome_build=19, case_id="caseA")
+    cli_delete.sample.callback(sample_id="sample1", genome_build=19, case_id="caseA")
 
     assert coll.find_one({"sample_id": "sample1"}) is None
 
 
 def test_update_sample_updates_document(
-    update_sample_cmd: ModuleType,
+    cli_update: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-    patch_cli: Callable,
     db: mongomock.Database,
 ) -> None:
-    patch_cli(update_sample_cmd)
-
     sample_obj = SampleInfo(
         sample_id="sample1",
         case_id="caseA",
@@ -201,23 +170,25 @@ def test_update_sample_updates_document(
         baf_file=Path(__file__),
         coverage_file=Path(__file__),
         sample_type=None,
+        institute=None,
         sex=None,
         meta=[],
     )
 
-    monkeypatch.setattr(update_sample_cmd, "get_sample", lambda db, sample_id, case_id: sample_obj)
+    monkeypatch.setattr(cli_update, "get_sample", lambda db, sample_id, case_id: sample_obj)
     # monkeypatch.setattr(update_sample_cmd, "parse_meta_file", lambda p: "META")
 
     meta_file = tmp_path / "meta.tsv"
     meta_file.write_text("type\tvalue\nA\t1\n")
 
-    assert update_sample_cmd.sample.callback is not None
+    # assert update_sample_cmd.sample.callback is not None
 
-    update_sample_cmd.sample.callback(
+    cli_update.sample.callback(
         sample_id="sample1",
         case_id="caseA",
         genome_build=GenomeBuild(19),
         sample_type="tumor",
+        institute="constitutional",
         sex=SampleSex("M"),
         meta_files=(meta_file,),
     )
@@ -228,6 +199,7 @@ def test_update_sample_updates_document(
     )
     assert doc is not None
     assert doc["sample_type"] == "tumor"
+    assert doc["institute"] == "constitutional"
     assert doc.get("sex") in ("M", SampleSex("M"), SampleSex.MALE)
 
     LOG.debug(doc)
@@ -251,6 +223,7 @@ def _build_sample() -> SampleInfo:
         genome_build=GenomeBuild(38),
         baf_file=Path(__file__),
         coverage_file=Path(__file__),
+        institute="constitutional"
     )
 
 

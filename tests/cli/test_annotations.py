@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import importlib
-import types
+from types import ModuleType
 from pathlib import Path
 from typing import Callable
 
@@ -13,13 +12,6 @@ import logging
 from gens.db.collections import ANNOTATION_TRACKS_COLLECTION, ANNOTATIONS_COLLECTION
 
 LOG = logging.getLogger(__name__)
-
-
-@pytest.fixture
-def load_annotations_cmd() -> types.ModuleType:
-    module = importlib.import_module("gens.cli.load")
-    return module
-
 
 @dataclass
 class AnnotEntry:
@@ -47,14 +39,11 @@ def annot_entry() -> AnnotEntry:
 
 
 def test_load_annotations_from_bed(
-    load_annotations_cmd: types.ModuleType,
-    patch_cli: Callable,
+    cli_load: ModuleType,
     tmp_path: Path,
     db: mongomock.Database,
     annot_entry: AnnotEntry,
 ):
-    patch_cli(load_annotations_cmd)
-
     bed_file = tmp_path / "track.bed"
     bed_file.write_text(
         "\t".join(
@@ -72,7 +61,7 @@ def test_load_annotations_from_bed(
         )
     )
 
-    load_annotations_cmd.annotations.callback(
+    cli_load.annotations.callback(
         file=bed_file,
         genome_build=38,
         is_tsv=False,
@@ -102,14 +91,11 @@ def test_load_annotations_from_bed(
 
 
 def test_load_annotations_from_tsv(
-    load_annotations_cmd: types.ModuleType,
-    patch_cli: Callable,
+    cli_load: ModuleType,
     tmp_path: Path,
     db: mongomock.Database,
     annot_entry: AnnotEntry,
 ):
-    patch_cli(load_annotations_cmd)
-
     header = "\t".join(["Chromosome", "Start", "Stop", "Name", "Color"])
     content = "\t".join(
             [annot_entry.chrom, str(annot_entry.start_pos), str(annot_entry.end_pos), annot_entry.label, annot_entry.color]
@@ -120,7 +106,7 @@ def test_load_annotations_from_tsv(
     tsv_file = tmp_path / "track.tsv"
     tsv_file.write_text(file_content)
 
-    load_annotations_cmd.annotations.callback(
+    cli_load.annotations.callback(
         file=tsv_file,
         genome_build=38,
         is_tsv=False,
@@ -150,14 +136,11 @@ def test_load_annotations_from_tsv(
 
 
 def test_load_annotations_from_tsv_with_comments(
-    load_annotations_cmd: types.ModuleType,
-    patch_cli: Callable,
+    cli_load: ModuleType,
     tmp_path: Path,
     db: mongomock.Database,
     annot_entry: AnnotEntry,
 ):
-    patch_cli(load_annotations_cmd)
-
     header = "\t".join([
         "Chromosome",
         "Start",
@@ -182,7 +165,7 @@ def test_load_annotations_from_tsv_with_comments(
     tsv_file = tmp_path / "track.tsv"
     tsv_file.write_text(file_content)
 
-    load_annotations_cmd.annotations.callback(
+    cli_load.annotations.callback(
         file=tsv_file,
         genome_build=38,
         is_tsv=False,
@@ -198,14 +181,11 @@ def test_load_annotations_from_tsv_with_comments(
 
 
 def test_load_annotations_parses_aed(
-    load_annotations_cmd: types.ModuleType,
-    patch_cli: Callable,
+    cli_load: ModuleType,
     tmp_path: Path,
     db: mongomock.Database,
     annot_entry: AnnotEntry,
 ):
-    patch_cli(load_annotations_cmd)
-
     aed_file = tmp_path / "track.aed"
     aed_file.write_text(
 """bio:sequence(aed:String)	bio:start(aed:Integer)	bio:end(aed:Integer)	aed:name(aed:String)	aed:value(aed:String)	aed:category(aed:String)	style:color(aed:Color)	aed:modifiedBy(aed:String)	aed:reference(aed:URI)	affx:materialModifiedBy(aed:String)	aed:modified(aed:DateTime)	bio:cdsMax(aed:Integer)	aed:note(aed:String)	bio:cdsMin(aed:Integer)	aed:counter(aed:Integer)	affx:materialModified(aed:DateTime)	bio:state(aed:Rational)	bed:score(aed:Integer)	affx:interpreted(aed:DateTime)	affx:interpretedBy(aed:String)	affx:inheritance(aed:String)	affx:interpretation(aed:String)	affx:call(aed:String)
@@ -221,7 +201,7 @@ chr1	6785323	7769706	Cerebellar dysfunction with variable cognitive and behavior
 chr1	8352403	8817640	Neurodevelopmental disorder with or without anomalies of the brain, eye, or heart (RERE)		OMIM #616975; ORPHA:494344; GeneReviews	rgb(204,0,0)	115422:TJ	https://omim.org/entry/616975	115422:TJ	2025-01-15T22:50:00.442+01:00		"MANE Select NM_001042681. OMIM #616975; ORPHA:494344 ""RERE-related neurodevelopmental syndrome""; Fregeau et al., 2016, De novo mutations of RERE cause a genetic syndrome with features that overlap those associated with proximal 1p36 deletions (PMID: 27087320); Jordan et al., 2018, Genotype-phenotype correlations in individuals with pathogenic RERE variants (PMID: 29330883); GeneReviews ""RERE-Related Disorders"" (PMID: 30896913, www.ncbi.nlm.nih.gov/books/NBK538938); NIH (https://medlineplus.gov/genetics/gene/rere)"		0	2025-01-13T18:45:43.626+01:00							
 chr1	15847864	15940460	Radio-Tartaglia syndrome (SPEN)		OMIM #619312	rgb(204,0,0)	115422:TJ	https://omim.org/entry/619312	115422:TJ Genomik	2025-01-15T22:57:16.413+01:00	0	OMIM #619312; Radio et al., 2021, SPEN haploinsufficiency causes a neurodevelopmental disorder overlapping proximal 1p36 deletion syndrome with an episignature of X chromosomes in females (PMID: 33596411); https://panelapp.genomicsengland.co.uk/panels/285/gene/SPEN; Decipher (www.deciphergenomics.org/gene/SPEN/overview/clinical-info)	0	0	2022-09-23T15:56:45.119+02:00"""
     )
-    load_annotations_cmd.annotations.callback(
+    cli_load.annotations.callback(
         file=aed_file,
         genome_build=38,
         is_tsv=False,
@@ -249,3 +229,41 @@ chr1	15847864	15940460	Radio-Tartaglia syndrome (SPEN)		OMIM #619312	rgb(204,0,0
     assert rec["name"] == "1p36 deletion syndrome, distal"
     assert rec["color"] == [204, 0, 0]
 
+
+def test_delete_annotation_cli_removes_documents(
+    cli_delete: ModuleType,
+    db: mongomock.Database,
+) -> None:
+    tracks = db.get_collection(ANNOTATION_TRACKS_COLLECTION)
+    annots = db.get_collection(ANNOTATIONS_COLLECTION)
+
+    res = tracks.insert_one(
+        {
+            "name": "track1",
+            "description": "",
+            "maintainer": None,
+            "metadata": [],
+            "genome_build": 38,
+        }
+    )
+
+    annots.insert_one(
+        {
+            "track_id": res.inserted_id,
+            "name": "rec",
+            "chrom": "1",
+            "start": 1,
+            "end": 10,
+            "genome_build": 38,
+            "color": [0, 0, 0],
+            "description": None,
+            "comments": [],
+            "references": [],
+            "metadata": [],
+        }
+    )
+
+    cli_delete.annotation.callback(genome_build=38, name="track1")
+
+    assert tracks.count_documents({}) == 0
+    assert annots.count_documents({}) == 0

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from gens.cli.util.util import ChoiceType
+from gens.cli.util.util import ChoiceType, db_setup
 from gens.config import settings
 from gens.crud.samples import get_sample, update_sample
 from gens.db.collections import (
@@ -47,6 +47,11 @@ def update() -> None:
     help="New sample type (for instance, tumor/normal, proband/mother/father/relative, other)",
 )
 @click.option(
+    "--institute",
+    required=False,
+    help="Update sample institute",
+)
+@click.option(
     "--sex",
     type=ChoiceType(SampleSex),
     required=False,
@@ -64,21 +69,20 @@ def sample(
     case_id: str,
     genome_build: GenomeBuild,
     sample_type: str,
+    institute: str | None,
     sex: SampleSex | None,
     meta_files: tuple[Path, ...],
 ) -> None:
     """Update sample type for a sample."""
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
-        create_index(db, SAMPLES_COLLECTION)
+
+    db = db_setup([SAMPLES_COLLECTION])
 
     sample_obj = get_sample(db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id)
 
     if sample_type is not None:
         sample_obj.sample_type = sample_type
+    if institute is not None:
+        sample_obj.institute = institute
     if sex is not None:
         sample_obj.sex = sex
 
