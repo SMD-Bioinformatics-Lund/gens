@@ -60,14 +60,14 @@ def main(sample_id: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path
     #         generate_cov_bed(coverage, win_size, prefix, covout)
 
     print("Calculating BAFs from gvcf...", file=sys.stderr)
-    tmp_baf = f"{sample_id}.baf.tmp"
+    tmp_baf = out_dir / f"{sample_id}.baf.tmp"
     with open(tmp_baf, "w", encoding="utf-8") as tmpout:
         parse_gvcfvaf(gvcf, gnomad, tmpout)
 
     with open(baf_output, "w", encoding="utf-8") as bafout:
         for skip_n, prefix in zip(BAF_SKIP_N, PREFIXES):
             print(f"Outputting BAF {prefix}...", file=sys.stderr)
-            generate_baf_bed(tmp_baf, skip_n, prefix, bafout)
+            generate_baf_bed(str(tmp_baf), skip_n, prefix, bafout)
 
     # subprocess.run(["bgzip", "-f", "-@10", str(baf_output)], check=True)
     # subprocess.run(["tabix", "-f", "-p", "bed", str(baf_output) + ".gz"], check=True)
@@ -168,53 +168,61 @@ def chr_position_less(chr1: str, pos1: int, chr2: str, pos2: int) -> bool:
 
 def parse_gvcfvaf(gvcf_file: Path, gnomad_file: Path, out_fh: TextIO) -> None:
 
-    with gzip.open(gvcf_file, "rt") as gvcf_fh, open(gnomad_file) as gnomad_fh:
-        for line in gvcf_fh:
-            if not line.startswith("#"):
-                gvcf_line = line
-                break
-        else:
-            sys.exit("GVCF file contained no entries")
+    gnomad_positions = set()
+    with open(gnomad_file, "r") as gnomad_fh:
+        for line in gnomad_fh:
+            line = line.rstrip()
+            chrom, pos = line.split("\t")
+            pos_key = f"{chrom}_{pos}"
+            gnomad_positions.add(pos_key)
 
-        gvcf_pos: Optional[Region] = gvcf_region(gvcf_line)
+    with gzip.open(gvcf_file, "rt") as gvcf_fh:
+
         gvcf_count = 0
         match_count = 0
 
-        for entry in gnomad_fh:
-            chrom, pos_str = entry.rstrip().split("\t")
-            pos = int(pos_str)
-            while True:
-                if not chr_position_less(gvcf_pos.chrom, int(gvcf_pos.start), chrom, pos):
-                    break
-                line = gvcf_fh.readline()
-                if not line:
-                    gvcf_pos = None
-                    break
-                gvcf_line = line
-                gvcf_pos = gvcf_region(gvcf_line)
-                gvcf_count += 1
+        for gvcf_line in gvcf_fh:
+            if gvcf_line.startswith("#"):
+                continue
 
-            if gvcf_pos is None:
-                break
-            if chrom == gvcf_pos.chrom and pos == int(gvcf_pos.start):
-                entry = GVCFEntry(gvcf_line)
+            gvcf_count += 1
 
-                if entry.is_indel():
+            gvcf_pos: Region = gvcf_region(gvcf_line)
+
+            # if gvcf_pos.start > 8525612:
+            #     break
+
+            position_key = f"{gvcf_pos.chrom}_{gvcf_pos.start}"
+
+            if position_key not in gnomad_positions:
+                continue
+
+            entry = GVCFEntry(gvcf_line)
+
+            # print(f"Working with entry {entry} {gvcf_line.rstrip()}")
+
+            if entry.is_indel():
+                # print("Is indel")
+                continue
+
+            if "AD" not in entry.sample_entries:
+                # print("No AD")
+                baf_freq = 0
+            elif not entry.pass_depth_filter(10):
+                # baf_freq = 0
+                continue
+            else:
+                # print("Parsing baf")
+                parsed_baf = entry.parse_b_allele_freq()
+                if parsed_baf is None:
+                    # print("No baf")
                     continue
+                baf_freq = parsed_baf
 
-                if not entry.pass_depth_filter(10):
-                    continue
-
-                if "AD" not in entry.sample_entries:
-                    baf_freq = 0
-                else:
-                    parsed_baf = entry.parse_b_allele_freq()
-                    if parsed_baf is None:
-                        continue
-                    baf_freq = parsed_baf
-
-                print(f"{chrom}\t{pos}\t{baf_freq}", file=out_fh)
-                match_count += 1
+            #print(f"> {gvcf_pos.chrom}\t{gvcf_pos.start}\t{baf_freq}")
+            print(f"{gvcf_pos.chrom}\t{gvcf_pos.start}\t{round(baf_freq, 3)}", file=out_fh)
+            match_count += 1
+        
         skipped = gvcf_count - match_count
         print(f"{skipped} variants skipped!", file=sys.stderr)
 
@@ -231,6 +239,9 @@ class GVCFEntry:
         sample_vals = cols[9].split(":")
         self.sample_entries = dict(zip(sample_keys, sample_vals))
     
+    def __str__(self) -> str:
+        return f"{self.chrom} {self.start} {self.ref} {",".join(self.alt_alleles)}"
+
 
     def is_indel(self):
         return len(self.ref) > 1
@@ -239,7 +250,10 @@ class GVCFEntry:
         depth = self.sample_entries.get("DP")
         if not depth:
             return False
-        return int(depth) >= depth_filter
+        if int(depth) >= depth_filter:
+            return True
+        else:
+            return False
 
     def parse_b_allele_freq(self) -> Optional[float]:
 
