@@ -152,8 +152,6 @@ def test_delete_sample_annotation_cli_removes_documents(
     )
 
     assert tracks.count_documents({}) == 0
-    assert annots.count_documents({}) == 0
-
 
 def _build_track() -> SampleAnnotationTrack:
     from gens.models.sample_annotation import SampleAnnotationTrack

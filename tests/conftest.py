@@ -55,12 +55,9 @@ def db() -> mongomock.Database:
     return client.get_database("test")
 
 
-
-
-
 @pytest.fixture()
 def patch_cli(
-    monkeypatch: pytest.MonkeyPatch, db
+    monkeypatch: pytest.MonkeyPatch, db: mongomock.Database
 ) -> Callable[[str | types.ModuleType], None]:
     
     # Patch out cli indexing commands
@@ -69,13 +66,9 @@ def patch_cli(
             monkeypatch.setattr(
                 f"{module}.get_db_connection", lambda *a, **kw: db
             )
-            monkeypatch.setattr(f"{module}.get_indexes", lambda *a, **kw: [])
-            monkeypatch.setattr(f"{module}.create_index", lambda *a, **kw: None)
             monkeypatch.setattr(f"{module}.db_setup", lambda *a, **kw: db)
         else:
             monkeypatch.setattr(module, "get_db_connection", lambda *a, **kw: db)
-            monkeypatch.setattr(module, "get_indexes", lambda *a, **kw: [])
-            monkeypatch.setattr(module, "create_index", lambda *a, **kw: None)
             monkeypatch.setattr(module, "db_setup", lambda *a, **kw: db)
     return _patch
 
@@ -101,8 +94,8 @@ def cli_update(patch_cli) -> types.ModuleType:
     return module
 
 
-gens_app_stub: Any = types.ModuleType("gens.app")
-def _create_app():
-    return None
-gens_app_stub.create_app = _create_app
-sys.modules.setdefault("gens.app", gens_app_stub)
+@pytest.fixture
+def cli_index(patch_cli) -> types.ModuleType:
+    module = importlib.import_module("gens.cli.index")
+    patch_cli(module)
+    return module
