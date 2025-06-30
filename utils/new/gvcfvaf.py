@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+from pathlib import Path
 import re
 import sys
 from typing import Optional
@@ -44,8 +45,8 @@ CHR_ORDER = [
 CHR_ORDER_MAP = {c: i for i, c in enumerate(CHR_ORDER)}
 
 
-def gvcfvaf_main(gvcf_file: str, gnomad: str) -> None:
-    args = parse_args()
+def gvcfvaf_main(gvcf_file: Path, gnomad: Path, out_file: Path) -> None:
+    # args = parse_args()
 
     with gzip.open(gvcf_file, "rt") as gvcf_fh:
         for line in gvcf_fh:
@@ -59,7 +60,7 @@ def gvcfvaf_main(gvcf_file: str, gnomad: str) -> None:
         gvcf_count = 0
         match_count = 0
 
-        with open(gnomad) as gnomad_fh:
+        with open(gnomad) as gnomad_fh, open(out_file, 'w') as out_fh:
             for entry in gnomad_fh:
                 chrom, pos_s = entry.rstrip().split("\t")
                 pos = int(pos_s)
@@ -79,7 +80,7 @@ def gvcfvaf_main(gvcf_file: str, gnomad: str) -> None:
                 if chrom == gvcf_pos.chrom and pos == int(gvcf_pos.start):
                     parsed = parse_gvcf_entry(gvcf_line)
                     if "frq" in parsed:
-                        print(f"{chrom}\t{pos}\t{parsed.get('frq', 0)}")
+                        print(f"{chrom}\t{pos}\t{parsed.get('frq', 0)}", file=out_fh)
                     match_count += 1
             skipped = gvcf_count - match_count
             print(f"{skipped} variants skipped!", file=sys.stderr)

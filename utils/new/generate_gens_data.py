@@ -11,39 +11,40 @@ import subprocess
 from pathlib import Path
 from typing import Iterable, TextIO
 
-from utils.new.gvcfvaf import gvcfvaf_main
+from gvcfvaf import gvcfvaf_main
 
 COV_WINDOW_SIZES = [100000, 25000, 5000, 1000, 100]
 BAF_SKIP_N = [160, 40, 10, 4, 1]
 PREFIXES = ["o", "a", "b", "c", "d"]
 
 
-def main(sample_id: str, coverage: str, gvcf: str, gnomad: str) -> None:
-   
-    cov_output = f"{sample_id}.cov.bed"
-    baf_output = f"{sample_id}.baf.bed"
-    script_root = Path(__file__).resolve().parent
+def main(sample_id: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path) -> None:
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    cov_output = out_dir / f"{sample_id}.cov.bed"
+    baf_output = out_dir / f"{sample_id}.baf.bed"
 
     print("Calculating coverage data", file=sys.stderr)
     with open(cov_output, "w", encoding="utf-8") as covout:
         for win_size, prefix in zip(COV_WINDOW_SIZES, PREFIXES):
             generate_cov_bed(coverage, win_size, prefix, covout)
 
-    print("Calculating BAFs from gvcf...", file=sys.stderr)
-    tmp_baf = f"{sample_id}.baf.tmp"
-    with open(tmp_baf, "w", encoding="utf-8") as tmpout:
-        gvcfvaf_main(gvcf, gnomad)
-        
-    with open(baf_output, "w", encoding="utf-8") as bafout:
-        for skip_n, prefix in zip(BAF_SKIP_N, PREFIXES):
-            print(f"Outputting BAF {prefix}...", file=sys.stderr)
-            generate_baf_bed(tmp_baf, skip_n, prefix, bafout)
+    # print("Calculating BAFs from gvcf...", file=sys.stderr)
+    # tmp_baf = f"{sample_id}.baf.tmp"
+    # with open(tmp_baf, "w", encoding="utf-8") as tmpout:
+    #     gvcfvaf_main(gvcf, gnomad, baf_output)
 
-    subprocess.run(["bgzip", "-f", "-@10", baf_output], check=True)
-    subprocess.run(["tabix", "-f", "-p", "bed", baf_output + ".gz"], check=True)
-    subprocess.run(["bgzip", "-f", "-@10", cov_output], check=True)
-    subprocess.run(["tabix", "-f", "-p", "bed", cov_output + ".gz"], check=True)
-    os.unlink(tmp_baf)
+    # with open(baf_output, "w", encoding="utf-8") as bafout:
+    #     for skip_n, prefix in zip(BAF_SKIP_N, PREFIXES):
+    #         print(f"Outputting BAF {prefix}...", file=sys.stderr)
+    #         generate_baf_bed(tmp_baf, skip_n, prefix, bafout)
+
+    # subprocess.run(["bgzip", "-f", "-@10", str(baf_output)], check=True)
+    # subprocess.run(["tabix", "-f", "-p", "bed", str(baf_output) + ".gz"], check=True)
+    # subprocess.run(["bgzip", "-f", "-@10", str(cov_output)], check=True)
+    # subprocess.run(["tabix", "-f", "-p", "bed", str(cov_output) + ".gz"], check=True)
+    # os.unlink(tmp_baf)
 
 
 def mean(values: Iterable[float]) -> float:
@@ -64,70 +65,68 @@ def generate_baf_bed(fn: str, skip: int, prefix: str, out_fh: TextIO) -> None:
                 out_fh.write(f"{prefix}_{chrom}\t{int(pos) - 1}\t{pos}\t{val}\n")
 
 
-def generate_cov_bed(fn: str, win_size: int, prefix: str, out_fh: TextIO) -> None:
+class Region:
+    def __init__(self, chr: str, start: int, end: int):
+        self.chrom = chr
+        self.start = start
+        self.end = end
+
+
+def generate_cov_bed(cov_file: Path, win_size: int, prefix: str, out_fh: TextIO) -> None:
     """Convert standardized coverage to Gens bed format."""
-    reg_start = None
-    reg_end = None
-    reg_chr = None
+    active_region = None
     force_end = False
     reg_ratios: list[float] = []
 
-    with open(fn, "r", encoding="utf-8") as fh:
+    with open(cov_file, "r", encoding="utf-8") as fh:
         for line in fh:
             if line.startswith("@") or line.startswith("CONTIG"):
                 continue
-            chr_, start_str, end_str, ratio_str = line.rstrip().split("\t")
-            start = int(start_str)
-            end = int(end_str)
-            ratio = float(ratio_str)
-            orig_end = end
 
-            if reg_start is None:
-                reg_start = start
-                reg_end = end
-                reg_chr = chr_
+            chrom, start_str, end_str, ratio_str = line.rstrip().split("\t")
+            curr = Region(chrom, int(start_str), int(end_str))
+            orig_end = curr.end
+            curr_ratio = float(ratio_str)
 
-            if chr_ == reg_chr:
-                if start - reg_end < win_size:
-                    reg_ratios.append(ratio)
-                    reg_end = end
-                else:
-                    force_end = True
-                    end = reg_end
+            if not active_region:
+                active_region = Region(curr.chrom, curr.start, curr.end)
+
+            # Are we still within the target window size?
+            if chrom == active_region.chrom and curr.start - active_region.end < win_size:
+                reg_ratios.append(curr_ratio)
+                active_region.end = curr.end
             else:
+                # If not, then finish the current window
                 force_end = True
-                end = reg_end
+                curr.end = active_region.end
 
-            if reg_start is not None and ((end - reg_start + 1) >= win_size or force_end):
-                mid_point = reg_start + (end - reg_start) // 2
+            curr_window_size = curr.end - active_region.start + 1
+            if curr_window_size >= win_size or force_end:
+                mid_point = active_region.start + (curr.end - active_region.start) // 2
                 out_fh.write(
-                    f"{prefix}_{reg_chr}\t{mid_point - 1}\t{mid_point}\t{mean(reg_ratios)}\n"
+                    f"{prefix}_{active_region.chrom}\t{mid_point - 1}\t{mid_point}\t{mean(reg_ratios)}\n"
                 )
-                reg_start = reg_end = reg_chr = None
+                active_region = None
                 reg_ratios = []
 
             if force_end:
-                reg_start = start
-                reg_end = orig_end
-                reg_chr = chr_
-                reg_ratios.append(ratio)
+                active_region = Region(chrom, curr.start, orig_end)
+                reg_ratios.append(curr_ratio)
                 force_end = False
-
-
-
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Generate Gens BAF and coverage data")
-    parser.add_argument("coverage", help="Standardized coverage file")
-    parser.add_argument("gvcf", help="Input gVCF file")
-    parser.add_argument("sample_id", help="Sample identifier")
-    parser.add_argument("gnomad", help="File with gnomAD SNP positions")
+    parser.add_argument("--coverage", help="Standardized coverage file", required=True, type=Path)
+    parser.add_argument("--gvcf", help="Input gVCF file", required=True, type=Path)
+    parser.add_argument("--sample_id", help="Sample identifier", required=True)
+    parser.add_argument("--gnomad", help="File with gnomAD SNP positions", required=True, type=Path)
+    parser.add_argument("--outdir", help="Output dir", required=True, type=Path)
     args = parser.parse_args()
     return args
 
 
 if __name__ == "__main__":
     args = parse_arguments()
-    main(args.sample_id, args.coverage, args.gvcf, args.gnomad)
 
+    main(args.sample_id, args.coverage, args.gvcf, args.gnomad, args.outdir)
