@@ -202,12 +202,18 @@ def parse_gvcfvaf(gvcf_file: Path, gnomad_file: Path, out_fh: TextIO) -> None:
                 if entry.is_indel():
                     continue
 
-                if "AD" in entry.sample_entries:
+                if not entry.pass_depth_filter(10):
                     continue
 
-                parsed_baf = entry.parse_b_allele_freq()
+                if "AD" not in entry.sample_entries:
+                    baf_freq = 0
+                else:
+                    parsed_baf = entry.parse_b_allele_freq()
+                    if parsed_baf is None:
+                        continue
+                    baf_freq = parsed_baf
 
-                print(f"{chrom}\t{pos}\t{parsed_baf}", file=out_fh)
+                print(f"{chrom}\t{pos}\t{baf_freq}", file=out_fh)
                 match_count += 1
         skipped = gvcf_count - match_count
         print(f"{skipped} variants skipped!", file=sys.stderr)
@@ -219,6 +225,7 @@ class GVCFEntry:
         self.chrom = cols[0]
         self.start = int(cols[1])
         self.ref = cols[3]
+        self.alt_alleles = cols[4].split(",")
         self.info_str = cols[7]
         sample_keys = cols[8].split(":")
         sample_vals = cols[9].split(":")
@@ -228,8 +235,13 @@ class GVCFEntry:
     def is_indel(self):
         return len(self.ref) > 1
 
+    def pass_depth_filter(self, depth_filter: int) -> bool:
+        depth = self.sample_entries.get("DP")
+        if not depth:
+            return False
+        return int(depth) >= depth_filter
 
-    def parse_b_allele_freq(self):
+    def parse_b_allele_freq(self) -> Optional[float]:
 
         gt = self.sample_entries["GT"]
         _ref_str, alt_str = gt.replace("|", "/").split("/")
@@ -237,9 +249,14 @@ class GVCFEntry:
         
         allele_depths = [int(d) for d in self.sample_entries["AD"].split(",")]
         if alt != 0:
+            if alt > len(self.alt_alleles):
+                return None            
+            alt_allele_length = len(self.alt_alleles[alt - 1])
+            if alt_allele_length > 1:
+                return None
             alt_count = allele_depths[alt]
         else:
-            print("Is this ever triggered?")
+            # print("Is this ever triggered?")
             alt_count = max(allele_depths[1:])
         
         dp = int(self.sample_entries["DP"])
