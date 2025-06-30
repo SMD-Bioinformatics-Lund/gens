@@ -7,12 +7,16 @@ from utils.generate_gens_data import generate_baf_bed, generate_cov_bed, parse_g
 
 def test_generate_baf_bed(tmp_path: Path):
     baf_file = tmp_path / "input.baf"
-    baf_file.write_text("\n".join([
-        "chr1\t10\t0.1",
-        "chr1\t20\t0.2",
-        "chr1\t30\t0.3",
-        "chr1\t40\t0.4",
-    ]))
+    baf_file.write_text(
+        "\n".join(
+            [
+                "chr1\t10\t0.1",
+                "chr1\t20\t0.2",
+                "chr1\t30\t0.3",
+                "chr1\t40\t0.4",
+            ]
+        )
+    )
 
     output = io.StringIO()
     generate_baf_bed(str(baf_file), skip=2, prefix="x", out_fh=output)
@@ -26,12 +30,16 @@ def test_generate_baf_bed(tmp_path: Path):
 
 def test_generate_cov_bed(tmp_path: Path):
     cov_file = tmp_path / "input.cov"
-    cov_file.write_text("\n".join([
-        "chr1\t1\t50\t0.1",
-        "chr1\t51\t100\t0.2",
-        "chr1\t101\t150\t0.4",
-        "chr1\t151\t200\t0.6",
-    ]))
+    cov_file.write_text(
+        "\n".join(
+            [
+                "chr1\t1\t50\t0.1",
+                "chr1\t51\t100\t0.2",
+                "chr1\t101\t150\t0.4",
+                "chr1\t151\t200\t0.6",
+            ]
+        )
+    )
 
     output = io.StringIO()
     generate_cov_bed(cov_file, win_size=100, prefix="x", out_fh=output)
@@ -45,11 +53,15 @@ def test_generate_cov_bed(tmp_path: Path):
 
 def test_generate_cov_bed_gap_and_chromosome(tmp_path: Path):
     cov_file = tmp_path / "gap.cov"
-    cov_file.write_text("\n".join([
-        "chr1\t1\t60\t0.1",
-        "chr2\t1\t50\t0.2",
-        "chr2\t51\t100\t0.4",
-    ]))
+    cov_file.write_text(
+        "\n".join(
+            [
+                "chr1\t1\t60\t0.1",
+                "chr2\t1\t50\t0.2",
+                "chr2\t51\t100\t0.4",
+            ]
+        )
+    )
 
     output = io.StringIO()
     generate_cov_bed(cov_file, win_size=100, prefix="x", out_fh=output)
@@ -62,10 +74,14 @@ def test_generate_cov_bed_gap_and_chromosome(tmp_path: Path):
 
 def test_generate_cov_bed_incomplete_window(tmp_path: Path):
     cov_file = tmp_path / "incomplete.cov"
-    cov_file.write_text("\n".join([
-        "chr1\t1\t50\t0.1",
-        "chr1\t51\t90\t0.2",
-    ]))
+    cov_file.write_text(
+        "\n".join(
+            [
+                "chr1\t1\t50\t0.1",
+                "chr1\t51\t90\t0.2",
+            ]
+        )
+    )
 
     output = io.StringIO()
     generate_cov_bed(cov_file, win_size=100, prefix="x", out_fh=output)

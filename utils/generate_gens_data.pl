@@ -47,7 +47,7 @@ system("bgzip -f -\@10 $BAF_OUTPUT");
 system("tabix -f -p bed $BAF_OUTPUT.gz");
 system("bgzip -f -\@10 $COV_OUTPUT");
 system("tabix -f -p bed $COV_OUTPUT.gz");
-# unlink($SAMPLE_ID.".baf.tmp");
+unlink($SAMPLE_ID.".baf.tmp");
 
 sub generate_baf_bed {
 	my( $fn, $skip, $prefix ) = @_;
