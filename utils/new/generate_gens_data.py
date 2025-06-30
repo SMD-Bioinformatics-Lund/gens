@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import math
 import os
 import re
 import sys
@@ -12,6 +13,24 @@ import statistics
 import subprocess
 from pathlib import Path
 from typing import Iterable, Optional, TextIO
+
+DESCRIPTION = """
+Generate Gens BAF and coverage data
+
+BAF: Given a set of predefined coordinates (i.e. common variants in Gnomad). Look through a gVCF.
+For SNVs in those positions, check the alternative allele frequency.
+
+Coverage: Given a per-range coverage file. Given certain window sizes, calculate the average coverage within 
+these larger ranges.
+
+Both yields bed files on different levels of resolutions.
+
+Resolutions for coverage files are calculated by using different window sizes.
+
+Resolution for BAF files are calculated by sub-sampling the BAF.
+"""
+
+VERSION = "1.0.0"
 
 CHR_ORDER = [
     "1",
@@ -45,6 +64,7 @@ CHR_ORDER_MAP = {c: i for i, c in enumerate(CHR_ORDER)}
 COV_WINDOW_SIZES = [100000, 25000, 5000, 1000, 100]
 BAF_SKIP_N = [160, 40, 10, 4, 1]
 PREFIXES = ["o", "a", "b", "c", "d"]
+BAF_MIN_DEPTH = 10
 
 
 def main(sample_id: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path) -> None:
@@ -54,10 +74,10 @@ def main(sample_id: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path
     cov_output = out_dir / f"{sample_id}.cov.bed"
     baf_output = out_dir / f"{sample_id}.baf.bed"
 
-    # print("Calculating coverage data", file=sys.stderr)
-    # with open(cov_output, "w", encoding="utf-8") as covout:
-    #     for win_size, prefix in zip(COV_WINDOW_SIZES, PREFIXES):
-    #         generate_cov_bed(coverage, win_size, prefix, covout)
+    print("Calculating coverage data", file=sys.stderr)
+    with open(cov_output, "w", encoding="utf-8") as covout:
+        for win_size, prefix in zip(COV_WINDOW_SIZES, PREFIXES):
+            generate_cov_bed(coverage, win_size, prefix, covout)
 
     print("Calculating BAFs from gvcf...", file=sys.stderr)
     tmp_baf = out_dir / f"{sample_id}.baf.tmp"
@@ -69,17 +89,11 @@ def main(sample_id: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path
             print(f"Outputting BAF {prefix}...", file=sys.stderr)
             generate_baf_bed(str(tmp_baf), skip_n, prefix, bafout)
 
-    # subprocess.run(["bgzip", "-f", "-@10", str(baf_output)], check=True)
-    # subprocess.run(["tabix", "-f", "-p", "bed", str(baf_output) + ".gz"], check=True)
-    # subprocess.run(["bgzip", "-f", "-@10", str(cov_output)], check=True)
-    # subprocess.run(["tabix", "-f", "-p", "bed", str(cov_output) + ".gz"], check=True)
-    # os.unlink(tmp_baf)
-
-
-def mean(values: Iterable[float]) -> float:
-    """Return the mean of an iterable of floats."""
-    seq = list(values)
-    return statistics.fmean(seq) if seq else 0.0
+    subprocess.run(["bgzip", "-f", "-@10", str(baf_output)], check=True)
+    subprocess.run(["tabix", "-f", "-p", "bed", str(baf_output) + ".gz"], check=True)
+    subprocess.run(["bgzip", "-f", "-@10", str(cov_output)], check=True)
+    subprocess.run(["tabix", "-f", "-p", "bed", str(cov_output) + ".gz"], check=True)
+    os.unlink(tmp_baf)
 
 
 def generate_baf_bed(fn: str, skip: int, prefix: str, out_fh: TextIO) -> None:
@@ -92,13 +106,6 @@ def generate_baf_bed(fn: str, skip: int, prefix: str, out_fh: TextIO) -> None:
                     continue
                 chrom, pos, val = parts
                 out_fh.write(f"{prefix}_{chrom}\t{int(pos) - 1}\t{pos}\t{val}\n")
-
-
-class Region:
-    def __init__(self, chr: str, start: int, end: int):
-        self.chrom = chr
-        self.start = start
-        self.end = end
 
 
 def generate_cov_bed(cov_file: Path, win_size: int, prefix: str, out_fh: TextIO) -> None:
@@ -133,7 +140,7 @@ def generate_cov_bed(cov_file: Path, win_size: int, prefix: str, out_fh: TextIO)
             if curr_window_size >= win_size or force_end:
                 mid_point = active_region.start + (curr.end - active_region.start) // 2
                 out_fh.write(
-                    f"{prefix}_{active_region.chrom}\t{mid_point - 1}\t{mid_point}\t{mean(reg_ratios)}\n"
+                    f"{prefix}_{active_region.chrom}\t{mid_point - 1}\t{mid_point}\t{statistics.mean(reg_ratios)}\n"
                 )
                 active_region = None
                 reg_ratios = []
@@ -142,28 +149,6 @@ def generate_cov_bed(cov_file: Path, win_size: int, prefix: str, out_fh: TextIO)
                 active_region = Region(chrom, curr.start, orig_end)
                 reg_ratios.append(curr_ratio)
                 force_end = False
-
-
-def gvcf_region(line: str) -> Region:
-    cols = line.rstrip().split("\t")
-    match = re.search(r"(?:^|;)END=(.*?)(?:;|$)", cols[7])
-    end = int(match.group(1)) if match else int(cols[1])
-    return Region(
-        cols[0],
-        int(cols[1]),
-        end
-    )
-
-
-def chr_less(chr1: str, chr2: str) -> bool:
-    return CHR_ORDER_MAP.get(chr1, 1e9) < CHR_ORDER_MAP.get(chr2, 1e9)
-
-
-
-def chr_position_less(chr1: str, pos1: int, chr2: str, pos2: int) -> bool:
-    if chr1 == chr2:
-        return pos1 < pos2
-    return chr_less(chr1, chr2)
 
 
 def parse_gvcfvaf(gvcf_file: Path, gnomad_file: Path, out_fh: TextIO) -> None:
@@ -186,45 +171,45 @@ def parse_gvcfvaf(gvcf_file: Path, gnomad_file: Path, out_fh: TextIO) -> None:
                 continue
 
             gvcf_count += 1
-
             gvcf_pos: Region = gvcf_region(gvcf_line)
-
-            # if gvcf_pos.start > 8525612:
-            #     break
-
             position_key = f"{gvcf_pos.chrom}_{gvcf_pos.start}"
-
             if position_key not in gnomad_positions:
                 continue
 
             entry = GVCFEntry(gvcf_line)
-
-            # print(f"Working with entry {entry} {gvcf_line.rstrip()}")
-
-            if entry.is_indel():
-                # print("Is indel")
+            if len(entry.ref) > 1:
                 continue
 
             if "AD" not in entry.sample_entries:
-                # print("No AD")
                 baf_freq = 0
-            elif not entry.pass_depth_filter(10):
-                # baf_freq = 0
+            elif not entry.pass_depth_filter(BAF_MIN_DEPTH):
                 continue
             else:
-                # print("Parsing baf")
                 parsed_baf = entry.parse_b_allele_freq()
                 if parsed_baf is None:
-                    # print("No baf")
                     continue
                 baf_freq = parsed_baf
 
-            #print(f"> {gvcf_pos.chrom}\t{gvcf_pos.start}\t{baf_freq}")
-            print(f"{gvcf_pos.chrom}\t{gvcf_pos.start}\t{round(baf_freq, 3)}", file=out_fh)
+            print(f"{gvcf_pos.chrom}\t{gvcf_pos.start}\t{baf_freq}", file=out_fh)
             match_count += 1
-        
+
         skipped = gvcf_count - match_count
         print(f"{skipped} variants skipped!", file=sys.stderr)
+
+
+def gvcf_region(line: str) -> Region:
+    cols = line.rstrip().split("\t")
+    match = re.search(r"(?:^|;)END=(.*?)(?:;|$)", cols[7])
+    end = int(match.group(1)) if match else int(cols[1])
+    return Region(cols[0], int(cols[1]), end)
+
+
+class Region:
+    def __init__(self, chr: str, start: int, end: int):
+        self.chrom = chr
+        self.start = start
+        self.end = end
+
 
 class GVCFEntry:
     def __init__(self, line: str):
@@ -238,13 +223,6 @@ class GVCFEntry:
         sample_keys = cols[8].split(":")
         sample_vals = cols[9].split(":")
         self.sample_entries = dict(zip(sample_keys, sample_vals))
-    
-    def __str__(self) -> str:
-        return f"{self.chrom} {self.start} {self.ref} {",".join(self.alt_alleles)}"
-
-
-    def is_indel(self):
-        return len(self.ref) > 1
 
     def pass_depth_filter(self, depth_filter: int) -> bool:
         depth = self.sample_entries.get("DP")
@@ -260,26 +238,29 @@ class GVCFEntry:
         gt = self.sample_entries["GT"]
         _ref_str, alt_str = gt.replace("|", "/").split("/")
         alt = int(alt_str)
-        
+
         allele_depths = [int(d) for d in self.sample_entries["AD"].split(",")]
         if alt != 0:
             if alt > len(self.alt_alleles):
-                return None            
+                return None
             alt_allele_length = len(self.alt_alleles[alt - 1])
             if alt_allele_length > 1:
                 return None
             alt_count = allele_depths[alt]
         else:
-            # print("Is this ever triggered?")
             alt_count = max(allele_depths[1:])
-        
+
         dp = int(self.sample_entries["DP"])
         b_allele_freq = alt_count / dp
         return b_allele_freq
 
+    def __str__(self) -> str:
+        return f"{self.chrom} {self.start} {self.ref} {",".join(self.alt_alleles)}"
+
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Generate Gens BAF and coverage data")
+    parser = argparse.ArgumentParser(description=DESCRIPTION)
+    parser.add_argument("-v", "--version", action="version", version=VERSION)
     parser.add_argument("--coverage", help="Standardized coverage file", required=True, type=Path)
     parser.add_argument("--gvcf", help="Input gVCF file", required=True, type=Path)
     parser.add_argument("--sample_id", help="Sample identifier", required=True)
