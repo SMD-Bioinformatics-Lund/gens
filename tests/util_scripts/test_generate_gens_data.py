@@ -100,8 +100,10 @@ def test_parse_gvcfvaf(tmp_path: Path, capsys):
     gnomad_file = tmp_path / "gnomad.tsv"
     gnomad_file.write_text("\n".join(["1\t10", "1\t20", "1\t30"]))
 
+    depth_threshold = 10
+
     output = io.StringIO()
-    parse_gvcfvaf(gvcf_file, gnomad_file, output)
+    parse_gvcfvaf(gvcf_file, gnomad_file, output, depth_threshold)
     captured = capsys.readouterr()
 
     assert output.getvalue().splitlines() == [
