@@ -1,12 +1,7 @@
 import io
 from pathlib import Path
 
-from utils.new.generate_gens_data import mean, generate_baf_bed, generate_cov_bed
-
-
-def test_mean():
-    assert mean([1, 2, 3]) == 2.0
-    assert mean([]) == 0.0
+from utils.generate_gens_data import generate_baf_bed, generate_cov_bed
 
 
 def test_generate_baf_bed(tmp_path: Path):

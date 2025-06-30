@@ -5,14 +5,13 @@ from __future__ import annotations
 
 import argparse
 import gzip
-import math
 import os
 import re
 import sys
 import statistics
 import subprocess
 from pathlib import Path
-from typing import Iterable, Optional, TextIO
+from typing import Optional, TextIO
 
 DESCRIPTION = """
 Generate Gens BAF and coverage data
