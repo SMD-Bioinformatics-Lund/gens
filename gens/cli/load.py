@@ -38,11 +38,8 @@ from gens.db.collections import (
 from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
 from gens.load.annotations import (
-    fmt_aed_to_annotation,
     fmt_bed_to_annotation,
-    parse_aed_file,
     parse_bed_file,
-    parse_tsv_file,
 )
 from gens.load.chromosomes import build_chromosomes_obj, get_assembly_info
 from gens.load.meta import parse_meta_file
@@ -97,11 +94,7 @@ def load() -> None:
     required=True,
     help="Id of case",
 )
-@click.option(
-    "--institute",
-    required=False,
-    help="Institute of the sample"
-)
+@click.option("--institute", required=False, help="Institute of the sample")
 @click.option(
     "-j",
     "--overview-json",
@@ -271,12 +264,7 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
 
         try:
             parse_recs_res = parse_raw_records(
-                file_format,
-                is_tsv,
-                file,
-                ignore_errors,
-                track_result,
-                genome_build
+                file_format, is_tsv, file, ignore_errors, track_result, genome_build
             )
         except ValueError as err:
             click.secho(
@@ -287,7 +275,9 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
 
         if len(parse_recs_res.file_meta) > 0:
             LOG.debug("Updating existing annotation track with metadata from file.")
-            update_annotation_track(track_id=track_result.track_id, metadata=parse_recs_res.file_meta, db=db)
+            update_annotation_track(
+                track_id=track_result.track_id, metadata=parse_recs_res.file_meta, db=db
+            )
 
         if len(parse_recs_res.records) == 0:
             delete_annotation_track(track_result.track_id, db)  # cleanup

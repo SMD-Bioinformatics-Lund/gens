@@ -4,7 +4,9 @@ import logging
 
 import click
 
+from gens.cli.util.util import db_setup
 from gens.config import settings
+from gens.db.collections import ALL_COLLECTIONS
 from gens.db.db import get_db_connection
 from gens.db.index import create_indexes, update_indexes
 
@@ -21,12 +23,7 @@ LOG = logging.getLogger(__name__)
 @click.option("-u", "--update", help="Update the indexes", is_flag=True)
 def index(build: bool, update: bool) -> None:
     """Create indexes for the database."""
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
+    db = db_setup(ALL_COLLECTIONS)
 
     if update:
         n_updated = update_indexes(db)

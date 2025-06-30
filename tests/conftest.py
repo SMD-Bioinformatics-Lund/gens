@@ -20,9 +20,44 @@ def data_path():
 
 
 @pytest.fixture()
-def aed_file_path(data_path: Path) -> Path:
-    """Get path to AED test file from Chas."""
-    return data_path.joinpath("chas.aed")
+def aed_file_path(tmp_path: Path) -> Path:
+    """Return path to a small AED file used in tests."""
+
+    header = "\t".join(
+        [
+            "sequence(aed:Sequence)",
+            "start(aed:Integer)",
+            "end(aed:Integer)",
+            "name(aed:String)",
+            "color(aed:Color)",
+            "note(aed:String)",
+        ]
+    )
+
+    metadata = "\n".join(
+        [
+            "\t\t\tsource(aed:String)\tgens",
+            "\t\t\tversion(aed:String)\t1",
+            "\t\t\tmaintainer(aed:String)\ttest",
+            "\t\t\tcomment(aed:String)\tdata",
+        ]
+    )
+
+    records = "\n".join(
+        [
+            "chr1\t10001\t11372343\t1p36 deletion syndrome, distal\trgb(204,0,0)\tnote",
+            "chr1\t20001\t30000\tsecond\trgb(0,204,0)\t-",
+            "chr2\t40001\t50000\tthird\trgb(0,0,204)\t-",
+            "chr3\t60001\t70000\tfourth\trgb(0,0,0)\t-",
+            "chrX\t80001\t90000\tfifth\trgb(128,128,128)\t-",
+        ]
+    )
+
+    file_content = "\n".join([header, metadata, records]) + "\n"
+
+    file_path = tmp_path / "chas.aed"
+    file_path.write_text(file_content)
+    return file_path
 
 
 @pytest.fixture()
@@ -55,12 +90,9 @@ def db() -> mongomock.Database:
     return client.get_database("test")
 
 
-
-
-
 @pytest.fixture()
 def patch_cli(
-    monkeypatch: pytest.MonkeyPatch, db
+    monkeypatch: pytest.MonkeyPatch, db: mongomock.Database
 ) -> Callable[[str | types.ModuleType], None]:
     
     # Patch out cli indexing commands
@@ -69,13 +101,9 @@ def patch_cli(
             monkeypatch.setattr(
                 f"{module}.get_db_connection", lambda *a, **kw: db
             )
-            monkeypatch.setattr(f"{module}.get_indexes", lambda *a, **kw: [])
-            monkeypatch.setattr(f"{module}.create_index", lambda *a, **kw: None)
             monkeypatch.setattr(f"{module}.db_setup", lambda *a, **kw: db)
         else:
             monkeypatch.setattr(module, "get_db_connection", lambda *a, **kw: db)
-            monkeypatch.setattr(module, "get_indexes", lambda *a, **kw: [])
-            monkeypatch.setattr(module, "create_index", lambda *a, **kw: None)
             monkeypatch.setattr(module, "db_setup", lambda *a, **kw: db)
     return _patch
 
@@ -101,8 +129,8 @@ def cli_update(patch_cli) -> types.ModuleType:
     return module
 
 
-gens_app_stub: Any = types.ModuleType("gens.app")
-def _create_app():
-    return None
-gens_app_stub.create_app = _create_app
-sys.modules.setdefault("gens.app", gens_app_stub)
+@pytest.fixture
+def cli_index(patch_cli) -> types.ModuleType:
+    module = importlib.import_module("gens.cli.index")
+    patch_cli(module)
+    return module

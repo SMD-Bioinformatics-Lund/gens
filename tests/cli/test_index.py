@@ -1,53 +1,41 @@
+import logging
+from types import ModuleType
 import mongomock
-import pytest
-from gens.cli.index import index as index_cmd
+
+from gens.db.index import INDEXES
+
+LOG = logging.getLogger(__name__)
+
+def _index_name(model) -> str:
+    name = model.document.get("name")
+    if name:
+        return name
+    return "_".join(f"{field}_{order}" for field, order in model.document["key"])
 
 
-def test_index_creates_indexes(monkeypatch: pytest.MonkeyPatch, db):
-
-    client = mongomock.MongoClient()
-    db = client.get_database("test")
-
-    def fake_get_db(connection, db_name: str):
-        return db
-
-    called = {}
-
-    def fake_create_indexes(arg):
-        called["created"] = True
-        assert arg is db
-
-    monkeypatch.setattr("gens.cli.index.get_db_connection", fake_get_db)
-    monkeypatch.setattr("gens.cli.index.create_indexes", fake_create_indexes)
-    monkeypatch.setattr("gens.cli.index.update_indexes", lambda db: 0)
+def test_index_creates_indexes(cli_index: ModuleType, db: mongomock.Database):
+    """Ensure that the index command builds all indexes."""
     
-    assert index_cmd.callback is not None
+    cli_index.index.callback(build=True, update=False)
 
-    index_cmd.callback(build=True, update=False)
-    assert called.get("created")
+    for collection_name, models in INDEXES.items():
+        info = db.get_collection(collection_name).index_information()
+        for model in models:
+            assert _index_name(model) in info
 
 
-def test_index_updates_indexes(monkeypatch: pytest.MonkeyPatch, db):
-    client = mongomock.MongoClient()
-    db = client.get_database("test")
-    
-    def fake_get_db(connection, db_name: str):
-        return db
+def test_index_updates_indexes(cli_index: ModuleType, db: mongomock.Database):
+    """Ensure missing indexes are created when running update."""
 
-    called = {}
+    # Create first index for each collection
+    for collection_name, models in INDEXES.items():
+        db.get_collection(collection_name).create_indexes(models[1:])
 
-    def fake_update_indexes(arg):
-        called["updated"] = True
-        assert arg is db
-        return 1
+    cli_index.index.callback(build=False, update=True)
 
-    monkeypatch.setattr("gens.cli.index.get_db_connection", fake_get_db)
-    monkeypatch.setattr("gens.cli.index.update_indexes", fake_update_indexes)
-    monkeypatch.setattr("gens.cli.index.create_indexes", lambda db: None)
-
-    assert index_cmd.callback is not None
-
-    index_cmd.callback(build=False, update=True)
-    assert called.get("updated")
+    for collection_name, models in INDEXES.items():
+        info = db.get_collection(collection_name).index_information()
+        for model in models:
+            assert _index_name(model) in info
 
 
