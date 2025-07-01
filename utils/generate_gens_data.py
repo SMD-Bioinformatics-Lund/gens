@@ -66,17 +66,22 @@ PREFIXES = ["o", "a", "b", "c", "d"]
 BAF_MIN_DEPTH = 10
 
 
-def main(label: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path) -> None:
+def main(label: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path, bigwig: bool) -> None:
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
     cov_output = out_dir / f"{label}.cov.bed"
+    cov_bw_output = out_dir / f"{label}.cov.bw"
     baf_output = out_dir / f"{label}.baf.bed"
 
     print("Calculating coverage data", file=sys.stderr)
     with open(cov_output, "w", encoding="utf-8") as covout:
         for win_size, prefix in zip(COV_WINDOW_SIZES, PREFIXES):
             generate_cov_bed(coverage, win_size, prefix, covout)
+
+    if bigwig:
+        print("Generating coverage bigwig", file=sys.stderr)
+        bed_to_bigwig(cov_output, cov_bw_output)
 
     print("Calculating BAFs from gvcf...", file=sys.stderr)
     tmp_baf = out_dir / f"{label}.baf.tmp"
@@ -148,6 +153,46 @@ def generate_cov_bed(cov_file: Path, win_size: int, prefix: str, out_fh: TextIO)
                 active_region = Region(chrom, curr.start, orig_end)
                 reg_ratios.append(curr_ratio)
                 force_end = False
+
+
+def bed_to_bigwig(bed_file: Path, bw_file: Path) -> None:
+    chrom_sizes: dict[str, int] = {}
+    chrom_order: list[str] = []
+
+    d_only_bed = bed_file.parent / "d_only.bed"
+
+    with open(bed_file, "r", encoding="utf-8") as in_fh, open(d_only_bed, "w") as tmp_bed:
+        for line in in_fh:
+            line = line.rstrip()
+
+            if not line.startswith("d_"):
+                continue
+
+            zoom_chrom, start, end_str, val = line.split("\t")
+            chrom = zoom_chrom.split("_")[1]
+            end = int(end_str)
+            if chrom not in chrom_sizes:
+                chrom_sizes[chrom] = end
+                chrom_order.append(chrom)
+            elif end > chrom_sizes[chrom]:
+                chrom_sizes[chrom] = end
+            
+            print(f"{chrom}\t{start}\t{end_str}\t{val}", file=tmp_bed)
+
+    
+    sizes_path = bed_file.with_suffix(".sizes")
+    with open(sizes_path, "w", encoding="utf-8") as out_fh:
+        for zoom_chrom in chrom_order:
+            print(f"{zoom_chrom}\t{chrom_sizes[zoom_chrom]}", file=out_fh)
+    
+    subprocess.run([
+        "bedGraphToBigWig",
+        str(d_only_bed),
+        str(sizes_path),
+        str(bw_file),
+    ], check=True)
+
+    # os.unlink(sizes_path)
 
 
 def parse_gvcfvaf(gvcf_file: Path, gnomad_file: Path, out_fh: TextIO, depth_threshold: int) -> None:
@@ -280,6 +325,8 @@ def parse_arguments():
     parser.add_argument("--gvcf", help="gVCF file", required=True, type=Path)
     parser.add_argument("--gnomad", help="File with gnomAD SNP positions", required=True, type=Path)
     
+    parser.add_argument("--bigwig", help="Generate an additional bigwig file for coverage (requires bedGraphToBigWig in PATH)", action="store_true")
+
     parser.add_argument("--outdir", help="Output dir", required=True, type=Path)
     args = parser.parse_args()
     return args
@@ -288,4 +335,4 @@ def parse_arguments():
 if __name__ == "__main__":
     args = parse_arguments()
 
-    main(args.label, args.coverage, args.gvcf, args.gnomad, args.outdir)
+    main(args.label, args.coverage, args.gvcf, args.gnomad, args.outdir, args.bigwig)
