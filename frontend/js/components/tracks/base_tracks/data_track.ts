@@ -272,7 +272,10 @@ export abstract class DataTrack extends CanvasTrack {
         y1: 0,
         y2: this.dimensions.height,
       };
-      drawBox(this.ctx, box, { fillColor: band.color, alpha: 0.3 });
+      drawBox(this.ctx, box, {
+        fillColor: band.color,
+        alpha: STYLE.tracks.backgroundColorTransparency,
+      });
     }
 
     // Color fill Y axis area
@@ -317,7 +320,6 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected drawEnd() {
-
     // Restore the clipping
     this.ctx.restore();
 
