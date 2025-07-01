@@ -40,6 +40,7 @@ dependencies = [
   "gunicorn",
   "uvicorn",
   "asgiref",
+  "requests",
 ]
 
 [project.urls]
