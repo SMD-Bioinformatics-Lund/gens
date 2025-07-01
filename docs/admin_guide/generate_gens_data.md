@@ -21,7 +21,7 @@ gatk --java-options "-Xmx30g" DenoiseReadCounts                     \
     --denoised-copy-ratios subject.denoisedCR.tsv
 ```
 
-## Generate BAF data
+## Generate B-allele frequency (BAF) data
 
 It is possible to use the GATK tools to create BAF data as well, but we have found it to be very slow and since we are already doing (germline) variant calling, we extract the BAF data from the gVCF.
 
@@ -36,6 +36,17 @@ utils/generate_gens_data.pl subject.standardizedCR.tsv subject.gvcf SAMPLE_ID gn
 The script requires that **bgzip** and **tabix** are installed in a $PATH directory.
 
 The final output should be two files named: **SAMPLE_ID.baf.bed.gz** and **SAMPLE_ID.cov.bed.gz**
+
+A Python version of this script is available with argparse interface. This will eventually replace the Perl script shown above.
+
+```python3
+utils/generate_gens_data.py \
+    --coverage hg002.standardizedCR.tsv \
+    --gvcf hg002.dnascope.gvcf.gz \
+    --label hg002 \
+    --gnomad gnomad_hg38.0.05.txt \
+    --outdir output
+```
 
 ## Data format
 

@@ -20,9 +20,9 @@ User guide
 
 Admin guide
 
-- [Installation](docs/admin_guide/installation.md)
+- [Setup](docs/admin_guide/installation.md)
 - [Load data](docs/admin_guide/load_gens_data.md)
-- [Generate input data](docs/admin_guide/generate_gens_data.md)
+- [Generate sample data](docs/admin_guide/generate_gens_data.md)
 - [Panel of normals](docs/admin_guide/panel_of_normals.md)
 - [Configurations](docs/admin_guide/configure_gens.md)
 
