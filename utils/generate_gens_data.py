@@ -212,7 +212,8 @@ def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
         str(bw_file),
     ], check=True)
 
-    # os.unlink(sizes_path)
+    os.unlink(sizes_path)
+    os.unlink(d_only_bed)
 
 
 def parse_gvcfvaf(gvcf_file: Path, gnomad_file: Path, out_fh: TextIO, depth_threshold: int) -> None:
