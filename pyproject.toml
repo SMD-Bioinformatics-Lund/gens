@@ -28,24 +28,19 @@ classifiers = [
 dependencies = [
   "Click",
   "Flask",
-  "flask-caching",
   "flask_login",
   "authlib",
   "pymongo",
-  "gtfparse",
   "pysam",
-  "pyyaml",
-  "connexion==2.14.2",
   "fastapi",
   "flask-compress",
-  "tabulate",
   "pydantic[email]",
   "pydantic-settings",
   "pydantic-extra-types",
   "gunicorn",
-  "a2wsgi",
   "uvicorn",
   "asgiref",
+  "requests",
 ]
 
 [project.urls]
