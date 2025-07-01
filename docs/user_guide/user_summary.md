@@ -1,8 +1,6 @@
 # Quick summary
 
-Gens has two primary views. The sample page and the viewer page.
-
-The sample page lists all available cases. From here, a full case can be opened, or single samples. If set up, links to cases in external software (here: Scout).
+When open Gens, a list of all available cases is shown. From here, a full case can be opened, or single samples. If set up, links to cases in external software (here: Scout).
 
 <img src="../img/samples.PNG" width="800">
 
@@ -12,7 +10,7 @@ In the track view below chromosome 1 is inspected for a single sample. You see t
 
 <img src="../img/track_view.PNG" width="800">
 
-Open the chromosome view by clicking the chromosomes button:
+Open the multi-chromosomes view by clicking the chromosomes button:
 
 <img src="../img/settings_chromosomes.PNG" width="400">
 

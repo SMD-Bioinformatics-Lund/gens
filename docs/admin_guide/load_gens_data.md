@@ -8,20 +8,13 @@ gens load --help
 
 ## Chromosome sizes
 
-Gens requires the chromosome sizes to be loaded into the database. Running the load command automatically retrieves the chromosome sizes. The data is downloaded from Ensembl.
+Gens requires the chromosome sizes and information about bands and centromeres to be loaded into the database. Running the load command automatically retrieves the chromosome sizes. The data is downloaded from Ensembl.
 
 ```bash
 gens load chromosomes --genome-build 38
 ```
 
 This will fetch the karyotype for the selected build and replace any previous entries.
-
-If you already have the assembly stored locally you can provide it with `--file`. Note that centromere ranges
-needs to be added to the JSON compared to the one downloaded from the [REST API](http://rest.ensembl.org/info/assembly/homo_sapiens?bands=true&content-type=json&synonyms=true).
-
-```bash
-gens load chromosomes --genome-build 38 --file chromosomes_hg38.json
-```
 
 ## Gene information
 
@@ -41,11 +34,11 @@ Annotated regions can be loaded into the database in either `bed` or `aed` forma
 
 Each sample requires a coverage file and BAF file (both tabix indexed). Provide a sample ID, case ID and genome build when loading. 
 
-Sample type (proband/mother/father, tumor/normal) is needed when for Gens to understand what samples belong where in a case with multiple samples. 
+Sample type (proband/mother/father, tumor/normal) is needed in cases with multiple samples for Gens to understand what sample to handle as the "main" sample (i.e. display at top, show in overview plot / multi-chromosome view).
 
 Sex is not required but might enable optional functionalities in the future (such as adjusting sex chromosome coverage).
 
-Input files can be generated from the standardized coverage output and the gVCF using `utils/generate_gens_data.pl`. The script creates a pair of tabix indexed fiels named `<SAMPLE_ID>.cov.bed.gz` and `<SAMPLE_ID>.baf.bed.gz` which can be loaded into Gens.
+Input files can be generated from the standardized coverage output and the gVCF as described in the [generate sample data](./generate_gens_data.md) part of the README. The script creates a pair of tabix indexed fiels named `<SAMPLE_ID>.cov.bed.gz` and `<SAMPLE_ID>.baf.bed.gz` to be loaded into Gens.
 
 ```bash
 gens load sample \
@@ -63,7 +56,7 @@ gens load sample \
 
 Additionally, meta data can be loaded from long-format tsv files using the `--meta` flag.
 
-Metadata files are TSV formatted. Currently, the data is expected in long format, i.e. one entry per row.
+Metadata files are TSV formatted. Currently, the data is expected in long format, i.e. one entry per row. Wide-format might be more user friendly. Something for the future.
 
 They must contain at least the columns `type` and `value`. A column not named `type`, `value` or `color` is treated as the row name header.
 
@@ -84,7 +77,7 @@ gender   female
 library  PCR-free
 ```
 
-For example, to add metadata stoed in `SAMPLE1_meta.tsv`, run:
+For example, to add metadata stored in `SAMPLE1_meta.tsv`, run:
 
 ```bash
 gens load sample \
@@ -121,11 +114,61 @@ If a track with the same name already exists in the database, its annotations ar
 
 ### File formats
 
-FIXME
 
-* bed
-* aed
-* tsv - Mandatory headers: chromosome, start, stop, name. Optional: color, comments. Comments are ; separated
+#### Tsv format
+
+Specific headers are required. Optional columns are read by name. Case insensitive.
+
+Mandatory columns:
+
+* `chromosome`
+* `start`
+* `stop` (Or `end`)
+
+Non-mandatory columns:
+
+* `color` (Format: `"rgb(0,0,0)"`)
+* `comments` (Multiple comments can be separated using ";")
+
+Example:
+
+```
+sample	type	value	color		comments
+first	A	valA	rgb(1,2,3)	A comment
+second	B	valB	.		Another comment
+.	C	valC	rgb(4,5,6)	First; second
+```
+
+#### Bed format
+
+Follows the bed-standard (https://en.wikipedia.org/wiki/BED_(file_format)). Required fields are:
+
+* Chromosome (col1)
+* Start (col2)
+* End (col3)
+
+Non-mandatory but useful fields are:
+
+* Name (col4)
+* Color (col9, format: `"rgb(0,0,0)"`)
+
+Non-used columns can be filled with dots ".".
+
+Lines starting with comments are ignored.
+
+Example:
+
+```
+# A bed 9 file following the BED v1 spec, https://samtools.github.io/hts-specs/BEDv1.pdf
+# chrom	start	end	name	score	strand	thickStart	thickEnd	itemRgb
+1	809860	1565798	.	.	.	.	.	0,0,255
+1	852889	1616947	.	.	.	.	.	0,0,255
+
+```
+
+#### Aed format
+
+This is a custom format written by [ChAS](https://assets.thermofisher.com/TFS-Assets/LSG/manuals/ChAS_Manual.pdf).
 
 ### Loading annotations from UCSC
 
@@ -159,8 +202,3 @@ This should result in something like:
 [2023-12-15 14:45:41,873] INFO in load: Update height order
 Finished loading annotations ✔
 ```
-
-## Sample annotations
-
-## Sample meta data
-

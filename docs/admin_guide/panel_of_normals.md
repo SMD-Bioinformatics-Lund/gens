@@ -39,4 +39,4 @@ gatk --java-options "-Xmx120000m" CreateReadCountPanelOfNormals \
 
 ## Nf-core pipeline
 
-The nf-core pipeline [createpanelrefs](https://github.com/nf-core/createpanelrefs) can be used to prepare a panel of normals. (Disclaimer: We have not tried this out yet).
+The nf-core pipeline [createpanelrefs](https://github.com/nf-core/createpanelrefs) can be used to prepare a panel of normals.

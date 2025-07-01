@@ -1,6 +1,4 @@
-# Tracks view
-
-The tracks view displays information about a single chromosome.
+# Single-chromosome view
 
 * [Tracks](#tracks)
 * [Opening a case](#opening-a-case)
@@ -35,17 +33,15 @@ You can zoom using the buttons or the up/down arrow keys.
 
 You can also zoom into any area by pressing shift and dragging with the mouse.
 
-[FIXME]
-
 You can pan using the buttons or the left/right arrow keys. You can also press space and drag the mouse to pan.
 
 <img src="../img/controls_arrows.PNG" width="400">
 
-You can at any point reset the zoom to the current chromosome the button or "R" key.
+You can at any point reset the zoom to the current chromosome by clicking the reset button (top bar, between right pan and the search field) or "R" key.
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/navigation.gif" width="800">
 
-You can navigate between chromosomes by clicking the overview plot, or pressing control + arrows.
+You can navigate between chromosomes by clicking the overview plot at the bottom of the screen, or pressing control + arrows.
 
 You can also navigate directly to a position by typing out a chromosome + range in the search field and pressing search.
 
@@ -53,7 +49,7 @@ You can also navigate directly to a position by typing out a chromosome + range 
 
 ## Opening multiple samples
 
-When opening a full case, the view is similar, but will display BAF and coverage tracks for all included samples. Variant tracks for non-proband (i.e. mother / father) are available but hidden by default. Then can be shown in the settings menu (FIXME: see below).
+When opening a full case, the view is similar, but will display BAF and coverage tracks for all included samples. Variant tracks for non-proband (i.e. mother / father) are available but hidden by default. Then can be shown in the settings menu.
 
 <img src="../img/trio.PNG" width="800">
 
@@ -74,8 +70,6 @@ it expands to show all overlapping bands.
 
 The collapsed / expanded heights of tracks can be configured in the settings menu.
 
-[FIXME]
-
 ## Open the context menu
 
 Clicking any bands in the band tracks opens additional information. Here, a band in the annotation track is clicked.
@@ -92,17 +86,17 @@ You can select one annotation track to color the backgrounds of other tracks.
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/mimisbrunnr.gif" width="800">
 
-These settings persist when refreshing the page.
-
 ## Rearrange tracks
 
-Tracks can be rearranged by dragging the Y-axis. 
+Tracks can be rearranged by dragging the Y-axis (gray box at the left). 
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/dragging.gif" width="800">
 
 They can also be rearranged in the settings menu.
 
-## Adjust 
+## Adjust track heights
+
+Track heights (both collapsed and expanded) can be adjusted in the settings menu.
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/changing_height.gif" width="800">
 
