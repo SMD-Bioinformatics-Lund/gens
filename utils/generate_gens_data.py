@@ -71,17 +71,12 @@ def main(label: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path, bi
     out_dir.mkdir(parents=True, exist_ok=True)
 
     cov_output = out_dir / f"{label}.cov.bed"
-    cov_bw_output = out_dir / f"{label}.cov.bw"
     baf_output = out_dir / f"{label}.baf.bed"
 
     print("Calculating coverage data", file=sys.stderr)
     with open(cov_output, "w", encoding="utf-8") as covout:
         for win_size, prefix in zip(COV_WINDOW_SIZES, PREFIXES):
             generate_cov_bed(coverage, win_size, prefix, covout)
-
-    if bigwig:
-        print("Generating coverage bigwig", file=sys.stderr)
-        bed_to_bigwig(cov_output, cov_bw_output)
 
     print("Calculating BAFs from gvcf...", file=sys.stderr)
     tmp_baf = out_dir / f"{label}.baf.tmp"
@@ -93,11 +88,26 @@ def main(label: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path, bi
             print(f"Outputting BAF {prefix}...", file=sys.stderr)
             generate_baf_bed(str(tmp_baf), skip_n, prefix, bafout)
 
+    if bigwig:
+        cov_sizes = out_dir / f"{label}.cov.sizes"
+        baf_sizes = out_dir / f"{label}.baf.sizes"
+        cov_bw_output = out_dir / f"{label}.cov.bw"
+        baf_bw_output = out_dir / f"{label}.baf.bw"
+        print("Generating size files", file=sys.stderr)
+        write_chrom_sizes(cov_output, cov_sizes)
+        write_chrom_sizes(baf_output, baf_sizes)
+        print("Generating cov bigwig", file=sys.stderr)
+        gens_bed_to_bigwig(cov_output, cov_sizes, cov_bw_output)
+        print("Generating baf bigwig", file=sys.stderr)
+        gens_bed_to_bigwig(baf_output, baf_sizes, baf_bw_output)
+
+    print("Compressing bed files", file=sys.stderr)
     subprocess.run(["bgzip", "-f", "-@10", str(baf_output)], check=True)
     subprocess.run(["tabix", "-f", "-p", "bed", str(baf_output) + ".gz"], check=True)
     subprocess.run(["bgzip", "-f", "-@10", str(cov_output)], check=True)
     subprocess.run(["tabix", "-f", "-p", "bed", str(cov_output) + ".gz"], check=True)
     os.unlink(tmp_baf)
+
 
 
 def generate_baf_bed(fn: str, skip: int, prefix: str, out_fh: TextIO) -> None:
@@ -155,14 +165,11 @@ def generate_cov_bed(cov_file: Path, win_size: int, prefix: str, out_fh: TextIO)
                 force_end = False
 
 
-def bed_to_bigwig(bed_file: Path, bw_file: Path) -> None:
+def write_chrom_sizes(cov_bed_file: Path, out_path: Path) -> None:
     chrom_sizes: dict[str, int] = {}
     chrom_order: list[str] = []
-
-    d_only_bed = bed_file.parent / "d_only.bed"
-
-    with open(bed_file, "r", encoding="utf-8") as in_fh, open(d_only_bed, "w") as tmp_bed:
-        for line in in_fh:
+    with open(cov_bed_file, "r", encoding="utf-8") as cov_in_fh:
+        for line in cov_in_fh:
             line = line.rstrip()
 
             if not line.startswith("d_"):
@@ -176,15 +183,28 @@ def bed_to_bigwig(bed_file: Path, bw_file: Path) -> None:
                 chrom_order.append(chrom)
             elif end > chrom_sizes[chrom]:
                 chrom_sizes[chrom] = end
-            
-            print(f"{chrom}\t{start}\t{end_str}\t{val}", file=tmp_bed)
 
-    
-    sizes_path = bed_file.with_suffix(".sizes")
-    with open(sizes_path, "w", encoding="utf-8") as out_fh:
+    with open(out_path, "w", encoding="utf-8") as out_fh:
         for zoom_chrom in chrom_order:
             print(f"{zoom_chrom}\t{chrom_sizes[zoom_chrom]}", file=out_fh)
-    
+
+
+def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
+
+    d_only_bed = str(bed_file) + ".d_only"
+
+    with open(bed_file, "r", encoding="utf-8") as bed_in_fh, open(d_only_bed, "w") as tmp_cov_bed:
+        for line in bed_in_fh:
+            line = line.rstrip()
+
+            if not line.startswith("d_"):
+                continue
+
+            zoom_chrom, start, end_str, val = line.split("\t")
+            chrom = zoom_chrom.split("_")[1]
+
+            print(f"{chrom}\t{start}\t{end_str}\t{val}", file=tmp_cov_bed)
+
     subprocess.run([
         "bedGraphToBigWig",
         str(d_only_bed),
