@@ -8,6 +8,7 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Any, Literal
 
+import pyBigWig
 from pymongo.collection import Collection
 from pysam import TabixFile
 
@@ -72,6 +73,60 @@ def parse_raw_tabix(tabix_result: list[list[str]]) -> GenomeCoverage:
     )
 
 
+def bigwig_query(
+    bw: pyBigWig.pyBigWig,
+    zoom_level: ZoomLevel,
+    region: GenomicRegion,
+    max_bins: int = 2000,
+) -> GenomeCoverage:
+    """Query coverage from a bigwig file"""
+
+    chrom = (
+        region.chromosome.value if hasattr(region.chromosome, "value") else str(region.chromosome)
+    )
+
+    region_start = region.start
+    if not region_start:
+        raise ValueError("No region start", region_start)
+
+    bw_end = region.end or bw.chroms(chrom)
+    span = bw_end - region_start + 1
+    if span <= max_bins:
+        values = bw.values(chrom, region_start - 1, bw_end)
+        positions = list(range(region_start, bw_end + 1))
+    else:
+        values = bw.stats(chrom, region_start - 1, bw_end, nBins=max_bins)
+        step = span / max_bins
+        positions = [int(region_start + (i + 0.5) * step) for i in range(max_bins)]
+    values = [0.0 if v is None else float(v) for v in values]
+    return GenomeCoverage(region=chrom, zoom=zoom_level, position=positions, value=values)
+
+
+def bigwig_overview(bw: pyBigWig.pyBigWig, max_bins: int = 2000) -> list[GenomeCoverage]:
+    """Generate overview data from a bigwig file"""
+
+    results: list[GenomeCoverage] = []
+    chroms = bw.chroms()
+    for chrom in Chromosome:
+        if chrom.value not in chroms:
+            continue
+        chrom_len = chroms[chrom.value]
+        bins = max_bins if chrom_len > max_bins else chrom_len
+        values = bw.stats(chrom.value, 0, chrom_len, nBins=bins)
+        step = chrom_len / bins
+        positions = [int((i + 0.5) * step) for i in range(bins)]
+        values = [0.0 if v is None else float(v) for v in values]
+        results.append(
+            GenomeCoverage(
+                region=chrom.value,
+                zoom=ZoomLevel.O,
+                position=positions,
+                value=values
+            )
+        )
+    return results
+
+
 def get_scatter_data(
     collection: Collection[dict[str, Any]],
     sample_id: str,
@@ -85,9 +140,15 @@ def get_scatter_data(
     sample_obj = get_sample(collection, sample_id, case_id)
 
     if data_type == ScatterDataType.COV:
-        tabix_file = TabixFile(str(sample_obj.coverage_file))
+        file_path = sample_obj.coverage_file
     else:
-        tabix_file = TabixFile(str(sample_obj.baf_file))
+        file_path = sample_obj.baf_file
+
+    if file_path.suffix.lower in {".bw", ".bigwig"}:
+        with pyBigWig.open(str(file_path)) as bw:
+            return bigwig_query(bw, ZoomLevel(zoom_level), region)
+    else:
+        tabix_file = TabixFile(str(file_path))
 
     valid_zoom_levels = {"o", "a", "b", "c", "d"}
     if zoom_level not in valid_zoom_levels:
@@ -132,9 +193,15 @@ def get_overview_from_tabix(sample: SampleInfo, data_type: ScatterDataType) -> l
     """Generate overview data using the "o" resolution from bed files."""
 
     if data_type == ScatterDataType.COV:
-        tabix_file = TabixFile(str(sample.coverage_file))
+        file_path = sample.coverage_file
     else:
-        tabix_file = TabixFile(str(sample.baf_file))
+        file_path = sample.coverage_file
+
+    if file_path.suffix.lower() in {".bw", ".bigwig"}:
+        with pyBigWig.open(str(file_path)) as bw:
+            return bigwig_overview(bw)
+
+    tabix_file = TabixFile(str(file_path))
 
     results: list[GenomeCoverage] = []
     for chrom in Chromosome:

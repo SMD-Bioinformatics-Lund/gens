@@ -15,9 +15,13 @@ def _get_tabix_path(path: Path, check: bool = False) -> Path:
     """Get path to a tabix index.
 
     The index is assumed to be in the same location as the file."""
+
+    if path.suffix.lower() in {".bw", ".bigwig"}:
+        return path
+
     idx_path = path.with_suffix(path.suffix + ".tbi")
     if check and not idx_path.is_file():
-        raise FileNotFoundError("Index file: {idx_path} was not found.")
+        raise FileNotFoundError(f"Index file: {idx_path} was not found.")
     return idx_path
 
 
