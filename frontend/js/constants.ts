@@ -167,6 +167,7 @@ export const STYLE = {
     backgroundColor: COLORS.white,
     frameLineWidth: 2,
     trackHeight: TRACK_HEIGHTS,
+    backgroundColorTransparency: 0.1,
   },
   positionTrack: {
     sizePadFraction: 0.02,
