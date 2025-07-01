@@ -109,7 +109,6 @@ def main(label: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path, bi
     os.unlink(tmp_baf)
 
 
-
 def generate_baf_bed(fn: str, skip: int, prefix: str, out_fh: TextIO) -> None:
     """Write a downsampled BAF bed file."""
     with open(fn, "r", encoding="utf-8") as fh:
@@ -205,12 +204,15 @@ def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
 
             print(f"{chrom}\t{start}\t{end_str}\t{val}", file=tmp_cov_bed)
 
-    subprocess.run([
-        "bedGraphToBigWig",
-        str(d_only_bed),
-        str(sizes_path),
-        str(bw_file),
-    ], check=True)
+    subprocess.run(
+        [
+            "bedGraphToBigWig",
+            str(d_only_bed),
+            str(sizes_path),
+            str(bw_file),
+        ],
+        check=True,
+    )
 
     os.unlink(sizes_path)
     os.unlink(d_only_bed)
@@ -220,7 +222,7 @@ def parse_gvcfvaf(gvcf_file: Path, gnomad_file: Path, out_fh: TextIO, depth_thre
     """
     Calculate BAF frequencies for provided gnomad file positions
     Write position and BAF frequencies to file
-    
+
     Considerations:
     - Skip indels
     - If no alt-allele depth (AD) assigned (i.e. no call), set frequency 0
@@ -345,8 +347,12 @@ def parse_arguments():
     parser.add_argument("--coverage", help="Standardized coverage file", required=True, type=Path)
     parser.add_argument("--gvcf", help="gVCF file", required=True, type=Path)
     parser.add_argument("--gnomad", help="File with gnomAD SNP positions", required=True, type=Path)
-    
-    parser.add_argument("--bigwig", help="Generate an additional bigwig file for coverage (requires bedGraphToBigWig in PATH)", action="store_true")
+
+    parser.add_argument(
+        "--bigwig",
+        help="Generate additional bigwigs for coverage and baf (requires bedGraphToBigWig in PATH)",
+        action="store_true",
+    )
 
     parser.add_argument("--outdir", help="Output dir", required=True, type=Path)
     args = parser.parse_args()
