@@ -68,6 +68,16 @@ template.innerHTML = String.raw`
       padding: ${style.padding}px;
       overflow: hidden;
     }
+    #resize-handle {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: ${SIZES.xs}px;
+      height: 100%;
+      background: transparent;
+      cursor: ew-resize;
+      z-index: ${ZINDICES.sideMenu + 2}
+    }
     :host([drawer-open]) #settings-drawer {
       transform: translateX(0);
     }
@@ -111,6 +121,7 @@ template.innerHTML = String.raw`
     }
   </style>
   <div id="settings-drawer">
+    <div id="resize-handle"></div>
     <div id="content">
       <div id="header-row">
         <div id="header">Placeholder header</div>
@@ -131,6 +142,12 @@ export class SideMenu extends ShadowBaseElement {
   private header!: HTMLDivElement;
   private entries!: HTMLDivElement;
 
+  private resizeHandle: HTMLDivElement;
+  private isResizing: boolean = false;
+  private startX: number = 0;
+  private startWidth: number = 0;
+  private defaultWidth: number = STYLE.menu.width;
+
   constructor() {
     super(template);
   }
@@ -139,9 +156,39 @@ export class SideMenu extends ShadowBaseElement {
     this.removeAttribute("drawer-open");
   }
 
+  private readonly onResizeStart = (e: MouseEvent) => {
+    e.preventDefault();
+    this.isResizing = true;
+    this.startX = e.clientX;
+    this.startWidth = this.drawer.getBoundingClientRect().width;
+    document.addEventListener("mousemove", this.onResizeMove);
+    document.addEventListener("mouseup", this.onResizeEnd);
+  }
+
+  private readonly onResizeMove = (e: MouseEvent) => {
+    if (!this.isResizing) {
+      return;
+    }
+
+    const dx = this.startX - e.clientX;
+    const newWidth = this.startWidth + dx;
+    this.drawer.style.width = `${newWidth}px`;
+  }
+
+  private readonly onResizeEnd = () => {
+    if (!this.isResizing) {
+      return;
+    }
+
+    this.isResizing = false;
+    document.removeEventListener("mousemove", this.onResizeMove);
+    document.removeEventListener("mouseup", this.onResizeEnd);
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.drawer = this.root.querySelector("#settings-drawer") as HTMLElement;
+    this.resizeHandle = this.root.querySelector("#resize-handle") as HTMLDivElement;
     this.closeButton = this.root.querySelector(
       "#close-drawer",
     ) as HTMLButtonElement;
@@ -150,10 +197,12 @@ export class SideMenu extends ShadowBaseElement {
     this.entries = this.root.querySelector("#entries") as HTMLDivElement;
 
     this.closeButton.addEventListener("click", this.onCloseClick);
+    this.resizeHandle.addEventListener("mousedown", this.onResizeStart);
   }
 
   disconnectedCallback() {
     this.closeButton.removeEventListener("click", this.onCloseClick);
+    this.resizeHandle.removeEventListener("mousedown", this.onResizeStart);
   }
 
   open() {
@@ -167,6 +216,7 @@ export class SideMenu extends ShadowBaseElement {
     const isOpen = this.hasAttribute("drawer-open");
     if (isOpen) {
       this.removeAttribute("drawer-open");
+      this.drawer.style.width = `${this.defaultWidth}px`;
     }
   }
 
@@ -181,6 +231,8 @@ export class SideMenu extends ShadowBaseElement {
 
   showContent(header: string, content: HTMLElement[], width: number) {
     this.open();
+
+    this.defaultWidth = width;
 
     this.drawer.style.width = `${width}px`;
 
