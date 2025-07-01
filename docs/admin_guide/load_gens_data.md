@@ -202,8 +202,3 @@ This should result in something like:
 [2023-12-15 14:45:41,873] INFO in load: Update height order
 Finished loading annotations ✔
 ```
-
-## Sample annotations
-
-## Sample meta data
-
