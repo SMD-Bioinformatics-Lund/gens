@@ -39,15 +39,18 @@ The `dump` folder should contain:
 * Scout db dump
   * `hg002_variants.json`
 * Gens exports
-  * `hg00[234].baf.bed.gz`
-  * `hg00[234].baf.bed.gz.tbi`
-  * `hg00[234].cov.bed.gz`
-  * `hg00[234].cov.bed.gz.tbi`
-  * `hg00[234].overview.json.gz`
+  * Sample data
+    * `hg00[234].baf.bed.gz`
+    * `hg00[234].baf.bed.gz.tbi`
+    * `hg00[234].cov.bed.gz`
+    * `hg00[234].cov.bed.gz.tbi`
+    * `hg00[234].overview.json.gz`
+  * HG002 meta data
+      * `hg002_upd-roh.bed.gz`
+      * `hg002_meta.tsv`
+      * `hg002_chr_meta.tsv`
 * Annotation tracks
   * `annotation_tracks` (empty folder)
-
-FIXME: Add meta data as well for hg002
 
 In the moment of writing, this folder can be copied from: `/data/bnf/dev/jakob/data/gens_dump_hg002`.
 
@@ -101,7 +104,7 @@ gens index
 [gens] $ gens load chromosomes --genome-build 38
 ```
 
-- [ ] Load annotation track (aes, bed with header and bed without header)
+- [ ] Try loading annotation tracks. This should load successfully. Warnings fine, crashes are not.
 
 ```
 gens load annotations --file /dump/annotation_tracks --genome-build 38
@@ -138,7 +141,20 @@ gens load sample \
     --coverage /dump/hg002.cov.bed.gz \
     --overview-json /dump/hg002.overview.json.gz \
     --sample-type proband \
-    --sex M
+    --sex M \
+    --meta /dump/hg002_meta.tsv \
+    --meta /dump/hg002_chr_meta.tsv
+```
+
+Load the sample annotation track.
+
+```
+gens load sample-annotation \
+    --sample-id hg002-2 \
+    --case-id hg002-2 \
+    --genome-build 38 \
+    --file /dump/hg002_upd-roh.bed.gz \
+    --name "UPD and ROH"
 ```
 
 Load the parents as well.
