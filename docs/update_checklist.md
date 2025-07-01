@@ -208,23 +208,23 @@ Zooming in, and expanding tracks. Are details shown for the gene track?
 - [ ] Transcript labels centered for the transcripts
 - [ ] UTRs colored in gray
 
-<img src="https://ralfvanveen.com/wp-content/uploads/2021/06/Placeholder-_-Glossary-1200x675.webp" width=400 alt="Chromosomes view">
+<img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/update_checklist/genes_view.PNG" width=400 alt="Genes zoomed in">
 
 - [ ] Type "RNU4-2" into the search box. It should be localized in chromosome 12. Is it represented as a single blue block? (I.e. a non protein coding transcript)
 
-<img src="https://ralfvanveen.com/wp-content/uploads/2021/06/Placeholder-_-Glossary-1200x675.webp" width=400 alt="Chromosomes view">
+<img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/update_checklist/rnu4_2.PNG" width=400 alt="RNU zoomed in">
 
 ### Context menus
 
 Is content correctly displayed in the context menus for the different band tracks:
 
-- [ ] Annotation track. Click a mimisbrunnr track.
+- [ ] Annotation track. Click a mimisbrunnr band. Does the content look sane. In particular check the comments and metadata parts.
 
-<img src="https://ralfvanveen.com/wp-content/uploads/2021/06/Placeholder-_-Glossary-1200x675.webp" width=400 alt="Chromosomes view">
+<img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/update_checklist/mimis_annots.PNG" width=400 alt="Mimis side menu">
 
-- [ ] Variant bands
-- [ ] Gene bands
-- [ ] Sample annotation bands
+- [ ] Variant bands. Does the content look sane?
+- [ ] Gene bands. Does the content look sane?
+- [ ] Sample annotation bands. Does the content look sane?
 
 ### Navigation
 
@@ -246,8 +246,9 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Meta page opens without console errors
 - [ ] Meta page contains key-value information on proband
 - [ ] Meta page contains chromosome table
+- [ ] Drag the edge to expand and show the full table.
 
-<img src="https://ralfvanveen.com/wp-content/uploads/2021/06/Placeholder-_-Glossary-1200x675.webp" width=400 alt="Multiple chromosomes view">
+<img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/update_checklist/meta_side_page.PNG" width=400 alt="Meta">
 
 ### Settings
 
@@ -270,7 +271,7 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Coverage for all chromosomes is shown correctly
 - [ ] Sample annotation for chromosomes is shown correctly
 
-<img src="https://ralfvanveen.com/wp-content/uploads/2021/06/Placeholder-_-Glossary-1200x675.webp" width=400 alt="Multiple chromosomes view">
+<img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/chromosome_view.PNG" width=400 alt="Multiple chromosomes view">
 
 # Test on Gens dev
 
