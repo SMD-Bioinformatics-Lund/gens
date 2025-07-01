@@ -181,7 +181,6 @@ interface ApiVariantDetails {
   gatk: string;
   hgnc_ids: string[];
   hgnc_symbols: string[];
-  institute: string;
   genes: string[];
   length: number;
   missing_data: boolean;
