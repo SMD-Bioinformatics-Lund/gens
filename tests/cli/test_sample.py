@@ -49,7 +49,6 @@ def test_load_sample_cli(
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
-        institute="constitutional",
         overview_json=overview_file,
         meta_files=[meta_file_simple, meta_file_complex],
         sample_type="proband",
@@ -67,7 +66,6 @@ def test_load_sample_cli(
     assert Path(doc["coverage_file"]) == cov_file
     assert Path(doc["overview_file"]) == overview_file
     assert doc["sample_type"] == "proband"
-    assert doc["institute"] == "constitutional"
     assert len(doc["meta"]) == 2
 
     assert doc["meta"][0]["file_name"] == "meta_simple.tsv"
@@ -113,7 +111,6 @@ def test_load_sample_cli_with_string_genome_build_fails(
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
-        institute="institute",
         overview_json=overview_file,
         meta_files=[meta_file],
         sample_type="proband",
@@ -132,7 +129,6 @@ def test_load_sample_cli_with_string_genome_build_fails(
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
-        institute="institute",
         overview_json=overview_file,
         meta_files=[meta_file],
         sample_type="proband",
@@ -167,7 +163,6 @@ def test_update_sample_updates_document(
         baf_file=Path(__file__),
         coverage_file=Path(__file__),
         sample_type=None,
-        institute=None,
         sex=None,
         meta=[],
     )
@@ -185,7 +180,6 @@ def test_update_sample_updates_document(
         case_id="caseA",
         genome_build=GenomeBuild(19),
         sample_type="tumor",
-        institute="constitutional",
         sex=SampleSex("M"),
         meta_files=(meta_file,),
     )
@@ -196,7 +190,6 @@ def test_update_sample_updates_document(
     )
     assert doc is not None
     assert doc["sample_type"] == "tumor"
-    assert doc["institute"] == "constitutional"
     assert doc.get("sex") in ("M", SampleSex("M"), SampleSex.MALE)
 
     LOG.debug(doc)
@@ -220,7 +213,6 @@ def _build_sample() -> SampleInfo:
         genome_build=GenomeBuild(38),
         baf_file=Path(__file__),
         coverage_file=Path(__file__),
-        institute="constitutional",
     )
 
 

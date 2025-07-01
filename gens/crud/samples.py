@@ -120,7 +120,6 @@ def get_samples_per_case(
             "case_id": sample["case_id"],
             "sample_id": sample["sample_id"],
             "sample_type": sample.get("sample_type"),
-            "institute": sample.get("institute"),
             "sex": sample.get("sex"),
             "genome_build": sample["genome_build"],
             "has_overview_file": sample["overview_file"] is not None,
@@ -137,7 +136,7 @@ def get_sample(
     samples_c: Collection[dict[str, Any]],
     sample_id: str,
     case_id: str,
-    genome_build: GenomeBuild | None = None
+    genome_build: GenomeBuild | None = None,
 ) -> SampleInfo:
     """Get a sample with id."""
     sample_filter: dict[str, Any] = {
@@ -166,7 +165,6 @@ def get_sample(
         coverage_file=result["coverage_file"],
         overview_file=overview_file,
         sample_type=result.get("sample_type"),
-        institute=result.get("institute"),
         sex=result.get("sex"),
         meta=sample_meta,
         created_at=result["created_at"],

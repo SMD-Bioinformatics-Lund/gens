@@ -94,7 +94,6 @@ def load() -> None:
     required=True,
     help="Id of case",
 )
-@click.option("--institute", required=False, help="Institute of the sample")
 @click.option(
     "-j",
     "--overview-json",
@@ -127,7 +126,6 @@ def sample(
     baf: Path,
     coverage: Path,
     case_id: str,
-    institute: str | None,
     overview_json: Path,
     meta_files: tuple[Path, ...],
     sample_type: str | None,
@@ -146,7 +144,6 @@ def sample(
         {
             "sample_id": sample_id,
             "case_id": case_id,
-            "institute": institute,
             "genome_build": genome_build,
             "baf_file": baf,
             "coverage_file": coverage,

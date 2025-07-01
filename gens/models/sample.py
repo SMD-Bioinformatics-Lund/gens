@@ -82,7 +82,6 @@ class SampleInfo(RWModel, CreatedAtModel):
     coverage_file: FilePath
     overview_file: FilePath | None = None
     sample_type: str | None = None
-    institute: str | None = None
     sex: SampleSex | None = None
     meta: list[MetaEntry] = Field(default_factory=list)
 
