@@ -37,6 +37,7 @@ dependencies = [
   "pydantic[email]",
   "pydantic-settings",
   "pydantic-extra-types",
+  "numpy",
   "pybigwig",
   "gunicorn",
   "uvicorn",

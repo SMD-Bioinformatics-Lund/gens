@@ -5,6 +5,7 @@ import itertools
 import json
 import logging
 from fractions import Fraction
+import math
 from pathlib import Path
 from typing import Any, Literal
 
@@ -77,7 +78,8 @@ def bigwig_query(
     bw: pyBigWig.pyBigWig,
     zoom_level: ZoomLevel,
     region: GenomicRegion,
-    max_bins: int = 2000,
+    subsample: bool,
+    max_bins: int = 5000,
 ) -> GenomeCoverage:
     """Query coverage from a bigwig file"""
 
@@ -89,17 +91,46 @@ def bigwig_query(
     if not region_start:
         raise ValueError("No region start", region_start)
 
+    LOG.info(f">>> region.end {region.end}, bw.chroms {bw.chroms(chrom)}")
+
     bw_end = region.end or bw.chroms(chrom)
+
+    # FIXME: Supply chromosome sizes when creating the original bw
+    if bw_end > bw.chroms(chrom):
+        bw_end = bw.chroms(chrom)
     span = bw_end - region_start + 1
+
+
     if span <= max_bins:
-        values = bw.values(chrom, region_start - 1, bw_end)
+        values = bw.values(chrom, region_start, bw_end)
         positions = list(range(region_start, bw_end + 1))
     else:
-        values = bw.stats(chrom, region_start - 1, bw_end, nBins=max_bins)
+        # bw_end = 36709983
+        if subsample:
+            step = int(bw_end / max_bins)
+            LOG.info(f">>> bw.values({chrom}, {region_start}, {bw_end}, exact=True)")
+            arr = bw.values(chrom, region_start, bw_end)
+            LOG.info(f"arr length: {len(arr)}")
+            values = [arr[i * step] for i in range(max_bins)]
+        else:
+            values = bw.stats(chrom, region_start, bw_end, nBins=max_bins)
+        # LOG.info(f">>> values: {values}")
         step = span / max_bins
         positions = [int(region_start + (i + 0.5) * step) for i in range(max_bins)]
-    values = [0.0 if v is None else float(v) for v in values]
-    return GenomeCoverage(region=chrom, zoom=zoom_level, position=positions, value=values)
+    # values = [0.0 if v is None else float(v) for v in values]
+
+    return_vals = []
+    return_pos = []
+    for i in range(len(values)):
+        val = values[i]
+        pos = positions[i]
+        if val is not None and not math.isnan(val):
+            return_vals.append(val)
+            return_pos.append(pos)
+
+    LOG.info(f">>> {return_vals}")
+
+    return GenomeCoverage(region=chrom, zoom=zoom_level, position=return_pos, value=return_vals)
 
 
 def bigwig_overview(bw: pyBigWig.pyBigWig, max_bins: int = 2000) -> list[GenomeCoverage]:
@@ -144,9 +175,14 @@ def get_scatter_data(
     else:
         file_path = sample_obj.baf_file
 
-    if file_path.suffix.lower in {".bw", ".bigwig"}:
+    LOG.info(f">>> working with file_path {file_path}")
+    LOG.info(f">>> suffix {file_path.suffix}")
+
+    if file_path.suffix.lower() in {".bw", ".bigwig"}:
+        LOG.info(f">>> Inside bw branch")
         with pyBigWig.open(str(file_path)) as bw:
-            return bigwig_query(bw, ZoomLevel(zoom_level), region)
+            subsample =  data_type == ScatterDataType.BAF
+            return bigwig_query(bw, ZoomLevel(zoom_level), region, subsample)
     else:
         tabix_file = TabixFile(str(file_path))
 
