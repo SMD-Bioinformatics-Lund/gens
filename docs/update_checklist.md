@@ -24,13 +24,12 @@ $ cd gens_test
 
 A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/data/bnf/dev/jakob/data/gens_test_data`.
 
-Furthermore, current annotation tracks for testing can be copied from `/access/annotation_tracks`. Copy these into the folder `annotation_tracks` folder in the `dump` folder.
-
+Furthermore, current annotation tracks for testing can be copied from `/access/annotation_tracks`. Copy these into the folder `annotation_tracks` folder in the `dump` folder. Note - some of these contain sensitive data. Test loading all as a final step when running on Gens dev.
 
 ```
 # Note: ~1.6 GB
 rsync --bwlimit 20000 -avPh Trannel:/data/bnf/dev/jakob/data/gens_test_data dump
-rsync --bwlimit 20000 -avPh Trannel:/access/annotation_tracks/*{.aed,*.bed,*.tsv} test_dump/annotation_tracks
+rsync --bwlimit 20000 -avPh Trannel:/access/annotation_tracks/{Mimisbrunnr.Lund-hg38.aed,DECIPHER.DDG2P.250216-hg38.aed,IlluminaRL100.dark.gene.annotations-hg38.aed} test_dump/annotation_tracks
 ```
 
 This can be achieved by placing the `dump` folder in the repo and adding the following `docker-compose.override.yml`:
@@ -65,11 +64,11 @@ The `dump` folder should contain:
 
 ### Production settings for the front-end part
 
-In `gens/webpack.config.cjs`:
+In `webpack.config.cjs`:
 
 - [ ] Set `mode: 'production'`
 
-In `gens/tsconfig.json`:
+In `tsconfig.json`:
 
 - [ ] Turn off source map (used for debugging typescript): `sourceMap: false`
 - [ ] Build and copy the web assets
@@ -83,7 +82,7 @@ $ npm run buildcp
 - [ ] Build and start the containers
 
 ```
-$ docker-compose up -d --build
+$ docker compose -p gens_test up -d --build
 ```
 
 ### Setup the Scout database
@@ -91,11 +90,17 @@ $ docker-compose up -d --build
 - [ ] Import the Scout hg002 variant collection into mongo
 
 ```
-$ docker-compose exec mongodb /bin/bash
+$ docker compose -p gens_test exec mongodb /bin/bash
 [mongodb] $ mongoimport --db scout --collection variant /dump/hg002_variants.json
 ```
 
 # Testing the CLI
+
+Access the CLI by:
+
+```
+docker compose -p gens_test exec gens /bin/bash
+```
 
 ## Loading data
 

@@ -10,6 +10,7 @@ docker-compose.override.yml
 !tests/fixtures/*.aed
 !tests/fixtures/*.bed
 *Identifier
+test_dump/
 
 # python
 *.pyc

@@ -9,6 +9,7 @@ from pymongo.database import Database
 from gens.db.collections import SAMPLES_COLLECTION
 
 from .collections import (
+    ANNOTATION_TRACKS_COLLECTION,
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
     SAMPLE_ANNOTATION_TRACKS_COLLECTION,
