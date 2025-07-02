@@ -13,7 +13,7 @@ Do a PR and copy in this template.
 
 ### Preparing the repo
 
-- [ ] Clone the repo into a new folder
+- [ ] If needed - clone the repo into a new folder
 
 ```
 $ git clone git@github.com:SMD-Bioinformatics-Lund/gens.git gens_test
@@ -21,6 +21,17 @@ $ cd gens_test
 ```
 
 - [ ] Link in the /dump data folder
+
+A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/data/bnf/dev/jakob/data/gens_test_data`.
+
+Furthermore, current annotation tracks for testing can be copied from `/access/annotation_tracks`. Copy these into the folder `annotation_tracks` folder in the `dump` folder.
+
+
+```
+# Note: ~1.6 GB
+rsync --bwlimit 20000 -avPh Trannel:/data/bnf/dev/jakob/data/gens_test_data dump
+rsync --bwlimit 20000 -avPh Trannel:/access/annotation_tracks/*{.aed,*.bed,*.tsv} test_dump/annotation_tracks
+```
 
 This can be achieved by placing the `dump` folder in the repo and adding the following `docker-compose.override.yml`:
 
@@ -46,15 +57,11 @@ The `dump` folder should contain:
     * `hg00[234].cov.bed.gz.tbi`
     * `hg00[234].overview.json.gz`
   * HG002 meta data
-      * `hg002_upd-roh.bed.gz`
-      * `hg002_meta.tsv`
-      * `hg002_chr_meta.tsv`
+      * `hg002.upd-roh.bed.gz`
+      * `hg002.meta.tsv`
+      * `hg002.chr_meta.tsv`
 * Annotation tracks
-  * `annotation_tracks` (empty folder)
-
-In the moment of writing, this folder can be copied from: `/data/bnf/dev/jakob/data/gens_dump_hg002`.
-
-Annotation tracks for testing can be copied from `/access/annotation_tracks`. Copy these into the folder `annotation_tracks` folder in the `dump` folder.
+  * `annotation_tracks`
 
 ### Production settings for the front-end part
 
