@@ -99,6 +99,5 @@ def get_transcript(transcript_id: PydanticObjectId, db: Database[Any]) -> Transc
 def create_transcripts(transcripts: Iterable[TranscriptRecord], db: Database[Any]):
     """Insert many transcripts in the database."""
 
-    LOG.info("Adding transcripts to database")
     db.get_collection(TRANSCRIPTS_COLLECTION).insert_many([tr.model_dump() for tr in transcripts])
     register_data_update(db, TRANSCRIPTS_COLLECTION)

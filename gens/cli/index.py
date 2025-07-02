@@ -5,8 +5,6 @@ import logging
 import click
 
 from gens.cli.util.util import db_setup
-from gens.config import settings
-from gens.db.collections import ALL_COLLECTIONS
 from gens.db.db import get_db_connection
 from gens.db.index import INDEXES, create_indexes, update_indexes
 
@@ -37,7 +35,6 @@ def index(build: bool, update: bool) -> None:
         shall_index = click.confirm(
             "This will delete and rebuild all indexes. Are you sure?"
         )
-
 
     if shall_index or build:
         create_indexes(db)

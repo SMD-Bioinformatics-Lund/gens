@@ -61,8 +61,6 @@ def parse_raw_records(
     if is_tsv:
         file_format = "tsv"
 
-    LOG.info(f"HELLO, file format {file_format}")
-
     if file_format == "tsv":
         for rec in  parse_tsv_file(file):
             validated_rec = AnnotationRecord.model_validate(
@@ -76,7 +74,6 @@ def parse_raw_records(
             records.append(parsed_rec)
 
     elif file_format == "aed":
-        LOG.info("Parsing aed")
         file_meta, aed_records = parse_aed_file(file, ignore_errors)
         records = []
         for rec in aed_records:

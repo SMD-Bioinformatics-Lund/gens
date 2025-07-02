@@ -249,7 +249,6 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
 
     files = file.glob("*") if file.is_dir() else [file]
 
-    LOG.info(f"Processing files (Hello2) {files}")
     for annot_file in files:
         if annot_file.suffix not in [".bed", ".aed", ".tsv"]:
             continue
@@ -263,7 +262,6 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
             parse_recs_res = parse_raw_records(
                 file_format, is_tsv, annot_file, ignore_errors, track_result, genome_build
             )
-            LOG.info(f"Nbr entries {len(parse_recs_res.records)}")
         except ValueError as err:
             click.secho(
                 f"An error occured when creating loading annotation: {err}",
@@ -276,8 +274,6 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
             update_annotation_track(
                 track_id=track_result.track_id, metadata=parse_recs_res.file_meta, db=db
             )
-
-        LOG.debug(">>> Hello")
 
         if len(parse_recs_res.records) == 0:
             delete_annotation_track(track_result.track_id, db)  # cleanup
