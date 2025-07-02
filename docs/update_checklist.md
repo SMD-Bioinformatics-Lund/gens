@@ -107,19 +107,19 @@ docker compose -p gens_test exec gens /bin/bash
 - [ ] Index the database
 
 ```
-gens index
+$ gens index
 ```
 
 - [ ] Load chromosome info (retrieves information from the web).
 
 ```
-[gens] $ gens load chromosomes --genome-build 38
+$ gens load chromosomes --genome-build 38
 ```
 
 - [ ] Try loading annotation tracks. This should load successfully. Warnings fine, crashes are not.
 
 ```
-gens load annotations --file /dump/annotation_tracks --genome-build 38
+$ gens load annotations --file /dump/annotation_tracks --genome-build 38
 ```
 
 - [ ] Load transcripts
@@ -127,8 +127,9 @@ gens load annotations --file /dump/annotation_tracks --genome-build 38
 First, download / copy into the `dump` folder:
 
 ```
-curl https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.113.gtf.gz
-curl https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
+# ~60MB
+wget https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.113.gtf.gz
+wget https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
 ```
 
 Then load them into Gens:
@@ -142,49 +143,53 @@ gens load transcripts \
 
 - [ ] Load the HG002 sample
 
-Using the exact name `hg002-2` here matters as it should match the variants for the Scout case previously loaded.
+Using the exact name `hg002` here matters as it should match the variants for the Scout case previously loaded.
 
 ```
 gens load sample \
-    --sample-id hg002-2 \
-    --case-id hg002-2 \
+    --sample-id hg002 \
+    --case-id hg002 \
     --genome-build 38 \
     --baf /dump/hg002.baf.bed.gz \
     --coverage /dump/hg002.cov.bed.gz \
     --overview-json /dump/hg002.overview.json.gz \
     --sample-type proband \
     --sex M \
-    --meta /dump/hg002_meta.tsv \
-    --meta /dump/hg002_chr_meta.tsv
+    --meta /dump/hg002.meta.tsv \
+    --meta /dump/hg002.chr_meta.tsv
 ```
 
-Load the sample annotation track.
+- [ ] Load the sample annotation track.
 
 ```
 gens load sample-annotation \
-    --sample-id hg002-2 \
-    --case-id hg002-2 \
+    --sample-id hg002 \
+    --case-id hg002 \
     --genome-build 38 \
-    --file /dump/hg002_upd-roh.bed.gz \
+    --file /dump/hg002.upd_roh.bed \
     --name "UPD and ROH"
 ```
 
-Load the parents as well.
+- [ ] Load the father (hg003)
 
 ```
 gens load sample \
   --sample-id hg003 \
-  --case-id hg002-2 \
+  --case-id hg002 \
   --genome-build 38 \
   --baf /dump/hg003.baf.bed.gz \
   --coverage /dump/hg003.cov.bed.gz \
   --overview-json /dump/hg003.overview.json.gz \
   --sample-type father \
   --sex M
+```
 
+- [ ] Load the father (hg004)
+
+```
 gens load sample \
   --sample-id hg004 \
-  --case-id hg002-2 \
+  --case-id hg002 \
   --genome-build 38 \
   --baf /dump/hg004.baf.bed.gz \
   --coverage /dump/hg004.cov.bed.gz \
@@ -195,14 +200,11 @@ gens load sample \
 
 # Testing the GUI
 
-Some steps needs access to a Scout stack. Recommended to run this on the test data set up above, but can be tested on Gens dev as well.
-
 The tasks are ripe for being automated using Cypress. Something to iterate on with future Gens updates.
 
 ## Sample page
 
 - [ ] Are expected samples present?
-- [ ] Does the case link to Scout work? (On PGM1)
 - [ ] Is the version number displayed to the top left updated?
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/samples.PNG" width="400px">
@@ -303,7 +305,20 @@ Is content correctly displayed in the context menus for the different band track
 
 # Test on Gens dev
 
+## CLI
+
+Try loading all the annotation tracks and make sure it completes without errors.
+
+```
+gens load annotations --file <FIXME> --genome-build 38
+```
+
+## UI
+
 General sanity check and testing things that cannot be tested in a test setup.
+
+- [ ] Does the case link to Scout work? (On PGM1)
+
 
 - [ ] The sample list looks correct
 - [ ] Opening a trio for the the single-chromosome view, all tracks are shown
@@ -314,4 +329,5 @@ General sanity check and testing things that cannot be tested in a test setup.
   - [ ] Gene track
 - [ ] Variant context menu
   - [ ] Clicking variant links back to Scout
+
 
