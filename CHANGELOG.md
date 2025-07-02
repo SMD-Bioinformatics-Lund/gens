@@ -46,6 +46,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
  - If no overview file is supplied, Gens will fall back to o level zoom in the cov/baf files
+ - Multi-line entries in aed header allowed
 
 ## 3.1.0
 
