@@ -240,18 +240,25 @@ def _parse_aed_header(
     file_metadata: list[dict[str, AedDatatypes]] = []
     while True:
         next_line = peek_line(fh)
-        if _is_metadata_row(next_line):
-            # read and parse the metadata row
-            key, value = fh.readline().strip().split("\t")
-            # Not implemented yet
-            if key.startswith("namespace"):
-                continue
-            property = _parse_aed_property(key)
-            file_metadata.append(
-                {"name": property.name, "value": format_aed_entry(value, property.type)}
-            )
-        else:
+
+        if not _is_metadata_row(next_line):
             break
+
+        line = fh.readline().strip()
+        while line.count('"') % 2 == 1:
+            line += "\n" + fh.readline()
+
+        key, value_raw = line.rstrip().split("\t")
+
+        value = value_raw.strip('"')
+
+        if key.startswith("namespace"):
+            continue
+        property = _parse_aed_property(key)
+        file_metadata.append(
+            {"name": property.name, "value": format_aed_entry(value, property.type)}
+        )
+
     return col_def, file_metadata
 
 

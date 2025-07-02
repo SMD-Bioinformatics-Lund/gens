@@ -61,6 +61,44 @@ def aed_file_path(tmp_path: Path) -> Path:
 
 
 @pytest.fixture()
+def aed_multiline_header_path(tmp_path: Path) -> Path:
+    """Return path to an AED file with a multiline header value."""
+
+    header = "\t".join(
+        [
+            "sequence(aed:Sequence)",
+            "start(aed:Integer)",
+            "end(aed:Integer)",
+            "name(aed:String)",
+            "color(aed:Color)",
+            "note(aed:String)",
+        ]
+    )
+
+    metadata = "\n".join(
+        [
+            "\t\t\tsource(aed:String)\tgens",
+            "\t\t\tversion(aed:String)\t1",
+            "\t\t\tmaintainer(aed:String)\ttest",
+            '\t\t\tinterpretation(aed:String)\t"row1\nrow2"',
+        ]
+    )
+
+    records = "\n".join(
+        [
+            "chr1\t10001\t11372343\t1p36 deletion syndrome, distal\trgb(204,0,0)\tnote",
+            "chr1\t20001\t30000\tsecond\trgb(0,204,0)\t-",
+        ]
+    )
+
+    file_content = "\n".join([header, metadata, records]) + "\n"
+
+    file_path = tmp_path / "multiline.aed"
+    file_path.write_text(file_content)
+    return file_path
+
+
+@pytest.fixture()
 def standard_bed_file_path(data_path: Path) -> Path:
     """Get path to a BED 9 file following the BED v1 spec.
 
