@@ -292,6 +292,7 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
 
         LOG.info("Load annotations in the database")
         create_annotations_for_track(parse_recs_res.records, db)
+        register_data_update(db, ANNOTATIONS_COLLECTION, annot_file.stem)
 
     click.secho("Finished loading annotations ✔", fg="green")
 
