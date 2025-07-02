@@ -26,17 +26,18 @@ export function initializeDragSelect(
   }
 
   element.addEventListener("mousedown", (event) => {
+
+    const path = event.composedPath();
+    const onCanvas = path.some((el) => el instanceof HTMLCanvasElement);
+    if (!onCanvas) {
+      return;
+    }
+
     isDragging = true;
     isMoved = false;
 
     const pos = getLocalPos(event);
     dragStart = { x: pos.x, y: pos.y };
-    // dragStart = { x: event.offsetX, y: event.offsetY };
-
-    // FIXME: Deal with the yAxis width in a more robust way
-    if (pos.x < STYLE.yAxis.width) {
-      return;
-    }
 
     if (getMarkerMode() || keyLogger.heldKeys.Shift) {
       const color = keyLogger.heldKeys.Shift

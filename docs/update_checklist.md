@@ -200,7 +200,7 @@ gens load sample \
 
 # Testing the GUI
 
-The tasks are ripe for being automated using Cypress. Something to iterate on with future Gens updates.
+Perform the tests with an open web console. Log messages are OK. Errors are usually not.
 
 ## Sample page
 
@@ -218,6 +218,8 @@ The tasks are ripe for being automated using Cypress. Something to iterate on wi
 
 Opening hg002. Does all tracks show up in the initial view?
 
+- [ ] Chromosome ideogram
+- [ ] Position track
 - [ ] B allele frequency track
 - [ ] Log2 ratio track
 - [ ] Overview track
@@ -248,7 +250,7 @@ Zooming in, and expanding tracks. Are details shown for the gene track?
 
 Is content correctly displayed in the context menus for the different band tracks:
 
-- [ ] Annotation track. Click a mimisbrunnr band. Does the content look sane. In particular check the comments and metadata parts.
+- [ ] Annotation track. Add mimisbrunnr. Click the first large band at chromosome 1. Does the content look sane. In particular check the comments and metadata parts.
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/update_checklist/mimis_annots.PNG" width=400 alt="Mimis side menu">
 
@@ -266,15 +268,15 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Tracks can be expanded / collapse by right click
 - [ ] Highlight mode works
   - [ ] Toggle using pen button or M
-  - [ ] Drag and put highlight
+  - [ ] Add some highlights
   - [ ] Open setting menu and find the highlight. Click and see if you navigate to it.
   - [ ] Try removing a highlight by hovering and pressing the "X"
-- [ ] Rearrange tracks by clicking and dragging
+- [ ] Rearrange tracks by drag and drop
 
 ### Meta data
 
 - [ ] Meta page opens without console errors
-- [ ] Meta page contains key-value information on proband
+- [ ] Meta page contains key-value information on proband (%ROH)
 - [ ] Meta page contains chromosome table
 - [ ] Drag the edge to expand and show the full table.
 
