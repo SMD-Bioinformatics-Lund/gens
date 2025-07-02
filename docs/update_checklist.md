@@ -13,7 +13,7 @@ Do a PR and copy in this template.
 
 ### Preparing the repo
 
-- [ ] Clone the repo into a new folder
+- [ ] If needed - clone the repo into a new folder
 
 ```
 $ git clone git@github.com:SMD-Bioinformatics-Lund/gens.git gens_test
@@ -21,6 +21,16 @@ $ cd gens_test
 ```
 
 - [ ] Link in the /dump data folder
+
+A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/data/bnf/dev/jakob/data/gens_test_data`.
+
+Furthermore, current annotation tracks for testing can be copied from `/access/annotation_tracks`. Copy these into the folder `annotation_tracks` folder in the `dump` folder. Note - some of these contain sensitive data. Test loading all as a final step when running on Gens dev.
+
+```
+# Note: ~1.6 GB
+rsync --bwlimit 20000 -avPh Trannel:/data/bnf/dev/jakob/data/gens_test_data dump
+rsync --bwlimit 20000 -avPh Trannel:/access/annotation_tracks/{Mimisbrunnr.Lund-hg38.aed,DECIPHER.DDG2P.250216-hg38.aed,IlluminaRL100.dark.gene.annotations-hg38.aed} test_dump/annotation_tracks
+```
 
 This can be achieved by placing the `dump` folder in the repo and adding the following `docker-compose.override.yml`:
 
@@ -46,23 +56,19 @@ The `dump` folder should contain:
     * `hg00[234].cov.bed.gz.tbi`
     * `hg00[234].overview.json.gz`
   * HG002 meta data
-      * `hg002_upd-roh.bed.gz`
-      * `hg002_meta.tsv`
-      * `hg002_chr_meta.tsv`
+      * `hg002.upd-roh.bed.gz`
+      * `hg002.meta.tsv`
+      * `hg002.chr_meta.tsv`
 * Annotation tracks
-  * `annotation_tracks` (empty folder)
-
-In the moment of writing, this folder can be copied from: `/data/bnf/dev/jakob/data/gens_dump_hg002`.
-
-Annotation tracks for testing can be copied from `/access/annotation_tracks`. Copy these into the folder `annotation_tracks` folder in the `dump` folder.
+  * `annotation_tracks`
 
 ### Production settings for the front-end part
 
-In `gens/webpack.config.cjs`:
+In `webpack.config.cjs`:
 
 - [ ] Set `mode: 'production'`
 
-In `gens/tsconfig.json`:
+In `tsconfig.json`:
 
 - [ ] Turn off source map (used for debugging typescript): `sourceMap: false`
 - [ ] Build and copy the web assets
@@ -76,7 +82,7 @@ $ npm run buildcp
 - [ ] Build and start the containers
 
 ```
-$ docker-compose up -d --build
+$ docker compose -p gens_test up -d --build
 ```
 
 ### Setup the Scout database
@@ -84,30 +90,36 @@ $ docker-compose up -d --build
 - [ ] Import the Scout hg002 variant collection into mongo
 
 ```
-$ docker-compose exec mongodb /bin/bash
+$ docker compose -p gens_test exec mongodb /bin/bash
 [mongodb] $ mongoimport --db scout --collection variant /dump/hg002_variants.json
 ```
 
 # Testing the CLI
+
+Access the CLI by:
+
+```
+docker compose -p gens_test exec gens /bin/bash
+```
 
 ## Loading data
 
 - [ ] Index the database
 
 ```
-gens index
+$ gens index
 ```
 
 - [ ] Load chromosome info (retrieves information from the web).
 
 ```
-[gens] $ gens load chromosomes --genome-build 38
+$ gens load chromosomes --genome-build 38
 ```
 
 - [ ] Try loading annotation tracks. This should load successfully. Warnings fine, crashes are not.
 
 ```
-gens load annotations --file /dump/annotation_tracks --genome-build 38
+$ gens load annotations --file /dump/annotation_tracks --genome-build 38
 ```
 
 - [ ] Load transcripts
@@ -115,8 +127,9 @@ gens load annotations --file /dump/annotation_tracks --genome-build 38
 First, download / copy into the `dump` folder:
 
 ```
-curl https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.113.gtf.gz
-curl https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
+# ~60MB
+wget https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.113.gtf.gz
+wget https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
 ```
 
 Then load them into Gens:
@@ -130,49 +143,53 @@ gens load transcripts \
 
 - [ ] Load the HG002 sample
 
-Using the exact name `hg002-2` here matters as it should match the variants for the Scout case previously loaded.
+Using the exact name `hg002` here matters as it should match the variants for the Scout case previously loaded.
 
 ```
 gens load sample \
-    --sample-id hg002-2 \
-    --case-id hg002-2 \
+    --sample-id hg002 \
+    --case-id hg002 \
     --genome-build 38 \
     --baf /dump/hg002.baf.bed.gz \
     --coverage /dump/hg002.cov.bed.gz \
     --overview-json /dump/hg002.overview.json.gz \
     --sample-type proband \
     --sex M \
-    --meta /dump/hg002_meta.tsv \
-    --meta /dump/hg002_chr_meta.tsv
+    --meta /dump/hg002.meta.tsv \
+    --meta /dump/hg002.chr_meta.tsv
 ```
 
-Load the sample annotation track.
+- [ ] Load the sample annotation track.
 
 ```
 gens load sample-annotation \
-    --sample-id hg002-2 \
-    --case-id hg002-2 \
+    --sample-id hg002 \
+    --case-id hg002 \
     --genome-build 38 \
-    --file /dump/hg002_upd-roh.bed.gz \
+    --file /dump/hg002.upd_roh.bed \
     --name "UPD and ROH"
 ```
 
-Load the parents as well.
+- [ ] Load the father (hg003)
 
 ```
 gens load sample \
   --sample-id hg003 \
-  --case-id hg002-2 \
+  --case-id hg002 \
   --genome-build 38 \
   --baf /dump/hg003.baf.bed.gz \
   --coverage /dump/hg003.cov.bed.gz \
   --overview-json /dump/hg003.overview.json.gz \
   --sample-type father \
   --sex M
+```
 
+- [ ] Load the father (hg004)
+
+```
 gens load sample \
   --sample-id hg004 \
-  --case-id hg002-2 \
+  --case-id hg002 \
   --genome-build 38 \
   --baf /dump/hg004.baf.bed.gz \
   --coverage /dump/hg004.cov.bed.gz \
@@ -183,14 +200,11 @@ gens load sample \
 
 # Testing the GUI
 
-Some steps needs access to a Scout stack. Recommended to run this on the test data set up above, but can be tested on Gens dev as well.
-
-The tasks are ripe for being automated using Cypress. Something to iterate on with future Gens updates.
+Perform the tests with an open web console. Log messages are OK. Errors are usually not.
 
 ## Sample page
 
 - [ ] Are expected samples present?
-- [ ] Does the case link to Scout work? (On PGM1)
 - [ ] Is the version number displayed to the top left updated?
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/samples.PNG" width="400px">
@@ -204,6 +218,8 @@ The tasks are ripe for being automated using Cypress. Something to iterate on wi
 
 Opening hg002. Does all tracks show up in the initial view?
 
+- [ ] Chromosome ideogram
+- [ ] Position track
 - [ ] B allele frequency track
 - [ ] Log2 ratio track
 - [ ] Overview track
@@ -234,7 +250,7 @@ Zooming in, and expanding tracks. Are details shown for the gene track?
 
 Is content correctly displayed in the context menus for the different band tracks:
 
-- [ ] Annotation track. Click a mimisbrunnr band. Does the content look sane. In particular check the comments and metadata parts.
+- [ ] Annotation track. Add mimisbrunnr. Click the first large band at chromosome 1. Does the content look sane. In particular check the comments and metadata parts.
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/update_checklist/mimis_annots.PNG" width=400 alt="Mimis side menu">
 
@@ -252,15 +268,15 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Tracks can be expanded / collapse by right click
 - [ ] Highlight mode works
   - [ ] Toggle using pen button or M
-  - [ ] Drag and put highlight
+  - [ ] Add some highlights
   - [ ] Open setting menu and find the highlight. Click and see if you navigate to it.
   - [ ] Try removing a highlight by hovering and pressing the "X"
-- [ ] Rearrange tracks by clicking and dragging
+- [ ] Rearrange tracks by drag and drop
 
 ### Meta data
 
 - [ ] Meta page opens without console errors
-- [ ] Meta page contains key-value information on proband
+- [ ] Meta page contains key-value information on proband (%ROH)
 - [ ] Meta page contains chromosome table
 - [ ] Drag the edge to expand and show the full table.
 
@@ -291,9 +307,20 @@ Is content correctly displayed in the context menus for the different band track
 
 # Test on Gens dev
 
+## CLI
+
+- [ ] Try loading all the annotation tracks and make sure it completes without errors.
+
+```
+gens load annotations --file <FIXME> --genome-build 38
+```
+
+## UI
+
 General sanity check and testing things that cannot be tested in a test setup.
 
 - [ ] The sample list looks correct
+- [ ] Does the case link to Scout work? (On PGM1)
 - [ ] Opening a trio for the the single-chromosome view, all tracks are shown
   - [ ] Three cov tracks
   - [ ] Three BAF tracks
@@ -302,4 +329,5 @@ General sanity check and testing things that cannot be tested in a test setup.
   - [ ] Gene track
 - [ ] Variant context menu
   - [ ] Clicking variant links back to Scout
+
 
