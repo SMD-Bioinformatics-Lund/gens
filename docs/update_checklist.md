@@ -312,7 +312,7 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Try loading all the annotation tracks and make sure it completes without errors.
 
 ```
-gens load annotations --file <FIXME> --genome-build 38
+gens load annotations --file /access/annotation_tracks/ --genome-build 38
 ```
 
 ## UI
