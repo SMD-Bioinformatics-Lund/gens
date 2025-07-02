@@ -309,7 +309,7 @@ Is content correctly displayed in the context menus for the different band track
 
 ## CLI
 
-Try loading all the annotation tracks and make sure it completes without errors.
+- [ ] Try loading all the annotation tracks and make sure it completes without errors.
 
 ```
 gens load annotations --file <FIXME> --genome-build 38
@@ -319,10 +319,8 @@ gens load annotations --file <FIXME> --genome-build 38
 
 General sanity check and testing things that cannot be tested in a test setup.
 
-- [ ] Does the case link to Scout work? (On PGM1)
-
-
 - [ ] The sample list looks correct
+- [ ] Does the case link to Scout work? (On PGM1)
 - [ ] Opening a trio for the the single-chromosome view, all tracks are shown
   - [ ] Three cov tracks
   - [ ] Three BAF tracks
