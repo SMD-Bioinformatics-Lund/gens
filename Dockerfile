@@ -79,7 +79,7 @@ ENV GUNICORN_THREADS=1
 ENV GUNICORN_BIND="0.0.0.0:5000"
 ENV GUNICORN_TIMEOUT=400
 
-CMD gunicorn \
+CMD gunicorn -k uvicorn.workers.UvicornWorker \
     --workers=$GUNICORN_WORKERS \
     --bind=$GUNICORN_BIND  \
     --threads=$GUNICORN_THREADS \

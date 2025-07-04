@@ -47,7 +47,7 @@ class ParseRawResult:
 
 
 def parse_raw_records(
-    file_format: "str",
+    file_format: str,
     is_tsv: bool,
     file: Path,
     ignore_errors: bool,
@@ -87,4 +87,6 @@ def parse_raw_records(
 
             if formatted_rec is not None:
                 records.append(formatted_rec)
+    else:
+        raise ValueError(f'Unfamiliar file format detected: "{file_format}"')
     return ParseRawResult(records=records, file_meta=file_meta)
