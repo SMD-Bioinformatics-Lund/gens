@@ -54,7 +54,7 @@ def display_samples(case_id: str) -> str:
 
     sample_id_list = request.args.get("sample_ids")
     if not sample_id_list:
-        case_samples = get_samples_for_case(db.get_collection(SAMPLES_COLLECTION), case_id.split("&")[0])
+        case_samples = get_samples_for_case(db.get_collection(SAMPLES_COLLECTION), case_id)
         if not case_samples:
             raise ValueError(f"Expected sample_ids for case_id: {case_id}")
         sample_ids = [sample.sample_id for sample in case_samples]
