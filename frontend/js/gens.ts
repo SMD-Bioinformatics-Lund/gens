@@ -44,8 +44,13 @@ export async function samplesListInit(
 ) {
   const gens_home = document.querySelector("#gens-home") as GensHome;
 
-  const getGensURL = (caseId: string, sampleIds: string[]) => {
-    const subpath = `app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
+  const getGensURL = (caseId: string, sampleIds?: string[]) => {
+    let subpath;
+    if (sampleIds != null) {
+      subpath = `app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
+    } else {
+      subpath = `app/viewer/${caseId}&genome_build=${genomeBuild}`;
+    }
 
     return new URL(subpath, gensBaseURL).href;
   };

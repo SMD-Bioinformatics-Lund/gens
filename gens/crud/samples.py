@@ -132,6 +132,34 @@ def get_samples_per_case(
     return case_to_samples
 
 
+def get_samples_for_case(
+    samples_c: Collection[dict[str, Any]],
+    case_id: str,
+) -> list[SampleInfo]:
+    cursor = samples_c.find({"case_id": case_id}).sort("created_at", DESCENDING)
+
+    LOG.warning(f">>> inside get samples for case {case_id}")
+
+    samples: list[SampleInfo] = []
+    for sample in cursor:
+        LOG.warning(f">>> iterating sample {sample}")
+        sample_obj = {
+            "case_id": sample["case_id"],
+            "sample_id": sample["sample_id"],
+            "sample_type": sample.get("sample_type"),
+            "sex": sample.get("sex"),
+            "genome_build": sample["genome_build"],
+            "has_overview_file": sample["overview_file"] is not None,
+            "files_present": bool(sample["baf_file"] and sample["coverage_file"]),
+            "created_at": sample["created_at"].astimezone(timezone.utc).isoformat(),
+        }
+        sample = SampleInfo.model_validate(sample_obj)
+        samples.append(sample)
+    LOG.warning(f">>> returning samples: {samples}")
+    
+    return samples
+    
+
 def get_sample(
     samples_c: Collection[dict[str, Any]],
     sample_id: str,
