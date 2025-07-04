@@ -141,19 +141,25 @@ def get_samples_for_case(
     LOG.warning(f">>> inside get samples for case {case_id}")
 
     samples: list[SampleInfo] = []
-    for sample in cursor:
-        LOG.warning(f">>> iterating sample {sample}")
-        sample_obj = {
-            "case_id": sample["case_id"],
-            "sample_id": sample["sample_id"],
-            "sample_type": sample.get("sample_type"),
-            "sex": sample.get("sex"),
-            "genome_build": sample["genome_build"],
-            "has_overview_file": sample["overview_file"] is not None,
-            "files_present": bool(sample["baf_file"] and sample["coverage_file"]),
-            "created_at": sample["created_at"].astimezone(timezone.utc).isoformat(),
-        }
-        sample = SampleInfo.model_validate(sample_obj)
+    for result in cursor:
+        overview_file = result.get("overview_file")
+        if overview_file == "None":
+            overview_file = None
+
+        sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
+
+        sample = SampleInfo(
+            sample_id=result["sample_id"],
+            case_id=result["case_id"],
+            genome_build=GenomeBuild(int(result["genome_build"])),
+            baf_file=result["baf_file"],
+            coverage_file=result["coverage_file"],
+            overview_file=overview_file,
+            sample_type=result.get("sample_type"),
+            sex=result.get("sex"),
+            meta=sample_meta,
+            created_at=result["created_at"],
+        )
         samples.append(sample)
     LOG.warning(f">>> returning samples: {samples}")
     

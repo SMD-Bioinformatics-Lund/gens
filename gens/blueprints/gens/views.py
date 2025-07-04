@@ -63,6 +63,9 @@ def display_samples(case_id: str) -> str:
         if not case_samples:
             raise ValueError(f"Expected sample_ids for case_id: {case_id}")
         sample_ids = [sample.sample_id for sample in case_samples]
+
+        if request.args.get("genome_build") is None:
+            genome_build = GenomeBuild(case_samples[0].genome_build)
     else:
         sample_ids = sample_id_list.split(",")
 
