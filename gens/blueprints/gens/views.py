@@ -79,8 +79,8 @@ def display_samples(case_id: str) -> str:
     samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
 
     all_samples: list[dict[str, str]] = []
-    for case_samples in samples_per_case.values():
-        for sample in case_samples:
+    for samples_per_case_dict in samples_per_case.values():
+        for sample in samples_per_case_dict:
             sample_info = {
                 "caseId": sample["case_id"],
                 "sampleId": sample["sample_id"],
