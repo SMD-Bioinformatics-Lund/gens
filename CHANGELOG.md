@@ -43,6 +43,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Updated CLI command for loading annotations.
  - Remove height order from backend.
  - Gens usage documentation added. Admin documentation also updated.
+ - Rewrite the data loading scripts into a single Python script.
 
 ### Fixed
  - If no overview file is supplied, Gens will fall back to o level zoom in the cov/baf files
