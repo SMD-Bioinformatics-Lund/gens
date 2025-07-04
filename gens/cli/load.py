@@ -249,7 +249,6 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
 
     files = file.glob("*") if file.is_dir() else [file]
 
-    LOG.info("Processing files")
     for annot_file in files:
         if annot_file.suffix not in [".bed", ".aed", ".tsv"]:
             continue
@@ -257,11 +256,11 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
 
         track_result = upsert_annotation_track(db, annot_file, genome_build)
 
-        file_format = file.suffix[1:]
+        file_format = annot_file.suffix[1:]
 
         try:
             parse_recs_res = parse_raw_records(
-                file_format, is_tsv, file, ignore_errors, track_result, genome_build
+                file_format, is_tsv, annot_file, ignore_errors, track_result, genome_build
             )
         except ValueError as err:
             click.secho(
@@ -289,6 +288,7 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
 
         LOG.info("Load annotations in the database")
         create_annotations_for_track(parse_recs_res.records, db)
+        register_data_update(db, ANNOTATIONS_COLLECTION, annot_file.stem)
 
     click.secho("Finished loading annotations ✔", fg="green")
 

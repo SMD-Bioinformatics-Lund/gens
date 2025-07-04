@@ -5,10 +5,8 @@ import logging
 import click
 
 from gens.cli.util.util import db_setup
-from gens.config import settings
-from gens.db.collections import ALL_COLLECTIONS
 from gens.db.db import get_db_connection
-from gens.db.index import create_indexes, update_indexes
+from gens.db.index import INDEXES, create_indexes, update_indexes
 
 LOG = logging.getLogger(__name__)
 
@@ -23,7 +21,7 @@ LOG = logging.getLogger(__name__)
 @click.option("-u", "--update", help="Update the indexes", is_flag=True)
 def index(build: bool, update: bool) -> None:
     """Create indexes for the database."""
-    db = db_setup(ALL_COLLECTIONS)
+    db = db_setup(list(INDEXES.keys()))
 
     if update:
         n_updated = update_indexes(db)
@@ -35,7 +33,7 @@ def index(build: bool, update: bool) -> None:
     shall_index = False
     if not build:
         shall_index = click.confirm(
-            "This will delete and rebuild all indexes(if not --update). Are you sure?"
+            "This will delete and rebuild all indexes. Are you sure?"
         )
 
     if shall_index or build:

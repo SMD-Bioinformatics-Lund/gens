@@ -215,6 +215,44 @@ def test_load_annotations_parses_aed(
     assert rec["color"] == [204, 0, 0]
 
 
+def test_load_annotations_from_directory(
+    cli_load: ModuleType,
+    tmp_path: Path,
+    db: mongomock.Database,
+    annot_entry: AnnotEntry,
+):
+    bed1 = tmp_path / "track1.bed"
+    bed2 = tmp_path / "track2.bed"
+    bed_line = "\t".join(
+        [
+            annot_entry.chrom,
+            str(annot_entry.start_pos),
+            str(annot_entry.end_pos),
+            annot_entry.label,
+            str(annot_entry.score),
+            annot_entry.strand,
+            ".",
+            ".",
+            annot_entry.color,
+        ]
+    )
+    bed1.write_text(bed_line)
+    bed2.write_text(bed_line)
+
+    cli_load.annotations.callback(
+        file=tmp_path,
+        genome_build=38,
+        is_tsv=False,
+        ignore_errors=False,
+    )
+
+    track_coll = db.get_collection(ANNOTATION_TRACKS_COLLECTION)
+    annot_coll = db.get_collection(ANNOTATIONS_COLLECTION)
+
+    assert track_coll.count_documents({}) == 2
+    assert annot_coll.count_documents({}) == 2
+
+
 def test_delete_annotation_cli_removes_documents(
     cli_delete: ModuleType,
     db: mongomock.Database,

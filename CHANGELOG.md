@@ -34,6 +34,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Add end-to-end unit testing for CLI commands.
  - Comments similar to those in aed format can be supplied in tsv format.
  - Gens logo in browser tabs.
+ - Checklist to run through when doing releases.
 
 ### Changed
  - Resolution increased 2x for tracks.
@@ -43,9 +44,11 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Updated CLI command for loading annotations.
  - Remove height order from backend.
  - Gens usage documentation added. Admin documentation also updated.
+ - Rewrite the data loading scripts into a single Python script.
 
 ### Fixed
  - If no overview file is supplied, Gens will fall back to o level zoom in the cov/baf files
+ - Multi-line entries in aed header allowed
 
 ## 3.1.0
 
