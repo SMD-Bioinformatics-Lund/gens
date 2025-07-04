@@ -82,7 +82,7 @@ export class SamplesTable extends HTMLElement {
     this.tableContainer.hidden = false;
 
     const newRows = sampleInfo.map((s) => [
-      `<a href="${getGensURL(s.case_id)}">${s.case_id}</a> (<a href="${scoutBaseURL}/${s.case_id}" target="_blank" rel="noopener noreferrer">Scout</a>)`,
+      `<a href="${getGensURL(s.case_id)}">${s.case_id}</a> (<a href="${scoutBaseURL}/case/case_id/${s.case_id}" target="_blank" rel="noopener noreferrer">Scout</a>)`,
       s.sample_ids
         .map((id) => `<a href="${getGensURL(s.case_id, [id])}">${id}</a>`)
         .join(", "),
