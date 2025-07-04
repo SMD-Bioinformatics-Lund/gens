@@ -132,6 +132,38 @@ def get_samples_per_case(
     return case_to_samples
 
 
+def get_samples_for_case(
+    samples_c: Collection[dict[str, Any]],
+    case_id: str,
+) -> list[SampleInfo]:
+    
+    cursor = samples_c.find({"case_id": case_id}).sort("created_at", DESCENDING)
+
+    samples: list[SampleInfo] = []
+    for result in cursor:
+        overview_file = result.get("overview_file")
+        if overview_file == "None":
+            overview_file = None
+
+        sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
+
+        sample = SampleInfo(
+            sample_id=result["sample_id"],
+            case_id=result["case_id"],
+            genome_build=GenomeBuild(int(result["genome_build"])),
+            baf_file=result["baf_file"],
+            coverage_file=result["coverage_file"],
+            overview_file=overview_file,
+            sample_type=result.get("sample_type"),
+            sex=result.get("sex"),
+            meta=sample_meta,
+            created_at=result["created_at"],
+        )
+        samples.append(sample)
+    
+    return samples
+    
+
 def get_sample(
     samples_c: Collection[dict[str, Any]],
     sample_id: str,

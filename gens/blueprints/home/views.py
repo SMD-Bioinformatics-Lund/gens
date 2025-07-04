@@ -1,7 +1,6 @@
 """About the software page."""
 
 import logging
-import os
 from typing import Any
 
 from flask import Blueprint, current_app, render_template, request

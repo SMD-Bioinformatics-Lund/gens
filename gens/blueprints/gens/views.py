@@ -7,9 +7,9 @@ from flask import Blueprint, abort, current_app, render_template, request
 from pymongo.database import Database
 
 from gens import version
-from gens.config import UI_COLORS, settings
+from gens.config import settings
 from gens.crud.genomic import get_chromosome_info
-from gens.crud.samples import get_sample, get_samples_per_case
+from gens.crud.samples import get_samples_for_case, get_samples_per_case
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.genomic import parse_region_str
 from gens.models.genomic import GenomeBuild
@@ -34,11 +34,6 @@ def display_samples(case_id: str) -> str:
     Expects sample_id as input to be able to load the sample data
     """
 
-    sample_id_list = request.args.get("sample_ids")
-    if not sample_id_list:
-        raise ValueError(f"Expected sample_ids, found: {sample_id_list}")
-    sample_ids = sample_id_list.split(",")
-
     # get genome build and region
     region = request.args.get("region", None)
     print_page = request.args.get("print_page", "false")
@@ -57,6 +52,18 @@ def display_samples(case_id: str) -> str:
     # verify that sample has been loaded
     db: Database = current_app.config["GENS_DB"]
 
+    sample_id_list = request.args.get("sample_ids")
+    if not sample_id_list:
+        case_samples = get_samples_for_case(db.get_collection(SAMPLES_COLLECTION), case_id)
+        if not case_samples:
+            raise ValueError(f"Expected sample_ids for case_id: {case_id}")
+        sample_ids = [sample.sample_id for sample in case_samples]
+
+        if request.args.get("genome_build") is None:
+            genome_build = GenomeBuild(case_samples[0].genome_build)
+    else:
+        sample_ids = sample_id_list.split(",")
+
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
 
@@ -69,12 +76,11 @@ def display_samples(case_id: str) -> str:
             raise ValueError(f"Chromosome {parsed_region.chromosome} is not found in the database")
         parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})
 
-    # FIXME: Something to think about here. Is this initial dict enough actually?
     samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
 
     all_samples: list[dict[str, str]] = []
-    for case_samples in samples_per_case.values():
-        for sample in case_samples:
+    for samples_per_case_dict in samples_per_case.values():
+        for sample in samples_per_case_dict:
             sample_info = {
                 "caseId": sample["case_id"],
                 "sampleId": sample["sample_id"],

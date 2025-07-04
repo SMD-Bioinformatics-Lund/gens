@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
-## 4.0.0 (dev version)
+## 4.0.0
 
 ### Added
  - Tracks expand with wider window size.
