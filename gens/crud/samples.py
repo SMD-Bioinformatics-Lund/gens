@@ -136,9 +136,8 @@ def get_samples_for_case(
     samples_c: Collection[dict[str, Any]],
     case_id: str,
 ) -> list[SampleInfo]:
+    
     cursor = samples_c.find({"case_id": case_id}).sort("created_at", DESCENDING)
-
-    LOG.warning(f">>> inside get samples for case {case_id}")
 
     samples: list[SampleInfo] = []
     for result in cursor:
@@ -161,7 +160,6 @@ def get_samples_for_case(
             created_at=result["created_at"],
         )
         samples.append(sample)
-    LOG.warning(f">>> returning samples: {samples}")
     
     return samples
     

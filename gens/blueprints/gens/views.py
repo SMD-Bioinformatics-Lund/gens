@@ -34,11 +34,6 @@ def display_samples(case_id: str) -> str:
     Expects sample_id as input to be able to load the sample data
     """
 
-    # sample_id_list = request.args.get("sample_ids")
-    # if not sample_id_list:
-    #     raise ValueError(f"Expected sample_ids, found: {sample_id_list}")
-    # sample_ids = sample_id_list.split(",")
-
     # get genome build and region
     region = request.args.get("region", None)
     print_page = request.args.get("print_page", "false")
