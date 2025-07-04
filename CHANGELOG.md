@@ -34,6 +34,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
  - Add end-to-end unit testing for CLI commands.
  - Comments similar to those in aed format can be supplied in tsv format.
  - Gens logo in browser tabs.
+ - Checklist to run through when doing releases.
 
 ### Changed
  - Resolution increased 2x for tracks.
