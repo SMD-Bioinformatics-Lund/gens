@@ -7,9 +7,9 @@ from flask import Blueprint, abort, current_app, render_template, request
 from pymongo.database import Database
 
 from gens import version
-from gens.config import UI_COLORS, settings
+from gens.config import settings
 from gens.crud.genomic import get_chromosome_info
-from gens.crud.samples import get_sample, get_samples_per_case
+from gens.crud.samples import get_samples_per_case
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.genomic import parse_region_str
 from gens.models.genomic import GenomeBuild
@@ -56,6 +56,16 @@ def display_samples(case_id: str) -> str:
 
     # verify that sample has been loaded
     db: Database = current_app.config["GENS_DB"]
+
+    sample_id_list = request.args.get("sample_ids")
+    if not sample_id_list:
+        samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
+        case_samples = samples_per_case.get(case_id, [])
+        if not case_samples:
+            raise ValueError(f"Expected sample_ids, found: {sample_id_list}")
+        sample_ids = [sample["sample_id"] for sample in case_samples]
+    else:
+        sample_ids = sample_id_list.split(",")
 
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
