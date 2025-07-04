@@ -10,92 +10,24 @@
 
 {% block scripts %}
   {{ super() }}
+  <script
+    src="{{ url_for('gens.static', filename='gens.min.js') }}"
+  ></script>
 {% endblock scripts %}
 
 {% block body %}
   {{ navbar('home', version, current_user) }}
   {{ super() }}
+  <script>
+    const samplesJSON = JSON.parse(`{{ samples | tojson }}`);
+    // FIXME: Get from the backend
+    const genomeBuild = '{{ genome_build | safe }}';
+    const scoutBaseURL = '{{ scout_base_url | safe }}';
+    const gensBaseURL = '{{ gens_api_url | safe }}';
+    gens.samplesListInit(samplesJSON, scoutBaseURL, gensBaseURL, genomeBuild);
+  </script>
 {% endblock %}
 
 {% block content %}
-<div class="content">
-  <h1>Samples</h1>
-  <p>There are {{ total_samples }} samples loaded into Gens. Click on a <em>sample_id</em> to open it</p>
-  <div>
-    {{ samples_table(samples, pagination) }}
-  </div>
-</div>
+<gens-home id="gens-home"></gens-home>
 {% endblock content %}
-
-{% macro samples_table(samples_obj, pagination)%}
-  {% set per_page = samples_obj | length %}
-  <p class="display-info">Displaying <em>{{ pagination["from"] }}</em> to <em>{{ pagination["to"] }}</em> of <em>{{ per_page * pagination.last_page }}</em> samples</p>
-  <table>
-    <thead>
-      <tr>
-        <td>Sample id</td>
-        <td>Case id</td>
-        <td>Genome build</td>
-        <td>Overview file</td>
-        <td>BAM/BAF found</td>
-        <td>Import date</td>
-      </tr>
-    </thead>
-    <tbody>
-      {% for sample in samples_obj %}
-        {% set genome_build=sample["genome_build"]%}
-        {% set sample_id=sample["sample_id"]%}
-        {% set case_id=sample["case_id"]%}
-        <tr>
-          <td id="id-cell"><a href="{% if case_id %}
-          {{ url_for('gens.display_case', sample_name=sample_id, individual_id=sample_id, case_id=case_id, genome_build=genome_build) }}
-          {% else %}
-           {{ url_for('gens.display_case', sample_name=sample_id, genome_build=genome_build) }}
-          {% endif %}" target="_blank">{{ sample_id }}</a></td>
-          <td id="case-cell">{% if case_id %}
-            <a href="{{ scout_base_url + "/case/case_id/" + case_id }}" target="_blank">{{ case_id }}</a>
-          {% endif %}</td>
-          <td id="build-cell" class="align-right">{{ genome_build }}</td>
-          <td id="overview-cell"  class="align-right">
-            {% if sample["has_overview_file"] %}
-              <span class="icon icon-check"></span>
-            {% else %}
-              <span class="icon icon-x icon-color-red"></span>
-            {% endif %}
-          </td>
-          <td id="has-files-cell" class="align-right">
-            {% if sample["files_present"] %}
-              <span class="icon icon-check"></span>
-            {% else %}
-              <span class="icon icon-x icon-color-red"></span>
-            {% endif %}
-          </td>
-          <td id="date-cell">{{sample["created_at"]}}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {{ pagination_bar(pagination) }}
-{% endmacro %}
-
-{% macro pagination_bar(pagination)%}
-  <div class="pagination">
-    <ul>
-      {% set start = 1 if pagination["current_page"] == 1 else pagination["current_page"] - 1 %}
-      <!-- next -->
-      <li class="page-item {{ 'disabled' if pagination["current_page"] == 1 else '' }}">
-        <a href="{{url_for('home.home', page=pagination["current_page"] - 1) }}">Previous</a>
-      </li>
-      <!-- create numbers -->
-      {% for num in range(start, start + 3) %}
-        <li class="page-item {{ 'disabled' if pagination["last_page"] < num else '' }} {{ 'selected' if pagination["current_page"] == num else '' }}">
-          <a href="{{url_for('home.home', page=num) }}">{{ num }}</a>
-        </li>
-      {% endfor %}
-      <!-- previous -->
-      <li class="page-item {{ 'disabled' if pagination["current_page"] == pagination["last_page"] else '' }}">
-        <a href="{{url_for('home.home', page=pagination["current_page"] + 1) }}">Next</a>
-      </li>
-    </ul>
-  </div>
-{% endmacro %}

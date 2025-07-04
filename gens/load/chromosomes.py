@@ -6,7 +6,14 @@ from typing import Any
 
 import requests
 
-from ..models.genomic import ChromBand, ChromInfo, DnaStrand, GenomeBuild
+from ..models.genomic import (
+    ChromBand,
+    ChromInfo,
+    Chromosome,
+    DnaStrand,
+    GenomeBuild,
+    GenomePosition,
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -24,53 +31,69 @@ def format_dna_strand(strand: int | None) -> DnaStrand:
 
 
 def build_chromosomes_obj(
-    chromosome_data: dict[str, Any], genome_build: GenomeBuild, timeout: int
+    chromosome_data: dict[str, Any],
+    genome_build: GenomeBuild,
+    timeout: int,
 ) -> list[ChromInfo]:
     """Build chromosome object containing normalized size."""
     chromosomes: list[ChromInfo] = []
 
     genome_size = sum(c["length"] for c in chromosome_data.values())
     for name, data in chromosome_data.items():
-        LOG.info("Processing chromosome %s", name)
-        # calculate genome scale
+
         scale = round(data["length"] / genome_size, 2)
-        # skip for mitochondria
-        if not name == "MT":
+
+        if name == "MT":
+            continue
+
+        assembly_id = parse_assembly_id(data.get("synonyms", []))
+
+        if not assembly_id:
+            raise ValueError("No assembly ID found for ...")
+
+        if data.get("centromere") is None:
             # get centeromer position by querying assembly annotation from EBI
-            assembly_id = next(
-                syn["name"].rsplit(".")[0]  # strip assembly version
-                for syn in data.get("synonyms", [])
-                if syn["dbname"] == "INSDC"
-            )
             embl_annot = get_assembly_annotation(assembly_id, timeout=timeout)
             start, end = parse_centromere_pos(embl_annot)
             centro_pos = {"start": start, "end": end}
-            # parse cytogenic bands
-            cyto_bands = [
-                ChromBand(
-                    id=band["id"],
-                    stain=band["stain"],
-                    start=band["start"],
-                    end=band["end"],
-                    strand=format_dna_strand(band["strand"]),
-                )
-                for band in data["bands"]
-            ]
         else:
-            centro_pos = None
-            cyto_bands = None
+            centro_pos = data["centromere"]
+
+        cyto_bands = [
+            ChromBand(
+                id=band["id"],
+                stain=band["stain"],
+                start=band["start"],
+                end=band["end"],
+                strand=format_dna_strand(band["strand"]),
+            )
+            for band in data["bands"]
+        ]
 
         chromosomes.append(
             ChromInfo(
-                chrom=name,
+                chrom=Chromosome(name),
                 genome_build=genome_build,
                 bands=cyto_bands,
                 size=data["length"],
                 scale=scale,
-                centromere=centro_pos,
+                centromere=(
+                    GenomePosition(start=centro_pos["start"], end=centro_pos["end"])
+                    if centro_pos is not None
+                    else None
+                ),
             )
         )
     return chromosomes
+
+
+def parse_assembly_id(synonym_entries: list) -> str | None:
+    assembly_id = next(
+        syn["name"].rsplit(".")[0]  # strip assembly version
+        for syn in synonym_entries
+        if syn["dbname"] == "INSDC"
+    )
+    return assembly_id
 
 
 def get_assembly_info(
@@ -81,7 +104,7 @@ def get_assembly_info(
     timeout: int = 2,
 ) -> Any:
     """Get assembly info from ensembl."""
-    base_rest_url = {"37": "grch37.rest.ensembl.org", "38": "rest.ensembl.org"}
+    base_rest_url = {"19": "grch37.rest.ensembl.org", "38": "rest.ensembl.org"}
     params: dict[str, str] = {
         "content-type": "application/json",
         "bands": str(bands),

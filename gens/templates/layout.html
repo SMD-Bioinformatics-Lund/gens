@@ -3,7 +3,7 @@
     <head>
         <meta charset='utf-8'>
         <title>GENS - {% block title %}{% endblock title %}</title>
-        <link rel='icon' href='data:,'>
+        <link rel="icon" href="{{ url_for('home.static', filename='svg/gens-logo-only.svg') }}" type="image/svg+xml">
         {% block css_style %}
         {% endblock css_style %}
         {% block scripts %}

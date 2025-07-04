@@ -30,7 +30,7 @@ RUN apt-get update &&                                                     \
 FROM node:20.8.1-alpine AS node-builder
 WORKDIR /usr/src/app
 COPY package.json package-lock.json webpack.config.cjs gulpfile.js tsconfig.json ./
-COPY assets assets
+COPY frontend frontend
 RUN npm install && npm run build
 
 #########
@@ -79,7 +79,7 @@ ENV GUNICORN_THREADS=1
 ENV GUNICORN_BIND="0.0.0.0:5000"
 ENV GUNICORN_TIMEOUT=400
 
-CMD gunicorn \
+CMD gunicorn -k uvicorn.workers.UvicornWorker \
     --workers=$GUNICORN_WORKERS \
     --bind=$GUNICORN_BIND  \
     --threads=$GUNICORN_THREADS \

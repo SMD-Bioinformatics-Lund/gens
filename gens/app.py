@@ -5,18 +5,21 @@ Whole genome visualization of BAF and log2 ratio
 import logging
 from logging.config import dictConfig
 
-import connexion
+from asgiref.wsgi import WsgiToAsgi
+from fastapi import FastAPI
 from flask import Flask, redirect, request, url_for
 from flask_compress import Compress  # type: ignore
 from flask_login import current_user  # type: ignore
 from werkzeug.wrappers.response import Response
 
+from gens.db.db import init_database_connection
+from gens.exceptions import SampleNotFoundError
+
 from .auth import login_manager, oauth_client
 from .blueprints import gens_bp, home_bp, login_bp
-from .cache import cache
 from .config import AuthMethod, settings
-from .db import SampleNotFoundError, init_database
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
+from .routes import annotations, base, sample, sample_annotations
 
 dictConfig(
     {
@@ -41,32 +44,35 @@ LOG = logging.getLogger(__name__)
 compress = Compress()
 
 
-def create_app() -> Flask:
+def create_app() -> FastAPI:
     """Create and setup Gens application."""
-    application = connexion.FlaskApp(__name__, specification_dir="openapi/")
-    application.add_api("openapi.yaml")
-    app: Flask = application.app  # type: ignore
-    # configure app
-    app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
+    # application = connexion.FlaskApp(__name__, specification_dir="openapi/")
+    # application.add_api("openapi.yaml")
+    # setup fastapi app
+    fastapi_app = FastAPI(title="Gens")
+    add_api_routers(fastapi_app)
+
+    # create and configure flask frontend
+    flask_app: Flask = Flask(__name__)  # type: ignore
+    flask_app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 
     # initialize database and store db content
-    with app.app_context():
-        init_database()
+    with flask_app.app_context():
+        init_database_connection(flask_app)
     # connect to mongo client
-    app.config["DEBUG"] = True
-    app.config["SECRET_KEY"] = "pass"
+    flask_app.config["DEBUG"] = True
+    flask_app.config["SECRET_KEY"] = "pass"
 
     # prepare app context
-    initialize_extensions(app)
+    initialize_extensions(flask_app)
 
-    configure_extensions(app)
+    configure_extensions(flask_app)
 
     # register bluprints and errors
-    register_blueprints(app)
-    # register_errors(app)
+    register_blueprints(flask_app)
 
-    @app.before_request
-    def check_user() -> Flask|None|Response: # type: ignore
+    @flask_app.before_request
+    def check_user() -> Flask | None | Response:  # type: ignore
         """Check permission if page requires authentication."""
         if settings.authentication == AuthMethod.DISABLED or not request.endpoint:
             return None
@@ -74,7 +80,7 @@ def create_app() -> Flask:
         # check if the endpoint requires authentication
         static_endpoint = "static" in request.endpoint
         public_endpoint = getattr(
-            app.view_functions[request.endpoint], "is_public", False
+            flask_app.view_functions[request.endpoint], "is_public", False
         )
         relevant_endpoint = not (static_endpoint or public_endpoint)
         # if endpoint requires auth, check if user is authenticated
@@ -84,12 +90,20 @@ def create_app() -> Flask:
             login_url = url_for("home.landing", next=next_url)
             return redirect(login_url)
 
-    return app
+    # mount flask app to FastAPI app
+    fastapi_app.mount("/app", WsgiToAsgi(flask_app))
+    return fastapi_app
+
+
+def add_api_routers(app: FastAPI):
+    app.include_router(base.router)
+    app.include_router(sample.router)
+    app.include_router(annotations.router)
+    app.include_router(sample_annotations.router)
 
 
 def initialize_extensions(app: Flask) -> None:
     """Initialize flask extensions."""
-    cache.init_app(app)
     compress.init_app(app)
     login_manager.init_app(app)
 

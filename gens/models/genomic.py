@@ -1,7 +1,7 @@
 """Models related to genomic data"""
 
 import re
-from enum import Enum, IntEnum
+from enum import Enum, IntEnum, StrEnum
 
 from pydantic import computed_field, field_validator
 from pydantic.types import PositiveFloat, PositiveInt
@@ -30,7 +30,7 @@ class GenomeBuild(IntEnum):
     HG38 = 38
 
 
-class Chromosome(str, Enum):
+class Chromosome(StrEnum):
     """Valid chromosome names."""
 
     CH1 = "1"
@@ -60,12 +60,30 @@ class Chromosome(str, Enum):
     MT = "MT"
 
 
-class VariantCategory(Enum):
+class VariantType(StrEnum):
+    CLIN = "clinical"
+    RESEARCH = "research"
+
+class VariantCategory(StrEnum):
     """Valid categories for variants."""
 
     STRUCTURAL = "str"
     SINGLE_VAR = "sv"
     SINGLE_NT_VAR = "snv"
+
+
+class VariantSubCategory(StrEnum):
+    SNV = "snv"
+    INDEL = "indel"
+    DEL = "del"
+    INS = "ins"
+    DUP = "dup"
+    TDUP = "tdup"
+    INV = "inv"
+    CNV = "cnv"
+    BND = "bnd"
+    STR = "str"
+    MEI = "mei"
 
 
 class GenomePosition(RWModel):
@@ -85,6 +103,13 @@ class ChromBand(RWModel):
     strand: DnaStrand
 
 
+class ReducedChromInfo(RWModel):
+    """Information on a chromosome."""
+
+    chrom: Chromosome
+    size: PositiveInt
+
+
 class ChromInfo(RWModel):
     """Information on a chromosome."""
 
@@ -97,66 +122,16 @@ class ChromInfo(RWModel):
 
 
 class GenomicRegion(RWModel):
-    """Representation of a region string format.
+    """Representation of a region string format."""
 
-    i.e. chromosome:start-end
-    """
-
-    region: str
-
-    @field_validator("region")
-    @classmethod
-    def valid_region(cls, region: str) -> str:
-        """Validate region string.
-
-        Expected format <chom>:<start>-<end>
-        chrom: member of Enum Chromosome
-        start: >= 0
-        end: [0-9]+|None
-        """
-        match = re.match(REGION_PATTERN, region)
-        if not match:
-            raise ValueError(f"Invalid format of region string: {region}")
-        chrom, start, _ = match.groups()
-        if chrom not in [chr.value for chr in Chromosome]:
-            raise ValueError(f"{chrom} is not a valid chromosome name")
-        if 0 > float(start):
-            raise ValueError(f"{start} is not a valid start position")
-        return region
+    chromosome: Chromosome
+    start: int | None
+    end: int | None
 
     @computed_field()  # type: ignore
     @property
-    def chromosome(self) -> Chromosome:
-        """Get the chromosome name from region string."""
-
-        match = re.match(REGION_PATTERN, self.region)
-        if match is None:
-            raise ValueError("Invalid region designation.")
-        return Chromosome(match.group(1))
-
-    @computed_field()  # type: ignore
-    @property
-    def start(self) -> int | None:
-        """Get start position from a region string."""
-
-        match = re.match(REGION_PATTERN, self.region)
-        return int(match.group(2)) if match else None
-
-    @computed_field()  # type: ignore
-    @property
-    def end(self) -> int | None:
-        """Get end position from a region string."""
-
-        match = re.match(REGION_PATTERN, self.region)
-        if match is None:
-            return None
-
-        raw_num: str = match.group(3)
-        try:
-            num = int(raw_num)
-        except ValueError:
-            num = None
-        return num
+    def region(self) -> str:
+        return f"{self.chromosome}:{self.start}-{self.end}"
 
 
 class QueryGenomicPosition(GenomicRegion):

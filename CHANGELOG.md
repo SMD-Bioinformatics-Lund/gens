@@ -4,6 +4,52 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## 4.0.0
+
+### Added
+ - Tracks expand with wider window size.
+ - Tracks retrieve data on demand and caches requests.
+ - Multiple annotation tracks.
+ - Context menu when clicking band tracks.
+ - Highlight regions and see these highlights across all the position tracks.
+ - View multiple coverage tracks for samples within a case.
+ - Renderings are debounced and keep track of the last render such that they not double-render
+ - Tracks can be shown / hidden, collapsed and moved
+ - Tracks menu and customize Y-axis
+ - Drag and drop of tracks
+ - Color background of all data tracks based on bands from an annotation track
+ - Simple data table to display sample list, allowing search and sorting
+ - Navigate to position by clicking ideogram bands
+ - Add any additional sample to an ongoing session
+ - Track heights are customizable
+ - Multiple-chromosomes view
+ - Parsing AED files can deal with " surrounded comments split across multiple rows
+ - Optional sample type introduced (tumor/normal, proband/mother/father, other). Used in multi-sample views to display only proband-relevant tracks.
+ - Configure the "main sample types" through `main_sample_types` settings in the config
+ - Optional sample sex attribute (M/F) for samples.
+ - Load and display meta data in right hand table.
+ - Pydantic validation of loaded transcripts
+ - Add optional sample annotations. These can be loaded using CLI and displays additional band annotation linked to a sample.
+ - Persistent session state for annotation selection, annotation color, track heights and coverage Y range.
+ - Add end-to-end unit testing for CLI commands.
+ - Comments similar to those in aed format can be supplied in tsv format.
+ - Gens logo in browser tabs.
+ - Checklist to run through when doing releases.
+
+### Changed
+ - Resolution increased 2x for tracks.
+ - Tracks are dynamic, meaning that they can be created and removed on run-time.
+ - Migrated from Connexion to FastAPI.
+ - Changed API routes and the underlying data structure for samples, annotations and transcripts.
+ - Updated CLI command for loading annotations.
+ - Remove height order from backend.
+ - Gens usage documentation added. Admin documentation also updated.
+ - Rewrite the data loading scripts into a single Python script.
+
+### Fixed
+ - If no overview file is supplied, Gens will fall back to o level zoom in the cov/baf files
+ - Multi-line entries in aed header allowed
+
 ## 3.1.0
 
 ### Added

@@ -2,7 +2,7 @@ const webpack = require('webpack');
 const resolve = require('path').resolve;
 const config = {
   devtool: 'inline-source-map',
-  entry: __dirname + '/assets/js/gens',
+  entry: __dirname + '/frontend/js/gens',
   output:{
     path: resolve('./build/js'),
     filename: 'gens.min.js',
@@ -33,7 +33,7 @@ const config = {
       process: 'process/browser'
     })
   ],
-  mode: 'production',
-  // mode: 'development',
+  // mode: 'production',
+  mode: 'development',
 };
 module.exports = config;

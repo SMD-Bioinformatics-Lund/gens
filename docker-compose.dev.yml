@@ -15,12 +15,13 @@ services:
     depends_on:
       - mongodb
     environment:
-      - FLASK_ENV=development
+      - FLASK_DEBUG=1
       - AUTHENTICATION=disabled
     ports:
-      - 8080:5000
+      - 8080:8000
     volumes:
       - ./dump:/dump
       - ./gens:/home/worker/gens
       - ./tests:/home/worker/tests
       - ./utils:/home/worker/utils
+    command: uvicorn gens.app:create_app --reload --log-level debug --host 0.0.0.0

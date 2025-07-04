@@ -1,14 +1,15 @@
 # other
+.vscode/
 *~
 \#*
 tags
 coverage
 *.aed
 dump/
-frontend/
 docker-compose.override.yml
 !tests/fixtures/*.aed
 !tests/fixtures/*.bed
+*Identifier
 
 # python
 *.pyc
@@ -47,3 +48,4 @@ gens/static/css/*
 *.min.css
 *.min.js
 *.map
+
