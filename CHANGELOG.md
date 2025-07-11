@@ -4,6 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## TBD
+
+### Fixed
+ - Samples with underscore (_) in their name can now be added through settings
+
 ## 4.0.0
 
 ### Added
