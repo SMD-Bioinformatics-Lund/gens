@@ -730,7 +730,7 @@ function updateAnnotationTracks(
       {
         height: session.getTrackHeights().bandCollapsed,
         showLabelWhenCollapsed: hasLabel,
-        startExpanded: true,
+        startExpanded: session.getTrackExpanded(source.id, true),
       },
     );
     addTrack(newTrack);
@@ -771,7 +771,7 @@ async function getSampleAnnotationTracks(
       {
         height: session.getTrackHeights().bandCollapsed,
         showLabelWhenCollapsed: true,
-        startExpanded: session.getTrackExpanded(sampleAnnotSource.id, true),
+        startExpanded: false,
       },
     );
     sampleAnnotTracks.push(annotTrack);
