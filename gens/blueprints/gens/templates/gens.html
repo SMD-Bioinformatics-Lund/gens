@@ -67,7 +67,7 @@
     // Set first input field value for ic
     let startJs = {{ start }} === 0 ? 1 : {{ start }};
     const endJs = {{ end }}
-    const chromJs = {{ chrom }} !== undefined ? {{ chrom }} : "1";
+    const chromJs = "{{ chrom }}" !== undefined ? "{{ chrom }}" : "1";
     const genomeBuildJs = {{ genome_build }}
 
     // Initiate variant, annotation and transcript canvases
