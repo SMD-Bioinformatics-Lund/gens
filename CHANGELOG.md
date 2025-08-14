@@ -4,6 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## TBD
+
+### Fixed
+ - Direct links to regions now works also for regions within non numeric chromosomes (i.e. X and Y)
+
 ## 4.0.0
 
 ### Added
