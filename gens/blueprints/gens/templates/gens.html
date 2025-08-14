@@ -70,8 +70,6 @@
     const chromJs = "{{ chrom }}" !== undefined ? "{{ chrom }}" : "1";
     const genomeBuildJs = {{ genome_build }}
 
-    console.log("Chrom JS", chromJs);
-
     // Initiate variant, annotation and transcript canvases
     // and pass flask values to tracks
     gens.initCanvases({
