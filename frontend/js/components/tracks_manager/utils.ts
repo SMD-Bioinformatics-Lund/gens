@@ -65,15 +65,12 @@ export function createAnnotTrack(
     isHidden: false,
   };
 
-  console.log(`Starting ${trackId} with expanded: ${settings.startExpanded}`);
-
   const track = new BandTrack(
     trackId,
     label,
     "annotation",
     () => fnSettings,
     (settings) => {
-      console.log(`${trackId} for setting expanded ${settings.isExpanded}`);
       fnSettings = settings;
       session.setTrackExpanded(trackId, settings.isExpanded);
     },

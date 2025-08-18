@@ -601,12 +601,9 @@ function createSampleTracks(
   baf: TrackViewTrackInfo;
   variant: TrackViewTrackInfo;
 } {
-  const covId =  `${sample.sampleId}_log2_cov`;
-  const covLabel = `${sample.sampleId} cov`;
-
   const coverageTrack = createDotTrack(
-    covId,
-    covLabel,
+    `${sample.sampleId}_log2_cov`,
+    `${sample.sampleId} cov`,
     sample,
     (sample: Sample) =>
       dataSources.getCovData(
@@ -630,13 +627,9 @@ function createSampleTracks(
     openTrackContextMenu,
     () => session.getTrackHeights(),
   );
-
-  const bafId = `${sample.sampleId}_log2_baf`;
-  const bafLabel = `${sample.sampleId} baf`
-
   const bafTrack = createDotTrack(
-    bafId,
-    bafLabel,
+    `${sample.sampleId}_log2_baf`,
+    `${sample.sampleId} baf`,
     sample,
     (sample: Sample) =>
       dataSources.getBafData(
@@ -771,7 +764,7 @@ async function getSampleAnnotationTracks(
       {
         height: session.getTrackHeights().bandCollapsed,
         showLabelWhenCollapsed: true,
-        startExpanded: false,
+        startExpanded: true,
       },
     );
     sampleAnnotTracks.push(annotTrack);

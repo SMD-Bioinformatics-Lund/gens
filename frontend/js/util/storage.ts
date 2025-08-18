@@ -49,13 +49,14 @@ export function loadCoverageRange(): Rng {
 }
 
 export function saveExpandedTracks(tracks: Record<string, boolean>): void {
-  console.log(`Saving ${JSON.stringify(tracks)}`);
   saveToBrowserSession(tracks, EXPANDED_TRACKS_KEY);
 }
 
 export function loadExpandedTracks(): Record<string, boolean> {
-  const tracks = loadFromBrowserSession(EXPANDED_TRACKS_KEY) as Record<string, boolean>;
-  console.log(`Loading ${JSON.stringify(tracks)}`);
+  const tracks = loadFromBrowserSession(EXPANDED_TRACKS_KEY) as Record<
+    string,
+    boolean
+  >;
   return tracks;
 }
 

@@ -6,6 +6,9 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## TBD
 
+### Added
+ - Persist expanded state for annotation tracks
+
 ### Changed
  - Removed unused coveralls GitHub workflows automation
 
