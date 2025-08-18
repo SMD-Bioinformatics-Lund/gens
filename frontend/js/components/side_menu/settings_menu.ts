@@ -110,10 +110,16 @@ template.innerHTML = String.raw`
   </flex-row>
   <flex-row class="height-row">
     <div>Default cov y-range</div>
+    <button>Apply</button>
     <flex-row class="height-inputs">
       <input id="coverage-y-start" class="height-input" type="number" step="0.1">
       <input id="coverage-y-end" class="height-input" type="number" step="0.1">
     </flex-row>
+  </flex-row>
+  <flex-row class="height-row">
+    <div>Variant filter</div>
+    <button>Apply</button>
+    <input id="variant-filter" type="number" step="1">
   </flex-row>
   <div id="tracks-overview"></div>
 `;
