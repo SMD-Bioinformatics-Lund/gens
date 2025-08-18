@@ -364,7 +364,7 @@ export class TrackView extends ShadowBaseElement {
         () => track.getIsExpanded(),
         isDotTrack ? () => track.getYAxis().range : null,
         (newY: Rng) => {
-          track.updateYAxis(newY);
+          track.setYAxis(newY);
           render({});
         },
         async (annotId: string | null) => {
