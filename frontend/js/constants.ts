@@ -90,6 +90,7 @@ export const TRACK_HEIGHTS = {
   xxs: 10,
 }
 
+// FIXME: Consider. Can we separate hom / het variants and their colors here?
 export const VARIANT_COLORS = {
     del: "rgb(102,0,0)",
     dup: "rgb(0,0,102)",

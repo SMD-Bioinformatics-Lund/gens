@@ -188,6 +188,10 @@ export class GensSession {
     return this.chromosome;
   }
 
+  public getRankScoreThres(): number {
+    return this.settings.getRankScoreThres();
+  }
+
   public getXRange(): Rng {
     return [this.start, this.end] as Rng;
   }

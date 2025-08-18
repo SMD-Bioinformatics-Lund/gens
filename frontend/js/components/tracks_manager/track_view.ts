@@ -346,7 +346,11 @@ export class TrackView extends ShadowBaseElement {
       }
 
       const trackPage = this.trackPages[track.id];
-      this.session.showContent(track.label, [trackPage], STYLE.menu.narrowWidth);
+      this.session.showContent(
+        track.label,
+        [trackPage],
+        STYLE.menu.narrowWidth,
+      );
 
       trackPage.initialize(
         (settings: { selectedOnly: boolean }) =>
@@ -658,7 +662,12 @@ function createSampleTracks(
     sample.sampleId,
     `${sample.sampleId}_variants`,
     `${sample.sampleId} Variants`,
-    () => dataSources.getVariantBands(sample, session.getChromosome()),
+    () =>
+      dataSources.getVariantBands(
+        sample,
+        session.getChromosome(),
+        session.getRankScoreThres(),
+      ),
     (variantId: string) => dataSources.getVariantDetails(variantId),
     (variantId: string) => session.getVariantURL(variantId),
     session,

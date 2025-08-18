@@ -139,7 +139,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private coverageYEndElem: HTMLInputElement;
 
   private applyDefaultCovYRange: HTMLButtonElement;
-  private variantFilter: HTMLInputElement;
+  private rankScoreThres: HTMLInputElement;
   private applyVariantFilter: HTMLButtonElement;
 
   private session: GensSession;
@@ -231,7 +231,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addSampleButton = this.root.querySelector("#add-sample");
     this.applyDefaultCovYRange = this.root.querySelector("#apply-default-cov-y-range");
     this.applyVariantFilter = this.root.querySelector("#apply-variant-filter");
-    this.variantFilter = this.root.querySelector("#variant-filter");
+    this.rankScoreThres = this.root.querySelector("#variant-filter");
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
       "#band-collapsed-height",
@@ -258,7 +258,7 @@ export class SettingsMenu extends ShadowBaseElement {
     console.log("Variant filter", this.applyVariantFilter);
 
 
-    this.variantFilter.value = `10`;
+    this.rankScoreThres.value = `10`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
@@ -326,7 +326,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.applyVariantFilter, "click", () => {
       console.log("Event 2");
-      const variantFilter = Number.parseInt(this.variantFilter.value);
+      const variantFilter = Number.parseInt(this.rankScoreThres.value);
       this.onApplyVariantFilter(variantFilter);
     })
   }
@@ -461,6 +461,10 @@ export class SettingsMenu extends ShadowBaseElement {
       };
     });
     return returnVals;
+  }
+
+  public getRankScoreThres(): number {
+    return Number.parseInt(this.rankScoreThres.value);
   }
 }
 
