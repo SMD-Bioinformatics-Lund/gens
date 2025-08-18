@@ -202,7 +202,7 @@ export function createGeneTrack(
       collapsedHeight: session.getTrackHeights().bandCollapsed,
     },
     showLabelWhenCollapsed: true,
-    isExpanded: false,
+    isExpanded: session.getTrackExpanded(id, true),
     isHidden: false,
   };
 
@@ -211,7 +211,10 @@ export function createGeneTrack(
     label,
     "gene",
     () => fnSettings,
-    (settings) => (fnSettings = settings),
+    (settings) => {
+      fnSettings = settings
+      session.setTrackExpanded(id, settings.isExpanded);
+    },
     () => session.getXRange(),
     async () => {
       return {
