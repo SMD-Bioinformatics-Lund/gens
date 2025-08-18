@@ -110,7 +110,7 @@ template.innerHTML = String.raw`
   </flex-row>
   <flex-row class="height-row">
     <div>Default cov y-range</div>
-    <button>Apply</button>
+    <button id="apply-default-cov-y-range">Apply</button>
     <flex-row class="height-inputs">
       <input id="coverage-y-start" class="height-input" type="number" step="0.1">
       <input id="coverage-y-end" class="height-input" type="number" step="0.1">
@@ -118,7 +118,7 @@ template.innerHTML = String.raw`
   </flex-row>
   <flex-row class="height-row">
     <div>Variant filter</div>
-    <button>Apply</button>
+    <button id="apply-variant-filter">Apply</button>
     <input id="variant-filter" type="number" step="1">
   </flex-row>
   <div id="tracks-overview"></div>
@@ -137,6 +137,10 @@ export class SettingsMenu extends ShadowBaseElement {
   private dotTrackExpandedHeightElem: HTMLInputElement;
   private coverageYStartElem: HTMLInputElement;
   private coverageYEndElem: HTMLInputElement;
+
+  private applyDefaultCovYRange: HTMLButtonElement;
+  private variantFilter: HTMLInputElement;
+  private applyVariantFilter: HTMLButtonElement;
 
   private session: GensSession;
 
@@ -158,6 +162,9 @@ export class SettingsMenu extends ShadowBaseElement {
   private onColorByChange: (annotId: string | null) => void;
   private getColorAnnotation: () => string | null;
 
+  private onApplyVariantFilter: (threshold: number) => void;
+  private onApplyDefaultCovRange: (rng: Rng) => void;
+
   public isInitialized: boolean = false;
 
   constructor() {
@@ -177,6 +184,8 @@ export class SettingsMenu extends ShadowBaseElement {
     onRemoveSample: (sample: Sample) => void,
     setTrackInfo: (trackHeights: TrackHeights) => void,
     onColorByChange: (annotId: string | null) => void,
+    onApplyVariantFilter: (threshold: number) => void,
+    onApplyDefaultCovRange: (rng: Rng) => void,
   ) {
     this.session = session;
     this.onChange = onChange;
@@ -206,6 +215,9 @@ export class SettingsMenu extends ShadowBaseElement {
     this.setTrackHeights = setTrackInfo;
     this.onColorByChange = onColorByChange;
     this.getColorAnnotation = () => session.getColorAnnotation();
+
+    this.onApplyVariantFilter = onApplyVariantFilter;
+    this.onApplyDefaultCovRange = onApplyDefaultCovRange;
   }
 
   connectedCallback() {
@@ -217,6 +229,9 @@ export class SettingsMenu extends ShadowBaseElement {
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
     this.addSampleButton = this.root.querySelector("#add-sample");
+    this.applyDefaultCovYRange = this.root.querySelector("#apply-default-cov-y-range");
+    this.applyVariantFilter = this.root.querySelector("#apply-variant-filter");
+    this.variantFilter = this.root.querySelector("#variant-filter");
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
       "#band-collapsed-height",
@@ -239,6 +254,11 @@ export class SettingsMenu extends ShadowBaseElement {
     this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
     this.coverageYStartElem.value = `${coverageRange[0]}`;
     this.coverageYEndElem.value = `${coverageRange[1]}`;
+    // FIXME: Read from session
+    console.log("Variant filter", this.applyVariantFilter);
+
+
+    this.variantFilter.value = `10`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
@@ -296,6 +316,19 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addElementListener(this.coverageYEndElem, "change", () => {
       this.session.setCoverageRange(getCovRange());
     });
+
+    this.addElementListener(this.applyDefaultCovYRange, "click", () => {
+      console.log("Event 1");
+      const defaultCovStart = Number.parseFloat(this.coverageYStartElem.value);
+      const defaultCovEnd = Number.parseFloat(this.coverageYEndElem.value);
+      this.onApplyDefaultCovRange([defaultCovStart, defaultCovEnd]);
+    })
+
+    this.addElementListener(this.applyVariantFilter, "click", () => {
+      console.log("Event 2");
+      const variantFilter = Number.parseInt(this.variantFilter.value);
+      this.onApplyVariantFilter(variantFilter);
+    })
   }
 
   initialize() {

@@ -230,6 +230,12 @@ export async function initCanvases({
       await gensTracks.trackView.setColorAnnotation(annotId);
       render({});
     },
+    (threshold: number) => {
+      console.log(`Applying variant threshold: ${threshold}`)
+    },
+    (rng: Rng) => {
+      console.log(`Applying cov range ${rng}`);
+    },
   );
 
   infoPage.setSources(() => session.getSamples());
