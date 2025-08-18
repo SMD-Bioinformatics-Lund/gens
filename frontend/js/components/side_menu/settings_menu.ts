@@ -148,6 +148,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private onRemoveSample: (sample: Sample) => void;
   private getTrackHeights: () => TrackHeights;
   private setTrackHeights: (sizes: TrackHeights) => void;
+  private setCovRange: (rng: Rng) => void;
   private onColorByChange: (annotId: string | null) => void;
   private getColorAnnotation: () => string | null;
 

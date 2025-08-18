@@ -77,7 +77,6 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
-    // Could session be provided in all render methods? Should it?
     const chromViewActive = this.session.getChromViewActive();
     this.chromosomeView.hidden = !chromViewActive;
     this.trackView.hidden = chromViewActive;
