@@ -49,7 +49,7 @@ def get_transcripts(
     db: Database[Any],
 ) -> list[SimplifiedTranscriptInfo]:
     """Get transcript information from the database."""
-    # build base query
+
     if region.start is None or region.end is None:
         raise ValueError("Start and end coordinates must be set.")
 
@@ -58,7 +58,7 @@ def get_transcripts(
         "genome_build": genome_build,
         **query_genomic_region(region.start, region.end),
     }
-    # build sort order
+    
     sort_order: list[tuple[str, int]] = [("start", 1), ("height_order", 1)]
 
     projection: dict[str, bool] = {

@@ -10,12 +10,11 @@ from typing import Any, Generator, Iterable, Iterator, Optional, TextIO, TypedDi
 import click
 from pydantic import ValidationError
 
-from gens.constants import MANE_PLUS_CLINICAL, MANE_SELECT
+from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.models.annotation import ExonFeature, TranscriptRecord, UtrFeature
 from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
-
 
 
 @dataclass
@@ -27,6 +26,7 @@ class GTFEntry:
     strand: str
     attribs: dict[str, str]
     is_canonical: bool
+
 
 class TranscriptEntry(TypedDict):
     """Represents a single transcript entry in an GTF file"""
@@ -70,6 +70,9 @@ def build_transcripts(
 
             if transc.feature == "transcript":
                 selected_mane: dict[str, str] = mane_info.get(transcript_id, {})
+
+                if not selected_mane and transc.is_canonical:
+                    selected_mane = {"mane_status": ENSEMBL_CANONICAL}
 
                 if transc.attribs.get("gene_name") is None:
                     skipped_no_gene_name += 1
@@ -196,8 +199,6 @@ def _count_file_len(file: TextIO) -> int:
     return n_lines
 
 
-
-
 def _parse_transcript_gtf(
     transc_file: Iterable[str], delimiter: str = "\t"
 ) -> Generator[GTFEntry, None, None]:
@@ -238,5 +239,3 @@ def _parse_transcript_gtf(
 
         # skip non protein coding genes
         yield gtf_entry
-
-

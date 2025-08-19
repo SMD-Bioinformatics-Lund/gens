@@ -8,7 +8,7 @@ from http import HTTPStatus
 from typing import List
 from fastapi import APIRouter, HTTPException, Query
 
-from gens.constants import MANE_PLUS_CLINICAL, MANE_SELECT
+from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import get_annotation, get_annotation_tracks, get_annotations_for_track
 from gens.models.annotation import (
     AnnotationRecord,
@@ -95,7 +95,16 @@ async def get_transcripts(
     # get transcript for the new region
     transcripts: list[SimplifiedTranscriptInfo] = crud_get_transcripts(region, genome_build, db)
     if only_mane:
-        transcripts = [tr for tr in transcripts if tr.type in {MANE_SELECT, MANE_PLUS_CLINICAL}]
+        transcripts = [
+            tr for tr in transcripts if tr.type in {MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL}
+        ]
+
+        test = [
+            tr for tr in transcripts if tr.type in {ENSEMBL_CANONICAL}
+        ]
+
+        print(f">>> {len(test)} with type ENSEMBL_CANONICAL")
+
     return transcripts
 
 
