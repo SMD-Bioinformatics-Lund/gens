@@ -8,6 +8,7 @@ export class DotTrack extends DataTrack {
   constructor(
     id: string,
     label: string,
+    trackType: "dot-cov" | "dot-baf",
     getSettings: () => DataTrackSettings,
     // FIXME: Is this one even used? Can probably be removed?
     updateSettings: (settings: DataTrackSettings) => void,
@@ -19,7 +20,7 @@ export class DotTrack extends DataTrack {
     super(
       id,
       label,
-      "dot" as TrackType,
+      trackType,
       getXRange,
       () => {
         // const xRange = this.renderData.xRange;

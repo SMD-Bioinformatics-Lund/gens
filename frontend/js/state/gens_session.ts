@@ -52,6 +52,7 @@ export class GensSession {
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
   private coverageRange: [number, number] = COV_Y_RANGE;
+  private variantThreshold: number;
   private expandedTracks: Record<string, boolean> = {};
 
   constructor(
@@ -67,6 +68,7 @@ export class GensSession {
     chromInfo: Record<Chromosome, ChromosomeInfo>,
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
+    variantThreshold: number,
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
@@ -86,6 +88,7 @@ export class GensSession {
     this.annotationSelections = loadAnnotationSelections() || [];
     this.colorAnnotationId = loadColorAnnotation();
     this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
+    this.variantThreshold = variantThreshold;
     this.expandedTracks = loadExpandedTracks() || {};
   }
 
@@ -248,6 +251,14 @@ export class GensSession {
 
   public getMarkerModeOn(): boolean {
     return this.markerModeOn;
+  }
+
+  public setVariantThreshold(threshold: number) {
+    this.variantThreshold = threshold;
+  }
+
+  public getVariantThreshold(): number {
+    return this.variantThreshold;
   }
 
   /**

@@ -4,7 +4,11 @@
 export const ZINDICES = {
   trackMarkers: 1000,
   sideMenu: 2000,
-}
+};
+
+// FIXME: This is hard-coded for the constitutional pipeline
+// Will need to consider how to generalize this for somatic (and micro?)
+export const DEFAULT_VARIANT_THRES = 14;
 
 export const FONT_SIZE = {
   small: 10,
@@ -15,11 +19,11 @@ export const FONT_SIZE = {
 export const FONT_WEIGHT = {
   header: 600,
   bold: 300,
-}
+};
 
 export const ANIM_TIME = {
   medium: 150,
-}
+};
 
 export const ICONS = {
   chromosomes: "fa-chart-bar",
@@ -27,6 +31,7 @@ export const ICONS = {
   down: "fa-arrow-down",
   expand: "fa-maximize",
   hide: "fa-eye-slash",
+  play: "fa-play",
   plus: "fa-plus",
   left: "fa-arrow-left",
   marker: "fa-marker",
@@ -36,19 +41,20 @@ export const ICONS = {
   search: "fa-search",
   settings: "fa-cog",
   info: "fa-circle-info",
+  refresh: "fa-arrows-rotate",
   show: "fa-eye",
   trash: "fa-trash",
   up: "fa-arrow-up",
   xmark: "fa-xmark",
   zoomin: "fa-search-plus",
   zoomout: "fa-search-minus",
-}
+};
 
 export const TRANSPARENCY = {
   s: "CC",
   m: "44",
   l: "22",
-}
+};
 
 export const COLORS = {
   white: "#FFFFFF",
@@ -77,7 +83,7 @@ export const SIZES = {
   s: 6,
   m: 8,
   l: 12,
-}
+};
 
 const font = "12px sans-serif";
 
@@ -88,14 +94,17 @@ export const TRACK_HEIGHTS = {
   s: 30,
   xs: 20,
   xxs: 10,
-}
+};
 
+// FIXME: Consider. Can we separate hom / het variants and their colors here?
+const delColors = { hom: "rgb(102,0,0)", het: "rgb(204,0,0)" };
+const dupColors = { hom: "rgb(0,0,102)", het: "rgb(0,0,153)" };
 export const VARIANT_COLORS = {
-    del: "rgb(102,0,0)",
-    dup: "rgb(0,0,102)",
-    tdup: "rgb(0,0,102)",
-    default: "gray",
-  }
+  del: delColors,
+  dup: dupColors,
+  tdup: dupColors,
+  default: { het: "rgb(102,102,102)", hom: "rgb(102,102,102)" },
+};
 
 // FIXME: First step is to gather all constants here
 // FIXME: Then, the content below should be homogenized
@@ -145,7 +154,7 @@ export const STYLE = {
   },
   overviewTrack: {
     titleSpace: 20,
-    labelPad: SIZES.s
+    labelPad: SIZES.s,
   },
   tracks: {
     // edgeColor: colors.white,
@@ -225,4 +234,3 @@ export const CHROMOSOMES: Chromosome[] = [
   "X",
   "Y",
 ];
-

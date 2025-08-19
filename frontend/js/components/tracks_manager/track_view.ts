@@ -346,7 +346,11 @@ export class TrackView extends ShadowBaseElement {
       }
 
       const trackPage = this.trackPages[track.id];
-      this.session.showContent(track.label, [trackPage], STYLE.menu.narrowWidth);
+      this.session.showContent(
+        track.label,
+        [trackPage],
+        STYLE.menu.narrowWidth,
+      );
 
       trackPage.initialize(
         (settings: { selectedOnly: boolean }) =>
@@ -364,7 +368,7 @@ export class TrackView extends ShadowBaseElement {
         () => track.getIsExpanded(),
         isDotTrack ? () => track.getYAxis().range : null,
         (newY: Rng) => {
-          track.updateYAxis(newY);
+          track.setYAxis(newY);
           render({});
         },
         async (annotId: string | null) => {
@@ -506,6 +510,14 @@ export class TrackView extends ShadowBaseElement {
     }
   }
 
+  public setCovYRange(yRange: Rng) {
+    for (const trackContainer of this.dataTracks) {
+      if (trackContainer.track.trackType == "dot-cov") {
+        trackContainer.track.setYAxis(yRange);
+      }
+    }
+  }
+
   public render(settings: RenderSettings) {
     if (settings.dataUpdated) {
       this.updateColorBands();
@@ -604,6 +616,7 @@ function createSampleTracks(
   const coverageTrack = createDotTrack(
     `${sample.sampleId}_log2_cov`,
     `${sample.sampleId} cov`,
+    "dot-cov",
     sample,
     (sample: Sample) =>
       dataSources.getCovData(
@@ -630,6 +643,7 @@ function createSampleTracks(
   const bafTrack = createDotTrack(
     `${sample.sampleId}_log2_baf`,
     `${sample.sampleId} baf`,
+    "dot-baf",
     sample,
     (sample: Sample) =>
       dataSources.getBafData(
@@ -658,7 +672,12 @@ function createSampleTracks(
     sample.sampleId,
     `${sample.sampleId}_variants`,
     `${sample.sampleId} Variants`,
-    () => dataSources.getVariantBands(sample, session.getChromosome()),
+    () =>
+      dataSources.getVariantBands(
+        sample,
+        session.getChromosome(),
+        session.getVariantThreshold(),
+      ),
     (variantId: string) => dataSources.getVariantDetails(variantId),
     (variantId: string) => session.getVariantURL(variantId),
     session,

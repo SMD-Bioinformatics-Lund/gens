@@ -163,6 +163,7 @@ interface ApiSimplifiedVariant {
   variant_type: string; // e.g. research, clinical
   category: VariantCategory;
   sub_category: VariantSubCategory;
+  genotype: string;
 }
 
 interface ApiVariantDetails {
@@ -383,7 +384,7 @@ interface RenderDataSource {
   getTranscriptBands: (chrom: string) => Promise<RenderBand[]>;
   getTranscriptDetails: (geneId: string) => Promise<ApiGeneDetails>;
 
-  getVariantBands: (sample: Sample, chrom: string) => Promise<RenderBand[]>;
+  getVariantBands: (sample: Sample, chrom: string, rankScoreThres: number) => Promise<RenderBand[]>;
   getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>;
 
   getOverviewCovData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
@@ -642,4 +643,4 @@ interface Sample {
   meta?: SampleMetaEntry[];
 }
 
-type TrackType = "annotation" | "variant" | "dot" | "gene" | "position";
+type TrackType = "annotation" | "variant" | "dot-cov" | "dot-baf" | "gene" | "position";

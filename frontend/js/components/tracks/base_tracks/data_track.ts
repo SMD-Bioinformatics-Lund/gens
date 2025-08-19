@@ -71,7 +71,7 @@ export abstract class DataTrack extends CanvasTrack {
     return this.getSettings().yAxis;
   }
 
-  public updateYAxis(range: Rng) {
+  public setYAxis(range: Rng) {
     this.getSettings().yAxis.range = range;
   }
 
