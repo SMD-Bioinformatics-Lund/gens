@@ -81,6 +81,9 @@ export function getRenderDataSource(
     chrom: string,
     rankScoreThres: number,
   ): Promise<RenderBand[]> => {
+
+    console.log("Getting variants for threshold", rankScoreThres);
+
     const variantsRaw = await api.getVariants(
       sample.caseId,
       sample.sampleId,

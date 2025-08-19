@@ -144,6 +144,8 @@ export async function initCanvases({
 
   const mainSample = getMainSample(samples);
 
+  const defaultVariantThres = 14;
+
   const session = new GensSession(
     render,
     sideMenu,
@@ -157,6 +159,7 @@ export async function initCanvases({
     api.getChromInfo(),
     api.getChromSizes(),
     startRegion,
+    defaultVariantThres,
   );
 
   const renderDataSource = getRenderDataSource(
@@ -232,13 +235,14 @@ export async function initCanvases({
     },
     (threshold: number) => {
       console.log(`Applying variant threshold: ${threshold}`)
+
+      // FIXME: What should happen here?
+      // Enough to rerender? Pulling the new data?
+
+      render({dataUpdated: true});
     },
     (rng: Rng) => {
       console.log(`Applying cov range ${rng}`);
-      // FIXME: What should happen here
-
-      // Tracks managers, apply heights to all tracks isn't it
-
       gensTracks.setCovYRange(rng);
       render({dataUpdated: true});
     },
