@@ -6,6 +6,12 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## TBD
 
+### Added
+ - Updated default coverage Y-axis range can be directly applied with a button click
+ - Coverage Y-axis range is reflected in the chromosome view
+ - Variant score threshold can be adjusted and directly applied
+ - Variants are colored both per type (dup/del) and genotype, i.e. CN0, CN1, CN2, CN3+ have different colors
+
 ### Changed
  - Removed unused coveralls GitHub workflows automation
 
