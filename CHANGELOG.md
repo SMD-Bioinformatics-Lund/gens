@@ -1,4 +1,5 @@
 # Change Log
+
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/)
 
@@ -19,6 +20,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
  - Direct links to regions now works also for regions within non numeric chromosomes (i.e. X and Y)
+ - Samples with underscore (_) in their name can now be added through settings
 
 ## 4.0.0
 
