@@ -117,16 +117,6 @@ export function getRenderDataSource(
     return overviewBafRender;
   };
 
-  // const getSampleAnnotationSources = async(caseId: string, sampleId: string): Promise<ApiSampleAnnotationTrack[]> => {
-  //   const rawSources = await api.getSampleAnnotationSources(caseId, sampleId);
-  //   const sources = rawSources.map((source) => {
-  //     source.track_id = source._id;
-  //     return source;
-  //   })
-  //   console.log("Returning sources", sources);
-  //   return sources
-  // }
-
   const getSampleAnnotationBands = async (
     trackId: string,
     chrom: string,
@@ -273,6 +263,9 @@ export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
   return variants.map((variant) => {
     const id = variant.document_id;
     const length = variant.end - variant.start;
+
+    // FIXME: We need the genotype of variants here
+
     return {
       id,
       start: variant.start,

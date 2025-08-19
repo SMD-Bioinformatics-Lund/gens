@@ -163,6 +163,7 @@ interface ApiSimplifiedVariant {
   variant_type: string; // e.g. research, clinical
   category: VariantCategory;
   sub_category: VariantSubCategory;
+  genotype: string;
 }
 
 interface ApiVariantDetails {
