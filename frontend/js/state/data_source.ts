@@ -71,8 +71,8 @@ export function getRenderDataSource(
   };
 
   const getTranscriptBands = async (chrom: string): Promise<RenderBand[]> => {
-    const onlyMane = true;
-    const transcriptsRaw = await api.getTranscripts(chrom, onlyMane);
+    const onlyCanonical = true;
+    const transcriptsRaw = await api.getTranscripts(chrom, onlyCanonical);
     return parseTranscripts(transcriptsRaw);
   };
 
