@@ -76,6 +76,11 @@ export class TracksManager extends ShadowBaseElement {
     );
   }
 
+  setCovYRange(covHeights: Rng) {
+    this.trackView.setCovYRange(covHeights);
+    this.chromosomeView.setCovYRange(covHeights);
+  }
+
   render(settings: RenderSettings) {
     const chromViewActive = this.session.getChromViewActive();
     this.chromosomeView.hidden = !chromViewActive;

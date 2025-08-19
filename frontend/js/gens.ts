@@ -235,6 +235,12 @@ export async function initCanvases({
     },
     (rng: Rng) => {
       console.log(`Applying cov range ${rng}`);
+      // FIXME: What should happen here
+
+      // Tracks managers, apply heights to all tracks isn't it
+
+      gensTracks.setCovYRange(rng);
+      render({dataUpdated: true});
     },
   );
 

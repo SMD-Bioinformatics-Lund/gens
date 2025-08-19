@@ -470,7 +470,9 @@ export class SettingsMenu extends ShadowBaseElement {
   }
 
   public getRankScoreThres(): number {
-    return Number.parseInt(this.rankScoreThres.value);
+    // FIXME
+    return 10;
+    // return Number.parseInt(this.rankScoreThres.value);
   }
 }
 

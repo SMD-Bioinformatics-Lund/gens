@@ -135,6 +135,14 @@ export class ChromosomeView extends ShadowBaseElement {
     }
   }
 
+  public setCovYRange(covRange: Rng) {
+    for (const track of this.tracks) {
+      if (track.type == "coverage") {
+        track.track.setYAxis(covRange);
+      }
+    }
+  }
+
   private onAddTrack(subgroup: HTMLDivElement, trackInfo: ChromViewTrackInfo) {
     this.tracks.push(trackInfo);
     subgroup.appendChild(trackInfo.container);
@@ -170,6 +178,7 @@ function addSampleTracks(
   const dotTrack = createDotTrack(
     trackId,
     trackLabel,
+    "dot-cov",
     sample,
     () => getCovData(sample, chrom),
     {

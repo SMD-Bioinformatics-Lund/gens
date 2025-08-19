@@ -85,6 +85,7 @@ export function createAnnotTrack(
 export function createDotTrack(
   trackId: string,
   label: string,
+  trackType: "dot-cov" | "dot-baf",
   sample: Sample,
   dataFn: (sample: Sample) => Promise<RenderDot[]>,
   settings: {
@@ -113,6 +114,7 @@ export function createDotTrack(
   const dotTrack = new DotTrack(
     trackId,
     label,
+    trackType,
     () => fnSettings,
     (settings) => (fnSettings = settings),
     () => getXRange(),
