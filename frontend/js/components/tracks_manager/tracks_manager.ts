@@ -76,8 +76,12 @@ export class TracksManager extends ShadowBaseElement {
     );
   }
 
+  setCovYRange(covHeights: Rng) {
+    this.trackView.setCovYRange(covHeights);
+    this.chromosomeView.setCovYRange(covHeights);
+  }
+
   render(settings: RenderSettings) {
-    // Could session be provided in all render methods? Should it?
     const chromViewActive = this.session.getChromViewActive();
     this.chromosomeView.hidden = !chromViewActive;
     this.trackView.hidden = chromViewActive;

@@ -71,19 +71,22 @@ export function getRenderDataSource(
   };
 
   const getTranscriptBands = async (chrom: string): Promise<RenderBand[]> => {
-    const onlyMane = true;
-    const transcriptsRaw = await api.getTranscripts(chrom, onlyMane);
+    const onlyCanonical = true;
+    const transcriptsRaw = await api.getTranscripts(chrom, onlyCanonical);
     return parseTranscripts(transcriptsRaw);
   };
 
   const getVariantBands = async (
     sample: Sample,
     chrom: string,
+    rankScoreThres: number,
   ): Promise<RenderBand[]> => {
+
     const variantsRaw = await api.getVariants(
       sample.caseId,
       sample.sampleId,
       chrom,
+      rankScoreThres,
     );
     return parseVariants(variantsRaw);
   };
@@ -113,16 +116,6 @@ export function getRenderDataSource(
     );
     return overviewBafRender;
   };
-
-  // const getSampleAnnotationSources = async(caseId: string, sampleId: string): Promise<ApiSampleAnnotationTrack[]> => {
-  //   const rawSources = await api.getSampleAnnotationSources(caseId, sampleId);
-  //   const sources = rawSources.map((source) => {
-  //     source.track_id = source._id;
-  //     return source;
-  //   })
-  //   console.log("Returning sources", sources);
-  //   return sources
-  // }
 
   const getSampleAnnotationBands = async (
     trackId: string,
@@ -270,16 +263,19 @@ export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
   return variants.map((variant) => {
     const id = variant.document_id;
     const length = variant.end - variant.start;
+
+    const hetHomColors = VARIANT_COLORS[variant.sub_category] != undefined ? 
+      VARIANT_COLORS[variant.sub_category] : VARIANT_COLORS.default
+
+    const color = variant.genotype == "1/0" ? hetHomColors.het : hetHomColors.hom;
+
     return {
       id,
       start: variant.start,
       end: variant.end,
       hoverInfo: `${variant.sub_category} (${prefixNts(length)})`,
       label: `${variant.variant_type} ${variant.sub_category}`,
-      color:
-        VARIANT_COLORS[variant.sub_category] != undefined
-          ? VARIANT_COLORS[variant.sub_category]
-          : VARIANT_COLORS.default,
+      color
     };
   });
 }

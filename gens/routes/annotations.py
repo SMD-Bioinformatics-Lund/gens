@@ -8,7 +8,7 @@ from http import HTTPStatus
 from typing import List
 from fastapi import APIRouter, HTTPException, Query
 
-from gens.constants import MANE_PLUS_CLINICAL, MANE_SELECT
+from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import get_annotation, get_annotation_tracks, get_annotations_for_track
 from gens.models.annotation import (
     AnnotationRecord,
@@ -32,7 +32,7 @@ from gens.crud.genomic import get_chromosome_info, get_chromosomes
 from gens.crud.transcripts import get_transcript, get_transcripts as crud_get_transcripts
 from gens.crud.scout import (
     VariantNotFoundError,
-    VariantValidaitonError,
+    VariantValidationError,
     get_variant,
     get_variants as get_variants_from_scout,
 )
@@ -73,7 +73,7 @@ async def get_transcripts(
     db: GensDb,
     start: int | None = 1,
     end: int | None = None,
-    only_mane: bool = False,
+    only_canonical: bool = False,
 ) -> list[SimplifiedTranscriptInfo]:
     """Get all transcripts for a genomic region.
 
@@ -94,8 +94,13 @@ async def get_transcripts(
 
     # get transcript for the new region
     transcripts: list[SimplifiedTranscriptInfo] = crud_get_transcripts(region, genome_build, db)
-    if only_mane:
-        transcripts = [tr for tr in transcripts if tr.type in {MANE_SELECT, MANE_PLUS_CLINICAL}]
+    if only_canonical:
+        transcripts = [
+            tr
+            for tr in transcripts
+            if tr.type in {MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL}
+        ]
+
     return transcripts
 
 
@@ -157,7 +162,7 @@ async def get_variants(
         variants = get_variants_from_scout(
             sample_name=sample_id, case_id=case_id, region=region, variant_category=category, db=db
         )
-    except VariantValidaitonError as e:
+    except VariantValidationError as e:
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
 
     sub_categories_values = sub_categories.split(",") if sub_categories else None
@@ -187,7 +192,7 @@ async def get_variant_with_id(
     """
     try:
         variant = get_variant(document_id, db=db)
-    except VariantValidaitonError as e:
+    except VariantValidationError as e:
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
     except VariantNotFoundError:
         raise HTTPException(
