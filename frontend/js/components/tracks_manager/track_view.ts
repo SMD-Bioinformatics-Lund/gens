@@ -742,7 +742,7 @@ function updateAnnotationTracks(
       {
         height: session.getTrackHeights().bandCollapsed,
         showLabelWhenCollapsed: hasLabel,
-        startExpanded: true,
+        startExpanded: session.getTrackExpanded(source.id, true),
       },
     );
     addTrack(newTrack);

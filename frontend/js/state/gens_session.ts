@@ -5,7 +5,18 @@ import {
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { COLORS } from "../constants";
-import { loadAnnotationSelections, loadColorAnnotation, loadCoverageRange, loadTrackHeights, saveAnnotationSelections, saveColorAnnotation, saveCoverageRange, saveTrackHeights } from "../util/storage";
+import {
+  loadAnnotationSelections,
+  loadColorAnnotation,
+  loadCoverageRange,
+  loadExpandedTracks,
+  loadTrackHeights,
+  saveAnnotationSelections,
+  saveColorAnnotation,
+  saveCoverageRange,
+  saveExpandedTracks,
+  saveTrackHeights,
+} from "../util/storage";
 import { generateID } from "../util/utils";
 
 /**
@@ -42,6 +53,7 @@ export class GensSession {
   private annotationSelections: string[] = [];
   private coverageRange: [number, number] = COV_Y_RANGE;
   private variantThreshold: number;
+  private expandedTracks: Record<string, boolean> = {};
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -77,6 +89,7 @@ export class GensSession {
     this.colorAnnotationId = loadColorAnnotation();
     this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
     this.variantThreshold = variantThreshold;
+    this.expandedTracks = loadExpandedTracks() || {};
   }
 
   public getMainSample(): Sample {
@@ -135,6 +148,17 @@ export class GensSession {
   public setTrackHeights(heights: TrackHeights) {
     this.trackHeights = heights;
     saveTrackHeights(heights);
+  }
+
+  public getTrackExpanded(id: string, defaultValue: boolean): boolean {
+    const expanded = this.expandedTracks[id];
+    const returnVal = expanded != null ? expanded : defaultValue;
+    return returnVal;
+  }
+
+  public setTrackExpanded(id: string, value: boolean): void {
+    this.expandedTracks[id] = value;
+    saveExpandedTracks(this.expandedTracks);
   }
 
   public getCoverageRange(): [number, number] {
