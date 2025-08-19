@@ -6,7 +6,9 @@ export const ZINDICES = {
   sideMenu: 2000,
 };
 
-export const defaultVariantThres = 14;
+// FIXME: This is hard-coded for the constitutional pipeline
+// Will need to consider how to generalize this for somatic (and micro?)
+export const DEFAULT_VARIANT_THRES = 14;
 
 export const FONT_SIZE = {
   small: 10,

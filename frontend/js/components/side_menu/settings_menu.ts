@@ -165,8 +165,6 @@ export class SettingsMenu extends ShadowBaseElement {
   private setTrackHeights: (sizes: TrackHeights) => void;
   private onColorByChange: (annotId: string | null) => void;
   private getColorAnnotation: () => string | null;
-
-  private onApplyVariantFilter: (threshold: number) => void;
   private onApplyDefaultCovRange: (rng: Rng) => void;
 
   public isInitialized: boolean = false;
@@ -188,7 +186,6 @@ export class SettingsMenu extends ShadowBaseElement {
     onRemoveSample: (sample: Sample) => void,
     setTrackInfo: (trackHeights: TrackHeights) => void,
     onColorByChange: (annotId: string | null) => void,
-    onApplyVariantFilter: (threshold: number) => void,
     onApplyDefaultCovRange: (rng: Rng) => void,
   ) {
     this.session = session;
@@ -220,7 +217,6 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onColorByChange = onColorByChange;
     this.getColorAnnotation = () => session.getColorAnnotation();
 
-    this.onApplyVariantFilter = onApplyVariantFilter;
     this.onApplyDefaultCovRange = onApplyDefaultCovRange;
   }
 
@@ -328,7 +324,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addElementListener(this.applyVariantFilter, "click", () => {
       const variantThreshold = Number.parseInt(this.variantThreshold.value);
       this.session.setVariantThreshold(variantThreshold);
-      this.onApplyVariantFilter(variantThreshold);
+      this.onChange();
     });
   }
 

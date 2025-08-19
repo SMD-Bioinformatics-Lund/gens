@@ -264,12 +264,10 @@ export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
     const id = variant.document_id;
     const length = variant.end - variant.start;
 
-    // FIXME: We need the genotype of variants here
-
     const hetHomColors = VARIANT_COLORS[variant.sub_category] != undefined ? 
       VARIANT_COLORS[variant.sub_category] : VARIANT_COLORS.default
 
-    const color = variant.genotype == "1/1" ? hetHomColors.hom : hetHomColors.het;
+    const color = variant.genotype == "1/0" ? hetHomColors.het : hetHomColors.hom;
 
     return {
       id,

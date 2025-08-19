@@ -62,7 +62,6 @@ def get_variants(
         for doc in db.get_collection("variant").find(query, projection):
             genotype = None
 
-
             for sample in doc.get("samples", []):
                 if (
                     sample.get("sample_id") == sample_name

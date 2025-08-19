@@ -157,7 +157,6 @@ async def get_variants(
         variants = get_variants_from_scout(
             sample_name=sample_id, case_id=case_id, region=region, variant_category=category, db=db
         )
-        print(f">>> Number variants {len(variants)}")
     except VariantValidationError as e:
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
 
@@ -173,8 +172,6 @@ async def get_variants(
             or var.rank_score >= rank_score_threshold
         )
     ]
-
-    print(f">>> Number filtered variants {len(filtered)}")
 
     return filtered
 

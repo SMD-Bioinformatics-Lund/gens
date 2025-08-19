@@ -402,7 +402,7 @@ export class API {
         chromosome: chrom,
         category: "sv",
         start: 1,
-        rank_score_threshold: rank_score_threshold,
+        rank_score_threshold,
         sub_categories: DEFAULT_VARIANT_TYPES,
       };
       const url = new URL("tracks/variants", this.apiURI).href;
