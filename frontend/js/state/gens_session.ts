@@ -92,6 +92,8 @@ export class GensSession {
     this.expandedTracks = loadExpandedTracks() || {};
   }
 
+  // FIXME: Just testing
+
   public getMainSample(): Sample {
     return this.mainSample;
   }
