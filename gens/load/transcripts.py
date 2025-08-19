@@ -1,6 +1,7 @@
 """Load transcripts into database"""
 
 import csv
+from dataclasses import dataclass
 import logging
 from collections import defaultdict
 from itertools import chain
@@ -15,6 +16,17 @@ from gens.models.genomic import GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
+
+
+@dataclass
+class GTFEntry:
+    seqname: str
+    start: int
+    end: int
+    feature: str
+    strand: str
+    attribs: dict[str, str]
+    is_canonical: bool
 
 class TranscriptEntry(TypedDict):
     """Represents a single transcript entry in an GTF file"""
@@ -51,46 +63,46 @@ def build_transcripts(
 
         skipped_no_gene_name = 0
 
-        for transc, attribs in _parse_transcript_gtf(progressbar):
-            transcript_id = attribs.get("transcript_id")
+        for transc in _parse_transcript_gtf(progressbar):
+            transcript_id = transc.attribs.get("transcript_id")
             if not transcript_id:
                 raise ValueError(f"Expected an ID, found: {transcript_id}")
 
-            if transc["feature"] == "transcript":
+            if transc.feature == "transcript":
                 selected_mane: dict[str, str] = mane_info.get(transcript_id, {})
 
-                if attribs.get("gene_name") is None:
+                if transc.attribs.get("gene_name") is None:
                     skipped_no_gene_name += 1
                     continue
 
                 try:
                     transcript_entry = _make_transcript_entry(
-                        transcript_id, selected_mane, transc, attribs, genome_build
+                        transcript_id, selected_mane, transc, genome_build
                     )
                 except ValidationError as e:
                     LOG.warning("Skipping transcript %r: validation failed: %s", transcript_id, e)
                     continue
                 transc_index[transcript_id] = transcript_entry
-                annotated_mane_transc[attribs["gene_name"]].append(transcript_entry)
-            elif transc["feature"] in ["exon", "three_prime_utr", "five_prime_utr"]:
+                annotated_mane_transc[transc.attribs["gene_name"]].append(transcript_entry)
+            elif transc.feature in ["exon", "three_prime_utr", "five_prime_utr"]:
                 # add features to existing transcript
                 if transcript_id in transc_index:
                     feature: ExonFeature | UtrFeature
-                    if transc["feature"] == "exon":
+                    if transc.feature == "exon":
                         feature = ExonFeature.model_validate(
                             {
-                                "feature": transc["feature"],
-                                "start": int(transc["start"]),
-                                "end": int(transc["end"]),
-                                "exon_number": int(attribs["exon_number"]),
+                                "feature": transc.feature,
+                                "start": transc.start,
+                                "end": transc.end,
+                                "exon_number": int(transc.attribs["exon_number"]),
                             }
                         )
                     else:
                         feature = UtrFeature.model_validate(
                             {
-                                "feature": transc["feature"],
-                                "start": int(transc["start"]),
-                                "end": int(transc["end"]),
+                                "feature": transc.feature,
+                                "start": transc.start,
+                                "end": transc.end,
                             }
                         )
                     transcript_obj = transc_index[transcript_id]
@@ -111,22 +123,22 @@ def _make_transcript_entry(
         str,
         str,
     ],
-    transc: dict[str, str],
-    attribs: dict[str, str],
+    transc: GTFEntry,
+    # attribs: dict[str, str],
     genome_build: GenomeBuild,
 ) -> TranscriptRecord:
 
     return TranscriptRecord.model_validate(
         {
-            "chrom": transc["seqname"],
+            "chrom": transc.seqname,
             "genome_build": genome_build.value,
-            "gene_name": attribs["gene_name"],
-            "start": int(transc["start"]),
-            "end": int(transc["end"]),
-            "strand": transc["strand"],
+            "gene_name": transc.attribs["gene_name"],
+            "start": transc.start,
+            "end": transc.end,
+            "strand": transc.strand,
             "height_order": None,  # will be set later
             "transcript_id": transcript_id,
-            "transcript_biotype": attribs["transcript_biotype"],
+            "transcript_biotype": transc.attribs["transcript_biotype"],
             "mane": selected_name.get("mane_status"),
             "hgnc_id": selected_name.get("hgnc_id"),
             "refseq_id": selected_name.get("refseq_id"),
@@ -184,9 +196,11 @@ def _count_file_len(file: TextIO) -> int:
     return n_lines
 
 
+
+
 def _parse_transcript_gtf(
     transc_file: Iterable[str], delimiter: str = "\t"
-) -> Generator[tuple[dict[str, str], dict[str, str]], None, None]:
+) -> Generator[GTFEntry, None, None]:
     """Parse transcripts."""
     col_names = [
         "seqname",
@@ -203,15 +217,26 @@ def _parse_transcript_gtf(
     target_features = ("transcript", "exon", "three_prime_utr", "five_prime_utr")
     LOG.debug("parsing transcripts")
     cfile = csv.DictReader(transc_file, col_names, delimiter=delimiter)
-    for row in cfile:
-        if row["seqname"].startswith("#") or row["seqname"] is None:
+    for row_fields in cfile:
+        if row_fields["seqname"].startswith("#") or row_fields["seqname"] is None:
             continue
 
-        if row["feature"] not in target_features:
+        if row_fields["feature"] not in target_features:
             continue
 
-        attribs = _parse_attribs(row["attribute"])
+        attribs = _parse_attribs(row_fields["attribute"])
+
+        is_canonical = 'tag "Ensembl_canonical"' in row_fields["attribute"]
+
+        seqname = row_fields["seqname"]
+        start = int(row_fields["start"])
+        end = int(row_fields["end"])
+        feature = row_fields["feature"]
+        strand = row_fields["strand"]
+
+        gtf_entry = GTFEntry(seqname, start, end, feature, strand, attribs, is_canonical)
+
         # skip non protein coding genes
-        yield row, attribs
+        yield gtf_entry
 
 
