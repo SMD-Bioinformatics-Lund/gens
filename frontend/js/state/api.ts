@@ -351,14 +351,14 @@ export class API {
     {};
   getTranscripts(
     chrom: string,
-    onlyMane: boolean,
+    onlyCanonical: boolean,
   ): Promise<ApiSimplifiedTranscript[]> {
     const isCached = this.transcriptCache[chrom] !== undefined;
     if (!isCached) {
       const query = {
         chromosome: chrom,
         genome_build: this.genomeBuild,
-        only_mane: onlyMane,
+        only_canonical: onlyCanonical,
       };
       const transcripts = get(
         new URL("tracks/transcripts", this.apiURI).href,

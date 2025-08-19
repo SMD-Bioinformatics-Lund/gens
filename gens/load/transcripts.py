@@ -10,7 +10,7 @@ from typing import Any, Generator, Iterable, Iterator, Optional, TextIO, TypedDi
 import click
 from pydantic import ValidationError
 
-from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
+from gens.constants import ENSEMBL_CANONICAL
 from gens.models.annotation import ExonFeature, TranscriptRecord, UtrFeature
 from gens.models.genomic import GenomeBuild
 

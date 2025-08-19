@@ -73,7 +73,7 @@ async def get_transcripts(
     db: GensDb,
     start: int | None = 1,
     end: int | None = None,
-    only_mane: bool = False,
+    only_canonical: bool = False,
 ) -> list[SimplifiedTranscriptInfo]:
     """Get all transcripts for a genomic region.
 
@@ -94,16 +94,12 @@ async def get_transcripts(
 
     # get transcript for the new region
     transcripts: list[SimplifiedTranscriptInfo] = crud_get_transcripts(region, genome_build, db)
-    if only_mane:
+    if only_canonical:
         transcripts = [
-            tr for tr in transcripts if tr.type in {MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL}
+            tr
+            for tr in transcripts
+            if tr.type in {MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL}
         ]
-
-        test = [
-            tr for tr in transcripts if tr.type in {ENSEMBL_CANONICAL}
-        ]
-
-        print(f">>> {len(test)} with type ENSEMBL_CANONICAL")
 
     return transcripts
 
