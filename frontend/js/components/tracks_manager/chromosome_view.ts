@@ -120,17 +120,11 @@ export class ChromosomeView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
-
-    console.log("Current coverage range", this.session.getCoverageRange());
-
     const covYRange = this.session.getCoverageRange();
-
     for (const track of this.tracks) {
-
       if (track.type == "coverage") {
         track.track.setYAxis(covYRange);
       }
-
       track.track.render(settings);
     }
   }

@@ -22,7 +22,7 @@ import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/data_source";
-import { STYLE } from "./constants";
+import { defaultVariantThres as DEFAULT_VARIANT_THRES, STYLE } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
 import {
   SettingsMenu,
@@ -144,8 +144,6 @@ export async function initCanvases({
 
   const mainSample = getMainSample(samples);
 
-  const defaultVariantThres = 14;
-
   const session = new GensSession(
     render,
     sideMenu,
@@ -159,7 +157,7 @@ export async function initCanvases({
     api.getChromInfo(),
     api.getChromSizes(),
     startRegion,
-    defaultVariantThres,
+    DEFAULT_VARIANT_THRES,
   );
 
   const renderDataSource = getRenderDataSource(

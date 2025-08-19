@@ -510,8 +510,6 @@ export class TrackView extends ShadowBaseElement {
     }
   }
 
-  // FIXME: Seems this should be dealt with through the session or?
-  // Letting the tracks check this themselves
   public setCovYRange(yRange: Rng) {
     for (const trackContainer of this.dataTracks) {
       if (trackContainer.track.trackType == "dot-cov") {
@@ -678,7 +676,7 @@ function createSampleTracks(
       dataSources.getVariantBands(
         sample,
         session.getChromosome(),
-        session.getRankScoreThres(),
+        session.getVariantThreshold(),
       ),
     (variantId: string) => dataSources.getVariantDetails(variantId),
     (variantId: string) => session.getVariantURL(variantId),

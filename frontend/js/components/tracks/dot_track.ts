@@ -51,8 +51,6 @@ export class DotTrack extends DataTrack {
     super.syncDimensions();
     super.drawStart();
 
-    console.log("Drawing dot track");
-
     const { dots } = renderData;
 
     const xRange = this.getXRange();

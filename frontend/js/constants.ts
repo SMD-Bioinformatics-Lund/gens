@@ -6,6 +6,8 @@ export const ZINDICES = {
   sideMenu: 2000,
 }
 
+export const defaultVariantThres = 14;
+
 export const FONT_SIZE = {
   small: 10,
   medium: 12,

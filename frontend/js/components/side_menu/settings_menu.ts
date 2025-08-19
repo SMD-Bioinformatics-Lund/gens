@@ -120,7 +120,7 @@ template.innerHTML = String.raw`
     </flex-row>
   </flex-row>
   <flex-row class="height-row">
-    <div>Variant filter</div>
+    <div>Variant filter threshold</div>
     <flex-row>
       <input id="variant-filter" type="number" step="1" class="height-input">
       <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
@@ -163,7 +163,6 @@ export class SettingsMenu extends ShadowBaseElement {
   private onRemoveSample: (sample: Sample) => void;
   private getTrackHeights: () => TrackHeights;
   private setTrackHeights: (sizes: TrackHeights) => void;
-  private setCovRange: (rng: Rng) => void;
   private onColorByChange: (annotId: string | null) => void;
   private getColorAnnotation: () => string | null;
 
@@ -261,10 +260,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
     this.coverageYStartElem.value = `${coverageRange[0]}`;
     this.coverageYEndElem.value = `${coverageRange[1]}`;
-    // FIXME: Read from session
-    console.log("Variant filter", this.applyVariantFilter);
-
-    this.variantThreshold.value = `10`;
+    this.variantThreshold.value = `${this.session.getVariantThreshold()}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
@@ -466,12 +462,6 @@ export class SettingsMenu extends ShadowBaseElement {
       };
     });
     return returnVals;
-  }
-
-  public getRankScoreThres(): number {
-    // FIXME
-    return 10;
-    // return Number.parseInt(this.rankScoreThres.value);
   }
 }
 
