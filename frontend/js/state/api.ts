@@ -5,7 +5,6 @@ import { zip } from "../util/utils";
 const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 
 // FIXME: This will need to be made configurable eventually
-const DEFAULT_RANK_SCORE_FILTER = 12;
 const DEFAULT_VARIANT_TYPES = ["del", "dup", "tdup"];
 const ZOOM_WINDOW_MULTIPLIER = 5;
 
