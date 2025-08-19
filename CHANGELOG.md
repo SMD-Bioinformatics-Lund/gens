@@ -7,14 +7,12 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ## TBD
 
 ### Added
-<<<<<<< HEAD
  - Updated default coverage Y-axis range can be directly applied with a button click
  - Coverage Y-axis range is reflected in the chromosome view
  - Variant score threshold can be adjusted and directly applied
  - Variants are colored both per type (dup/del) and genotype, i.e. CN0, CN1, CN2, CN3+ have different colors
-=======
  - Persist expanded state for annotation tracks
->>>>>>> 09f3188a4737a8a37a5943185c42446d737b95a9
+ - Fallback to displaying Ensembl canonical when MANE and MANE plus transcripts aren't available for a gene
 
 ### Changed
  - Removed unused coveralls GitHub workflows automation
