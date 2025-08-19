@@ -32,7 +32,7 @@ from gens.crud.genomic import get_chromosome_info, get_chromosomes
 from gens.crud.transcripts import get_transcript, get_transcripts as crud_get_transcripts
 from gens.crud.scout import (
     VariantNotFoundError,
-    VariantValidaitonError,
+    VariantValidationError,
     get_variant,
     get_variants as get_variants_from_scout,
 )
@@ -157,7 +157,8 @@ async def get_variants(
         variants = get_variants_from_scout(
             sample_name=sample_id, case_id=case_id, region=region, variant_category=category, db=db
         )
-    except VariantValidaitonError as e:
+        print(f">>> Number variants {len(variants)}")
+    except VariantValidationError as e:
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
 
     sub_categories_values = sub_categories.split(",") if sub_categories else None
@@ -173,6 +174,8 @@ async def get_variants(
         )
     ]
 
+    print(f">>> Number filtered variants {len(filtered)}")
+
     return filtered
 
 
@@ -187,7 +190,7 @@ async def get_variant_with_id(
     """
     try:
         variant = get_variant(document_id, db=db)
-    except VariantValidaitonError as e:
+    except VariantValidationError as e:
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
     except VariantNotFoundError:
         raise HTTPException(

@@ -266,16 +266,18 @@ export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
 
     // FIXME: We need the genotype of variants here
 
+    const hetHomColors = VARIANT_COLORS[variant.sub_category] != undefined ? 
+      VARIANT_COLORS[variant.sub_category] : VARIANT_COLORS.default
+
+    const color = variant.genotype == "1/1" ? hetHomColors.hom : hetHomColors.het;
+
     return {
       id,
       start: variant.start,
       end: variant.end,
       hoverInfo: `${variant.sub_category} (${prefixNts(length)})`,
       label: `${variant.variant_type} ${variant.sub_category}`,
-      color:
-        VARIANT_COLORS[variant.sub_category] != undefined
-          ? VARIANT_COLORS[variant.sub_category]
-          : VARIANT_COLORS.default,
+      color
     };
   });
 }
