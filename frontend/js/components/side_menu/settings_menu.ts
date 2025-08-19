@@ -60,6 +60,9 @@ template.innerHTML = String.raw`
     .height-inputs {
       gap: ${SIZES.xs}px;
     }
+    #apply-variant-filter {
+      margin-left: ${SIZES.xs}px;
+    }
     #samples-header-row {
       gap: ${SIZES.s}px;
     }
@@ -110,16 +113,18 @@ template.innerHTML = String.raw`
   </flex-row>
   <flex-row class="height-row">
     <div>Default cov y-range</div>
-    <button id="apply-default-cov-y-range">Apply</button>
     <flex-row class="height-inputs">
       <input id="coverage-y-start" class="height-input" type="number" step="0.1">
       <input id="coverage-y-end" class="height-input" type="number" step="0.1">
+      <icon-button id="apply-default-cov-y-range" icon="${ICONS.play}" title="Apply coverage Y-range"></icon-button>
     </flex-row>
   </flex-row>
   <flex-row class="height-row">
     <div>Variant filter</div>
-    <button id="apply-variant-filter">Apply</button>
-    <input id="variant-filter" type="number" step="1">
+    <flex-row>
+      <input id="variant-filter" type="number" step="1" class="height-input">
+      <icon-button id="apply-variant-filter" icon="${ICONS.play}" title="Apply variant filter"></icon-button>
+    </flex-row>
   </flex-row>
   <div id="tracks-overview"></div>
 `;
@@ -229,7 +234,9 @@ export class SettingsMenu extends ShadowBaseElement {
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
     this.addSampleButton = this.root.querySelector("#add-sample");
-    this.applyDefaultCovYRange = this.root.querySelector("#apply-default-cov-y-range");
+    this.applyDefaultCovYRange = this.root.querySelector(
+      "#apply-default-cov-y-range",
+    );
     this.applyVariantFilter = this.root.querySelector("#apply-variant-filter");
     this.rankScoreThres = this.root.querySelector("#variant-filter");
 
@@ -256,7 +263,6 @@ export class SettingsMenu extends ShadowBaseElement {
     this.coverageYEndElem.value = `${coverageRange[1]}`;
     // FIXME: Read from session
     console.log("Variant filter", this.applyVariantFilter);
-
 
     this.rankScoreThres.value = `10`;
 
@@ -322,13 +328,13 @@ export class SettingsMenu extends ShadowBaseElement {
       const defaultCovStart = Number.parseFloat(this.coverageYStartElem.value);
       const defaultCovEnd = Number.parseFloat(this.coverageYEndElem.value);
       this.onApplyDefaultCovRange([defaultCovStart, defaultCovEnd]);
-    })
+    });
 
     this.addElementListener(this.applyVariantFilter, "click", () => {
       console.log("Event 2");
       const variantFilter = Number.parseInt(this.rankScoreThres.value);
       this.onApplyVariantFilter(variantFilter);
-    })
+    });
   }
 
   initialize() {

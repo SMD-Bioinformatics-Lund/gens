@@ -27,6 +27,7 @@ export const ICONS = {
   down: "fa-arrow-down",
   expand: "fa-maximize",
   hide: "fa-eye-slash",
+  play: "fa-play",
   plus: "fa-plus",
   left: "fa-arrow-left",
   marker: "fa-marker",
