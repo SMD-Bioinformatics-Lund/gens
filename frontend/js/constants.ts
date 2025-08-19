@@ -37,6 +37,7 @@ export const ICONS = {
   search: "fa-search",
   settings: "fa-cog",
   info: "fa-circle-info",
+  refresh: "fa-arrows-rotate",
   show: "fa-eye",
   trash: "fa-trash",
   up: "fa-arrow-up",

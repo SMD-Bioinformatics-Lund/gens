@@ -116,14 +116,14 @@ template.innerHTML = String.raw`
     <flex-row class="height-inputs">
       <input id="coverage-y-start" class="height-input" type="number" step="0.1">
       <input id="coverage-y-end" class="height-input" type="number" step="0.1">
-      <icon-button id="apply-default-cov-y-range" icon="${ICONS.play}" title="Apply coverage Y-range"></icon-button>
+      <icon-button id="apply-default-cov-y-range" icon="${ICONS.refresh}" title="Apply coverage Y-range"></icon-button>
     </flex-row>
   </flex-row>
   <flex-row class="height-row">
     <div>Variant filter</div>
     <flex-row>
       <input id="variant-filter" type="number" step="1" class="height-input">
-      <icon-button id="apply-variant-filter" icon="${ICONS.play}" title="Apply variant filter"></icon-button>
+      <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
     </flex-row>
   </flex-row>
   <div id="tracks-overview"></div>
