@@ -186,7 +186,7 @@ export async function initCanvases({
 
   settingsPage.setSources(
     session,
-    () => render({}),
+    render,
     allAnnotSources,
     defaultAnnot,
     () => gensTracks.trackView.getDataTracks(),

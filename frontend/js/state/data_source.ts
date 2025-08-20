@@ -79,14 +79,14 @@ export function getRenderDataSource(
   const getVariantBands = async (
     sample: Sample,
     chrom: string,
-    rankScoreThres: number,
+    variantThres: number,
   ): Promise<RenderBand[]> => {
 
     const variantsRaw = await api.getVariants(
       sample.caseId,
       sample.sampleId,
       chrom,
-      rankScoreThres,
+      variantThres,
     );
     return parseVariants(variantsRaw);
   };

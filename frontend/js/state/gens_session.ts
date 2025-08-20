@@ -306,10 +306,12 @@ export class GensSession {
   public addHighlight(range: Rng): string {
     const id = generateID();
 
+    const intRange: Rng = [Math.round(range[0]), Math.round(range[1])];
+
     const highlight = {
       id,
       chromosome: this.chromosome,
-      range,
+      range: intRange,
       color: COLORS.transparentBlue,
     };
 

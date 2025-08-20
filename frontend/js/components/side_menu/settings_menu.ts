@@ -149,7 +149,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
   private session: GensSession;
 
-  private onChange: () => void;
+  private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private defaultAnnots: { id: string; label: string }[];
   private getDataTracks: () => DataTrack[];
@@ -175,7 +175,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
   setSources(
     session: GensSession,
-    onChange: () => void,
+    onChange: (renderSettings: RenderSettings) => void,
     allAnnotationSources: ApiAnnotationTrack[],
     defaultAnnots: { id: string; label: string }[],
     getDataTracks: () => DataTrack[],
@@ -269,7 +269,7 @@ export class SettingsMenu extends ShadowBaseElement {
         .getValues()
         .map((obj) => obj.value as string);
       this.session.setAnnotationSelections(ids);
-      this.onChange();
+      this.onChange({});
     });
 
     this.addElementListener(this.colorBySelect, "change", () => {
@@ -324,7 +324,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addElementListener(this.applyVariantFilter, "click", () => {
       const variantThreshold = Number.parseInt(this.variantThreshold.value);
       this.session.setVariantThreshold(variantThreshold);
-      this.onChange();
+      this.onChange({dataUpdated: true});
     });
   }
 
@@ -348,7 +348,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
     this.session.setAnnotationSelections(this.defaultAnnots.map((a) => a.id));
-    this.onChange();
+    this.onChange({});
   }
 
   private setupSampleSelect() {
@@ -378,15 +378,15 @@ export class SettingsMenu extends ShadowBaseElement {
       tracks,
       (track: DataTrack, direction: "up" | "down") => {
         this.onTrackMove(track.id, direction);
-        this.onChange();
+        this.onChange({});
       },
       (track: DataTrack) => {
         track.toggleHidden();
-        this.onChange();
+        this.onChange({});
       },
       (track: DataTrack) => {
         track.toggleExpanded();
-        this.onChange();
+        this.onChange({});
       },
     );
     this.tracksOverview.appendChild(tracksSection);
