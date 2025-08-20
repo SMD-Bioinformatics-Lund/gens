@@ -62,6 +62,8 @@ The `dump` folder should contain:
 * Annotation tracks
   * `annotation_tracks`
 
+If running the default configs, you might need to change the port of `gens_api_url` to `5000` in `config.toml`.
+
 ### Production settings for the front-end part
 
 In `webpack.config.cjs`:
@@ -284,11 +286,6 @@ Is content correctly displayed in the context menus for the different band track
 
 ### Settings
 
-- [ ] Persistent settings
-  - [ ] Try adjusting track height
-  - [ ] Assign mimisbrunnr as "Color tracks by"
-  - [ ] Add another annotation track
-  - [ ] Refresh the page. These settings should persist.
 - [ ] Track settings
   - [ ] Open a dot track menu by clicking its label
   - [ ] Adjust the Y-axis. These changes should be shown directly in the viewer for that track.
@@ -297,6 +294,14 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Adding / removing samples
   - [ ] In the settings menu, try removing a sample. The corresponding tracks should be removed.
   - [ ] In the settings menu, try adding a sample. The corresponding tracks should be added at the bottom of the tracks.
+- Try changing the variant threshold to 6. More bands should appear in chromosome 1.
+- Try updating the default Y-axis range and click apply. All coverage tracks should change Y-axis.
+- [ ] Persistent settings
+  - [ ] Try adjusting track height
+  - [ ] Assign mimisbrunnr as "Color tracks by"
+  - [ ] Add another annotation track
+  - [ ] Expand / collapse annotation tracks and the gene track
+  - [ ] Refresh the page. These settings should persist.
 
 ## Multiple-chromosomes page
 
