@@ -1,13 +1,26 @@
 # Change Log
+
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
-## TBD
+## 4.1.0
+
+### Added
+ - Updated default coverage Y-axis range can be directly applied with a button click
+ - Coverage Y-axis range is reflected also in the chromosome view
+ - Variant score threshold can be adjusted
+ - Variants are colored both per type (dup/del) and genotype, i.e. CN0, CN1, CN2, CN3+ have different colors
+ - Persist expansion state (i.e. collapsed or expanded) for annotation tracks and variant track
+ - Fallback to displaying Ensembl canonical when MANE and MANE plus transcripts aren't available for a gene
 
 ### Changed
  - Removed unused coveralls GitHub workflows automation
+
+### Fixed
+ - Direct links to regions now works also for regions within non numeric chromosomes (i.e. X and Y)
+ - Samples with underscore (_) in their name can now be added through settings
 
 ## 4.0.0
 

@@ -5,7 +5,6 @@ import { zip } from "../util/utils";
 const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 
 // FIXME: This will need to be made configurable eventually
-const DEFAULT_RANK_SCORE_FILTER = 12;
 const DEFAULT_VARIANT_TYPES = ["del", "dup", "tdup"];
 const ZOOM_WINDOW_MULTIPLIER = 5;
 
@@ -352,14 +351,14 @@ export class API {
     {};
   getTranscripts(
     chrom: string,
-    onlyMane: boolean,
+    onlyCanonical: boolean,
   ): Promise<ApiSimplifiedTranscript[]> {
     const isCached = this.transcriptCache[chrom] !== undefined;
     if (!isCached) {
       const query = {
         chromosome: chrom,
         genome_build: this.genomeBuild,
-        only_mane: onlyMane,
+        only_canonical: onlyCanonical,
       };
       const transcripts = get(
         new URL("tracks/transcripts", this.apiURI).href,
@@ -371,6 +370,7 @@ export class API {
     return this.transcriptCache[chrom];
   }
 
+  private cachedThreshold: number;
   private variantsSampleChromCache: Record<
     string,
     Record<string, Promise<ApiSimplifiedVariant[]>>
@@ -379,7 +379,15 @@ export class API {
     caseId: string,
     sampleId: string,
     chrom: string,
+    rank_score_threshold: number,
   ): Promise<ApiSimplifiedVariant[]> {
+
+    // Invalidate cache if changing the rank score threshold
+    if (this.cachedThreshold != rank_score_threshold) {
+      this.cachedThreshold = rank_score_threshold;
+      this.variantsSampleChromCache = {};
+    }
+
     if (this.variantsSampleChromCache[sampleId] == null) {
       this.variantsSampleChromCache[sampleId] = {};
     }
@@ -393,7 +401,7 @@ export class API {
         chromosome: chrom,
         category: "sv",
         start: 1,
-        rank_score_threshold: DEFAULT_RANK_SCORE_FILTER,
+        rank_score_threshold,
         sub_categories: DEFAULT_VARIANT_TYPES,
       };
       const url = new URL("tracks/variants", this.apiURI).href;

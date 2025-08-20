@@ -5,7 +5,18 @@ import {
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { COLORS } from "../constants";
-import { loadAnnotationSelections, loadColorAnnotation, loadCoverageRange, loadTrackHeights, saveAnnotationSelections, saveColorAnnotation, saveCoverageRange, saveTrackHeights } from "../util/storage";
+import {
+  loadAnnotationSelections,
+  loadColorAnnotation,
+  loadCoverageRange,
+  loadExpandedTracks,
+  loadTrackHeights,
+  saveAnnotationSelections,
+  saveColorAnnotation,
+  saveCoverageRange,
+  saveExpandedTracks,
+  saveTrackHeights,
+} from "../util/storage";
 import { generateID } from "../util/utils";
 
 /**
@@ -41,6 +52,8 @@ export class GensSession {
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
   private coverageRange: [number, number] = COV_Y_RANGE;
+  private variantThreshold: number;
+  private expandedTracks: Record<string, boolean> = {};
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -55,6 +68,7 @@ export class GensSession {
     chromInfo: Record<Chromosome, ChromosomeInfo>,
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
+    variantThreshold: number,
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
@@ -74,6 +88,8 @@ export class GensSession {
     this.annotationSelections = loadAnnotationSelections() || [];
     this.colorAnnotationId = loadColorAnnotation();
     this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
+    this.variantThreshold = variantThreshold;
+    this.expandedTracks = loadExpandedTracks() || {};
   }
 
   public getMainSample(): Sample {
@@ -132,6 +148,17 @@ export class GensSession {
   public setTrackHeights(heights: TrackHeights) {
     this.trackHeights = heights;
     saveTrackHeights(heights);
+  }
+
+  public getTrackExpanded(id: string, defaultValue: boolean): boolean {
+    const expanded = this.expandedTracks[id];
+    const returnVal = expanded != null ? expanded : defaultValue;
+    return returnVal;
+  }
+
+  public setTrackExpanded(id: string, value: boolean): void {
+    this.expandedTracks[id] = value;
+    saveExpandedTracks(this.expandedTracks);
   }
 
   public getCoverageRange(): [number, number] {
@@ -226,6 +253,14 @@ export class GensSession {
     return this.markerModeOn;
   }
 
+  public setVariantThreshold(threshold: number) {
+    this.variantThreshold = threshold;
+  }
+
+  public getVariantThreshold(): number {
+    return this.variantThreshold;
+  }
+
   /**
    * Distance can be negative
    */
@@ -271,10 +306,12 @@ export class GensSession {
   public addHighlight(range: Rng): string {
     const id = generateID();
 
+    const intRange: Rng = [Math.round(range[0]), Math.round(range[1])];
+
     const highlight = {
       id,
       chromosome: this.chromosome,
-      range,
+      range: intRange,
       color: COLORS.transparentBlue,
     };
 

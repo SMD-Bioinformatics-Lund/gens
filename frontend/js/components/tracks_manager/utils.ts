@@ -72,6 +72,7 @@ export function createAnnotTrack(
     () => fnSettings,
     (settings) => {
       fnSettings = settings;
+      session.setTrackExpanded(trackId, settings.isExpanded);
     },
     () => getXRange(),
     () => getAnnotTrackData(getAnnotationBands),
@@ -85,6 +86,7 @@ export function createAnnotTrack(
 export function createDotTrack(
   trackId: string,
   label: string,
+  trackType: "dot-cov" | "dot-baf",
   sample: Sample,
   dataFn: (sample: Sample) => Promise<RenderDot[]>,
   settings: {
@@ -113,6 +115,7 @@ export function createDotTrack(
   const dotTrack = new DotTrack(
     trackId,
     label,
+    trackType,
     () => fnSettings,
     (settings) => (fnSettings = settings),
     () => getXRange(),
@@ -201,7 +204,7 @@ export function createGeneTrack(
       collapsedHeight: session.getTrackHeights().bandCollapsed,
     },
     showLabelWhenCollapsed: true,
-    isExpanded: false,
+    isExpanded: session.getTrackExpanded(id, true),
     isHidden: false,
   };
 
@@ -210,7 +213,10 @@ export function createGeneTrack(
     label,
     "gene",
     () => fnSettings,
-    (settings) => (fnSettings = settings),
+    (settings) => {
+      fnSettings = settings
+      session.setTrackExpanded(id, settings.isExpanded);
+    },
     () => session.getXRange(),
     async () => {
       return {

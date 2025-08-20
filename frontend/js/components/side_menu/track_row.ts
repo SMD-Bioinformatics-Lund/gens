@@ -10,6 +10,13 @@ template.innerHTML = String.raw`
       justify-content: space-between;
       width: 100%;
     }
+    #label {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     #button-row {
       gap: ${SIZES.s}px;
     }
@@ -17,7 +24,6 @@ template.innerHTML = String.raw`
   <flex-row id="main-row">
     <div id="label"></div>
     <flex-row id="button-row">
-
       <icon-button id="up" icon="${ICONS.up}"></icon-button>
       <icon-button id="down" icon="${ICONS.down}"></icon-button>
       <icon-button id="hide" icon="${ICONS.hide}"></icon-button>
@@ -72,6 +78,7 @@ export class TrackRow extends ShadowBaseElement {
     this.toggleExpand = this.root.querySelector("#collapse");
 
     this.label.innerHTML = this.track.label;
+    this.label.title = this.track.label;
 
     // This is needed to make sure the icon buttons are classes
     // before later assigning the icon, i.e.

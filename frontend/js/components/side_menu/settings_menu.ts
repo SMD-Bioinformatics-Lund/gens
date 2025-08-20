@@ -60,6 +60,9 @@ template.innerHTML = String.raw`
     .height-inputs {
       gap: ${SIZES.xs}px;
     }
+    #apply-variant-filter {
+      margin-left: ${SIZES.xs}px;
+    }
     #samples-header-row {
       gap: ${SIZES.s}px;
     }
@@ -113,6 +116,14 @@ template.innerHTML = String.raw`
     <flex-row class="height-inputs">
       <input id="coverage-y-start" class="height-input" type="number" step="0.1">
       <input id="coverage-y-end" class="height-input" type="number" step="0.1">
+      <icon-button id="apply-default-cov-y-range" icon="${ICONS.refresh}" title="Apply coverage Y-range"></icon-button>
+    </flex-row>
+  </flex-row>
+  <flex-row class="height-row">
+    <div>Variant filter threshold</div>
+    <flex-row>
+      <input id="variant-filter" type="number" step="1" class="height-input">
+      <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
     </flex-row>
   </flex-row>
   <div id="tracks-overview"></div>
@@ -132,9 +143,13 @@ export class SettingsMenu extends ShadowBaseElement {
   private coverageYStartElem: HTMLInputElement;
   private coverageYEndElem: HTMLInputElement;
 
+  private applyDefaultCovYRange: HTMLButtonElement;
+  private variantThreshold: HTMLInputElement;
+  private applyVariantFilter: HTMLButtonElement;
+
   private session: GensSession;
 
-  private onChange: () => void;
+  private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private defaultAnnots: { id: string; label: string }[];
   private getDataTracks: () => DataTrack[];
@@ -150,6 +165,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private setTrackHeights: (sizes: TrackHeights) => void;
   private onColorByChange: (annotId: string | null) => void;
   private getColorAnnotation: () => string | null;
+  private onApplyDefaultCovRange: (rng: Rng) => void;
 
   public isInitialized: boolean = false;
 
@@ -159,7 +175,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
   setSources(
     session: GensSession,
-    onChange: () => void,
+    onChange: (renderSettings: RenderSettings) => void,
     allAnnotationSources: ApiAnnotationTrack[],
     defaultAnnots: { id: string; label: string }[],
     getDataTracks: () => DataTrack[],
@@ -170,6 +186,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onRemoveSample: (sample: Sample) => void,
     setTrackInfo: (trackHeights: TrackHeights) => void,
     onColorByChange: (annotId: string | null) => void,
+    onApplyDefaultCovRange: (rng: Rng) => void,
   ) {
     this.session = session;
     this.onChange = onChange;
@@ -199,6 +216,8 @@ export class SettingsMenu extends ShadowBaseElement {
     this.setTrackHeights = setTrackInfo;
     this.onColorByChange = onColorByChange;
     this.getColorAnnotation = () => session.getColorAnnotation();
+
+    this.onApplyDefaultCovRange = onApplyDefaultCovRange;
   }
 
   connectedCallback() {
@@ -210,6 +229,11 @@ export class SettingsMenu extends ShadowBaseElement {
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
     this.addSampleButton = this.root.querySelector("#add-sample");
+    this.applyDefaultCovYRange = this.root.querySelector(
+      "#apply-default-cov-y-range",
+    );
+    this.applyVariantFilter = this.root.querySelector("#apply-variant-filter");
+    this.variantThreshold = this.root.querySelector("#variant-filter");
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
       "#band-collapsed-height",
@@ -232,10 +256,11 @@ export class SettingsMenu extends ShadowBaseElement {
     this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
     this.coverageYStartElem.value = `${coverageRange[0]}`;
     this.coverageYEndElem.value = `${coverageRange[1]}`;
+    this.variantThreshold.value = `${this.session.getVariantThreshold()}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
-      const [caseId, sampleId] = caseId_sampleId.split("_");
+      const [caseId, sampleId] = caseId_sampleId.split("___");
       this.onAddSample({ caseId, sampleId });
     });
 
@@ -244,7 +269,7 @@ export class SettingsMenu extends ShadowBaseElement {
         .getValues()
         .map((obj) => obj.value as string);
       this.session.setAnnotationSelections(ids);
-      this.onChange();
+      this.onChange({});
     });
 
     this.addElementListener(this.colorBySelect, "change", () => {
@@ -289,6 +314,18 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addElementListener(this.coverageYEndElem, "change", () => {
       this.session.setCoverageRange(getCovRange());
     });
+
+    this.addElementListener(this.applyDefaultCovYRange, "click", () => {
+      const defaultCovStart = Number.parseFloat(this.coverageYStartElem.value);
+      const defaultCovEnd = Number.parseFloat(this.coverageYEndElem.value);
+      this.onApplyDefaultCovRange([defaultCovStart, defaultCovEnd]);
+    });
+
+    this.addElementListener(this.applyVariantFilter, "click", () => {
+      const variantThreshold = Number.parseInt(this.variantThreshold.value);
+      this.session.setVariantThreshold(variantThreshold);
+      this.onChange({dataUpdated: true});
+    });
   }
 
   initialize() {
@@ -311,7 +348,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
     this.session.setAnnotationSelections(this.defaultAnnots.map((a) => a.id));
-    this.onChange();
+    this.onChange({});
   }
 
   private setupSampleSelect() {
@@ -319,7 +356,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const allSamples = rawSamples.map((s) => {
       return {
         label: `${s.sampleId} (case: ${s.caseId})`,
-        value: `${s.caseId}_${s.sampleId}`,
+        value: `${s.caseId}___${s.sampleId}`,
       };
     });
     this.sampleSelect.setValues(allSamples);
@@ -341,15 +378,15 @@ export class SettingsMenu extends ShadowBaseElement {
       tracks,
       (track: DataTrack, direction: "up" | "down") => {
         this.onTrackMove(track.id, direction);
-        this.onChange();
+        this.onChange({});
       },
       (track: DataTrack) => {
         track.toggleHidden();
-        this.onChange();
+        this.onChange({});
       },
       (track: DataTrack) => {
         track.toggleExpanded();
-        this.onChange();
+        this.onChange({});
       },
     );
     this.tracksOverview.appendChild(tracksSection);
