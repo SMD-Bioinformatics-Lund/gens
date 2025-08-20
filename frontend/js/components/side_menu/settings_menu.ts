@@ -260,7 +260,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
-      const [caseId, sampleId] = caseId_sampleId.split("_");
+      const [caseId, sampleId] = caseId_sampleId.split("___");
       this.onAddSample({ caseId, sampleId });
     });
 
@@ -356,7 +356,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const allSamples = rawSamples.map((s) => {
       return {
         label: `${s.sampleId} (case: ${s.caseId})`,
-        value: `${s.caseId}_${s.sampleId}`,
+        value: `${s.caseId}___${s.sampleId}`,
       };
     });
     this.sampleSelect.setValues(allSamples);
