@@ -320,6 +320,23 @@ Is content correctly displayed in the context menus for the different band track
 gens load annotations --file /access/annotation_tracks/ --genome-build 38
 ```
 
+- [ ] Check for new ensembl version and update if available.
+
+On host (check the versions)
+
+```
+curl --silent --output ./Homo_sapiens.GRCh38.113.gtf.gz https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.113.gtf.gz
+curl --silent --output ./MANE.GRCh38.v1.4.summary.txt.gz https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
+docker cp Homo_sapiens.GRCh38.113.gtf.gz <container ID>:/tmp
+docker cp MANE.GRCh38.v1.4.summary.txt.gz <container ID>:/tmp
+```
+
+In container
+
+```
+gens load transcripts --file /tmp/Homo_sapiens.GRCh38.113.gtf.gz --mane /tmp/MANE.GRCh38.v1.4.summary.txt.gz -b 38
+```
+
 ## UI
 
 General sanity check and testing things that cannot be tested in a test setup.
