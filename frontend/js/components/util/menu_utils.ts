@@ -49,8 +49,18 @@ export function getURLRow(text: string) {
   const row = getContainer("row");
   const span = document.createElement("span");
 
-  const pmid_regex =
-    /(PMID: \s*(\d+))|(https?:\/\/[^\s)]+)|(www\.[^\s)]+)|(OMIM #(\d+))|(ORPHA:\s*(\d+))/g;
+  const pmid = "(PMID:\\s*(\\d+))";
+  const url = "(https?:\\/\\/[^\\s)]+)";
+  const www = "(www\\.[^\\s)]+)";
+  const omim = "(OMIM #(\\d+))";
+  const orpha = "(ORPHA:\\s*(\\d+))";
+  const vcv = "(VCV\\d+(?:\\.\\d+)?)";
+  const rcv = "(RCV\\d+(?:\\.\\d+)?)";
+
+  const combined_regex = new RegExp(
+    [pmid, url, www, omim, orpha, vcv, rcv].join("|"),
+    "g"
+  );
 
   const groups = {
     pmid: 1,
@@ -61,11 +71,13 @@ export function getURLRow(text: string) {
     omimId: 6,
     orpha: 7,
     orphaId: 8,
+    vcv: 9,
+    rcv: 10,
   };
 
   let lastIndex = 0;
   let match: RegExpExecArray | null;
-  while ((match = pmid_regex.exec(text)) != null) {
+  while ((match = combined_regex.exec(text)) != null) {
     if (match.index > lastIndex) {
       span.appendChild(
         document.createTextNode(text.slice(lastIndex, match.index)),
@@ -98,6 +110,14 @@ export function getURLRow(text: string) {
       prefix = "ORPHA: ";
       label = orphaId;
       url = `https://www.orpha.net/en/disease/detail/${orphaId}`;
+    } else if (match[groups.vcv]) {
+      const vcvId = match[groups.vcv];
+      label = vcvId;
+      url = `https://www.ncbi.nlm.nih.gov/clinvar/variation/${vcvId}/`;
+    } else if (match[groups.rcv]) {
+      const rcvId = match[groups.rcv];
+      label = rcvId;
+      url = `https://www.ncbi.nlm.nih.gov/clinvar/${rcvId}`;
     }
     if (prefix != null) {
       const prefixSpan = document.createTextNode(prefix);
@@ -106,7 +126,7 @@ export function getURLRow(text: string) {
     const aHref = getAHref(label, url);
     span.appendChild(aHref);
 
-    lastIndex = pmid_regex.lastIndex;
+    lastIndex = combined_regex.lastIndex;
   }
 
   if (lastIndex < text.length) {
