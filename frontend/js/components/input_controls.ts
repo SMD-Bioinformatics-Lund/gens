@@ -7,7 +7,7 @@ import {
 } from "../constants";
 import { GensSession } from "../state/gens_session";
 import { getPan, zoomIn, zoomOut } from "../util/navigation";
-import { rangeSize } from "../util/utils";
+import { clampRange, rangeSize } from "../util/utils";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -287,7 +287,8 @@ async function queryRegionOrGene(
     chrom = searchResult.chromosome as Chromosome;
 
     // Add visual padding at edges
-    range = extendRange([searchResult.start, searchResult.end]);
+    const rawRange = extendRange([searchResult.start, searchResult.end]);
+    range = clampRange(rawRange, 1, this.session.getCurrentChromSize());
   }
   onChangePosition(chrom, range);
 }
