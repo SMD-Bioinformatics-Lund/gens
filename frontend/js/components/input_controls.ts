@@ -1,6 +1,13 @@
-import { CHROMOSOMES, COLORS, ICONS, SIZES } from "../constants";
+import {
+  CHROMOSOMES,
+  COLORS,
+  ICONS,
+  SEARCH_PAD_FRAC,
+  SIZES,
+} from "../constants";
 import { GensSession } from "../state/gens_session";
 import { getPan, zoomIn, zoomOut } from "../util/navigation";
+import { clampRange, rangeSize } from "../util/utils";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -184,12 +191,11 @@ export class InputControls extends HTMLElement {
 
     this.infoButton.addEventListener("click", () => {
       this.onOpenInfo();
-    })
+    });
 
     // FIXME: Also enter when inside the input?
     this.searchButton.addEventListener("click", () => {
       const currentValue = this.regionField.value;
-      // console.log("Search", currentValue);
       queryRegionOrGene(
         currentValue,
         (chrom: Chromosome, range?: Rng) => {
@@ -279,9 +285,20 @@ async function queryRegionOrGene(
       return;
     }
     chrom = searchResult.chromosome as Chromosome;
-    range = [searchResult.start, searchResult.end];
+
+    // Add visual padding at edges
+    const rawRange = extendRange([searchResult.start, searchResult.end]);
+    range = clampRange(rawRange, 1, this.session.getCurrentChromSize());
   }
   onChangePosition(chrom, range);
+}
+
+function extendRange(startRange: Rng): Rng {
+  const range = rangeSize(startRange);
+  const fracDiff = range * SEARCH_PAD_FRAC;
+  const usedStart = Math.ceil(startRange[0] - fracDiff / 2);
+  const usedEnd = Math.floor(startRange[1] + fracDiff / 2);
+  return [usedStart, usedEnd];
 }
 
 customElements.define("input-controls", InputControls);
