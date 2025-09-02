@@ -149,6 +149,12 @@ export function padRange(range: Rng, pad: number): Rng {
   return [range[0] + pad, range[1] - pad];
 }
 
+export function clampRange(range: Rng, min: number, max: number): Rng {
+  const clampedMin = Math.max(range[0], min);
+  const clampedMax = Math.min(range[1], max);
+  return [clampedMin, clampedMax]
+}
+
 export function removeChildren(container: HTMLElement) {
   while (container.firstChild) {
     container.removeChild(container.firstChild);
