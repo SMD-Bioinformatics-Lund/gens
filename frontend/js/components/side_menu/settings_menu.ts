@@ -70,6 +70,10 @@ template.innerHTML = String.raw`
       min-width: 150px;
       padding-right: ${SIZES.l}px;
     }
+    #advanced-settings {
+      padding-top: ${SIZES.l}px;
+      cursor: pointer;
+    }
   </style>
   <div class="header-row">
     <div class="header">Annotation sources</div>
@@ -95,38 +99,45 @@ template.innerHTML = String.raw`
     <div class="header">Highlights</div>
   </div>
   <div id="highlights-overview"></div>
-  <div class="header-row">
-    <div class="header">Tracks</div>
-  </div>
-  <flex-row class="height-row">
-    <div>Band track height</div>
-    <flex-row class="height-inputs">
-      <input title="Collapsed height" id="band-collapsed-height" class="height-input" type="number" step="5">
+
+  <details id="advanced-settings">
+    <summary>Toggle advanced settings</summary>
+    <div class="header-row">
+      <div class="header">Configure tracks</div>
+    </div>
+    <flex-row class="height-row">
+      <div>Band track height</div>
+      <flex-row class="height-inputs">
+        <input title="Collapsed height" id="band-collapsed-height" class="height-input" type="number" step="5">
+      </flex-row>
     </flex-row>
-  </flex-row>
-  <flex-row class="height-row">
-    <div>Dot track heights</div>
-    <flex-row class="height-inputs">
-      <input title="Collapsed height" id="dot-collapsed-height" class="height-input" type="number" step="5">
-      <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
+    <flex-row class="height-row">
+      <div>Dot track heights</div>
+      <flex-row class="height-inputs">
+        <input title="Collapsed height" id="dot-collapsed-height" class="height-input" type="number" step="5">
+        <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
+      </flex-row>
     </flex-row>
-  </flex-row>
-  <flex-row class="height-row">
-    <div>Default cov y-range</div>
-    <flex-row class="height-inputs">
-      <input id="coverage-y-start" class="height-input" type="number" step="0.1">
-      <input id="coverage-y-end" class="height-input" type="number" step="0.1">
-      <icon-button id="apply-default-cov-y-range" icon="${ICONS.refresh}" title="Apply coverage Y-range"></icon-button>
+    <flex-row class="height-row">
+      <div>Default cov y-range</div>
+      <flex-row class="height-inputs">
+        <input id="coverage-y-start" class="height-input" type="number" step="0.1">
+        <input id="coverage-y-end" class="height-input" type="number" step="0.1">
+        <icon-button id="apply-default-cov-y-range" icon="${ICONS.refresh}" title="Apply coverage Y-range"></icon-button>
+      </flex-row>
     </flex-row>
-  </flex-row>
-  <flex-row class="height-row">
-    <div>Variant filter threshold</div>
-    <flex-row>
-      <input id="variant-filter" type="number" step="1" class="height-input">
-      <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
+    <flex-row class="height-row">
+      <div>Variant filter threshold</div>
+      <flex-row>
+        <input id="variant-filter" type="number" step="1" class="height-input">
+        <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
+      </flex-row>
     </flex-row>
-  </flex-row>
-  <div id="tracks-overview"></div>
+    <div class="header-row">
+      <div class="header">Tracks overview</div>
+    </div>
+    <div id="tracks-overview"></div>
+  </details>
 `;
 
 export class SettingsMenu extends ShadowBaseElement {
@@ -324,7 +335,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addElementListener(this.applyVariantFilter, "click", () => {
       const variantThreshold = Number.parseInt(this.variantThreshold.value);
       this.session.setVariantThreshold(variantThreshold);
-      this.onChange({dataUpdated: true});
+      this.onChange({ dataUpdated: true });
     });
   }
 
