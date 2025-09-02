@@ -70,6 +70,9 @@ template.innerHTML = String.raw`
       min-width: 150px;
       padding-right: ${SIZES.l}px;
     }
+    #advanced-settings {
+      padding-top: ${SIZES.l}px;
+    }
   </style>
   <div class="header-row">
     <div class="header">Annotation sources</div>
@@ -97,8 +100,9 @@ template.innerHTML = String.raw`
   <div id="highlights-overview"></div>
 
   <details id="advanced-settings">
+    <summary>Toggle advanced settings</summary>
     <div class="header-row">
-      <div class="header">Tracks</div>
+      <div class="header">Configure tracks</div>
     </div>
     <flex-row class="height-row">
       <div>Band track height</div>
@@ -128,6 +132,9 @@ template.innerHTML = String.raw`
         <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
       </flex-row>
     </flex-row>
+    <div class="header-row">
+      <div class="header">Tracks overview</div>
+    </div>
     <div id="tracks-overview"></div>
   </details>
 `;

@@ -12,6 +12,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
  - Add a small padding at sides when navigating to a gene or annotation through search. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/516)
+ - 
 
 ### Fixed 
  - Coloring of heterozygote variants now uses correct colors. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/514)
