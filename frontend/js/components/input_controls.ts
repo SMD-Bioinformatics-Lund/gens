@@ -287,9 +287,9 @@ async function queryRegionOrGene(
     chrom = searchResult.chromosome as Chromosome;
 
     // Add visual padding at edges
-    const paddedRange = extendRange([searchResult.start, searchResult.end]);
-
-    onChangePosition(chrom, paddedRange);
+    range = extendRange([searchResult.start, searchResult.end]);
+  }
+  onChangePosition(chrom, range);
 }
 
 function extendRange(startRange: Rng): Rng {
@@ -297,7 +297,7 @@ function extendRange(startRange: Rng): Rng {
   const fracDiff = range * SEARCH_PAD_FRAC;
   const usedStart = Math.ceil(startRange[0] - fracDiff / 2);
   const usedEnd = Math.floor(startRange[1] + fracDiff / 2);
-  return [usedStart, usedEnd]
+  return [usedStart, usedEnd];
 }
 
 customElements.define("input-controls", InputControls);
