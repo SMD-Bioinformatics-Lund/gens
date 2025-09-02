@@ -9,6 +9,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
  - ClinVar IDs (VCV, RCV) are detect in annotation text and automatically made into URLs. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/512)
+ - Add `--baf` and `--coverage` flags to `gens update sample` CLI command
 
 ### Changed
  - Add a small padding at sides when navigating to a gene or annotation through search. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/516)
