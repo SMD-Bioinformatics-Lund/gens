@@ -138,6 +138,38 @@ def test_load_sample_cli_with_string_genome_build_fails(
     assert sample_coll.count_documents({}) == 1
 
 
+@pytest.mark.parametrize("alias,expected", [("T", "tumor"), ("N", "normal")])
+def test_load_sample_cli_accepts_aliases(
+    cli_load: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+    alias: str,
+    expected: str,
+) -> None:
+    baf_file = tmp_path / "baf"
+    baf_file.write_text("baf")
+    cov_file = tmp_path / "cov"
+    cov_file.write_text("cov")
+    overview_file = tmp_path / "overview"
+    overview_file.write_text("{}")
+
+    cli_load.sample.callback(
+        sample_id=f"sample-{alias}",
+        genome_build=38,
+        baf=baf_file,
+        coverage=cov_file,
+        case_id=f"case-{alias}",
+        overview_json=overview_file,
+        meta_files=[],
+        sample_type=alias,
+        sex=None,
+    )
+
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one({"sample_id": f"sample-{alias}"})
+    assert doc is not None
+    assert doc["sample_type"] == expected
+
+
 def test_delete_sample_cli_removes_document(
     cli_delete: ModuleType,
     db: mongomock.Database,

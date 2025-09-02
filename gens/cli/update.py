@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from gens.cli.util.util import ChoiceType, db_setup
+from gens.cli.util.util import ChoiceType, db_setup, normalize_sample_type
 from gens.crud.samples import get_sample, update_sample
 from gens.db.collections import (
     SAMPLES_COLLECTION,
@@ -87,7 +87,7 @@ def sample(
     )
 
     if sample_type is not None:
-        sample_obj.sample_type = sample_type
+        sample_obj.sample_type = normalize_sample_type(sample_type) if sample_type else None
     if sex is not None:
         sample_obj.sex = sex
     if coverage is not None:
