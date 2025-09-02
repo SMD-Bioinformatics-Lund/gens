@@ -72,6 +72,7 @@ template.innerHTML = String.raw`
     }
     #advanced-settings {
       padding-top: ${SIZES.l}px;
+      cursor: pointer;
     }
   </style>
   <div class="header-row">
