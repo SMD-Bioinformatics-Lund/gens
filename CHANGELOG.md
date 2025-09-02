@@ -8,7 +8,11 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ## TBD
 
 ### Added
- - ClinVar IDs (VCV, RCV) are detect in annotation text and automatically made into URLs.
+ - ClinVar IDs (VCV, RCV) are detect in annotation text and automatically made into URLs. (https://github.com/SMD-Bioinformatics-Lund/gens/issues/510)
+
+### Fixed 
+
+ - Coloring of heterozygote variants now uses correct colors. (https://github.com/SMD-Bioinformatics-Lund/gens/issues/504)
 
 ## 4.1.0
 

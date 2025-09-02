@@ -267,7 +267,7 @@ export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
     const hetHomColors = VARIANT_COLORS[variant.sub_category] != undefined ? 
       VARIANT_COLORS[variant.sub_category] : VARIANT_COLORS.default
 
-    const color = variant.genotype == "1/0" ? hetHomColors.het : hetHomColors.hom;
+    const color = variant.genotype == "0/1" ? hetHomColors.het : hetHomColors.hom;
 
     return {
       id,
