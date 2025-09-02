@@ -1,17 +1,15 @@
-import { STYLE, VARIANT_COLORS } from "../constants";
+import { STYLE, VARIANT_COLORS, ZOOM_STEPS } from "../constants";
 import { prefixNts, transformMap } from "../util/utils";
 import { API } from "./api";
 
 function calculateZoom(xRange: Rng) {
   const xRangeSize = xRange[1] - xRange[0];
   let returnVal;
-  if (xRangeSize > 100 * 10 ** 6) {
-    returnVal = "o";
-  } else if (xRangeSize > 50 * 10 ** 6) {
+  if (xRangeSize > ZOOM_STEPS.A) {
     returnVal = "a";
-  } else if (xRangeSize > 10 * 10 ** 6) {
+  } else if (xRangeSize > ZOOM_STEPS.B) {
     returnVal = "b";
-  } else if (xRangeSize > 500 * 10 ** 3) {
+  } else if (xRangeSize > ZOOM_STEPS.C) {
     returnVal = "c";
   } else {
     returnVal = "d";
