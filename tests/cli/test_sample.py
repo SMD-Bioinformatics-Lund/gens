@@ -167,11 +167,18 @@ def test_update_sample_updates_document(
         meta=[],
     )
 
-    monkeypatch.setattr(cli_update, "get_sample", lambda db, sample_id, case_id, genome_build: sample_obj)
+    monkeypatch.setattr(
+        cli_update, "get_sample", lambda db, sample_id, case_id, genome_build: sample_obj
+    )
     # monkeypatch.setattr(update_sample_cmd, "parse_meta_file", lambda p: "META")
 
     meta_file = tmp_path / "meta.tsv"
     meta_file.write_text("type\tvalue\nA\t1\n")
+
+    baf_file = tmp_path / "baf"
+    baf_file.write_text("baf")
+    cov_file = tmp_path / "cov"
+    cov_file.write_text("cov")
 
     # assert update_sample_cmd.sample.callback is not None
 
@@ -181,6 +188,8 @@ def test_update_sample_updates_document(
         genome_build=GenomeBuild(19),
         sample_type="tumor",
         sex=SampleSex("M"),
+        baf=baf_file,
+        coverage=cov_file,
         meta_files=(meta_file,),
     )
 
@@ -191,6 +200,8 @@ def test_update_sample_updates_document(
     assert doc is not None
     assert doc["sample_type"] == "tumor"
     assert doc.get("sex") in ("M", SampleSex("M"), SampleSex.MALE)
+    assert Path(doc["baf_file"]) == baf_file
+    assert Path(doc["coverage_file"]) == cov_file
 
     LOG.debug(doc)
 
