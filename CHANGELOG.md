@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## TBD
+
+### Added
+ - ClinVar IDs (VCV, RCV) are detect in annotation text and automatically made into URLs.
+
 ## 4.1.0
 
 ### Added
