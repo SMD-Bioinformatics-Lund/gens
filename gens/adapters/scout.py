@@ -20,27 +20,24 @@ class ScoutMongoAdapter(InterpretationAdapter):
 
     # FIXME: Cleanup
     def get_variants(
-            self,
-            case_id: str,
-            sample_name: str,
-            region: GenomicRegion,
-            variant_category: VariantCategory
+        self,
+        case_id: str,
+        sample_name: str,
+        region: GenomicRegion,
+        variant_category: VariantCategory,
     ) -> list[SimplifiedVariantRecord]:
         valid_genotype_calls = ["0/1", "1/1"]
         query: dict[str, Any] = {
             "case_id": case_id,
             "category": variant_category,
-            "$or": [
-                {"samples.sample_id": sample_name},
-                {"samples.display_name": sample_name}
-            ],
+            "$or": [{"samples.sample_id": sample_name}, {"samples.display_name": sample_name}],
             "chromosome": region.chromosome,
-            "samples.genotype_call": {"$in": valid_genotype_calls}
+            "samples.genotype_call": {"$in": valid_genotype_calls},
         }
         if all(param is not None for param in [region.start, region.end]):
             query = {
                 **query,
-                **query_genomic_regions(region.start, region.end, variant_category), # type: ignore
+                **query_genomic_regions(region.start, region.end, variant_category),  # type: ignore
             }
         projection: dict[str, bool] = {}
         LOG.info("Query variant database: %s", query)
@@ -56,17 +53,16 @@ class ScoutMongoAdapter(InterpretationAdapter):
                         or sample.get("display_name") == sample_name
                     ):
                         genotype = sample.get("genotype_call")
-                
+
                 doc_with_genotype = {**doc, "genotype": genotype}
 
                 result.append(SimplifiedVariantRecord.model_validate(doc_with_genotype))
-        
+
         except ValidationError as e:
             LOG.error("Failed to validate variant data: %s", e)
             # FIXME: More details?
             raise VariantValidationError("Invalid variant data in Scout database ")
         return result
-
 
     # FIXME: Consider cleanup
     def get_variant(self, document_id: str) -> VariantRecord:
@@ -85,20 +81,28 @@ class ScoutMongoAdapter(InterpretationAdapter):
             raise VariantValidationError(f"Invalid variant data for ID {document_id}")
         return variant
 
+    def get_panels(self) -> list[tuple[str, str]]:
+
+        panels = list(
+            self._db.get_collection("gene_panel").find(
+                {}, {"_id": 1, "panel_name": 1, "display_name": 1}
+            )
+        )
+
+        print(">>> panels", panels)
+
+        return []
+        # return super().get_panels()
 
     def get_panel(self, panel_id: str) -> list[SimplifiedVariantRecord]:
         return []
         # return super().get_panel(panel_id)
 
-    def get_panels(self) -> list[tuple[str, str]]:
-        return []
-        # return super().get_panels()
-
     # FIXME: Panels should be here. Should the URLs? Unsure. Something to ponder.
     def get_case_url(self, case_id: str) -> str:
         return ""
         # return super().get_case_url(case_id)
-    
+
     def get_variant_url(self, variant_id: str) -> str:
         return ""
         # return super().get_variant_url(variant_id)
