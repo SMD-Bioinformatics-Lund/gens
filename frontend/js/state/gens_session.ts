@@ -16,6 +16,8 @@ import {
   saveCoverageRange,
   saveExpandedTracks,
   saveTrackHeights,
+  loadGeneListSelections,
+  saveGeneListSelections,
 } from "../util/storage";
 import { generateID } from "../util/utils";
 
@@ -51,6 +53,7 @@ export class GensSession {
   private genomeBuild: number;
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
+  private geneListSelections: string[] = [];
   private coverageRange: [number, number] = COV_Y_RANGE;
   private variantThreshold: number;
   private expandedTracks: Record<string, boolean> = {};
@@ -86,6 +89,7 @@ export class GensSession {
     this.chromInfo = chromInfo;
     this.chromSizes = chromSizes;
     this.annotationSelections = loadAnnotationSelections() || [];
+    this.geneListSelections = loadGeneListSelections() || [];
     this.colorAnnotationId = loadColorAnnotation();
     this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
     this.variantThreshold = variantThreshold;
@@ -139,6 +143,15 @@ export class GensSession {
   public setAnnotationSelections(ids: string[]): void {
     this.annotationSelections = ids;
     saveAnnotationSelections(ids);
+  }
+
+  public getGeneListSelections(): string[] {
+    return this.geneListSelections;
+  }
+
+  public setGeneListSelections(ids: string[]): void {
+    this.geneListSelections = ids;
+    saveGeneListSelections(ids);
   }
 
   public getTrackHeights(): TrackHeights {

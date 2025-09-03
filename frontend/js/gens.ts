@@ -174,6 +174,7 @@ export async function initCanvases({
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
   const allAnnotSources = await api.getAnnotationSources();
+  const geneLists = await api.getGeneLists();
 
   const defaultAnnot = allAnnotSources
     .filter((track) => track.name === defaultAnnotationName)
@@ -189,6 +190,7 @@ export async function initCanvases({
     render,
     allAnnotSources,
     defaultAnnot,
+    geneLists,
     () => gensTracks.trackView.getDataTracks(),
     (trackId: string, direction: "up" | "down") =>
       gensTracks.trackView.moveTrack(trackId, direction),
@@ -235,9 +237,6 @@ export async function initCanvases({
       gensTracks.setCovYRange(rng);
       render({dataUpdated: true});
     },
-    () => {
-      return api.getGeneLists();
-    }
   );
 
   infoPage.setSources(() => session.getSamples());

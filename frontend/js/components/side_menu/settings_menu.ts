@@ -221,15 +221,6 @@ export class SettingsMenu extends ShadowBaseElement {
     }
     this.defaultAnnots = defaultAnnots;
 
-    // FIXME: Consider generalizing with the annots above
-    const storedGeneLists = session.getGeneListSelections();
-    let storedGeneListsObjects = [];
-    if (storedGeneLists && storedGeneLists.length > 0) {
-      storedGeneListsObjects = geneLists
-        .filter((src) => storedGeneLists.includes(src.id))
-        .map((src) => ({ id: src.id, label: `${src.name} (v${src.version})` }));
-    }
-
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
 
@@ -311,6 +302,15 @@ export class SettingsMenu extends ShadowBaseElement {
       this.onColorByChange(id);
     });
 
+    if (this.geneListSelect) {
+      this.addElementListener(this.geneListSelect, "change", () => {
+        const ids = this.geneListSelect
+          .getValues()
+          .map((obj) => obj.value as string);
+        this.session.setGeneListSelections(ids);
+      });
+    }
+
     this.addElementListener(this.sampleSelect, "change", () => {
       this.render({});
     });
@@ -372,11 +372,19 @@ export class SettingsMenu extends ShadowBaseElement {
       ),
     );
 
-    this.geneListSelect.setValues(
-      getGeneListChoices(this.geneLists).sort((source1, source2) =>
-        source1.label.toString().localeCompare(source2.label.toString()),
-      ),
-    );
+    if (this.geneListSelect) {
+      const selectedGeneLists = this.session.getGeneListSelections() || [];
+      const choices = this.geneLists
+        .map((geneList) => ({
+          value: geneList.id,
+          label: `${geneList.name} (v${geneList.version})`,
+          selected: selectedGeneLists.includes(geneList.id),
+        }))
+        .sort((entry1, entry2) =>
+          entry1.label.toString().localeCompare(entry2.label.toString()),
+        );
+      this.geneListSelect.setValues(choices);
+    }
 
     const colorChoices = [
       { label: "None", value: "", selected: this.getColorAnnotation() == null },
