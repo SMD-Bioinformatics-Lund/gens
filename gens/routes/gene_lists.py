@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from gens.crud.genomic import get_chromosome_info
+from gens.crud.transcripts import get_transcripts
 from gens.models.annotation import GeneListRecord, SimplifiedTranscriptInfo
 from gens.models.genomic import Chromosome, GenomeBuild, GenomicRegion
 from gens.routes.utils import AdapterDep, ApiTags, GensDb
@@ -35,6 +36,6 @@ async def get_gene_list_track(
         return []
 
     region = GenomicRegion(chromosome=chromosome, start=1, end=chrom_info.size)
-    transcripts = crud_get_transcripts(region, genome_build, db)
+    transcripts = get_transcripts(region, genome_build, db)
     gene_set = gene_names
     return [tr for tr in transcripts if tr.name in gene_set]

@@ -95,7 +95,7 @@ class ScoutMongoAdapter(InterpretationAdapter):
             for res in raw_query_results
         ]
 
-        highest_version_per_panel = defaultdict(float)
+        highest_version_per_panel: dict[str, float] = defaultdict(float)
         for res_dict in all_gene_lists_parsed:
             panel_id = res_dict["id"]
             version = res_dict["version"]
