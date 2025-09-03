@@ -6,11 +6,14 @@ from typing import Annotated, Any
 from fastapi import Depends
 from pymongo.database import Database
 
-from gens.db.db import get_gens_db, get_scout_db
+# from gens.adapters.scout import ScoutAdapter
+from gens.db.db import get_gens_db
 
 GensDb = Annotated[Database[Any], Depends(get_gens_db)]
 
-ScoutDb = Annotated[Database[Any], Depends(get_scout_db)]
+# ScoutDb = Annotated[Database[Any], Depends(get_scout_db)]
+
+# ScoutAdapterDep = Annotated[ScoutAdapter, Depends(get_scout_adapter)]
 
 
 class ApiTags(StrEnum):

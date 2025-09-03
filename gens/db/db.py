@@ -3,12 +3,12 @@
 import logging
 from typing import Any, Generator
 
-import pymongo
 from flask import Flask
 from pydantic import MongoDsn
 from pymongo import MongoClient
 from pymongo.database import Database
 
+from gens.adapters.scout import ScoutAdapter
 from gens.config import settings
 
 LOG = logging.getLogger(__name__)
@@ -19,10 +19,16 @@ def init_database_connection(app: Flask) -> None:
     # verify that database was properly configured
     LOG.info("Initialize db connection")
 
-    # connect to database
-    app.config["SCOUT_DB"] = MongoClient(
-        str(settings.scout_db.connection)
-    ).get_database(name=settings.scout_db.database)
+    # app.config["SCOUT_DB"] = MongoClient(
+    #     str(settings.scout_db.connection)
+    # ).get_database(name=settings.scout_db.database)
+
+    # FIXME: Generalize
+    interpretation_client: MongoClient = MongoClient(str(settings.scout_db.connection))
+    app.config["INTERPRETATION_ADAPTER"] = ScoutAdapter(
+        interpretation_client.get_database(name=settings.scout_db.database)
+    )
+
     app.config["GENS_DB"] = MongoClient(str(settings.gens_db.connection)).get_database(
         name=settings.gens_db.database
     )
@@ -35,7 +41,7 @@ def get_db_connection(mongo_uri: MongoDsn, db_name: str) -> Database[Any]:
 
 
 def get_gens_db() -> Generator[Database[Any], None, None]:
-    """Connect to a database."""
+    """Connect to the Gens database."""
     try:
         client: MongoClient[Any] = MongoClient(str(settings.gens_db.connection))
         yield client.get_database(settings.gens_db.database)
@@ -43,7 +49,7 @@ def get_gens_db() -> Generator[Database[Any], None, None]:
         client.close()
 
 
-def get_scout_db() -> Generator[Database[Any], None, None]:
+def get_variant_software_adapter() -> Generator[Database[Any], None, None]:
     """Connect to the Scout database."""
     try:
         client: MongoClient[Any] = MongoClient(str(settings.scout_db.connection))

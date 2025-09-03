@@ -5,10 +5,10 @@ Query individual annotations or transcript to get the full info.
 """
 
 from http import HTTPStatus
-from typing import List
 
 from fastapi import APIRouter, HTTPException, Query
 
+from gens.adapters.base import VariantSoftwareAdapter
 from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import (
     get_annotation,
@@ -45,7 +45,7 @@ from gens.models.genomic import (
     VariantCategory,
 )
 
-from .utils import ApiTags, GensDb, ScoutDb
+from .utils import ApiTags, GensDb
 
 router = APIRouter(prefix="/tracks")
 
@@ -158,7 +158,7 @@ async def get_variants(
     case_id: str,
     chromosome: Chromosome,
     category: VariantCategory,
-    db: ScoutDb,
+    adapter: VariantSoftwareAdapter,
     start: int = 1,
     end: int | None = None,
     rank_score_threshold: float | None = Query(
@@ -175,13 +175,19 @@ async def get_variants(
     """
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
     try:
-        variants = get_variants_from_scout(
+        variants = adapter.get_variants(
             sample_name=sample_id,
             case_id=case_id,
             region=region,
             variant_category=category,
-            db=db,
         )
+        # variants = get_variants_from_scout(
+        #     sample_name=sample_id,
+        #     case_id=case_id,
+        #     region=region,
+        #     variant_category=category,
+        #     db=db,
+        # )
     except VariantValidationError as e:
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
 
@@ -204,14 +210,14 @@ async def get_variants(
 @router.get("/variants/{document_id}", tags=[ApiTags.VAR])
 async def get_variant_with_id(
     document_id: str,
-    db: ScoutDb,
+    adapter: VariantSoftwareAdapter,
 ) -> VariantRecord:
     """Get a single variant by its unique ID.
 
-    Returns the full variant record from Scout with all available details.
+    Returns the full variant record from the interpretation software with all available details.
     """
     try:
-        variant = get_variant(document_id, db=db)
+        variant = adapter.get_variant(document_id)
     except VariantValidationError as e:
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
     except VariantNotFoundError:
