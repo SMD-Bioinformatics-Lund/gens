@@ -23,3 +23,4 @@ class ApiTags(StrEnum):
     USER = "user"
     VAR = "variant"
     SAMPLE_ANNOT = "sample-annotation"
+    GENE_LIST = "gene-list"

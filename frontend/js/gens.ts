@@ -235,6 +235,9 @@ export async function initCanvases({
       gensTracks.setCovYRange(rng);
       render({dataUpdated: true});
     },
+    () => {
+      return api.getGeneLists();
+    }
   );
 
   infoPage.setSources(() => session.getSamples());

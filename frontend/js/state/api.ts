@@ -105,6 +105,14 @@ export class API {
     return annotSources;
   }
 
+  getGeneLists(): Promise<ApiGeneList[]> {
+    const geneLists = get(
+      new URL("gene_lists/gene_lists", this.apiURI).href,
+      {},
+    ) as Promise<ApiGeneList[]>;
+    return geneLists;
+  }
+
   getSampleAnnotationSources(
     caseId: string,
     sampleId: string,
@@ -381,7 +389,6 @@ export class API {
     chrom: string,
     rank_score_threshold: number,
   ): Promise<ApiSimplifiedVariant[]> {
-
     // Invalidate cache if changing the rank score threshold
     if (this.cachedThreshold != rank_score_threshold) {
       this.cachedThreshold = rank_score_threshold;

@@ -8,7 +8,6 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, HTTPException, Query
 
-from gens.adapters.base import InterpretationAdapter
 from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import (
     get_annotation,
@@ -21,7 +20,6 @@ from gens.crud.scout import (
     VariantValidationError,
     get_variant,
 )
-from gens.crud.scout import get_variants as get_variants_from_scout
 from gens.crud.transcripts import (
     get_transcript,
 )
@@ -174,22 +172,13 @@ async def get_variants(
     Returns a list of simplified variant records. Use query parameters to filter by region or type.
     """
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
-    print(">>> Preparing to get variants")
     try:
-        print(">>> Adapter", adapter)
         variants = adapter.get_variants(
             sample_name=sample_id,
             case_id=case_id,
             region=region,
             variant_category=category,
         )
-        # variants = get_variants_from_scout(
-        #     sample_name=sample_id,
-        #     case_id=case_id,
-        #     region=region,
-        #     variant_category=category,
-        #     db=db,
-        # )
     except VariantValidationError as e:
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
 

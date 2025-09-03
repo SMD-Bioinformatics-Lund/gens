@@ -198,7 +198,14 @@ export class SettingsMenu extends ShadowBaseElement {
     setTrackInfo: (trackHeights: TrackHeights) => void,
     onColorByChange: (annotId: string | null) => void,
     onApplyDefaultCovRange: (rng: Rng) => void,
+    getGeneLists: () => Promise<ApiGeneList[]>,
   ) {
+    console.log("Testing getting gene lists")
+    console.log(getGeneLists().then((res) => {
+      console.log("then")
+      console.log(res)
+    }));
+
     this.session = session;
     this.onChange = onChange;
     this.allAnnotationSources = allAnnotationSources;

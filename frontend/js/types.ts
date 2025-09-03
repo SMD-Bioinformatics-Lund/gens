@@ -26,6 +26,11 @@ interface ApiAnnotationTrack {
   genome_build: number;
 }
 
+interface ApiGeneList {
+  id: string;
+  value: string;
+}
+
 interface ApiSampleAnnotationTrack {
   // FIXME: What to do with this one
   _id: string;
