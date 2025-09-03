@@ -1,12 +1,9 @@
-import importlib
 import json
 import logging
 from pathlib import Path
 from types import ModuleType
-from typing import Callable
 
 import mongomock
-import pytest
 
 from gens.db.collections import CHROMSIZES_COLLECTION
 from gens.models.genomic import GenomeBuild

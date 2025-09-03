@@ -1,13 +1,12 @@
-import importlib
 import logging
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable
+from typing import Any
 
 import mongomock
 import pytest
 
-from gens.crud.samples import delete_sample, update_sample
+from gens.crud.samples import update_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
@@ -71,7 +70,7 @@ def test_load_sample_cli(
     assert len(doc["meta"]) == 2
 
     assert doc["meta"][0]["file_name"] == "meta_simple.tsv"
-    assert doc["meta"][0]["row_name_header"] == None
+    assert doc["meta"][0]["row_name_header"] is None
     assert len(doc["meta"][0]["data"]) == 1
     assert doc["meta"][0]["data"][0] == {
         "type": "A",
@@ -253,7 +252,7 @@ def test_update_sample_updates_document(
     assert len(meta[0]["data"]) == 1
     assert meta[0]["data"][0]["type"] == "A"
     assert meta[0]["data"][0]["value"] == "1"
-    assert meta[0]["data"][0]["row_name"] == None
+    assert meta[0]["data"][0]["row_name"] isinstance None
     assert meta[0]["data"][0]["color"] == "rgb(0,0,0)"
 
 

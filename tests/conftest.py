@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import importlib
-import sys
 import types
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 import mongomock
 import pytest
