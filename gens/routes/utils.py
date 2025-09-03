@@ -7,9 +7,13 @@ from fastapi import Depends
 from pymongo.database import Database
 
 # from gens.adapters.scout import ScoutAdapter
-from gens.db.db import get_gens_db
+from gens.adapters.base import VariantSoftwareAdapter
+from gens.db.db import get_gens_db, get_variant_software_adapter
 
 GensDb = Annotated[Database[Any], Depends(get_gens_db)]
+
+# FIXME: Needed for FastAPI types to work
+AdapterDep = Annotated[VariantSoftwareAdapter, Depends(get_variant_software_adapter)]
 
 # ScoutDb = Annotated[Database[Any], Depends(get_scout_db)]
 

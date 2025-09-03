@@ -1,8 +1,8 @@
 import logging
 from typing import Any
 
-from mongomock import Database
 from pydantic import ValidationError
+from pymongo.database import Database
 
 from gens.adapters.base import VariantSoftwareAdapter
 from gens.crud.scout import VariantNotFoundError, VariantValidationError

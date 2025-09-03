@@ -45,7 +45,7 @@ from gens.models.genomic import (
     VariantCategory,
 )
 
-from .utils import ApiTags, GensDb
+from .utils import AdapterDep, ApiTags, GensDb
 
 router = APIRouter(prefix="/tracks")
 
@@ -158,7 +158,7 @@ async def get_variants(
     case_id: str,
     chromosome: Chromosome,
     category: VariantCategory,
-    adapter: VariantSoftwareAdapter,
+    adapter: AdapterDep,
     start: int = 1,
     end: int | None = None,
     rank_score_threshold: float | None = Query(
@@ -210,7 +210,7 @@ async def get_variants(
 @router.get("/variants/{document_id}", tags=[ApiTags.VAR])
 async def get_variant_with_id(
     document_id: str,
-    adapter: VariantSoftwareAdapter,
+    adapter: AdapterDep,
 ) -> VariantRecord:
     """Get a single variant by its unique ID.
 
