@@ -5,14 +5,11 @@ from pathlib import Path
 
 import click
 
-from gens.cli.util.util import ChoiceType, db_setup
-from gens.config import settings
+from gens.cli.util.util import ChoiceType, db_setup, normalize_sample_type
 from gens.crud.samples import get_sample, update_sample
 from gens.db.collections import (
     SAMPLES_COLLECTION,
 )
-from gens.db.db import get_db_connection
-from gens.db.index import create_index, get_indexes
 from gens.load.meta import parse_meta_file
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleSex
@@ -53,6 +50,18 @@ def update() -> None:
     help="Update sample sex",
 )
 @click.option(
+    "--baf",
+    type=click.Path(exists=True, path_type=Path),
+    required=False,
+    help="Update BAF file",
+)
+@click.option(
+    "--coverage",
+    type=click.Path(exists=True, path_type=Path),
+    required=False,
+    help="Update coverage file",
+)
+@click.option(
     "--meta",
     "meta_files",
     type=click.Path(exists=True, path_type=Path),
@@ -63,11 +72,13 @@ def sample(
     sample_id: str,
     case_id: str,
     genome_build: GenomeBuild,
-    sample_type: str,
+    sample_type: str | None,
     sex: SampleSex | None,
+    baf: Path | None,
+    coverage: Path | None,
     meta_files: tuple[Path, ...],
 ) -> None:
-    """Update sample type for a sample."""
+    """Update sample information for a sample."""
 
     db = db_setup([SAMPLES_COLLECTION])
 
@@ -76,9 +87,13 @@ def sample(
     )
 
     if sample_type is not None:
-        sample_obj.sample_type = sample_type
+        sample_obj.sample_type = normalize_sample_type(sample_type) if sample_type else None
     if sex is not None:
         sample_obj.sex = sex
+    if coverage is not None:
+        sample_obj.coverage_file = coverage
+    if baf is not None:
+        sample_obj.baf_file = baf
 
     if meta_files:
         meta_results = [parse_meta_file(p) for p in meta_files]
