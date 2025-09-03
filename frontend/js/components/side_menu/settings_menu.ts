@@ -308,6 +308,7 @@ export class SettingsMenu extends ShadowBaseElement {
           .getValues()
           .map((obj) => obj.value as string);
         this.session.setGeneListSelections(ids);
+        this.onChange({});
       });
     }
 
