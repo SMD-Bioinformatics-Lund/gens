@@ -100,6 +100,16 @@ def get_transcript(
     return None
 
 
+def get_transcripts_by_gene_symbol(
+    gene_symbol: str, genome_build: GenomeBuild, db: Database[Any]
+) -> list[TranscriptRecord]:
+    cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
+        {"gene_name": gene_symbol, "genome_build": genome_build},
+        sort=[("start", 1), ("chrom", 1)],
+    )
+    return [TranscriptRecord.model_validate(doc) for doc in cursor]
+
+
 def create_transcripts(transcripts: Iterable[TranscriptRecord], db: Database[Any]):
     """Insert many transcripts in the database."""
 

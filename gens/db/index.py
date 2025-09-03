@@ -68,6 +68,11 @@ INDEXES = {
             background=True,
         ),
         IndexModel(
+            [("gene_name", ASCENDING), ("genome_build", ASCENDING)],
+            name="gene_name_genome_build",
+            background=True,
+        ),
+        IndexModel(
             [("gene_name", TEXT), ("hgnc_id", TEXT), ("refseq_id", TEXT)],
             name="text_gene_hgnc_refseq",
             background=True,
