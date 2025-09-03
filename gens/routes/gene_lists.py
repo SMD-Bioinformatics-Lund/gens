@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from gens.crud.genomic import get_chromosome_info
+from gens.constants import MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL
 from gens.crud.transcripts import get_transcripts
 from gens.models.annotation import GeneListRecord, SimplifiedTranscriptInfo
 from gens.models.genomic import Chromosome, GenomeBuild, GenomicRegion
@@ -30,7 +31,7 @@ async def get_gene_list_track(
     gene_names = variant_adapter.get_panel(panel_id)
     if not gene_names:
         return []
-    
+
     chrom_info = get_chromosome_info(db, chromosome, genome_build)
     if chrom_info is None:
         return []
@@ -38,4 +39,5 @@ async def get_gene_list_track(
     region = GenomicRegion(chromosome=chromosome, start=1, end=chrom_info.size)
     transcripts = get_transcripts(region, genome_build, db)
     gene_set = gene_names
-    return [tr for tr in transcripts if tr.name in gene_set]
+    canonical_types = {MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL}
+    return [tr for tr in transcripts if tr.name in gene_set and tr.type in canonical_types]
