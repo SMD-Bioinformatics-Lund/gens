@@ -107,7 +107,7 @@ export class API {
 
   getGeneLists(): Promise<ApiGeneList[]> {
     const geneLists = get(
-      new URL("gene_lists/gene_lists", this.apiURI).href,
+      new URL("gene_lists", this.apiURI).href,
       {},
     ) as Promise<ApiGeneList[]>;
     return geneLists;
