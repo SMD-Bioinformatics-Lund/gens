@@ -114,7 +114,6 @@ def get_samples_per_case(
         #     continue
 
         case_id = sample["case_id"]
-        # case_id = sample_data.case_id
         if not case_to_samples.get(case_id):
             case_to_samples[case_id] = []
 
