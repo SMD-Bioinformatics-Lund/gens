@@ -556,7 +556,27 @@ export class TrackView extends ShadowBaseElement {
     );
 
     updateGeneListTracks(
-    )
+      this.dataTracks.filter(
+        (info) => info.track.trackType == "gene" && info.track.id !== "genes",
+      ),
+      (sourceId: string, chrom: string) =>
+        this.dataSource.getGeneListBands(sourceId, chrom),
+      (bandId: string) => this.dataSource.getTranscriptDetails(bandId),
+      this.session,
+      this.openTrackContextMenu,
+      (trackInfo: TrackViewTrackInfo) => {
+        this.dataTracks.push(trackInfo);
+        this.tracksContainer.appendChild(trackInfo.container);
+        trackInfo.track.initialize();
+      },
+      (id: string) => {
+        const match = removeOne(
+          this.dataTracks,
+          (info) => info.track.id === id,
+        );
+        this.tracksContainer.removeChild(match.container);
+      },
+    );
 
     // FIXME: Only the active one needs to be rendered isn't it?
     Object.values(this.trackPages).forEach((trackPage) =>
@@ -758,24 +778,21 @@ function updateAnnotationTracks(
 
 function updateGeneListTracks(
   currGeneTracks: TrackViewTrackInfo[],
-  getGeneListBands: (
-    sourceId: string,
-    chrom: string,
-  ) => Promise<RenderBand[]>,
+  getGeneListBands: (sourceId: string, chrom: string) => Promise<RenderBand[]>,
   getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
-  addTrack: (track: DataTrack) => void,
+  addTrack: (track: TrackViewTrackInfo) => void,
   removeTrack: (id: string) => void,
 ) {
-  const sources = session.getGeneListSelections();
+  const sources = session.getGeneListSources({ selectedOnly: true });
   const trackId = (id: string) => `gene-list_${id}`;
 
   const currTrackIds = currGeneTracks.map((info) => info.track.id);
   const sourceTrackIds = sources.map((s) => trackId(s.id));
 
   const newSources = sources.filter(
-    (source) => !currTrackIds.includes(trackId(source.id))
+    (source) => !currTrackIds.includes(trackId(source.id)),
   );
 
   const removedIds = currTrackIds.filter((id) => !sourceTrackIds.includes(id));
@@ -784,7 +801,7 @@ function updateGeneListTracks(
     const newTrack = createGeneTrack(
       trackId(source.id),
       source.label,
-      (chrom: string) => getGeneListBands(source.indexOf, chrom),
+      (chrom: string) => getGeneListBands(source.id, chrom),
       (bandId: string) => getTranscriptDetails(bandId),
       session,
       openTrackContextMenu,
@@ -794,7 +811,7 @@ function updateGeneListTracks(
 
   removedIds.forEach((id) => {
     removeTrack(id);
-  })
+  });
 }
 
 async function getSampleAnnotationTracks(
