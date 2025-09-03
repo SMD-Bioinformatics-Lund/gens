@@ -93,7 +93,7 @@ def display_samples(case_id: str) -> str:
 
     return render_template(
         "gens.html",
-        scout_base_url=settings.scout_url,
+        scout_base_url=settings.variant_url,
         chrom=parsed_region.chromosome,
         start=parsed_region.start,
         end=parsed_region.end,

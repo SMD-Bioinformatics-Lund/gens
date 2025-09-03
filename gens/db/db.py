@@ -25,9 +25,9 @@ def init_database_connection(app: Flask) -> None:
     # ).get_database(name=settings.scout_db.database)
 
     # FIXME: Generalize
-    interpretation_client: MongoClient = MongoClient(str(settings.scout_db.connection))
+    interpretation_client: MongoClient = MongoClient(str(settings.variant_db.connection))
     app.config["INTERPRETATION_ADAPTER"] = ScoutMongoAdapter(
-        interpretation_client.get_database(name=settings.scout_db.database)
+        interpretation_client.get_database(name=settings.variant_db.database)
     )
 
     app.config["GENS_DB"] = MongoClient(str(settings.gens_db.connection)).get_database(
@@ -43,8 +43,8 @@ def get_db_connection(mongo_uri: MongoDsn, db_name: str) -> Database[Any]:
 
 def get_gens_db() -> Generator[Database[Any], None, None]:
     """Connect to the Gens database."""
+    client: MongoClient[Any] = MongoClient(str(settings.gens_db.connection))
     try:
-        client: MongoClient[Any] = MongoClient(str(settings.gens_db.connection))
         yield client.get_database(settings.gens_db.database)
     finally:
         client.close()
@@ -58,10 +58,10 @@ def get_variant_software_adapter() -> Generator[InterpretationAdapter, None, Non
     if settings.interpretation_backend != "scout_mongo":
         raise ValueError(f"Unsupported interpretation backend: {settings.interpretation_backend}")
 
-    client: MongoClient[Any] = MongoClient(str(settings.scout_db.connection))
+    client: MongoClient[Any] = MongoClient(str(settings.variant_db.connection))
 
     try:
-        db = client.get_database(settings.scout_db.database)
+        db = client.get_database(settings.variant_db.database)
         # FIXME: Why yield here
         yield ScoutMongoAdapter(db)
     finally:

@@ -53,8 +53,10 @@ class Settings(BaseSettings):
 
     # For scout integration
     gens_db: MongoDbConfig
-    scout_db: MongoDbConfig
-    scout_url: HttpUrl = Field(..., description="Base URL to Scout.")
+    variant_db: MongoDbConfig
+    variant_url: HttpUrl = Field(
+        ..., description="Base URL to interpretation software."
+    )
     gens_api_url: HttpUrl = Field(..., description="Gens API URL")
     interpretation_backend: str = Field(
         default="scout_mongo",
@@ -84,8 +86,8 @@ class Settings(BaseSettings):
     def get_dict(self) -> dict[str, Any]:
         return {
             "gens_db": self.gens_db.database,
-            "scout_db": self.scout_db.database,
-            "scout_url": self.scout_url,
+            "interpretation_software_db": self.variant_db.database,
+            "scout_url": self.variant_url,
             "gens_api_url": self.gens_api_url,
             "default_annotation_track": self.default_annotation_track,
             "main_sample_types": self.main_sample_types,
@@ -117,9 +119,9 @@ class Settings(BaseSettings):
         )
 
         # scout
-        conn_info = parse_uri(str(self.scout_db.connection))
-        self.scout_db.database = (
-            self.scout_db.database if conn_info["database"] is None else conn_info["database"]
+        conn_info = parse_uri(str(self.variant_db.connection))
+        self.variant_db.database = (
+            self.variant_db.database if conn_info["database"] is None else conn_info["database"]
         )
 
         return self
