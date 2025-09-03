@@ -176,6 +176,12 @@ class TranscriptRecord(RWModel):
     genome_build: GenomeBuild
 
 
+class GeneListRecord(RWModel):
+    id: str
+    name: str
+    version: str
+
+
 class SimplifiedVariantRecord(RWModel):
     """Simplified variant info for rendering variant track."""
 

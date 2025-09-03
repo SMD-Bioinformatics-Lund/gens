@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 from typing import Any
 
@@ -6,7 +7,7 @@ from pymongo.database import Database
 
 from gens.adapters.base import InterpretationAdapter
 from gens.crud.scout import VariantNotFoundError, VariantValidationError
-from gens.models.annotation import SimplifiedVariantRecord, VariantRecord
+from gens.models.annotation import GeneListRecord, SimplifiedVariantRecord, VariantRecord
 from gens.models.genomic import GenomicRegion, VariantCategory
 
 
@@ -81,18 +82,35 @@ class ScoutMongoAdapter(InterpretationAdapter):
             raise VariantValidationError(f"Invalid variant data for ID {document_id}")
         return variant
 
-    def get_panels(self) -> list[tuple[str, str]]:
+    def get_gene_lists(self) -> list[GeneListRecord]:
 
-        panels = list(
+        raw_query_results = list(
             self._db.get_collection("gene_panel").find(
-                {}, {"_id": 1, "panel_name": 1, "display_name": 1}
+                {}, {"_id": 1, "panel_name": 1, "display_name": 1, "version": 1}
             )
         )
 
-        print(">>> panels", panels)
+        all_gene_lists_parsed = [
+            {"id": res["panel_name"], "name": res["display_name"], "version": res["version"]}
+            for res in raw_query_results
+        ]
 
-        return []
-        # return super().get_panels()
+        highest_version_per_panel = defaultdict(float)
+        for res_dict in all_gene_lists_parsed:
+            panel_id = res_dict["id"]
+            version = res_dict["version"]
+            if version > highest_version_per_panel[panel_id]:
+                highest_version_per_panel[panel_id] = res_dict["version"]
+
+        only_highest = [
+            {"id": gene_list["id"], "name": gene_list["name"], "version": str(gene_list["version"])}
+            for gene_list in all_gene_lists_parsed
+            if gene_list["version"] == highest_version_per_panel[gene_list["id"]]
+        ]
+
+        gene_lists = [GeneListRecord.model_validate(result) for result in only_highest]
+
+        return gene_lists
 
     def get_panel(self, panel_id: str) -> list[SimplifiedVariantRecord]:
         return []

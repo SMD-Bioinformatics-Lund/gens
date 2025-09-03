@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from gens.models.annotation import SimplifiedVariantRecord, VariantRecord
+from gens.models.annotation import GeneListRecord, SimplifiedVariantRecord, VariantRecord
 from gens.models.genomic import GenomicRegion, VariantCategory
 
 
@@ -21,7 +21,7 @@ class InterpretationAdapter(ABC):
         """Return a single variant"""
 
     @abstractmethod
-    def get_panels(self) -> list[tuple[str, str]]:
+    def get_gene_lists(self) -> list[GeneListRecord]:
         """Return list of panel IDs and names"""
     
     @abstractmethod
