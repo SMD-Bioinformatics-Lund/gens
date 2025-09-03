@@ -1,9 +1,9 @@
 """Load transcripts into database"""
 
 import csv
-from dataclasses import dataclass
 import logging
 from collections import defaultdict
+from dataclasses import dataclass
 from itertools import chain
 from typing import Any, Generator, Iterable, Iterator, Optional, TextIO, TypedDict
 
@@ -83,10 +83,16 @@ def build_transcripts(
                         transcript_id, selected_mane, transc, genome_build
                     )
                 except ValidationError as e:
-                    LOG.warning("Skipping transcript %r: validation failed: %s", transcript_id, e)
+                    LOG.warning(
+                        "Skipping transcript %r: validation failed: %s",
+                        transcript_id,
+                        e,
+                    )
                     continue
                 transc_index[transcript_id] = transcript_entry
-                annotated_mane_transc[transc.attribs["gene_name"]].append(transcript_entry)
+                annotated_mane_transc[transc.attribs["gene_name"]].append(
+                    transcript_entry
+                )
             elif transc.feature in ["exon", "three_prime_utr", "five_prime_utr"]:
                 # add features to existing transcript
                 if transcript_id in transc_index:
@@ -235,7 +241,9 @@ def _parse_transcript_gtf(
         feature = row_fields["feature"]
         strand = row_fields["strand"]
 
-        gtf_entry = GTFEntry(seqname, start, end, feature, strand, attribs, is_canonical)
+        gtf_entry = GTFEntry(
+            seqname, start, end, feature, strand, attribs, is_canonical
+        )
 
         # skip non protein coding genes
         yield gtf_entry

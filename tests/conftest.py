@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import importlib
 import sys
-from typing import Any
-from pathlib import Path
 import types
-from typing import Callable
+from pathlib import Path
+from typing import Any, Callable
 
 import mongomock
 import pytest
@@ -140,10 +139,16 @@ def patch_cli(
     # Patch out cli indexing commands
     def _patch(module: str | types.ModuleType) -> None:
         if isinstance(module, str):
-            monkeypatch.setattr(f"{module}.get_db_connection", lambda *a, **kw: db, raising=False)
-            monkeypatch.setattr(f"{module}.db_setup", lambda *a, **kw: db, raising=False)
+            monkeypatch.setattr(
+                f"{module}.get_db_connection", lambda *a, **kw: db, raising=False
+            )
+            monkeypatch.setattr(
+                f"{module}.db_setup", lambda *a, **kw: db, raising=False
+            )
         else:
-            monkeypatch.setattr(module, "get_db_connection", lambda *a, **kw: db, raising=False)
+            monkeypatch.setattr(
+                module, "get_db_connection", lambda *a, **kw: db, raising=False
+            )
             monkeypatch.setattr(module, "db_setup", lambda *a, **kw: db, raising=False)
 
     return _patch

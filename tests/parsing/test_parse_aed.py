@@ -1,9 +1,9 @@
 import logging
-from gens.load.annotations import parse_aed_file
 from pathlib import Path
 
-LOG = logging.getLogger(__name__)
+from gens.load.annotations import parse_aed_file
 
+LOG = logging.getLogger(__name__)
 
 
 def test_parse_aed_header_multiline(aed_multiline_header_path: Path):

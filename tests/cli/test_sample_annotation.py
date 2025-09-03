@@ -6,13 +6,18 @@ from typing import Callable
 import mongomock
 import pytest
 
-from gens.db.collections import SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION
+from gens.db.collections import (
+    SAMPLE_ANNOTATION_TRACKS_COLLECTION,
+    SAMPLE_ANNOTATIONS_COLLECTION,
+)
 from gens.models.genomic import GenomeBuild
 from gens.models.sample_annotation import SampleAnnotationTrack
 
 
 def _write_bed(path: Path, start: int, end: int) -> None:
-    bed_line = "\t".join(["1", str(start), str(end), "rec", "0", "+", ".", ".", "rgb(0,0,255)"])
+    bed_line = "\t".join(
+        ["1", str(start), str(end), "rec", "0", "+", ".", ".", "rgb(0,0,255)"]
+    )
     path.write_text(bed_line)
 
 
@@ -93,7 +98,9 @@ def test_load_sample_annotation_updates_existing(
     assert updated_annot["track_id"] == first_track["_id"]
 
 
-def test_update_sample_annotation_track_modifies_collection(db: mongomock.Database) -> None:
+def test_update_sample_annotation_track_modifies_collection(
+    db: mongomock.Database,
+) -> None:
     import importlib
 
     load_mod = importlib.import_module("gens.crud.sample_annotations")
@@ -109,7 +116,9 @@ def test_update_sample_annotation_track_modifies_collection(db: mongomock.Databa
     assert doc["description"] == "new"
 
 
-def test_delete_sample_annotation_track_removes_document(db: mongomock.Database) -> None:
+def test_delete_sample_annotation_track_removes_document(
+    db: mongomock.Database,
+) -> None:
     import importlib
 
     load_mod = importlib.import_module("gens.crud.sample_annotations")
@@ -152,6 +161,7 @@ def test_delete_sample_annotation_cli_removes_documents(
     )
 
     assert tracks.count_documents({}) == 0
+
 
 def _build_track() -> SampleAnnotationTrack:
     from gens.models.sample_annotation import SampleAnnotationTrack

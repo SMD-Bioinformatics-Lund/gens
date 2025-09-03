@@ -83,11 +83,16 @@ def sample(
     db = db_setup([SAMPLES_COLLECTION])
 
     sample_obj = get_sample(
-        db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id, genome_build=genome_build
+        db[SAMPLES_COLLECTION],
+        sample_id=sample_id,
+        case_id=case_id,
+        genome_build=genome_build,
     )
 
     if sample_type is not None:
-        sample_obj.sample_type = normalize_sample_type(sample_type) if sample_type else None
+        sample_obj.sample_type = (
+            normalize_sample_type(sample_type) if sample_type else None
+        )
     if sex is not None:
         sample_obj.sex = sex
     if coverage is not None:

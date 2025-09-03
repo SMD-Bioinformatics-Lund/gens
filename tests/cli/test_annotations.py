@@ -1,17 +1,18 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
-from types import ModuleType
 from pathlib import Path
+from types import ModuleType
 from typing import Callable
 
 import mongomock
 import pytest
-import logging
 
 from gens.db.collections import ANNOTATION_TRACKS_COLLECTION, ANNOTATIONS_COLLECTION
 
 LOG = logging.getLogger(__name__)
+
 
 @dataclass
 class AnnotEntry:
@@ -98,8 +99,14 @@ def test_load_annotations_from_tsv(
 ):
     header = "\t".join(["Chromosome", "Start", "Stop", "Name", "Color"])
     content = "\t".join(
-            [annot_entry.chrom, str(annot_entry.start_pos), str(annot_entry.end_pos), annot_entry.label, annot_entry.color]
-        )
+        [
+            annot_entry.chrom,
+            str(annot_entry.start_pos),
+            str(annot_entry.end_pos),
+            annot_entry.label,
+            annot_entry.color,
+        ]
+    )
 
     file_content = "\n".join([header, content])
 
@@ -141,14 +148,16 @@ def test_load_annotations_from_tsv_with_comments(
     db: mongomock.Database,
     annot_entry: AnnotEntry,
 ):
-    header = "\t".join([
-        "Chromosome",
-        "Start",
-        "Stop",
-        "Name",
-        "Color",
-        "Comments",
-    ])
+    header = "\t".join(
+        [
+            "Chromosome",
+            "Start",
+            "Stop",
+            "Name",
+            "Color",
+            "Comments",
+        ]
+    )
     content = "\t".join(
         [
             annot_entry.chrom,

@@ -2,8 +2,8 @@
 
 import logging
 from typing import Any
-from pydantic import ValidationError
 
+from pydantic import ValidationError
 from pymongo.database import Database
 
 from gens.models.annotation import SimplifiedVariantRecord, VariantRecord
@@ -81,10 +81,16 @@ def get_variants(
 
 def get_variant(document_id: str, db: Database[Any]) -> VariantRecord:
     """Get detailed variant info for one variant from the scout database."""
-    raw_variant = db.get_collection("variant").find_one({"_id": document_id}, {"_id": False})
+    raw_variant = db.get_collection("variant").find_one(
+        {"_id": document_id}, {"_id": False}
+    )
     if raw_variant is None:
-        LOG.warning("Variant with document_id %s not found in scout database", document_id)
-        raise VariantNotFoundError(f"Variant with id {document_id} is not found in Scout database")
+        LOG.warning(
+            "Variant with document_id %s not found in scout database", document_id
+        )
+        raise VariantNotFoundError(
+            f"Variant with id {document_id} is not found in Scout database"
+        )
     try:
         variant = VariantRecord.model_validate(raw_variant)
     except ValidationError as e:

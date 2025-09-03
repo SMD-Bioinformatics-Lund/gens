@@ -6,8 +6,16 @@ import click
 
 from gens.cli.util.util import ChoiceType, db_setup
 from gens.config import settings
-from gens.crud.annotations import delete_annotation_track, delete_annotations_for_track, get_annotation_track
-from gens.crud.sample_annotations import delete_sample_annotation_track, delete_sample_annotations_for_track, get_sample_annotation_track
+from gens.crud.annotations import (
+    delete_annotation_track,
+    delete_annotations_for_track,
+    get_annotation_track,
+)
+from gens.crud.sample_annotations import (
+    delete_sample_annotation_track,
+    delete_sample_annotations_for_track,
+    get_sample_annotation_track,
+)
 from gens.crud.samples import delete_sample
 from gens.db.collections import (
     ANNOTATION_TRACKS_COLLECTION,
@@ -48,7 +56,9 @@ def sample(sample_id: str, genome_build: int, case_id: str) -> None:
     """Remove a sample from Gens database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
-        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
@@ -65,7 +75,9 @@ def sample(sample_id: str, genome_build: int, case_id: str) -> None:
 @delete.command("sample-annotation")
 @click.option("--sample-id", required=True, help="Sample ID")
 @click.option("--case-id", required=True, help="Case ID")
-@click.option("--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build")
+@click.option(
+    "--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build"
+)
 @click.option("--name", required=True, help="Name of the annotation track")
 def sample_annotation(
     sample_id: str,
@@ -78,19 +90,25 @@ def sample_annotation(
     db = db_setup([SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION])
 
     track = get_sample_annotation_track(
-        genome_build=genome_build, db=db, sample_id=sample_id, case_id=case_id, name=name
+        genome_build=genome_build,
+        db=db,
+        sample_id=sample_id,
+        case_id=case_id,
+        name=name,
     )
 
     if track is None:
         raise click.ClickException("No matching sample annotation track found")
-    
+
     delete_sample_annotations_for_track(track.track_id, db)
     delete_sample_annotation_track(track.track_id, db)
     click.secho("Finished removing sample annotation track ✔", fg="green")
 
 
 @delete.command("annotation")
-@click.option("--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build")
+@click.option(
+    "--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build"
+)
 @click.option("--name", required=True, help="Name of the annotation track")
 def annotation(genome_build: GenomeBuild, name: str) -> None:
     """Remove an annotation track from Gens database."""

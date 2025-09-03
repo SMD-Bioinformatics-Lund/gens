@@ -1,7 +1,7 @@
 """CRUD operations for sample info."""
 
-from datetime import timezone
 import logging
+from datetime import timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -196,7 +196,9 @@ def get_sample(
     result = samples_c.find_one(sample_filter)
 
     if result is None:
-        raise SampleNotFoundError(f'No sample with id: "{sample_id}" in database', sample_id)
+        raise SampleNotFoundError(
+            f'No sample with id: "{sample_id}" in database', sample_id
+        )
 
     overview_file = result.get("overview_file")
     if overview_file == "None":

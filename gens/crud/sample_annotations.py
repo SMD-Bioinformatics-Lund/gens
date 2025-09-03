@@ -1,10 +1,9 @@
 import logging
 from typing import Any
 
-from pymongo.database import Database
 from pymongo import DESCENDING
-
 from pymongo.cursor import Cursor
+from pymongo.database import Database
 
 from gens.db.collections import (
     SAMPLE_ANNOTATION_TRACKS_COLLECTION,
@@ -20,7 +19,6 @@ from gens.models.sample_annotation import (
     SampleAnnotationTrackInDb,
 )
 from gens.utils import get_timestamp
-
 
 LOG = logging.getLogger(__name__)
 
@@ -56,7 +54,9 @@ def get_sample_annotation_track(
 def create_sample_annotation_track(
     track: SampleAnnotationTrack, db: Database[Any]
 ) -> PydanticObjectId:
-    resp = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION).insert_one(track.model_dump())
+    resp = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION).insert_one(
+        track.model_dump()
+    )
     return PydanticObjectId(resp.inserted_id)
 
 
@@ -70,8 +70,12 @@ def update_sample_annotation_track(
     return resp.matched_count == 1 and resp.modified_count == 1
 
 
-def delete_sample_annotation_track(track_id: PydanticObjectId, db: Database[Any]) -> bool:
-    resp = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION).delete_one({"_id": track_id})
+def delete_sample_annotation_track(
+    track_id: PydanticObjectId, db: Database[Any]
+) -> bool:
+    resp = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION).delete_one(
+        {"_id": track_id}
+    )
     return resp.deleted_count == 1
 
 
@@ -123,14 +127,20 @@ def get_sample_annotations(
     record_id: PydanticObjectId, db: Database[Any]
 ) -> SampleAnnotationRecord | None:
     """Get single sample annotation record by its ID."""
-    record = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).find_one({"_id": record_id})
+    record = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).find_one(
+        {"_id": record_id}
+    )
     if record is not None:
         return SampleAnnotationRecord.model_validate(record)
     return None
 
 
-def delete_sample_annotations_for_track(track_id: PydanticObjectId, db: Database[Any]) -> bool:
-    resp = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).delete_many({"track_id": track_id})
+def delete_sample_annotations_for_track(
+    track_id: PydanticObjectId, db: Database[Any]
+) -> bool:
+    resp = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).delete_many(
+        {"track_id": track_id}
+    )
     if resp.deleted_count > 0:
         db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION).update_one(
             {"_id": track_id}, {"$set": {"modified_at": get_timestamp()}}
@@ -152,7 +162,9 @@ def create_sample_annotations_for_track(
     return [PydanticObjectId(id) for id in resp.inserted_ids]
 
 
-def register_data_update(db: Database[Any], track_type: str, name: str | None = None) -> None:
+def register_data_update(
+    db: Database[Any], track_type: str, name: str | None = None
+) -> None:
     LOG.debug("Creating timestamp for %s", track_type)
     track = {"track": track_type, "name": name}
     collection = db.get_collection(UPDATES_COLLECTION)

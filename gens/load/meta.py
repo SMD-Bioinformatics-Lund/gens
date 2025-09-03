@@ -1,14 +1,13 @@
 import csv
+import logging
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
 from pydantic import ValidationError
-
-from gens.models.sample import MetaEntry, MetaValue
 from pydantic_extra_types.color import Color
 
-import logging
+from gens.models.sample import MetaEntry, MetaValue
 
 LOG = logging.getLogger(__name__)
 
@@ -25,7 +24,8 @@ def parse_meta_file(file: Path) -> MetaEntry:
         reader = csv.DictReader(meta_fh, delimiter="\t")
         fieldnames = reader.fieldnames or []
         row_name_header = next(
-            (name for name in fieldnames if name not in {"type", "value", "color"}), None
+            (name for name in fieldnames if name not in {"type", "value", "color"}),
+            None,
         )
 
         for row in reader:
@@ -44,15 +44,21 @@ def parse_meta_file(file: Path) -> MetaEntry:
                     Color(color)
                 except ValueError as err:
                     line_no = reader.line_num
-                    LOG.error("Invalid color '%s' on line %s in %s", color, line_no, file)
-                    raise ValueError(f"Invalid color '{color}' on line {line_no}") from err
+                    LOG.error(
+                        "Invalid color '%s' on line %s in %s", color, line_no, file
+                    )
+                    raise ValueError(
+                        f"Invalid color '{color}' on line {line_no}"
+                    ) from err
                 entry["color"] = color
-            
+
             try:
                 validated_meta = MetaValue.model_validate(entry)
             except ValidationError as err:
                 line_no = reader.line_num
-                LOG.error("Invalid metadata entry on line %s in %s: %s", line_no, file, err)
+                LOG.error(
+                    "Invalid metadata entry on line %s in %s: %s", line_no, file, err
+                )
                 raise ValueError(f"Failed to parse metadata on file {line_no}: {err}")
             data.append(validated_meta)
 

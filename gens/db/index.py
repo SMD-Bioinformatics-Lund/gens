@@ -3,7 +3,7 @@
 import logging
 from typing import Any
 
-from pymongo import ASCENDING, IndexModel, TEXT
+from pymongo import ASCENDING, TEXT, IndexModel
 from pymongo.database import Database
 
 from gens.db.collections import SAMPLES_COLLECTION

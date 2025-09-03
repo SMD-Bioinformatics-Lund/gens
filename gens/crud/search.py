@@ -5,9 +5,9 @@ import re
 from typing import Any, Iterable
 
 from bson import ObjectId
-from pymongo.database import Database
 from pymongo.collection import Collection
 from pymongo.cursor import Cursor
+from pymongo.database import Database
 
 from gens.db.collections import ANNOTATIONS_COLLECTION, TRANSCRIPTS_COLLECTION
 from gens.models.genomic import GenomeBuild, GenomicRegion
@@ -36,7 +36,9 @@ def search_annotations_and_transcripts(
     )
     if len(transcripts) > 0:
 
-        elements_with_mane = [elem for elem in transcripts if elem.get("mane") is not None]
+        elements_with_mane = [
+            elem for elem in transcripts if elem.get("mane") is not None
+        ]
 
         target = transcripts[0]
         if len(elements_with_mane) > 0:
@@ -90,7 +92,8 @@ def text_search_suggestion(
         projection={"name": True},
     )
     annotations = [
-        Suggestion(text=hit["name"], record_id=hit["_id"], score=hit["score"]) for hit in annot_hits
+        Suggestion(text=hit["name"], record_id=hit["_id"], score=hit["score"])
+        for hit in annot_hits
     ]
     transc_hits = generic_text_search(
         query=query,
@@ -119,7 +122,8 @@ def generic_text_search(
     result_projection: dict[str, Any] = {"score": {"$meta": "textScore"}, **projection}
     results = (
         collection.find(
-            {"genome_build": genome_build, "$text": {"$search": query}}, result_projection
+            {"genome_build": genome_build, "$text": {"$search": query}},
+            result_projection,
         )
         .sort({"score": {"$meta": "textScore"}})
         .limit(limit)

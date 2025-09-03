@@ -91,7 +91,9 @@ def get_scatter_data(
 
     valid_zoom_levels = {"o", "a", "b", "c", "d"}
     if zoom_level not in valid_zoom_levels:
-        raise ValueError(f"Unexpected zoom level: {zoom_level}, valid are: {valid_zoom_levels}")
+        raise ValueError(
+            f"Unexpected zoom level: {zoom_level}, valid are: {valid_zoom_levels}"
+        )
 
     # Tabix
     record_name = f"{zoom_level}_{region.chromosome}"
@@ -116,7 +118,9 @@ def get_overview_data(file: Path, data_type: ScatterDataType) -> list[GenomeCove
 
     results: list[GenomeCoverage] = []
     for chrom in json_data.keys():
-        chrom_data = json_data[chrom]["cov" if data_type == ScatterDataType.COV else "baf"]
+        chrom_data = json_data[chrom][
+            "cov" if data_type == ScatterDataType.COV else "baf"
+        ]
 
         results.append(
             GenomeCoverage(
@@ -128,7 +132,9 @@ def get_overview_data(file: Path, data_type: ScatterDataType) -> list[GenomeCove
     return results
 
 
-def get_overview_from_tabix(sample: SampleInfo, data_type: ScatterDataType) -> list[GenomeCoverage]:
+def get_overview_from_tabix(
+    sample: SampleInfo, data_type: ScatterDataType
+) -> list[GenomeCoverage]:
     """Generate overview data using the "o" resolution from bed files."""
 
     if data_type == ScatterDataType.COV:

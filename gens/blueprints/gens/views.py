@@ -14,8 +14,6 @@ from gens.db.collections import SAMPLES_COLLECTION
 from gens.genomic import parse_region_str
 from gens.models.genomic import GenomeBuild
 
-from gens.config import settings
-
 LOG = logging.getLogger(__name__)
 
 gens_bp = Blueprint(
@@ -54,7 +52,9 @@ def display_samples(case_id: str) -> str:
 
     sample_id_list = request.args.get("sample_ids")
     if not sample_id_list:
-        case_samples = get_samples_for_case(db.get_collection(SAMPLES_COLLECTION), case_id)
+        case_samples = get_samples_for_case(
+            db.get_collection(SAMPLES_COLLECTION), case_id
+        )
         if not case_samples:
             raise ValueError(f"Expected sample_ids for case_id: {case_id}")
         sample_ids = [sample.sample_id for sample in case_samples]
@@ -73,7 +73,9 @@ def display_samples(case_id: str) -> str:
     if parsed_region.end is None:
         chrom_info = get_chromosome_info(db, parsed_region.chromosome, genome_build)
         if chrom_info is None:
-            raise ValueError(f"Chromosome {parsed_region.chromosome} is not found in the database")
+            raise ValueError(
+                f"Chromosome {parsed_region.chromosome} is not found in the database"
+            )
         parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})
 
     samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))

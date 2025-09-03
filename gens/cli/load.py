@@ -8,8 +8,8 @@ from typing import TextIO
 import click
 from flask import json
 
+from gens.cli.util.annotations import parse_raw_records, upsert_annotation_track
 from gens.cli.util.util import ChoiceType, db_setup, normalize_sample_type
-from gens.cli.util.annotations import upsert_annotation_track, parse_raw_records
 from gens.config import settings
 from gens.crud.annotations import (
     create_annotations_for_track,
@@ -132,7 +132,9 @@ def sample(
     """Load a sample into Gens database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
-        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
@@ -158,7 +160,9 @@ def sample(
 @load.command("sample-annotation")
 @click.option("--sample-id", required=True, help="Sample ID")
 @click.option("--case-id", required=True, help="Case ID")
-@click.option("--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build")
+@click.option(
+    "--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build"
+)
 @click.option("--file", required=True, type=click.Path(exists=True, path_type=Path))
 @click.option("--name", required=True, help="Name of the annotation track")
 def sample_annotation(
@@ -240,7 +244,9 @@ def sample_annotation(
     is_flag=True,
     help="Proceed with parsing AED files even if some entries fail.",
 )
-def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_errors: bool) -> None:
+def annotations(
+    file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_errors: bool
+) -> None:
     """Load annotations from file into the database."""
 
     db = db_setup([ANNOTATIONS_COLLECTION])
@@ -258,7 +264,12 @@ def annotations(file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_erro
 
         try:
             parse_recs_res = parse_raw_records(
-                file_format, is_tsv, annot_file, ignore_errors, track_result, genome_build
+                file_format,
+                is_tsv,
+                annot_file,
+                ignore_errors,
+                track_result,
+                genome_build,
             )
         except ValueError as err:
             click.secho(
@@ -315,7 +326,9 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     """Load transcripts into the database."""
     gens_db_name = settings.gens_db.database
     if gens_db_name is None:
-        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
     # if collection is not indexed, create index
     if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) == 0:
@@ -384,10 +397,14 @@ def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> N
 
     # remove old entries
     res = db[CHROMSIZES_COLLECTION].delete_many({"genome_build": int(genome_build)})
-    LOG.info("Removed %d old entries with genome build: %s", res.deleted_count, genome_build)
+    LOG.info(
+        "Removed %d old entries with genome build: %s", res.deleted_count, genome_build
+    )
     # insert collection
     LOG.info("Add chromosome info to database")
-    db[CHROMSIZES_COLLECTION].insert_many([chr.model_dump() for chr in chromosomes_data])
+    db[CHROMSIZES_COLLECTION].insert_many(
+        [chr.model_dump() for chr in chromosomes_data]
+    )
     register_data_update(db, CHROMSIZES_COLLECTION)
     # build cytogenetic data
     click.secho("Finished updating chromosome sizes ✔", fg="green")

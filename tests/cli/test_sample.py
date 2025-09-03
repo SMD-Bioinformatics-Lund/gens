@@ -3,14 +3,14 @@ import logging
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable
+
 import mongomock
 import pytest
 
+from gens.crud.samples import delete_sample, update_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
-
-from gens.crud.samples import update_sample, delete_sample
 
 LOG = logging.getLogger(__name__)
 
@@ -18,7 +18,9 @@ LOG = logging.getLogger(__name__)
 @pytest.fixture(autouse=True)
 def ensure_indexes(db: mongomock.Database):
     coll = db.get_collection(SAMPLES_COLLECTION)
-    coll.create_index([("sample_id", 1), ("case_id", 1), ("genome_build", 1)], unique=True)
+    coll.create_index(
+        [("sample_id", 1), ("case_id", 1), ("genome_build", 1)], unique=True
+    )
 
 
 def test_load_sample_cli(
@@ -165,7 +167,9 @@ def test_load_sample_cli_accepts_aliases(
         sex=None,
     )
 
-    doc = db.get_collection(SAMPLES_COLLECTION).find_one({"sample_id": f"sample-{alias}"})
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one(
+        {"sample_id": f"sample-{alias}"}
+    )
     assert doc is not None
     assert doc["sample_type"] == expected
 
@@ -175,7 +179,9 @@ def test_delete_sample_cli_removes_document(
     db: mongomock.Database,
 ) -> None:
     coll = db.get_collection(SAMPLES_COLLECTION)
-    coll.insert_one({"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(19)})
+    coll.insert_one(
+        {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(19)}
+    )
 
     cli_delete.sample.callback(sample_id="sample1", genome_build=19, case_id="caseA")
 
@@ -200,7 +206,9 @@ def test_update_sample_updates_document(
     )
 
     monkeypatch.setattr(
-        cli_update, "get_sample", lambda db, sample_id, case_id, genome_build: sample_obj
+        cli_update,
+        "get_sample",
+        lambda db, sample_id, case_id, genome_build: sample_obj,
     )
     # monkeypatch.setattr(update_sample_cmd, "parse_meta_file", lambda p: "META")
 

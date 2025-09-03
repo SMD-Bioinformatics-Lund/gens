@@ -7,9 +7,9 @@ import argparse
 import gzip
 import os
 import re
-import sys
 import statistics
 import subprocess
+import sys
 from pathlib import Path
 from typing import Optional, TextIO
 
@@ -66,7 +66,9 @@ PREFIXES = ["o", "a", "b", "c", "d"]
 BAF_MIN_DEPTH = 10
 
 
-def main(label: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path, bigwig: bool) -> None:
+def main(
+    label: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path, bigwig: bool
+) -> None:
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -121,7 +123,9 @@ def generate_baf_bed(fn: str, skip: int, prefix: str, out_fh: TextIO) -> None:
                 out_fh.write(f"{prefix}_{chrom}\t{int(pos) - 1}\t{pos}\t{val}\n")
 
 
-def generate_cov_bed(cov_file: Path, win_size: int, prefix: str, out_fh: TextIO) -> None:
+def generate_cov_bed(
+    cov_file: Path, win_size: int, prefix: str, out_fh: TextIO
+) -> None:
     """Convert standardized coverage to Gens bed format."""
     active_region = None
     force_end = False
@@ -141,7 +145,10 @@ def generate_cov_bed(cov_file: Path, win_size: int, prefix: str, out_fh: TextIO)
                 active_region = Region(curr.chrom, curr.start, curr.end)
 
             # Check if still within the target window size
-            if chrom == active_region.chrom and curr.start - active_region.end < win_size:
+            if (
+                chrom == active_region.chrom
+                and curr.start - active_region.end < win_size
+            ):
                 reg_ratios.append(curr_ratio)
                 active_region.end = curr.end
             else:
@@ -192,7 +199,9 @@ def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
 
     d_only_bed = str(bed_file) + ".d_only"
 
-    with open(bed_file, "r", encoding="utf-8") as bed_in_fh, open(d_only_bed, "w") as tmp_cov_bed:
+    with open(bed_file, "r", encoding="utf-8") as bed_in_fh, open(
+        d_only_bed, "w"
+    ) as tmp_cov_bed:
         for line in bed_in_fh:
             line = line.rstrip()
 
@@ -218,7 +227,9 @@ def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
     os.unlink(d_only_bed)
 
 
-def parse_gvcfvaf(gvcf_file: Path, gnomad_file: Path, out_fh: TextIO, depth_threshold: int) -> None:
+def parse_gvcfvaf(
+    gvcf_file: Path, gnomad_file: Path, out_fh: TextIO, depth_threshold: int
+) -> None:
     """
     Calculate BAF frequencies for provided gnomad file positions
     Write position and BAF frequencies to file
@@ -344,9 +355,13 @@ def parse_arguments():
     parser.add_argument("-v", "--version", action="version", version=VERSION)
 
     parser.add_argument("--label", help="Output label", required=True)
-    parser.add_argument("--coverage", help="Standardized coverage file", required=True, type=Path)
+    parser.add_argument(
+        "--coverage", help="Standardized coverage file", required=True, type=Path
+    )
     parser.add_argument("--gvcf", help="gVCF file", required=True, type=Path)
-    parser.add_argument("--gnomad", help="File with gnomAD SNP positions", required=True, type=Path)
+    parser.add_argument(
+        "--gnomad", help="File with gnomAD SNP positions", required=True, type=Path
+    )
 
     parser.add_argument(
         "--bigwig",
