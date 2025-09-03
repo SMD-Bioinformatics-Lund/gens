@@ -17,12 +17,8 @@ LOG = logging.getLogger(__name__)
 
 def init_database_connection(app: Flask) -> None:
     """Initialize database connection and store variables to the two databases."""
-    # verify that database was properly configured
-    LOG.info("Initialize db connection")
 
-    # app.config["SCOUT_DB"] = MongoClient(
-    #     str(settings.scout_db.connection)
-    # ).get_database(name=settings.scout_db.database)
+    LOG.info("Initialize db connection")
 
     # FIXME: Generalize
     interpretation_client: MongoClient = MongoClient(str(settings.variant_db.connection))

@@ -18,6 +18,7 @@ class ScoutMongoAdapter(InterpretationAdapter):
     def __init__(self, db: Database[Any]):
         self._db = db
 
+    # FIXME: Cleanup
     def get_variants(
             self,
             case_id: str,
@@ -67,6 +68,7 @@ class ScoutMongoAdapter(InterpretationAdapter):
         return result
 
 
+    # FIXME: Consider cleanup
     def get_variant(self, document_id: str) -> VariantRecord:
         raw_variant = self._db.get_collection("variant").find_one(
             {"_id": document_id}, {"_id", False}
@@ -82,3 +84,21 @@ class ScoutMongoAdapter(InterpretationAdapter):
             LOG.error("Failed to validate variant %s: %s", document_id, e)
             raise VariantValidationError(f"Invalid variant data for ID {document_id}")
         return variant
+
+
+    def get_panel(self, panel_id: str) -> list[SimplifiedVariantRecord]:
+        return []
+        # return super().get_panel(panel_id)
+
+    def get_panels(self) -> list[tuple[str, str]]:
+        return []
+        # return super().get_panels()
+
+    # FIXME: Panels should be here. Should the URLs? Unsure. Something to ponder.
+    def get_case_url(self, case_id: str) -> str:
+        return ""
+        # return super().get_case_url(case_id)
+    
+    def get_variant_url(self, variant_id: str) -> str:
+        return ""
+        # return super().get_variant_url(variant_id)

@@ -86,7 +86,7 @@ class Settings(BaseSettings):
     def get_dict(self) -> dict[str, Any]:
         return {
             "gens_db": self.gens_db.database,
-            "interpretation_software_db": self.variant_db.database,
+            "variant_db": self.variant_db.database,
             "scout_url": self.variant_url,
             "gens_api_url": self.gens_api_url,
             "default_annotation_track": self.default_annotation_track,

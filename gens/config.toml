@@ -1,4 +1,4 @@
-scout_url = "http://localhost:8000"
+variant_url = "http://localhost:8000"
 authentication = "disabled"
 gens_api_url = "http://localhost:8080/"
 main_sample_types = ["proband", "tumor"]
@@ -6,5 +6,5 @@ main_sample_types = ["proband", "tumor"]
 [gens_db]
 connection = "mongodb://mongodb:27017/gens"
 
-[scout_db]
+[variant_db]
 connection = "mongodb://mongodb:27017/scout"
