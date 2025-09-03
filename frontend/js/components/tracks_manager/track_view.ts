@@ -555,6 +555,9 @@ export class TrackView extends ShadowBaseElement {
       },
     );
 
+    updateGeneListTracks(
+    )
+
     // FIXME: Only the active one needs to be rendered isn't it?
     Object.values(this.trackPages).forEach((trackPage) =>
       trackPage.render(settings),
@@ -751,6 +754,47 @@ function updateAnnotationTracks(
   removedSourceIds.forEach((id) => {
     removeTrack(id);
   });
+}
+
+function updateGeneListTracks(
+  currGeneTracks: TrackViewTrackInfo[],
+  getGeneListBands: (
+    sourceId: string,
+    chrom: string,
+  ) => Promise<RenderBand[]>,
+  getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
+  session: GensSession,
+  openTrackContextMenu: (track: DataTrack) => void,
+  addTrack: (track: DataTrack) => void,
+  removeTrack: (id: string) => void,
+) {
+  const sources = session.getGeneListSelections();
+  const trackId = (id: string) => `gene-list_${id}`;
+
+  const currTrackIds = currGeneTracks.map((info) => info.track.id);
+  const sourceTrackIds = sources.map((s) => trackId(s.id));
+
+  const newSources = sources.filter(
+    (source) => !currTrackIds.includes(trackId(source.id))
+  );
+
+  const removedIds = currTrackIds.filter((id) => !sourceTrackIds.includes(id));
+
+  newSources.forEach((source) => {
+    const newTrack = createGeneTrack(
+      trackId(source.id),
+      source.label,
+      (chrom: string) => getGeneListBands(source.indexOf, chrom),
+      (bandId: string) => getTranscriptDetails(bandId),
+      session,
+      openTrackContextMenu,
+    );
+    addTrack(newTrack);
+  });
+
+  removedIds.forEach((id) => {
+    removeTrack(id);
+  })
 }
 
 async function getSampleAnnotationTracks(

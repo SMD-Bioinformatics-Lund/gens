@@ -384,6 +384,7 @@ export class SettingsMenu extends ShadowBaseElement {
           entry1.label.toString().localeCompare(entry2.label.toString()),
         );
       this.geneListSelect.setValues(choices);
+      this.onChange({});
     }
 
     const colorChoices = [
@@ -482,6 +483,33 @@ export class SettingsMenu extends ShadowBaseElement {
     }
   }
 
+  // FIXME: Refactor with annot sources
+  getGeneListSources(settings: {
+    selectedOnly: boolean
+  }): { id: string, label: string }[] {
+    if (!settings.selectedOnly) {
+      return this.geneLists.map((source) => {
+        return {
+          id: source.id,
+          label: `${source.name} (${source.version})`
+        }
+      })
+    }
+
+    if (this.geneListSelect == null) {
+      return [];
+    }
+
+    const choices = this.geneListSelect.getValues();
+    const returnVals = choices.map((obj) => {
+      return {
+        id: obj.value,
+        label: obj.label.toString()
+      }
+    })
+    return returnVals;
+  }
+
   getAnnotSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
@@ -525,17 +553,17 @@ function getAnnotationChoices(
   return choices;
 }
 
-function getGeneListChoices(geneLists: ApiGeneList[]): InputChoice[] {
-  const choices: InputChoice[] = [];
-  for (const geneList of geneLists) {
-    const choice = {
-      value: geneList.id,
-      label: `${geneList.name} (v${geneList.version})`,
-    };
-    choices.push(choice);
-  }
-  return choices;
-}
+// function getGeneListChoices(geneLists: ApiGeneList[]): InputChoice[] {
+//   const choices: InputChoice[] = [];
+//   for (const geneList of geneLists) {
+//     const choice = {
+//       value: geneList.id,
+//       label: `${geneList.name} (v${geneList.version})`,
+//     };
+//     choices.push(choice);
+//   }
+//   return choices;
+// }
 
 function getSamplesSection(
   samples: Sample[],
