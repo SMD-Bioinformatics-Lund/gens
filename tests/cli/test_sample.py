@@ -138,6 +138,38 @@ def test_load_sample_cli_with_string_genome_build_fails(
     assert sample_coll.count_documents({}) == 1
 
 
+@pytest.mark.parametrize("alias,expected", [("T", "tumor"), ("N", "normal")])
+def test_load_sample_cli_accepts_aliases(
+    cli_load: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+    alias: str,
+    expected: str,
+) -> None:
+    baf_file = tmp_path / "baf"
+    baf_file.write_text("baf")
+    cov_file = tmp_path / "cov"
+    cov_file.write_text("cov")
+    overview_file = tmp_path / "overview"
+    overview_file.write_text("{}")
+
+    cli_load.sample.callback(
+        sample_id=f"sample-{alias}",
+        genome_build=38,
+        baf=baf_file,
+        coverage=cov_file,
+        case_id=f"case-{alias}",
+        overview_json=overview_file,
+        meta_files=[],
+        sample_type=alias,
+        sex=None,
+    )
+
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one({"sample_id": f"sample-{alias}"})
+    assert doc is not None
+    assert doc["sample_type"] == expected
+
+
 def test_delete_sample_cli_removes_document(
     cli_delete: ModuleType,
     db: mongomock.Database,
@@ -167,11 +199,18 @@ def test_update_sample_updates_document(
         meta=[],
     )
 
-    monkeypatch.setattr(cli_update, "get_sample", lambda db, sample_id, case_id, genome_build: sample_obj)
+    monkeypatch.setattr(
+        cli_update, "get_sample", lambda db, sample_id, case_id, genome_build: sample_obj
+    )
     # monkeypatch.setattr(update_sample_cmd, "parse_meta_file", lambda p: "META")
 
     meta_file = tmp_path / "meta.tsv"
     meta_file.write_text("type\tvalue\nA\t1\n")
+
+    baf_file = tmp_path / "baf"
+    baf_file.write_text("baf")
+    cov_file = tmp_path / "cov"
+    cov_file.write_text("cov")
 
     # assert update_sample_cmd.sample.callback is not None
 
@@ -181,6 +220,8 @@ def test_update_sample_updates_document(
         genome_build=GenomeBuild(19),
         sample_type="tumor",
         sex=SampleSex("M"),
+        baf=baf_file,
+        coverage=cov_file,
         meta_files=(meta_file,),
     )
 
@@ -191,6 +232,8 @@ def test_update_sample_updates_document(
     assert doc is not None
     assert doc["sample_type"] == "tumor"
     assert doc.get("sex") in ("M", SampleSex("M"), SampleSex.MALE)
+    assert Path(doc["baf_file"]) == baf_file
+    assert Path(doc["coverage_file"]) == cov_file
 
     LOG.debug(doc)
 

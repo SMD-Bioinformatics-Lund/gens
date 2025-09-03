@@ -2,6 +2,7 @@
 
 from datetime import timezone
 import logging
+from pathlib import Path
 from typing import Any, Dict, List
 
 from pydantic import ValidationError
@@ -113,9 +114,12 @@ def get_samples_per_case(
         #     continue
 
         case_id = sample["case_id"]
-        # case_id = sample_data.case_id
         if not case_to_samples.get(case_id):
             case_to_samples[case_id] = []
+
+        baf_file_exists = Path(sample.get("baf_file", "")).is_file()
+        cov_file_exists = Path(sample.get("coverage_file", "")).is_file()
+
         sample_obj = {
             "case_id": sample["case_id"],
             "sample_id": sample["sample_id"],
@@ -123,7 +127,7 @@ def get_samples_per_case(
             "sex": sample.get("sex"),
             "genome_build": sample["genome_build"],
             "has_overview_file": sample["overview_file"] is not None,
-            "files_present": bool(sample["baf_file"] and sample["coverage_file"]),
+            "files_present": baf_file_exists and cov_file_exists,
             "created_at": sample["created_at"].astimezone(timezone.utc).isoformat(),
         }
 
@@ -136,7 +140,7 @@ def get_samples_for_case(
     samples_c: Collection[dict[str, Any]],
     case_id: str,
 ) -> list[SampleInfo]:
-    
+
     cursor = samples_c.find({"case_id": case_id}).sort("created_at", DESCENDING)
 
     samples: list[SampleInfo] = []
@@ -147,22 +151,33 @@ def get_samples_for_case(
 
         sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
 
+        baf_file = Path(result["baf_file"])
+        coverage_file = Path(result["coverage_file"])
+        for file_path in (baf_file, coverage_file):
+            if not file_path.is_file():
+                raise FileNotFoundError(f"{file_path} was not found")
+            index_path = file_path.with_suffix(file_path.suffix + ".tbi")
+            if not index_path.is_file():
+                raise FileNotFoundError(f"{index_path} was not found")
+        if overview_file is not None and not Path(overview_file).is_file():
+            raise FileNotFoundError(f"{overview_file} was not found")
+
         sample = SampleInfo(
             sample_id=result["sample_id"],
             case_id=result["case_id"],
             genome_build=GenomeBuild(int(result["genome_build"])),
-            baf_file=result["baf_file"],
-            coverage_file=result["coverage_file"],
-            overview_file=overview_file,
+            baf_file=baf_file,
+            coverage_file=coverage_file,
+            overview_file=Path(overview_file) if overview_file is not None else None,
             sample_type=result.get("sample_type"),
             sex=result.get("sex"),
             meta=sample_meta,
             created_at=result["created_at"],
         )
         samples.append(sample)
-    
+
     return samples
-    
+
 
 def get_sample(
     samples_c: Collection[dict[str, Any]],

@@ -3,13 +3,12 @@
 import gzip
 import logging
 from pathlib import Path
-from typing import Any, TextIO
+from typing import TextIO
 
 import click
 from flask import json
-from pymongo.database import Database
 
-from gens.cli.util.util import ChoiceType, db_setup
+from gens.cli.util.util import ChoiceType, db_setup, normalize_sample_type
 from gens.cli.util.annotations import upsert_annotation_track, parse_raw_records
 from gens.config import settings
 from gens.crud.annotations import (
@@ -44,7 +43,6 @@ from gens.load.annotations import (
 from gens.load.chromosomes import build_chromosomes_obj, get_assembly_info
 from gens.load.meta import parse_meta_file
 from gens.load.transcripts import build_transcripts
-from gens.models.annotation import AnnotationRecord, AnnotationTrack, TranscriptRecord
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
 from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrack
@@ -148,7 +146,7 @@ def sample(
             "baf_file": baf,
             "coverage_file": coverage,
             "overview_file": overview_json,
-            "sample_type": sample_type,
+            "sample_type": normalize_sample_type(sample_type) if sample_type else None,
             "sex": sex,
             "meta": [parse_meta_file(p) for p in meta_files],
         }

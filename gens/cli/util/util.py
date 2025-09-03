@@ -3,8 +3,13 @@
 import click
 from pymongo.database import Database
 from gens.config import settings
+from gens.constants import SAMPLE_TYPE_ALIASES
 from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
+
+
+def normalize_sample_type(sample_type: str) -> str:
+    return SAMPLE_TYPE_ALIASES.get(sample_type.lower(), sample_type)
 
 
 class ChoiceType(click.Choice):

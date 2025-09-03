@@ -12,6 +12,7 @@ from typing import Callable
 import mongomock
 import pytest
 
+
 @pytest.fixture()
 def data_path():
     """Get path of this file"""
@@ -112,15 +113,18 @@ def stockholm_bed_file_path(data_path: Path) -> Path:
     """Get path a bed file used by Stockholm."""
     return data_path.joinpath("stockholm.bed")
 
+
 @pytest.fixture()
 def meta_file_path(data_path: Path) -> Path:
     """Get path to a metadata TSV file with row names."""
     return data_path.joinpath("meta.tsv")
 
+
 @pytest.fixture()
 def meta_norow_file_path(data_path: Path) -> Path:
     """Get path to a metadata TSV file without row name column."""
     return data_path.joinpath("meta_norow.tsv")
+
 
 @pytest.fixture()
 def db() -> mongomock.Database:
@@ -132,17 +136,16 @@ def db() -> mongomock.Database:
 def patch_cli(
     monkeypatch: pytest.MonkeyPatch, db: mongomock.Database
 ) -> Callable[[str | types.ModuleType], None]:
-    
+
     # Patch out cli indexing commands
     def _patch(module: str | types.ModuleType) -> None:
         if isinstance(module, str):
-            monkeypatch.setattr(
-                f"{module}.get_db_connection", lambda *a, **kw: db
-            )
-            monkeypatch.setattr(f"{module}.db_setup", lambda *a, **kw: db)
+            monkeypatch.setattr(f"{module}.get_db_connection", lambda *a, **kw: db, raising=False)
+            monkeypatch.setattr(f"{module}.db_setup", lambda *a, **kw: db, raising=False)
         else:
-            monkeypatch.setattr(module, "get_db_connection", lambda *a, **kw: db)
-            monkeypatch.setattr(module, "db_setup", lambda *a, **kw: db)
+            monkeypatch.setattr(module, "get_db_connection", lambda *a, **kw: db, raising=False)
+            monkeypatch.setattr(module, "db_setup", lambda *a, **kw: db, raising=False)
+
     return _patch
 
 
