@@ -82,6 +82,12 @@ template.innerHTML = String.raw`
     <choice-select id="annotation-select" multiple></choice-select>
   </div>
   <div class="header-row">
+    <div class="header">Gene lists</div>
+  </div>
+  <div>
+    <choice-select id="gene-lists-select" multiple></choice-select>
+  </div>
+  <div class="header-row">
     <div class="header">Color tracks by</div>
   </div>
   <div>
@@ -145,6 +151,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private tracksOverview: HTMLDivElement;
   private highlightsOverview: HTMLDivElement;
   private annotSelect: ChoiceSelect;
+  private geneListSelect: ChoiceSelect;
   private colorBySelect: ChoiceSelect;
   private sampleSelect: ChoiceSelect;
   private addSampleButton: IconButton;
@@ -162,6 +169,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
   private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
+  private geneLists: ApiGeneList[];
   private defaultAnnots: { id: string; label: string }[];
   private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
@@ -189,6 +197,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onChange: (renderSettings: RenderSettings) => void,
     allAnnotationSources: ApiAnnotationTrack[],
     defaultAnnots: { id: string; label: string }[],
+    geneLists: ApiGeneList[],
     getDataTracks: () => DataTrack[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
     getAllSamples: () => Sample[],
@@ -198,17 +207,12 @@ export class SettingsMenu extends ShadowBaseElement {
     setTrackInfo: (trackHeights: TrackHeights) => void,
     onColorByChange: (annotId: string | null) => void,
     onApplyDefaultCovRange: (rng: Rng) => void,
-    getGeneLists: () => Promise<ApiGeneList[]>,
   ) {
-    console.log("Testing getting gene lists")
-    console.log(getGeneLists().then((res) => {
-      console.log("then")
-      console.log(res)
-    }));
-
     this.session = session;
     this.onChange = onChange;
     this.allAnnotationSources = allAnnotationSources;
+    this.geneLists = geneLists;
+
     const stored = session.getAnnotationSelections();
     if (stored && stored.length > 0) {
       defaultAnnots = allAnnotationSources
@@ -216,6 +220,16 @@ export class SettingsMenu extends ShadowBaseElement {
         .map((src) => ({ id: src.track_id, label: src.name }));
     }
     this.defaultAnnots = defaultAnnots;
+
+    // FIXME: Consider generalizing with the annots above
+    const storedGeneLists = session.getGeneListSelections();
+    let storedGeneListsObjects = [];
+    if (storedGeneLists && storedGeneLists.length > 0) {
+      storedGeneListsObjects = geneLists
+        .filter((src) => storedGeneLists.includes(src.id))
+        .map((src) => ({ id: src.id, label: `${src.name} (v${src.version})` }));
+    }
+
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
 
@@ -241,6 +255,7 @@ export class SettingsMenu extends ShadowBaseElement {
   connectedCallback() {
     super.connectedCallback();
     this.annotSelect = this.root.querySelector("#annotation-select");
+    this.geneListSelect = this.root.querySelector("#gene-lists-select");
     this.colorBySelect = this.root.querySelector("#color-by-select");
     this.sampleSelect = this.root.querySelector("#sample-select");
     this.tracksOverview = this.root.querySelector("#tracks-overview");
@@ -356,6 +371,13 @@ export class SettingsMenu extends ShadowBaseElement {
         source1.label.toString().localeCompare(source2.label.toString()),
       ),
     );
+
+    this.geneListSelect.setValues(
+      getGeneListChoices(this.geneLists).sort((source1, source2) =>
+        source1.label.toString().localeCompare(source2.label.toString()),
+      ),
+    );
+
     const colorChoices = [
       { label: "None", value: "", selected: this.getColorAnnotation() == null },
       ...getAnnotationChoices(this.allAnnotationSources, []).map((c) => ({
@@ -489,6 +511,18 @@ function getAnnotationChoices(
       value: source.track_id,
       label: source.name,
       selected: defaultAnnotIds.includes(source.track_id),
+    };
+    choices.push(choice);
+  }
+  return choices;
+}
+
+function getGeneListChoices(geneLists: ApiGeneList[]): InputChoice[] {
+  const choices: InputChoice[] = [];
+  for (const geneList of geneLists) {
+    const choice = {
+      value: geneList.id,
+      label: `${geneList.name} (v${geneList.version})`,
     };
     choices.push(choice);
   }

@@ -28,7 +28,8 @@ interface ApiAnnotationTrack {
 
 interface ApiGeneList {
   id: string;
-  value: string;
+  name: string;
+  version: string;
 }
 
 interface ApiSampleAnnotationTrack {
