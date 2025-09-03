@@ -8,7 +8,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, HTTPException, Query
 
-from gens.adapters.base import VariantSoftwareAdapter
+from gens.adapters.base import InterpretationAdapter
 from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import (
     get_annotation,
@@ -174,7 +174,9 @@ async def get_variants(
     Returns a list of simplified variant records. Use query parameters to filter by region or type.
     """
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
+    print(">>> Preparing to get variants")
     try:
+        print(">>> Adapter", adapter)
         variants = adapter.get_variants(
             sample_name=sample_id,
             case_id=case_id,

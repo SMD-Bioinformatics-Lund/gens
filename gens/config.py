@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     scout_db: MongoDbConfig
     scout_url: HttpUrl = Field(..., description="Base URL to Scout.")
     gens_api_url: HttpUrl = Field(..., description="Gens API URL")
+    interpretation_backend: str = Field(
+        default="scout_mongo",
+        description="Implementation used for interpretation software integration.",
+    )
 
     main_sample_types: list[str] = Field(
         default_factory=lambda: ["proband", "tumor"],
@@ -109,17 +113,13 @@ class Settings(BaseSettings):
         # gens
         conn_info = parse_uri(str(self.gens_db.connection))
         self.gens_db.database = (
-            self.gens_db.database
-            if conn_info["database"] is None
-            else conn_info["database"]
+            self.gens_db.database if conn_info["database"] is None else conn_info["database"]
         )
 
         # scout
         conn_info = parse_uri(str(self.scout_db.connection))
         self.scout_db.database = (
-            self.scout_db.database
-            if conn_info["database"] is None
-            else conn_info["database"]
+            self.scout_db.database if conn_info["database"] is None else conn_info["database"]
         )
 
         return self

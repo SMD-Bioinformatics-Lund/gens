@@ -4,7 +4,7 @@ from typing import Any
 from pydantic import ValidationError
 from pymongo.database import Database
 
-from gens.adapters.base import VariantSoftwareAdapter
+from gens.adapters.base import InterpretationAdapter
 from gens.crud.scout import VariantNotFoundError, VariantValidationError
 from gens.models.annotation import SimplifiedVariantRecord, VariantRecord
 from gens.models.genomic import GenomicRegion, VariantCategory
@@ -13,7 +13,7 @@ from gens.models.genomic import GenomicRegion, VariantCategory
 LOG = logging.getLogger(__name__)
 
 
-class ScoutAdapter(VariantSoftwareAdapter):
+class ScoutMongoAdapter(InterpretationAdapter):
 
     def __init__(self, db: Database[Any]):
         self._db = db

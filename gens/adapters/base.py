@@ -4,7 +4,7 @@ from gens.models.annotation import SimplifiedVariantRecord, VariantRecord
 from gens.models.genomic import GenomicRegion, VariantCategory
 
 
-class VariantSoftwareAdapter(ABC):
+class InterpretationAdapter(ABC):
 
     @abstractmethod
     def get_variants(

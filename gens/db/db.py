@@ -8,7 +8,8 @@ from pydantic import MongoDsn
 from pymongo import MongoClient
 from pymongo.database import Database
 
-from gens.adapters.scout import ScoutAdapter
+from gens.adapters.base import InterpretationAdapter
+from gens.adapters.scout import ScoutMongoAdapter
 from gens.config import settings
 
 LOG = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def init_database_connection(app: Flask) -> None:
 
     # FIXME: Generalize
     interpretation_client: MongoClient = MongoClient(str(settings.scout_db.connection))
-    app.config["INTERPRETATION_ADAPTER"] = ScoutAdapter(
+    app.config["INTERPRETATION_ADAPTER"] = ScoutMongoAdapter(
         interpretation_client.get_database(name=settings.scout_db.database)
     )
 
@@ -49,10 +50,19 @@ def get_gens_db() -> Generator[Database[Any], None, None]:
         client.close()
 
 
-def get_variant_software_adapter() -> Generator[Database[Any], None, None]:
-    """Connect to the Scout database."""
+# FIXME: Think through how and why this is needed
+# Seems required to setup the deps for the FastAPI usage
+def get_variant_software_adapter() -> Generator[InterpretationAdapter, None, None]:
+    """Return the configured interpretation adapter."""
+
+    if settings.interpretation_backend != "scout_mongo":
+        raise ValueError(f"Unsupported interpretation backend: {settings.interpretation_backend}")
+
+    client: MongoClient[Any] = MongoClient(str(settings.scout_db.connection))
+
     try:
-        client: MongoClient[Any] = MongoClient(str(settings.scout_db.connection))
-        yield client.get_database(settings.scout_db.database)
+        db = client.get_database(settings.scout_db.database)
+        # FIXME: Why yield here
+        yield ScoutMongoAdapter(db)
     finally:
         client.close()
