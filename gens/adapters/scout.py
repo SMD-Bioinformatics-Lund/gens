@@ -112,8 +112,17 @@ class ScoutMongoAdapter(InterpretationAdapter):
 
         return gene_lists
 
-    def get_panel(self, panel_id: str) -> list[SimplifiedVariantRecord]:
-        return []
+    def get_panel(self, panel_id: str) -> list[str]:
+        # FIXME: Look into how to grab the latest version here
+        panel = self._db.get_collection("gene_panel").find_one({"panel_name": panel_id})
+        if not panel:
+            return []
+        genes = []
+        for gene in panel.get("genes", []):
+            symbol = gene.get("hgnc_symbol") or gene.get("symbol")
+            if symbol:
+                genes.append(symbol)
+        return genes
         # return super().get_panel(panel_id)
 
     # FIXME: Panels should be here. Should the URLs? Unsure. Something to ponder.

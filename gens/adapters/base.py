@@ -25,8 +25,8 @@ class InterpretationAdapter(ABC):
         """Return list of panel IDs and names"""
     
     @abstractmethod
-    def get_panel(self, panel_id: str) -> list[SimplifiedVariantRecord]:
-        """Return list of panel entries for specific panel"""
+    def get_panel(self, panel_id: str) -> list[str]:
+        """Return list of gene symbols for specific panel"""
 
     @abstractmethod
     def get_case_url(self, case_id: str) -> str:

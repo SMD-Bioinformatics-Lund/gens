@@ -114,6 +114,17 @@ export class API {
     return geneLists;
   }
 
+  getGeneListGenes(
+    panelId: string,
+    chromosome: string,
+  ): Promise<ApiSimplifiedTranscript[]> {
+    const genes = get(
+      new URL(`gene_lists/track/${panelId}`, this.apiURI).href,
+      { chromosome, genome_build: this.genomeBuild }
+    ) as Promise<ApiSimplifiedTranscript[]>;
+    return genes;
+  }
+
   getSampleAnnotationSources(
     caseId: string,
     sampleId: string,

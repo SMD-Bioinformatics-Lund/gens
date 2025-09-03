@@ -390,6 +390,8 @@ interface RenderDataSource {
   getTranscriptBands: (chrom: string) => Promise<RenderBand[]>;
   getTranscriptDetails: (geneId: string) => Promise<ApiGeneDetails>;
 
+  getGeneListBands: (listId: string, chrom: string) => Promise<RenderBand[]>;
+
   getVariantBands: (sample: Sample, chrom: string, rankScoreThres: number) => Promise<RenderBand[]>;
   getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>;
 
