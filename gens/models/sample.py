@@ -33,7 +33,7 @@ class ZoomLevel(StrEnum):
     B = "b"
     C = "c"
     D = "d"
-    O = "o"
+    overview = "o"
 
 
 class SampleSex(StrEnum):

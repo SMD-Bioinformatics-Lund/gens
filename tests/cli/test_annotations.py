@@ -125,7 +125,7 @@ def test_load_annotations_from_tsv(
     assert track_info is not None
     assert track_info["name"] == "track"
     assert track_info["description"] == ""
-    assert track_info["maintainer"] == None
+    assert track_info["maintainer"] is None
     assert track_info["metadata"] == []
     assert track_info["genome_build"] == 38
 
