@@ -48,4 +48,5 @@ gens/static/css/*
 *.min.css
 *.min.js
 *.map
+frontend/**/*.js
 

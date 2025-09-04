@@ -235,6 +235,7 @@ export class TrackView extends ShadowBaseElement {
     const genesTrack = createGeneTrack(
       "genes",
       "Genes",
+      "gene",
       (chrom: string) => dataSources.getTranscriptBands(chrom),
       (id: string) => dataSources.getTranscriptDetails(id),
       session,
@@ -557,7 +558,7 @@ export class TrackView extends ShadowBaseElement {
 
     updateGeneListTracks(
       this.dataTracks.filter(
-        (info) => info.track.trackType == "gene-panel",
+        (info) => info.track.trackType == "gene-list",
       ),
       (sourceId: string, chrom: string) =>
         this.dataSource.getGeneListBands(sourceId, chrom),
@@ -801,6 +802,7 @@ function updateGeneListTracks(
     const newTrack = createGeneTrack(
       trackId(source.id),
       source.label,
+      "gene-list",
       (chrom: string) => getGeneListBands(source.id, chrom),
       (bandId: string) => getTranscriptDetails(bandId),
       session,
