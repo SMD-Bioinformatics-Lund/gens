@@ -13,6 +13,7 @@ from gens.crud.annotations import (
     get_annotation,
     get_annotation_tracks,
     get_annotations_for_track,
+    get_data_update_timestamp,
 )
 from gens.crud.genomic import get_chromosome_info, get_chromosomes
 from gens.crud.scout import (
@@ -128,6 +129,27 @@ async def get_transcript_with_id(
     if result is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
     return result
+
+
+@router.get("/updates")
+async def get_track_updates(
+    track: str = Query(default="all", description="Track type, e.g. 'transcripts'"),
+    db: GensDb,
+):
+    """Return latest update timestamps for tracks.
+
+    When a specific track is requested, return the latest timestamp string for that track.
+    """
+    updates = get_data_update_timestamp(db, track)
+    if track == "all":
+        return updates
+
+    entries = updates.get(track, [])
+    if len(entries) == 0:
+        return {"track": track, "timestamp": None}
+
+    latest = max(e.get("timestamp", "") for e in entries)
+    return {"track": track, "timestamp": latest}
 
 
 @router.get("/chromosomes/", tags=[ApiTags.CHROM])
