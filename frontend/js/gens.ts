@@ -65,7 +65,6 @@ export async function initCanvases({
   scoutBaseURL,
   gensApiURL,
   mainSampleTypes,
-  annotationFile: defaultAnnotationName,
   startRegion,
   version,
   allSamples,
@@ -176,20 +175,19 @@ export async function initCanvases({
   const allAnnotSources = await api.getAnnotationSources();
   const geneLists = await api.getGeneLists();
 
-  const defaultAnnot = allAnnotSources
-    .filter((track) => track.name === defaultAnnotationName)
-    .map((track) => {
-      return {
-        id: track.track_id,
-        label: track.name,
-      };
-    });
+  // const defaultAnnot = allAnnotSources
+  //   .filter((track) => track.name === defaultAnnotationName)
+  //   .map((track) => {
+  //     return {
+  //       id: track.track_id,
+  //       label: track.name,
+  //     };
+  //   });
 
   settingsPage.setSources(
     session,
     render,
     allAnnotSources,
-    defaultAnnot,
     geneLists,
     () => gensTracks.trackView.getDataTracks(),
     (trackId: string, direction: "up" | "down") =>

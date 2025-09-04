@@ -170,7 +170,8 @@ export class SettingsMenu extends ShadowBaseElement {
   private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private geneLists: ApiGeneList[];
-  private defaultAnnots: { id: string; label: string }[];
+  // private defaultAnnots: { id: string; label: string }[];
+  // private defaultGeneLists: { id: string; label: string }[];
   private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
   private getCurrentSamples: () => Sample[];
@@ -196,7 +197,6 @@ export class SettingsMenu extends ShadowBaseElement {
     session: GensSession,
     onChange: (renderSettings: RenderSettings) => void,
     allAnnotationSources: ApiAnnotationTrack[],
-    defaultAnnots: { id: string; label: string }[],
     geneLists: ApiGeneList[],
     getDataTracks: () => DataTrack[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
@@ -213,13 +213,14 @@ export class SettingsMenu extends ShadowBaseElement {
     this.allAnnotationSources = allAnnotationSources;
     this.geneLists = geneLists;
 
-    const stored = session.getAnnotationSelections();
-    if (stored && stored.length > 0) {
-      defaultAnnots = allAnnotationSources
-        .filter((src) => stored.includes(src.track_id))
-        .map((src) => ({ id: src.track_id, label: src.name }));
-    }
-    this.defaultAnnots = defaultAnnots;
+    // const stored = session.getAnnotationSelections();
+    // // if (stored && stored.length > 0) {
+    // //   defaultAnnots = allAnnotationSources
+    // //     .filter((src) => stored.includes(src.track_id))
+    // //     .map((src) => ({ id: src.track_id, label: src.name }));
+    // // }
+    // this.defaultAnnots = defaultAnnots;
+    // this.defaultGeneLists = defaultGeneLists;
 
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
@@ -362,25 +363,31 @@ export class SettingsMenu extends ShadowBaseElement {
 
   initialize() {
     this.isInitialized = true;
+    const prevSelectedAnnots = this.session.getAnnotationSelections();
     this.annotSelect.setValues(
-      getAnnotationChoices(
-        this.allAnnotationSources,
-        this.defaultAnnots.map((a) => a.id),
+      getAnnotationChoices(this.allAnnotationSources, prevSelectedAnnots),
+    );
+
+    const prevSelectedGeneLists = this.session.getGeneListSelections();
+    this.geneListSelect.setValues(
+      getGeneListChoices(
+        this.geneLists,
+        prevSelectedGeneLists,
+        // this.defaultGeneLists.map((a) => a.id),
       ),
     );
 
-    this.geneListSelect.setValues(getGeneListChoices(this.geneLists));
-
+    const allAnnotChoices = getAnnotationChoices(this.allAnnotationSources, []);
     const colorChoices = [
       { label: "None", value: "", selected: this.getColorAnnotation() == null },
-      ...getAnnotationChoices(this.allAnnotationSources, []).map((c) => ({
+      ...allAnnotChoices.map((c) => ({
         ...c,
         selected: c.value === this.getColorAnnotation(),
       })),
     ];
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
-    this.session.setAnnotationSelections(this.defaultAnnots.map((a) => a.id));
+    // this.session.setAnnotationSelections(this.defaultAnnots.map((a) => a.id));
     this.onChange({});
   }
 
@@ -471,15 +478,12 @@ export class SettingsMenu extends ShadowBaseElement {
   getGeneListSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
-
     const sources = parseSources(
       this.geneLists,
-      // FIXME: Default sources
-      [],
       this.geneListSelect,
       settings.selectedOnly,
       (source) => source.id,
-      (source) => `${source.name} + ${source.version}`
+      (source) => `${source.name} + ${source.version}`,
     );
     return sources;
   }
@@ -489,7 +493,6 @@ export class SettingsMenu extends ShadowBaseElement {
   }): { id: string; label: string }[] {
     const sources = parseSources<ApiAnnotationTrack>(
       this.allAnnotationSources,
-      this.defaultAnnots,
       this.annotSelect,
       settings.selectedOnly,
       (source) => source.track_id,
@@ -502,7 +505,6 @@ export class SettingsMenu extends ShadowBaseElement {
 
 function parseSources<T>(
   allSources: T[],
-  defaultSources: { id: string; label: string }[],
   targetSelect: ChoiceSelect | null,
   selectedOnly: boolean,
   getId: (source: T) => string,
@@ -518,7 +520,7 @@ function parseSources<T>(
   }
 
   if (targetSelect == null) {
-    return defaultSources;
+    return [];
   }
 
   const choices = targetSelect.getValues();
@@ -533,14 +535,14 @@ function parseSources<T>(
 
 function getAnnotationChoices(
   annotationSources: ApiAnnotationTrack[],
-  defaultAnnotIds: string[],
+  prevSelected: string[],
 ): InputChoice[] {
   const choices: InputChoice[] = [];
   for (const source of annotationSources) {
     const choice = {
       value: source.track_id,
       label: source.name,
-      selected: defaultAnnotIds.includes(source.track_id),
+      selected: prevSelected.includes(source.track_id),
     };
     choices.push(choice);
   }
@@ -549,12 +551,16 @@ function getAnnotationChoices(
   );
 }
 
-function getGeneListChoices(geneLists: ApiGeneList[]): InputChoice[] {
+function getGeneListChoices(
+  geneLists: ApiGeneList[],
+  prevSelected: string[],
+): InputChoice[] {
   const choices: InputChoice[] = [];
   for (const geneList of geneLists) {
     const choice = {
       value: geneList.id,
       label: `${geneList.name} (v${geneList.version})`,
+      selected: prevSelected.includes(geneList.id),
     };
     choices.push(choice);
   }
