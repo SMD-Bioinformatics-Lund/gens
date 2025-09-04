@@ -651,7 +651,7 @@ interface Sample {
   meta?: SampleMetaEntry[];
 }
 
-type TrackType = "annotation" | "variant" | "dot-cov" | "dot-baf" | "gene" | "position";
+type TrackType = "annotation" | "variant" | "dot-cov" | "dot-baf" | "gene" | "position" | "gene-panel";
 
 type IDBTranscripts = {
   transcripts: ApiSimplifiedTranscript[],

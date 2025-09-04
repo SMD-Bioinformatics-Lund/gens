@@ -213,15 +213,6 @@ export class SettingsMenu extends ShadowBaseElement {
     this.allAnnotationSources = allAnnotationSources;
     this.geneLists = geneLists;
 
-    // const stored = session.getAnnotationSelections();
-    // // if (stored && stored.length > 0) {
-    // //   defaultAnnots = allAnnotationSources
-    // //     .filter((src) => stored.includes(src.track_id))
-    // //     .map((src) => ({ id: src.track_id, label: src.name }));
-    // // }
-    // this.defaultAnnots = defaultAnnots;
-    // this.defaultGeneLists = defaultGeneLists;
-
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
 
@@ -370,11 +361,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
     const prevSelectedGeneLists = this.session.getGeneListSelections();
     this.geneListSelect.setValues(
-      getGeneListChoices(
-        this.geneLists,
-        prevSelectedGeneLists,
-        // this.defaultGeneLists.map((a) => a.id),
-      ),
+      getGeneListChoices(this.geneLists, prevSelectedGeneLists),
     );
 
     const allAnnotChoices = getAnnotationChoices(this.allAnnotationSources, []);
@@ -387,7 +374,6 @@ export class SettingsMenu extends ShadowBaseElement {
     ];
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
-    // this.session.setAnnotationSelections(this.defaultAnnots.map((a) => a.id));
     this.onChange({});
   }
 
@@ -474,7 +460,6 @@ export class SettingsMenu extends ShadowBaseElement {
     }
   }
 
-  // FIXME: Refactor with annot sources
   getGeneListSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {

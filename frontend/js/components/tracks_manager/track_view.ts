@@ -557,7 +557,7 @@ export class TrackView extends ShadowBaseElement {
 
     updateGeneListTracks(
       this.dataTracks.filter(
-        (info) => info.track.trackType == "gene" && info.track.id !== "genes",
+        (info) => info.track.trackType == "gene-panel",
       ),
       (sourceId: string, chrom: string) =>
         this.dataSource.getGeneListBands(sourceId, chrom),
