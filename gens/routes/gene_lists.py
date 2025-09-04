@@ -2,17 +2,8 @@ import logging
 
 from fastapi import APIRouter
 
-from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
-from gens.crud.genomic import get_chromosome_info
-from gens.crud.transcripts import (
-    _format_features,
-    get_simplified_transcripts_by_gene_symbol,
-    get_transcripts,
-    get_transcripts_by_gene_symbol,
-)
-from gens.models.annotation import GeneListRecord, SimplifiedTranscriptInfo
-from gens.models.genomic import Chromosome, GenomeBuild, GenomicRegion
-from gens.routes.utils import AdapterDep, ApiTags, GensDb
+from gens.models.annotation import GeneListRecord
+from gens.routes.utils import AdapterDep, ApiTags
 
 router = APIRouter(prefix="/gene_lists")
 

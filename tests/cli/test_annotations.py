@@ -4,7 +4,6 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Callable
 
 import mongomock
 import pytest
@@ -75,7 +74,7 @@ def test_load_annotations_from_bed(
     assert track_info is not None
     assert track_info["name"] == "track"
     assert track_info["description"] == ""
-    assert track_info["maintainer"] == None
+    assert track_info["maintainer"] is None
     assert track_info["metadata"] == []
     assert track_info["genome_build"] == 38
 
@@ -209,7 +208,7 @@ def test_load_annotations_parses_aed(
     assert track_info is not None
     assert track_info["name"] == "chas"
     assert track_info["description"] == ""
-    assert track_info["maintainer"] == None
+    assert track_info["maintainer"] is None
     assert len(track_info["metadata"]) == 4
     assert track_info["genome_build"] == 38
 

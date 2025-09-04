@@ -5,7 +5,7 @@ import logging
 from collections import defaultdict
 from dataclasses import dataclass
 from itertools import chain
-from typing import Any, Generator, Iterable, Iterator, Optional, TextIO, TypedDict
+from typing import Generator, Iterable, Optional, TextIO, TypedDict
 
 import click
 from pydantic import ValidationError

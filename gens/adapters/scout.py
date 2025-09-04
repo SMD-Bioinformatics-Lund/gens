@@ -42,9 +42,11 @@ class ScoutMongoAdapter(InterpretationAdapter):
             "samples.genotype_call": {"$in": valid_genotype_calls},
         }
         if all(param is not None for param in [region.start, region.end]):
+            # FIXME: What is this?
+            # **query_genomic_regions(region.start, region.end, variant_category),  # type: ignore
+
             query = {
                 **query,
-                **query_genomic_regions(region.start, region.end, variant_category),  # type: ignore
             }
         projection: dict[str, bool] = {}
         LOG.info("Query variant database: %s", query)

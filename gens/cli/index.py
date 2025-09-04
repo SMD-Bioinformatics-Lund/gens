@@ -5,7 +5,6 @@ import logging
 import click
 
 from gens.cli.util.util import db_setup
-from gens.db.db import get_db_connection
 from gens.db.index import INDEXES, create_indexes, update_indexes
 
 LOG = logging.getLogger(__name__)

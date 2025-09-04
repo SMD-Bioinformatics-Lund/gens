@@ -374,11 +374,11 @@ def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> N
     # Get chromosome info from ensemble
     # If file is given, use sizes from file else download chromsizes from ebi
     if file is not None:
-        LOG.info(f"File is provided, loading from file")
+        LOG.info("File is provided, loading from file")
         with open_text_or_gzip(str(file)) as fh:
             assembly_info = json.load(fh)
     else:
-        LOG.info(f"Retrieving online")
+        LOG.info("Retrieving online")
         assembly_info = get_assembly_info(genome_build, timeout=timeout)
 
     chrom_data = {

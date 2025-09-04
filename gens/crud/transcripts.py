@@ -5,7 +5,6 @@ from typing import Any, Iterable
 
 from pymongo.database import Database
 
-from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import register_data_update
 from gens.db.collections import TRANSCRIPTS_COLLECTION
 from gens.models.annotation import (
@@ -15,7 +14,7 @@ from gens.models.annotation import (
     UtrFeature,
 )
 from gens.models.base import PydanticObjectId
-from gens.models.genomic import GenomeBuild, GenomePosition, GenomicRegion
+from gens.models.genomic import GenomeBuild, GenomicRegion
 
 from .utils import query_genomic_region
 
