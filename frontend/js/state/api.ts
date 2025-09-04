@@ -373,6 +373,9 @@ export class API {
   private transcriptUpdateTimestamp: string | null = null;
 
   private async getTranscriptUpdateTimestamp(): Promise<string | null> {
+
+    console.log("Setting transcripts to cache");
+
     if (this.transcriptUpdateTimestamp != null) {
       return this.transcriptUpdateTimestamp;
     }
@@ -391,6 +394,9 @@ export class API {
     chrom: string,
     onlyCanonical: boolean,
   ): Promise<ApiSimplifiedTranscript[]> {
+
+    console.log("Getting transcripts from cache");
+
     const cacheKey = `${this.genomeBuild}|${chrom}|${onlyCanonical ? 1 : 0}`;
 
     if (this.transcriptCache[cacheKey] !== undefined) {

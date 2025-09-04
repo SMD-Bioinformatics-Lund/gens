@@ -115,13 +115,17 @@ class Settings(BaseSettings):
         # gens
         conn_info = parse_uri(str(self.gens_db.connection))
         self.gens_db.database = (
-            self.gens_db.database if conn_info["database"] is None else conn_info["database"]
+            self.gens_db.database
+            if conn_info["database"] is None
+            else conn_info["database"]
         )
 
         # scout
         conn_info = parse_uri(str(self.variant_db.connection))
         self.variant_db.database = (
-            self.variant_db.database if conn_info["database"] is None else conn_info["database"]
+            self.variant_db.database
+            if conn_info["database"] is None
+            else conn_info["database"]
         )
 
         return self

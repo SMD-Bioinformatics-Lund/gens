@@ -19,7 +19,7 @@ from .auth import login_manager, oauth_client
 from .blueprints import gens_bp, home_bp, login_bp
 from .config import AuthMethod, settings
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
-from .routes import annotations, base, sample, sample_annotations, gene_lists
+from .routes import annotations, base, gene_lists, sample, sample_annotations
 
 dictConfig(
     {

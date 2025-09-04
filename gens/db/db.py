@@ -21,7 +21,9 @@ def init_database_connection(app: Flask) -> None:
     LOG.info("Initialize db connection")
 
     # FIXME: Generalize
-    interpretation_client: MongoClient = MongoClient(str(settings.variant_db.connection))
+    interpretation_client: MongoClient = MongoClient(
+        str(settings.variant_db.connection)
+    )
     app.config["INTERPRETATION_ADAPTER"] = ScoutMongoAdapter(
         interpretation_client.get_database(name=settings.variant_db.database)
     )
@@ -52,7 +54,9 @@ def get_variant_software_adapter() -> Generator[InterpretationAdapter, None, Non
     """Return the configured interpretation adapter."""
 
     if settings.interpretation_backend != "scout_mongo":
-        raise ValueError(f"Unsupported interpretation backend: {settings.interpretation_backend}")
+        raise ValueError(
+            f"Unsupported interpretation backend: {settings.interpretation_backend}"
+        )
 
     client: MongoClient[Any] = MongoClient(str(settings.variant_db.connection))
 

@@ -133,7 +133,7 @@ async def get_transcript_with_id(
 
 @router.get("/updates")
 async def get_track_updates(
-    track: str = Query(default="all", description="Track type, e.g. 'transcripts'"),
+    track: str,
     db: GensDb,
 ):
     """Return latest update timestamps for tracks.

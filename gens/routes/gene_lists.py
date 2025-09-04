@@ -1,8 +1,9 @@
 import logging
+
 from fastapi import APIRouter
 
+from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.genomic import get_chromosome_info
-from gens.constants import MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL
 from gens.crud.transcripts import (
     _format_features,
     get_simplified_transcripts_by_gene_symbol,
@@ -12,7 +13,6 @@ from gens.crud.transcripts import (
 from gens.models.annotation import GeneListRecord, SimplifiedTranscriptInfo
 from gens.models.genomic import Chromosome, GenomeBuild, GenomicRegion
 from gens.routes.utils import AdapterDep, ApiTags, GensDb
-
 
 router = APIRouter(prefix="/gene_lists")
 
@@ -47,6 +47,5 @@ async def get_gene_list_symbols(
 
     #     matches_in_chr = [tr for tr in matches if tr.chrom == chromosome.value]
     #     all_matches.extend(matches_in_chr)
-
 
     # return all_matches

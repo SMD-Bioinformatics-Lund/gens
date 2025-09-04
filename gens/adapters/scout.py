@@ -1,5 +1,5 @@
-from collections import defaultdict
 import logging
+from collections import defaultdict
 from typing import Any
 
 from pydantic import ValidationError
@@ -7,9 +7,12 @@ from pymongo.database import Database
 
 from gens.adapters.base import InterpretationAdapter
 from gens.crud.scout import VariantNotFoundError, VariantValidationError
-from gens.models.annotation import GeneListRecord, SimplifiedVariantRecord, VariantRecord
+from gens.models.annotation import (
+    GeneListRecord,
+    SimplifiedVariantRecord,
+    VariantRecord,
+)
 from gens.models.genomic import GenomicRegion, VariantCategory
-
 
 LOG = logging.getLogger(__name__)
 
@@ -31,7 +34,10 @@ class ScoutMongoAdapter(InterpretationAdapter):
         query: dict[str, Any] = {
             "case_id": case_id,
             "category": variant_category,
-            "$or": [{"samples.sample_id": sample_name}, {"samples.display_name": sample_name}],
+            "$or": [
+                {"samples.sample_id": sample_name},
+                {"samples.display_name": sample_name},
+            ],
             "chromosome": region.chromosome,
             "samples.genotype_call": {"$in": valid_genotype_calls},
         }
@@ -71,7 +77,9 @@ class ScoutMongoAdapter(InterpretationAdapter):
             {"_id": document_id}, {"_id", False}
         )
         if raw_variant is None:
-            LOG.warning("Variant with document_id %s not found in Scout database", document_id)
+            LOG.warning(
+                "Variant with document_id %s not found in Scout database", document_id
+            )
             raise VariantNotFoundError(
                 f"Variant with id {document_id} is not found in Scout database"
             )
@@ -91,7 +99,11 @@ class ScoutMongoAdapter(InterpretationAdapter):
         )
 
         all_gene_lists_parsed = [
-            {"id": res["panel_name"], "name": res["display_name"], "version": res["version"]}
+            {
+                "id": res["panel_name"],
+                "name": res["display_name"],
+                "version": res["version"],
+            }
             for res in raw_query_results
         ]
 
@@ -103,7 +115,11 @@ class ScoutMongoAdapter(InterpretationAdapter):
                 highest_version_per_panel[panel_id] = res_dict["version"]
 
         only_highest = [
-            {"id": gene_list["id"], "name": gene_list["name"], "version": str(gene_list["version"])}
+            {
+                "id": gene_list["id"],
+                "name": gene_list["name"],
+                "version": str(gene_list["version"]),
+            }
             for gene_list in all_gene_lists_parsed
             if gene_list["version"] == highest_version_per_panel[gene_list["id"]]
         ]

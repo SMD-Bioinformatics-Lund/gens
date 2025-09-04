@@ -138,7 +138,7 @@ def get_simplified_transcripts_by_gene_symbol(
                 "features": _format_features(doc["features"]),
             }
         )
-        return_transcripts.append(simple_tr) 
+        return_transcripts.append(simple_tr)
 
     return return_transcripts
 
