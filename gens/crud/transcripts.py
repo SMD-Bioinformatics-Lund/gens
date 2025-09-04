@@ -5,6 +5,7 @@ from typing import Any, Iterable
 
 from pymongo.database import Database
 
+from gens.constants import ENSEMBL_CANONICAL, MANE_PLUS_CLINICAL, MANE_SELECT
 from gens.crud.annotations import register_data_update
 from gens.db.collections import TRANSCRIPTS_COLLECTION
 from gens.models.annotation import (
@@ -108,6 +109,37 @@ def get_transcripts_by_gene_symbol(
         sort=[("start", 1), ("chrom", 1)],
     )
     return [TranscriptRecord.model_validate(doc) for doc in cursor]
+
+
+def get_simplified_transcripts_by_gene_symbol(
+    gene_symbol: str, genome_build: GenomeBuild, db: Database[Any], only_mane: bool
+) -> list[SimplifiedTranscriptInfo]:
+    cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
+        {"gene_name": gene_symbol, "genome_build": genome_build},
+        sort=[("start", 1), ("chrom", 1)],
+    )
+    # FIXME
+    # canonical_types = {MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL}
+
+    return_transcripts = []
+    for doc in cursor:
+        if only_mane and not doc["mane"]:
+            continue
+        simple_tr = SimplifiedTranscriptInfo.model_validate(
+            {
+                "record_id": doc["_id"],
+                "name": doc["gene_name"],
+                "start": doc["start"],
+                "end": doc["end"],
+                "type": doc["mane"] if doc["mane"] is not None else "non-mane",
+                "strand": doc["strand"],
+                "is_protein_coding": doc["transcript_biotype"] == "protein_coding",
+                "features": _format_features(doc["features"]),
+            }
+        )
+        return_transcripts.append(simple_tr) 
+
+    return return_transcripts
 
 
 def create_transcripts(transcripts: Iterable[TranscriptRecord], db: Database[Any]):

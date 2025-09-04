@@ -3,7 +3,12 @@ from fastapi import APIRouter
 
 from gens.crud.genomic import get_chromosome_info
 from gens.constants import MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL
-from gens.crud.transcripts import get_transcripts, get_transcripts_by_gene_symbol
+from gens.crud.transcripts import (
+    _format_features,
+    get_simplified_transcripts_by_gene_symbol,
+    get_transcripts,
+    get_transcripts_by_gene_symbol,
+)
 from gens.models.annotation import GeneListRecord, SimplifiedTranscriptInfo
 from gens.models.genomic import Chromosome, GenomeBuild, GenomicRegion
 from gens.routes.utils import AdapterDep, ApiTags, GensDb
@@ -51,20 +56,31 @@ async def get_gene_list_track(
     # transcripts = get_transcripts(region, genome_build, db)
 
     # FIXME: Looks like something is coming from the transcript matching now
-    # but seems 
+    # but seems
 
-    canonical_types = {MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL}
-    all_matches = []
-    for gene_name in gene_names:
+    all_matches: list[SimplifiedTranscriptInfo] = []
+    for gene_name in gene_names[0:1]:
 
         LOG.warning(f"Looking for gene name {gene_name}")
 
-        transcripts = get_transcripts_by_gene_symbol(gene_name, genome_build, db)
-        result =  [tr for tr in transcripts if tr.mane in canonical_types]
-        if len(result) > 0:
-            all_matches.append(result[0])
-        else:
-            LOG.warning(f">>> No matches for symbol {gene_name}")
+        matches = get_simplified_transcripts_by_gene_symbol(
+            gene_name, genome_build, db, only_mane=True
+        )
+        LOG.warning(f">>> Matches {matches}")
+        all_matches.extend(matches)
+        # mane_matching = [tr for tr in all_matching if tr.mane in canonical_types]
+        # if len(mane_matching) > 0:
+        #     target_transcript = mane_matching[0]
+        #     simplified_record = SimplifiedTranscriptInfo.model_validate(
+        #         {
+        #             "features": _format_features(target_transcript.features),
+        #             "strand": target_transcript.strand,
+        #             "is_protein_coding": target_transcript.transcript_biotype == "protein_coding",
+        #         }
+        #     )
+        #     all_matches.append(simplified_record)
+        # else:
+        #     LOG.warning(f">>> No matches for symbol {gene_name}")
 
     LOG.warning(">>> test7")
     # result =  [tr for tr in transcripts if tr.name in gene_set and tr.type in canonical_types]

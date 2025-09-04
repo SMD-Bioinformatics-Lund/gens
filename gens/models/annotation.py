@@ -168,7 +168,6 @@ class TranscriptRecord(RWModel):
     hgnc_id: str | None
     refseq_id: str | None
     features: list[ExonFeature | UtrFeature]
-    # positional info
     chrom: Chromosome
     start: PositiveInt
     end: PositiveInt
