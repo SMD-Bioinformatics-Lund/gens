@@ -149,7 +149,9 @@ export class GensSession {
     return this.geneListSelections;
   }
 
-  public getGeneListSources(settings: {selectedOnly: boolean}): {id: string, label: string}[] {
+  public getGeneListSources(settings: {
+    selectedOnly: boolean;
+  }): { id: string; label: string }[] {
     return this.settings.getGeneListSources(settings);
   }
 

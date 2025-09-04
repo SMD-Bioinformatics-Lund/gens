@@ -32,10 +32,3 @@ class InterpretationAdapter(ABC):
     def get_panel(self, panel_id: str) -> list[str]:
         """Return list of gene symbols for specific panel"""
 
-    @abstractmethod
-    def get_case_url(self, case_id: str) -> str:
-        """Return an URL to a specific case"""
-
-    @abstractmethod
-    def get_variant_url(self, variant_id: str) -> str:
-        """Return an URL to a specific variant"""
