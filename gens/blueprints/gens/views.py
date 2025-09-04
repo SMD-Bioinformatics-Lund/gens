@@ -6,7 +6,7 @@ from datetime import date
 from flask import Blueprint, abort, current_app, render_template, request
 from pymongo.database import Database
 
-from gens import version
+from gens.__version__ import VERSION as version
 from gens.config import settings
 from gens.crud.genomic import get_chromosome_info
 from gens.crud.samples import get_samples_for_case, get_samples_per_case

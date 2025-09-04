@@ -6,7 +6,7 @@ from typing import Any
 from flask import Blueprint, current_app, render_template, request
 from pymongo.database import Database
 
-from gens import version
+from gens.__version__ import VERSION as version
 from gens.config import settings
 from gens.crud.annotations import get_data_update_timestamp
 from gens.crud.samples import get_samples_per_case
