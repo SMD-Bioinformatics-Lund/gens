@@ -170,8 +170,6 @@ export class SettingsMenu extends ShadowBaseElement {
   private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private geneLists: ApiGeneList[];
-  // private defaultAnnots: { id: string; label: string }[];
-  // private defaultGeneLists: { id: string; label: string }[];
   private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
   private getCurrentSamples: () => Sample[];
