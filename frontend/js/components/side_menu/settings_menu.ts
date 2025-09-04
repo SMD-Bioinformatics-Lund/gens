@@ -467,6 +467,7 @@ export class SettingsMenu extends ShadowBaseElement {
       this.geneLists,
       this.geneListSelect,
       settings.selectedOnly,
+      this.session.getGeneListSelections(),
       (source) => source.id,
       (source) => `${source.name} + ${source.version}`,
     );
@@ -480,6 +481,7 @@ export class SettingsMenu extends ShadowBaseElement {
       this.allAnnotationSources,
       this.annotSelect,
       settings.selectedOnly,
+      this.session.getAnnotationSelections(),
       (source) => source.track_id,
       (source) => source.name,
     );
@@ -492,6 +494,7 @@ function parseSources<T>(
   allSources: T[],
   targetSelect: ChoiceSelect | null,
   selectedOnly: boolean,
+  storedIds: string[],
   getId: (source: T) => string,
   getLabel: (source: T) => string,
 ): { id: string; label: string }[] {
@@ -505,7 +508,14 @@ function parseSources<T>(
   }
 
   if (targetSelect == null) {
-    return [];
+    return allSources
+      .filter((source) => storedIds.includes(getId(source)))
+      .map((source) => {
+        return {
+          id: getId(source),
+          label: getLabel(source),
+        };
+      });
   }
 
   const choices = targetSelect.getValues();
