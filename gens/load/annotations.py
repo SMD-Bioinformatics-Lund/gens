@@ -433,7 +433,7 @@ def fmt_aed_to_annotation(
                                 {"title": match.group(1), "pmid": match.group(2)}
                             )
                         )
-                    except ValidationError as err:
+                    except ValidationError:
                         continue
             elif "http" in note or "www" in note:
                 match = re.search(AED_URL_REFERENCE_NOTE, note)
@@ -444,7 +444,7 @@ def fmt_aed_to_annotation(
                                 {"title": match.group(1), "url": match.group(2)}
                             )
                         )
-                    except ValidationError as err:
+                    except ValidationError:
                         continue
             else:
                 continue
@@ -533,7 +533,7 @@ def fmt_aed_to_annotation(
 
     try:
         chromosome = Chromosome(rec_sequence.strip("chr"))
-    except ValueError as e:
+    except ValueError:
         LOG.error(f"Failed to parse chromosome: {rec_sequence}, skipping")
         return None
 

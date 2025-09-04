@@ -5,7 +5,6 @@ from datetime import timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
-from pydantic import ValidationError
 from pymongo import DESCENDING
 from pymongo.collection import Collection
 from pymongo.database import Database

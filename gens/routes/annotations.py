@@ -19,7 +19,6 @@ from gens.crud.genomic import get_chromosome_info, get_chromosomes
 from gens.crud.scout import (
     VariantNotFoundError,
     VariantValidationError,
-    get_variant,
 )
 from gens.crud.scout import get_variants as get_variants_from_scout
 from gens.crud.transcripts import (
@@ -60,17 +59,13 @@ async def get_annotations_tracks(
 
 
 @router.get("/annotations/track/{track_id}", tags=[ApiTags.ANNOT])
-async def get_annotation_track(
-    track_id: PydanticObjectId, db: GensDb
-) -> list[SimplifiedTrackInfo]:
+async def get_annotation_track(track_id: PydanticObjectId, db: GensDb) -> list[SimplifiedTrackInfo]:
     """Get annotations for a region."""
     return get_annotations_for_track(track_id=track_id, db=db)
 
 
 @router.get("/annotations/record/{record_id}", tags=[ApiTags.ANNOT])
-async def get_annotation_with_id(
-    record_id: PydanticObjectId, db: GensDb
-) -> AnnotationRecord:
+async def get_annotation_with_id(record_id: PydanticObjectId, db: GensDb) -> AnnotationRecord:
     """Get annotations for a region."""
     result = get_annotation(record_id, db)
     if result is None:
@@ -105,9 +100,7 @@ async def get_transcripts(
     region = GenomicRegion(chromosome=chromosome, start=start, end=end)
 
     # get transcript for the new region
-    transcripts: list[SimplifiedTranscriptInfo] = crud_get_transcripts(
-        region, genome_build, db
-    )
+    transcripts: list[SimplifiedTranscriptInfo] = crud_get_transcripts(region, genome_build, db)
     if only_canonical:
         transcripts = [
             tr
@@ -119,9 +112,7 @@ async def get_transcripts(
 
 
 @router.get("/transcripts/{transcript_id}", tags=[ApiTags.TRANSC])
-async def get_transcript_with_id(
-    transcript_id: PydanticObjectId, db: GensDb
-) -> TranscriptRecord:
+async def get_transcript_with_id(transcript_id: PydanticObjectId, db: GensDb) -> TranscriptRecord:
     """Get a single transcript by its unique ID.
 
     Returns the full transcript record with all available details.

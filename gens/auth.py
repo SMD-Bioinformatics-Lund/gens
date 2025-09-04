@@ -1,7 +1,5 @@
 """Authentication and login related functions."""
 
-from typing import Any
-
 from authlib.integrations.flask_client import OAuth
 from flask_login import LoginManager  # type: ignore
 from flask_login import UserMixin

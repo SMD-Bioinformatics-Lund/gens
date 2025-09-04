@@ -14,7 +14,7 @@ from gens.models.annotation import (
     UtrFeature,
 )
 from gens.models.base import PydanticObjectId
-from gens.models.genomic import GenomeBuild, GenomePosition, GenomicRegion
+from gens.models.genomic import GenomeBuild, GenomicRegion
 
 from .utils import query_genomic_region
 
