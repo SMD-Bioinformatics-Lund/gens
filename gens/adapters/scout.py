@@ -130,7 +130,7 @@ class ScoutMongoAdapter(InterpretationAdapter):
 
         return gene_lists
 
-    def get_panel(self, panel_id: str) -> list[str]:
+    def get_gene_list(self, panel_id: str) -> list[str]:
         # FIXME: Look into how to grab the latest version here
         panel = self._db.get_collection("gene_panel").find_one({"panel_name": panel_id})
         if not panel:

@@ -79,18 +79,11 @@ export function getRenderDataSource(
     chrom: string,
   ): Promise<RenderBand[]> => {
     const geneSymbols = new Set(await api.getGeneListGenes(listId, chrom));
-
     const onlyCanonical = true;
     const transcriptsRaw = await api.getTranscripts(chrom, onlyCanonical);
-
     const matchingTranscripts = transcriptsRaw.filter((tr) => geneSymbols.has(tr.name));
 
-    // FIXME: Parse symbols to ranges here instead. We have the transcripts.
-    // Consider if this should be part of the genes track actually, and there show "in panel"
-    // OK, we can start with separate tracks
-
     return parseTranscripts(matchingTranscripts);
-    // return parseTranscripts(transcriptsRaw);
   }
 
   const getVariantBands = async (

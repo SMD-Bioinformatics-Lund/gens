@@ -9,6 +9,10 @@ from gens.models.genomic import GenomicRegion, VariantCategory
 
 
 class InterpretationAdapter(ABC):
+    """
+    Adapter class for interaction with variant interpretation software.
+    Makes no assumption on how the retrieval is done (i.e. from db or API).
+    """
 
     @abstractmethod
     def get_variants(
@@ -18,10 +22,10 @@ class InterpretationAdapter(ABC):
         region: GenomicRegion,
         variant_category: VariantCategory,
     ) -> list[SimplifiedVariantRecord]:
-        """Return variants for a sample"""
+        """Return variants for a sample within a case, in the specified region (chromosome and position range)"""
 
     @abstractmethod
-    def get_variant(self, document_id: str) -> VariantRecord:
+    def get_variant(self, variant_id: str) -> VariantRecord:
         """Return a single variant"""
 
     @abstractmethod
@@ -29,6 +33,6 @@ class InterpretationAdapter(ABC):
         """Return list of panel IDs and names"""
 
     @abstractmethod
-    def get_panel(self, panel_id: str) -> list[str]:
-        """Return list of gene symbols for specific panel"""
+    def get_gene_list(self, gene_list_id: str) -> list[str]:
+        """Return list of gene symbols for specified gene list"""
 

@@ -24,7 +24,7 @@ async def get_gene_list_symbols(
 ) -> list[str]:
     """Get gene list entries"""
 
-    gene_names = variant_adapter.get_panel(panel_id)
+    gene_names = variant_adapter.get_gene_list(panel_id)
     return gene_names
     # if not gene_names:
     #     return []

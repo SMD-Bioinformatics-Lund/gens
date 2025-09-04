@@ -417,8 +417,7 @@ export class API {
         query,
       )) as ApiSimplifiedTranscript[];
 
-      // Store to IndexedDB with current server timestamp
-      await idbSet("gens-cache", "transcripts", cacheKey, {
+      await idbSet(IDB_CACHE_KEY, IDB_TRANSCRIPTS_KEY, cacheKey, {
         transcripts,
         serverTimestamp: serverTs,
         cachedAt: new Date().toISOString(),

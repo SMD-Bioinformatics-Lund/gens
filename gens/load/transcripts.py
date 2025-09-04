@@ -51,7 +51,7 @@ def build_transcripts(
     transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild
 ) -> Iterable[TranscriptRecord]:
     """Build transcript object from transcript and mane file."""
-    mane_info = _parse_mane_transc(mane_file)
+    mane_info = parse_mane_transc(mane_file)
 
     LOG.info("%s MANE entries loaded", len(mane_info))
 
@@ -80,7 +80,7 @@ def build_transcripts(
                     continue
 
                 try:
-                    transcript_entry = _make_transcript_entry(
+                    transcript_entry = make_transcript_entry(
                         transcript_id, selected_mane, transc, genome_build
                     )
                 except ValidationError as e:
@@ -127,14 +127,13 @@ def build_transcripts(
     return flat_transcripts
 
 
-def _make_transcript_entry(
+def make_transcript_entry(
     transcript_id: str,
-    selected_name: dict[
+    selected_mane: dict[
         str,
         str,
     ],
     transc: GTFEntry,
-    # attribs: dict[str, str],
     genome_build: GenomeBuild,
 ) -> TranscriptRecord:
 
@@ -149,15 +148,15 @@ def _make_transcript_entry(
             "height_order": None,  # will be set later
             "transcript_id": transcript_id,
             "transcript_biotype": transc.attribs["transcript_biotype"],
-            "mane": selected_name.get("mane_status"),
-            "hgnc_id": selected_name.get("hgnc_id"),
-            "refseq_id": selected_name.get("refseq_id"),
+            "mane": selected_mane.get("mane_status"),
+            "hgnc_id": selected_mane.get("hgnc_id"),
+            "refseq_id": selected_mane.get("refseq_id"),
             "features": [],
         }
     )
 
 
-def _parse_mane_transc(mane_file: Iterable[str]) -> dict[str, dict[str, str]]:
+def parse_mane_transc(mane_file: Iterable[str]) -> dict[str, dict[str, str]]:
     """Parse mane tranascript file and index on ensemble id."""
     mane_info: dict[str, dict[str, str]] = {}
     LOG.info("parsing mane transcripts")

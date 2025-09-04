@@ -175,15 +175,6 @@ export async function initCanvases({
   const allAnnotSources = await api.getAnnotationSources();
   const geneLists = await api.getGeneLists();
 
-  // const defaultAnnot = allAnnotSources
-  //   .filter((track) => track.name === defaultAnnotationName)
-  //   .map((track) => {
-  //     return {
-  //       id: track.track_id,
-  //       label: track.name,
-  //     };
-  //   });
-
   settingsPage.setSources(
     session,
     render,

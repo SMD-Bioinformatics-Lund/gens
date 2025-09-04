@@ -123,17 +123,12 @@ async def get_transcript_with_id(transcript_id: PydanticObjectId, db: GensDb) ->
 
 
 @router.get("/updates")
-async def get_track_updates(
+async def get_track_latest_update_time(
     track: str,
     db: GensDb,
 ):
-    """Return latest update timestamps for tracks.
-
-    When a specific track is requested, return the latest timestamp string for that track.
-    """
+    """Return latest update timestamp for a given track"""
     updates = get_data_update_timestamp(db, track)
-    if track == "all":
-        return updates
 
     entries = updates.get(track, [])
     if len(entries) == 0:
@@ -218,7 +213,7 @@ async def get_variant_with_id(
 ) -> VariantRecord:
     """Get a single variant by its unique ID.
 
-    Returns the full variant record from the interpretation software with all available details.
+    Returns the full variant record from the variant software with all available details.
     """
     try:
         variant = adapter.get_variant(document_id)

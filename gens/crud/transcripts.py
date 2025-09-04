@@ -100,16 +100,6 @@ def get_transcript(
     return None
 
 
-def get_transcripts_by_gene_symbol(
-    gene_symbol: str, genome_build: GenomeBuild, db: Database[Any]
-) -> list[TranscriptRecord]:
-    cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
-        {"gene_name": gene_symbol, "genome_build": genome_build},
-        sort=[("start", 1), ("chrom", 1)],
-    )
-    return [TranscriptRecord.model_validate(doc) for doc in cursor]
-
-
 def get_simplified_transcripts_by_gene_symbol(
     gene_symbol: str, genome_build: GenomeBuild, db: Database[Any], only_mane: bool
 ) -> list[SimplifiedTranscriptInfo]:
@@ -117,8 +107,6 @@ def get_simplified_transcripts_by_gene_symbol(
         {"gene_name": gene_symbol, "genome_build": genome_build},
         sort=[("start", 1), ("chrom", 1)],
     )
-    # FIXME
-    # canonical_types = {MANE_SELECT, MANE_PLUS_CLINICAL, ENSEMBL_CANONICAL}
 
     return_transcripts = []
     for doc in cursor:

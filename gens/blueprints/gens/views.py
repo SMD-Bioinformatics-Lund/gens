@@ -67,9 +67,6 @@ def display_samples(case_id: str) -> str:
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
 
-    # get annotation track
-    annotation = request.args.get("annotation", settings.default_annotation_track)
-
     if parsed_region.end is None:
         chrom_info = get_chromosome_info(db, parsed_region.chromosome, genome_build)
         if chrom_info is None:
@@ -102,7 +99,6 @@ def display_samples(case_id: str) -> str:
         all_samples=list(all_samples),
         genome_build=genome_build.value,
         print_page=print_page,
-        annotation=annotation,
         selected_variant=selected_variant,
         todays_date=date.today(),
         version=version,

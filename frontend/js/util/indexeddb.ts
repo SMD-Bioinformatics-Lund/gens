@@ -1,3 +1,5 @@
+// A set of utility functions for interacting with the browsers built in IndexedDB
+
 function openDB(dbName: string, version: number, stores: string[]): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(dbName, version);

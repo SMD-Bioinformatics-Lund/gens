@@ -58,7 +58,7 @@ class Settings(BaseSettings):
         ..., description="Base URL to interpretation software."
     )
     gens_api_url: HttpUrl = Field(..., description="Gens API URL")
-    interpretation_backend: str = Field(
+    variant_software_backend: str = Field(
         default="scout_mongo",
         description="Implementation used for interpretation software integration.",
     )
@@ -67,9 +67,6 @@ class Settings(BaseSettings):
         default_factory=lambda: ["proband", "tumor"],
         description="Sample types treated as main samples",
     )
-
-    # Annotation
-    default_annotation_track: str | None = None
 
     # Authentication options
     authentication: AuthMethod = AuthMethod.DISABLED

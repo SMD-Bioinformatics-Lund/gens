@@ -20,13 +20,12 @@ def init_database_connection(app: Flask) -> None:
 
     LOG.info("Initialize db connection")
 
-    # FIXME: Generalize
-    interpretation_client: MongoClient = MongoClient(
-        str(settings.variant_db.connection)
-    )
-    app.config["INTERPRETATION_ADAPTER"] = ScoutMongoAdapter(
-        interpretation_client.get_database(name=settings.variant_db.database)
-    )
+    # variant_client: MongoClient = MongoClient(
+        # str(settings.variant_db.connection)
+    # )
+    # app.config["INTERPRETATION_ADAPTER"] = ScoutMongoAdapter(
+    #     variant_client.get_database(name=settings.variant_db.database)
+    # )
 
     app.config["GENS_DB"] = MongoClient(str(settings.gens_db.connection)).get_database(
         name=settings.gens_db.database
@@ -48,21 +47,18 @@ def get_gens_db() -> Generator[Database[Any], None, None]:
         client.close()
 
 
-# FIXME: Think through how and why this is needed
-# Seems required to setup the deps for the FastAPI usage
 def get_variant_software_adapter() -> Generator[InterpretationAdapter, None, None]:
     """Return the configured interpretation adapter."""
 
-    if settings.interpretation_backend != "scout_mongo":
+    if settings.variant_software_backend != "scout_mongo":
         raise ValueError(
-            f"Unsupported interpretation backend: {settings.interpretation_backend}"
+            f"Unsupported variant software backend: {settings.variant_software_backend}"
         )
 
     client: MongoClient[Any] = MongoClient(str(settings.variant_db.connection))
 
     try:
         db = client.get_database(settings.variant_db.database)
-        # FIXME: Why yield here
         yield ScoutMongoAdapter(db)
     finally:
         client.close()
