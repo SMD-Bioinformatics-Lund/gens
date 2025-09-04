@@ -117,12 +117,12 @@ export class API {
   getGeneListGenes(
     panelId: string,
     chromosome: string,
-  ): Promise<ApiSimplifiedTranscript[]> {
-    const genes = get(
+  ): Promise<string[]> {
+    const geneSymbols = get(
       new URL(`gene_lists/track/${panelId}`, this.apiURI).href,
       { chromosome, genome_build: this.genomeBuild }
-    ) as Promise<ApiSimplifiedTranscript[]>;
-    return genes;
+    ) as Promise<string[]>;
+    return geneSymbols;
   }
 
   getSampleAnnotationSources(

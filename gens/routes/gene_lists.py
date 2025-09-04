@@ -27,28 +27,26 @@ async def get_gene_lists(variant_adapter: AdapterDep) -> list[GeneListRecord]:
 
 
 @router.get("/track/{panel_id}", tags=[ApiTags.GENE_LIST])
-async def get_gene_list_track(
+async def get_gene_list_symbols(
     panel_id: str,
-    chromosome: Chromosome,
-    genome_build: GenomeBuild,
     variant_adapter: AdapterDep,
-    db: GensDb,
-) -> list[SimplifiedTranscriptInfo]:
+) -> list[str]:
     """Get gene list entries"""
 
     gene_names = variant_adapter.get_panel(panel_id)
-    if not gene_names:
-        return []
+    return gene_names
+    # if not gene_names:
+    #     return []
 
-    all_matches: list[SimplifiedTranscriptInfo] = []
-    for gene_name in gene_names:
+    # all_matches: list[SimplifiedTranscriptInfo] = []
+    # for gene_name in gene_names:
 
-        matches = get_simplified_transcripts_by_gene_symbol(
-            gene_name, genome_build, db, only_mane=True
-        )
+    #     matches = get_simplified_transcripts_by_gene_symbol(
+    #         gene_name, genome_build, db, only_mane=True
+    #     )
 
-        matches_in_chr = [tr for tr in matches if tr.chrom == chromosome.value]
-        all_matches.extend(matches_in_chr)
+    #     matches_in_chr = [tr for tr in matches if tr.chrom == chromosome.value]
+    #     all_matches.extend(matches_in_chr)
 
 
-    return all_matches
+    # return all_matches
