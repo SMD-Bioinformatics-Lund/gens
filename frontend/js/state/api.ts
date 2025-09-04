@@ -110,7 +110,6 @@ export class API {
   }
 
   getGeneLists(): Promise<ApiGeneList[]> {
-    console.log("Getting gene lists");
     const geneLists = get(
       new URL("gene_lists", this.apiURI).href,
       {},
@@ -386,8 +385,6 @@ export class API {
     chrom: string,
     onlyCanonical: boolean,
   ): Promise<ApiSimplifiedTranscript[]> {
-    console.log("Getting transcripts from cache");
-
     const cacheKey = `${this.genomeBuild}|${chrom}|${onlyCanonical ? 1 : 0}`;
 
     if (this.transcriptCache[cacheKey] !== undefined) {

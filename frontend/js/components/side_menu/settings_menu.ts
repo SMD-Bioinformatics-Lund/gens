@@ -302,15 +302,13 @@ export class SettingsMenu extends ShadowBaseElement {
       this.onColorByChange(id);
     });
 
-    if (this.geneListSelect) {
-      this.addElementListener(this.geneListSelect, "change", () => {
-        const ids = this.geneListSelect
-          .getValues()
-          .map((obj) => obj.value as string);
-        this.session.setGeneListSelections(ids);
-        this.onChange({});
-      });
-    }
+    this.addElementListener(this.geneListSelect, "change", () => {
+      const ids = this.geneListSelect
+        .getValues()
+        .map((obj) => obj.value as string);
+      this.session.setGeneListSelections(ids);
+      this.onChange({});
+    });
 
     this.addElementListener(this.sampleSelect, "change", () => {
       this.render({});
@@ -368,25 +366,10 @@ export class SettingsMenu extends ShadowBaseElement {
       getAnnotationChoices(
         this.allAnnotationSources,
         this.defaultAnnots.map((a) => a.id),
-      ).sort((source1, source2) =>
-        source1.label.toString().localeCompare(source2.label.toString()),
       ),
     );
 
-    if (this.geneListSelect) {
-      const selectedGeneLists = this.session.getGeneListSelections() || [];
-      const choices = this.geneLists
-        .map((geneList) => ({
-          value: geneList.id,
-          label: `${geneList.name} (v${geneList.version})`,
-          selected: selectedGeneLists.includes(geneList.id),
-        }))
-        .sort((entry1, entry2) =>
-          entry1.label.toString().localeCompare(entry2.label.toString()),
-        );
-      this.geneListSelect.setValues(choices);
-      this.onChange({});
-    }
+    this.geneListSelect.setValues(getGeneListChoices(this.geneLists));
 
     const colorChoices = [
       { label: "None", value: "", selected: this.getColorAnnotation() == null },
@@ -486,65 +469,66 @@ export class SettingsMenu extends ShadowBaseElement {
 
   // FIXME: Refactor with annot sources
   getGeneListSources(settings: {
-    selectedOnly: boolean
-  }): { id: string, label: string }[] {
-    if (!settings.selectedOnly) {
-      return this.geneLists.map((source) => {
-        return {
-          id: source.id,
-          label: `${source.name} (${source.version})`
-        }
-      })
-    }
+    selectedOnly: boolean;
+  }): { id: string; label: string }[] {
 
-    // FIXME: Look over, use same structure as for the annotated tracks
-    // If the menu hasn't been initialized yet, fall back to stored selections
-    if (this.geneListSelect == null) {
-      const selectedIds = this.session.getGeneListSelections() || [];
-      if (selectedIds.length === 0) {
-        return [];
-      }
-      const idSet = new Set(selectedIds);
-      return this.geneLists
-        .filter((gl) => idSet.has(gl.id))
-        .map((gl) => ({ id: gl.id, label: `${gl.name} (${gl.version})` }));
-    }
-
-    const choices = this.geneListSelect.getValues();
-    const returnVals = choices.map((obj) => {
-      return {
-        id: obj.value,
-        label: obj.label.toString()
-      }
-    })
-    return returnVals;
+    const sources = parseSources(
+      this.geneLists,
+      // FIXME: Default sources
+      [],
+      this.geneListSelect,
+      settings.selectedOnly,
+      (source) => source.id,
+      (source) => `${source.name} + ${source.version}`
+    );
+    return sources;
   }
 
   getAnnotSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
-    if (!settings.selectedOnly) {
-      return this.allAnnotationSources.map((source) => {
-        return {
-          id: source.track_id,
-          label: source.name,
-        };
-      });
-    }
+    const sources = parseSources<ApiAnnotationTrack>(
+      this.allAnnotationSources,
+      this.defaultAnnots,
+      this.annotSelect,
+      settings.selectedOnly,
+      (source) => source.track_id,
+      (source) => source.name,
+    );
 
-    if (this.annotSelect == null) {
-      return this.defaultAnnots;
-    }
+    return sources;
+  }
+}
 
-    const choices = this.annotSelect.getValues();
-    const returnVals = choices.map((obj) => {
+function parseSources<T>(
+  allSources: T[],
+  defaultSources: { id: string; label: string }[],
+  targetSelect: ChoiceSelect | null,
+  selectedOnly: boolean,
+  getId: (source: T) => string,
+  getLabel: (source: T) => string,
+): { id: string; label: string }[] {
+  if (!selectedOnly) {
+    return allSources.map((source) => {
       return {
-        id: obj.value,
-        label: obj.label.toString(),
+        id: getId(source),
+        label: getLabel(source),
       };
     });
-    return returnVals;
   }
+
+  if (targetSelect == null) {
+    return defaultSources;
+  }
+
+  const choices = targetSelect.getValues();
+  const returnVals = choices.map((obj) => {
+    return {
+      id: obj.value,
+      label: obj.label.toString(),
+    };
+  });
+  return returnVals;
 }
 
 function getAnnotationChoices(
@@ -560,20 +544,24 @@ function getAnnotationChoices(
     };
     choices.push(choice);
   }
-  return choices;
+  return choices.sort((source1, source2) =>
+    source1.label.toString().localeCompare(source2.label.toString()),
+  );
 }
 
-// function getGeneListChoices(geneLists: ApiGeneList[]): InputChoice[] {
-//   const choices: InputChoice[] = [];
-//   for (const geneList of geneLists) {
-//     const choice = {
-//       value: geneList.id,
-//       label: `${geneList.name} (v${geneList.version})`,
-//     };
-//     choices.push(choice);
-//   }
-//   return choices;
-// }
+function getGeneListChoices(geneLists: ApiGeneList[]): InputChoice[] {
+  const choices: InputChoice[] = [];
+  for (const geneList of geneLists) {
+    const choice = {
+      value: geneList.id,
+      label: `${geneList.name} (v${geneList.version})`,
+    };
+    choices.push(choice);
+  }
+  return choices.sort((source1, source2) =>
+    source1.label.toString().localeCompare(source2.label.toString()),
+  );
+}
 
 function getSamplesSection(
   samples: Sample[],
