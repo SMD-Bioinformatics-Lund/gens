@@ -79,7 +79,9 @@ class ScoutMongoAdapter(InterpretationAdapter):
             {"_id": document_id}, {"_id", False}
         )
         if raw_variant is None:
-            LOG.warning("Variant with document_id %s not found in Scout database", document_id)
+            LOG.warning(
+                "Variant with document_id %s not found in Scout database", document_id
+            )
             raise VariantNotFoundError(
                 f"Variant with id {document_id} is not found in Scout database"
             )
@@ -130,7 +132,9 @@ class ScoutMongoAdapter(InterpretationAdapter):
 
     def get_gene_list(self, gene_list_id: str) -> list[str]:
         # FIXME: Look into how to grab the latest version here
-        panel = self._db.get_collection("gene_panel").find_one({"panel_name": gene_list_id})
+        panel = self._db.get_collection("gene_panel").find_one(
+            {"panel_name": gene_list_id}
+        )
         if not panel:
             return []
         genes = []
@@ -139,4 +143,3 @@ class ScoutMongoAdapter(InterpretationAdapter):
             if symbol:
                 genes.append(symbol)
         return genes
-

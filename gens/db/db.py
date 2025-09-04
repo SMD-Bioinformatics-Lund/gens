@@ -21,7 +21,7 @@ def init_database_connection(app: Flask) -> None:
     LOG.info("Initialize db connection")
 
     # variant_client: MongoClient = MongoClient(
-        # str(settings.variant_db.connection)
+    # str(settings.variant_db.connection)
     # )
     # app.config["INTERPRETATION_ADAPTER"] = ScoutMongoAdapter(
     #     variant_client.get_database(name=settings.variant_db.database)

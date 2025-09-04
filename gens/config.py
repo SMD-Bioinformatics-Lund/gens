@@ -86,7 +86,6 @@ class Settings(BaseSettings):
             "variant_db": self.variant_db.database,
             "scout_url": self.variant_url,
             "gens_api_url": self.gens_api_url,
-            "default_annotation_track": self.default_annotation_track,
             "main_sample_types": self.main_sample_types,
             "authentication": self.authentication.value,
             "oauth": self.oauth,

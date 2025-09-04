@@ -35,4 +35,3 @@ class InterpretationAdapter(ABC):
     @abstractmethod
     def get_gene_list(self, gene_list_id: str) -> list[str]:
         """Return list of gene symbols for specified gene list"""
-
