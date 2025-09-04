@@ -652,3 +652,8 @@ interface Sample {
 }
 
 type TrackType = "annotation" | "variant" | "dot-cov" | "dot-baf" | "gene" | "position";
+
+type IDBTranscripts = {
+  transcripts: ApiSimplifiedTranscript[],
+  serverTimestamp: string,
+}

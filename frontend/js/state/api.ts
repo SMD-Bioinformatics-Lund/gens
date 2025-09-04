@@ -8,6 +8,9 @@ const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 // FIXME: This will need to be made configurable eventually
 const DEFAULT_VARIANT_TYPES = ["del", "dup", "tdup"];
 const ZOOM_WINDOW_MULTIPLIER = 5;
+const IDB_CACHE_KEY = "gens-cache";
+const IDB_TRANSCRIPTS_KEY = "transcripts";
+
 
 export class API {
   genomeBuild: number;
@@ -107,7 +110,7 @@ export class API {
   }
 
   getGeneLists(): Promise<ApiGeneList[]> {
-    console.log("Getting gene lists")
+    console.log("Getting gene lists");
     const geneLists = get(
       new URL("gene_lists", this.apiURI).href,
       {},
@@ -115,13 +118,10 @@ export class API {
     return geneLists;
   }
 
-  getGeneListGenes(
-    panelId: string,
-    chromosome: string,
-  ): Promise<string[]> {
+  getGeneListGenes(panelId: string, chromosome: string): Promise<string[]> {
     const geneSymbols = get(
       new URL(`gene_lists/track/${panelId}`, this.apiURI).href,
-      { chromosome, genome_build: this.genomeBuild }
+      { chromosome, genome_build: this.genomeBuild },
     ) as Promise<string[]>;
     return geneSymbols;
   }
@@ -368,33 +368,24 @@ export class API {
     }
   }
 
-  private transcriptCache: Record<string, Promise<ApiSimplifiedTranscript[]>> =
-    {};
   private transcriptUpdateTimestamp: string | null = null;
-
   private async getTranscriptUpdateTimestamp(): Promise<string | null> {
-
-    console.log("Setting transcripts to cache");
-
     if (this.transcriptUpdateTimestamp != null) {
       return this.transcriptUpdateTimestamp;
     }
-    try {
-      const resp = (await get(new URL("tracks/updates", this.apiURI).href, {
-        track: "transcripts",
-      })) as { track: string; timestamp: string | null };
-      this.transcriptUpdateTimestamp = resp ? resp.timestamp : null;
-      return this.transcriptUpdateTimestamp;
-    } catch (e) {
-      // If updates endpoint not available, fall back to null (no invalidation)
-      return null;
-    }
+    const resp = (await get(new URL("tracks/updates", this.apiURI).href, {
+      track: "transcripts",
+    })) as { track: string; timestamp: string | null };
+    this.transcriptUpdateTimestamp = resp ? resp.timestamp : null;
+    return this.transcriptUpdateTimestamp;
   }
+
+  private transcriptCache: Record<string, Promise<ApiSimplifiedTranscript[]>> =
+    {};
   getTranscripts(
     chrom: string,
     onlyCanonical: boolean,
   ): Promise<ApiSimplifiedTranscript[]> {
-
     console.log("Getting transcripts from cache");
 
     const cacheKey = `${this.genomeBuild}|${chrom}|${onlyCanonical ? 1 : 0}`;
@@ -405,20 +396,18 @@ export class API {
 
     const promise = (async () => {
       const serverTs = await this.getTranscriptUpdateTimestamp();
-      // Try read from IndexedDB
-      try {
-        const cached = await idbGet("gens-cache", "transcripts", cacheKey);
-        if (cached != null && Array.isArray(cached.transcripts)) {
-          if (serverTs == null) {
-            // No server timestamp available; use cached as-is
-            return cached.transcripts as ApiSimplifiedTranscript[];
-          }
-          if (cached.serverTimestamp === serverTs) {
-            return cached.transcripts as ApiSimplifiedTranscript[];
-          }
+      const cached = await idbGet<IDBTranscripts>(
+        IDB_CACHE_KEY,
+        IDB_TRANSCRIPTS_KEY,
+        cacheKey,
+      );
+      if (cached != null && Array.isArray(cached.transcripts)) {
+        if (serverTs == null) {
+          return cached.transcripts as ApiSimplifiedTranscript[];
         }
-      } catch (_e) {
-        // ignore IDB errors and fall back to network
+        if (cached.serverTimestamp === serverTs) {
+          return cached.transcripts as ApiSimplifiedTranscript[];
+        }
       }
 
       const query = {
@@ -432,15 +421,11 @@ export class API {
       )) as ApiSimplifiedTranscript[];
 
       // Store to IndexedDB with current server timestamp
-      try {
-        await idbSet("gens-cache", "transcripts", cacheKey, {
-          transcripts,
-          serverTimestamp: serverTs,
-          cachedAt: new Date().toISOString(),
-        });
-      } catch (_e) {
-        // ignore IDB write errors
-      }
+      await idbSet("gens-cache", "transcripts", cacheKey, {
+        transcripts,
+        serverTimestamp: serverTs,
+        cachedAt: new Date().toISOString(),
+      });
 
       return transcripts;
     })();

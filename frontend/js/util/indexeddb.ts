@@ -1,7 +1,3 @@
-// Minimal IndexedDB helper for caching JSON payloads
-
-export type IDBValue = any;
-
 function openDB(dbName: string, version: number, stores: string[]): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(dbName, version);
@@ -18,7 +14,7 @@ function openDB(dbName: string, version: number, stores: string[]): Promise<IDBD
   });
 }
 
-export async function idbGet(dbName: string, store: string, key: string): Promise<IDBValue | null> {
+export async function idbGet<T>(dbName: string, store: string, key: string): Promise<T | null> {
   const db = await openDB(dbName, 1, [store]);
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, "readonly");
@@ -29,7 +25,7 @@ export async function idbGet(dbName: string, store: string, key: string): Promis
   });
 }
 
-export async function idbSet(dbName: string, store: string, key: string, value: IDBValue): Promise<void> {
+export async function idbSet<T>(dbName: string, store: string, key: string, value: T): Promise<void> {
   const db = await openDB(dbName, 1, [store]);
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, "readwrite");
