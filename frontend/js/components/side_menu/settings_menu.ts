@@ -497,8 +497,17 @@ export class SettingsMenu extends ShadowBaseElement {
       })
     }
 
+    // FIXME: Look over, use same structure as for the annotated tracks
+    // If the menu hasn't been initialized yet, fall back to stored selections
     if (this.geneListSelect == null) {
-      return [];
+      const selectedIds = this.session.getGeneListSelections() || [];
+      if (selectedIds.length === 0) {
+        return [];
+      }
+      const idSet = new Set(selectedIds);
+      return this.geneLists
+        .filter((gl) => idSet.has(gl.id))
+        .map((gl) => ({ id: gl.id, label: `${gl.name} (${gl.version})` }));
     }
 
     const choices = this.geneListSelect.getValues();
