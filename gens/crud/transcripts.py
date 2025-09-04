@@ -129,6 +129,7 @@ def get_simplified_transcripts_by_gene_symbol(
             {
                 "record_id": doc["_id"],
                 "name": doc["gene_name"],
+                "chrom": doc["chrom"],
                 "start": doc["start"],
                 "end": doc["end"],
                 "type": doc["mane"] if doc["mane"] is not None else "non-mane",

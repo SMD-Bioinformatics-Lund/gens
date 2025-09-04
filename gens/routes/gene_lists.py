@@ -36,53 +36,19 @@ async def get_gene_list_track(
 ) -> list[SimplifiedTranscriptInfo]:
     """Get gene list entries"""
 
-    LOG.warning(">>> test1")
-
     gene_names = variant_adapter.get_panel(panel_id)
     if not gene_names:
         return []
 
-    LOG.warning(">>> test2")
-
-    # chrom_info = get_chromosome_info(db, chromosome, genome_build)
-    # if chrom_info is None:
-    #     return []
-
-    LOG.warning(">>> test3")
-
-    # region = GenomicRegion(chromosome=chromosome, start=1, end=chrom_info.size)
-    LOG.warning(">>> test4")
-    # FIXME: This is slow. How to do direct lookup
-    # transcripts = get_transcripts(region, genome_build, db)
-
-    # FIXME: Looks like something is coming from the transcript matching now
-    # but seems
-
     all_matches: list[SimplifiedTranscriptInfo] = []
-    for gene_name in gene_names[0:1]:
-
-        LOG.warning(f"Looking for gene name {gene_name}")
+    for gene_name in gene_names:
 
         matches = get_simplified_transcripts_by_gene_symbol(
             gene_name, genome_build, db, only_mane=True
         )
-        LOG.warning(f">>> Matches {matches}")
-        all_matches.extend(matches)
-        # mane_matching = [tr for tr in all_matching if tr.mane in canonical_types]
-        # if len(mane_matching) > 0:
-        #     target_transcript = mane_matching[0]
-        #     simplified_record = SimplifiedTranscriptInfo.model_validate(
-        #         {
-        #             "features": _format_features(target_transcript.features),
-        #             "strand": target_transcript.strand,
-        #             "is_protein_coding": target_transcript.transcript_biotype == "protein_coding",
-        #         }
-        #     )
-        #     all_matches.append(simplified_record)
-        # else:
-        #     LOG.warning(f">>> No matches for symbol {gene_name}")
 
-    LOG.warning(">>> test7")
-    # result =  [tr for tr in transcripts if tr.name in gene_set and tr.type in canonical_types]
-    LOG.warning(">>> test8")
+        matches_in_chr = [tr for tr in matches if tr.chrom == chromosome.value]
+        all_matches.extend(matches_in_chr)
+
+
     return all_matches
