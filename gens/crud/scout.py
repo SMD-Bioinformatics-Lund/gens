@@ -53,9 +53,10 @@ def get_variants(
     }
     # add start, end position to query
     if all(param is not None for param in [region.start, region.end]):
+        # FIXME: Is the query_genomic_region important? Why is it used?
         query = {
             **query,
-            **query_genomic_region(region.start, region.end, variant_category),  # type: ignore
+            # **query_genomic_region(region.start, region.end, variant_category),  # type: ignore
         }
     projection: dict[str, bool] = {}
     # query database

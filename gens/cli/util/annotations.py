@@ -51,6 +51,7 @@ class ParseRawResult:
     file_meta: list
 
 
+# FIXME: Reduce complexity to satisfy flake8 warnings
 def parse_raw_records(
     file_format: str,
     is_tsv: bool,

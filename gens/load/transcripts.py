@@ -46,6 +46,7 @@ class TranscriptEntry(TypedDict):
     features: list
 
 
+# FIXME: Reduce complexity to satisfy flake8 warnings
 def build_transcripts(
     transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild
 ) -> Iterable[TranscriptRecord]:

@@ -408,6 +408,7 @@ def format_bed_data(data_type: str, value: str) -> str | int | Color | None:
     return new_value
 
 
+# FIXME: Reduce complexity to satisfy flake8 warnings
 def fmt_aed_to_annotation(
     record: AedRecord,
     track_id: PydanticObjectId,
