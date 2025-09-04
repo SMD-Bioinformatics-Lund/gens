@@ -79,9 +79,7 @@ class ScoutMongoAdapter(InterpretationAdapter):
             {"_id": document_id}, {"_id", False}
         )
         if raw_variant is None:
-            LOG.warning(
-                "Variant with document_id %s not found in Scout database", document_id
-            )
+            LOG.warning("Variant with document_id %s not found in Scout database", document_id)
             raise VariantNotFoundError(
                 f"Variant with id {document_id} is not found in Scout database"
             )
@@ -130,9 +128,9 @@ class ScoutMongoAdapter(InterpretationAdapter):
 
         return gene_lists
 
-    def get_gene_list(self, panel_id: str) -> list[str]:
+    def get_gene_list(self, gene_list_id: str) -> list[str]:
         # FIXME: Look into how to grab the latest version here
-        panel = self._db.get_collection("gene_panel").find_one({"panel_name": panel_id})
+        panel = self._db.get_collection("gene_panel").find_one({"panel_name": gene_list_id})
         if not panel:
             return []
         genes = []
@@ -141,13 +139,4 @@ class ScoutMongoAdapter(InterpretationAdapter):
             if symbol:
                 genes.append(symbol)
         return genes
-        # return super().get_panel(panel_id)
 
-    # FIXME: Panels should be here. Should the URLs? Unsure. Something to ponder.
-    def get_case_url(self, case_id: str) -> str:
-        return ""
-        # return super().get_case_url(case_id)
-
-    def get_variant_url(self, variant_id: str) -> str:
-        return ""
-        # return super().get_variant_url(variant_id)
