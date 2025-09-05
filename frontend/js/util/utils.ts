@@ -360,3 +360,13 @@ export function getMainSample(samples: Sample[]): Sample {
   }
   return samples[0];
 }
+
+export function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
+  const diff = new Set<T>()
+  for (const val of set1) {
+    if (!set2.has(val)) {
+      diff.add(val);
+    }
+  }
+  return diff;
+}

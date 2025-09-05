@@ -29,7 +29,7 @@ import { BandTrack } from "../tracks/band_track";
 import { TrackHeights } from "../side_menu/settings_menu";
 import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
-import { removeOne } from "../../util/utils";
+import { removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
 
@@ -579,6 +579,8 @@ export class TrackView extends ShadowBaseElement {
           (info) => info.track.id === id,
         );
         this.tracksContainer.removeChild(match.container);
+        // Removing from the settings as well
+        removeOne(this.dataTrackSettings, (setting) => setting.trackId === id);
       },
     );
 
@@ -586,17 +588,27 @@ export class TrackView extends ShadowBaseElement {
 
     // FIXME: Generate some tracks now
 
-    for (const setting of this.dataTrackSettings) {
+    const currIds = new Set(
+      this.dataTrackSettings.map((setting) => setting.trackId),
+    );
+    const trackIds = new Set(this.dataTracks.map((track) => track.track.id));
+    const addedIds = setDiff(currIds, trackIds);
+    const removedIds = setDiff(trackIds, currIds);
+
+    for (const settingId of addedIds) {
+      const setting = this.dataTrackSettings.filter(
+        (setting) => setting.trackId == settingId,
+      )[0];
       const rawTrack = new BandTrack(
         setting.trackId,
         setting.trackLabel,
         setting.trackType,
         () => {
-          console.warn("Attempting to retrieve setting", setting);
+          // console.warn("Attempting to retrieve setting", setting);
           return setting;
         },
         (settings) => {
-          console.warn("Attempting to update setting", setting);
+          // console.warn("Attempting to update setting", setting);
           // fnSettings = settings;
           // session.setTrackExpanded(trackId, settings.isExpanded);
         },
@@ -636,6 +648,12 @@ export class TrackView extends ShadowBaseElement {
       this.tracksContainer.appendChild(trackWrapper.container);
       rawTrack.initialize();
       rawTrack.render({});
+    }
+
+    console.log("Removing:", removedIds);
+    for (const id of removedIds) {
+      const match = removeOne(this.dataTracks, (info) => info.track.id === id);
+      this.tracksContainer.removeChild(match.container);
     }
 
     // updateGeneListTracks(
@@ -839,15 +857,21 @@ function updateAnnotationTracks(
 
   console.log("Updating annotation tracks with sources", sources);
 
-  const currTrackIds = trackSettings.map((setting) => setting.trackId);
-  const sourceIds = sources.map((source) => source.id);
+  const currTrackIds = new Set(trackSettings.map((setting) => setting.trackId));
+  const sourceIds = new Set(sources.map((source) => source.id));
 
-  const newSources = sources.filter(
-    (source) => !currTrackIds.includes(source.id),
-  );
-  const removedSourceIds = trackSettings
-    .map((setting) => setting.trackId)
-    .filter((id) => !sourceIds.includes(id));
+  console.log("Curr IDs", currTrackIds);
+
+  const newAnnotIds = setDiff(sourceIds, currTrackIds);
+  const removedSourceIds = setDiff(currTrackIds, sourceIds);
+
+  const newSources = sources.filter((source) => newAnnotIds.has(source.id));
+
+  console.log("New sources", newAnnotIds);
+
+  // const removedSourceIds = trackSettings
+  //   .map((setting) => setting.trackId)
+  //   .filter((id) => !sourceIds.has(id));
 
   newSources.forEach((source) => {
     const newSetting: DataTrackSettingsNew = {
