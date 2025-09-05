@@ -168,10 +168,10 @@ export class TrackView extends ShadowBaseElement {
     //   render({ dataUpdated: true, positionOnly: true });
     // });
 
-    const covTracks: DataTrackWrapper[] = [];
-    const bafTracks: DataTrackWrapper[] = [];
-    const variantTracks: DataTrackWrapper[] = [];
-    const sampleAnnotTracks: DataTrackWrapper[] = [];
+    // const covTracks: DataTrackWrapper[] = [];
+    // const bafTracks: DataTrackWrapper[] = [];
+    // const variantTracks: DataTrackWrapper[] = [];
+    // const sampleAnnotTracks: DataTrackWrapper[] = [];
 
     // this.ideogramTrack = new IdeogramTrack(
     //   "ideogram",
@@ -225,26 +225,26 @@ export class TrackView extends ShadowBaseElement {
 
     // this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
-    for (const sample of samples) {
-      const startExpanded = samples.length == 1 ? true : false;
+    // for (const sample of samples) {
+    //   const startExpanded = samples.length == 1 ? true : false;
 
-      const sampleTracks = createSampleTracks(
-        sample,
-        dataSources,
-        startExpanded,
-        session,
-        true,
-        openTrackContextMenu,
-      );
+    //   const sampleTracks = createSampleTracks(
+    //     sample,
+    //     dataSources,
+    //     startExpanded,
+    //     session,
+    //     true,
+    //     openTrackContextMenu,
+    //   );
 
-      this.sampleToTracks[sample.sampleId] = sampleTracks;
+    //   this.sampleToTracks[sample.sampleId] = sampleTracks;
 
-      covTracks.push(sampleTracks.cov);
-      bafTracks.push(sampleTracks.baf);
-      variantTracks.push(sampleTracks.variant);
+    //   covTracks.push(sampleTracks.cov);
+    //   bafTracks.push(sampleTracks.baf);
+    //   variantTracks.push(sampleTracks.variant);
 
-      this.setupSampleAnnotationTracks(sample);
-    }
+    //   this.setupSampleAnnotationTracks(sample);
+    // }
 
     // const genesTrack = createGeneTrack(
     //   "genes",
@@ -256,7 +256,7 @@ export class TrackView extends ShadowBaseElement {
     //   openTrackContextMenu,
     // );
 
-    const trackSettings = [];
+    // const trackSettings = [];
 
     // const tracks: DataTrackWrapper[] = [
     //   ...bafTracks,
@@ -266,23 +266,23 @@ export class TrackView extends ShadowBaseElement {
     //   genesTrack,
     // ];
 
-    let positionTrackSettings: DataTrackSettings = {
-      height: {
-        collapsedHeight: STYLE.tracks.trackHeight.xs,
-      },
-      showLabelWhenCollapsed: false,
-      isExpanded: false,
-      isHidden: false,
-    };
+    // let positionTrackSettings: DataTrackSettings = {
+    //   height: {
+    //     collapsedHeight: STYLE.tracks.trackHeight.xs,
+    //   },
+    //   showLabelWhenCollapsed: false,
+    //   isExpanded: false,
+    //   isHidden: false,
+    // };
 
-    this.positionTrack = new PositionTrack(
-      "position",
-      "Position",
-      () => positionTrackSettings,
-      (settings) => (positionTrackSettings = settings),
-      () => session.getMarkerModeOn(),
-      () => session.getXRange(),
-    );
+    // this.positionTrack = new PositionTrack(
+    //   "position",
+    //   "Position",
+    //   () => positionTrackSettings,
+    //   (settings) => (positionTrackSettings = settings),
+    //   () => session.getMarkerModeOn(),
+    //   () => session.getXRange(),
+    // );
 
     // const chromosomeRow = document.createElement("flex-row");
     // chromosomeRow.style.width = "100%";
@@ -309,33 +309,33 @@ export class TrackView extends ShadowBaseElement {
 
     // this.dataTracks = orderedTracks;
 
-    this.overviewTracks.forEach((track) => {
-      this.bottomContainer.appendChild(track);
-      track.initialize();
-      track.renderLoading();
-    });
+    // this.overviewTracks.forEach((track) => {
+    //   this.bottomContainer.appendChild(track);
+    //   track.initialize();
+    //   track.renderLoading();
+    // });
 
-    setupDrag(
-      this.tracksContainer,
-      () => session.getMarkerModeOn(),
-      () => session.getXRange(),
-      (range: Rng) => {
-        session.setViewRange(range);
-        render({ dataUpdated: true, positionOnly: true });
-      },
-      (range: Rng) => session.addHighlight(range),
-      (id: string) => session.removeHighlight(id),
-    );
+    // setupDrag(
+    //   this.tracksContainer,
+    //   () => session.getMarkerModeOn(),
+    //   () => session.getXRange(),
+    //   (range: Rng) => {
+    //     session.setViewRange(range);
+    //     render({ dataUpdated: true, positionOnly: true });
+    //   },
+    //   (range: Rng) => session.addHighlight(range),
+    //   (id: string) => session.removeHighlight(id),
+    // );
 
-    this.addElementListener(this.tracksContainer, "click", () => {
-      if (keyLogger.heldKeys.Control) {
-        const updatedRange = zoomOut(
-          this.session.getXRange(),
-          this.session.getCurrentChromSize(),
-        );
-        session.setViewRange(updatedRange);
-      }
-    });
+    // this.addElementListener(this.tracksContainer, "click", () => {
+    //   if (keyLogger.heldKeys.Control) {
+    //     const updatedRange = zoomOut(
+    //       this.session.getXRange(),
+    //       this.session.getCurrentChromSize(),
+    //     );
+    //     session.setViewRange(updatedRange);
+    //   }
+    // });
   }
 
   private getXScale(inverted: boolean = false): Scale {
@@ -539,6 +539,9 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
+
+    console.log("Rendering called");
+
     if (settings.dataUpdated) {
       this.updateColorBands();
     }
