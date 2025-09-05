@@ -392,7 +392,11 @@ interface RenderDataSource {
 
   getGeneListBands: (listId: string, chrom: string) => Promise<RenderBand[]>;
 
-  getVariantBands: (sample: Sample, chrom: string, rankScoreThres: number) => Promise<RenderBand[]>;
+  getVariantBands: (
+    sample: Sample,
+    chrom: string,
+    rankScoreThres: number,
+  ) => Promise<RenderBand[]>;
   getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>;
 
   getOverviewCovData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
@@ -631,7 +635,7 @@ interface RangeHighlight {
 
 interface ApiSample {
   baf_file: string;
-  baf_index: string,
+  baf_index: string;
   case_id: string;
   coverage_file: string;
   coverage_index: string;
@@ -652,12 +656,20 @@ interface Sample {
   meta?: SampleMetaEntry[];
 }
 
-type TrackType = "annotation" | "variant" | "dot-cov" | "dot-baf" | "gene" | "position" | "gene-list";
+type TrackType =
+  | "annotation"
+  | "sample-annotation"
+  | "variant"
+  | "dot-cov"
+  | "dot-baf"
+  | "gene"
+  | "position"
+  | "gene-list";
 
 type IDBTranscripts = {
-  transcripts: ApiSimplifiedTranscript[],
-  serverTimestamp: string,
-}
+  transcripts: ApiSimplifiedTranscript[];
+  serverTimestamp: string;
+};
 
 interface SelectData {
   id: string;

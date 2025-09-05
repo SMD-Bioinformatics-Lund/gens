@@ -94,6 +94,7 @@ export class TrackView extends ShadowBaseElement {
   private dataSource: RenderDataSource;
 
   private dataTrackSettings: DataTrackSettingsNew[] = [];
+  private lastRenderedSamples: Sample[] = [];
 
   private dataTracks: DataTrackWrapper[] = [];
   private ideogramTrack: IdeogramTrack;
@@ -557,14 +558,18 @@ export class TrackView extends ShadowBaseElement {
       (id) => this.session.removeHighlight(id),
     );
 
-    this.dataTrackSettings = syncTrackSettings(
+    // lastRenderedSamples
+
+    syncDataTrackSettings(
       this.dataTrackSettings,
       this.session,
-    );
-
-    console.log("Track settings after annot update", this.dataTrackSettings);
-
-    this.renderTracks();
+      this.dataSource,
+      this.lastRenderedSamples,
+    ).then(({ settings, samples }) => {
+      this.dataTrackSettings = settings;
+      this.lastRenderedSamples = samples;
+      this.renderTracks();
+    });
 
     // FIXME: Only the active one needs to be rendered isn't it?
     Object.values(this.trackPages).forEach((trackPage) =>
@@ -635,6 +640,13 @@ export class TrackView extends ShadowBaseElement {
             this.session.getChromosome(),
           );
         rawTrack = this.getBandTrack(setting, getGeneListBands);
+      } else if (setting.trackType == "sample-annotation") {
+        const getSampleAnnotBands = () =>
+          this.dataSource.getSampleAnnotationBands(
+            setting.trackId,
+            this.session.getChromosome(),
+          );
+        rawTrack = this.getBandTrack(setting, getSampleAnnotBands);
       } else {
         throw Error(`Not yet supported track type ${setting.trackType}`);
       }
@@ -654,7 +666,7 @@ export class TrackView extends ShadowBaseElement {
 
   getBandTrack(
     setting: DataTrackSettingsNew,
-    getAnnotationBands: () => Promise<RenderBand[]>,
+    getRenderBands: () => Promise<RenderBand[]>,
   ): BandTrack {
     const rawTrack = new BandTrack(
       setting.trackId,
@@ -671,7 +683,7 @@ export class TrackView extends ShadowBaseElement {
       },
       () => this.session.getXRange(),
       () => {
-        async function getAnnotTrackData(
+        async function getBandTrackData(
           getAnnotation: () => Promise<RenderBand[]>,
         ): Promise<BandTrackData> {
           const bands = await getAnnotation();
@@ -680,7 +692,7 @@ export class TrackView extends ShadowBaseElement {
           };
         }
 
-        return getAnnotTrackData(getAnnotationBands);
+        return getBandTrackData(getRenderBands);
       },
       () => {
         console.warn("Attempting to open context menu");
@@ -811,46 +823,47 @@ function createSampleTracks(
   };
 }
 
-// FIXME: Generalize with the gene lists?
-function syncTrackSettings(
+const getSettingsDiffs = (
+  sources: SelectData[],
+  startSettings: DataTrackSettingsNew[],
+  trackType: TrackType,
+): { newSettings: DataTrackSettingsNew[]; removedIds: string[] } => {
+  // FIXME: Ponder here a bit more
+  const { onlyAIds: removedIds, onlyB: newSources } = getDifferences(
+    startSettings,
+    sources,
+    (setting) => setting.trackId,
+    (source) => source.id,
+  );
+
+  const newSettings = newSources.map((source) => {
+    const newSetting: DataTrackSettingsNew = {
+      trackId: source.id,
+      trackLabel: source.label,
+      trackType,
+      height: { collapsedHeight: 20 },
+      showLabelWhenCollapsed: true,
+      yAxis: null,
+      isExpanded: false,
+      isHidden: false,
+    };
+    return newSetting;
+    // returnSettings.push(newSetting);
+  });
+
+  return {
+    newSettings,
+    removedIds: [...removedIds],
+  };
+};
+
+// FIXME: Can the sources be generalized to only work with IDs
+async function syncDataTrackSettings(
   origSettings: DataTrackSettingsNew[],
   session: GensSession,
-): DataTrackSettingsNew[] {
-
-  const updateSettings = (
-    sources: SelectData[],
-    startSettings: DataTrackSettingsNew[],
-    trackType: TrackType,
-  ): { newSettings: DataTrackSettingsNew[]; removedIds: string[] } => {
-    // FIXME: Ponder here a bit more
-    const { onlyAIds: removedIds, onlyB: newSources } = getDifferences(
-      startSettings,
-      sources,
-      (setting) => setting.trackId,
-      (source) => source.id,
-    );
-
-    const newSettings = newSources.map((source) => {
-      const newSetting: DataTrackSettingsNew = {
-        trackId: source.id,
-        trackLabel: source.label,
-        trackType,
-        height: { collapsedHeight: 20 },
-        showLabelWhenCollapsed: true,
-        yAxis: null,
-        isExpanded: false,
-        isHidden: false,
-      };
-      return newSetting;
-      // returnSettings.push(newSetting);
-    });
-
-    return {
-      newSettings,
-      removedIds: [...removedIds],
-    };
-  };
-
+  dataSources: RenderDataSource,
+  lastRenderedSamples: Sample[],
+): Promise<{ settings: DataTrackSettingsNew[]; samples: Sample[] }> {
   const annotSources = session.getAnnotationSources({
     selectedOnly: true,
   });
@@ -858,61 +871,69 @@ function syncTrackSettings(
     selectedOnly: true,
   });
 
-  // FIXME: Could probably return the new settings and removed IDs?
-  // And do the calculations just once
-  const annotUpdates = updateSettings(annotSources, origSettings, "annotation");
-  const geneListUpdates = updateSettings(geneListSources, origSettings, "gene-list");
+  const samples = session.getSamples();
+  // FIXME: Assuming unique sample IDs here. What to do about that.
+  const { onlyAIds: sampleAnnotRemovedIds, onlyB: newSamples } = getDifferences(
+    lastRenderedSamples,
+    samples,
+    (sample) => sample.sampleId,
+    (sample) => sample.sampleId,
+  );
+
+  const annotUpdates = getSettingsDiffs(
+    annotSources,
+    origSettings,
+    "annotation",
+  );
+  const geneListUpdates = getSettingsDiffs(
+    geneListSources,
+    origSettings,
+    "gene-list",
+  );
+
+  const sampleSettings = [];
+  for (const sample of newSamples) {
+    const sampleSources = await dataSources.getSampleAnnotSources(
+      sample.caseId,
+      sample.sampleId,
+    );
+    for (const source of sampleSources) {
+      const setting: DataTrackSettingsNew = {
+        trackId: source.id,
+        trackLabel: source.name,
+        trackType: "sample-annotation",
+        height: { collapsedHeight: 20 },
+        showLabelWhenCollapsed: true,
+        yAxis: null,
+        isExpanded: false,
+        isHidden: false,
+      };
+      sampleSettings.push(setting);
+    }
+  }
+
+  // Sample tracks diff
+
+  // const sampleAnnotSources = await dataSources.getSampleAnnotSources(
+  //   sample.caseId,
+  //   sample.sampleId,
+  // );
 
   const returnSettings = [...origSettings];
-  const removeIds = [...annotUpdates.removedIds, ...geneListUpdates.removedIds];
-  console.log("All IDs to remove", removeIds);
+  const removeIds = [
+    ...annotUpdates.removedIds,
+    ...geneListUpdates.removedIds,
+    ...sampleAnnotRemovedIds,
+  ];
   for (const removeId of removeIds) {
     removeOne(returnSettings, (setting) => setting.trackId == removeId);
   }
 
   returnSettings.push(...annotUpdates.newSettings);
   returnSettings.push(...geneListUpdates.newSettings);
+  returnSettings.push(...sampleSettings);
 
-  return returnSettings;
-}
-
-function updateGeneListTracks(
-  currGeneTracks: DataTrackWrapper[],
-  getGeneListBands: (sourceId: string, chrom: string) => Promise<RenderBand[]>,
-  getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
-  session: GensSession,
-  openTrackContextMenu: (track: DataTrack) => void,
-  addTrack: (track: DataTrackWrapper) => void,
-  removeTrack: (id: string) => void,
-) {
-  const sources = session.getGeneListSources({ selectedOnly: true });
-  const trackId = (id: string) => `${GENE_LIST_TRACK_TYPE}_${id}`;
-
-  const currTrackIds = currGeneTracks.map((info) => info.track.id);
-  const sourceTrackIds = sources.map((s) => trackId(s.id));
-
-  const newSources = sources.filter(
-    (source) => !currTrackIds.includes(trackId(source.id)),
-  );
-
-  const removedIds = currTrackIds.filter((id) => !sourceTrackIds.includes(id));
-
-  newSources.forEach((source) => {
-    const newTrack = createGeneTrack(
-      trackId(source.id),
-      source.label,
-      GENE_LIST_TRACK_TYPE,
-      (chrom: string) => getGeneListBands(source.id, chrom),
-      (bandId: string) => getTranscriptDetails(bandId),
-      session,
-      openTrackContextMenu,
-    );
-    addTrack(newTrack);
-  });
-
-  removedIds.forEach((id) => {
-    removeTrack(id);
-  });
+  return { settings: returnSettings, samples };
 }
 
 async function getSampleAnnotationTracks(
