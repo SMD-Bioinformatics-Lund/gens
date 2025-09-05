@@ -104,6 +104,10 @@ export async function initCanvases({
     settingsPage.render(settings);
     infoPage.render();
     inputControls.render(settings);
+
+    if (settings.layout) {
+      gensTracks.trackView.saveTrackLayout();
+    }
   };
 
   const trackHeights: TrackHeights = {
@@ -225,9 +229,6 @@ export async function initCanvases({
     (rng: Rng) => {
       gensTracks.setCovYRange(rng);
       render({dataUpdated: true});
-    },
-    () => {
-      gensTracks.trackView.saveTrackLayout();
     },
   );
 

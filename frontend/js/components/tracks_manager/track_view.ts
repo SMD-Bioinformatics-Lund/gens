@@ -27,6 +27,7 @@ import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
+import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -105,6 +106,10 @@ export class TrackView extends ShadowBaseElement {
     }
   > = {};
 
+  public saveTrackLayout() {
+    saveTrackLayout(this.session, this.dataTracks);
+  }
+
   constructor() {
     super(template);
   }
@@ -141,7 +146,7 @@ export class TrackView extends ShadowBaseElement {
         const [moved] = this.dataTracks.splice(oldIndex, 1);
         this.dataTracks.splice(newIndex, 0, moved);
 
-        render({});
+        render({layout: true});
       },
     });
 
@@ -285,7 +290,7 @@ export class TrackView extends ShadowBaseElement {
     this.positionTrack.initialize();
     this.positionTrack.renderLoading();
 
-    const orderedTracks = loadTrackLayout(tracks);
+    const orderedTracks = loadTrackLayout(this.session, tracks);
     orderedTracks.forEach(({ track, container }) => {
       this.tracksContainer.appendChild(container);
       track.initialize();
@@ -363,13 +368,11 @@ export class TrackView extends ShadowBaseElement {
         (direction: "up" | "down") => this.moveTrack(track.id, direction),
         () => {
           track.toggleHidden();
-          saveTrackLayout(this.dataTracks);
-          render({});
+          render({layout: true});
         },
         () => {
           track.toggleExpanded();
-          saveTrackLayout(this.dataTracks);
-          render({});
+          render({layout: true});
         },
         () => track.getIsHidden(),
         () => track.getIsExpanded(),
@@ -616,7 +619,7 @@ export class TrackView extends ShadowBaseElement {
       }
 
       // Re-apply saved layout now that these tracks exist
-      const ordered = loadTrackLayout(this.dataTracks);
+      const ordered = loadTrackLayout(this.session, this.dataTracks);
       if (ordered !== this.dataTracks) {
         this.dataTracks = ordered;
         // Reorder DOM according to the new order
@@ -871,88 +874,5 @@ async function getSampleAnnotationTracks(
   return sampleAnnotTracks;
 }
 
-// FIXME: First get things working
-// Then before PR move this to suitable location
-function getPortableId(info: DataTrackWrapper): string {
-  const track = info.track;
-  const trackId = track.id;
-  if (info.sample != null) {
-    const sampleType = info.sample.sampleType || "unknown";
-    if (trackId.endsWith("_log2_cov")) {
-      return `${sampleType}|log2_cov`;
-    }
-    if (trackId.endsWith("_log2_baf")) {
-      return `${sampleType}|log2_baf`;
-    }
-    if (trackId.endsWith("_variants")) {
-      return `${sampleType}|variants`;
-    }
-    // Sample-annotation tracks (per-sample band tracks)
-    // Use label to get a portable identity across cases
-    return `sample-annot|${sampleType}|${info.track.label}`;
-  }
-  if (trackId.startsWith("gene-list_")) {
-    return `gene-list|${trackId.substring("gene-list_".length)}`;
-  }
-  if (trackId === "genes") {
-    return "genes";
-  }
-  return `annot|${trackId}`;
-}
-
-function saveTrackLayout(dataTracks: DataTrackWrapper[]) {
-  const order: string[] = [];
-  const hidden: Record<string, boolean> = {};
-  const expanded: Record<string, boolean> = {};
-  for (const info of dataTracks) {
-    const pid = this.getPortableId(info);
-    if (!pid) continue;
-    order.push(pid);
-    hidden[pid] = info.track.getIsHidden();
-    expanded[pid] = info.track.getIsExpanded();
-  }
-  this.session.saveTrackLayout({ order, hidden, expanded });
-}
-
-function loadTrackLayout(tracks: DataTrackWrapper[]): DataTrackWrapper[] {
-  const layout = this.session.loadTrackLayout();
-  if (!layout) return tracks;
-  const byPid: Record<string, DataTrackWrapper> = {};
-  for (const info of tracks) {
-    const pid = this.getPortableId(info);
-    if (pid) byPid[pid] = info;
-  }
-  const picked = new Set<string>();
-  const reordered: DataTrackWrapper[] = [];
-  for (const pid of layout.order) {
-    const info = byPid[pid];
-    if (info) {
-      reordered.push(info);
-      picked.add(info.track.id);
-    }
-  }
-  for (const info of tracks) {
-    if (!picked.has(info.track.id)) reordered.push(info);
-  }
-  for (const info of reordered) {
-    const pid = this.getPortableId(info);
-    if (!pid) continue;
-    const desiredHidden = layout.hidden[pid];
-    if (
-      typeof desiredHidden === "boolean" &&
-      info.track.getIsHidden() !== desiredHidden
-    ) {
-      info.track.toggleHidden();
-    }
-    const desiredExpanded = layout.expanded[pid];
-    if (
-      typeof desiredExpanded === "boolean" &&
-      info.track.getIsExpanded() !== desiredExpanded
-    ) {
-      info.track.toggleExpanded();
-    }
-  }
-  return reordered;
-}
 
 customElements.define("track-view", TrackView);
