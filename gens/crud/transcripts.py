@@ -73,8 +73,9 @@ def get_transcripts(
     cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
         query, projection, sort=sort_order
     )
-    return [
-        SimplifiedTranscriptInfo.model_validate(
+    transcripts = []
+    for doc in cursor:
+        tr = SimplifiedTranscriptInfo.model_validate(
             {
                 "record_id": doc["_id"],
                 "name": doc["gene_name"],
@@ -86,8 +87,10 @@ def get_transcripts(
                 "features": _format_features(doc["features"]),
             }
         )
-        for doc in cursor
-    ]
+        transcripts.append(tr)
+        if len(transcripts) % 1000 == 0:
+            print(f">>> Iterating at {len(transcripts)} transcripts")
+    return transcripts
 
 
 def get_transcript(
