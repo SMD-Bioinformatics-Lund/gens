@@ -32,6 +32,7 @@ import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { getDifferences, removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
+import { ChromosomeView } from "./chromosome_view";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -474,7 +475,7 @@ export class TrackView extends ShadowBaseElement {
       this.openTrackContextMenu,
     );
 
-    this.setupSampleAnnotationTracks(sample);
+    // this.setupSampleAnnotationTracks(sample);
 
     this.dataTracks.push(
       sampleTracks.cov,
@@ -586,33 +587,6 @@ export class TrackView extends ShadowBaseElement {
     // this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 
-  private setupSampleAnnotationTracks(sample: Sample) {
-    getSampleAnnotationTracks(
-      sample,
-      this.dataSource,
-      this.session,
-      this.openTrackContextMenu,
-    ).then((tracks: BandTrack[]) => {
-      for (const track of tracks) {
-        const container = makeTrackContainer(track, sample);
-        this.dataTracks.push(container);
-        this.tracksContainer.appendChild(container.container);
-        track.initialize();
-        track.render({});
-      }
-
-      // Re-apply saved layout now that these tracks exist
-      const ordered = loadTrackLayout(this.session, this.dataTracks);
-      if (ordered !== this.dataTracks) {
-        this.dataTracks = ordered;
-        // Reorder DOM according to the new order
-        for (const info of this.dataTracks) {
-          this.tracksContainer.appendChild(info.container);
-        }
-      }
-    });
-  }
-
   renderTracks() {
     const currIds = new Set(
       this.dataTrackSettings.map((setting) => setting.trackId),
@@ -721,107 +695,6 @@ function getDataTrackInfoById(
   console.error("Did not find any track with ID", trackId);
 }
 
-function createSampleTracks(
-  sample: Sample,
-  dataSources: RenderDataSource,
-  startExpanded: boolean,
-  session: GensSession,
-  isTrackViewTrack: boolean,
-  openTrackContextMenu: (track: DataTrack) => void,
-): {
-  cov: DataTrackWrapper;
-  baf: DataTrackWrapper;
-  variant: DataTrackWrapper;
-} {
-  const coverageTrack = createDotTrack(
-    `${sample.sampleId}_log2_cov`,
-    `${sample.sampleId} cov`,
-    "dot-cov",
-    sample,
-    (sample: Sample) =>
-      dataSources.getCovData(
-        sample,
-        session.getChromosome(),
-        session.getXRange(),
-      ),
-    {
-      startExpanded,
-      yAxis: {
-        range: session.getCoverageRange(),
-        label: "Log2 Ratio",
-        hideLabelOnCollapse: true,
-        hideTicksOnCollapse: true,
-      },
-      hasLabel: isTrackViewTrack,
-      fixedChrom: null,
-    },
-    () => session.getMarkerModeOn(),
-    () => session.getXRange(),
-    openTrackContextMenu,
-    () => session.getTrackHeights(),
-  );
-  const bafTrack = createDotTrack(
-    `${sample.sampleId}_log2_baf`,
-    `${sample.sampleId} baf`,
-    "dot-baf",
-    sample,
-    (sample: Sample) =>
-      dataSources.getBafData(
-        sample,
-        session.getChromosome(),
-        session.getXRange(),
-      ),
-    {
-      startExpanded,
-      yAxis: {
-        range: BAF_Y_RANGE,
-        label: "B Allele Freq",
-        hideLabelOnCollapse: true,
-        hideTicksOnCollapse: true,
-      },
-      hasLabel: isTrackViewTrack,
-      fixedChrom: null,
-    },
-    () => session.getMarkerModeOn(),
-    () => session.getXRange(),
-    openTrackContextMenu,
-    () => session.getTrackHeights(),
-  );
-
-  const variantTrack = createVariantTrack(
-    sample.sampleId,
-    `${sample.sampleId}_variants`,
-    `${sample.sampleId} Variants`,
-    () =>
-      dataSources.getVariantBands(
-        sample,
-        session.getChromosome(),
-        session.getVariantThreshold(),
-      ),
-    (variantId: string) => dataSources.getVariantDetails(variantId),
-    (variantId: string) => session.getVariantURL(variantId),
-    session,
-    openTrackContextMenu,
-    {
-      height: {
-        collapsedHeight: session.getTrackHeights().bandCollapsed,
-      },
-      showLabelWhenCollapsed: true,
-      isExpanded: false,
-      isHidden: sample.sampleId !== session.getMainSample().sampleId,
-    },
-  );
-
-  const cov = makeTrackContainer(coverageTrack, sample);
-  const baf = makeTrackContainer(bafTrack, sample);
-  const variant = makeTrackContainer(variantTrack, sample);
-
-  return {
-    cov,
-    baf,
-    variant,
-  };
-}
 
 const getSettingsDiffs = (
   sources: SelectData[],
@@ -857,7 +730,6 @@ const getSettingsDiffs = (
   };
 };
 
-// FIXME: Can the sources be generalized to only work with IDs
 async function syncDataTrackSettings(
   origSettings: DataTrackSettingsNew[],
   session: GensSession,
@@ -897,8 +769,43 @@ async function syncDataTrackSettings(
       sample.caseId,
       sample.sampleId,
     );
+
+    const cov: DataTrackSettingsNew = {
+      trackId: `${sample.sampleId}_log2_cov`,
+      trackLabel: `${sample.sampleId} cov`,
+      trackType: "dot-cov",
+      height: { collapsedHeight: 20, expandedHeight: 40 },
+      showLabelWhenCollapsed: true,
+      yAxis: null,
+      isExpanded: false,
+      isHidden: false,
+    }
+
+    const baf: DataTrackSettingsNew = {
+      trackId: `${sample.sampleId}_baf`,
+      trackLabel: `${sample.sampleId} baf`,
+      trackType: "dot-baf",
+      height: { collapsedHeight: 20, expandedHeight: 40 },
+      showLabelWhenCollapsed: true,
+      yAxis: null,
+      isExpanded: false,
+      isHidden: false,
+    }
+
+    const variants: DataTrackSettingsNew = {
+      trackId: `${sample.sampleId}_variants`,
+      trackLabel: `${sample.sampleId} Variants`,
+      trackType: "variant",
+      height: { collapsedHeight: 20, expandedHeight: 40 },
+      showLabelWhenCollapsed: true,
+      yAxis: null,
+      isExpanded: false,
+      isHidden: false,
+    }
+
+    const sampleAnnots = [];
     for (const source of sampleSources) {
-      const setting: DataTrackSettingsNew = {
+      const sampleAnnot: DataTrackSettingsNew = {
         trackId: source.id,
         trackLabel: source.name,
         trackType: "sample-annotation",
@@ -908,16 +815,10 @@ async function syncDataTrackSettings(
         isExpanded: false,
         isHidden: false,
       };
-      sampleSettings.push(setting);
+      sampleAnnots.push(sampleAnnot);
     }
+    sampleSettings.push(cov, baf, variants, ...sampleAnnots);
   }
-
-  // Sample tracks diff
-
-  // const sampleAnnotSources = await dataSources.getSampleAnnotSources(
-  //   sample.caseId,
-  //   sample.sampleId,
-  // );
 
   const returnSettings = [...origSettings];
   const removeIds = [
@@ -936,43 +837,5 @@ async function syncDataTrackSettings(
   return { settings: returnSettings, samples };
 }
 
-async function getSampleAnnotationTracks(
-  sample: Sample,
-  dataSources: RenderDataSource,
-  session: GensSession,
-  openTrackContextMenu: (track: DataTrack) => void,
-): Promise<BandTrack[]> {
-  const sampleAnnotSources = await dataSources.getSampleAnnotSources(
-    sample.caseId,
-    sample.sampleId,
-  );
-
-  const sampleAnnotTracks = [];
-  for (const sampleAnnotSource of sampleAnnotSources) {
-    const annotTrack = createAnnotTrack(
-      sampleAnnotSource.id,
-      sampleAnnotSource.name,
-      () => session.getXRange(),
-      () => {
-        const bands = dataSources.getSampleAnnotationBands(
-          sampleAnnotSource.id,
-          session.getChromosome(),
-        );
-        return bands;
-      },
-      (id: string) => dataSources.getSampleAnnotationDetails(id),
-      session,
-      openTrackContextMenu,
-      {
-        height: session.getTrackHeights().bandCollapsed,
-        showLabelWhenCollapsed: true,
-        startExpanded: true,
-      },
-    );
-    sampleAnnotTracks.push(annotTrack);
-  }
-
-  return sampleAnnotTracks;
-}
 
 customElements.define("track-view", TrackView);
