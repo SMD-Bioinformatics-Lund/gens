@@ -10,7 +10,11 @@ import {
   makeTrackContainer,
   TRACK_HANDLE_CLASS,
 } from "./utils";
-import { DataTrack, DataTrackSettings, DataTrackSettingsNew } from "../tracks/base_tracks/data_track";
+import {
+  DataTrack,
+  DataTrackSettings,
+  DataTrackSettingsNew,
+} from "../tracks/base_tracks/data_track";
 import { setupDrag, setupDragging } from "../../movements/dragging";
 import { GensSession } from "../../state/gens_session";
 import { getLinearScale } from "../../draw/render_utils";
@@ -378,11 +382,11 @@ export class TrackView extends ShadowBaseElement {
         (direction: "up" | "down") => this.moveTrack(track.id, direction),
         () => {
           track.toggleHidden();
-          render({layout: true});
+          render({ layout: true });
         },
         () => {
           track.toggleExpanded();
-          render({layout: true});
+          render({ layout: true });
         },
         () => track.getIsHidden(),
         () => track.getIsExpanded(),
@@ -539,7 +543,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
-
     console.log("Settings:", this.dataTrackSettings);
 
     if (settings.dataUpdated) {
@@ -582,6 +585,58 @@ export class TrackView extends ShadowBaseElement {
     console.log("Track settings after annot update", this.dataTrackSettings);
 
     // FIXME: Generate some tracks now
+
+    for (const setting of this.dataTrackSettings) {
+      const rawTrack = new BandTrack(
+        setting.trackId,
+        setting.trackLabel,
+        setting.trackType,
+        () => {
+          console.warn("Attempting to retrieve setting", setting);
+          return setting;
+        },
+        (settings) => {
+          console.warn("Attempting to update setting", setting);
+          // fnSettings = settings;
+          // session.setTrackExpanded(trackId, settings.isExpanded);
+        },
+        () => this.session.getXRange(),
+        () => {
+          async function getAnnotTrackData(
+            getAnnotation: () => Promise<RenderBand[]>,
+          ): Promise<BandTrackData> {
+            const bands = await getAnnotation();
+            return {
+              bands,
+            };
+          }
+
+          const getAnnotationBands = () =>
+            this.dataSource.getAnnotationBands(
+              setting.trackId,
+              this.session.getChromosome(),
+            );
+
+          return getAnnotTrackData(getAnnotationBands);
+        },
+        () => {
+          console.warn("Attempting to open context menu");
+        },
+        () => {
+          console.warn("Attempting to open track context menu");
+        },
+        // openContextMenuId,
+        // openTrackContextMenu,
+        () => this.session.getMarkerModeOn(),
+      );
+
+      // This is fine, but should be done once for all tracks
+      const trackWrapper = makeTrackContainer(rawTrack, null);
+      this.dataTracks.push(trackWrapper);
+      this.tracksContainer.appendChild(trackWrapper.container);
+      rawTrack.initialize();
+      rawTrack.render({});
+    }
 
     // updateGeneListTracks(
     //   this.dataTracks.filter(
@@ -795,7 +850,6 @@ function updateAnnotationTracks(
     .filter((id) => !sourceIds.includes(id));
 
   newSources.forEach((source) => {
-
     const newSetting: DataTrackSettingsNew = {
       trackId: source.id,
       trackLabel: source.label,
@@ -805,7 +859,7 @@ function updateAnnotationTracks(
       yAxis: null,
       isExpanded: false,
       isHidden: false,
-    }
+    };
 
     trackSettings.push(newSetting);
 
@@ -910,6 +964,5 @@ async function getSampleAnnotationTracks(
 
   return sampleAnnotTracks;
 }
-
 
 customElements.define("track-view", TrackView);
