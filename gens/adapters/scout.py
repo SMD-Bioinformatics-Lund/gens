@@ -131,14 +131,18 @@ class ScoutMongoAdapter(InterpretationAdapter):
         return gene_lists
 
     def get_gene_list(self, gene_list_id: str) -> list[str]:
-        # FIXME: Look into how to grab the latest version here
-        panel = self._db.get_collection("gene_panel").find_one(
-            {"panel_name": gene_list_id}
+        # Fetch the latest version of the panel by sorting on version descending
+        cursor = (
+            self._db.get_collection("gene_panel")
+            .find({"panel_name": gene_list_id})
+            .sort("version", -1)
+            .limit(1)
         )
-        if not panel:
+        gene_list = next(cursor, None)
+        if not gene_list:
             return []
         genes = []
-        for gene in panel.get("genes", []):
+        for gene in gene_list.get("genes", []):
             symbol = gene.get("hgnc_symbol") or gene.get("symbol")
             if symbol:
                 genes.append(symbol)
