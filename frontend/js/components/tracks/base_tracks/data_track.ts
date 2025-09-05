@@ -25,6 +25,19 @@ export interface ExpandedTrackHeight {
   expandedHeight?: number;
 }
 
+export interface DataTrackSettingsNew {
+  trackId: string;
+  trackLabel: string;
+  sampleId?: string;
+  trackType: string;
+  height: ExpandedTrackHeight;
+  showLabelWhenCollapsed: boolean;
+  yAxis?: Axis;
+  yPadBands?: boolean;
+  isExpanded: boolean;
+  isHidden: boolean;
+}
+
 export interface DataTrackSettings {
   height: ExpandedTrackHeight;
   showLabelWhenCollapsed: boolean;

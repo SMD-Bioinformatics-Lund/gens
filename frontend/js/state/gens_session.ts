@@ -3,6 +3,7 @@ import {
   TrackHeights,
 } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
+import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { COLORS } from "../constants";
 import {
@@ -36,6 +37,7 @@ import { generateID } from "../util/utils";
  * Currently that is maintained by the tracks themselves though. But
  * it should probably be kept here as well.
  */
+
 export class GensSession {
   private chromosome: Chromosome;
   private start: number;
@@ -61,6 +63,24 @@ export class GensSession {
   private variantThreshold: number;
   private expandedTracks: Record<string, boolean> = {};
   private layoutProfileKey: string;
+
+  // private dataTracks: DataTrackSettings[] = [];
+
+  // public addTrack(settings: DataTrackSettings) {
+  //   this.dataTracks.push(settings);
+
+  //   const trackLayout = {
+  //     order: [],
+  //     hidden: {},
+  //     expanded: {},
+  //   }
+
+  //   this.saveTrackLayout(this.dataTracks);
+  // }
+
+  // public getTrack(key: string): DataTrackSettings {
+  //   return this.dataTracks.filter((track) => track.trackId == key)[0];
+  // }
 
   constructor(
     render: (settings: RenderSettings) => void,

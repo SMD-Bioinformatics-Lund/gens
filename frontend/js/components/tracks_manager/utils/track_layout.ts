@@ -3,7 +3,6 @@
 import { GensSession } from "../../../state/gens_session";
 import { DataTrackWrapper } from "../track_view";
 
-// Then before PR move this to suitable location
 function getPortableId(info: DataTrackWrapper): string {
   const track = info.track;
   const trackId = track.id;

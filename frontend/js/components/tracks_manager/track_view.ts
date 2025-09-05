@@ -89,6 +89,8 @@ export class TrackView extends ShadowBaseElement {
   private session: GensSession;
   private dataSource: RenderDataSource;
 
+  private dataTracksSettings: DataTrackSettings[] = [];
+
   private dataTracks: DataTrackWrapper[] = [];
   private ideogramTrack: IdeogramTrack;
   private positionTrack: PositionTrack;
@@ -137,87 +139,91 @@ export class TrackView extends ShadowBaseElement {
     const openTrackContextMenu = this.createOpenTrackContextMenu(render);
     this.openTrackContextMenu = openTrackContextMenu;
 
-    Sortable.create(this.tracksContainer, {
-      animation: ANIM_TIME.medium,
-      handle: `.${TRACK_HANDLE_CLASS}`,
-      swapThreshold: 0.5,
-      onEnd: (evt: SortableEvent) => {
-        const { oldIndex, newIndex } = evt;
-        const [moved] = this.dataTracks.splice(oldIndex, 1);
-        this.dataTracks.splice(newIndex, 0, moved);
+    // Sortable.create(this.tracksContainer, {
+    //   animation: ANIM_TIME.medium,
+    //   handle: `.${TRACK_HANDLE_CLASS}`,
+    //   swapThreshold: 0.5,
+    //   onEnd: (evt: SortableEvent) => {
 
-        render({layout: true});
-      },
-    });
+    //     // FIXME: Would it make sense for this to first shift the settings
+    //     // And then let the render sort things through
 
-    setupDragging(this.tracksContainer, (dragRangePx: Rng) => {
-      const inverted = true;
-      const invertedXScale = this.getXScale(inverted);
+    //     const { oldIndex, newIndex } = evt;
+    //     const [moved] = this.dataTracks.splice(oldIndex, 1);
+    //     this.dataTracks.splice(newIndex, 0, moved);
 
-      const scaledStart = invertedXScale(dragRangePx[0]);
-      const scaledEnd = invertedXScale(dragRangePx[1]);
-      const panDistance = scaledStart - scaledEnd;
+    //     render({layout: true});
+    //   },
+    // });
 
-      session.moveXRange(panDistance);
-      render({ dataUpdated: true, positionOnly: true });
-    });
+    // setupDragging(this.tracksContainer, (dragRangePx: Rng) => {
+    //   const inverted = true;
+    //   const invertedXScale = this.getXScale(inverted);
+
+    //   const scaledStart = invertedXScale(dragRangePx[0]);
+    //   const scaledEnd = invertedXScale(dragRangePx[1]);
+    //   const panDistance = scaledStart - scaledEnd;
+
+    //   session.moveXRange(panDistance);
+    //   render({ dataUpdated: true, positionOnly: true });
+    // });
 
     const covTracks: DataTrackWrapper[] = [];
     const bafTracks: DataTrackWrapper[] = [];
     const variantTracks: DataTrackWrapper[] = [];
     const sampleAnnotTracks: DataTrackWrapper[] = [];
 
-    this.ideogramTrack = new IdeogramTrack(
-      "ideogram",
-      "Ideogram",
-      { height: trackHeight.xs },
-      async () => {
-        return {
-          xRange: session.getXRange(),
-          chromInfo: await dataSources.getChromInfo(session.getChromosome()),
-        };
-      },
-      (band: RenderBand) => {
-        session.setViewRange([band.start, band.end]);
-        render({ dataUpdated: true, positionOnly: true });
-      },
-    );
+    // this.ideogramTrack = new IdeogramTrack(
+    //   "ideogram",
+    //   "Ideogram",
+    //   { height: trackHeight.xs },
+    //   async () => {
+    //     return {
+    //       xRange: session.getXRange(),
+    //       chromInfo: await dataSources.getChromInfo(session.getChromosome()),
+    //     };
+    //   },
+    //   (band: RenderBand) => {
+    //     session.setViewRange([band.start, band.end]);
+    //     render({ dataUpdated: true, positionOnly: true });
+    //   },
+    // );
 
-    const yAxisCov = {
-      range: session.getCoverageRange(),
-      label: "Log2 Ratio",
-      hideLabelOnCollapse: false,
-      hideTicksOnCollapse: false,
-    };
-    const overviewTrackCov = createOverviewTrack(
-      "overview_cov",
-      "Overview (cov)",
-      () => dataSources.getOverviewCovData(session.getMainSample()),
-      session.getCoverageRange(),
-      chromSizes,
-      chromClick,
-      session,
-      yAxisCov,
-    );
+    // const yAxisCov = {
+    //   range: session.getCoverageRange(),
+    //   label: "Log2 Ratio",
+    //   hideLabelOnCollapse: false,
+    //   hideTicksOnCollapse: false,
+    // };
+    // const overviewTrackCov = createOverviewTrack(
+    //   "overview_cov",
+    //   "Overview (cov)",
+    //   () => dataSources.getOverviewCovData(session.getMainSample()),
+    //   session.getCoverageRange(),
+    //   chromSizes,
+    //   chromClick,
+    //   session,
+    //   yAxisCov,
+    // );
 
-    const yAxisBaf = {
-      range: BAF_Y_RANGE,
-      label: "B Allele Freq",
-      hideLabelOnCollapse: false,
-      hideTicksOnCollapse: false,
-    };
-    const overviewTrackBaf = createOverviewTrack(
-      "overview_baf",
-      "Overview (baf)",
-      () => dataSources.getOverviewBafData(session.getMainSample()),
-      BAF_Y_RANGE,
-      chromSizes,
-      chromClick,
-      session,
-      yAxisBaf,
-    );
+    // const yAxisBaf = {
+    //   range: BAF_Y_RANGE,
+    //   label: "B Allele Freq",
+    //   hideLabelOnCollapse: false,
+    //   hideTicksOnCollapse: false,
+    // };
+    // const overviewTrackBaf = createOverviewTrack(
+    //   "overview_baf",
+    //   "Overview (baf)",
+    //   () => dataSources.getOverviewBafData(session.getMainSample()),
+    //   BAF_Y_RANGE,
+    //   chromSizes,
+    //   chromClick,
+    //   session,
+    //   yAxisBaf,
+    // );
 
-    this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
+    // this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
     for (const sample of samples) {
       const startExpanded = samples.length == 1 ? true : false;
@@ -240,23 +246,25 @@ export class TrackView extends ShadowBaseElement {
       this.setupSampleAnnotationTracks(sample);
     }
 
-    const genesTrack = createGeneTrack(
-      "genes",
-      "Genes",
-      GENE_TRACK_TYPE,
-      (chrom: string) => dataSources.getTranscriptBands(chrom),
-      (id: string) => dataSources.getTranscriptDetails(id),
-      session,
-      openTrackContextMenu,
-    );
+    // const genesTrack = createGeneTrack(
+    //   "genes",
+    //   "Genes",
+    //   GENE_TRACK_TYPE,
+    //   (chrom: string) => dataSources.getTranscriptBands(chrom),
+    //   (id: string) => dataSources.getTranscriptDetails(id),
+    //   session,
+    //   openTrackContextMenu,
+    // );
 
-    const tracks: DataTrackWrapper[] = [
-      ...bafTracks,
-      ...covTracks,
-      ...variantTracks,
-      ...sampleAnnotTracks,
-      genesTrack,
-    ];
+    const trackSettings = [];
+
+    // const tracks: DataTrackWrapper[] = [
+    //   ...bafTracks,
+    //   ...covTracks,
+    //   ...variantTracks,
+    //   ...sampleAnnotTracks,
+    //   genesTrack,
+    // ];
 
     let positionTrackSettings: DataTrackSettings = {
       height: {
@@ -276,28 +284,30 @@ export class TrackView extends ShadowBaseElement {
       () => session.getXRange(),
     );
 
-    const chromosomeRow = document.createElement("flex-row");
-    chromosomeRow.style.width = "100%";
-    this.positionLabel = document.createElement("div");
-    this.positionLabel.id = "position-label";
-    chromosomeRow.appendChild(this.positionLabel);
-    chromosomeRow.appendChild(this.ideogramTrack);
+    // const chromosomeRow = document.createElement("flex-row");
+    // chromosomeRow.style.width = "100%";
+    // this.positionLabel = document.createElement("div");
+    // this.positionLabel.id = "position-label";
+    // chromosomeRow.appendChild(this.positionLabel);
+    // chromosomeRow.appendChild(this.ideogramTrack);
 
-    this.topContainer.appendChild(chromosomeRow);
-    this.topContainer.appendChild(this.positionTrack);
-    this.ideogramTrack.initialize();
-    this.ideogramTrack.renderLoading();
-    this.positionTrack.initialize();
-    this.positionTrack.renderLoading();
+    // this.topContainer.appendChild(chromosomeRow);
+    // this.topContainer.appendChild(this.positionTrack);
+    // this.ideogramTrack.initialize();
+    // this.ideogramTrack.renderLoading();
+    // this.positionTrack.initialize();
+    // this.positionTrack.renderLoading();
 
-    const orderedTracks = loadTrackLayout(this.session, tracks);
-    orderedTracks.forEach(({ track, container }) => {
-      this.tracksContainer.appendChild(container);
-      track.initialize();
-      track.renderLoading();
-    });
+    // this.dataTracks = this.dataTracks;
 
-    this.dataTracks = orderedTracks;
+    // const orderedTracks = loadTrackLayout(this.session, tracks);
+    // orderedTracks.forEach(({ track, container }) => {
+    //   this.tracksContainer.appendChild(container);
+    //   track.initialize();
+    //   track.renderLoading();
+    // });
+
+    // this.dataTracks = orderedTracks;
 
     this.overviewTracks.forEach((track) => {
       this.bottomContainer.appendChild(track);
@@ -593,14 +603,14 @@ export class TrackView extends ShadowBaseElement {
       trackPage.render(settings),
     );
 
-    this.ideogramTrack.render(settings);
-    this.positionTrack.render(settings);
+    // this.ideogramTrack.render(settings);
+    // this.positionTrack.render(settings);
     this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
-    this.overviewTracks.forEach((track) => track.render(settings));
+    // this.overviewTracks.forEach((track) => track.render(settings));
 
-    const [startChrSeg, endChrSeg] = this.session.getChrSegments();
+    // const [startChrSeg, endChrSeg] = this.session.getChrSegments();
 
-    this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
+    // this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 
   private setupSampleAnnotationTracks(sample: Sample) {
