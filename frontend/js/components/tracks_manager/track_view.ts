@@ -30,6 +30,9 @@ import { PositionTrack } from "../tracks/position_track";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
+const GENE_LIST_TRACK_TYPE = "gene-list"
+const GENE_TRACK_TYPE = "gene"
+
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>
@@ -235,6 +238,7 @@ export class TrackView extends ShadowBaseElement {
     const genesTrack = createGeneTrack(
       "genes",
       "Genes",
+      GENE_TRACK_TYPE,
       (chrom: string) => dataSources.getTranscriptBands(chrom),
       (id: string) => dataSources.getTranscriptDetails(id),
       session,
@@ -555,6 +559,29 @@ export class TrackView extends ShadowBaseElement {
       },
     );
 
+    updateGeneListTracks(
+      this.dataTracks.filter(
+        (info) => info.track.trackType == GENE_LIST_TRACK_TYPE,
+      ),
+      (sourceId: string, chrom: string) =>
+        this.dataSource.getGeneListBands(sourceId, chrom),
+      (bandId: string) => this.dataSource.getTranscriptDetails(bandId),
+      this.session,
+      this.openTrackContextMenu,
+      (trackInfo: TrackViewTrackInfo) => {
+        this.dataTracks.push(trackInfo);
+        this.tracksContainer.appendChild(trackInfo.container);
+        trackInfo.track.initialize();
+      },
+      (id: string) => {
+        const match = removeOne(
+          this.dataTracks,
+          (info) => info.track.id === id,
+        );
+        this.tracksContainer.removeChild(match.container);
+      },
+    );
+
     // FIXME: Only the active one needs to be rendered isn't it?
     Object.values(this.trackPages).forEach((trackPage) =>
       trackPage.render(settings),
@@ -749,6 +776,45 @@ function updateAnnotationTracks(
   });
 
   removedSourceIds.forEach((id) => {
+    removeTrack(id);
+  });
+}
+
+function updateGeneListTracks(
+  currGeneTracks: TrackViewTrackInfo[],
+  getGeneListBands: (sourceId: string, chrom: string) => Promise<RenderBand[]>,
+  getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
+  session: GensSession,
+  openTrackContextMenu: (track: DataTrack) => void,
+  addTrack: (track: TrackViewTrackInfo) => void,
+  removeTrack: (id: string) => void,
+) {
+  const sources = session.getGeneListSources({ selectedOnly: true });
+  const trackId = (id: string) => `${GENE_LIST_TRACK_TYPE}_${id}`;
+
+  const currTrackIds = currGeneTracks.map((info) => info.track.id);
+  const sourceTrackIds = sources.map((s) => trackId(s.id));
+
+  const newSources = sources.filter(
+    (source) => !currTrackIds.includes(trackId(source.id)),
+  );
+
+  const removedIds = currTrackIds.filter((id) => !sourceTrackIds.includes(id));
+
+  newSources.forEach((source) => {
+    const newTrack = createGeneTrack(
+      trackId(source.id),
+      source.label,
+      GENE_LIST_TRACK_TYPE,
+      (chrom: string) => getGeneListBands(source.id, chrom),
+      (bandId: string) => getTranscriptDetails(bandId),
+      session,
+      openTrackContextMenu,
+    );
+    addTrack(newTrack);
+  });
+
+  removedIds.forEach((id) => {
     removeTrack(id);
   });
 }

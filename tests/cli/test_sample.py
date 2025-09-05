@@ -252,7 +252,7 @@ def test_update_sample_updates_document(
     assert len(meta[0]["data"]) == 1
     assert meta[0]["data"][0]["type"] == "A"
     assert meta[0]["data"][0]["value"] == "1"
-    assert meta[0]["data"][0]["row_name"] isinstance None
+    assert meta[0]["data"][0]["row_name"] is None
     assert meta[0]["data"][0]["color"] == "rgb(0,0,0)"
 
 

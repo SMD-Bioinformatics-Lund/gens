@@ -130,24 +130,20 @@ class ScoutMongoAdapter(InterpretationAdapter):
 
         return gene_lists
 
-    def get_panel(self, panel_id: str) -> list[str]:
-        # FIXME: Look into how to grab the latest version here
-        panel = self._db.get_collection("gene_panel").find_one({"panel_name": panel_id})
-        if not panel:
+    def get_gene_list(self, gene_list_id: str) -> list[str]:
+        # Fetch the latest version of the panel by sorting on version descending
+        cursor = (
+            self._db.get_collection("gene_panel")
+            .find({"panel_name": gene_list_id})
+            .sort("version", -1)
+            .limit(1)
+        )
+        gene_list = next(cursor, None)
+        if not gene_list:
             return []
         genes = []
-        for gene in panel.get("genes", []):
+        for gene in gene_list.get("genes", []):
             symbol = gene.get("hgnc_symbol") or gene.get("symbol")
             if symbol:
                 genes.append(symbol)
         return genes
-        # return super().get_panel(panel_id)
-
-    # FIXME: Panels should be here. Should the URLs? Unsure. Something to ponder.
-    def get_case_url(self, case_id: str) -> str:
-        return ""
-        # return super().get_case_url(case_id)
-
-    def get_variant_url(self, variant_id: str) -> str:
-        return ""
-        # return super().get_variant_url(variant_id)

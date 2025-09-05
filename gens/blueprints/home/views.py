@@ -6,7 +6,7 @@ from typing import Any
 from flask import Blueprint, current_app, render_template, request
 from pymongo.database import Database
 
-from gens import version
+from gens.__version__ import VERSION as version
 from gens.config import settings
 from gens.crud.annotations import get_data_update_timestamp
 from gens.crud.samples import get_samples_per_case
@@ -55,7 +55,7 @@ def home() -> str:
         "home.html",
         samples=parsed_samples,
         total_samples=len(samples_per_case),
-        scout_base_url=str(settings.scout_url),
+        scout_base_url=str(settings.variant_url),
         gens_api_url=str(settings.gens_api_url),
         main_sample_types=settings.main_sample_types,
         genome_build=genome_build.value,

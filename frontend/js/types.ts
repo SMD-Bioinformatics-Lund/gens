@@ -26,6 +26,12 @@ interface ApiAnnotationTrack {
   genome_build: number;
 }
 
+interface ApiGeneList {
+  id: string;
+  name: string;
+  version: string;
+}
+
 interface ApiSampleAnnotationTrack {
   // FIXME: What to do with this one
   _id: string;
@@ -384,6 +390,8 @@ interface RenderDataSource {
   getTranscriptBands: (chrom: string) => Promise<RenderBand[]>;
   getTranscriptDetails: (geneId: string) => Promise<ApiGeneDetails>;
 
+  getGeneListBands: (listId: string, chrom: string) => Promise<RenderBand[]>;
+
   getVariantBands: (sample: Sample, chrom: string, rankScoreThres: number) => Promise<RenderBand[]>;
   getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>;
 
@@ -643,4 +651,9 @@ interface Sample {
   meta?: SampleMetaEntry[];
 }
 
-type TrackType = "annotation" | "variant" | "dot-cov" | "dot-baf" | "gene" | "position";
+type TrackType = "annotation" | "variant" | "dot-cov" | "dot-baf" | "gene" | "position" | "gene-list";
+
+type IDBTranscripts = {
+  transcripts: ApiSimplifiedTranscript[],
+  serverTimestamp: string,
+}

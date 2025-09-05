@@ -15,7 +15,6 @@ from .update import update as update_command
 # from gens.app import create_app
 
 
-
 @click.group()
 @click.version_option(version)
 def cli() -> None:

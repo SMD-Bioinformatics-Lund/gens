@@ -203,7 +203,7 @@ def get_data_update_timestamp(
                 {
                     "tack": entry["track"],
                     "name": entry["name"],
-                    "timestamp": entry["timestamp"].strftime("%Y-%m-%d"),
+                    "timestamp": entry["timestamp"].isoformat(),
                 }
             )
     return results

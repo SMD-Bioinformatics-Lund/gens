@@ -4,6 +4,7 @@ export interface TrackHeights {
   dotExpanded: number;
 }
 export const ANNOT_SELECTIONS_KEY = "gens.annotationSelections";
+export const GENE_LIST_SELECTIONS_KEY = "gens.geneListSelections";
 export const COLOR_ANNOTATIONS_KEY = "gens.colorAnnotation";
 export const TRACK_HEIGHTS_KEY = "gens.trackHeights";
 export const COVERAGE_RANGE_KEY = "gens.coverageRange";
@@ -22,6 +23,14 @@ export function saveAnnotationSelections(ids: string[]): void {
 
 export function loadAnnotationSelections(): string[] {
   return loadFromBrowserSession(ANNOT_SELECTIONS_KEY) as string[];
+}
+
+export function saveGeneListSelections(ids: string[]): void {
+  saveToBrowserSession(ids, GENE_LIST_SELECTIONS_KEY);
+}
+
+export function loadGeneListSelections(): string[] {
+  return loadFromBrowserSession(GENE_LIST_SELECTIONS_KEY) as string[];
 }
 
 export function saveColorAnnotation(id: string | null): void {

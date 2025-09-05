@@ -168,12 +168,17 @@ class TranscriptRecord(RWModel):
     hgnc_id: str | None
     refseq_id: str | None
     features: list[ExonFeature | UtrFeature]
-    # positional info
     chrom: Chromosome
     start: PositiveInt
     end: PositiveInt
     strand: DnaStrand
     genome_build: GenomeBuild
+
+
+class GeneListRecord(RWModel):
+    id: str
+    name: str
+    version: str
 
 
 class SimplifiedVariantRecord(RWModel):

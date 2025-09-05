@@ -6,7 +6,7 @@ from datetime import date
 from flask import Blueprint, abort, current_app, render_template, request
 from pymongo.database import Database
 
-from gens import version
+from gens.__version__ import VERSION as version
 from gens.config import settings
 from gens.crud.genomic import get_chromosome_info
 from gens.crud.samples import get_samples_for_case, get_samples_per_case
@@ -67,9 +67,6 @@ def display_samples(case_id: str) -> str:
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
 
-    # get annotation track
-    annotation = request.args.get("annotation", settings.default_annotation_track)
-
     if parsed_region.end is None:
         chrom_info = get_chromosome_info(db, parsed_region.chromosome, genome_build)
         if chrom_info is None:
@@ -93,7 +90,7 @@ def display_samples(case_id: str) -> str:
 
     return render_template(
         "gens.html",
-        scout_base_url=settings.scout_url,
+        scout_base_url=settings.variant_url,
         chrom=parsed_region.chromosome,
         start=parsed_region.start,
         end=parsed_region.end,
@@ -102,7 +99,6 @@ def display_samples(case_id: str) -> str:
         all_samples=list(all_samples),
         genome_build=genome_build.value,
         print_page=print_page,
-        annotation=annotation,
         selected_variant=selected_variant,
         todays_date=date.today(),
         version=version,

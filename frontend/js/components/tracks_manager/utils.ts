@@ -194,6 +194,7 @@ export function makeTrackContainer(
 export function createGeneTrack(
   id: string,
   label: string,
+  track_type: TrackType,
   getBands: (chrom: string) => Promise<RenderBand[]>,
   getDetails: (id: string) => Promise<ApiGeneDetails>,
   session: GensSession,
@@ -211,7 +212,7 @@ export function createGeneTrack(
   const genesTrack = new BandTrack(
     id,
     label,
-    "gene",
+    track_type,
     () => fnSettings,
     (settings) => {
       fnSettings = settings

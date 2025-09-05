@@ -82,6 +82,12 @@ template.innerHTML = String.raw`
     <choice-select id="annotation-select" multiple></choice-select>
   </div>
   <div class="header-row">
+    <div class="header">Gene lists</div>
+  </div>
+  <div>
+    <choice-select id="gene-lists-select" multiple></choice-select>
+  </div>
+  <div class="header-row">
     <div class="header">Color tracks by</div>
   </div>
   <div>
@@ -145,6 +151,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private tracksOverview: HTMLDivElement;
   private highlightsOverview: HTMLDivElement;
   private annotSelect: ChoiceSelect;
+  private geneListSelect: ChoiceSelect;
   private colorBySelect: ChoiceSelect;
   private sampleSelect: ChoiceSelect;
   private addSampleButton: IconButton;
@@ -162,7 +169,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
   private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
-  private defaultAnnots: { id: string; label: string }[];
+  private geneLists: ApiGeneList[];
   private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
   private getCurrentSamples: () => Sample[];
@@ -188,7 +195,7 @@ export class SettingsMenu extends ShadowBaseElement {
     session: GensSession,
     onChange: (renderSettings: RenderSettings) => void,
     allAnnotationSources: ApiAnnotationTrack[],
-    defaultAnnots: { id: string; label: string }[],
+    geneLists: ApiGeneList[],
     getDataTracks: () => DataTrack[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
     getAllSamples: () => Sample[],
@@ -202,13 +209,8 @@ export class SettingsMenu extends ShadowBaseElement {
     this.session = session;
     this.onChange = onChange;
     this.allAnnotationSources = allAnnotationSources;
-    const stored = session.getAnnotationSelections();
-    if (stored && stored.length > 0) {
-      defaultAnnots = allAnnotationSources
-        .filter((src) => stored.includes(src.track_id))
-        .map((src) => ({ id: src.track_id, label: src.name }));
-    }
-    this.defaultAnnots = defaultAnnots;
+    this.geneLists = geneLists;
+
     this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
 
@@ -234,6 +236,7 @@ export class SettingsMenu extends ShadowBaseElement {
   connectedCallback() {
     super.connectedCallback();
     this.annotSelect = this.root.querySelector("#annotation-select");
+    this.geneListSelect = this.root.querySelector("#gene-lists-select");
     this.colorBySelect = this.root.querySelector("#color-by-select");
     this.sampleSelect = this.root.querySelector("#sample-select");
     this.tracksOverview = this.root.querySelector("#tracks-overview");
@@ -289,6 +292,14 @@ export class SettingsMenu extends ShadowBaseElement {
       this.onColorByChange(id);
     });
 
+    this.addElementListener(this.geneListSelect, "change", () => {
+      const ids = this.geneListSelect
+        .getValues()
+        .map((obj) => obj.value as string);
+      this.session.setGeneListSelections(ids);
+      this.onChange({});
+    });
+
     this.addElementListener(this.sampleSelect, "change", () => {
       this.render({});
     });
@@ -341,24 +352,26 @@ export class SettingsMenu extends ShadowBaseElement {
 
   initialize() {
     this.isInitialized = true;
+    const prevSelectedAnnots = this.session.getAnnotationSelections();
     this.annotSelect.setValues(
-      getAnnotationChoices(
-        this.allAnnotationSources,
-        this.defaultAnnots.map((a) => a.id),
-      ).sort((source1, source2) =>
-        source1.label.toString().localeCompare(source2.label.toString()),
-      ),
+      getAnnotationChoices(this.allAnnotationSources, prevSelectedAnnots),
     );
+
+    const prevSelectedGeneLists = this.session.getGeneListSelections();
+    this.geneListSelect.setValues(
+      getGeneListChoices(this.geneLists, prevSelectedGeneLists),
+    );
+
+    const allAnnotChoices = getAnnotationChoices(this.allAnnotationSources, []);
     const colorChoices = [
       { label: "None", value: "", selected: this.getColorAnnotation() == null },
-      ...getAnnotationChoices(this.allAnnotationSources, []).map((c) => ({
+      ...allAnnotChoices.map((c) => ({
         ...c,
         selected: c.value === this.getColorAnnotation(),
       })),
     ];
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
-    this.session.setAnnotationSelections(this.defaultAnnots.map((a) => a.id));
     this.onChange({});
   }
 
@@ -445,47 +458,108 @@ export class SettingsMenu extends ShadowBaseElement {
     }
   }
 
+  getGeneListSources(settings: {
+    selectedOnly: boolean;
+  }): { id: string; label: string }[] {
+    const sources = parseSources(
+      this.geneLists,
+      this.geneListSelect,
+      settings.selectedOnly,
+      this.session.getGeneListSelections(),
+      (source) => source.id,
+      (source) => `${source.name} + ${source.version}`,
+    );
+    return sources;
+  }
+
   getAnnotSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
-    if (!settings.selectedOnly) {
-      return this.allAnnotationSources.map((source) => {
-        return {
-          id: source.track_id,
-          label: source.name,
-        };
-      });
-    }
+    const sources = parseSources<ApiAnnotationTrack>(
+      this.allAnnotationSources,
+      this.annotSelect,
+      settings.selectedOnly,
+      this.session.getAnnotationSelections(),
+      (source) => source.track_id,
+      (source) => source.name,
+    );
 
-    if (this.annotSelect == null) {
-      return this.defaultAnnots;
-    }
+    return sources;
+  }
+}
 
-    const choices = this.annotSelect.getValues();
-    const returnVals = choices.map((obj) => {
+function parseSources<T>(
+  allSources: T[],
+  targetSelect: ChoiceSelect | null,
+  selectedOnly: boolean,
+  storedIds: string[],
+  getId: (source: T) => string,
+  getLabel: (source: T) => string,
+): { id: string; label: string }[] {
+  if (!selectedOnly) {
+    return allSources.map((source) => {
       return {
-        id: obj.value,
-        label: obj.label.toString(),
+        id: getId(source),
+        label: getLabel(source),
       };
     });
-    return returnVals;
   }
+
+  if (targetSelect == null) {
+    return allSources
+      .filter((source) => storedIds.includes(getId(source)))
+      .map((source) => {
+        return {
+          id: getId(source),
+          label: getLabel(source),
+        };
+      });
+  }
+
+  const choices = targetSelect.getValues();
+  const returnVals = choices.map((obj) => {
+    return {
+      id: obj.value,
+      label: obj.label.toString(),
+    };
+  });
+  return returnVals;
 }
 
 function getAnnotationChoices(
   annotationSources: ApiAnnotationTrack[],
-  defaultAnnotIds: string[],
+  prevSelected: string[],
 ): InputChoice[] {
   const choices: InputChoice[] = [];
   for (const source of annotationSources) {
     const choice = {
       value: source.track_id,
       label: source.name,
-      selected: defaultAnnotIds.includes(source.track_id),
+      selected: prevSelected.includes(source.track_id),
     };
     choices.push(choice);
   }
-  return choices;
+  return choices.sort((source1, source2) =>
+    source1.label.toString().localeCompare(source2.label.toString()),
+  );
+}
+
+function getGeneListChoices(
+  geneLists: ApiGeneList[],
+  prevSelected: string[],
+): InputChoice[] {
+  const choices: InputChoice[] = [];
+  for (const geneList of geneLists) {
+    const choice = {
+      value: geneList.id,
+      label: `${geneList.name} (v${geneList.version})`,
+      selected: prevSelected.includes(geneList.id),
+    };
+    choices.push(choice);
+  }
+  return choices.sort((source1, source2) =>
+    source1.label.toString().localeCompare(source2.label.toString()),
+  );
 }
 
 function getSamplesSection(

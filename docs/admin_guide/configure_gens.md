@@ -32,7 +32,7 @@ services:
 ### Example config file
 
 ```
-scout_url = "http://localhost:8000/scout"
+variant_url = "http://localhost:8000/scout"
 authentication = "oauth"
 gens_api_url = "http://localhost:8080/gens"
 main_sample_types = ["proband", "tumor"]
@@ -40,7 +40,7 @@ main_sample_types = ["proband", "tumor"]
 [gens_db]
 connection = "mongodb://mongodb:27017/gens"
 
-[scout_db]
+[variant_db]
 connection = "mongodb://mongodb:27017/scout"
 ```
 

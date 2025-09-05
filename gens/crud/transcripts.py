@@ -59,7 +59,7 @@ def get_transcripts(
         **query_genomic_region(region.start, region.end),
     }
     # build sort order
-    sort_order: list[tuple[str, int]] = [("start", 1), ("height_order", 1)]
+    sort_order: list[tuple[str, int]] = [("start", 1)]
 
     projection: dict[str, bool] = {
         "gene_name": True,
@@ -73,8 +73,9 @@ def get_transcripts(
     cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
         query, projection, sort=sort_order
     )
-    return [
-        SimplifiedTranscriptInfo.model_validate(
+    transcripts = []
+    for doc in cursor:
+        tr = SimplifiedTranscriptInfo.model_validate(
             {
                 "record_id": doc["_id"],
                 "name": doc["gene_name"],
@@ -86,8 +87,8 @@ def get_transcripts(
                 "features": _format_features(doc["features"]),
             }
         )
-        for doc in cursor
-    ]
+        transcripts.append(tr)
+    return transcripts
 
 
 def get_transcript(
@@ -98,6 +99,37 @@ def get_transcript(
     if resp is not None:
         return TranscriptRecord.model_validate(resp)
     return None
+
+
+def get_simplified_transcripts_by_gene_symbol(
+    gene_symbol: str, genome_build: GenomeBuild, db: Database[Any], only_mane: bool
+) -> list[SimplifiedTranscriptInfo]:
+    cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
+        {"gene_name": gene_symbol, "genome_build": genome_build},
+        sort=[("chrom", 1), ("start", 1)],
+        allow_disk_use=True,
+    )
+
+    return_transcripts = []
+    for doc in cursor:
+        if only_mane and not doc["mane"]:
+            continue
+        simple_tr = SimplifiedTranscriptInfo.model_validate(
+            {
+                "record_id": doc["_id"],
+                "name": doc["gene_name"],
+                "chrom": doc["chrom"],
+                "start": doc["start"],
+                "end": doc["end"],
+                "type": doc["mane"] if doc["mane"] is not None else "non-mane",
+                "strand": doc["strand"],
+                "is_protein_coding": doc["transcript_biotype"] == "protein_coding",
+                "features": _format_features(doc["features"]),
+            }
+        )
+        return_transcripts.append(simple_tr)
+
+    return return_transcripts
 
 
 def create_transcripts(transcripts: Iterable[TranscriptRecord], db: Database[Any]):

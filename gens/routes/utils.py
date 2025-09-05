@@ -6,11 +6,11 @@ from typing import Annotated, Any
 from fastapi import Depends
 from pymongo.database import Database
 
-from gens.db.db import get_gens_db, get_scout_db
+from gens.adapters.base import InterpretationAdapter
+from gens.db.db import get_gens_db, get_variant_software_adapter
 
 GensDb = Annotated[Database[Any], Depends(get_gens_db)]
-
-ScoutDb = Annotated[Database[Any], Depends(get_scout_db)]
+AdapterDep = Annotated[InterpretationAdapter, Depends(get_variant_software_adapter)]
 
 
 class ApiTags(StrEnum):
@@ -23,3 +23,4 @@ class ApiTags(StrEnum):
     USER = "user"
     VAR = "variant"
     SAMPLE_ANNOT = "sample-annotation"
+    GENE_LIST = "gene-list"

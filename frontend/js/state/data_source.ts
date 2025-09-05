@@ -74,6 +74,18 @@ export function getRenderDataSource(
     return parseTranscripts(transcriptsRaw);
   };
 
+  const getGeneListBands = async (
+    listId: string,
+    chrom: string,
+  ): Promise<RenderBand[]> => {
+    const geneSymbols = new Set(await api.getGeneListGenes(listId, chrom));
+    const onlyCanonical = true;
+    const transcriptsRaw = await api.getTranscripts(chrom, onlyCanonical);
+    const matchingTranscripts = transcriptsRaw.filter((tr) => geneSymbols.has(tr.name));
+
+    return parseTranscripts(matchingTranscripts);
+  }
+
   const getVariantBands = async (
     sample: Sample,
     chrom: string,
@@ -153,6 +165,7 @@ export function getRenderDataSource(
     getBafData,
     getTranscriptBands,
     getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
+    getGeneListBands,
     getVariantBands,
     getVariantDetails: (id: string) => api.getVariantDetails(id),
     getOverviewCovData,
