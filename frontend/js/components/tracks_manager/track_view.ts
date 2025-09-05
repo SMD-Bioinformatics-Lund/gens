@@ -557,31 +557,9 @@ export class TrackView extends ShadowBaseElement {
       (id) => this.session.removeHighlight(id),
     );
 
-    updateAnnotationTracks(
+    const updatedTrackSettings = syncTrackSettings(
       this.dataTrackSettings,
-      // this.dataTracks.filter(
-      //   (info) => info.track.trackType == "annotation" && info.sample == null,
-      // ),
-      (sourceId: string, chrom: string) =>
-        this.dataSource.getAnnotationBands(sourceId, chrom),
-      (bandId: string) => this.dataSource.getAnnotationDetails(bandId),
       this.session,
-      this.openTrackContextMenu,
-      (track: DataTrack) => {
-        const annotTrack = makeTrackContainer(track, null);
-        this.dataTracks.push(annotTrack);
-        this.tracksContainer.appendChild(annotTrack.container);
-        annotTrack.track.initialize();
-      },
-      (id: string) => {
-        const match = removeOne(
-          this.dataTracks,
-          (info) => info.track.id === id,
-        );
-        this.tracksContainer.removeChild(match.container);
-        // Removing from the settings as well
-        removeOne(this.dataTrackSettings, (setting) => setting.trackId === id);
-      },
     );
 
     console.log("Track settings after annot update", this.dataTrackSettings);
@@ -599,48 +577,7 @@ export class TrackView extends ShadowBaseElement {
       const setting = this.dataTrackSettings.filter(
         (setting) => setting.trackId == settingId,
       )[0];
-      const rawTrack = new BandTrack(
-        setting.trackId,
-        setting.trackLabel,
-        setting.trackType,
-        () => {
-          // console.warn("Attempting to retrieve setting", setting);
-          return setting;
-        },
-        (settings) => {
-          // console.warn("Attempting to update setting", setting);
-          // fnSettings = settings;
-          // session.setTrackExpanded(trackId, settings.isExpanded);
-        },
-        () => this.session.getXRange(),
-        () => {
-          async function getAnnotTrackData(
-            getAnnotation: () => Promise<RenderBand[]>,
-          ): Promise<BandTrackData> {
-            const bands = await getAnnotation();
-            return {
-              bands,
-            };
-          }
-
-          const getAnnotationBands = () =>
-            this.dataSource.getAnnotationBands(
-              setting.trackId,
-              this.session.getChromosome(),
-            );
-
-          return getAnnotTrackData(getAnnotationBands);
-        },
-        () => {
-          console.warn("Attempting to open context menu");
-        },
-        () => {
-          console.warn("Attempting to open track context menu");
-        },
-        // openContextMenuId,
-        // openTrackContextMenu,
-        () => this.session.getMarkerModeOn(),
-      );
+      const rawTrack = this.getAnnotTrackNew(setting);
 
       // This is fine, but should be done once for all tracks
       const trackWrapper = makeTrackContainer(rawTrack, null);
@@ -719,6 +656,52 @@ export class TrackView extends ShadowBaseElement {
         }
       }
     });
+  }
+
+  getAnnotTrackNew(setting: DataTrackSettingsNew): BandTrack {
+    const rawTrack = new BandTrack(
+      setting.trackId,
+      setting.trackLabel,
+      setting.trackType,
+      () => {
+        // console.warn("Attempting to retrieve setting", setting);
+        return setting;
+      },
+      (settings) => {
+        // console.warn("Attempting to update setting", setting);
+        // fnSettings = settings;
+        // session.setTrackExpanded(trackId, settings.isExpanded);
+      },
+      () => this.session.getXRange(),
+      () => {
+        async function getAnnotTrackData(
+          getAnnotation: () => Promise<RenderBand[]>,
+        ): Promise<BandTrackData> {
+          const bands = await getAnnotation();
+          return {
+            bands,
+          };
+        }
+
+        const getAnnotationBands = () =>
+          this.dataSource.getAnnotationBands(
+            setting.trackId,
+            this.session.getChromosome(),
+          );
+
+        return getAnnotTrackData(getAnnotationBands);
+      },
+      () => {
+        console.warn("Attempting to open context menu");
+      },
+      () => {
+        console.warn("Attempting to open track context menu");
+      },
+      // openContextMenuId,
+      // openTrackContextMenu,
+      () => this.session.getMarkerModeOn(),
+    );
+    return rawTrack;
   }
 }
 
@@ -838,77 +821,49 @@ function createSampleTracks(
 }
 
 // FIXME: Generalize with the gene lists?
-function updateAnnotationTracks(
-  trackSettings: DataTrackSettingsNew[],
-  // currAnnotTracks: DataTrackWrapper[],
-  getAnnotationBands: (
-    sourceId: string,
-    chrom: string,
-  ) => Promise<RenderBand[]>,
-  getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>,
+function syncTrackSettings(
+  origSettings: DataTrackSettingsNew[],
   session: GensSession,
-  openTrackContextMenu: (track: DataTrack) => void,
-  addTrack: (track: DataTrack) => void,
-  removeTrack: (id: string) => void,
-) {
-  const sources = session.getAnnotationSources({
+): DataTrackSettingsNew[] {
+
+  const updateSettings = (sources) => {
+
+    const currTrackIds = new Set(origSettings.map((setting) => setting.trackId));
+    const sourceIds = new Set(sources.map((source) => source.id));
+    const newAnnotIds = setDiff(sourceIds, currTrackIds);
+    const removedSourceIds = setDiff(currTrackIds, sourceIds);
+    const newSources = sources.filter((source) => newAnnotIds.has(source.id));
+    const newSettings = [...origSettings];
+  
+    newSources.forEach((source) => {
+      const newSetting: DataTrackSettingsNew = {
+        trackId: source.id,
+        trackLabel: source.label,
+        trackType: "annotation",
+        height: { collapsedHeight: 40, expandedHeight: 80 },
+        showLabelWhenCollapsed: true,
+        yAxis: null,
+        isExpanded: false,
+        isHidden: false,
+      };
+  
+      newSettings.push(newSetting);
+    });
+  
+    removedSourceIds.forEach((id) => {
+      removeOne(newSettings, (setting) => setting.trackId == id);
+    });
+  }
+
+  const annotSources = session.getAnnotationSources({
+    selectedOnly: true,
+  });
+  const geneListSources = session.getGeneListSources({
     selectedOnly: true,
   });
 
-  console.log("Updating annotation tracks with sources", sources);
 
-  const currTrackIds = new Set(trackSettings.map((setting) => setting.trackId));
-  const sourceIds = new Set(sources.map((source) => source.id));
-
-  console.log("Curr IDs", currTrackIds);
-
-  const newAnnotIds = setDiff(sourceIds, currTrackIds);
-  const removedSourceIds = setDiff(currTrackIds, sourceIds);
-
-  const newSources = sources.filter((source) => newAnnotIds.has(source.id));
-
-  console.log("New sources", newAnnotIds);
-
-  // const removedSourceIds = trackSettings
-  //   .map((setting) => setting.trackId)
-  //   .filter((id) => !sourceIds.has(id));
-
-  newSources.forEach((source) => {
-    const newSetting: DataTrackSettingsNew = {
-      trackId: source.id,
-      trackLabel: source.label,
-      trackType: "annotation",
-      height: { collapsedHeight: 40, expandedHeight: 80 },
-      showLabelWhenCollapsed: true,
-      yAxis: null,
-      isExpanded: false,
-      isHidden: false,
-    };
-
-    trackSettings.push(newSetting);
-
-    // const newTrack = createAnnotTrack(
-    //   source.id,
-    //   source.label,
-    //   () => session.getXRange(),
-    //   () => getAnnotationBands(source.id, session.getChromosome()),
-    //   (bandId: string) => getAnnotationDetails(bandId),
-    //   session,
-    //   openTrackContextMenu,
-    //   {
-    //     height: session.getTrackHeights().bandCollapsed,
-    //     showLabelWhenCollapsed: hasLabel,
-    //     startExpanded: session.getTrackExpanded(source.id, true),
-    //   },
-    // );
-    // addTrack(newTrack);
-  });
-
-  console.log("Now track settings is", trackSettings);
-
-  removedSourceIds.forEach((id) => {
-    removeTrack(id);
-  });
+  return newSettings;
 }
 
 function updateGeneListTracks(
