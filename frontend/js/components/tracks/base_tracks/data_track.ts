@@ -28,7 +28,7 @@ export interface ExpandedTrackHeight {
 export interface DataTrackSettingsNew {
   trackId: string;
   trackLabel: string;
-  sampleId?: string;
+  sample?: Sample;
   trackType: TrackType;
   height: ExpandedTrackHeight;
   showLabelWhenCollapsed: boolean;

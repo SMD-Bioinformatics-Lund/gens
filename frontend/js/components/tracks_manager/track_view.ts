@@ -466,49 +466,42 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public addSample(sample: Sample, isTrackViewTrack: boolean) {
-    const sampleTracks = createSampleTracks(
-      sample,
-      this.dataSource,
-      false,
-      this.session,
-      isTrackViewTrack,
-      this.openTrackContextMenu,
-    );
-
-    // this.setupSampleAnnotationTracks(sample);
-
-    this.dataTracks.push(
-      sampleTracks.cov,
-      sampleTracks.baf,
-      sampleTracks.variant,
-    );
-
-    this.tracksContainer.appendChild(sampleTracks.cov.container);
-    this.tracksContainer.appendChild(sampleTracks.baf.container);
-    this.tracksContainer.appendChild(sampleTracks.variant.container);
-
-    sampleTracks.cov.track.initialize();
-    sampleTracks.baf.track.initialize();
-    sampleTracks.variant.track.initialize();
+    // const sampleTracks = createSampleTracks(
+    //   sample,
+    //   this.dataSource,
+    //   false,
+    //   this.session,
+    //   isTrackViewTrack,
+    //   this.openTrackContextMenu,
+    // );
+    // // this.setupSampleAnnotationTracks(sample);
+    // this.dataTracks.push(
+    //   sampleTracks.cov,
+    //   sampleTracks.baf,
+    //   sampleTracks.variant,
+    // );
+    // this.tracksContainer.appendChild(sampleTracks.cov.container);
+    // this.tracksContainer.appendChild(sampleTracks.baf.container);
+    // this.tracksContainer.appendChild(sampleTracks.variant.container);
+    // sampleTracks.cov.track.initialize();
+    // sampleTracks.baf.track.initialize();
+    // sampleTracks.variant.track.initialize();
   }
 
   public removeSample(sample: Sample) {
-    const trackMatches = (trackInfo: DataTrackWrapper) =>
-      trackInfo.sample != null &&
-      trackInfo.sample.sampleId === sample.sampleId &&
-      trackInfo.sample.caseId === sample.caseId;
-
-    const removeInfos = this.dataTracks.filter((track: DataTrackWrapper) =>
-      trackMatches(track),
-    );
-
-    this.dataTracks = this.dataTracks.filter(
-      (track: DataTrackWrapper) => !trackMatches(track),
-    );
-
-    for (const removeInfo of removeInfos) {
-      this.tracksContainer.removeChild(removeInfo.container);
-    }
+    // const trackMatches = (trackInfo: DataTrackWrapper) =>
+    //   trackInfo.sample != null &&
+    //   trackInfo.sample.sampleId === sample.sampleId &&
+    //   trackInfo.sample.caseId === sample.caseId;
+    // const removeInfos = this.dataTracks.filter((track: DataTrackWrapper) =>
+    //   trackMatches(track),
+    // );
+    // this.dataTracks = this.dataTracks.filter(
+    //   (track: DataTrackWrapper) => !trackMatches(track),
+    // );
+    // for (const removeInfo of removeInfos) {
+    //   this.tracksContainer.removeChild(removeInfo.container);
+    // }
   }
 
   public showTrack(trackId: string) {
@@ -621,6 +614,31 @@ export class TrackView extends ShadowBaseElement {
             this.session.getChromosome(),
           );
         rawTrack = this.getBandTrack(setting, getSampleAnnotBands);
+      } else if (setting.trackType == "variant") {
+        // FIXME: Generalize the rank score threshold. Where did it come from before?
+        const getSampleAnnotBands = () =>
+          this.dataSource.getVariantBands(
+            setting.sample,
+            this.session.getChromosome(),
+            4,
+          );
+        rawTrack = this.getBandTrack(setting, getSampleAnnotBands);
+      } else if (setting.trackType == "dot-cov") {
+        const getSampleCovDots = () =>
+          this.dataSource.getCovData(
+            setting.sample,
+            this.session.getChromosome(),
+            this.session.getXRange(),
+          );
+        rawTrack = this.getDotTrack(setting, getSampleCovDots);
+      } else if (setting.trackType == "dot-baf") {
+        const getSampleBafDots = () =>
+          this.dataSource.getBafData(
+            setting.sample,
+            this.session.getChromosome(),
+            this.session.getXRange(),
+          );
+        rawTrack = this.getDotTrack(setting, getSampleBafDots);
       } else {
         throw Error(`Not yet supported track type ${setting.trackType}`);
       }
@@ -638,6 +656,32 @@ export class TrackView extends ShadowBaseElement {
     }
   }
 
+  getDotTrack(
+    setting: DataTrackSettingsNew,
+    getDots: () => Promise<RenderDot[]>,
+  ): DotTrack {
+    const dotTrack = new DotTrack(
+      setting.trackId,
+      setting.trackLabel,
+      setting.trackType,
+      () => {
+        return setting;
+      },
+      (settings) => {},
+      () => this.session.getXRange(),
+      () => {
+        return getDots().then((dots) => {
+          return {
+            dots,
+          };
+        });
+      },
+      () => {},
+      () => false,
+    );
+    return dotTrack;
+  }
+
   getBandTrack(
     setting: DataTrackSettingsNew,
     getRenderBands: () => Promise<RenderBand[]>,
@@ -650,7 +694,7 @@ export class TrackView extends ShadowBaseElement {
         // console.warn("Attempting to retrieve setting", setting);
         return setting;
       },
-      (settings) => {
+      (_settings) => {
         // console.warn("Attempting to update setting", setting);
         // fnSettings = settings;
         // session.setTrackExpanded(trackId, settings.isExpanded);
@@ -694,7 +738,6 @@ function getDataTrackInfoById(
   }
   console.error("Did not find any track with ID", trackId);
 }
-
 
 const getSettingsDiffs = (
   sources: SelectData[],
@@ -779,7 +822,7 @@ async function syncDataTrackSettings(
       yAxis: null,
       isExpanded: false,
       isHidden: false,
-    }
+    };
 
     const baf: DataTrackSettingsNew = {
       trackId: `${sample.sampleId}_baf`,
@@ -790,7 +833,7 @@ async function syncDataTrackSettings(
       yAxis: null,
       isExpanded: false,
       isHidden: false,
-    }
+    };
 
     const variants: DataTrackSettingsNew = {
       trackId: `${sample.sampleId}_variants`,
@@ -801,7 +844,7 @@ async function syncDataTrackSettings(
       yAxis: null,
       isExpanded: false,
       isHidden: false,
-    }
+    };
 
     const sampleAnnots = [];
     for (const source of sampleSources) {
@@ -836,6 +879,5 @@ async function syncDataTrackSettings(
 
   return { settings: returnSettings, samples };
 }
-
 
 customElements.define("track-view", TrackView);
