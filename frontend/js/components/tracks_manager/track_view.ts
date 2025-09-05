@@ -593,6 +593,7 @@ export class TrackView extends ShadowBaseElement {
         (setting) => setting.trackId == settingId,
       )[0];
       let rawTrack;
+      console.log("Hitting setting with type", setting.trackType);
       if (setting.trackType == "annotation") {
         const getAnnotationBands = () =>
           this.dataSource.getAnnotationBands(
@@ -817,9 +818,15 @@ async function syncDataTrackSettings(
       trackId: `${sample.sampleId}_log2_cov`,
       trackLabel: `${sample.sampleId} cov`,
       trackType: "dot-cov",
+      sample,
       height: { collapsedHeight: 20, expandedHeight: 40 },
       showLabelWhenCollapsed: true,
-      yAxis: null,
+      yAxis: {
+        range: [-2, 2],
+        label: "Cov",
+        hideLabelOnCollapse: false,
+        hideTicksOnCollapse: false,
+      },
       isExpanded: false,
       isHidden: false,
     };
@@ -828,9 +835,15 @@ async function syncDataTrackSettings(
       trackId: `${sample.sampleId}_baf`,
       trackLabel: `${sample.sampleId} baf`,
       trackType: "dot-baf",
+      sample,
       height: { collapsedHeight: 20, expandedHeight: 40 },
       showLabelWhenCollapsed: true,
-      yAxis: null,
+      yAxis: {
+        range: [-2, 2],
+        label: "Cov",
+        hideLabelOnCollapse: false,
+        hideTicksOnCollapse: false,
+      },
       isExpanded: false,
       isHidden: false,
     };
@@ -839,6 +852,7 @@ async function syncDataTrackSettings(
       trackId: `${sample.sampleId}_variants`,
       trackLabel: `${sample.sampleId} Variants`,
       trackType: "variant",
+      sample,
       height: { collapsedHeight: 20, expandedHeight: 40 },
       showLabelWhenCollapsed: true,
       yAxis: null,
@@ -852,6 +866,7 @@ async function syncDataTrackSettings(
         trackId: source.id,
         trackLabel: source.name,
         trackType: "sample-annotation",
+        sample,
         height: { collapsedHeight: 20 },
         showLabelWhenCollapsed: true,
         yAxis: null,
