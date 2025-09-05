@@ -88,8 +88,6 @@ def get_transcripts(
             }
         )
         transcripts.append(tr)
-        if len(transcripts) % 1000 == 0:
-            print(f">>> Iterating at {len(transcripts)} transcripts")
     return transcripts
 
 
