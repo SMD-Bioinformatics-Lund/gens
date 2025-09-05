@@ -42,7 +42,6 @@ export function saveTrackLayout(
   const expanded: Record<string, boolean> = {};
   for (const info of dataTracks) {
     const pid = getPortableId(info);
-    if (!pid) continue;
     order.push(pid);
     hidden[pid] = info.track.getIsHidden();
     expanded[pid] = info.track.getIsExpanded();

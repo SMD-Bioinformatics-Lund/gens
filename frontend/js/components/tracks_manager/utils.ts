@@ -217,6 +217,7 @@ export function createGeneTrack(
     (settings) => {
       fnSettings = settings
       session.setTrackExpanded(id, settings.isExpanded);
+      session.saveTrackLayout();
     },
     () => session.getXRange(),
     async () => {
