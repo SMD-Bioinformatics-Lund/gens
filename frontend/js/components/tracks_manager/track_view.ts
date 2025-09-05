@@ -29,7 +29,7 @@ import { BandTrack } from "../tracks/band_track";
 import { TrackHeights } from "../side_menu/settings_menu";
 import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
-import { removeOne, setDiff } from "../../util/utils";
+import { getDifferences, removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
 
@@ -557,64 +557,14 @@ export class TrackView extends ShadowBaseElement {
       (id) => this.session.removeHighlight(id),
     );
 
-    const updatedTrackSettings = syncTrackSettings(
+    this.dataTrackSettings = syncTrackSettings(
       this.dataTrackSettings,
       this.session,
     );
 
     console.log("Track settings after annot update", this.dataTrackSettings);
 
-    // FIXME: Generate some tracks now
-
-    const currIds = new Set(
-      this.dataTrackSettings.map((setting) => setting.trackId),
-    );
-    const trackIds = new Set(this.dataTracks.map((track) => track.track.id));
-    const addedIds = setDiff(currIds, trackIds);
-    const removedIds = setDiff(trackIds, currIds);
-
-    for (const settingId of addedIds) {
-      const setting = this.dataTrackSettings.filter(
-        (setting) => setting.trackId == settingId,
-      )[0];
-      const rawTrack = this.getAnnotTrackNew(setting);
-
-      // This is fine, but should be done once for all tracks
-      const trackWrapper = makeTrackContainer(rawTrack, null);
-      this.dataTracks.push(trackWrapper);
-      this.tracksContainer.appendChild(trackWrapper.container);
-      rawTrack.initialize();
-      rawTrack.render({});
-    }
-
-    console.log("Removing:", removedIds);
-    for (const id of removedIds) {
-      const match = removeOne(this.dataTracks, (info) => info.track.id === id);
-      this.tracksContainer.removeChild(match.container);
-    }
-
-    // updateGeneListTracks(
-    //   this.dataTracks.filter(
-    //     (info) => info.track.trackType == GENE_LIST_TRACK_TYPE,
-    //   ),
-    //   (sourceId: string, chrom: string) =>
-    //     this.dataSource.getGeneListBands(sourceId, chrom),
-    //   (bandId: string) => this.dataSource.getTranscriptDetails(bandId),
-    //   this.session,
-    //   this.openTrackContextMenu,
-    //   (trackInfo: DataTrackWrapper) => {
-    //     this.dataTracks.push(trackInfo);
-    //     this.tracksContainer.appendChild(trackInfo.container);
-    //     trackInfo.track.initialize();
-    //   },
-    //   (id: string) => {
-    //     const match = removeOne(
-    //       this.dataTracks,
-    //       (info) => info.track.id === id,
-    //     );
-    //     this.tracksContainer.removeChild(match.container);
-    //   },
-    // );
+    this.renderTracks();
 
     // FIXME: Only the active one needs to be rendered isn't it?
     Object.values(this.trackPages).forEach((trackPage) =>
@@ -658,7 +608,54 @@ export class TrackView extends ShadowBaseElement {
     });
   }
 
-  getAnnotTrackNew(setting: DataTrackSettingsNew): BandTrack {
+  renderTracks() {
+    const currIds = new Set(
+      this.dataTrackSettings.map((setting) => setting.trackId),
+    );
+    const trackIds = new Set(this.dataTracks.map((track) => track.track.id));
+    const addedIds = setDiff(currIds, trackIds);
+    const removedIds = setDiff(trackIds, currIds);
+
+    for (const settingId of addedIds) {
+      const setting = this.dataTrackSettings.filter(
+        (setting) => setting.trackId == settingId,
+      )[0];
+      let rawTrack;
+      if (setting.trackType == "annotation") {
+        const getAnnotationBands = () =>
+          this.dataSource.getAnnotationBands(
+            setting.trackId,
+            this.session.getChromosome(),
+          );
+        rawTrack = this.getBandTrack(setting, getAnnotationBands);
+      } else if (setting.trackType == "gene-list") {
+        const getGeneListBands = () =>
+          this.dataSource.getGeneListBands(
+            setting.trackId,
+            this.session.getChromosome(),
+          );
+        rawTrack = this.getBandTrack(setting, getGeneListBands);
+      } else {
+        throw Error(`Not yet supported track type ${setting.trackType}`);
+      }
+
+      const trackWrapper = makeTrackContainer(rawTrack, null);
+      this.dataTracks.push(trackWrapper);
+      this.tracksContainer.appendChild(trackWrapper.container);
+      rawTrack.initialize();
+      rawTrack.render({});
+    }
+
+    for (const id of removedIds) {
+      const match = removeOne(this.dataTracks, (info) => info.track.id === id);
+      this.tracksContainer.removeChild(match.container);
+    }
+  }
+
+  getBandTrack(
+    setting: DataTrackSettingsNew,
+    getAnnotationBands: () => Promise<RenderBand[]>,
+  ): BandTrack {
     const rawTrack = new BandTrack(
       setting.trackId,
       setting.trackLabel,
@@ -682,12 +679,6 @@ export class TrackView extends ShadowBaseElement {
             bands,
           };
         }
-
-        const getAnnotationBands = () =>
-          this.dataSource.getAnnotationBands(
-            setting.trackId,
-            this.session.getChromosome(),
-          );
 
         return getAnnotTrackData(getAnnotationBands);
       },
@@ -826,34 +817,39 @@ function syncTrackSettings(
   session: GensSession,
 ): DataTrackSettingsNew[] {
 
-  const updateSettings = (sources) => {
+  const updateSettings = (
+    sources: SelectData[],
+    startSettings: DataTrackSettingsNew[],
+    trackType: TrackType,
+  ): { newSettings: DataTrackSettingsNew[]; removedIds: string[] } => {
+    // FIXME: Ponder here a bit more
+    const { onlyAIds: removedIds, onlyB: newSources } = getDifferences(
+      startSettings,
+      sources,
+      (setting) => setting.trackId,
+      (source) => source.id,
+    );
 
-    const currTrackIds = new Set(origSettings.map((setting) => setting.trackId));
-    const sourceIds = new Set(sources.map((source) => source.id));
-    const newAnnotIds = setDiff(sourceIds, currTrackIds);
-    const removedSourceIds = setDiff(currTrackIds, sourceIds);
-    const newSources = sources.filter((source) => newAnnotIds.has(source.id));
-    const newSettings = [...origSettings];
-  
-    newSources.forEach((source) => {
+    const newSettings = newSources.map((source) => {
       const newSetting: DataTrackSettingsNew = {
         trackId: source.id,
         trackLabel: source.label,
-        trackType: "annotation",
-        height: { collapsedHeight: 40, expandedHeight: 80 },
+        trackType,
+        height: { collapsedHeight: 20 },
         showLabelWhenCollapsed: true,
         yAxis: null,
         isExpanded: false,
         isHidden: false,
       };
-  
-      newSettings.push(newSetting);
+      return newSetting;
+      // returnSettings.push(newSetting);
     });
-  
-    removedSourceIds.forEach((id) => {
-      removeOne(newSettings, (setting) => setting.trackId == id);
-    });
-  }
+
+    return {
+      newSettings,
+      removedIds: [...removedIds],
+    };
+  };
 
   const annotSources = session.getAnnotationSources({
     selectedOnly: true,
@@ -862,8 +858,22 @@ function syncTrackSettings(
     selectedOnly: true,
   });
 
+  // FIXME: Could probably return the new settings and removed IDs?
+  // And do the calculations just once
+  const annotUpdates = updateSettings(annotSources, origSettings, "annotation");
+  const geneListUpdates = updateSettings(geneListSources, origSettings, "gene-list");
 
-  return newSettings;
+  const returnSettings = [...origSettings];
+  const removeIds = [...annotUpdates.removedIds, ...geneListUpdates.removedIds];
+  console.log("All IDs to remove", removeIds);
+  for (const removeId of removeIds) {
+    removeOne(returnSettings, (setting) => setting.trackId == removeId);
+  }
+
+  returnSettings.push(...annotUpdates.newSettings);
+  returnSettings.push(...geneListUpdates.newSettings);
+
+  return returnSettings;
 }
 
 function updateGeneListTracks(

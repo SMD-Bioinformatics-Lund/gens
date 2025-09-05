@@ -152,7 +152,7 @@ export function padRange(range: Rng, pad: number): Rng {
 export function clampRange(range: Rng, min: number, max: number): Rng {
   const clampedMin = Math.max(range[0], min);
   const clampedMax = Math.min(range[1], max);
-  return [clampedMin, clampedMax]
+  return [clampedMin, clampedMax];
 }
 
 export function removeChildren(container: HTMLElement) {
@@ -339,7 +339,7 @@ export function removeOne<T>(arr: T[], matchFn: (arg: T) => boolean): T {
 
   if (count !== 1) {
     throw new Error(
-      `${count} matches found. This function expects strictly one.`,
+      `${count} matches found for ${arr}. This function expects strictly one.`,
     );
   }
 
@@ -362,11 +362,43 @@ export function getMainSample(samples: Sample[]): Sample {
 }
 
 export function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
-  const diff = new Set<T>()
+  const diff = new Set<T>();
   for (const val of set1) {
     if (!set2.has(val)) {
       diff.add(val);
     }
   }
   return diff;
+}
+
+/**
+ * Match different data types having shared IDs (i.e. tracks, track settings)
+ * Return those unique in each collection
+ */
+export function getDifferences<A, B>(
+  arrA: A[],
+  arrB: B[],
+  getAId: (a: A) => string,
+  getBId: (b: B) => string,
+): {
+  onlyA: A[],
+  onlyB: B[],
+  onlyAIds: Set<string>,
+  onlyBIds: Set<string>,
+} {
+  const aIds = new Set(arrA.map((a) => getAId(a)));
+  const bIds = new Set(arrB.map((b) => getBId(b)));
+
+  const onlyAIds = setDiff(aIds, bIds);
+  const onlyBIds = setDiff(bIds, aIds);
+
+  const onlyA = arrA.filter((a) => getAId(a));
+  const onlyB = arrB.filter((b) => getBId(b));
+
+  return {
+    onlyAIds,
+    onlyBIds,
+    onlyA,
+    onlyB,
+  }
 }

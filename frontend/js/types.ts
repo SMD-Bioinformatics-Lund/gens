@@ -658,3 +658,8 @@ type IDBTranscripts = {
   transcripts: ApiSimplifiedTranscript[],
   serverTimestamp: string,
 }
+
+interface SelectData {
+  id: string;
+  label: string;
+}
