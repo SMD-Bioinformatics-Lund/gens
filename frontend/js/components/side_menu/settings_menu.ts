@@ -397,20 +397,19 @@ export class SettingsMenu extends ShadowBaseElement {
 
     removeChildren(this.tracksOverview);
     const tracks = this.getDataTracks();
-    // FIXME: Could part of this simply be part of the template?
     const tracksSection = getTracksSection(
       tracks,
       (track: DataTrack, direction: "up" | "down") => {
         this.onTrackMove(track.id, direction);
-        this.onChange({});
+        this.onChange({layout: true});
       },
       (track: DataTrack) => {
         track.toggleHidden();
-        this.onChange({});
+        this.onChange({layout: true});
       },
       (track: DataTrack) => {
         track.toggleExpanded();
-        this.onChange({});
+        this.onChange({layout: true});
       },
     );
     this.tracksOverview.appendChild(tracksSection);

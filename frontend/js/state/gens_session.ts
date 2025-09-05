@@ -18,6 +18,9 @@ import {
   saveTrackHeights,
   loadGeneListSelections,
   saveGeneListSelections,
+  loadTrackLayout,
+  saveTrackLayout,
+  TrackLayout,
 } from "../util/storage";
 import { generateID } from "../util/utils";
 
@@ -57,6 +60,7 @@ export class GensSession {
   private coverageRange: [number, number] = COV_Y_RANGE;
   private variantThreshold: number;
   private expandedTracks: Record<string, boolean> = {};
+  private layoutProfileKey: string;
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -94,6 +98,7 @@ export class GensSession {
     this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
     this.variantThreshold = variantThreshold;
     this.expandedTracks = loadExpandedTracks() || {};
+    this.layoutProfileKey = this.computeProfileKey();
   }
 
   public getMainSample(): Sample {
@@ -200,6 +205,7 @@ export class GensSession {
   public removeSample(sample: Sample): void {
     const pos = this.samples.indexOf(sample);
     this.samples.splice(pos, 1);
+    this.layoutProfileKey = this.computeProfileKey();
   }
 
   public setViewRange(range: Rng): void {
@@ -342,5 +348,25 @@ export class GensSession {
   public removeHighlight(id: string) {
     delete this.highlights[id];
     this.render({});
+  }
+
+  private computeProfileKey(): string {
+    const types = this.samples
+      .map((s) => (s.sampleType ? s.sampleType : "unknown"))
+      .sort();
+    const signature = types.join("+");
+    return `v1.${this.genomeBuild}.${signature}`;
+  }
+
+  public getLayoutProfileKey(): string {
+    return this.layoutProfileKey;
+  }
+
+  public loadTrackLayout(): TrackLayout | null {
+    return loadTrackLayout(this.layoutProfileKey);
+  }
+
+  public saveTrackLayout(layout: TrackLayout): void {
+    saveTrackLayout(this.layoutProfileKey, layout);
   }
 }

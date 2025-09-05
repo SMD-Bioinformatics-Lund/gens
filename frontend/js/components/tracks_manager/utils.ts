@@ -11,7 +11,7 @@ import {
   getVariantContextMenuContent,
 } from "../util/menu_content_utils";
 import { getSimpleButton } from "../util/menu_utils";
-import { TrackViewTrackInfo } from "./track_view";
+import { DataTrackWrapper } from "./track_view";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -182,7 +182,7 @@ export function createVariantTrack(
 export function makeTrackContainer(
   track: DataTrack,
   sample: Sample | null,
-): TrackViewTrackInfo {
+): DataTrackWrapper {
   const wrapper = createDataTrackWrapper(track);
   return {
     track,
@@ -199,7 +199,7 @@ export function createGeneTrack(
   getDetails: (id: string) => Promise<ApiGeneDetails>,
   session: GensSession,
   openTrackContextMenu: ((track: DataTrack) => void) | null,
-): TrackViewTrackInfo {
+): DataTrackWrapper {
   let fnSettings: DataTrackSettings = {
     height: {
       collapsedHeight: session.getTrackHeights().bandCollapsed,

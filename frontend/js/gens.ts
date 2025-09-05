@@ -226,6 +226,9 @@ export async function initCanvases({
       gensTracks.setCovYRange(rng);
       render({dataUpdated: true});
     },
+    () => {
+      gensTracks.trackView.saveTrackLayout();
+    },
   );
 
   infoPage.setSources(() => session.getSamples());

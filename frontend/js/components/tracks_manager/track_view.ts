@@ -30,8 +30,8 @@ import { PositionTrack } from "../tracks/position_track";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
-const GENE_LIST_TRACK_TYPE = "gene-list"
-const GENE_TRACK_TYPE = "gene"
+const GENE_LIST_TRACK_TYPE = "gene-list";
+const GENE_TRACK_TYPE = "gene";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -73,7 +73,7 @@ template.innerHTML = String.raw`
   <div id="bottom-container"></div>
 `;
 
-export interface TrackViewTrackInfo {
+export interface DataTrackWrapper {
   track: DataTrack;
   container: HTMLDivElement;
   sample: Sample | null;
@@ -88,7 +88,7 @@ export class TrackView extends ShadowBaseElement {
   private session: GensSession;
   private dataSource: RenderDataSource;
 
-  private dataTracks: TrackViewTrackInfo[] = [];
+  private dataTracks: DataTrackWrapper[] = [];
   private ideogramTrack: IdeogramTrack;
   private positionTrack: PositionTrack;
   private overviewTracks: OverviewTrack[] = [];
@@ -99,9 +99,9 @@ export class TrackView extends ShadowBaseElement {
   private sampleToTracks: Record<
     string,
     {
-      cov: TrackViewTrackInfo;
-      baf: TrackViewTrackInfo;
-      variant: TrackViewTrackInfo;
+      cov: DataTrackWrapper;
+      baf: DataTrackWrapper;
+      variant: DataTrackWrapper;
     }
   > = {};
 
@@ -157,10 +157,10 @@ export class TrackView extends ShadowBaseElement {
       render({ dataUpdated: true, positionOnly: true });
     });
 
-    const covTracks: TrackViewTrackInfo[] = [];
-    const bafTracks: TrackViewTrackInfo[] = [];
-    const variantTracks: TrackViewTrackInfo[] = [];
-    const sampleAnnotTracks: TrackViewTrackInfo[] = [];
+    const covTracks: DataTrackWrapper[] = [];
+    const bafTracks: DataTrackWrapper[] = [];
+    const variantTracks: DataTrackWrapper[] = [];
+    const sampleAnnotTracks: DataTrackWrapper[] = [];
 
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -245,7 +245,7 @@ export class TrackView extends ShadowBaseElement {
       openTrackContextMenu,
     );
 
-    const tracks: TrackViewTrackInfo[] = [
+    const tracks: DataTrackWrapper[] = [
       ...bafTracks,
       ...covTracks,
       ...variantTracks,
@@ -285,13 +285,14 @@ export class TrackView extends ShadowBaseElement {
     this.positionTrack.initialize();
     this.positionTrack.renderLoading();
 
-    tracks.forEach(({ track, container }) => {
+    const orderedTracks = loadTrackLayout(tracks);
+    orderedTracks.forEach(({ track, container }) => {
       this.tracksContainer.appendChild(container);
       track.initialize();
       track.renderLoading();
     });
 
-    this.dataTracks = tracks;
+    this.dataTracks = orderedTracks;
 
     this.overviewTracks.forEach((track) => {
       this.bottomContainer.appendChild(track);
@@ -362,10 +363,12 @@ export class TrackView extends ShadowBaseElement {
         (direction: "up" | "down") => this.moveTrack(track.id, direction),
         () => {
           track.toggleHidden();
+          saveTrackLayout(this.dataTracks);
           render({});
         },
         () => {
           track.toggleExpanded();
+          saveTrackLayout(this.dataTracks);
           render({});
         },
         () => track.getIsHidden(),
@@ -471,17 +474,17 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public removeSample(sample: Sample) {
-    const trackMatches = (trackInfo: TrackViewTrackInfo) =>
+    const trackMatches = (trackInfo: DataTrackWrapper) =>
       trackInfo.sample != null &&
       trackInfo.sample.sampleId === sample.sampleId &&
       trackInfo.sample.caseId === sample.caseId;
 
-    const removeInfos = this.dataTracks.filter((track: TrackViewTrackInfo) =>
+    const removeInfos = this.dataTracks.filter((track: DataTrackWrapper) =>
       trackMatches(track),
     );
 
     this.dataTracks = this.dataTracks.filter(
-      (track: TrackViewTrackInfo) => !trackMatches(track),
+      (track: DataTrackWrapper) => !trackMatches(track),
     );
 
     for (const removeInfo of removeInfos) {
@@ -568,7 +571,7 @@ export class TrackView extends ShadowBaseElement {
       (bandId: string) => this.dataSource.getTranscriptDetails(bandId),
       this.session,
       this.openTrackContextMenu,
-      (trackInfo: TrackViewTrackInfo) => {
+      (trackInfo: DataTrackWrapper) => {
         this.dataTracks.push(trackInfo);
         this.tracksContainer.appendChild(trackInfo.container);
         trackInfo.track.initialize();
@@ -611,14 +614,24 @@ export class TrackView extends ShadowBaseElement {
         track.initialize();
         track.render({});
       }
+
+      // Re-apply saved layout now that these tracks exist
+      const ordered = loadTrackLayout(this.dataTracks);
+      if (ordered !== this.dataTracks) {
+        this.dataTracks = ordered;
+        // Reorder DOM according to the new order
+        for (const info of this.dataTracks) {
+          this.tracksContainer.appendChild(info.container);
+        }
+      }
     });
   }
 }
 
 function getDataTrackInfoById(
-  tracks: TrackViewTrackInfo[],
+  tracks: DataTrackWrapper[],
   trackId: string,
-): TrackViewTrackInfo {
+): DataTrackWrapper {
   for (let i = 0; i < tracks.length; i++) {
     if (tracks[i].track.id == trackId) {
       const track = tracks[i];
@@ -636,9 +649,9 @@ function createSampleTracks(
   isTrackViewTrack: boolean,
   openTrackContextMenu: (track: DataTrack) => void,
 ): {
-  cov: TrackViewTrackInfo;
-  baf: TrackViewTrackInfo;
-  variant: TrackViewTrackInfo;
+  cov: DataTrackWrapper;
+  baf: DataTrackWrapper;
+  variant: DataTrackWrapper;
 } {
   const coverageTrack = createDotTrack(
     `${sample.sampleId}_log2_cov`,
@@ -731,7 +744,7 @@ function createSampleTracks(
 }
 
 function updateAnnotationTracks(
-  currAnnotTracks: TrackViewTrackInfo[],
+  currAnnotTracks: DataTrackWrapper[],
   getAnnotationBands: (
     sourceId: string,
     chrom: string,
@@ -781,12 +794,12 @@ function updateAnnotationTracks(
 }
 
 function updateGeneListTracks(
-  currGeneTracks: TrackViewTrackInfo[],
+  currGeneTracks: DataTrackWrapper[],
   getGeneListBands: (sourceId: string, chrom: string) => Promise<RenderBand[]>,
   getTranscriptDetails: (id: string) => Promise<ApiGeneDetails>,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
-  addTrack: (track: TrackViewTrackInfo) => void,
+  addTrack: (track: DataTrackWrapper) => void,
   removeTrack: (id: string) => void,
 ) {
   const sources = session.getGeneListSources({ selectedOnly: true });
@@ -856,6 +869,90 @@ async function getSampleAnnotationTracks(
   }
 
   return sampleAnnotTracks;
+}
+
+// FIXME: First get things working
+// Then before PR move this to suitable location
+function getPortableId(info: DataTrackWrapper): string {
+  const track = info.track;
+  const trackId = track.id;
+  if (info.sample != null) {
+    const sampleType = info.sample.sampleType || "unknown";
+    if (trackId.endsWith("_log2_cov")) {
+      return `${sampleType}|log2_cov`;
+    }
+    if (trackId.endsWith("_log2_baf")) {
+      return `${sampleType}|log2_baf`;
+    }
+    if (trackId.endsWith("_variants")) {
+      return `${sampleType}|variants`;
+    }
+    // Sample-annotation tracks (per-sample band tracks)
+    // Use label to get a portable identity across cases
+    return `sample-annot|${sampleType}|${info.track.label}`;
+  }
+  if (trackId.startsWith("gene-list_")) {
+    return `gene-list|${trackId.substring("gene-list_".length)}`;
+  }
+  if (trackId === "genes") {
+    return "genes";
+  }
+  return `annot|${trackId}`;
+}
+
+function saveTrackLayout(dataTracks: DataTrackWrapper[]) {
+  const order: string[] = [];
+  const hidden: Record<string, boolean> = {};
+  const expanded: Record<string, boolean> = {};
+  for (const info of dataTracks) {
+    const pid = this.getPortableId(info);
+    if (!pid) continue;
+    order.push(pid);
+    hidden[pid] = info.track.getIsHidden();
+    expanded[pid] = info.track.getIsExpanded();
+  }
+  this.session.saveTrackLayout({ order, hidden, expanded });
+}
+
+function loadTrackLayout(tracks: DataTrackWrapper[]): DataTrackWrapper[] {
+  const layout = this.session.loadTrackLayout();
+  if (!layout) return tracks;
+  const byPid: Record<string, DataTrackWrapper> = {};
+  for (const info of tracks) {
+    const pid = this.getPortableId(info);
+    if (pid) byPid[pid] = info;
+  }
+  const picked = new Set<string>();
+  const reordered: DataTrackWrapper[] = [];
+  for (const pid of layout.order) {
+    const info = byPid[pid];
+    if (info) {
+      reordered.push(info);
+      picked.add(info.track.id);
+    }
+  }
+  for (const info of tracks) {
+    if (!picked.has(info.track.id)) reordered.push(info);
+  }
+  for (const info of reordered) {
+    const pid = this.getPortableId(info);
+    if (!pid) continue;
+    const desiredHidden = layout.hidden[pid];
+    if (
+      typeof desiredHidden === "boolean" &&
+      info.track.getIsHidden() !== desiredHidden
+    ) {
+      info.track.toggleHidden();
+    }
+    const desiredExpanded = layout.expanded[pid];
+    if (
+      typeof desiredExpanded === "boolean" &&
+      info.track.getIsExpanded() !== desiredExpanded
+    ) {
+      info.track.toggleExpanded();
+    }
+  }
+  return reordered;
 }
 
 customElements.define("track-view", TrackView);

@@ -9,13 +9,21 @@ export const COLOR_ANNOTATIONS_KEY = "gens.colorAnnotation";
 export const TRACK_HEIGHTS_KEY = "gens.trackHeights";
 export const COVERAGE_RANGE_KEY = "gens.coverageRange";
 export const EXPANDED_TRACKS_KEY = "gens.expandedTracks";
+export const TRACK_LAYOUT_PREFIX = "gens.trackLayout.";
 
 type StorageValue =
   | string
   | string[]
   | TrackHeights
   | Rng
-  | Record<string, boolean>;
+  | Record<string, boolean>
+  | TrackLayout;
+
+export type TrackLayout = {
+  order: string[];
+  hidden: Record<string, boolean>;
+  expanded: Record<string, boolean>;
+};
 
 export function saveAnnotationSelections(ids: string[]): void {
   saveToBrowserSession(ids, ANNOT_SELECTIONS_KEY);
@@ -67,6 +75,16 @@ export function loadExpandedTracks(): Record<string, boolean> {
     boolean
   >;
   return tracks;
+}
+
+export function saveTrackLayout(profileKey: string, layout: TrackLayout): void {
+  saveToBrowserSession(layout, `${TRACK_LAYOUT_PREFIX}${profileKey}`);
+}
+
+export function loadTrackLayout(profileKey: string): TrackLayout | null {
+  return loadFromBrowserSession(`${TRACK_LAYOUT_PREFIX}${profileKey}`) as
+    | TrackLayout
+    | null;
 }
 
 function saveToBrowserSession(value: StorageValue, key: string): void {

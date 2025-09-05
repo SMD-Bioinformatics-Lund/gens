@@ -619,6 +619,7 @@ interface RenderSettings {
   resized?: boolean;
   positionOnly?: boolean;
   samplesUpdated?: boolean;
+  layout?: boolean;
 }
 
 interface RangeHighlight {
