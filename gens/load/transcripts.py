@@ -37,7 +37,6 @@ class TranscriptEntry(TypedDict):
     start: int
     end: int
     strand: str
-    height_order: Optional[int]
     transcript_id: str
     transcript_biotype: str
     mane: Optional[str]
@@ -145,7 +144,6 @@ def make_transcript_entry(
             "start": transc.start,
             "end": transc.end,
             "strand": transc.strand,
-            "height_order": None,  # will be set later
             "transcript_id": transcript_id,
             "transcript_biotype": transc.attribs["transcript_biotype"],
             "mane": selected_mane.get("mane_status"),

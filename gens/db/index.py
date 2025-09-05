@@ -36,11 +36,6 @@ INDEXES = {
             background=True,
         ),
         IndexModel(
-            [("height_order", ASCENDING)],
-            name="height_order",
-            background=True,
-        ),
-        IndexModel(
             [("genome_build", ASCENDING)],
             name="genome_build",
             background=True,
@@ -55,11 +50,6 @@ INDEXES = {
         IndexModel(
             [("chrom", ASCENDING), ("start", ASCENDING), ("end", ASCENDING)],
             name="genome_position",
-            background=True,
-        ),
-        IndexModel(
-            [("height_order", ASCENDING)],
-            name="height_order",
             background=True,
         ),
         IndexModel(

@@ -59,7 +59,7 @@ def get_transcripts(
         **query_genomic_region(region.start, region.end),
     }
     # build sort order
-    sort_order: list[tuple[str, int]] = [("start", 1), ("height_order", 1)]
+    sort_order: list[tuple[str, int]] = [("start", 1)]
 
     projection: dict[str, bool] = {
         "gene_name": True,
@@ -109,6 +109,7 @@ def get_simplified_transcripts_by_gene_symbol(
     cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
         {"gene_name": gene_symbol, "genome_build": genome_build},
         sort=[("start", 1), ("chrom", 1)],
+        allow_disk_use=True,
     )
 
     return_transcripts = []
