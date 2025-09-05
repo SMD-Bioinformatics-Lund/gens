@@ -29,7 +29,7 @@ export interface DataTrackSettingsNew {
   trackId: string;
   trackLabel: string;
   sampleId?: string;
-  trackType: string;
+  trackType: TrackType;
   height: ExpandedTrackHeight;
   showLabelWhenCollapsed: boolean;
   yAxis?: Axis;

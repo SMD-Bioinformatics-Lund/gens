@@ -10,7 +10,7 @@ import {
   makeTrackContainer,
   TRACK_HANDLE_CLASS,
 } from "./utils";
-import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
+import { DataTrack, DataTrackSettings, DataTrackSettingsNew } from "../tracks/base_tracks/data_track";
 import { setupDrag, setupDragging } from "../../movements/dragging";
 import { GensSession } from "../../state/gens_session";
 import { getLinearScale } from "../../draw/render_utils";
@@ -89,7 +89,7 @@ export class TrackView extends ShadowBaseElement {
   private session: GensSession;
   private dataSource: RenderDataSource;
 
-  private dataTracksSettings: DataTrackSettings[] = [];
+  private dataTrackSettings: DataTrackSettingsNew[] = [];
 
   private dataTracks: DataTrackWrapper[] = [];
   private ideogramTrack: IdeogramTrack;
@@ -540,7 +540,7 @@ export class TrackView extends ShadowBaseElement {
 
   public render(settings: RenderSettings) {
 
-    console.log("Rendering called");
+    console.log("Settings:", this.dataTrackSettings);
 
     if (settings.dataUpdated) {
       this.updateColorBands();
@@ -555,9 +555,10 @@ export class TrackView extends ShadowBaseElement {
     );
 
     updateAnnotationTracks(
-      this.dataTracks.filter(
-        (info) => info.track.trackType == "annotation" && info.sample == null,
-      ),
+      this.dataTrackSettings,
+      // this.dataTracks.filter(
+      //   (info) => info.track.trackType == "annotation" && info.sample == null,
+      // ),
       (sourceId: string, chrom: string) =>
         this.dataSource.getAnnotationBands(sourceId, chrom),
       (bandId: string) => this.dataSource.getAnnotationDetails(bandId),
@@ -578,28 +579,32 @@ export class TrackView extends ShadowBaseElement {
       },
     );
 
-    updateGeneListTracks(
-      this.dataTracks.filter(
-        (info) => info.track.trackType == GENE_LIST_TRACK_TYPE,
-      ),
-      (sourceId: string, chrom: string) =>
-        this.dataSource.getGeneListBands(sourceId, chrom),
-      (bandId: string) => this.dataSource.getTranscriptDetails(bandId),
-      this.session,
-      this.openTrackContextMenu,
-      (trackInfo: DataTrackWrapper) => {
-        this.dataTracks.push(trackInfo);
-        this.tracksContainer.appendChild(trackInfo.container);
-        trackInfo.track.initialize();
-      },
-      (id: string) => {
-        const match = removeOne(
-          this.dataTracks,
-          (info) => info.track.id === id,
-        );
-        this.tracksContainer.removeChild(match.container);
-      },
-    );
+    console.log("Track settings after annot update", this.dataTrackSettings);
+
+    // FIXME: Generate some tracks now
+
+    // updateGeneListTracks(
+    //   this.dataTracks.filter(
+    //     (info) => info.track.trackType == GENE_LIST_TRACK_TYPE,
+    //   ),
+    //   (sourceId: string, chrom: string) =>
+    //     this.dataSource.getGeneListBands(sourceId, chrom),
+    //   (bandId: string) => this.dataSource.getTranscriptDetails(bandId),
+    //   this.session,
+    //   this.openTrackContextMenu,
+    //   (trackInfo: DataTrackWrapper) => {
+    //     this.dataTracks.push(trackInfo);
+    //     this.tracksContainer.appendChild(trackInfo.container);
+    //     trackInfo.track.initialize();
+    //   },
+    //   (id: string) => {
+    //     const match = removeOne(
+    //       this.dataTracks,
+    //       (info) => info.track.id === id,
+    //     );
+    //     this.tracksContainer.removeChild(match.container);
+    //   },
+    // );
 
     // FIXME: Only the active one needs to be rendered isn't it?
     Object.values(this.trackPages).forEach((trackPage) =>
@@ -608,7 +613,7 @@ export class TrackView extends ShadowBaseElement {
 
     // this.ideogramTrack.render(settings);
     // this.positionTrack.render(settings);
-    this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
+    // this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
     // this.overviewTracks.forEach((track) => track.render(settings));
 
     // const [startChrSeg, endChrSeg] = this.session.getChrSegments();
@@ -759,8 +764,10 @@ function createSampleTracks(
   };
 }
 
+// FIXME: Generalize with the gene lists?
 function updateAnnotationTracks(
-  currAnnotTracks: DataTrackWrapper[],
+  trackSettings: DataTrackSettingsNew[],
+  // currAnnotTracks: DataTrackWrapper[],
   getAnnotationBands: (
     sourceId: string,
     chrom: string,
@@ -775,34 +782,51 @@ function updateAnnotationTracks(
     selectedOnly: true,
   });
 
-  const currTrackIds = currAnnotTracks.map((info) => info.track.id);
+  console.log("Updating annotation tracks with sources", sources);
+
+  const currTrackIds = trackSettings.map((setting) => setting.trackId);
   const sourceIds = sources.map((source) => source.id);
 
   const newSources = sources.filter(
     (source) => !currTrackIds.includes(source.id),
   );
-  const removedSourceIds = currAnnotTracks
-    .map((info) => info.track.id)
+  const removedSourceIds = trackSettings
+    .map((setting) => setting.trackId)
     .filter((id) => !sourceIds.includes(id));
 
   newSources.forEach((source) => {
-    const hasLabel = true;
-    const newTrack = createAnnotTrack(
-      source.id,
-      source.label,
-      () => session.getXRange(),
-      () => getAnnotationBands(source.id, session.getChromosome()),
-      (bandId: string) => getAnnotationDetails(bandId),
-      session,
-      openTrackContextMenu,
-      {
-        height: session.getTrackHeights().bandCollapsed,
-        showLabelWhenCollapsed: hasLabel,
-        startExpanded: session.getTrackExpanded(source.id, true),
-      },
-    );
-    addTrack(newTrack);
+
+    const newSetting: DataTrackSettingsNew = {
+      trackId: source.id,
+      trackLabel: source.label,
+      trackType: "annotation",
+      height: { collapsedHeight: 40, expandedHeight: 80 },
+      showLabelWhenCollapsed: true,
+      yAxis: null,
+      isExpanded: false,
+      isHidden: false,
+    }
+
+    trackSettings.push(newSetting);
+
+    // const newTrack = createAnnotTrack(
+    //   source.id,
+    //   source.label,
+    //   () => session.getXRange(),
+    //   () => getAnnotationBands(source.id, session.getChromosome()),
+    //   (bandId: string) => getAnnotationDetails(bandId),
+    //   session,
+    //   openTrackContextMenu,
+    //   {
+    //     height: session.getTrackHeights().bandCollapsed,
+    //     showLabelWhenCollapsed: hasLabel,
+    //     startExpanded: session.getTrackExpanded(source.id, true),
+    //   },
+    // );
+    // addTrack(newTrack);
   });
+
+  console.log("Now track settings is", trackSettings);
 
   removedSourceIds.forEach((id) => {
     removeTrack(id);
