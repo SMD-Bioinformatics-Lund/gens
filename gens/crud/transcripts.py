@@ -106,7 +106,7 @@ def get_simplified_transcripts_by_gene_symbol(
 ) -> list[SimplifiedTranscriptInfo]:
     cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
         {"gene_name": gene_symbol, "genome_build": genome_build},
-        sort=[("start", 1), ("chrom", 1)],
+        sort=[("chrom", 1), ("start", 1)],
         allow_disk_use=True,
     )
 

@@ -30,6 +30,9 @@ import { PositionTrack } from "../tracks/position_track";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
+const GENE_LIST_TRACK_TYPE = "gene-list"
+const GENE_TRACK_TYPE = "gene"
+
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>
@@ -235,7 +238,7 @@ export class TrackView extends ShadowBaseElement {
     const genesTrack = createGeneTrack(
       "genes",
       "Genes",
-      "gene",
+      GENE_TRACK_TYPE,
       (chrom: string) => dataSources.getTranscriptBands(chrom),
       (id: string) => dataSources.getTranscriptDetails(id),
       session,
@@ -558,7 +561,7 @@ export class TrackView extends ShadowBaseElement {
 
     updateGeneListTracks(
       this.dataTracks.filter(
-        (info) => info.track.trackType == "gene-list",
+        (info) => info.track.trackType == GENE_LIST_TRACK_TYPE,
       ),
       (sourceId: string, chrom: string) =>
         this.dataSource.getGeneListBands(sourceId, chrom),
@@ -787,7 +790,7 @@ function updateGeneListTracks(
   removeTrack: (id: string) => void,
 ) {
   const sources = session.getGeneListSources({ selectedOnly: true });
-  const trackId = (id: string) => `gene-list_${id}`;
+  const trackId = (id: string) => `${GENE_LIST_TRACK_TYPE}_${id}`;
 
   const currTrackIds = currGeneTracks.map((info) => info.track.id);
   const sourceTrackIds = sources.map((s) => trackId(s.id));
@@ -802,7 +805,7 @@ function updateGeneListTracks(
     const newTrack = createGeneTrack(
       trackId(source.id),
       source.label,
-      "gene-list",
+      GENE_LIST_TRACK_TYPE,
       (chrom: string) => getGeneListBands(source.id, chrom),
       (bandId: string) => getTranscriptDetails(bandId),
       session,
