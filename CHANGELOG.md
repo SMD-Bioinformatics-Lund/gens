@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## unreleased
+### Fixed
+- Docker file syslog gives bad file descriptor (#101)
+
 ## 3.0.1
 ### Changed
  - Added files for setting up development and deployment-like instances.

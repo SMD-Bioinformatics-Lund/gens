@@ -2,7 +2,7 @@
 # BUILDER PYTHON #
 ##################
 
-FROM python:3.8.1-slim AS python-builder
+FROM python:3.12-slim AS python-builder
 
 # Set build variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -24,7 +24,7 @@ RUN apt-get update &&                                                     \
 # BUILDER NODE #
 ################
 
-FROM node:20.8.1-alpine AS node-builder
+FROM node:24-alpine AS node-builder
 WORKDIR /usr/src/app
 COPY package.json package-lock.json webpack.config.js gulpfile.js ./
 COPY assets assets
@@ -34,9 +34,9 @@ RUN npm install && npm run build
 # FINAL #
 #########
 
-FROM python:3.8.1-slim
+FROM python:3.12-slim
 
-LABEL base_image="python:3.8.1-slim"
+LABEL base_image="python:3.12-slim"
 LABEL about.home="https://github.com/Clinical-Genomics-Lund/Gens"
 
 # Run commands as non-root user
@@ -79,7 +79,6 @@ CMD gunicorn \
     --chdir /home/app/app/ \
     --proxy-protocol \
     --forwarded-allow-ips="10.0.2.100,127.0.0.1" \
-    --log-syslog \
     --access-logfile - \
     --error-logfile - \
     --log-level="debug" \
