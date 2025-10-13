@@ -3,7 +3,10 @@ import { GensSession } from "../../../state/gens_session";
 import { BandTrack } from "../../tracks/band_track";
 import { DataTrackSettingsNew } from "../../tracks/base_tracks/data_track";
 import { DotTrack } from "../../tracks/dot_track";
-import { getAnnotationContextMenuContent } from "../../util/menu_content_utils";
+import {
+  getAnnotationContextMenuContent,
+  getVariantContextMenuContent,
+} from "../../util/menu_content_utils";
 import { getSimpleButton } from "../../util/menu_utils";
 
 export function getRawTrack(
@@ -96,7 +99,7 @@ function getBandTrack(
   setting: DataTrackSettingsNew,
   getRenderBands: () => Promise<RenderBand[]>,
 ): BandTrack {
-  const openContextMenuId = async (id: string) => {
+  const annotationOpenContextMenuId = async (id: string) => {
     // const details = await dataSource.getAnnotationDetails(id);
     const details = await dataSource.getAnnotationDetails(id);
     const button = getSimpleButton("Set highlight", () => {
@@ -108,6 +111,29 @@ function getBandTrack(
     const content = [container];
     content.push(...entries);
     session.showContent("Annotations", content, STYLE.menu.narrowWidth);
+  };
+
+  const variantOpenContextMenuId = async (variantId: string) => {
+    // FIXME: How to control this for the sample?
+    const details = await dataSource.getVariantDetails(variantId);
+    const scoutUrl = "Placeholder";
+    // const scoutUrl = getVariantURL(details.document_id);
+
+    const button = getSimpleButton("Set highlight", () => {
+      session.addHighlight([details.start, details.end]);
+    });
+    const container = document.createElement("div");
+    container.appendChild(button);
+
+    const entries = getVariantContextMenuContent(
+      setting.sample.sampleId,
+      details,
+      scoutUrl,
+    );
+    const content = [container];
+    content.push(...entries);
+
+    session.showContent("Variant", content, STYLE.menu.narrowWidth);
   };
 
   const rawTrack = new BandTrack(
@@ -138,7 +164,16 @@ function getBandTrack(
     },
     (id) => {
       console.warn("Attempting to open context menu for ID", id);
-      openContextMenuId(id);
+      if (setting.trackType == "annotation") {
+        annotationOpenContextMenuId(id);
+      } else if (setting.trackType == "variant") {
+        // FIXME: This is not the variant ID
+        variantOpenContextMenuId(id);
+      } else if (setting.trackType == "gene-list") {
+      } else if (setting.trackType == "gene") {
+      } else {
+        throw new Error(`Track type not supported: ${setting.trackType}`);
+      }
     },
     () => {
       console.warn("Attempting to open track context menu");

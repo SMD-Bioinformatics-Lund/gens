@@ -140,7 +140,7 @@ export function createVariantTrack(
   getVariantURL: (documentId: string) => string,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
-  fnSettings: DataTrackSettings
+  fnSettings: DataTrackSettings,
 ): BandTrack {
   // FIXME: Move to session
 
@@ -215,7 +215,7 @@ export function createGeneTrack(
     track_type,
     () => fnSettings,
     (settings) => {
-      fnSettings = settings
+      fnSettings = settings;
       session.setTrackExpanded(id, settings.isExpanded);
     },
     () => session.getXRange(),
