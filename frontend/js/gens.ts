@@ -22,7 +22,10 @@ import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/data_source";
-import { DEFAULT_VARIANT_THRES as DEFAULT_VARIANT_THRES, STYLE } from "./constants";
+import {
+  DEFAULT_VARIANT_THRES as DEFAULT_VARIANT_THRES,
+  STYLE,
+} from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
 import {
   SettingsMenu,
@@ -230,7 +233,7 @@ export async function initCanvases({
     },
     (rng: Rng) => {
       gensTracks.setCovYRange(rng);
-      render({dataUpdated: true});
+      render({ dataUpdated: true });
     },
   );
 
@@ -239,6 +242,7 @@ export async function initCanvases({
   inputControls.initialize(
     session,
     async (range) => {
+      console.log("On position change");
       session.setViewRange(range);
       render({ dataUpdated: true, positionOnly: true });
     },

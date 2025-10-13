@@ -66,6 +66,9 @@ export class BandTrack extends DataTrack {
   }
 
   override draw(renderData: BandTrackData) {
+
+    console.log("Is band track draw hit");
+
     const { bands } = renderData;
     const xRange = this.getXRange();
     const ntsPerPx = this.getNtsPerPixel(xRange);

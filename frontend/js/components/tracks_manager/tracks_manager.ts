@@ -70,10 +70,7 @@ export class TracksManager extends ShadowBaseElement {
       session,
     );
 
-    this.chromosomeView.initialize(
-      session,
-      dataSource,
-    );
+    this.chromosomeView.initialize(session, dataSource);
   }
 
   setCovYRange(covHeights: Rng) {
@@ -82,6 +79,9 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
+
+    console.log("Gens tracks render hit");
+
     const chromViewActive = this.session.getChromViewActive();
     this.chromosomeView.hidden = !chromViewActive;
     this.trackView.hidden = chromViewActive;

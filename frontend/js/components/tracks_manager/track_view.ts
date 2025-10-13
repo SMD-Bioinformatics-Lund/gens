@@ -539,7 +539,7 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
-    console.log("Settings:", this.dataTrackSettings);
+    console.log("Track view render hit with settings", settings);
 
     if (settings.dataUpdated) {
       this.updateColorBands();
@@ -561,9 +561,6 @@ export class TrackView extends ShadowBaseElement {
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings, samples }) => {
-      console.log("Assigning some settings and samples");
-      console.log("Settings", settings);
-      console.log("Samples", samples);
       this.dataTrackSettings = settings;
       this.lastRenderedSamples = samples;
       this.renderTracks();
@@ -585,6 +582,8 @@ export class TrackView extends ShadowBaseElement {
   }
 
   renderTracks() {
+    console.log("renderTracks in tracks manager hit");
+
     const currIds = new Set(
       this.dataTrackSettings.map((setting) => setting.trackId),
     );
@@ -592,12 +591,12 @@ export class TrackView extends ShadowBaseElement {
     const addedIds = setDiff(currIds, trackIds);
     const removedIds = setDiff(trackIds, currIds);
 
+    // Aha, adding new things here
     for (const settingId of addedIds) {
       const setting = this.dataTrackSettings.filter(
         (setting) => setting.trackId == settingId,
       )[0];
       let rawTrack;
-      console.log("Hitting setting with type", setting.trackType);
       if (setting.trackType == "annotation") {
         const getAnnotationBands = () =>
           this.dataSource.getAnnotationBands(
@@ -652,12 +651,18 @@ export class TrackView extends ShadowBaseElement {
       this.dataTracks.push(trackWrapper);
       this.tracksContainer.appendChild(trackWrapper.container);
       rawTrack.initialize();
-      rawTrack.render({});
+      // rawTrack.render({});
     }
 
+    // And removing things here
     for (const id of removedIds) {
       const match = removeOne(this.dataTracks, (info) => info.track.id === id);
       this.tracksContainer.removeChild(match.container);
+    }
+
+    // But we should render everything here isn't it
+    for (const track of this.dataTracks) {
+      track.track.render({});
     }
   }
 
