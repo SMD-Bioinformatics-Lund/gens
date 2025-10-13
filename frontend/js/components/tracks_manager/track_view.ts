@@ -40,6 +40,7 @@ import { PositionTrack } from "../tracks/position_track";
 import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
 import { ChromosomeView } from "./chromosome_view";
 import { syncDataTrackSettings } from "./utils/sync_tracks";
+import { getRawTrack } from "./utils/create_tracks";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -153,34 +154,33 @@ export class TrackView extends ShadowBaseElement {
     const openTrackContextMenu = this.createOpenTrackContextMenu(render);
     this.openTrackContextMenu = openTrackContextMenu;
 
-    // Sortable.create(this.tracksContainer, {
-    //   animation: ANIM_TIME.medium,
-    //   handle: `.${TRACK_HANDLE_CLASS}`,
-    //   swapThreshold: 0.5,
-    //   onEnd: (evt: SortableEvent) => {
+    Sortable.create(this.tracksContainer, {
+      animation: ANIM_TIME.medium,
+      handle: `.${TRACK_HANDLE_CLASS}`,
+      swapThreshold: 0.5,
+      onEnd: (evt: SortableEvent) => {
+        // FIXME: Would it make sense for this to first shift the settings
+        // And then let the render sort things through
 
-    //     // FIXME: Would it make sense for this to first shift the settings
-    //     // And then let the render sort things through
+        const { oldIndex, newIndex } = evt;
+        const [moved] = this.dataTracks.splice(oldIndex, 1);
+        this.dataTracks.splice(newIndex, 0, moved);
 
-    //     const { oldIndex, newIndex } = evt;
-    //     const [moved] = this.dataTracks.splice(oldIndex, 1);
-    //     this.dataTracks.splice(newIndex, 0, moved);
+        render({ layout: true });
+      },
+    });
 
-    //     render({layout: true});
-    //   },
-    // });
+    setupDragging(this.tracksContainer, (dragRangePx: Rng) => {
+      const inverted = true;
+      const invertedXScale = this.getXScale(inverted);
 
-    // setupDragging(this.tracksContainer, (dragRangePx: Rng) => {
-    //   const inverted = true;
-    //   const invertedXScale = this.getXScale(inverted);
+      const scaledStart = invertedXScale(dragRangePx[0]);
+      const scaledEnd = invertedXScale(dragRangePx[1]);
+      const panDistance = scaledStart - scaledEnd;
 
-    //   const scaledStart = invertedXScale(dragRangePx[0]);
-    //   const scaledEnd = invertedXScale(dragRangePx[1]);
-    //   const panDistance = scaledStart - scaledEnd;
-
-    //   session.moveXRange(panDistance);
-    //   render({ dataUpdated: true, positionOnly: true });
-    // });
+      session.moveXRange(panDistance);
+      render({ dataUpdated: true, positionOnly: true });
+    });
 
     // const covTracks: DataTrackWrapper[] = [];
     // const bafTracks: DataTrackWrapper[] = [];
@@ -329,27 +329,27 @@ export class TrackView extends ShadowBaseElement {
       track.renderLoading();
     });
 
-    // setupDrag(
-    //   this.tracksContainer,
-    //   () => session.getMarkerModeOn(),
-    //   () => session.getXRange(),
-    //   (range: Rng) => {
-    //     session.setViewRange(range);
-    //     render({ dataUpdated: true, positionOnly: true });
-    //   },
-    //   (range: Rng) => session.addHighlight(range),
-    //   (id: string) => session.removeHighlight(id),
-    // );
+    setupDrag(
+      this.tracksContainer,
+      () => session.getMarkerModeOn(),
+      () => session.getXRange(),
+      (range: Rng) => {
+        session.setViewRange(range);
+        render({ dataUpdated: true, positionOnly: true });
+      },
+      (range: Rng) => session.addHighlight(range),
+      (id: string) => session.removeHighlight(id),
+    );
 
-    // this.addElementListener(this.tracksContainer, "click", () => {
-    //   if (keyLogger.heldKeys.Control) {
-    //     const updatedRange = zoomOut(
-    //       this.session.getXRange(),
-    //       this.session.getCurrentChromSize(),
-    //     );
-    //     session.setViewRange(updatedRange);
-    //   }
-    // });
+    this.addElementListener(this.tracksContainer, "click", () => {
+      if (keyLogger.heldKeys.Control) {
+        const updatedRange = zoomOut(
+          this.session.getXRange(),
+          this.session.getCurrentChromSize(),
+        );
+        session.setViewRange(updatedRange);
+      }
+    });
   }
 
   private getXScale(inverted: boolean = false): Scale {
@@ -473,6 +473,7 @@ export class TrackView extends ShadowBaseElement {
     moveElement(this.dataTracks, trackInfoIndex, shift, true);
   }
 
+  // FIXME: Move to session?
   public addSample(sample: Sample, isTrackViewTrack: boolean) {
     // const sampleTracks = createSampleTracks(
     //   sample,
@@ -496,6 +497,7 @@ export class TrackView extends ShadowBaseElement {
     // sampleTracks.variant.track.initialize();
   }
 
+  // FIXME: Move to session?
   public removeSample(sample: Sample) {
     // const trackMatches = (trackInfo: DataTrackWrapper) =>
     //   trackInfo.sample != null &&
@@ -585,6 +587,7 @@ export class TrackView extends ShadowBaseElement {
     this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 
+  // FIXME: Move to util?
   renderTracks(settings: RenderSettings) {
     console.log("renderTracks in tracks manager hit");
 
@@ -600,60 +603,7 @@ export class TrackView extends ShadowBaseElement {
       const setting = this.dataTrackSettings.filter(
         (setting) => setting.trackId == settingId,
       )[0];
-      let rawTrack;
-      if (setting.trackType == "annotation") {
-        const getAnnotationBands = () =>
-          this.dataSource.getAnnotationBands(
-            setting.trackId,
-            this.session.getChromosome(),
-          );
-        rawTrack = this.getBandTrack(setting, getAnnotationBands);
-      } else if (setting.trackType == "gene-list") {
-        const getGeneListBands = () =>
-          this.dataSource.getGeneListBands(
-            setting.trackId,
-            this.session.getChromosome(),
-          );
-        rawTrack = this.getBandTrack(setting, getGeneListBands);
-      } else if (setting.trackType == "sample-annotation") {
-        const getSampleAnnotBands = () =>
-          this.dataSource.getSampleAnnotationBands(
-            setting.trackId,
-            this.session.getChromosome(),
-          );
-        rawTrack = this.getBandTrack(setting, getSampleAnnotBands);
-      } else if (setting.trackType == "variant") {
-        // FIXME: Generalize the rank score threshold. Where did it come from before?
-        const getSampleAnnotBands = () =>
-          this.dataSource.getVariantBands(
-            setting.sample,
-            this.session.getChromosome(),
-            4,
-          );
-        rawTrack = this.getBandTrack(setting, getSampleAnnotBands);
-      } else if (setting.trackType == "dot-cov") {
-        const getSampleCovDots = () => {
-          const data = this.dataSource.getCovData(
-            setting.sample,
-            this.session.getChromosome(),
-            this.session.getXRange(),
-          );
-          console.log("Requesting new cov data");
-          return data;
-        };
-
-        rawTrack = this.getDotTrack(setting, getSampleCovDots);
-      } else if (setting.trackType == "dot-baf") {
-        const getSampleBafDots = () =>
-          this.dataSource.getBafData(
-            setting.sample,
-            this.session.getChromosome(),
-            this.session.getXRange(),
-          );
-        rawTrack = this.getDotTrack(setting, getSampleBafDots);
-      } else {
-        throw Error(`Not yet supported track type ${setting.trackType}`);
-      }
+      const rawTrack = getRawTrack(this.session, this.dataSource, setting);
 
       const trackWrapper = makeTrackContainer(rawTrack, null);
       this.dataTracks.push(trackWrapper);
@@ -672,75 +622,6 @@ export class TrackView extends ShadowBaseElement {
     for (const track of this.dataTracks) {
       track.track.render(settings);
     }
-  }
-
-  getDotTrack(
-    setting: DataTrackSettingsNew,
-    getDots: () => Promise<RenderDot[]>,
-  ): DotTrack {
-    const dotTrack = new DotTrack(
-      setting.trackId,
-      setting.trackLabel,
-      setting.trackType,
-      () => {
-        return setting;
-      },
-      (settings) => {},
-      () => this.session.getXRange(),
-      () => {
-        return getDots().then((dots) => {
-          return {
-            dots,
-          };
-        });
-      },
-      () => {},
-      () => false,
-    );
-    return dotTrack;
-  }
-
-  getBandTrack(
-    setting: DataTrackSettingsNew,
-    getRenderBands: () => Promise<RenderBand[]>,
-  ): BandTrack {
-    const rawTrack = new BandTrack(
-      setting.trackId,
-      setting.trackLabel,
-      setting.trackType,
-      () => {
-        // console.warn("Attempting to retrieve setting", setting);
-        return setting;
-      },
-      (_settings) => {
-        // console.warn("Attempting to update setting", setting);
-        // fnSettings = settings;
-        // session.setTrackExpanded(trackId, settings.isExpanded);
-      },
-      () => this.session.getXRange(),
-      () => {
-        async function getBandTrackData(
-          getAnnotation: () => Promise<RenderBand[]>,
-        ): Promise<BandTrackData> {
-          const bands = await getAnnotation();
-          return {
-            bands,
-          };
-        }
-
-        return getBandTrackData(getRenderBands);
-      },
-      () => {
-        console.warn("Attempting to open context menu");
-      },
-      () => {
-        console.warn("Attempting to open track context menu");
-      },
-      // openContextMenuId,
-      // openTrackContextMenu,
-      () => this.session.getMarkerModeOn(),
-    );
-    return rawTrack;
   }
 }
 
