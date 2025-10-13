@@ -139,6 +139,7 @@ export async function initCanvases({
   );
   const samples = orderSamples(unorderedSamples).map((sample) => {
     const result: Sample = {
+      combinedId: `${sample.case_id}_${sample.sample_id}`,
       caseId: sample.case_id,
       sampleId: sample.sample_id,
       sampleType: sample.sample_type,

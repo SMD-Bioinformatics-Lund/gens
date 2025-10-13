@@ -1,4 +1,10 @@
-import { ANIM_TIME, COLORS, SIZES, STYLE } from "../../constants";
+import {
+  ANIM_TIME,
+  COLORS,
+  SIZES,
+  STYLE,
+  TRACK_HEIGHTS,
+} from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import Sortable, { SortableEvent } from "sortablejs";
 import {
@@ -33,6 +39,7 @@ import { getDifferences, removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
 import { ChromosomeView } from "./chromosome_view";
+import { syncDataTrackSettings } from "./utils/sync_tracks";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -745,210 +752,6 @@ function getDataTrackInfoById(
     }
   }
   console.error("Did not find any track with ID", trackId);
-}
-
-/**
- * Given a Select element state and the last used settings
- * Calculate what settings have been added and what IDs removed
- */
-const getSettingsDiffs = (
-  currentlySelectedIds: string[],
-  previousSettingsIds: string[],
-  trackType: TrackType,
-): { newSettings: DataTrackSettingsNew[]; removedIds: string[] } => {
-  // FIXME: Ponder here a bit more
-
-  const removedIds = setDiff(
-    new Set(previousSettingsIds),
-    new Set(currentlySelectedIds),
-  );
-  const newIds = setDiff(
-    new Set(currentlySelectedIds),
-    new Set(previousSettingsIds),
-  );
-
-  // const rememberedIds = previousSettings.map((setting) => setting.trackId);
-  // const currentIds = currentlySelected.map(())
-
-  // const { onlyAIds: removedIds, onlyB: newSources } = getDifferences(
-  //   previousSettings,
-  //   currentlySelected,
-  //   (setting) => setting.trackId,
-  //   (source) => source.id,
-  // );
-
-  // FIXME: Aha, this is the original location. What to do with this one?
-  const newSettings = Array.from(newIds).map((id) => {
-    const newSetting: DataTrackSettingsNew = {
-      trackId: id,
-      trackLabel: "PLACEHOLDER",
-      trackType,
-      height: { collapsedHeight: 20 },
-      showLabelWhenCollapsed: true,
-      yAxis: null,
-      isExpanded: false,
-      isHidden: false,
-    };
-    return newSetting;
-    // returnSettings.push(newSetting);
-  });
-
-  return {
-    newSettings,
-    removedIds: [...removedIds],
-  };
-};
-
-async function syncDataTrackSettings(
-  origTrackSettings: DataTrackSettingsNew[],
-  session: GensSession,
-  dataSources: RenderDataSource,
-  lastRenderedSamples: Sample[],
-): Promise<{ settings: DataTrackSettingsNew[]; samples: Sample[] }> {
-  const annotSources = session.getAnnotationSources({
-    selectedOnly: true,
-  });
-  const geneListSources = session.getGeneListSources({
-    selectedOnly: true,
-  });
-
-  // FIXME: Let's start with assuming unique sample IDs
-  const samples = session.getSamples();
-  const sampleIds = samples.map((sample) => sample.sampleId);
-  const lastRenderedSampleIds = lastRenderedSamples.map(
-    (sample) => sample.sampleId,
-  );
-  const sampleAnnotRemovedIds = setDiff(
-    new Set(lastRenderedSampleIds),
-    new Set(sampleIds),
-  );
-  const newSampleIds = setDiff(
-    new Set(sampleIds),
-    new Set(lastRenderedSampleIds),
-  );
-
-  // FIXME: Assuming unique sample IDs here. What to do about that.
-  // const { onlyAIds: sampleAnnotRemovedIds, onlyB: newSamples } = getDifferences(
-  //   lastRenderedSamples,
-  //   samples,
-  //   (sample) => sample.sampleId,
-  //   (sample) => sample.sampleId,
-  // );
-
-  const origAnnotTrackSettings = origTrackSettings.filter(
-    (track) => track.trackType == "annotation",
-  );
-  console.log(
-    "Annot sources",
-    annotSources,
-    "origAnnotTrackSettings",
-    origAnnotTrackSettings,
-  );
-  const annotUpdates = getSettingsDiffs(
-    annotSources.map((source) => source.id),
-    origAnnotTrackSettings.map((value) => value.trackId),
-    "annotation",
-  );
-  console.log("Annot updates", annotUpdates);
-
-  const origGeneListTrackSettings = origTrackSettings.filter(
-    (track) => track.trackType == "gene-list",
-  );
-  const geneListUpdates = getSettingsDiffs(
-    geneListSources.map((geneList) => geneList.id),
-    origGeneListTrackSettings.map((trackSetting) => trackSetting.trackId),
-    "gene-list",
-  );
-
-  const sampleSettings = [];
-  for (const sampleId of newSampleIds) {
-    const sample = session.getSample(sampleId);
-    const sampleSources = await dataSources.getSampleAnnotSources(
-      sample.caseId,
-      sample.sampleId,
-    );
-
-    const cov: DataTrackSettingsNew = {
-      trackId: `${sample.sampleId}_log2_cov`,
-      trackLabel: `${sample.sampleId} cov`,
-      trackType: "dot-cov",
-      sample,
-      height: { collapsedHeight: 20, expandedHeight: 40 },
-      showLabelWhenCollapsed: true,
-      yAxis: {
-        range: [-2, 2],
-        label: "Cov",
-        hideLabelOnCollapse: false,
-        hideTicksOnCollapse: false,
-      },
-      isExpanded: false,
-      isHidden: false,
-    };
-
-    const baf: DataTrackSettingsNew = {
-      trackId: `${sample.sampleId}_baf`,
-      trackLabel: `${sample.sampleId} baf`,
-      trackType: "dot-baf",
-      sample,
-      height: { collapsedHeight: 20, expandedHeight: 40 },
-      showLabelWhenCollapsed: true,
-      yAxis: {
-        range: [-2, 2],
-        label: "Cov",
-        hideLabelOnCollapse: false,
-        hideTicksOnCollapse: false,
-      },
-      isExpanded: false,
-      isHidden: false,
-    };
-
-    const variants: DataTrackSettingsNew = {
-      trackId: `${sample.sampleId}_variants`,
-      trackLabel: `${sample.sampleId} Variants`,
-      trackType: "variant",
-      sample,
-      height: { collapsedHeight: 20, expandedHeight: 40 },
-      showLabelWhenCollapsed: true,
-      yAxis: null,
-      isExpanded: false,
-      isHidden: false,
-    };
-
-    const sampleAnnots = [];
-    for (const source of sampleSources) {
-      const sampleAnnot: DataTrackSettingsNew = {
-        trackId: source.id,
-        trackLabel: source.name,
-        trackType: "sample-annotation",
-        sample,
-        height: { collapsedHeight: 20 },
-        showLabelWhenCollapsed: true,
-        yAxis: null,
-        isExpanded: false,
-        isHidden: false,
-      };
-      sampleAnnots.push(sampleAnnot);
-    }
-    sampleSettings.push(cov, baf, variants, ...sampleAnnots);
-  }
-
-  const returnTrackSettings = [...origTrackSettings];
-  const removeIds = [
-    ...annotUpdates.removedIds,
-    ...geneListUpdates.removedIds,
-    ...sampleAnnotRemovedIds,
-  ];
-  for (const removeId of removeIds) {
-    removeOne(returnTrackSettings, (setting) => setting.trackId == removeId);
-  }
-
-  returnTrackSettings.push(...annotUpdates.newSettings);
-  returnTrackSettings.push(...geneListUpdates.newSettings);
-  returnTrackSettings.push(...sampleSettings);
-
-  console.log("Return track settings", returnTrackSettings);
-
-  return { settings: returnTrackSettings, samples };
 }
 
 customElements.define("track-view", TrackView);

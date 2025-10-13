@@ -268,9 +268,9 @@ export class GensSession {
     return this.samples;
   }
 
-  public getSample(id: string): Sample | null {
+  public getSample(combinedId: string): Sample | null {
     const matchedSamples = this.samples.filter(
-      (sample) => sample.sampleId == id,
+      (sample) => sample.combinedId == combinedId,
     );
     if (matchedSamples.length == 1) {
       return matchedSamples[0];

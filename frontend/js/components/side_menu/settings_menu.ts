@@ -234,7 +234,6 @@ export class SettingsMenu extends ShadowBaseElement {
   }
 
   connectedCallback() {
-
     console.log("Settings menu connected callback");
 
     super.connectedCallback();
@@ -276,9 +275,10 @@ export class SettingsMenu extends ShadowBaseElement {
     this.variantThreshold.value = `${this.session.getVariantThreshold()}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
-      const caseId_sampleId = this.sampleSelect.getValue().value;
-      const [caseId, sampleId] = caseId_sampleId.split("___");
-      this.onAddSample({ caseId, sampleId });
+      const combinedId = this.sampleSelect.getValue().value;
+      const [caseId, sampleId] = combinedId.split("___");
+      // FIXME: Deal with the combined ID here
+      this.onAddSample({ combinedId, caseId, sampleId });
     });
 
     this.addElementListener(this.annotSelect, "change", () => {

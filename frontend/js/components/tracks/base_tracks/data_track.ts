@@ -237,7 +237,6 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-
     console.log("Data track render hit");
 
     // The intent with the debounce keeping track of the rendering number (_renderSeq)

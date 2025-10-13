@@ -649,6 +649,7 @@ interface ApiSample {
 }
 
 interface Sample {
+  combinedId: string;
   caseId: string;
   sampleId: string;
   sampleType?: string;
