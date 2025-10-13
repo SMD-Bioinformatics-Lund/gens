@@ -545,8 +545,8 @@ export class TrackView extends ShadowBaseElement {
     }
   }
 
-  public render(settings: RenderSettings) {
-    if (settings.dataUpdated) {
+  public render(renderSettings: RenderSettings) {
+    if (renderSettings.dataUpdated) {
       this.updateColorBands();
     }
 
@@ -565,27 +565,27 @@ export class TrackView extends ShadowBaseElement {
       this.session,
       this.dataSource,
       this.lastRenderedSamples,
-    ).then(({ settings, samples }) => {
-      this.dataTrackSettings = settings;
+    ).then(({ settings: dataTrackSettings, samples }) => {
+      this.dataTrackSettings = dataTrackSettings;
       this.lastRenderedSamples = samples;
-      this.renderTracks();
+      this.renderTracks(renderSettings);
     });
 
     // FIXME: Only the active one needs to be rendered isn't it?
     Object.values(this.trackPages).forEach((trackPage) =>
-      trackPage.render(settings),
+      trackPage.render(renderSettings),
     );
 
-    this.ideogramTrack.render(settings);
-    this.positionTrack.render(settings);
+    this.ideogramTrack.render(renderSettings);
+    this.positionTrack.render(renderSettings);
     // this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
-    this.overviewTracks.forEach((track) => track.render(settings));
+    this.overviewTracks.forEach((track) => track.render(renderSettings));
 
     const [startChrSeg, endChrSeg] = this.session.getChrSegments();
     this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 
-  renderTracks() {
+  renderTracks(settings: RenderSettings) {
     console.log("renderTracks in tracks manager hit");
 
     const currIds = new Set(
@@ -632,12 +632,16 @@ export class TrackView extends ShadowBaseElement {
           );
         rawTrack = this.getBandTrack(setting, getSampleAnnotBands);
       } else if (setting.trackType == "dot-cov") {
-        const getSampleCovDots = () =>
-          this.dataSource.getCovData(
+        const getSampleCovDots = () => {
+          const data = this.dataSource.getCovData(
             setting.sample,
             this.session.getChromosome(),
             this.session.getXRange(),
           );
+          console.log("Requesting new cov data");
+          return data;
+        };
+
         rawTrack = this.getDotTrack(setting, getSampleCovDots);
       } else if (setting.trackType == "dot-baf") {
         const getSampleBafDots = () =>
@@ -666,7 +670,7 @@ export class TrackView extends ShadowBaseElement {
 
     // But we should render everything here isn't it
     for (const track of this.dataTracks) {
-      track.track.render({});
+      track.track.render(settings);
     }
   }
 
