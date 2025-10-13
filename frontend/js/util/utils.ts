@@ -381,10 +381,10 @@ export function getDifferences<A, B>(
   getAId: (a: A) => string,
   getBId: (b: B) => string,
 ): {
-  onlyA: A[],
-  onlyB: B[],
-  onlyAIds: Set<string>,
-  onlyBIds: Set<string>,
+  onlyA: A[];
+  onlyB: B[];
+  onlyAIds: Set<string>;
+  onlyBIds: Set<string>;
 } {
   const aIds = new Set(arrA.map((a) => getAId(a)));
   const bIds = new Set(arrB.map((b) => getBId(b)));
@@ -400,5 +400,5 @@ export function getDifferences<A, B>(
     onlyBIds,
     onlyA,
     onlyB,
-  }
+  };
 }

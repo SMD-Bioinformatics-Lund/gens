@@ -79,9 +79,6 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
-
-    console.log("Gens tracks render hit");
-
     const chromViewActive = this.session.getChromViewActive();
     this.chromosomeView.hidden = !chromViewActive;
     this.trackView.hidden = chromViewActive;

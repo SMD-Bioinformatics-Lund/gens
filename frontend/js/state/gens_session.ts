@@ -57,7 +57,6 @@ export class GensSession {
   private settings: SettingsMenu;
   private genomeBuild: number;
 
-
   private idToAnnotSource: Record<string, ApiAnnotationTrack>;
   private idToGeneList: Record<string, ApiGeneList>;
 
@@ -153,22 +152,21 @@ export class GensSession {
   public getAnnotationSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
-
     if (settings.selectedOnly) {
       return this.annotationSelections.map((id) => {
         const track = this.idToAnnotSource[id];
         return {
           id,
-          label: track.name
-        }
+          label: track.name,
+        };
       });
     } else {
       Object.values(this.idToAnnotSource).map((obj) => {
         return {
           id: obj.track_id,
           label: obj.name,
-        }
-      })
+        };
+      });
     }
 
     // FIXME: Should this be owned by the session?
@@ -212,22 +210,21 @@ export class GensSession {
   public getGeneListSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
-
     if (settings.selectedOnly) {
       return this.geneListSelections.map((id) => {
         const geneList = this.idToGeneList[id];
         return {
           id,
-          label: geneList.name
-        }
+          label: geneList.name,
+        };
       });
     } else {
       Object.values(this.idToGeneList).map((obj) => {
         return {
           id: obj.id,
           label: obj.name,
-        }
-      })
+        };
+      });
     }
 
     // return this.settings.getGeneListSources(settings);
@@ -269,6 +266,19 @@ export class GensSession {
 
   public getSamples(): Sample[] {
     return this.samples;
+  }
+
+  public getSample(id: string): Sample | null {
+    const matchedSamples = this.samples.filter(
+      (sample) => sample.sampleId == id,
+    );
+    if (matchedSamples.length == 1) {
+      return matchedSamples[0];
+    } else if (matchedSamples.length == 0) {
+      return null;
+    } else {
+      throw new Error(`Found multiple samples: ${matchedSamples}`);
+    }
   }
 
   public addSample(sample: Sample) {

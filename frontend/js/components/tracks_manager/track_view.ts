@@ -539,8 +539,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
-    console.log("Track view render hit with settings", settings);
-
     if (settings.dataUpdated) {
       this.updateColorBands();
     }
@@ -754,22 +752,36 @@ function getDataTrackInfoById(
  * Calculate what settings have been added and what IDs removed
  */
 const getSettingsDiffs = (
-  currentlySelected: SelectData[],
-  previousSettings: DataTrackSettingsNew[],
+  currentlySelectedIds: string[],
+  previousSettingsIds: string[],
   trackType: TrackType,
 ): { newSettings: DataTrackSettingsNew[]; removedIds: string[] } => {
   // FIXME: Ponder here a bit more
-  const { onlyAIds: removedIds, onlyB: newSources } = getDifferences(
-    previousSettings,
-    currentlySelected,
-    (setting) => setting.trackId,
-    (source) => source.id,
+
+  const removedIds = setDiff(
+    new Set(previousSettingsIds),
+    new Set(currentlySelectedIds),
+  );
+  const newIds = setDiff(
+    new Set(currentlySelectedIds),
+    new Set(previousSettingsIds),
   );
 
-  const newSettings = newSources.map((source) => {
+  // const rememberedIds = previousSettings.map((setting) => setting.trackId);
+  // const currentIds = currentlySelected.map(())
+
+  // const { onlyAIds: removedIds, onlyB: newSources } = getDifferences(
+  //   previousSettings,
+  //   currentlySelected,
+  //   (setting) => setting.trackId,
+  //   (source) => source.id,
+  // );
+
+  // FIXME: Aha, this is the original location. What to do with this one?
+  const newSettings = Array.from(newIds).map((id) => {
     const newSetting: DataTrackSettingsNew = {
-      trackId: source.id,
-      trackLabel: source.label,
+      trackId: id,
+      trackLabel: "PLACEHOLDER",
       trackType,
       height: { collapsedHeight: 20 },
       showLabelWhenCollapsed: true,
@@ -800,35 +812,57 @@ async function syncDataTrackSettings(
     selectedOnly: true,
   });
 
+  // FIXME: Let's start with assuming unique sample IDs
   const samples = session.getSamples();
-  // FIXME: Assuming unique sample IDs here. What to do about that.
-  const { onlyAIds: sampleAnnotRemovedIds, onlyB: newSamples } = getDifferences(
-    lastRenderedSamples,
-    samples,
-    (sample) => sample.sampleId,
+  const sampleIds = samples.map((sample) => sample.sampleId);
+  const lastRenderedSampleIds = lastRenderedSamples.map(
     (sample) => sample.sampleId,
   );
+  const sampleAnnotRemovedIds = setDiff(
+    new Set(lastRenderedSampleIds),
+    new Set(sampleIds),
+  );
+  const newSampleIds = setDiff(
+    new Set(sampleIds),
+    new Set(lastRenderedSampleIds),
+  );
+
+  // FIXME: Assuming unique sample IDs here. What to do about that.
+  // const { onlyAIds: sampleAnnotRemovedIds, onlyB: newSamples } = getDifferences(
+  //   lastRenderedSamples,
+  //   samples,
+  //   (sample) => sample.sampleId,
+  //   (sample) => sample.sampleId,
+  // );
 
   const origAnnotTrackSettings = origTrackSettings.filter(
     (track) => track.trackType == "annotation",
   );
-  const annotUpdates = getSettingsDiffs(
+  console.log(
+    "Annot sources",
     annotSources,
+    "origAnnotTrackSettings",
     origAnnotTrackSettings,
+  );
+  const annotUpdates = getSettingsDiffs(
+    annotSources.map((source) => source.id),
+    origAnnotTrackSettings.map((value) => value.trackId),
     "annotation",
   );
+  console.log("Annot updates", annotUpdates);
 
   const origGeneListTrackSettings = origTrackSettings.filter(
     (track) => track.trackType == "gene-list",
   );
   const geneListUpdates = getSettingsDiffs(
-    geneListSources,
-    origGeneListTrackSettings,
+    geneListSources.map((geneList) => geneList.id),
+    origGeneListTrackSettings.map((trackSetting) => trackSetting.trackId),
     "gene-list",
   );
 
   const sampleSettings = [];
-  for (const sample of newSamples) {
+  for (const sampleId of newSampleIds) {
+    const sample = session.getSample(sampleId);
     const sampleSources = await dataSources.getSampleAnnotSources(
       sample.caseId,
       sample.sampleId,
@@ -911,6 +945,8 @@ async function syncDataTrackSettings(
   returnTrackSettings.push(...annotUpdates.newSettings);
   returnTrackSettings.push(...geneListUpdates.newSettings);
   returnTrackSettings.push(...sampleSettings);
+
+  console.log("Return track settings", returnTrackSettings);
 
   return { settings: returnTrackSettings, samples };
 }
