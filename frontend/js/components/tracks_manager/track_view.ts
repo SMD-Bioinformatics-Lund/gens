@@ -94,6 +94,7 @@ export class TrackView extends ShadowBaseElement {
   private session: GensSession;
   private dataSource: RenderDataSource;
 
+  // FIXME: Document what this is
   private dataTrackSettings: DataTrackSettingsNew[] = [];
   private lastRenderedSamples: Sample[] = [];
 
@@ -560,6 +561,9 @@ export class TrackView extends ShadowBaseElement {
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings, samples }) => {
+      console.log("Assigning some settings and samples");
+      console.log("Settings", settings);
+      console.log("Samples", samples);
       this.dataTrackSettings = settings;
       this.lastRenderedSamples = samples;
       this.renderTracks();
@@ -668,7 +672,7 @@ export class TrackView extends ShadowBaseElement {
       () => {
         return setting;
       },
-      (settings) => { },
+      (settings) => {},
       () => this.session.getXRange(),
       () => {
         return getDots().then((dots) => {
@@ -677,7 +681,7 @@ export class TrackView extends ShadowBaseElement {
           };
         });
       },
-      () => { },
+      () => {},
       () => false,
     );
     return dotTrack;
@@ -779,7 +783,7 @@ const getSettingsDiffs = (
 };
 
 async function syncDataTrackSettings(
-  origSettings: DataTrackSettingsNew[],
+  origTrackSettings: DataTrackSettingsNew[],
   session: GensSession,
   dataSources: RenderDataSource,
   lastRenderedSamples: Sample[],
@@ -800,16 +804,21 @@ async function syncDataTrackSettings(
     (sample) => sample.sampleId,
   );
 
-  console.log("Settings diff annot sources", annotSources, origSettings);
-
+  const origAnnotTrackSettings = origTrackSettings.filter(
+    (track) => track.trackType == "annotation",
+  );
   const annotUpdates = getSettingsDiffs(
     annotSources,
-    origSettings,
+    origAnnotTrackSettings,
     "annotation",
+  );
+
+  const origGeneListTrackSettings = origTrackSettings.filter(
+    (track) => track.trackType == "gene-list",
   );
   const geneListUpdates = getSettingsDiffs(
     geneListSources,
-    origSettings,
+    origGeneListTrackSettings,
     "gene-list",
   );
 
@@ -884,24 +893,21 @@ async function syncDataTrackSettings(
     sampleSettings.push(cov, baf, variants, ...sampleAnnots);
   }
 
-  const returnSettings = [...origSettings];
-  console.log("Annot", annotUpdates);
-  console.log("Gene list", geneListUpdates);
-  console.log("Sample annot", sampleAnnotRemovedIds);
+  const returnTrackSettings = [...origTrackSettings];
   const removeIds = [
     ...annotUpdates.removedIds,
     ...geneListUpdates.removedIds,
     ...sampleAnnotRemovedIds,
   ];
   for (const removeId of removeIds) {
-    removeOne(returnSettings, (setting) => setting.trackId == removeId);
+    removeOne(returnTrackSettings, (setting) => setting.trackId == removeId);
   }
 
-  returnSettings.push(...annotUpdates.newSettings);
-  returnSettings.push(...geneListUpdates.newSettings);
-  returnSettings.push(...sampleSettings);
+  returnTrackSettings.push(...annotUpdates.newSettings);
+  returnTrackSettings.push(...geneListUpdates.newSettings);
+  returnTrackSettings.push(...sampleSettings);
 
-  return { settings: returnSettings, samples };
+  return { settings: returnTrackSettings, samples };
 }
 
 customElements.define("track-view", TrackView);
