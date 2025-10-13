@@ -1,7 +1,10 @@
+import { STYLE } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import { BandTrack } from "../../tracks/band_track";
 import { DataTrackSettingsNew } from "../../tracks/base_tracks/data_track";
 import { DotTrack } from "../../tracks/dot_track";
+import { getAnnotationContextMenuContent } from "../../util/menu_content_utils";
+import { getSimpleButton } from "../../util/menu_utils";
 
 export function getRawTrack(
   session: GensSession,
@@ -12,18 +15,18 @@ export function getRawTrack(
   if (setting.trackType == "annotation") {
     const getAnnotationBands = () =>
       dataSource.getAnnotationBands(setting.trackId, session.getChromosome());
-    rawTrack = getBandTrack(session, setting, getAnnotationBands);
+    rawTrack = getBandTrack(session, dataSource, setting, getAnnotationBands);
   } else if (setting.trackType == "gene-list") {
     const getGeneListBands = () =>
       dataSource.getGeneListBands(setting.trackId, session.getChromosome());
-    rawTrack = getBandTrack(session, setting, getGeneListBands);
+    rawTrack = getBandTrack(session, dataSource, setting, getGeneListBands);
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
       dataSource.getSampleAnnotationBands(
         setting.trackId,
         session.getChromosome(),
       );
-    rawTrack = getBandTrack(session, setting, getSampleAnnotBands);
+    rawTrack = getBandTrack(session, dataSource, setting, getSampleAnnotBands);
   } else if (setting.trackType == "variant") {
     // FIXME: Generalize the rank score threshold. Where did it come from before?
     const rankScoreThres = 4;
@@ -33,7 +36,7 @@ export function getRawTrack(
         session.getChromosome(),
         rankScoreThres,
       );
-    rawTrack = getBandTrack(session, setting, getSampleAnnotBands);
+    rawTrack = getBandTrack(session, dataSource, setting, getSampleAnnotBands);
   } else if (setting.trackType == "dot-cov") {
     const getSampleCovDots = () => {
       const data = dataSource.getCovData(
@@ -89,9 +92,24 @@ function getDotTrack(
 
 function getBandTrack(
   session: GensSession,
+  dataSource: RenderDataSource,
   setting: DataTrackSettingsNew,
   getRenderBands: () => Promise<RenderBand[]>,
 ): BandTrack {
+  const openContextMenuId = async (id: string) => {
+    // const details = await dataSource.getAnnotationDetails(id);
+    const details = await dataSource.getAnnotationDetails(id);
+    const button = getSimpleButton("Set highlight", () => {
+      session.addHighlight([details.start, details.end]);
+    });
+    const container = document.createElement("div");
+    container.appendChild(button);
+    const entries = getAnnotationContextMenuContent(id, details);
+    const content = [container];
+    content.push(...entries);
+    session.showContent("Annotations", content, STYLE.menu.narrowWidth);
+  };
+
   const rawTrack = new BandTrack(
     setting.trackId,
     setting.trackLabel,
@@ -118,8 +136,9 @@ function getBandTrack(
 
       return getBandTrackData(getRenderBands);
     },
-    () => {
-      console.warn("Attempting to open context menu");
+    (id) => {
+      console.warn("Attempting to open context menu for ID", id);
+      openContextMenuId(id);
     },
     () => {
       console.warn("Attempting to open track context menu");
