@@ -68,8 +68,6 @@ export async function syncDataTrackSettings(
   returnTrackSettings.push(...newAnnotationSettings);
   returnTrackSettings.push(...newGeneListSettings);
 
-  console.log("Return track settings", returnTrackSettings);
-
   return { settings: returnTrackSettings, samples };
 }
 

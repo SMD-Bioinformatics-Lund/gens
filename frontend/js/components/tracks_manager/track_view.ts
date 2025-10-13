@@ -203,41 +203,41 @@ export class TrackView extends ShadowBaseElement {
       },
     );
 
-    // const yAxisCov = {
-    //   range: session.getCoverageRange(),
-    //   label: "Log2 Ratio",
-    //   hideLabelOnCollapse: false,
-    //   hideTicksOnCollapse: false,
-    // };
-    // const overviewTrackCov = createOverviewTrack(
-    //   "overview_cov",
-    //   "Overview (cov)",
-    //   () => dataSources.getOverviewCovData(session.getMainSample()),
-    //   session.getCoverageRange(),
-    //   chromSizes,
-    //   chromClick,
-    //   session,
-    //   yAxisCov,
-    // );
+    const yAxisCov = {
+      range: session.getCoverageRange(),
+      label: "Log2 Ratio",
+      hideLabelOnCollapse: false,
+      hideTicksOnCollapse: false,
+    };
+    const overviewTrackCov = createOverviewTrack(
+      "overview_cov",
+      "Overview (cov)",
+      () => dataSources.getOverviewCovData(session.getMainSample()),
+      session.getCoverageRange(),
+      chromSizes,
+      chromClick,
+      session,
+      yAxisCov,
+    );
 
-    // const yAxisBaf = {
-    //   range: BAF_Y_RANGE,
-    //   label: "B Allele Freq",
-    //   hideLabelOnCollapse: false,
-    //   hideTicksOnCollapse: false,
-    // };
-    // const overviewTrackBaf = createOverviewTrack(
-    //   "overview_baf",
-    //   "Overview (baf)",
-    //   () => dataSources.getOverviewBafData(session.getMainSample()),
-    //   BAF_Y_RANGE,
-    //   chromSizes,
-    //   chromClick,
-    //   session,
-    //   yAxisBaf,
-    // );
+    const yAxisBaf = {
+      range: BAF_Y_RANGE,
+      label: "B Allele Freq",
+      hideLabelOnCollapse: false,
+      hideTicksOnCollapse: false,
+    };
+    const overviewTrackBaf = createOverviewTrack(
+      "overview_baf",
+      "Overview (baf)",
+      () => dataSources.getOverviewBafData(session.getMainSample()),
+      BAF_Y_RANGE,
+      chromSizes,
+      chromClick,
+      session,
+      yAxisBaf,
+    );
 
-    // this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
+    this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
     // for (const sample of samples) {
     //   const startExpanded = samples.length == 1 ? true : false;
@@ -323,11 +323,11 @@ export class TrackView extends ShadowBaseElement {
 
     // this.dataTracks = orderedTracks;
 
-    // this.overviewTracks.forEach((track) => {
-    //   this.bottomContainer.appendChild(track);
-    //   track.initialize();
-    //   track.renderLoading();
-    // });
+    this.overviewTracks.forEach((track) => {
+      this.bottomContainer.appendChild(track);
+      track.initialize();
+      track.renderLoading();
+    });
 
     // setupDrag(
     //   this.tracksContainer,
@@ -579,7 +579,7 @@ export class TrackView extends ShadowBaseElement {
     this.ideogramTrack.render(settings);
     this.positionTrack.render(settings);
     // this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
-    // this.overviewTracks.forEach((track) => track.render(settings));
+    this.overviewTracks.forEach((track) => track.render(settings));
 
     const [startChrSeg, endChrSeg] = this.session.getChrSegments();
     this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
