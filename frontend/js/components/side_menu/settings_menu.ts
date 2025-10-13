@@ -234,6 +234,9 @@ export class SettingsMenu extends ShadowBaseElement {
   }
 
   connectedCallback() {
+
+    console.log("Settings menu connected callback");
+
     super.connectedCallback();
     this.annotSelect = this.root.querySelector("#annotation-select");
     this.geneListSelect = this.root.querySelector("#gene-lists-select");
@@ -401,15 +404,15 @@ export class SettingsMenu extends ShadowBaseElement {
       tracks,
       (track: DataTrack, direction: "up" | "down") => {
         this.onTrackMove(track.id, direction);
-        this.onChange({layout: true});
+        this.onChange({ layout: true });
       },
       (track: DataTrack) => {
         track.toggleHidden();
-        this.onChange({layout: true});
+        this.onChange({ layout: true });
       },
       (track: DataTrack) => {
         track.toggleExpanded();
-        this.onChange({layout: true});
+        this.onChange({ layout: true });
       },
     );
     this.tracksOverview.appendChild(tracksSection);
@@ -456,74 +459,88 @@ export class SettingsMenu extends ShadowBaseElement {
       this.colorBySelect.setValues(choices);
     }
   }
-
-  getGeneListSources(settings: {
-    selectedOnly: boolean;
-  }): { id: string; label: string }[] {
-    const sources = parseSources(
-      this.geneLists,
-      this.geneListSelect,
-      settings.selectedOnly,
-      this.session.getGeneListSelections(),
-      (source) => source.id,
-      (source) => `${source.name} + ${source.version}`,
-    );
-    return sources;
-  }
-
-  getAnnotSources(settings: {
-    selectedOnly: boolean;
-  }): { id: string; label: string }[] {
-    const sources = parseSources<ApiAnnotationTrack>(
-      this.allAnnotationSources,
-      this.annotSelect,
-      settings.selectedOnly,
-      this.session.getAnnotationSelections(),
-      (source) => source.track_id,
-      (source) => source.name,
-    );
-
-    return sources;
-  }
 }
 
-function parseSources<T>(
-  allSources: T[],
-  targetSelect: ChoiceSelect | null,
-  selectedOnly: boolean,
-  storedIds: string[],
-  getId: (source: T) => string,
-  getLabel: (source: T) => string,
-): { id: string; label: string }[] {
-  if (!selectedOnly) {
-    return allSources.map((source) => {
-      return {
-        id: getId(source),
-        label: getLabel(source),
-      };
-    });
-  }
+//   getGeneListSources(settings: {
+//     selectedOnly: boolean;
+//   }): { id: string; label: string }[] {
+//     const sources = parseSources(
+//       this.geneLists,
+//       this.geneListSelect,
+//       settings.selectedOnly,
+//       this.session.getGeneListSelections(),
+//       (source) => source.id,
+//       (source) => `${source.name} + ${source.version}`,
+//     );
+//     return sources;
+//   }
 
-  if (targetSelect == null) {
-    return allSources
-      .filter((source) => storedIds.includes(getId(source)))
-      .map((source) => {
-        return {
-          id: getId(source),
-          label: getLabel(source),
-        };
-      });
-  }
+//   // This state should not live here, but in session right
+//   getAnnotSources(settings: {
+//     selectedOnly: boolean;
+//   }): { id: string; label: string }[] {
 
-  const choices = targetSelect.getValues();
-  const returnVals = choices.map((obj) => {
-    return {
-      id: obj.value,
-      label: obj.label.toString(),
-    };
-  });
-  return returnVals;
-}
+//     console.log("Getting annotation sources with the select", this.annotSelect);
+
+//     const sources = parseSources<ApiAnnotationTrack>(
+//       this.allAnnotationSources,
+//       this.annotSelect,
+//       settings.selectedOnly,
+//       this.session.getAnnotationSelections(),
+//       (source) => source.track_id,
+//       (source) => source.name,
+//     );
+
+//     return sources;
+//   }
+// }
+
+// /**
+//  * FIXME: What is the actual intent of this one?
+//  * Messy to have the choice select being passed all the way in here
+//  */
+// function parseSources<T>(
+//   allSources: T[],
+//   targetSelect: ChoiceSelect | null,
+//   selectedOnly: boolean,
+//   storedIds: string[],
+//   getId: (source: T) => string,
+//   getLabel: (source: T) => string,
+// ): { id: string; label: string }[] {
+
+//   console.log("Parsing sources")
+//   console.log("All sources", allSources);
+//   console.log("Selected only active?", selectedOnly);
+
+//   if (!selectedOnly) {
+//     return allSources.map((source) => {
+//       return {
+//         id: getId(source),
+//         label: getLabel(source),
+//       };
+//     });
+//   }
+
+//   if (targetSelect == null) {
+//     return allSources
+//       .filter((source) => storedIds.includes(getId(source)))
+//       .map((source) => {
+//         return {
+//           id: getId(source),
+//           label: getLabel(source),
+//         };
+//       });
+//   }
+
+//   const choices = targetSelect.getValues();
+//   const returnVals = choices.map((obj) => {
+//     return {
+//       id: obj.value,
+//       label: obj.label.toString(),
+//     };
+//   });
+//   return returnVals;
+// }
 
 function getAnnotationChoices(
   annotationSources: ApiAnnotationTrack[],

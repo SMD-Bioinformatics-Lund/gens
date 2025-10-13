@@ -56,6 +56,11 @@ export class GensSession {
   private gensBaseURL: string;
   private settings: SettingsMenu;
   private genomeBuild: number;
+
+
+  private idToAnnotSource: Record<string, ApiAnnotationTrack>;
+  private idToGeneList: Record<string, ApiGeneList>;
+
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
   private geneListSelections: string[] = [];
@@ -96,6 +101,8 @@ export class GensSession {
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
     variantThreshold: number,
+    allAnnotationSources: ApiAnnotationTrack[],
+    allGeneLists: ApiGeneList[],
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
@@ -119,6 +126,16 @@ export class GensSession {
     this.variantThreshold = variantThreshold;
     this.expandedTracks = loadExpandedTracks() || {};
     this.layoutProfileKey = this.computeProfileKey();
+
+    this.idToAnnotSource = {};
+    for (const annotSource of allAnnotationSources) {
+      this.idToAnnotSource[annotSource.track_id] = annotSource;
+    }
+
+    this.idToGeneList = {};
+    for (const geneList of allGeneLists) {
+      this.idToGeneList[geneList.id] = geneList;
+    }
   }
 
   public getMainSample(): Sample {
@@ -136,8 +153,26 @@ export class GensSession {
   public getAnnotationSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
+
+    if (settings.selectedOnly) {
+      return this.annotationSelections.map((id) => {
+        const track = this.idToAnnotSource[id];
+        return {
+          id,
+          label: track.name
+        }
+      });
+    } else {
+      Object.values(this.idToAnnotSource).map((obj) => {
+        return {
+          id: obj.track_id,
+          label: obj.name,
+        }
+      })
+    }
+
     // FIXME: Should this be owned by the session?
-    return this.settings.getAnnotSources(settings);
+    // return this.settings.getAnnotSources(settings);
   }
 
   public getVariantURL(variantId: string): string {
@@ -177,7 +212,25 @@ export class GensSession {
   public getGeneListSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
-    return this.settings.getGeneListSources(settings);
+
+    if (settings.selectedOnly) {
+      return this.geneListSelections.map((id) => {
+        const geneList = this.idToGeneList[id];
+        return {
+          id,
+          label: geneList.name
+        }
+      });
+    } else {
+      Object.values(this.idToGeneList).map((obj) => {
+        return {
+          id: obj.id,
+          label: obj.name,
+        }
+      })
+    }
+
+    // return this.settings.getGeneListSources(settings);
   }
 
   public setGeneListSelections(ids: string[]): void {

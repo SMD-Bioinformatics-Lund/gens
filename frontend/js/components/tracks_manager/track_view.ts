@@ -668,7 +668,7 @@ export class TrackView extends ShadowBaseElement {
       () => {
         return setting;
       },
-      (settings) => {},
+      (settings) => { },
       () => this.session.getXRange(),
       () => {
         return getDots().then((dots) => {
@@ -677,7 +677,7 @@ export class TrackView extends ShadowBaseElement {
           };
         });
       },
-      () => {},
+      () => { },
       () => false,
     );
     return dotTrack;
@@ -740,15 +740,19 @@ function getDataTrackInfoById(
   console.error("Did not find any track with ID", trackId);
 }
 
+/**
+ * Given a Select element state and the last used settings
+ * Calculate what settings have been added and what IDs removed
+ */
 const getSettingsDiffs = (
-  sources: SelectData[],
-  startSettings: DataTrackSettingsNew[],
+  currentlySelected: SelectData[],
+  previousSettings: DataTrackSettingsNew[],
   trackType: TrackType,
 ): { newSettings: DataTrackSettingsNew[]; removedIds: string[] } => {
   // FIXME: Ponder here a bit more
   const { onlyAIds: removedIds, onlyB: newSources } = getDifferences(
-    startSettings,
-    sources,
+    previousSettings,
+    currentlySelected,
     (setting) => setting.trackId,
     (source) => source.id,
   );
@@ -795,6 +799,8 @@ async function syncDataTrackSettings(
     (sample) => sample.sampleId,
     (sample) => sample.sampleId,
   );
+
+  console.log("Settings diff annot sources", annotSources, origSettings);
 
   const annotUpdates = getSettingsDiffs(
     annotSources,
@@ -879,6 +885,9 @@ async function syncDataTrackSettings(
   }
 
   const returnSettings = [...origSettings];
+  console.log("Annot", annotUpdates);
+  console.log("Gene list", geneListUpdates);
+  console.log("Sample annot", sampleAnnotRemovedIds);
   const removeIds = [
     ...annotUpdates.removedIds,
     ...geneListUpdates.removedIds,

@@ -147,6 +147,9 @@ export async function initCanvases({
 
   const mainSample = getMainSample(samples);
 
+  const allAnnotSources = await api.getAnnotationSources();
+  const geneLists = await api.getGeneLists();
+
   const session = new GensSession(
     render,
     sideMenu,
@@ -161,6 +164,8 @@ export async function initCanvases({
     api.getChromSizes(),
     startRegion,
     DEFAULT_VARIANT_THRES,
+    allAnnotSources,
+    geneLists,
   );
 
   const renderDataSource = getRenderDataSource(
@@ -175,9 +180,6 @@ export async function initCanvases({
   };
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
-
-  const allAnnotSources = await api.getAnnotationSources();
-  const geneLists = await api.getGeneLists();
 
   settingsPage.setSources(
     session,
