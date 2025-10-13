@@ -187,21 +187,21 @@ export class TrackView extends ShadowBaseElement {
     // const variantTracks: DataTrackWrapper[] = [];
     // const sampleAnnotTracks: DataTrackWrapper[] = [];
 
-    // this.ideogramTrack = new IdeogramTrack(
-    //   "ideogram",
-    //   "Ideogram",
-    //   { height: trackHeight.xs },
-    //   async () => {
-    //     return {
-    //       xRange: session.getXRange(),
-    //       chromInfo: await dataSources.getChromInfo(session.getChromosome()),
-    //     };
-    //   },
-    //   (band: RenderBand) => {
-    //     session.setViewRange([band.start, band.end]);
-    //     render({ dataUpdated: true, positionOnly: true });
-    //   },
-    // );
+    this.ideogramTrack = new IdeogramTrack(
+      "ideogram",
+      "Ideogram",
+      { height: trackHeight.xs },
+      async () => {
+        return {
+          xRange: session.getXRange(),
+          chromInfo: await dataSources.getChromInfo(session.getChromosome()),
+        };
+      },
+      (band: RenderBand) => {
+        session.setViewRange([band.start, band.end]);
+        render({ dataUpdated: true, positionOnly: true });
+      },
+    );
 
     // const yAxisCov = {
     //   range: session.getCoverageRange(),
@@ -280,37 +280,37 @@ export class TrackView extends ShadowBaseElement {
     //   genesTrack,
     // ];
 
-    // let positionTrackSettings: DataTrackSettings = {
-    //   height: {
-    //     collapsedHeight: STYLE.tracks.trackHeight.xs,
-    //   },
-    //   showLabelWhenCollapsed: false,
-    //   isExpanded: false,
-    //   isHidden: false,
-    // };
+    let positionTrackSettings: DataTrackSettings = {
+      height: {
+        collapsedHeight: STYLE.tracks.trackHeight.xs,
+      },
+      showLabelWhenCollapsed: false,
+      isExpanded: false,
+      isHidden: false,
+    };
 
-    // this.positionTrack = new PositionTrack(
-    //   "position",
-    //   "Position",
-    //   () => positionTrackSettings,
-    //   (settings) => (positionTrackSettings = settings),
-    //   () => session.getMarkerModeOn(),
-    //   () => session.getXRange(),
-    // );
+    this.positionTrack = new PositionTrack(
+      "position",
+      "Position",
+      () => positionTrackSettings,
+      (settings) => (positionTrackSettings = settings),
+      () => session.getMarkerModeOn(),
+      () => session.getXRange(),
+    );
 
-    // const chromosomeRow = document.createElement("flex-row");
-    // chromosomeRow.style.width = "100%";
-    // this.positionLabel = document.createElement("div");
-    // this.positionLabel.id = "position-label";
-    // chromosomeRow.appendChild(this.positionLabel);
-    // chromosomeRow.appendChild(this.ideogramTrack);
+    const chromosomeRow = document.createElement("flex-row");
+    chromosomeRow.style.width = "100%";
+    this.positionLabel = document.createElement("div");
+    this.positionLabel.id = "position-label";
+    chromosomeRow.appendChild(this.positionLabel);
+    chromosomeRow.appendChild(this.ideogramTrack);
 
-    // this.topContainer.appendChild(chromosomeRow);
-    // this.topContainer.appendChild(this.positionTrack);
-    // this.ideogramTrack.initialize();
-    // this.ideogramTrack.renderLoading();
-    // this.positionTrack.initialize();
-    // this.positionTrack.renderLoading();
+    this.topContainer.appendChild(chromosomeRow);
+    this.topContainer.appendChild(this.positionTrack);
+    this.ideogramTrack.initialize();
+    this.ideogramTrack.renderLoading();
+    this.positionTrack.initialize();
+    this.positionTrack.renderLoading();
 
     // this.dataTracks = this.dataTracks;
 
@@ -576,14 +576,13 @@ export class TrackView extends ShadowBaseElement {
       trackPage.render(settings),
     );
 
-    // this.ideogramTrack.render(settings);
-    // this.positionTrack.render(settings);
+    this.ideogramTrack.render(settings);
+    this.positionTrack.render(settings);
     // this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
     // this.overviewTracks.forEach((track) => track.render(settings));
 
-    // const [startChrSeg, endChrSeg] = this.session.getChrSegments();
-
-    // this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
+    const [startChrSeg, endChrSeg] = this.session.getChrSegments();
+    this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 
   renderTracks() {
