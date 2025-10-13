@@ -50,7 +50,7 @@ export async function syncDataTrackSettings(
     await sampleDiff(
       samples,
       lastRenderedSamples,
-      (id) => session.getSample(id),
+      (caseId: string, sampleId: string) => session.getSample(caseId, sampleId),
       (caseId, sampleId) => dataSources.getSampleAnnotSources(caseId, sampleId),
     );
 
@@ -76,7 +76,7 @@ export async function syncDataTrackSettings(
 async function sampleDiff(
   samples: Sample[],
   lastRenderedSamples: Sample[],
-  getSample: (id: string) => Sample,
+  getSample: (caseId: string, sampleId: string) => Sample,
   getSampleAnnotSources: (
     caseId: string,
     sampleId: string,
@@ -85,21 +85,22 @@ async function sampleDiff(
   removedIds: Set<string>;
   sampleSettings: DataTrackSettingsNew[];
 }> {
-  const sampleIds = samples.map(
+  const currentCombinedIds = samples.map(
     (sample) => `${sample.caseId}___${sample.sampleId}`,
   );
-  const lastRenderedSampleIds = lastRenderedSamples.map(
-    (sample) => sample.sampleId,
+  const lastRenderedCombinedIds = lastRenderedSamples.map(
+    (sample) => `${sample.caseId}___${sample.sampleId}`,
   );
 
-  const { removedIds, newIds: newSampleIds } = getIDDiff(
-    lastRenderedSampleIds,
-    sampleIds,
+  const { removedIds: removedCombinedIds, newIds: newCombinedIds } = getIDDiff(
+    lastRenderedCombinedIds,
+    currentCombinedIds,
   );
 
   const sampleSettings = [];
-  for (const sampleId of newSampleIds) {
-    const sample = getSample(sampleId);
+  for (const combinedId of newCombinedIds) {
+    const [caseId, sampleId] = combinedId.split("___");
+    const sample = getSample(caseId, sampleId);
     const sampleSources = await getSampleAnnotSources(
       sample.caseId,
       sample.sampleId,
@@ -181,7 +182,7 @@ async function sampleDiff(
   }
 
   return {
-    removedIds,
+    removedIds: removedCombinedIds,
     sampleSettings,
   };
 }
