@@ -129,7 +129,11 @@ function getBandTrack(
       console.warn("Attempting to open context menu for ID", id);
       let contextMenuFn: (id: string) => void;
       if (setting.trackType == "annotation") {
-        contextMenuFn = getAnnotOpenContextMenu(session, dataSource);
+        contextMenuFn = getAnnotOpenContextMenu(
+          session,
+          dataSource,
+          (id: string) => dataSource.getAnnotationDetails(id),
+        );
       } else if (setting.trackType == "variant") {
         // // FIXME: This is not the variant ID
         // variantOpenContextMenuId(id);
@@ -143,7 +147,11 @@ function getBandTrack(
       } else if (setting.trackType == "gene") {
         contextMenuFn = getGenesOpenContextMenu(session, dataSource);
       } else if (setting.trackType == "sample-annotation") {
-        throw new Error("Not implemented yet");
+        contextMenuFn = getAnnotOpenContextMenu(
+          session,
+          dataSource,
+          (id: string) => dataSource.getSampleAnnotationDetails(id),
+        );
       } else {
         throw new Error(`Track type not supported: ${setting.trackType}`);
       }
@@ -180,9 +188,13 @@ function getGenesOpenContextMenu(
 function getAnnotOpenContextMenu(
   session: GensSession,
   dataSource: RenderDataSource,
+  dataFn: (
+    id: string,
+  ) => Promise<ApiAnnotationDetails | ApiSampleAnnotationDetails>,
 ) {
   return async (id: string) => {
-    const details = await dataSource.getAnnotationDetails(id);
+    const details = await dataFn(id);
+    // const details = await dataSource.getAnnotationDetails(id);
     const button = getSimpleButton("Set highlight", () => {
       session.addHighlight([details.start, details.end]);
     });
