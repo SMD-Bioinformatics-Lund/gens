@@ -82,7 +82,9 @@ function getDotTrack(
     () => {
       return setting;
     },
-    (settings) => {},
+    (settings) => {
+      console.warn("Assigning a new setting does not seem to be implemented");
+    },
     () => session.getXRange(),
     () => {
       return getDots().then((dots) => {
@@ -91,8 +93,10 @@ function getDotTrack(
         };
       });
     },
-    () => {},
-    () => false,
+    () => {
+      console.warn("Open track context menu does not seem reimplemented yet");
+    },
+    () => session.getMarkerModeOn(),
   );
   return dotTrack;
 }
