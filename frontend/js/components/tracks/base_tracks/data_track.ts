@@ -25,7 +25,7 @@ export interface ExpandedTrackHeight {
   expandedHeight?: number;
 }
 
-export interface DataTrackSettingsNew {
+export interface DataTrackSettings {
   trackId: string;
   trackLabel: string;
   sample?: Sample;
@@ -38,7 +38,7 @@ export interface DataTrackSettingsNew {
   isHidden: boolean;
 }
 
-export interface DataTrackSettings {
+export interface DataTrackSettingsOld {
   height: ExpandedTrackHeight;
   showLabelWhenCollapsed: boolean;
   yAxis?: Axis;
@@ -60,8 +60,8 @@ export abstract class DataTrack extends CanvasTrack {
   protected defaultTrackHeight: number;
   protected collapsedTrackHeight: number;
   // Callback to allow multi-layered settings object
-  protected getSettings: () => DataTrackSettings;
-  protected updateSettings: (settings: DataTrackSettings) => void;
+  protected getSettings: () => DataTrackSettingsOld;
+  protected updateSettings: (settings: DataTrackSettingsOld) => void;
   protected renderData: BandTrackData | DotTrackData | null;
 
   private colorBands: RenderBand[] = [];
@@ -161,8 +161,8 @@ export abstract class DataTrack extends CanvasTrack {
     getXRange: () => Rng,
     getXScale: () => Scale,
     openTrackContextMenu: ((track: DataTrack) => void) | null,
-    getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
+    getSettings: () => DataTrackSettingsOld,
+    updateSettings: (settings: DataTrackSettingsOld) => void,
     getMarkerModeOn: () => boolean,
   ) {
     const settings = getSettings != null ? getSettings() : null;

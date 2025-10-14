@@ -7,7 +7,7 @@ import {
 import { COLORS, STYLE } from "../../constants";
 import { getLinearScale } from "../../draw/render_utils";
 import { drawLabel, drawLine, drawArrow } from "../../draw/shapes";
-import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
+import { DataTrack, DataTrackSettingsOld } from "./base_tracks/data_track";
 
 const LEFT_PX_EDGE = STYLE.yAxis.width;
 
@@ -19,8 +19,8 @@ export class BandTrack extends DataTrack {
     id: string,
     label: string,
     trackType: TrackType,
-    getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
+    getSettings: () => DataTrackSettingsOld,
+    updateSettings: (settings: DataTrackSettingsOld) => void,
     getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,

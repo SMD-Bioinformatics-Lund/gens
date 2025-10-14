@@ -1,6 +1,6 @@
 import { STYLE } from "../../constants";
 import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
-import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
+import { DataTrack, DataTrackSettingsOld } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {
   startExpanded: boolean;
@@ -9,9 +9,9 @@ export class DotTrack extends DataTrack {
     id: string,
     label: string,
     trackType: TrackType,
-    getSettings: () => DataTrackSettings,
+    getSettings: () => DataTrackSettingsOld,
     // FIXME: Is this one even used? Can probably be removed?
-    updateSettings: (settings: DataTrackSettings) => void,
+    updateSettings: (settings: DataTrackSettingsOld) => void,
     getXRange: () => Rng,
     getRenderData: () => Promise<DotTrackData>,
     openTrackContextMenu: (track: DataTrack) => void,

@@ -370,35 +370,3 @@ export function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
   }
   return diff;
 }
-
-/**
- * Match different data types having shared IDs (i.e. tracks, track settings)
- * Return those unique in each collection
- */
-export function getDifferences<A, B>(
-  arrA: A[],
-  arrB: B[],
-  getAId: (a: A) => string,
-  getBId: (b: B) => string,
-): {
-  onlyA: A[];
-  onlyB: B[];
-  onlyAIds: Set<string>;
-  onlyBIds: Set<string>;
-} {
-  const aIds = new Set(arrA.map((a) => getAId(a)));
-  const bIds = new Set(arrB.map((b) => getBId(b)));
-
-  const onlyAIds = setDiff(aIds, bIds);
-  const onlyBIds = setDiff(bIds, aIds);
-
-  const onlyA = arrA.filter((a) => getAId(a));
-  const onlyB = arrB.filter((b) => getBId(b));
-
-  return {
-    onlyAIds,
-    onlyBIds,
-    onlyA,
-    onlyB,
-  };
-}

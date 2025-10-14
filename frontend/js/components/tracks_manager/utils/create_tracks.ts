@@ -4,7 +4,7 @@ import { TrackMenu } from "../../side_menu/track_menu";
 import { BandTrack } from "../../tracks/band_track";
 import {
   DataTrack,
-  DataTrackSettingsNew,
+  DataTrackSettings,
 } from "../../tracks/base_tracks/data_track";
 import { DotTrack } from "../../tracks/dot_track";
 import {
@@ -17,7 +17,7 @@ import { getSimpleButton } from "../../util/menu_utils";
 export function getRawTrack(
   session: GensSession,
   dataSource: RenderDataSource,
-  setting: DataTrackSettingsNew,
+  setting: DataTrackSettings,
 ) {
   let rawTrack;
   if (setting.trackType == "annotation") {
@@ -76,7 +76,7 @@ export function getRawTrack(
 
 function getDotTrack(
   session: GensSession,
-  setting: DataTrackSettingsNew,
+  setting: DataTrackSettings,
   getDots: () => Promise<RenderDot[]>,
 ): DotTrack {
   const showTrackContextMenu = getOpenTrackContextMenu(session);
@@ -110,7 +110,7 @@ function getDotTrack(
 function getBandTrack(
   session: GensSession,
   dataSource: RenderDataSource,
-  setting: DataTrackSettingsNew,
+  setting: DataTrackSettings,
   getRenderBands: () => Promise<RenderBand[]>,
 ): BandTrack {
   const showTrackContextMenu = getOpenTrackContextMenu(session);

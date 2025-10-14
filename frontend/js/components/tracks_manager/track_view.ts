@@ -8,18 +8,14 @@ import {
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import Sortable, { SortableEvent } from "sortablejs";
 import {
-  createAnnotTrack,
-  createDotTrack,
-  createGeneTrack,
   createOverviewTrack,
-  createVariantTrack,
   makeTrackContainer,
   TRACK_HANDLE_CLASS,
 } from "./utils";
 import {
   DataTrack,
+  DataTrackSettingsOld,
   DataTrackSettings,
-  DataTrackSettingsNew,
 } from "../tracks/base_tracks/data_track";
 import { setupDrag, setupDragging } from "../../movements/dragging";
 import { GensSession } from "../../state/gens_session";
@@ -35,7 +31,7 @@ import { BandTrack } from "../tracks/band_track";
 import { TrackHeights } from "../side_menu/settings_menu";
 import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
-import { getDifferences, removeOne, setDiff } from "../../util/utils";
+import { removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
 import { ChromosomeView } from "./chromosome_view";
@@ -103,7 +99,7 @@ export class TrackView extends ShadowBaseElement {
   private dataSource: RenderDataSource;
 
   // FIXME: Document what this is
-  private dataTrackSettings: DataTrackSettingsNew[] = [];
+  private dataTrackSettings: DataTrackSettings[] = [];
   private lastRenderedSamples: Sample[] = [];
 
   private dataTracks: DataTrackWrapper[] = [];
@@ -111,7 +107,6 @@ export class TrackView extends ShadowBaseElement {
   private positionTrack: PositionTrack;
   private overviewTracks: OverviewTrack[] = [];
 
-  // private openTrackContextMenu: (track: DataTrack) => void;
   private trackPages: Record<string, TrackMenu> = {};
 
   private geneTrackInitialized = false;
@@ -153,9 +148,6 @@ export class TrackView extends ShadowBaseElement {
     this.dataSource = dataSources;
     this.session = session;
 
-    // const openTrackContextMenu = this.createOpenTrackContextMenu(render);
-    // this.openTrackContextMenu = openTrackContextMenu;
-
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
       handle: `.${TRACK_HANDLE_CLASS}`,
@@ -184,10 +176,6 @@ export class TrackView extends ShadowBaseElement {
       render({ dataUpdated: true, positionOnly: true });
     });
 
-    // const covTracks: DataTrackWrapper[] = [];
-    // const bafTracks: DataTrackWrapper[] = [];
-    // const variantTracks: DataTrackWrapper[] = [];
-    // const sampleAnnotTracks: DataTrackWrapper[] = [];
 
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -241,7 +229,7 @@ export class TrackView extends ShadowBaseElement {
 
     this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
-    let positionTrackSettings: DataTrackSettings = {
+    let positionTrackSettings: DataTrackSettingsOld = {
       height: {
         collapsedHeight: STYLE.tracks.trackHeight.xs,
       },
@@ -464,7 +452,7 @@ export class TrackView extends ShadowBaseElement {
 
       // Load it after the other tracks
       if (!this.geneTrackInitialized) {
-        const geneTrackSettings: DataTrackSettingsNew = {
+        const geneTrackSettings: DataTrackSettings = {
           trackId: "genes",
           trackLabel: "Genes",
           trackType: "gene",

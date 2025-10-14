@@ -244,7 +244,6 @@ export async function initCanvases({
   inputControls.initialize(
     session,
     async (range) => {
-      console.log("On position change");
       session.setViewRange(range);
       render({ dataUpdated: true, positionOnly: true });
     },
