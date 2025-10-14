@@ -557,8 +557,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   renderTracks(settings: RenderSettings) {
-    console.log("renderTracks in tracks manager hit");
-
     const currIds = new Set(
       this.dataTrackSettings.map((setting) => setting.trackId),
     );

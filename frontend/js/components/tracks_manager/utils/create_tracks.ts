@@ -219,8 +219,8 @@ function getVariantOpenContextMenu(
   return async (variantId: string) => {
     // FIXME: How to control this for the sample?
     const details = await dataSource.getVariantDetails(variantId);
-    const scoutUrl = "Placeholder";
-    // const scoutUrl = getVariantURL(details.document_id);
+    // const scoutUrl = "Placeholder";
+    const scoutUrl = dataSource.getVariantURL(details.document_id);
 
     const button = getSimpleButton("Set highlight", () => {
       session.addHighlight([details.start, details.end]);

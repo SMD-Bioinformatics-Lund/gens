@@ -37,7 +37,6 @@ export async function syncDataTrackSettings(
   const { removedIds: removedAnnotIds, newAnnotationSettings } = annotationDiff(
     origTrackSettings,
     annotSources,
-    (id) => `Dummy label for ${id}`,
   );
 
   // GENE LIST DIFF
@@ -188,7 +187,7 @@ async function sampleDiff(
 function annotationDiff(
   origTrackSettings: DataTrackSettingsNew[],
   annotationSources: { id: string; label: string }[],
-  getLabel: (id: string) => string,
+  // getLabel: (id: string) => string,
 ): { newAnnotationSettings: DataTrackSettingsNew[]; removedIds: Set<string> } {
   const origAnnotTrackSettings = origTrackSettings.filter(
     (track) => track.trackType == "annotation",
@@ -204,10 +203,13 @@ function annotationDiff(
     currentlySelectedAnnotIds,
   );
   const newAnnotationSettings = Array.from(newAnnotIds).map((id) => {
-    const trackLabel = getLabel(id);
+    // FIXME: Control for errors
+    const targetSource = annotationSources.filter(
+      (source) => source.id == id,
+    )[0];
     const newSetting: DataTrackSettingsNew = {
       trackId: id,
-      trackLabel: trackLabel,
+      trackLabel: targetSource.label,
       trackType: "annotation",
       height: { collapsedHeight: TRACK_HEIGHTS.m },
       showLabelWhenCollapsed: true,
@@ -263,6 +265,3 @@ function geneListDiff(
     removedIds,
   };
 }
-
-
-

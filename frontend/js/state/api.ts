@@ -95,7 +95,6 @@ export class API {
   }
 
   async getVariantDetails(id: string): Promise<ApiVariantDetails> {
-    console.error("Grabbing variant details for", id);
     const details = get(
       new URL(`tracks/variants/${id}`, this.apiURI).href,
       {},

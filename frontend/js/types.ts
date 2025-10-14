@@ -401,6 +401,8 @@ interface RenderDataSource {
 
   getOverviewCovData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
   getOverviewBafData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
+
+  getVariantURL: (doc_id: string) => string;
 }
 
 type Rng = [number, number];

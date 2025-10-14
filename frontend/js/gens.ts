@@ -176,6 +176,7 @@ export async function initCanvases({
     api,
     () => session.getChromosome(),
     () => session.getXRange(),
+    (id) => session.getVariantURL(id),
   );
 
   const onChromClick = async (chrom) => {
