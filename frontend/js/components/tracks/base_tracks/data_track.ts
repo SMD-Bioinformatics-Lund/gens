@@ -245,7 +245,6 @@ export abstract class DataTrack extends CanvasTrack {
         this.renderSeq = this.renderSeq + 1;
         const mySeq = this.renderSeq;
         this.renderLoading();
-        console.log("Getting new data");
         this.renderData = await this.getRenderData();
         if (mySeq !== this.renderSeq) {
           return;
@@ -265,7 +264,6 @@ export abstract class DataTrack extends CanvasTrack {
       if (!settings.positionOnly) {
         this.renderLoading();
       }
-      console.log("Ready to fetch more data");
       fetchData();
     } else {
       this.draw(this.renderData);

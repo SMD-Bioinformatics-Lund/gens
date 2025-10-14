@@ -47,7 +47,6 @@ export function getRawTrack(
         session.getChromosome(),
         session.getXRange(),
       );
-      console.log("Requesting new cov data");
       return data;
     };
 
