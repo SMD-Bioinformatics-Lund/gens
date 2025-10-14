@@ -114,6 +114,8 @@ export class TrackView extends ShadowBaseElement {
   private openTrackContextMenu: (track: DataTrack) => void;
   private trackPages: Record<string, TrackMenu> = {};
 
+  private geneTrackInitialized = false;
+
   private sampleToTracks: Record<
     string,
     {
@@ -239,47 +241,6 @@ export class TrackView extends ShadowBaseElement {
 
     this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
-    // for (const sample of samples) {
-    //   const startExpanded = samples.length == 1 ? true : false;
-
-    //   const sampleTracks = createSampleTracks(
-    //     sample,
-    //     dataSources,
-    //     startExpanded,
-    //     session,
-    //     true,
-    //     openTrackContextMenu,
-    //   );
-
-    //   this.sampleToTracks[sample.sampleId] = sampleTracks;
-
-    //   covTracks.push(sampleTracks.cov);
-    //   bafTracks.push(sampleTracks.baf);
-    //   variantTracks.push(sampleTracks.variant);
-
-    //   this.setupSampleAnnotationTracks(sample);
-    // }
-
-    // const genesTrack = createGeneTrack(
-    //   "genes",
-    //   "Genes",
-    //   GENE_TRACK_TYPE,
-    //   (chrom: string) => dataSources.getTranscriptBands(chrom),
-    //   (id: string) => dataSources.getTranscriptDetails(id),
-    //   session,
-    //   openTrackContextMenu,
-    // );
-
-    // const trackSettings = [];
-
-    // const tracks: DataTrackWrapper[] = [
-    //   ...bafTracks,
-    //   ...covTracks,
-    //   ...variantTracks,
-    //   ...sampleAnnotTracks,
-    //   genesTrack,
-    // ];
-
     let positionTrackSettings: DataTrackSettings = {
       height: {
         collapsedHeight: STYLE.tracks.trackHeight.xs,
@@ -311,17 +272,6 @@ export class TrackView extends ShadowBaseElement {
     this.ideogramTrack.renderLoading();
     this.positionTrack.initialize();
     this.positionTrack.renderLoading();
-
-    // this.dataTracks = this.dataTracks;
-
-    // const orderedTracks = loadTrackLayout(this.session, tracks);
-    // orderedTracks.forEach(({ track, container }) => {
-    //   this.tracksContainer.appendChild(container);
-    //   track.initialize();
-    //   track.renderLoading();
-    // });
-
-    // this.dataTracks = orderedTracks;
 
     this.overviewTracks.forEach((track) => {
       this.bottomContainer.appendChild(track);
@@ -570,6 +520,25 @@ export class TrackView extends ShadowBaseElement {
     ).then(({ settings: dataTrackSettings, samples }) => {
       this.dataTrackSettings = dataTrackSettings;
       this.lastRenderedSamples = samples;
+
+      // Load it after the other tracks
+      if (!this.geneTrackInitialized) {
+        const geneTrackSettings: DataTrackSettingsNew = {
+          trackId: "genes",
+          trackLabel: "Genes",
+          trackType: "gene",
+          height: {
+            collapsedHeight: TRACK_HEIGHTS.m,
+          },
+          showLabelWhenCollapsed: true,
+          isExpanded: true,
+          isHidden: false,
+        };
+
+        this.dataTrackSettings.push(geneTrackSettings);
+        this.geneTrackInitialized = true;
+      }
+
       this.renderTracks(renderSettings);
     });
 
@@ -587,7 +556,6 @@ export class TrackView extends ShadowBaseElement {
     this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 
-  // FIXME: Move to util?
   renderTracks(settings: RenderSettings) {
     console.log("renderTracks in tracks manager hit");
 
@@ -598,7 +566,6 @@ export class TrackView extends ShadowBaseElement {
     const addedIds = setDiff(currIds, trackIds);
     const removedIds = setDiff(trackIds, currIds);
 
-    // Aha, adding new things here
     for (const settingId of addedIds) {
       const setting = this.dataTrackSettings.filter(
         (setting) => setting.trackId == settingId,
@@ -609,16 +576,13 @@ export class TrackView extends ShadowBaseElement {
       this.dataTracks.push(trackWrapper);
       this.tracksContainer.appendChild(trackWrapper.container);
       rawTrack.initialize();
-      // rawTrack.render({});
     }
 
-    // And removing things here
     for (const id of removedIds) {
       const match = removeOne(this.dataTracks, (info) => info.track.id === id);
       this.tracksContainer.removeChild(match.container);
     }
 
-    // But we should render everything here isn't it
     for (const track of this.dataTracks) {
       track.track.render(settings);
     }

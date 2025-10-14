@@ -60,6 +60,10 @@ export function getRawTrack(
         session.getXRange(),
       );
     rawTrack = getDotTrack(session, setting, getSampleBafDots);
+  } else if (setting.trackType == "gene") {
+    const getGeneBands = () =>
+      dataSource.getTranscriptBands(session.getChromosome());
+    rawTrack = getBandTrack(session, dataSource, setting, getGeneBands);
   } else {
     throw Error(`Not yet supported track type ${setting.trackType}`);
   }
