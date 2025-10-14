@@ -99,7 +99,7 @@ export class TrackView extends ShadowBaseElement {
   private dataSource: RenderDataSource;
 
   // FIXME: Document what this is
-  private dataTrackSettings: DataTrackSettings[] = [];
+  // private dataTrackSettings: DataTrackSettings[] = [];
   private lastRenderedSamples: Sample[] = [];
 
   private dataTracks: DataTrackWrapper[] = [];
@@ -442,12 +442,12 @@ export class TrackView extends ShadowBaseElement {
     // lastRenderedSamples
 
     syncDataTrackSettings(
-      this.dataTrackSettings,
+      this.session.dataTrackSettings,
       this.session,
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
-      this.dataTrackSettings = dataTrackSettings;
+      this.session.dataTrackSettings = dataTrackSettings;
       this.lastRenderedSamples = samples;
 
       // Load it after the other tracks
@@ -464,7 +464,7 @@ export class TrackView extends ShadowBaseElement {
           isHidden: false,
         };
 
-        this.dataTrackSettings.push(geneTrackSettings);
+        this.session.dataTrackSettings.push(geneTrackSettings);
         this.geneTrackInitialized = true;
       }
 
@@ -487,14 +487,14 @@ export class TrackView extends ShadowBaseElement {
 
   renderTracks(settings: RenderSettings) {
     const currIds = new Set(
-      this.dataTrackSettings.map((setting) => setting.trackId),
+      this.session.dataTrackSettings.map((setting) => setting.trackId),
     );
     const trackIds = new Set(this.dataTracks.map((track) => track.track.id));
     const addedIds = setDiff(currIds, trackIds);
     const removedIds = setDiff(trackIds, currIds);
 
     for (const settingId of addedIds) {
-      const setting = this.dataTrackSettings.filter(
+      const setting = this.session.dataTrackSettings.filter(
         (setting) => setting.trackId == settingId,
       )[0];
       const rawTrack = getRawTrack(this.session, this.dataSource, setting);
