@@ -70,7 +70,6 @@ export class GensSession {
 
   public dataTrackSettings: DataTrackSettings[] = [];
 
-
   // private dataTracks: DataTrackSettings[] = [];
 
   // public addTrack(settings: DataTrackSettings) {
@@ -457,6 +456,30 @@ export class GensSession {
   }
 
   public moveTrack(trackId: string, direction: "up" | "down"): void {
-    console.warn("Moving track to be implemented");
+    const startTrack = this.dataTrackSettings.find(
+      (track) => track.trackId == trackId,
+    );
+    const startIndex = this.dataTrackSettings.indexOf(startTrack);
+
+    const endIndex = direction == "up" ? startIndex - 1 : startIndex + 1;
+
+    // Don't move at the edge
+    if (endIndex < 0 || endIndex >= this.dataTrackSettings.length) {
+      return;
+    }
+
+    const endTrack = this.dataTrackSettings[endIndex];
+
+    this.dataTrackSettings[startIndex] = endTrack;
+    this.dataTrackSettings[endIndex] = startTrack;
+
+    console.log("Track moved in session");
+
+    // this.dataTrackSettings[
+    //   (this.dataTrackSettings[startIndex], this.dataTrackSettings[endIndex])
+    // ] =
+    //   this.dataTrackSettings[
+    //     (this.dataTrackSettings[endIndex], this.dataTrackSettings[startIndex])
+    //   ];
   }
 }

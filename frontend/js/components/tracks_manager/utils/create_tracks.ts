@@ -14,27 +14,50 @@ import {
 } from "../../util/menu_content_utils";
 import { getSimpleButton } from "../../util/menu_utils";
 
+// FIXME: Should the track context menu come in as a separate thing or?
+
 export function getRawTrack(
   session: GensSession,
   dataSource: RenderDataSource,
   setting: DataTrackSettings,
+  // FIXME: Temporary, I don't think this should need to go into here
+  // Needed for the context menu
+  render: (settings: RenderSettings) => void,
 ) {
   let rawTrack;
   if (setting.trackType == "annotation") {
     const getAnnotationBands = () =>
       dataSource.getAnnotationBands(setting.trackId, session.getChromosome());
-    rawTrack = getBandTrack(session, dataSource, setting, getAnnotationBands);
+    rawTrack = getBandTrack(
+      session,
+      dataSource,
+      setting,
+      getAnnotationBands,
+      render,
+    );
   } else if (setting.trackType == "gene-list") {
     const getGeneListBands = () =>
       dataSource.getGeneListBands(setting.trackId, session.getChromosome());
-    rawTrack = getBandTrack(session, dataSource, setting, getGeneListBands);
+    rawTrack = getBandTrack(
+      session,
+      dataSource,
+      setting,
+      getGeneListBands,
+      render,
+    );
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
       dataSource.getSampleAnnotationBands(
         setting.trackId,
         session.getChromosome(),
       );
-    rawTrack = getBandTrack(session, dataSource, setting, getSampleAnnotBands);
+    rawTrack = getBandTrack(
+      session,
+      dataSource,
+      setting,
+      getSampleAnnotBands,
+      render,
+    );
   } else if (setting.trackType == "variant") {
     // FIXME: Generalize the rank score threshold. Where did it come from before?
     const rankScoreThres = 4;
@@ -44,7 +67,13 @@ export function getRawTrack(
         session.getChromosome(),
         rankScoreThres,
       );
-    rawTrack = getBandTrack(session, dataSource, setting, getSampleAnnotBands);
+    rawTrack = getBandTrack(
+      session,
+      dataSource,
+      setting,
+      getSampleAnnotBands,
+      render,
+    );
   } else if (setting.trackType == "dot-cov") {
     const getSampleCovDots = () => {
       const data = dataSource.getCovData(
@@ -55,7 +84,7 @@ export function getRawTrack(
       return data;
     };
 
-    rawTrack = getDotTrack(session, setting, getSampleCovDots);
+    rawTrack = getDotTrack(session, setting, getSampleCovDots, render);
   } else if (setting.trackType == "dot-baf") {
     const getSampleBafDots = () =>
       dataSource.getBafData(
@@ -63,11 +92,11 @@ export function getRawTrack(
         session.getChromosome(),
         session.getXRange(),
       );
-    rawTrack = getDotTrack(session, setting, getSampleBafDots);
+    rawTrack = getDotTrack(session, setting, getSampleBafDots, render);
   } else if (setting.trackType == "gene") {
     const getGeneBands = () =>
       dataSource.getTranscriptBands(session.getChromosome());
-    rawTrack = getBandTrack(session, dataSource, setting, getGeneBands);
+    rawTrack = getBandTrack(session, dataSource, setting, getGeneBands, render);
   } else {
     throw Error(`Not yet supported track type ${setting.trackType}`);
   }
@@ -78,8 +107,9 @@ function getDotTrack(
   session: GensSession,
   setting: DataTrackSettings,
   getDots: () => Promise<RenderDot[]>,
+  render: (settings: RenderSettings) => void,
 ): DotTrack {
-  const showTrackContextMenu = getOpenTrackContextMenu(session);
+  const showTrackContextMenu = getOpenTrackContextMenu(session, render);
 
   const dotTrack = new DotTrack(
     setting.trackId,
@@ -112,8 +142,9 @@ function getBandTrack(
   dataSource: RenderDataSource,
   setting: DataTrackSettings,
   getRenderBands: () => Promise<RenderBand[]>,
+  render: (setting: RenderSettings) => void,
 ): BandTrack {
-  const showTrackContextMenu = getOpenTrackContextMenu(session);
+  const showTrackContextMenu = getOpenTrackContextMenu(session, render);
 
   const rawTrack = new BandTrack(
     setting.trackId,
@@ -248,11 +279,10 @@ function getVariantOpenContextMenu(
   };
 }
 
-function getOpenTrackContextMenu(session: GensSession) {
-  const render = (settings: { layout?: boolean }) => {
-    console.warn("Just a render placeholder");
-  };
-
+function getOpenTrackContextMenu(
+  session: GensSession,
+  render: (settings: RenderSettings) => void,
+) {
   return (track: DataTrack) => {
     console.log("Open track context menu, inside");
 
@@ -274,7 +304,11 @@ function getOpenTrackContextMenu(session: GensSession) {
     trackPage.initialize(
       (settings: { selectedOnly: boolean }) =>
         session.getAnnotationSources(settings),
-      (direction: "up" | "down") => session.moveTrack(track.id, direction),
+      (direction: "up" | "down") => {
+        session.moveTrack(track.id, direction);
+        console.log("Ready for new render");
+        render({ layout: true });
+      },
       () => {
         track.toggleHidden();
         render({ layout: true });

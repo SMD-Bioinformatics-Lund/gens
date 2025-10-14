@@ -176,7 +176,6 @@ export class TrackView extends ShadowBaseElement {
       render({ dataUpdated: true, positionOnly: true });
     });
 
-
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
       "Ideogram",
@@ -486,6 +485,8 @@ export class TrackView extends ShadowBaseElement {
   }
 
   renderTracks(settings: RenderSettings) {
+    console.log("Tracks are rendered");
+
     const currIds = new Set(
       this.session.dataTrackSettings.map((setting) => setting.trackId),
     );
@@ -497,7 +498,12 @@ export class TrackView extends ShadowBaseElement {
       const setting = this.session.dataTrackSettings.filter(
         (setting) => setting.trackId == settingId,
       )[0];
-      const rawTrack = getRawTrack(this.session, this.dataSource, setting);
+      const rawTrack = getRawTrack(
+        this.session,
+        this.dataSource,
+        setting,
+        (settings) => this.renderTracks(settings),
+      );
 
       const trackWrapper = makeTrackContainer(rawTrack, null);
       this.dataTracks.push(trackWrapper);

@@ -67,6 +67,8 @@ export async function syncDataTrackSettings(
   returnTrackSettings.push(...newAnnotationSettings);
   returnTrackSettings.push(...newGeneListSettings);
 
+  // FIXME: Sync the ordering here as well
+
   return { settings: returnTrackSettings, samples };
 }
 
