@@ -111,7 +111,7 @@ export class TrackView extends ShadowBaseElement {
   private positionTrack: PositionTrack;
   private overviewTracks: OverviewTrack[] = [];
 
-  private openTrackContextMenu: (track: DataTrack) => void;
+  // private openTrackContextMenu: (track: DataTrack) => void;
   private trackPages: Record<string, TrackMenu> = {};
 
   private geneTrackInitialized = false;
@@ -153,8 +153,8 @@ export class TrackView extends ShadowBaseElement {
     this.dataSource = dataSources;
     this.session = session;
 
-    const openTrackContextMenu = this.createOpenTrackContextMenu(render);
-    this.openTrackContextMenu = openTrackContextMenu;
+    // const openTrackContextMenu = this.createOpenTrackContextMenu(render);
+    // this.openTrackContextMenu = openTrackContextMenu;
 
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
@@ -312,64 +312,64 @@ export class TrackView extends ShadowBaseElement {
     return xScale;
   }
 
-  // FIXME: Lift this one up one level
-  private createOpenTrackContextMenu(
-    render: (settings: RenderSettings) => void,
-  ) {
-    const openTrackContextMenu = (track: DataTrack) => {
-      const isDotTrack = track instanceof DotTrack;
+  // // FIXME: Lift this one up one level
+  // private createOpenTrackContextMenu(
+  //   render: (settings: RenderSettings) => void,
+  // ) {
+  //   const openTrackContextMenu = (track: DataTrack) => {
+  //     const isDotTrack = track instanceof DotTrack;
 
-      if (this.trackPages[track.id] == null) {
-        const trackPage = new TrackMenu();
-        const trackSettings = {
-          showYAxis: isDotTrack,
-          showColor: false,
-        };
-        trackPage.configure(track.id, trackSettings);
-        this.trackPages[track.id] = trackPage;
-      }
+  //     if (this.trackPages[track.id] == null) {
+  //       const trackPage = new TrackMenu();
+  //       const trackSettings = {
+  //         showYAxis: isDotTrack,
+  //         showColor: false,
+  //       };
+  //       trackPage.configure(track.id, trackSettings);
+  //       this.trackPages[track.id] = trackPage;
+  //     }
 
-      const trackPage = this.trackPages[track.id];
-      this.session.showContent(
-        track.label,
-        [trackPage],
-        STYLE.menu.narrowWidth,
-      );
+  //     const trackPage = this.trackPages[track.id];
+  //     this.session.showContent(
+  //       track.label,
+  //       [trackPage],
+  //       STYLE.menu.narrowWidth,
+  //     );
 
-      trackPage.initialize(
-        (settings: { selectedOnly: boolean }) =>
-          this.session.getAnnotationSources(settings),
-        (direction: "up" | "down") => this.moveTrack(track.id, direction),
-        () => {
-          track.toggleHidden();
-          render({ layout: true });
-        },
-        () => {
-          track.toggleExpanded();
-          render({ layout: true });
-        },
-        () => track.getIsHidden(),
-        () => track.getIsExpanded(),
-        isDotTrack ? () => track.getYAxis().range : null,
-        (newY: Rng) => {
-          track.setYAxis(newY);
-          render({});
-        },
-        async (annotId: string | null) => {
-          let colorBands = [];
-          if (annotId != null) {
-            colorBands = await this.dataSource.getAnnotationBands(
-              annotId,
-              this.session.getChromosome(),
-            );
-          }
-          track.setColorBands(colorBands);
-          render({});
-        },
-      );
-    };
-    return openTrackContextMenu;
-  }
+  //     trackPage.initialize(
+  //       (settings: { selectedOnly: boolean }) =>
+  //         this.session.getAnnotationSources(settings),
+  //       (direction: "up" | "down") => this.moveTrack(track.id, direction),
+  //       () => {
+  //         track.toggleHidden();
+  //         render({ layout: true });
+  //       },
+  //       () => {
+  //         track.toggleExpanded();
+  //         render({ layout: true });
+  //       },
+  //       () => track.getIsHidden(),
+  //       () => track.getIsExpanded(),
+  //       isDotTrack ? () => track.getYAxis().range : null,
+  //       (newY: Rng) => {
+  //         track.setYAxis(newY);
+  //         render({});
+  //       },
+  //       async (annotId: string | null) => {
+  //         let colorBands = [];
+  //         if (annotId != null) {
+  //           colorBands = await this.dataSource.getAnnotationBands(
+  //             annotId,
+  //             this.session.getChromosome(),
+  //           );
+  //         }
+  //         track.setColorBands(colorBands);
+  //         render({});
+  //       },
+  //     );
+  //   };
+  //   return openTrackContextMenu;
+  // }
 
   public getDataTracks(): DataTrack[] {
     return this.dataTracks.map((info) => info.track);

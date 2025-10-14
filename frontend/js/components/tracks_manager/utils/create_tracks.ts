@@ -1,7 +1,11 @@
 import { STYLE } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
+import { TrackMenu } from "../../side_menu/track_menu";
 import { BandTrack } from "../../tracks/band_track";
-import { DataTrackSettingsNew } from "../../tracks/base_tracks/data_track";
+import {
+  DataTrack,
+  DataTrackSettingsNew,
+} from "../../tracks/base_tracks/data_track";
 import { DotTrack } from "../../tracks/dot_track";
 import {
   getAnnotationContextMenuContent,
@@ -75,6 +79,8 @@ function getDotTrack(
   setting: DataTrackSettingsNew,
   getDots: () => Promise<RenderDot[]>,
 ): DotTrack {
+  const showTrackContextMenu = getOpenTrackContextMenu(session);
+
   const dotTrack = new DotTrack(
     setting.trackId,
     setting.trackLabel,
@@ -93,8 +99,8 @@ function getDotTrack(
         };
       });
     },
-    () => {
-      console.warn("Open track context menu does not seem reimplemented yet");
+    (track) => {
+      showTrackContextMenu(track);
     },
     () => session.getMarkerModeOn(),
   );
@@ -107,6 +113,8 @@ function getBandTrack(
   setting: DataTrackSettingsNew,
   getRenderBands: () => Promise<RenderBand[]>,
 ): BandTrack {
+  const showTrackContextMenu = getOpenTrackContextMenu(session);
+
   const rawTrack = new BandTrack(
     setting.trackId,
     setting.trackLabel,
@@ -165,8 +173,8 @@ function getBandTrack(
       }
       contextMenuFn(id);
     },
-    () => {
-      console.warn("Attempting to open track context menu");
+    (track) => {
+      showTrackContextMenu(track);
     },
     // openContextMenuId,
     // openTrackContextMenu,
@@ -237,5 +245,63 @@ function getVariantOpenContextMenu(
     content.push(...entries);
 
     session.showContent("Variant", content, STYLE.menu.narrowWidth);
+  };
+}
+
+function getOpenTrackContextMenu(session: GensSession) {
+  const render = (settings: { layout?: boolean }) => {
+    console.warn("Just a render placeholder");
+  };
+
+  return (track: DataTrack) => {
+    console.log("Open track context menu, inside");
+
+    const isDotTrack = track instanceof DotTrack;
+
+    // if (trackPages[track.id] == null) {
+    const trackPage = new TrackMenu();
+    const trackSettings = {
+      showYAxis: isDotTrack,
+      showColor: false,
+    };
+    trackPage.configure(track.id, trackSettings);
+    // trackPages[track.id] = trackPage;
+    // }
+
+    // const trackPage = trackPages[track.id];
+    session.showContent(track.label, [trackPage], STYLE.menu.narrowWidth);
+
+    trackPage.initialize(
+      (settings: { selectedOnly: boolean }) =>
+        session.getAnnotationSources(settings),
+      (direction: "up" | "down") => session.moveTrack(track.id, direction),
+      () => {
+        track.toggleHidden();
+        render({ layout: true });
+      },
+      () => {
+        track.toggleExpanded();
+        render({ layout: true });
+      },
+      () => track.getIsHidden(),
+      () => track.getIsExpanded(),
+      isDotTrack ? () => track.getYAxis().range : null,
+      (newY: Rng) => {
+        track.setYAxis(newY);
+        render({});
+      },
+      async (annotId: string | null) => {
+        console.warn("What is the intent here");
+        // let colorBands = [];
+        // if (annotId != null) {
+        //   colorBands = await dataSource.getAnnotationBands(
+        //     annotId,
+        //     session.getChromosome(),
+        //   );
+        // }
+        // track.setColorBands(colorBands);
+        // render({});
+      },
+    );
   };
 }

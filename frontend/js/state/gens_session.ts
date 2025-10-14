@@ -452,4 +452,8 @@ export class GensSession {
   public saveTrackLayout(layout: TrackLayout): void {
     saveTrackLayout(this.layoutProfileKey, layout);
   }
+
+  public moveTrack(trackId: string, direction: "up" | "down"): void {
+    console.warn("Moving track to be implemented");
+  }
 }
