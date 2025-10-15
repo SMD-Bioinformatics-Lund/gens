@@ -36,7 +36,8 @@ import { PositionTrack } from "../tracks/position_track";
 import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
 import { ChromosomeView } from "./chromosome_view";
 import { syncDataTrackSettings } from "./utils/sync_tracks";
-import { getRawTrack } from "./utils/create_tracks";
+import { getRawTrack as getTrack } from "./utils/create_tracks";
+import { getOpenTrackContextMenu } from "./utils/track_menues";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -471,11 +472,6 @@ export class TrackView extends ShadowBaseElement {
       this.renderTracks(renderSettings);
     });
 
-    console.log(
-      "What are the data track settings",
-      this.session.dataTrackSettings,
-    );
-
     this.syncTrackOrder();
 
     // FIXME: Only the active one needs to be rendered isn't it?
@@ -493,8 +489,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   syncTrackOrder() {
-    console.log("Syncing track order");
-
     const desiredOrder = this.session.dataTrackSettings.map((s) => s.trackId);
 
     if (desiredOrder.length == 0) {
@@ -574,22 +568,26 @@ export class TrackView extends ShadowBaseElement {
     const addedIds = setDiff(currIds, trackIds);
     const removedIds = setDiff(trackIds, currIds);
 
+    const showTrackContextMenu = getOpenTrackContextMenu(
+      this.session,
+      this.render,
+    );
+
     for (const settingId of addedIds) {
       const setting = this.session.dataTrackSettings.filter(
         (setting) => setting.trackId == settingId,
       )[0];
-      // FIXME: What does even raw mean here
-      const rawTrack = getRawTrack(
+      const track = getTrack(
         this.session,
         this.dataSource,
         setting,
-        (settings) => this.render(settings),
+        showTrackContextMenu,
       );
 
-      const trackWrapper = makeTrackContainer(rawTrack, null);
+      const trackWrapper = makeTrackContainer(track, null);
       this.dataTracks.push(trackWrapper);
       this.tracksContainer.appendChild(trackWrapper.container);
-      rawTrack.initialize();
+      track.initialize();
     }
 
     for (const id of removedIds) {

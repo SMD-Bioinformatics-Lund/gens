@@ -20,9 +20,7 @@ export function getRawTrack(
   session: GensSession,
   dataSource: RenderDataSource,
   setting: DataTrackSettings,
-  // FIXME: Temporary, I don't think this should need to go into here
-  // Needed for the context menu
-  render: (settings: RenderSettings) => void,
+  showTrackContextMenu: (track: DataTrack) => void,
 ) {
   let rawTrack;
   if (setting.trackType == "annotation") {
@@ -33,7 +31,7 @@ export function getRawTrack(
       dataSource,
       setting,
       getAnnotationBands,
-      render,
+      showTrackContextMenu,
     );
   } else if (setting.trackType == "gene-list") {
     const getGeneListBands = () =>
@@ -43,7 +41,7 @@ export function getRawTrack(
       dataSource,
       setting,
       getGeneListBands,
-      render,
+      showTrackContextMenu,
     );
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
@@ -56,7 +54,7 @@ export function getRawTrack(
       dataSource,
       setting,
       getSampleAnnotBands,
-      render,
+      showTrackContextMenu,
     );
   } else if (setting.trackType == "variant") {
     // FIXME: Generalize the rank score threshold. Where did it come from before?
@@ -72,7 +70,7 @@ export function getRawTrack(
       dataSource,
       setting,
       getSampleAnnotBands,
-      render,
+      showTrackContextMenu,
     );
   } else if (setting.trackType == "dot-cov") {
     const getSampleCovDots = () => {
@@ -84,7 +82,12 @@ export function getRawTrack(
       return data;
     };
 
-    rawTrack = getDotTrack(session, setting, getSampleCovDots, render);
+    rawTrack = getDotTrack(
+      session,
+      setting,
+      getSampleCovDots,
+      showTrackContextMenu,
+    );
   } else if (setting.trackType == "dot-baf") {
     const getSampleBafDots = () =>
       dataSource.getBafData(
@@ -92,11 +95,22 @@ export function getRawTrack(
         session.getChromosome(),
         session.getXRange(),
       );
-    rawTrack = getDotTrack(session, setting, getSampleBafDots, render);
+    rawTrack = getDotTrack(
+      session,
+      setting,
+      getSampleBafDots,
+      showTrackContextMenu,
+    );
   } else if (setting.trackType == "gene") {
     const getGeneBands = () =>
       dataSource.getTranscriptBands(session.getChromosome());
-    rawTrack = getBandTrack(session, dataSource, setting, getGeneBands, render);
+    rawTrack = getBandTrack(
+      session,
+      dataSource,
+      setting,
+      getGeneBands,
+      showTrackContextMenu,
+    );
   } else {
     throw Error(`Not yet supported track type ${setting.trackType}`);
   }
@@ -107,10 +121,8 @@ function getDotTrack(
   session: GensSession,
   setting: DataTrackSettings,
   getDots: () => Promise<RenderDot[]>,
-  render: (settings: RenderSettings) => void,
+  showTrackContextMenu: (track: DataTrack) => void,
 ): DotTrack {
-  const showTrackContextMenu = getOpenTrackContextMenu(session, render);
-
   const dotTrack = new DotTrack(
     setting.trackId,
     setting.trackLabel,
@@ -142,10 +154,8 @@ function getBandTrack(
   dataSource: RenderDataSource,
   setting: DataTrackSettings,
   getRenderBands: () => Promise<RenderBand[]>,
-  render: (setting: RenderSettings) => void,
+  showTrackContextMenu: (track: DataTrack) => void,
 ): BandTrack {
-  const showTrackContextMenu = getOpenTrackContextMenu(session, render);
-
   const rawTrack = new BandTrack(
     setting.trackId,
     setting.trackLabel,
@@ -279,63 +289,3 @@ function getVariantOpenContextMenu(
   };
 }
 
-function getOpenTrackContextMenu(
-  session: GensSession,
-  render: (settings: RenderSettings) => void,
-) {
-  return (track: DataTrack) => {
-    console.log("Open track context menu, inside");
-
-    const isDotTrack = track instanceof DotTrack;
-
-    // if (trackPages[track.id] == null) {
-    const trackPage = new TrackMenu();
-    const trackSettings = {
-      showYAxis: isDotTrack,
-      showColor: false,
-    };
-    trackPage.configure(track.id, trackSettings);
-    // trackPages[track.id] = trackPage;
-    // }
-
-    // const trackPage = trackPages[track.id];
-    session.showContent(track.label, [trackPage], STYLE.menu.narrowWidth);
-
-    trackPage.initialize(
-      (settings: { selectedOnly: boolean }) =>
-        session.getAnnotationSources(settings),
-      (direction: "up" | "down") => {
-        console.log("Move track clicked");
-        session.moveTrack(track.id, direction);
-        render({ layout: true });
-      },
-      () => {
-        track.toggleHidden();
-        render({ layout: true });
-      },
-      () => {
-        track.toggleExpanded();
-        render({ layout: true });
-      },
-      () => track.getIsHidden(),
-      () => track.getIsExpanded(),
-      isDotTrack ? () => track.getYAxis().range : null,
-      (newY: Rng) => {
-        track.setYAxis(newY);
-        render({});
-      },
-      async (annotId: string | null) => {
-        console.warn("What is the intent here");
-        // let colorBands = [];
-        // if (annotId != null) {
-        //   colorBands = await dataSource.getAnnotationBands(
-        //     annotId,
-        //     session.getChromosome(),
-        //   );
-        // }
-        // track.setColorBands(colorBands);
-        // render({});
-      },
-    );
-  };
-}
