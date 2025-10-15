@@ -36,6 +36,8 @@ export interface DataTrackSettings {
   yPadBands?: boolean;
   isExpanded: boolean;
   isHidden: boolean;
+  // For the chromosome view. Should it have its own setting type?
+  chromosome?: string;
 }
 
 const DEBOUNCE_DELAY = 50;
@@ -283,11 +285,8 @@ export abstract class DataTrack extends CanvasTrack {
 
     const settings = this.getSettings();
     if (this.lastRenderedExpanded != settings.isExpanded) {
-      console.log("Expansion triggered");
-
       this.lastRenderedExpanded = settings.isExpanded;
 
-      console.log("Has onExpand?", this.onExpand);
       if (this.onExpand) {
         this.syncHeight();
         this.onExpand();

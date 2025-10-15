@@ -68,35 +68,28 @@ export class GensSession {
   private expandedTracks: Record<string, boolean> = {};
   private layoutProfileKey: string;
 
-  public dataTrackSettings: DataTrackSettings[] = [];
+  public trackViewTracks: DataTrackSettings[] = [];
+  public chromosomeViewTracks: DataTrackSettings[] = [];
 
-  public updateDataTrackSetting(
+  public updateTrackViewSetting(
     trackId: string,
     updatedSettings: DataTrackSettings,
   ): void {
-    const settingIndex = this.dataTrackSettings.findIndex(
+    const settingIndex = this.trackViewTracks.findIndex(
       (setting) => setting.trackId == trackId,
     );
-    this.dataTrackSettings[settingIndex] = updatedSettings;
+    this.trackViewTracks[settingIndex] = updatedSettings;
   }
 
-  // private dataTracks: DataTrackSettings[] = [];
-
-  // public addTrack(settings: DataTrackSettings) {
-  //   this.dataTracks.push(settings);
-
-  //   const trackLayout = {
-  //     order: [],
-  //     hidden: {},
-  //     expanded: {},
-  //   }
-
-  //   this.saveTrackLayout(this.dataTracks);
-  // }
-
-  // public getTrack(key: string): DataTrackSettings {
-  //   return this.dataTracks.filter((track) => track.trackId == key)[0];
-  // }
+  public updateChromosomeViewSetting(
+    trackId: string,
+    updatedSettings: DataTrackSettings,
+  ): void {
+    const settingIndex = this.chromosomeViewTracks.findIndex(
+      (setting) => setting.trackId == trackId,
+    );
+    this.chromosomeViewTracks[settingIndex] = updatedSettings;
+  }
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -475,7 +468,7 @@ export class GensSession {
   }
 
   public moveTrack(trackId: string, direction: "up" | "down"): void {
-    const startIndex = this.dataTrackSettings.findIndex(
+    const startIndex = this.trackViewTracks.findIndex(
       (track) => track.trackId == trackId,
     );
 
@@ -487,18 +480,18 @@ export class GensSession {
     const endIndex = direction == "up" ? startIndex - 1 : startIndex + 1;
 
     // Don't move at the edge
-    if (endIndex < 0 || endIndex >= this.dataTrackSettings.length) {
+    if (endIndex < 0 || endIndex >= this.trackViewTracks.length) {
       return;
     }
 
-    [this.dataTrackSettings[startIndex], this.dataTrackSettings[endIndex]] = [
-      this.dataTrackSettings[endIndex],
-      this.dataTrackSettings[startIndex],
+    [this.trackViewTracks[startIndex], this.trackViewTracks[endIndex]] = [
+      this.trackViewTracks[endIndex],
+      this.trackViewTracks[startIndex],
     ];
   }
 
   public toggleTrackHidden(trackId: string): void {
-    const trackSettings = this.dataTrackSettings.find(
+    const trackSettings = this.trackViewTracks.find(
       (track) => track.trackId == trackId,
     );
     if (trackSettings == null) {
@@ -509,7 +502,7 @@ export class GensSession {
   }
 
   public toggleTrackExpanded(trackId: string): void {
-    const trackSettings = this.dataTrackSettings.find(
+    const trackSettings = this.trackViewTracks.find(
       (track) => track.trackId == trackId,
     );
     if (trackSettings == null) {

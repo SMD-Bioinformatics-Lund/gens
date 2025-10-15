@@ -80,42 +80,117 @@ export class ChromosomeView extends ShadowBaseElement {
       settingSample.sampleId,
     );
 
+    this.session.chromosomeViewTracks = [];
+
     for (const chrom of CHROMOSOMES) {
-      const chromGroup = this.chromosomeGroups[chrom];
-
-      const getCovData = (sample: Sample, chrom: string) =>
-        this.dataSource.getCovData(sample, chrom, [
-          1,
-          this.session.getChromSize(chrom),
-        ]);
-
-      addSampleTracks(
-        this.session,
-        settingSample,
-        chrom,
-        (sample: Sample) => getCovData(sample, chrom),
-        (trackInfo: ChromViewTrackInfo) => {
-          this.onAddTrack(chromGroup.samples, trackInfo);
+      const dataTrackSetting: DataTrackSettings = {
+        trackId: "track ID",
+        trackLabel: "Dot track label",
+        trackType: "dot-cov",
+        height: {
+          collapsedHeight: TRACK_HEIGHTS.m,
+          expandedHeight: TRACK_HEIGHTS.xl,
         },
-        () => session.getMarkerModeOn(),
-        () => [1, session.getChromSize("1")],
-        () => session.getCoverageRange(),
-        () => session.getTrackHeights(),
+        showLabelWhenCollapsed: false,
+        isExpanded: false,
+        isHidden: false,
+        yAxis: {
+          range: session.getCoverageRange(),
+          label: "Log2 ratio",
+          hideLabelOnCollapse: true,
+          hideTicksOnCollapse: true,
+        },
+        chromosome: chrom,
+        sample: settingSample,
+      };
+
+      const annotTrackSetting: DataTrackSettings = {
+        trackId: "annot track ID",
+        trackLabel: `Annot. track ${chrom}`,
+        trackType: "annotation",
+        height: {
+          collapsedHeight: TRACK_HEIGHTS.m,
+        },
+        showLabelWhenCollapsed: false,
+        isExpanded: false,
+        isHidden: false,
+        chromosome: chrom,
+        sample: settingSample,
+      };
+
+      this.session.chromosomeViewTracks.push(
+        dataTrackSetting,
+        annotTrackSetting,
+      );
+    }
+    //   addSampleTracks(
+    //     this.session,
+    //     settingSample,
+    //     chrom,
+    //     (sample: Sample) => getCovData(sample, chrom),
+    //     (trackInfo: ChromViewTrackInfo) => {
+    //       this.onAddTrack(chromGroup.samples, trackInfo);
+    //     },
+    //     () => session.getMarkerModeOn(),
+    //     () => [1, session.getChromSize("1")],
+    //     () => session.getCoverageRange(),
+    //     () => session.getTrackHeights(),
+    //   );
+
+    //   addSampleAnnotationTracks(
+    //     this.session,
+    //     settingSample,
+    //     chrom,
+    //     sampleAnnots,
+    //     this.dataSource,
+    //     (trackId: string, chrom: Chromosome) =>
+    //       this.dataSource.getSampleAnnotationBands(trackId, chrom),
+    //     (id: string) => this.dataSource.getSampleAnnotationDetails(id),
+    //     (trackInfo: ChromViewTrackInfo) => {
+    //       this.onAddTrack(chromGroup.annotations, trackInfo);
+    //     },
+    //   );
+    // }
+
+    const getCovData = (sample: Sample, chrom: string) =>
+      this.dataSource.getCovData(sample, chrom, [
+        1,
+        this.session.getChromSize(chrom),
+      ]);
+
+    for (const trackSetting of this.session.chromosomeViewTracks) {
+      if (trackSetting.trackType != "dot-cov") {
+        console.warn("Skipping while testing");
+        continue;
+      }
+
+      const chromGroup = this.chromosomeGroups[trackSetting.chromosome];
+
+      const dotTrack = getDotTrack(
+        session,
+        trackSetting,
+        () => getCovData(trackSetting.sample, trackSetting.chromosome),
+        (track: DataTrack) => {
+          console.warn("No context menu for chromosome view tracks");
+        },
+        (trackId: string, updatedSetting: DataTrackSettings) => {
+          console.log(
+            "Attempting to toggle the chromosome view tracks. Need a settings representation there as well?",
+          );
+          // console.warn("No context menu for chromosome view tracks");
+        },
       );
 
-      addSampleAnnotationTracks(
-        this.session,
-        settingSample,
-        chrom,
-        sampleAnnots,
-        this.dataSource,
-        (trackId: string, chrom: Chromosome) =>
-          this.dataSource.getSampleAnnotationBands(trackId, chrom),
-        (id: string) => this.dataSource.getSampleAnnotationDetails(id),
-        (trackInfo: ChromViewTrackInfo) => {
-          this.onAddTrack(chromGroup.annotations, trackInfo);
-        },
-      );
+      const trackWrapper = createDataTrackWrapper(dotTrack);
+      const trackInfo: ChromViewTrackInfo = {
+        track: dotTrack,
+        container: trackWrapper,
+        sampleId: trackSetting.sample.sampleId,
+        chromosome: trackSetting.chromosome,
+        sourceId: null,
+        type: "coverage",
+      };
+      this.onAddTrack(chromGroup.samples, trackInfo);
     }
   }
 
@@ -228,7 +303,7 @@ function addSampleAnnotationTracks(
 
     const trackSettings: DataTrackSettings = {
       trackId,
-      trackLabel: `Annot track ${chrom}`,
+      trackLabel: `Annot. track ${chrom}`,
       trackType: "annotation",
       height: {
         collapsedHeight: TRACK_HEIGHTS.m,

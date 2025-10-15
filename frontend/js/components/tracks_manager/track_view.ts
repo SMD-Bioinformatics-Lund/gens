@@ -137,8 +137,8 @@ export class TrackView extends ShadowBaseElement {
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
 
-        const [moved] = this.session.dataTrackSettings.splice(oldIndex, 1);
-        this.session.dataTrackSettings.splice(newIndex, 0, moved);
+        const [moved] = this.session.trackViewTracks.splice(oldIndex, 1);
+        this.session.trackViewTracks.splice(newIndex, 0, moved);
 
         render({ layout: true });
       },
@@ -305,12 +305,12 @@ export class TrackView extends ShadowBaseElement {
     );
 
     syncDataTrackSettings(
-      this.session.dataTrackSettings,
+      this.session.trackViewTracks,
       this.session,
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
-      this.session.dataTrackSettings = dataTrackSettings;
+      this.session.trackViewTracks = dataTrackSettings;
       this.lastRenderedSamples = samples;
 
       // Load it after the other tracks
@@ -328,7 +328,7 @@ export class TrackView extends ShadowBaseElement {
           isHidden: false,
         };
 
-        this.session.dataTrackSettings.push(geneTrackSettings);
+        this.session.trackViewTracks.push(geneTrackSettings);
         this.geneTrackInitialized = true;
       }
 
@@ -351,7 +351,7 @@ export class TrackView extends ShadowBaseElement {
   }
 
   syncTrackOrder() {
-    const desiredOrder = this.session.dataTrackSettings.map((s) => s.trackId);
+    const desiredOrder = this.session.trackViewTracks.map((s) => s.trackId);
 
     if (desiredOrder.length == 0) {
       return;
@@ -390,7 +390,7 @@ export class TrackView extends ShadowBaseElement {
 
   renderTracks(settings: RenderSettings) {
     const currIds = new Set(
-      this.session.dataTrackSettings.map((setting) => setting.trackId),
+      this.session.trackViewTracks.map((setting) => setting.trackId),
     );
     const trackIds = new Set(this.dataTracks.map((track) => track.track.id));
     const addedIds = setDiff(currIds, trackIds);
@@ -402,20 +402,23 @@ export class TrackView extends ShadowBaseElement {
     );
 
     for (const settingId of addedIds) {
-      const setting = this.session.dataTrackSettings.filter(
+      const setting = this.session.trackViewTracks.filter(
         (setting) => setting.trackId == settingId,
       )[0];
-      const updateTrackSettings = (trackId: string, settings: DataTrackSettings) => {
+      const updateTrackSettings = (
+        trackId: string,
+        settings: DataTrackSettings,
+      ) => {
         console.log("Requesting a new render for settings", settings);
-        this.session.updateDataTrackSetting(trackId, settings);
+        this.session.updateTrackViewSetting(trackId, settings);
         this.requestRender({});
-      }
+      };
       const track = getTrack(
         this.session,
         this.dataSource,
         setting,
         showTrackContextMenu,
-        updateTrackSettings
+        updateTrackSettings,
       );
 
       const trackWrapper = makeTrackContainer(track, null);
