@@ -371,6 +371,8 @@ export class TrackView extends ShadowBaseElement {
       this.updateColorBands();
     }
 
+    console.log("Rendering container", this.tracksContainer);
+
     renderHighlights(
       this.tracksContainer,
       this.session.getCurrentHighlights(),
