@@ -203,7 +203,7 @@ function addSampleAnnotationTracks(
   session: GensSession,
   sample: Sample,
   chrom: Chromosome,
-  annotTracks: {id: string, name: string}[],
+  annotTracks: { id: string; name: string }[],
   getBands: (trackId: string, chrom: Chromosome) => Promise<RenderBand[]>,
   getDetails: (id: string) => Promise<ApiSampleAnnotationDetails>,
   onAddTrack: (track: ChromViewTrackInfo) => void,

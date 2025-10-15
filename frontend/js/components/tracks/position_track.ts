@@ -2,14 +2,14 @@ import { SIZES, STYLE } from "../../constants";
 import { drawLabel, drawLine } from "../../draw/shapes";
 import { getLinearScale } from "../../draw/render_utils";
 import { padRange, prefixNts } from "../../util/utils";
-import { DataTrack, DataTrackSettingsOld } from "./base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
 
 export class PositionTrack extends DataTrack {
   constructor(
     id: string,
     label: string,
-    getSettings: () => DataTrackSettingsOld,
-    updateSettings: (settings: DataTrackSettingsOld) => void,
+    getSettings: () => DataTrackSettings,
+    updateSettings: (settings: DataTrackSettings) => void,
     getMarkerModeOn: () => boolean,
     getXRange: () => Rng,
   ) {

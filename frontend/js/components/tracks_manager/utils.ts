@@ -2,10 +2,7 @@ import { STYLE } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { TrackHeights } from "../side_menu/settings_menu";
 import { BandTrack } from "../tracks/band_track";
-import {
-  DataTrack,
-  DataTrackSettingsOld,
-} from "../tracks/base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { DotTrack } from "../tracks/dot_track";
 import { OverviewTrack } from "../tracks/overview_track";
 import {
@@ -60,7 +57,10 @@ export function createAnnotTrack(
   };
 
   // FIXME: Move to session
-  let fnSettings: DataTrackSettingsOld = {
+  let fnSettings: DataTrackSettings = {
+    trackId: "FIXME",
+    trackLabel: "FIXME",
+    trackType: "annotation",
     height: { collapsedHeight: settings.height },
     showLabelWhenCollapsed: settings.showLabelWhenCollapsed,
     yPadBands: settings.yPadBands,
@@ -104,7 +104,10 @@ export function createDotTrack(
   getTrackHeights: () => TrackHeights,
 ): DotTrack {
   // FIXME: Move to session
-  let fnSettings: DataTrackSettingsOld = {
+  let fnSettings: DataTrackSettings = {
+    trackId: "FIXME",
+    trackLabel: "FIXME",
+    trackType: "dot-cov",
     height: {
       collapsedHeight: getTrackHeights().dotCollapsed,
       expandedHeight: getTrackHeights().dotExpanded,
@@ -143,10 +146,8 @@ export function createVariantTrack(
   getVariantURL: (documentId: string) => string,
   session: GensSession,
   openTrackContextMenu: (track: DataTrack) => void,
-  fnSettings: DataTrackSettingsOld,
+  fnSettings: DataTrackSettings,
 ): BandTrack {
-  // FIXME: Move to session
-
   const variantTrack = new BandTrack(
     trackId,
     label,
@@ -192,58 +193,6 @@ export function makeTrackContainer(
     container: wrapper,
     sample,
   };
-}
-
-export function createGeneTrack(
-  id: string,
-  label: string,
-  track_type: TrackType,
-  getBands: (chrom: string) => Promise<RenderBand[]>,
-  getDetails: (id: string) => Promise<ApiGeneDetails>,
-  session: GensSession,
-  openTrackContextMenu: ((track: DataTrack) => void) | null,
-): DataTrackWrapper {
-  let fnSettings: DataTrackSettingsOld = {
-    height: {
-      collapsedHeight: session.getTrackHeights().bandCollapsed,
-    },
-    showLabelWhenCollapsed: true,
-    isExpanded: session.getTrackExpanded(id, true),
-    isHidden: false,
-  };
-
-  const genesTrack = new BandTrack(
-    id,
-    label,
-    track_type,
-    () => fnSettings,
-    (settings) => {
-      fnSettings = settings;
-      session.setTrackExpanded(id, settings.isExpanded);
-    },
-    () => session.getXRange(),
-    async () => {
-      return {
-        xRange: session.getXRange(),
-        bands: await getBands(session.getChromosome()),
-      };
-    },
-    async (id) => {
-      const details = await getDetails(id);
-      const container = document.createElement("div");
-      const button = getSimpleButton("Set highlight", () => {
-        session.addHighlight([details.start, details.end]);
-      });
-      container.appendChild(button);
-      const entries = getGenesContextMenuContent(id, details);
-      const content = [container];
-      content.push(...entries);
-      session.showContent("Transcript", content, STYLE.menu.narrowWidth);
-    },
-    openTrackContextMenu,
-    () => session.getMarkerModeOn(),
-  );
-  return makeTrackContainer(genesTrack, null);
 }
 
 export function createOverviewTrack(

@@ -50,11 +50,12 @@ template.innerHTML = String.raw`
     <div id="toggle-hide" label="Show / hide" class="button fas ${ICONS.show}"></div>
     <div id="toggle-collapse" label="Collapse / expand" class="button fas ${ICONS.expand}"></div>
   </div>
-  <div id="y-axis" class="row">
+  <!-- FIXME: Disabled for now. Is the global setting enough? -->
+  <!-- <div id="y-axis" class="row">
     <div>Y-axis: </div>
     <input id="y-axis-start" type="number" step="0.1">
     <input id="y-axis-end" type="number" step="0.1">
-  </div>
+  </div> -->
   <div id="colors" class="row">
     <div>Color by: </div>
     <select id="color-select">

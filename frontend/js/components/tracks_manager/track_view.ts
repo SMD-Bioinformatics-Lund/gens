@@ -12,11 +12,7 @@ import {
   makeTrackContainer,
   TRACK_HANDLE_CLASS,
 } from "./utils";
-import {
-  DataTrack,
-  DataTrackSettingsOld,
-  DataTrackSettings,
-} from "../tracks/base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { setupDrag, setupDragging } from "../../movements/dragging";
 import { GensSession } from "../../state/gens_session";
 import { getLinearScale } from "../../draw/render_utils";
@@ -229,7 +225,10 @@ export class TrackView extends ShadowBaseElement {
 
     this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
-    let positionTrackSettings: DataTrackSettingsOld = {
+    let positionTrackSettings: DataTrackSettings = {
+      trackId: "position",
+      trackLabel: "Position",
+      trackType: "position",
       height: {
         collapsedHeight: STYLE.tracks.trackHeight.xs,
       },
@@ -427,7 +426,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(renderSettings: RenderSettings) {
-
     // FIXME next: What happens when removing samples
 
     if (renderSettings.dataUpdated) {
