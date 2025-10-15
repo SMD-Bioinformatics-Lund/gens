@@ -1,10 +1,7 @@
 import { COMBINED_SAMPLE_ID_DIVIDER, TRACK_HEIGHTS } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import { removeOne, setDiff } from "../../../util/utils";
-import {
-  DataTrack,
-  DataTrackSettings,
-} from "../../tracks/base_tracks/data_track";
+import { DataTrackSettings } from "../../tracks/base_tracks/data_track";
 
 function getIDDiff(
   previousIds: string[],
@@ -31,7 +28,6 @@ export async function syncDataTrackSettings(
     selectedOnly: true,
   });
 
-  // FIXME: Let's start with assuming unique sample IDs
   const samples = session.getSamples();
 
   const { removedIds: removedAnnotIds, newAnnotationSettings } = annotationDiff(
@@ -81,8 +77,6 @@ export async function syncDataTrackSettings(
   returnTrackSettings.push(...sampleSettings);
   returnTrackSettings.push(...newAnnotationSettings);
   returnTrackSettings.push(...newGeneListSettings);
-
-  // FIXME: Sync the ordering here as well
 
   return { settings: returnTrackSettings, samples: [...samples] };
 }

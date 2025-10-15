@@ -38,15 +38,6 @@ export interface DataTrackSettings {
   isHidden: boolean;
 }
 
-// export interface DataTrackSettingsOld {
-//   height: ExpandedTrackHeight;
-//   showLabelWhenCollapsed: boolean;
-//   yAxis?: Axis;
-//   yPadBands?: boolean;
-//   isExpanded: boolean;
-//   isHidden: boolean;
-// }
-
 const DEBOUNCE_DELAY = 50;
 
 const Y_PAD = SIZES.s;

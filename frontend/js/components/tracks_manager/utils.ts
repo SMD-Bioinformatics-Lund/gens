@@ -7,7 +7,6 @@ import { DotTrack } from "../tracks/dot_track";
 import { OverviewTrack } from "../tracks/overview_track";
 import {
   getAnnotationContextMenuContent,
-  getGenesContextMenuContent,
   getVariantContextMenuContent,
 } from "../util/menu_content_utils";
 import { getSimpleButton } from "../util/menu_utils";
@@ -17,6 +16,7 @@ const trackHeight = STYLE.tracks.trackHeight;
 
 export const TRACK_HANDLE_CLASS = "track-handle";
 
+// FIXME: Still here for the chromosome view
 export function createAnnotTrack(
   trackId: string,
   label: string,
@@ -56,7 +56,6 @@ export function createAnnotTrack(
     session.showContent("Annotations", content, STYLE.menu.narrowWidth);
   };
 
-  // FIXME: Move to session
   let fnSettings: DataTrackSettings = {
     trackId: "FIXME",
     trackLabel: "FIXME",
@@ -251,6 +250,4 @@ export function createDataTrackWrapper(track: DataTrack) {
   wrapper.appendChild(handle);
 
   return wrapper;
-
-  //   parentContainer.appendChild(wrapper);
 }

@@ -9,21 +9,16 @@ export function getOpenTrackContextMenu(
   render: (settings: RenderSettings) => void,
 ) {
   return (track: DataTrack) => {
-    console.log("Open track context menu, inside");
 
     const isDotTrack = track instanceof DotTrack;
 
-    // if (trackPages[track.id] == null) {
     const trackPage = new TrackMenu();
     const trackSettings = {
       showYAxis: isDotTrack,
       showColor: false,
     };
     trackPage.configure(track.id, trackSettings);
-    // trackPages[track.id] = trackPage;
-    // }
 
-    // const trackPage = trackPages[track.id];
     session.showContent(track.label, [trackPage], STYLE.menu.narrowWidth);
 
     trackPage.initialize(

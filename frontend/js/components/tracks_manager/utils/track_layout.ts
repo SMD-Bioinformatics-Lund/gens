@@ -1,5 +1,3 @@
-// FIXME: First get things working
-
 import { GensSession } from "../../../state/gens_session";
 import { DataTrackWrapper } from "../track_view";
 
@@ -52,7 +50,6 @@ export function loadTrackLayout(
   session: GensSession,
   tracks: DataTrackWrapper[],
 ): DataTrackWrapper[] {
-  console.log("Loading track layout");
 
   const layout = session.loadTrackLayout();
   if (!layout) return tracks;

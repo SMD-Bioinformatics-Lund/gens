@@ -1,6 +1,5 @@
 import { STYLE } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
-import { TrackMenu } from "../../side_menu/track_menu";
 import { BandTrack } from "../../tracks/band_track";
 import {
   DataTrack,
@@ -13,8 +12,6 @@ import {
   getVariantContextMenuContent,
 } from "../../util/menu_content_utils";
 import { getSimpleButton } from "../../util/menu_utils";
-
-// FIXME: Should the track context menu come in as a separate thing or?
 
 export function getRawTrack(
   session: GensSession,
@@ -57,13 +54,11 @@ export function getRawTrack(
       showTrackContextMenu,
     );
   } else if (setting.trackType == "variant") {
-    // FIXME: Generalize the rank score threshold. Where did it come from before?
-    const rankScoreThres = 4;
     const getSampleAnnotBands = () =>
       dataSource.getVariantBands(
         setting.sample,
         session.getChromosome(),
-        rankScoreThres,
+        session.getVariantThreshold(),
       );
     rawTrack = getBandTrack(
       session,
@@ -161,7 +156,6 @@ function getBandTrack(
     setting.trackLabel,
     setting.trackType,
     () => {
-      // console.warn("Attempting to retrieve setting", setting);
       return setting;
     },
     (_settings) => {
@@ -186,14 +180,10 @@ function getBandTrack(
       console.warn("Attempting to open context menu for ID", id);
       let contextMenuFn: (id: string) => void;
       if (setting.trackType == "annotation") {
-        contextMenuFn = getAnnotOpenContextMenu(
-          session,
-          dataSource,
-          (id: string) => dataSource.getAnnotationDetails(id),
+        contextMenuFn = getAnnotOpenContextMenu(session, (id: string) =>
+          dataSource.getAnnotationDetails(id),
         );
       } else if (setting.trackType == "variant") {
-        // // FIXME: This is not the variant ID
-        // variantOpenContextMenuId(id);
         contextMenuFn = getVariantOpenContextMenu(
           session,
           dataSource,
@@ -204,10 +194,8 @@ function getBandTrack(
       } else if (setting.trackType == "gene") {
         contextMenuFn = getGenesOpenContextMenu(session, dataSource);
       } else if (setting.trackType == "sample-annotation") {
-        contextMenuFn = getAnnotOpenContextMenu(
-          session,
-          dataSource,
-          (id: string) => dataSource.getSampleAnnotationDetails(id),
+        contextMenuFn = getAnnotOpenContextMenu(session, (id: string) =>
+          dataSource.getSampleAnnotationDetails(id),
         );
       } else {
         throw new Error(`Track type not supported: ${setting.trackType}`);
@@ -217,8 +205,6 @@ function getBandTrack(
     (track) => {
       showTrackContextMenu(track);
     },
-    // openContextMenuId,
-    // openTrackContextMenu,
     () => session.getMarkerModeOn(),
   );
   return rawTrack;
@@ -244,14 +230,12 @@ function getGenesOpenContextMenu(
 
 function getAnnotOpenContextMenu(
   session: GensSession,
-  dataSource: RenderDataSource,
   dataFn: (
     id: string,
   ) => Promise<ApiAnnotationDetails | ApiSampleAnnotationDetails>,
 ) {
   return async (id: string) => {
     const details = await dataFn(id);
-    // const details = await dataSource.getAnnotationDetails(id);
     const button = getSimpleButton("Set highlight", () => {
       session.addHighlight([details.start, details.end]);
     });
@@ -270,9 +254,7 @@ function getVariantOpenContextMenu(
   sampleId: string,
 ) {
   return async (variantId: string) => {
-    // FIXME: How to control this for the sample?
     const details = await dataSource.getVariantDetails(variantId);
-    // const scoutUrl = "Placeholder";
     const scoutUrl = dataSource.getVariantURL(details.document_id);
 
     const button = getSimpleButton("Set highlight", () => {
@@ -288,4 +270,3 @@ function getVariantOpenContextMenu(
     session.showContent("Variant", content, STYLE.menu.narrowWidth);
   };
 }
-

@@ -30,15 +30,11 @@ import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
-import { ChromosomeView } from "./chromosome_view";
 import { syncDataTrackSettings } from "./utils/sync_tracks";
 import { getRawTrack as getTrack } from "./utils/create_tracks";
 import { getOpenTrackContextMenu } from "./utils/track_menues";
 
 const trackHeight = STYLE.tracks.trackHeight;
-
-const GENE_LIST_TRACK_TYPE = "gene-list";
-const GENE_TRACK_TYPE = "gene";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -97,8 +93,6 @@ export class TrackView extends ShadowBaseElement {
   private session: GensSession;
   private dataSource: RenderDataSource;
 
-  // FIXME: Document what this is
-  // private dataTrackSettings: DataTrackSettings[] = [];
   private lastRenderedSamples: Sample[] = [];
 
   private dataTracks: DataTrackWrapper[] = [];
@@ -109,15 +103,6 @@ export class TrackView extends ShadowBaseElement {
   private trackPages: Record<string, TrackMenu> = {};
 
   private geneTrackInitialized = false;
-
-  private sampleToTracks: Record<
-    string,
-    {
-      cov: DataTrackWrapper;
-      baf: DataTrackWrapper;
-      variant: DataTrackWrapper;
-    }
-  > = {};
 
   public saveTrackLayout() {
     saveTrackLayout(this.session, this.dataTracks);
@@ -138,7 +123,6 @@ export class TrackView extends ShadowBaseElement {
 
   public initialize(
     render: (settings: RenderSettings) => void,
-    samples: Sample[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
     dataSources: RenderDataSource,
@@ -351,83 +335,41 @@ export class TrackView extends ShadowBaseElement {
     moveElement(this.dataTracks, trackInfoIndex, shift, true);
   }
 
-  // FIXME: Move to session?
-  public addSample(sample: Sample, isTrackViewTrack: boolean) {
-    // const sampleTracks = createSampleTracks(
-    //   sample,
-    //   this.dataSource,
-    //   false,
-    //   this.session,
-    //   isTrackViewTrack,
-    //   this.openTrackContextMenu,
-    // );
-    // // this.setupSampleAnnotationTracks(sample);
-    // this.dataTracks.push(
-    //   sampleTracks.cov,
-    //   sampleTracks.baf,
-    //   sampleTracks.variant,
-    // );
-    // this.tracksContainer.appendChild(sampleTracks.cov.container);
-    // this.tracksContainer.appendChild(sampleTracks.baf.container);
-    // this.tracksContainer.appendChild(sampleTracks.variant.container);
-    // sampleTracks.cov.track.initialize();
-    // sampleTracks.baf.track.initialize();
-    // sampleTracks.variant.track.initialize();
-  }
+  // FIXME: These should be in the session
+  // public showTrack(trackId: string) {
+  //   const track = getDataTrackInfoById(this.dataTracks, trackId);
+  //   this.tracksContainer.appendChild(track.container);
+  // }
 
-  // FIXME: Move to session?
-  public removeSample(sample: Sample) {
-    // const trackMatches = (trackInfo: DataTrackWrapper) =>
-    //   trackInfo.sample != null &&
-    //   trackInfo.sample.sampleId === sample.sampleId &&
-    //   trackInfo.sample.caseId === sample.caseId;
-    // const removeInfos = this.dataTracks.filter((track: DataTrackWrapper) =>
-    //   trackMatches(track),
-    // );
-    // this.dataTracks = this.dataTracks.filter(
-    //   (track: DataTrackWrapper) => !trackMatches(track),
-    // );
-    // for (const removeInfo of removeInfos) {
-    //   this.tracksContainer.removeChild(removeInfo.container);
-    // }
-  }
+  // public hideTrack(trackId: string) {
+  //   const track = getDataTrackInfoById(this.dataTracks, trackId);
+  //   this.tracksContainer.removeChild(track.container);
+  // }
 
-  public showTrack(trackId: string) {
-    const track = getDataTrackInfoById(this.dataTracks, trackId);
-    this.tracksContainer.appendChild(track.container);
-  }
+  // public setTrackHeights(trackHeights: TrackHeights) {
+  //   for (const track of this.dataTracks) {
+  //     if (track.track instanceof BandTrack) {
+  //       track.track.setHeights(trackHeights.bandCollapsed);
+  //     } else if (track.track instanceof DotTrack) {
+  //       track.track.setHeights(
+  //         trackHeights.dotCollapsed,
+  //         trackHeights.dotExpanded,
+  //       );
+  //     } else {
+  //       console.error("Track of unknown DataTrack category:", track);
+  //     }
+  //   }
+  // }
 
-  public hideTrack(trackId: string) {
-    const track = getDataTrackInfoById(this.dataTracks, trackId);
-    this.tracksContainer.removeChild(track.container);
-  }
-
-  public setTrackHeights(trackHeights: TrackHeights) {
-    for (const track of this.dataTracks) {
-      if (track.track instanceof BandTrack) {
-        track.track.setHeights(trackHeights.bandCollapsed);
-      } else if (track.track instanceof DotTrack) {
-        track.track.setHeights(
-          trackHeights.dotCollapsed,
-          trackHeights.dotExpanded,
-        );
-      } else {
-        console.error("Track of unknown DataTrack category:", track);
-      }
-    }
-  }
-
-  public setCovYRange(yRange: Rng) {
-    for (const trackContainer of this.dataTracks) {
-      if (trackContainer.track.trackType == "dot-cov") {
-        trackContainer.track.setYAxis(yRange);
-      }
-    }
-  }
+  // public setCovYRange(yRange: Rng) {
+  //   for (const trackContainer of this.dataTracks) {
+  //     if (trackContainer.track.trackType == "dot-cov") {
+  //       trackContainer.track.setYAxis(yRange);
+  //     }
+  //   }
+  // }
 
   public render(renderSettings: RenderSettings) {
-    // FIXME next: What happens when removing samples
-
     if (renderSettings.dataUpdated) {
       this.updateColorBands();
     }
@@ -439,8 +381,6 @@ export class TrackView extends ShadowBaseElement {
       [STYLE.yAxis.width, this.tracksContainer.offsetWidth],
       (id) => this.session.removeHighlight(id),
     );
-
-    // lastRenderedSamples
 
     syncDataTrackSettings(
       this.session.dataTrackSettings,
@@ -482,7 +422,6 @@ export class TrackView extends ShadowBaseElement {
 
     this.ideogramTrack.render(renderSettings);
     this.positionTrack.render(renderSettings);
-    // this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
     this.overviewTracks.forEach((track) => track.render(renderSettings));
 
     const [startChrSeg, endChrSeg] = this.session.getChrSegments();
@@ -525,40 +464,6 @@ export class TrackView extends ShadowBaseElement {
 
     this.dataTracks = orderedDataTracks;
     this.tracksContainer.appendChild(fragment);
-
-    // console.log("Desired order", desiredOrder);
-
-    // for (let i = 0; i < desiredOrder.length; i++) {
-    //   const id = desiredOrder[i];
-    //   const element = this.tracksContainer.querySelector<HTMLElement>(
-    //     `[id="${id}-container"]`,
-    //   );
-    //   if (element) {
-    //     console.log("Found", element);
-    //     element.style.order = String(i);
-    //   }
-    // }
-
-    // console.log("Sync track order called");
-    // const desired = this.session.dataTrackSettings.map((s) => s.trackId);
-    // const docFragment = document.createDocumentFragment();
-
-    // for (const id of desired) {
-    //   const el = this.tracksContainer.querySelector<HTMLElement>(
-    //     `[data-track-id="${id}"]`,
-    //   );
-    //   if (el) {
-    //     docFragment.appendChild(el);
-    //   }
-    // }
-
-    // for (const node of this.tracksContainer.children) {
-    //   if (!docFragment.contains(node)) {
-    //     docFragment.appendChild(node);
-    //   }
-    // }
-
-    // this.tracksContainer.appendChild(docFragment);
   }
 
   renderTracks(settings: RenderSettings) {
