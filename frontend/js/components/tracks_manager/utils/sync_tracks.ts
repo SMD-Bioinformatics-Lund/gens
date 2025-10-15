@@ -24,8 +24,6 @@ export async function syncDataTrackSettings(
   dataSources: RenderDataSource,
   lastRenderedSamples: Sample[],
 ): Promise<{ settings: DataTrackSettings[]; samples: Sample[] }> {
-  console.log("Last rendered samples", lastRenderedSamples);
-
   const annotSources = session.getAnnotationSources({
     selectedOnly: true,
   });
@@ -75,8 +73,6 @@ export async function syncDataTrackSettings(
     ...removedGeneListIds,
     ...removedSampleTrackIds,
   ];
-
-  console.log("Removed IDs", removeIds);
 
   for (const removeId of removeIds) {
     removeOne(returnTrackSettings, (setting) => setting.trackId == removeId);
