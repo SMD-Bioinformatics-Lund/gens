@@ -227,7 +227,7 @@ function addSampleAnnotationTracks(
     const trackId = `${source.id}_${chrom}`;
 
     const trackSettings: DataTrackSettings = {
-      trackId: `annot-track-${chrom}`,
+      trackId,
       trackLabel: `Annot track ${chrom}`,
       trackType: "annotation",
       height: {
@@ -242,7 +242,7 @@ function addSampleAnnotationTracks(
       session,
       renderDataSource,
       trackSettings,
-      () => getBands(trackId, chrom),
+      () => getBands(source.id, chrom),
       () => {
         console.warn("No context menu available in chromosome view");
       },
