@@ -288,7 +288,17 @@ export class GensSession {
   }
 
   public removeSample(sample: Sample): void {
-    const pos = this.samples.indexOf(sample);
+    const pos = this.samples.findIndex(
+      (currSample) =>
+        currSample.caseId === sample.caseId &&
+        currSample.sampleId === sample.sampleId,
+    );
+
+    if (pos === -1) {
+      console.warn("Sample not found:", sample);
+      return;
+    }
+
     this.samples.splice(pos, 1);
     this.layoutProfileKey = this.computeProfileKey();
   }

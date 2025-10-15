@@ -10,13 +10,15 @@ export const ZOOM_STEPS = {
   A: 50 * 10 ** 6,
   B: 10 * 10 ** 6,
   C: 500 * 10 ** 3,
-}
+};
 
 export const SEARCH_PAD_FRAC = 0.02;
 
 // FIXME: This is hard-coded for the constitutional pipeline
 // Will need to consider how to generalize this for somatic (and micro?)
 export const DEFAULT_VARIANT_THRES = 14;
+
+export const COMBINED_SAMPLE_ID_DIVIDER = "___";
 
 export const FONT_SIZE = {
   small: 10,

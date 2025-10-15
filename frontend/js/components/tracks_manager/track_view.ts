@@ -427,6 +427,9 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(renderSettings: RenderSettings) {
+
+    // FIXME next: What happens when removing samples
+
     if (renderSettings.dataUpdated) {
       this.updateColorBands();
     }

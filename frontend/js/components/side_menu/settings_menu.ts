@@ -1,4 +1,10 @@
-import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
+import {
+  COLORS,
+  COMBINED_SAMPLE_ID_DIVIDER,
+  FONT_WEIGHT,
+  ICONS,
+  SIZES,
+} from "../../constants";
 import { removeChildren } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ChoiceSelect } from "../util/choice_select";
@@ -274,7 +280,9 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
-      const [caseId, sampleId] = caseId_sampleId.split("___");
+      const [caseId, sampleId] = caseId_sampleId.split(
+        COMBINED_SAMPLE_ID_DIVIDER,
+      );
       this.onAddSample({ caseId, sampleId });
     });
 
@@ -380,7 +388,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const allSamples = rawSamples.map((s) => {
       return {
         label: `${s.sampleId} (case: ${s.caseId})`,
-        value: `${s.caseId}___${s.sampleId}`,
+        value: `${s.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${s.sampleId}`,
       };
     });
     this.sampleSelect.setValues(allSamples);

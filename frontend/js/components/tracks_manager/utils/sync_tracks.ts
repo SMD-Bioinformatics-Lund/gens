@@ -1,4 +1,4 @@
-import { TRACK_HEIGHTS } from "../../../constants";
+import { COMBINED_SAMPLE_ID_DIVIDER, TRACK_HEIGHTS } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import { removeOne, setDiff } from "../../../util/utils";
 import {
@@ -24,6 +24,8 @@ export async function syncDataTrackSettings(
   dataSources: RenderDataSource,
   lastRenderedSamples: Sample[],
 ): Promise<{ settings: DataTrackSettings[]; samples: Sample[] }> {
+  console.log("Last rendered samples", lastRenderedSamples);
+
   const annotSources = session.getAnnotationSources({
     selectedOnly: true,
   });
@@ -45,20 +47,37 @@ export async function syncDataTrackSettings(
     geneListSources,
   );
 
-  const { removedIds: sampleAnnotRemovedIds, sampleSettings } =
-    await sampleDiff(
-      samples,
-      lastRenderedSamples,
-      (caseId: string, sampleId: string) => session.getSample(caseId, sampleId),
-      (caseId, sampleId) => dataSources.getSampleAnnotSources(caseId, sampleId),
+  const { removedIds: removedSamples, sampleSettings } = await sampleDiff(
+    samples,
+    lastRenderedSamples,
+    (caseId: string, sampleId: string) => session.getSample(caseId, sampleId),
+    (caseId, sampleId) => dataSources.getSampleAnnotSources(caseId, sampleId),
+  );
+  const removedSampleTrackIds = [];
+  for (const combinedSampleId of removedSamples) {
+    const [caseId, sampleId] = combinedSampleId.split(
+      COMBINED_SAMPLE_ID_DIVIDER,
     );
+    for (const track of origTrackSettings) {
+      if (
+        track.sample &&
+        track.sample.caseId == caseId &&
+        track.sample.sampleId == sampleId
+      ) {
+        removedSampleTrackIds.push(track.trackId);
+      }
+    }
+  }
 
   const returnTrackSettings = [...origTrackSettings];
   const removeIds = [
     ...removedAnnotIds,
     ...removedGeneListIds,
-    ...sampleAnnotRemovedIds,
+    ...removedSampleTrackIds,
   ];
+
+  console.log("Removed IDs", removeIds);
+
   for (const removeId of removeIds) {
     removeOne(returnTrackSettings, (setting) => setting.trackId == removeId);
   }
@@ -85,10 +104,12 @@ async function sampleDiff(
   sampleSettings: DataTrackSettings[];
 }> {
   const currentCombinedIds = samples.map(
-    (sample) => `${sample.caseId}___${sample.sampleId}`,
+    (sample) =>
+      `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}`,
   );
   const lastRenderedCombinedIds = lastRenderedSamples.map(
-    (sample) => `${sample.caseId}___${sample.sampleId}`,
+    (sample) =>
+      `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}`,
   );
 
   const { removedIds: removedCombinedIds, newIds: newCombinedIds } = getIDDiff(
@@ -98,7 +119,7 @@ async function sampleDiff(
 
   const sampleSettings = [];
   for (const combinedId of newCombinedIds) {
-    const [caseId, sampleId] = combinedId.split("___");
+    const [caseId, sampleId] = combinedId.split(COMBINED_SAMPLE_ID_DIVIDER);
     const sample = getSample(caseId, sampleId);
     const sampleSources = await getSampleAnnotSources(
       sample.caseId,
