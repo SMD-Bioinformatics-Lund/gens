@@ -77,7 +77,7 @@ export class TrackMenu extends ShadowBaseElement {
   private getIsHidden: () => boolean;
   private getIsCollapsed: () => boolean;
 
-  private yAxis: HTMLDivElement;
+  // private yAxis: HTMLDivElement;
   private colors: HTMLDivElement;
   private yAxisStart: HTMLSelectElement;
   private yAxisEnd: HTMLSelectElement;
@@ -101,7 +101,7 @@ export class TrackMenu extends ShadowBaseElement {
   connectedCallback(): void {
     super.connectedCallback();
 
-    this.yAxis = this.root.querySelector("#y-axis");
+    // this.yAxis = this.root.querySelector("#y-axis");
     this.colors = this.root.querySelector("#colors");
 
     this.yAxisStart = this.root.querySelector("#y-axis-start");
@@ -113,7 +113,7 @@ export class TrackMenu extends ShadowBaseElement {
     this.toggleHide = this.root.querySelector("#toggle-hide");
     this.toggleCollapse = this.root.querySelector("#toggle-collapse");
 
-    this.yAxis.hidden = !this.settings.showYAxis;
+    // this.yAxis.hidden = !this.settings.showYAxis;
     this.colors.hidden = !this.settings.showColor;
   }
 
@@ -141,11 +141,11 @@ export class TrackMenu extends ShadowBaseElement {
       populateSelect(this.colorSelect, annotSources, true);
     }
 
-    if (this.settings.showYAxis) {
-      const currY = getYAxis();
-      this.yAxisStart.value = currY[0].toString();
-      this.yAxisEnd.value = currY[1].toString();
-    }
+    // if (this.settings.showYAxis) {
+    //   const currY = getYAxis();
+    //   this.yAxisStart.value = currY[0].toString();
+    //   this.yAxisEnd.value = currY[1].toString();
+    // }
 
     this.moveUp.addEventListener(
       "click",
@@ -176,21 +176,21 @@ export class TrackMenu extends ShadowBaseElement {
       { signal: this.getListenerAbortSignal() },
     );
 
-    if (this.settings.showYAxis) {
-      const getCurrRange = (): Rng => {
-        return [
-          parseFloat(this.yAxisStart.value),
-          parseFloat(this.yAxisEnd.value),
-        ];
-      };
+    //   if (this.settings.showYAxis) {
+    //     const getCurrRange = (): Rng => {
+    //       return [
+    //         parseFloat(this.yAxisStart.value),
+    //         parseFloat(this.yAxisEnd.value),
+    //       ];
+    //     };
 
-      this.yAxisStart.addEventListener("change", () => {
-        setYAxis(getCurrRange());
-      });
-      this.yAxisEnd.addEventListener("change", () => {
-        setYAxis(getCurrRange());
-      });
-    }
+    //     this.yAxisStart.addEventListener("change", () => {
+    //       setYAxis(getCurrRange());
+    //     });
+    //     this.yAxisEnd.addEventListener("change", () => {
+    //       setYAxis(getCurrRange());
+    //     });
+    //   }
 
     if (this.settings.showColor) {
       this.colorSelect.addEventListener("change", () => {
