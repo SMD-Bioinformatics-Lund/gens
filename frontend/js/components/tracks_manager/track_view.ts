@@ -55,6 +55,8 @@ template.innerHTML = String.raw`
     }
 
     #tracks-container {
+      display: flex;
+      flex-direction: column;
       position: relative;
       width: 100%;
       max-width: 100%;
@@ -497,17 +499,52 @@ export class TrackView extends ShadowBaseElement {
 
     const desiredOrder = this.session.dataTrackSettings.map((s) => s.trackId);
 
-    console.log("Desired order", desiredOrder);
-
-    for (let i = 0; i < desiredOrder.length; i++) {
-      const id = desiredOrder[i];
-      const element = this.tracksContainer.querySelector<HTMLElement>(
-        `[id="${id}-container"]`,
-      );
-      if (element) {
-        element.style.order = String(i);
-      }
+    if (desiredOrder.length == 0) {
+      return;
     }
+
+    const trackById = new Map(
+      this.dataTracks.map((wrapper) => [wrapper.track.id, wrapper]),
+    );
+    const appendedIds = new Set<string>();
+    const orderedDataTracks: DataTrackWrapper[] = [];
+    const fragment = document.createDocumentFragment();
+
+    for (const id of desiredOrder) {
+      const wrapper = trackById.get(id);
+      if (!wrapper) {
+        continue;
+      }
+
+      appendedIds.add(id);
+      orderedDataTracks.push(wrapper);
+      fragment.appendChild(wrapper.container);
+    }
+
+    for (const wrapper of this.dataTracks) {
+      if (appendedIds.has(wrapper.track.id)) {
+        continue;
+      }
+
+      orderedDataTracks.push(wrapper);
+      fragment.appendChild(wrapper.container);
+    }
+
+    this.dataTracks = orderedDataTracks;
+    this.tracksContainer.appendChild(fragment);
+
+    // console.log("Desired order", desiredOrder);
+
+    // for (let i = 0; i < desiredOrder.length; i++) {
+    //   const id = desiredOrder[i];
+    //   const element = this.tracksContainer.querySelector<HTMLElement>(
+    //     `[id="${id}-container"]`,
+    //   );
+    //   if (element) {
+    //     console.log("Found", element);
+    //     element.style.order = String(i);
+    //   }
+    // }
 
     // console.log("Sync track order called");
     // const desired = this.session.dataTrackSettings.map((s) => s.trackId);
@@ -543,11 +580,12 @@ export class TrackView extends ShadowBaseElement {
       const setting = this.session.dataTrackSettings.filter(
         (setting) => setting.trackId == settingId,
       )[0];
+      // FIXME: What does even raw mean here
       const rawTrack = getRawTrack(
         this.session,
         this.dataSource,
         setting,
-        (settings) => this.renderTracks(settings),
+        (settings) => this.render(settings),
       );
 
       const trackWrapper = makeTrackContainer(rawTrack, null);

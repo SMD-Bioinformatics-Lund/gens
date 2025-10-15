@@ -484,7 +484,7 @@ export class GensSession {
       this.dataTrackSettings[startIndex],
     ];
 
-    console.log("After move", this.dataTrackSettings);
+    // console.log("After move", this.dataTrackSettings);
 
     // this.dataTrackSettings[
     //   (this.dataTrackSettings[startIndex], this.dataTrackSettings[endIndex])
