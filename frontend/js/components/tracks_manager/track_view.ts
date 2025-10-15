@@ -155,12 +155,10 @@ export class TrackView extends ShadowBaseElement {
       handle: `.${TRACK_HANDLE_CLASS}`,
       swapThreshold: 0.5,
       onEnd: (evt: SortableEvent) => {
-        // FIXME: Would it make sense for this to first shift the settings
-        // And then let the render sort things through
-
         const { oldIndex, newIndex } = evt;
-        const [moved] = this.dataTracks.splice(oldIndex, 1);
-        this.dataTracks.splice(newIndex, 0, moved);
+
+        const [moved] = this.session.dataTrackSettings.splice(oldIndex, 1);
+        this.session.dataTrackSettings.splice(newIndex, 0, moved);
 
         render({ layout: true });
       },
