@@ -34,7 +34,7 @@ interface ChromViewTrackInfo {
   chromosome: string;
   sourceId: string | null;
   sampleId: string | null;
-  type: "annotation" | "coverage";
+  type: "sample-annotation" | "dot-cov";
 }
 
 export class ChromosomeView extends ShadowBaseElement {
@@ -123,34 +123,6 @@ export class ChromosomeView extends ShadowBaseElement {
         annotTrackSetting,
       );
     }
-    //   addSampleTracks(
-    //     this.session,
-    //     settingSample,
-    //     chrom,
-    //     (sample: Sample) => getCovData(sample, chrom),
-    //     (trackInfo: ChromViewTrackInfo) => {
-    //       this.onAddTrack(chromGroup.samples, trackInfo);
-    //     },
-    //     () => session.getMarkerModeOn(),
-    //     () => [1, session.getChromSize("1")],
-    //     () => session.getCoverageRange(),
-    //     () => session.getTrackHeights(),
-    //   );
-
-    //   addSampleAnnotationTracks(
-    //     this.session,
-    //     settingSample,
-    //     chrom,
-    //     sampleAnnots,
-    //     this.dataSource,
-    //     (trackId: string, chrom: Chromosome) =>
-    //       this.dataSource.getSampleAnnotationBands(trackId, chrom),
-    //     (id: string) => this.dataSource.getSampleAnnotationDetails(id),
-    //     (trackInfo: ChromViewTrackInfo) => {
-    //       this.onAddTrack(chromGroup.annotations, trackInfo);
-    //     },
-    //   );
-    // }
 
     const getCovData = (sample: Sample, chrom: string) =>
       this.dataSource.getCovData(sample, chrom, [
@@ -159,38 +131,74 @@ export class ChromosomeView extends ShadowBaseElement {
       ]);
 
     for (const trackSetting of this.session.chromosomeViewTracks) {
-      if (trackSetting.trackType != "dot-cov") {
-        console.warn("Skipping while testing");
+      const chromGroup = this.chromosomeGroups[trackSetting.chromosome];
+
+      let track: DataTrack;
+      let targetGroup: HTMLDivElement;
+      if (trackSetting.trackType == "dot-cov") {
+        const dotTrack = getDotTrack(
+          session,
+          trackSetting,
+          () => getCovData(trackSetting.sample, trackSetting.chromosome),
+          (track: DataTrack) => {
+            console.warn("No context menu for chromosome view tracks");
+          },
+          (trackId: string, updatedSetting: DataTrackSettings) => {
+            console.log(
+              "Attempting to toggle the chromosome view tracks. Need a settings representation there as well?",
+            );
+            // console.warn("No context menu for chromosome view tracks");
+          },
+        );
+        targetGroup = chromGroup.samples;
+      } else if (trackSetting.trackType == "sample-annotation") {
+        track = getBandTrack(
+          session,
+          this.dataSource,
+          trackSetting,
+          () =>
+            this.dataSource.getSampleAnnotationBands(
+              trackSetting.trackId,
+              trackSetting.chromosome,
+            ),
+          () => {
+            console.warn("No context menu available in chromosome view");
+          },
+        );
+        targetGroup = chromGroup.annotations;
+
+        // const bandTrack = createAnnotTrack(
+        //   trackId,
+        //   source.name,
+        //   () => [1, session.getChromSize("1")],
+        //   () => getBands(source.id, chrom),
+        //   (id: string) => getDetails(id),
+        //   session,
+        //   null,
+        //   {
+        //     height: TRACK_HEIGHTS.xxs,
+        //     showLabelWhenCollapsed: false,
+        //     startExpanded: false,
+        //   },
+        // );
+      } else {
+        console.warn(
+          `Unsupported track setting type: ${trackSetting.trackType}`,
+        );
         continue;
       }
 
-      const chromGroup = this.chromosomeGroups[trackSetting.chromosome];
-
-      const dotTrack = getDotTrack(
-        session,
-        trackSetting,
-        () => getCovData(trackSetting.sample, trackSetting.chromosome),
-        (track: DataTrack) => {
-          console.warn("No context menu for chromosome view tracks");
-        },
-        (trackId: string, updatedSetting: DataTrackSettings) => {
-          console.log(
-            "Attempting to toggle the chromosome view tracks. Need a settings representation there as well?",
-          );
-          // console.warn("No context menu for chromosome view tracks");
-        },
-      );
-
-      const trackWrapper = createDataTrackWrapper(dotTrack);
-      const trackInfo: ChromViewTrackInfo = {
-        track: dotTrack,
-        container: trackWrapper,
-        sampleId: trackSetting.sample.sampleId,
+      const wrapper = createDataTrackWrapper(track);
+      const info: ChromViewTrackInfo = {
+        track,
+        container: wrapper,
         chromosome: trackSetting.chromosome,
-        sourceId: null,
-        type: "coverage",
+        sampleId: trackSetting.sample.sampleId,
+        sourceId: trackSetting.trackId,
+        type: trackSetting.trackType,
       };
-      this.onAddTrack(chromGroup.samples, trackInfo);
+      this.onAddTrack(chromGroup.samples, info);
+      // this.onAddTrack(info);
     }
   }
 
@@ -202,7 +210,7 @@ export class ChromosomeView extends ShadowBaseElement {
 
   public setCovYRange(covRange: Rng) {
     for (const track of this.tracks) {
-      if (track.type == "coverage") {
+      if (track.type == "dot-cov") {
         track.track.setYAxis(covRange);
       }
     }
@@ -283,7 +291,7 @@ function addSampleTracks(
     sampleId: sample.sampleId,
     chromosome: chrom,
     sourceId: null,
-    type: "coverage",
+    type: "dot-cov",
   };
   onAddTrack(trackInfo);
 }
@@ -344,7 +352,7 @@ function addSampleAnnotationTracks(
       chromosome: chrom,
       sampleId: sample.sampleId,
       sourceId: source.id,
-      type: "annotation",
+      type: "sample-annotation",
     };
     onAddTrack(info);
   }
