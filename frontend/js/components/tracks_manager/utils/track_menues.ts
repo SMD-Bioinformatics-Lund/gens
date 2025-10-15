@@ -9,7 +9,6 @@ export function getOpenTrackContextMenu(
   render: (settings: RenderSettings) => void,
 ) {
   return (track: DataTrack) => {
-
     const isDotTrack = track instanceof DotTrack;
 
     const trackPage = new TrackMenu();
@@ -34,7 +33,8 @@ export function getOpenTrackContextMenu(
         render({ layout: true });
       },
       () => {
-        track.toggleExpanded();
+        // track.toggleExpanded();
+        session.toggleTrackExpanded(track.id);
         render({ layout: true });
       },
       () => track.getIsHidden(),

@@ -70,23 +70,23 @@ export function loadTrackLayout(
   for (const info of tracks) {
     if (!picked.has(info.track.id)) reordered.push(info);
   }
-  for (const info of reordered) {
-    const pid = getPortableId(info);
-    if (!pid) continue;
-    const desiredHidden = layout.hidden[pid];
-    if (
-      typeof desiredHidden === "boolean" &&
-      info.track.getIsHidden() !== desiredHidden
-    ) {
-      info.track.toggleHidden();
-    }
-    const desiredExpanded = layout.expanded[pid];
-    if (
-      typeof desiredExpanded === "boolean" &&
-      info.track.getIsExpanded() !== desiredExpanded
-    ) {
-      info.track.toggleExpanded();
-    }
-  }
+  // for (const info of reordered) {
+  //   const pid = getPortableId(info);
+  //   if (!pid) continue;
+  //   const desiredHidden = layout.hidden[pid];
+  //   if (
+  //     typeof desiredHidden === "boolean" &&
+  //     info.track.getIsHidden() !== desiredHidden
+  //   ) {
+  //     info.track.toggleHidden();
+  //   }
+  //   const desiredExpanded = layout.expanded[pid];
+  //   if (
+  //     typeof desiredExpanded === "boolean" &&
+  //     info.track.getIsExpanded() !== desiredExpanded
+  //   ) {
+  //     info.track.toggleExpanded();
+  //   }
+  // }
   return reordered;
 }

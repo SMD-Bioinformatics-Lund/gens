@@ -282,15 +282,6 @@ export class TrackView extends ShadowBaseElement {
     return xScale;
   }
 
-  // public getDataTracks(): DataTrack[] {
-  //   return this.dataTracks.map((info) => info.track);
-  // }
-
-  // public async setColorAnnotation(annotId: string | null) {
-  //   this.session.setColorAnnotation(annotId);
-  //   await this.updateColorBands();
-  // }
-
   public async updateColorBands() {
     let colorBands: RenderBand[] = [];
     if (this.session.getColorAnnotation() != null) {
@@ -304,78 +295,7 @@ export class TrackView extends ShadowBaseElement {
     }
   }
 
-  // public moveTrack(trackId: string, direction: "up" | "down") {
-  //   const trackInfo = getDataTrackInfoById(this.dataTracks, trackId);
-  //   const trackInfoIndex = this.dataTracks.indexOf(trackInfo);
-
-  //   if (direction == "up" && trackInfoIndex == 0) {
-  //     return;
-  //   }
-  //   if (direction == "down" && trackInfoIndex == this.dataTracks.length - 1) {
-  //     return;
-  //   }
-
-  //   const shift = direction == "up" ? -1 : 1;
-  //   const trackContainer = trackInfo.container;
-  //   // FIXME: Shouldn't this always be the same container? Test it
-  //   const trackSContainer = trackContainer.parentNode;
-  //   if (direction == "up") {
-  //     trackSContainer.insertBefore(
-  //       trackContainer,
-  //       this.dataTracks[trackInfoIndex - 1].container,
-  //     );
-  //   } else {
-  //     trackSContainer.insertBefore(
-  //       trackContainer,
-  //       this.dataTracks[trackInfoIndex + 1].container.nextSibling,
-  //     );
-  //   }
-
-  //   moveElement(this.dataTracks, trackInfoIndex, shift, true);
-  // }
-
-  // FIXME: These should be in the session
-  // public showTrack(trackId: string) {
-  //   const track = getDataTrackInfoById(this.dataTracks, trackId);
-  //   this.tracksContainer.appendChild(track.container);
-  // }
-
-  // public hideTrack(trackId: string) {
-  //   const track = getDataTrackInfoById(this.dataTracks, trackId);
-  //   this.tracksContainer.removeChild(track.container);
-  // }
-
-  // public setTrackHeights(trackHeights: TrackHeights) {
-  //   for (const track of this.dataTracks) {
-  //     if (track.track instanceof BandTrack) {
-  //       track.track.setHeights(trackHeights.bandCollapsed);
-  //     } else if (track.track instanceof DotTrack) {
-  //       track.track.setHeights(
-  //         trackHeights.dotCollapsed,
-  //         trackHeights.dotExpanded,
-  //       );
-  //     } else {
-  //       console.error("Track of unknown DataTrack category:", track);
-  //     }
-  //   }
-  // }
-
-  // public setCovYRange(yRange: Rng) {
-  //   for (const trackContainer of this.dataTracks) {
-  //     if (trackContainer.track.trackType == "dot-cov") {
-  //       trackContainer.track.setYAxis(yRange);
-  //     }
-  //   }
-  // }
-
   public render(renderSettings: RenderSettings) {
-    // if (renderSettings.dataUpdated) {
-    //   this.updateColorBands();
-    // }
-
-    console.log("this", this);
-    console.log("Rendering container", this.tracksContainer);
-
     renderHighlights(
       this.tracksContainer,
       this.session.getCurrentHighlights(),
@@ -507,19 +427,6 @@ export class TrackView extends ShadowBaseElement {
       track.track.render(settings);
     }
   }
-}
-
-function getDataTrackInfoById(
-  tracks: DataTrackWrapper[],
-  trackId: string,
-): DataTrackWrapper {
-  for (let i = 0; i < tracks.length; i++) {
-    if (tracks[i].track.id == trackId) {
-      const track = tracks[i];
-      return track;
-    }
-  }
-  console.error("Did not find any track with ID", trackId);
 }
 
 customElements.define("track-view", TrackView);

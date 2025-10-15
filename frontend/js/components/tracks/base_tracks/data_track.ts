@@ -67,6 +67,9 @@ export abstract class DataTrack extends CanvasTrack {
   protected openTrackContextMenu: ((track: DataTrack) => void) | null;
   protected getMarkerModeOn: () => boolean;
 
+  private onExpand: () => void;
+  private lastRenderedExpanded: boolean;
+
   public getYDim(): Rng {
     return [Y_PAD, this.dimensions.height - Y_PAD];
   }
@@ -114,17 +117,17 @@ export abstract class DataTrack extends CanvasTrack {
     }
   }
 
-  public toggleExpanded() {
-    const settings = this.getSettings();
-    settings.isExpanded = !settings.isExpanded;
-    this.updateSettings(settings);
+  // protected toggleExpanded() {
+  //   const settings = this.getSettings();
+  //   settings.isExpanded = !settings.isExpanded;
+  //   this.updateSettings(settings);
 
-    if (settings.isExpanded && settings.height.expandedHeight == null) {
-      return;
-    }
+  //   if (settings.isExpanded && settings.height.expandedHeight == null) {
+  //     return;
+  //   }
 
-    this.syncHeight();
-  }
+  //   this.syncHeight();
+  // }
 
   protected syncHeight() {
     this.currentHeight = this.getSettings().isExpanded
@@ -133,13 +136,18 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected initializeExpander(eventKey: string, onExpand: () => void) {
+    this.onExpand = onExpand;
+
     this.trackContainer.addEventListener(
       eventKey,
       (event) => {
         event.preventDefault();
-        this.toggleExpanded();
-        this.syncDimensions();
-        onExpand();
+        const settings = this.getSettings();
+        settings.isExpanded = !settings.isExpanded;
+        this.updateSettings(settings);
+        // this.toggleExpanded();
+        // this.syncDimensions();
+        // onExpand();
       },
       { signal: this.getListenerAbortSignal() },
     );
@@ -269,6 +277,17 @@ export abstract class DataTrack extends CanvasTrack {
 
     const xScale = this.getXScale();
 
+    const settings = this.getSettings();
+    if (this.lastRenderedExpanded != settings.isExpanded) {
+      console.log("Expansion triggered");
+
+      this.lastRenderedExpanded = settings.isExpanded;
+
+      if (this.onExpand) {
+        this.onExpand();
+      }
+    }
+
     for (const band of this.colorBands) {
       const box = {
         x1: xScale(band.start),
@@ -328,6 +347,9 @@ export abstract class DataTrack extends CanvasTrack {
     this.ctx.restore();
 
     const settings = this.getSettings();
+
+    console.log(`Settings: ${settings.isExpanded} for track ${this.id}`);
+
     if (settings.isExpanded || settings.showLabelWhenCollapsed) {
       const yAxisWidth = STYLE.yAxis.width;
       const labelBox = this.drawTrackLabel(yAxisWidth);
