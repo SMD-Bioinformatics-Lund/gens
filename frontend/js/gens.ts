@@ -190,9 +190,10 @@ export async function initCanvases({
     render,
     allAnnotSources,
     geneLists,
-    () => gensTracks.trackView.getDataTracks(),
-    (trackId: string, direction: "up" | "down") =>
-      gensTracks.trackView.moveTrack(trackId, direction),
+    (trackId: string, direction: "up" | "down") => {
+      // gensTracks.trackView.moveTrack(trackId, direction),
+      session.moveTrack(trackId, direction);
+    },
     () => {
       const samples = session.getSamples();
       const currSampleIds = samples.map(
@@ -229,7 +230,8 @@ export async function initCanvases({
     },
     async (annotId: string | null) => {
       session.setColorAnnotation(annotId);
-      await gensTracks.trackView.setColorAnnotation(annotId);
+      // await gensTracks.trackView.setColorAnnotation(annotId);
+      await gensTracks.trackView.updateColorBands();
       render({});
     },
     (rng: Rng) => {

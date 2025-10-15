@@ -282,16 +282,16 @@ export class TrackView extends ShadowBaseElement {
     return xScale;
   }
 
-  public getDataTracks(): DataTrack[] {
-    return this.dataTracks.map((info) => info.track);
-  }
+  // public getDataTracks(): DataTrack[] {
+  //   return this.dataTracks.map((info) => info.track);
+  // }
 
-  public async setColorAnnotation(annotId: string | null) {
-    this.session.setColorAnnotation(annotId);
-    await this.updateColorBands();
-  }
+  // public async setColorAnnotation(annotId: string | null) {
+  //   this.session.setColorAnnotation(annotId);
+  //   await this.updateColorBands();
+  // }
 
-  private async updateColorBands() {
+  public async updateColorBands() {
     let colorBands: RenderBand[] = [];
     if (this.session.getColorAnnotation() != null) {
       colorBands = await this.dataSource.getAnnotationBands(
@@ -304,35 +304,35 @@ export class TrackView extends ShadowBaseElement {
     }
   }
 
-  public moveTrack(trackId: string, direction: "up" | "down") {
-    const trackInfo = getDataTrackInfoById(this.dataTracks, trackId);
-    const trackInfoIndex = this.dataTracks.indexOf(trackInfo);
+  // public moveTrack(trackId: string, direction: "up" | "down") {
+  //   const trackInfo = getDataTrackInfoById(this.dataTracks, trackId);
+  //   const trackInfoIndex = this.dataTracks.indexOf(trackInfo);
 
-    if (direction == "up" && trackInfoIndex == 0) {
-      return;
-    }
-    if (direction == "down" && trackInfoIndex == this.dataTracks.length - 1) {
-      return;
-    }
+  //   if (direction == "up" && trackInfoIndex == 0) {
+  //     return;
+  //   }
+  //   if (direction == "down" && trackInfoIndex == this.dataTracks.length - 1) {
+  //     return;
+  //   }
 
-    const shift = direction == "up" ? -1 : 1;
-    const trackContainer = trackInfo.container;
-    // FIXME: Shouldn't this always be the same container? Test it
-    const trackSContainer = trackContainer.parentNode;
-    if (direction == "up") {
-      trackSContainer.insertBefore(
-        trackContainer,
-        this.dataTracks[trackInfoIndex - 1].container,
-      );
-    } else {
-      trackSContainer.insertBefore(
-        trackContainer,
-        this.dataTracks[trackInfoIndex + 1].container.nextSibling,
-      );
-    }
+  //   const shift = direction == "up" ? -1 : 1;
+  //   const trackContainer = trackInfo.container;
+  //   // FIXME: Shouldn't this always be the same container? Test it
+  //   const trackSContainer = trackContainer.parentNode;
+  //   if (direction == "up") {
+  //     trackSContainer.insertBefore(
+  //       trackContainer,
+  //       this.dataTracks[trackInfoIndex - 1].container,
+  //     );
+  //   } else {
+  //     trackSContainer.insertBefore(
+  //       trackContainer,
+  //       this.dataTracks[trackInfoIndex + 1].container.nextSibling,
+  //     );
+  //   }
 
-    moveElement(this.dataTracks, trackInfoIndex, shift, true);
-  }
+  //   moveElement(this.dataTracks, trackInfoIndex, shift, true);
+  // }
 
   // FIXME: These should be in the session
   // public showTrack(trackId: string) {
@@ -369,9 +369,9 @@ export class TrackView extends ShadowBaseElement {
   // }
 
   public render(renderSettings: RenderSettings) {
-    if (renderSettings.dataUpdated) {
-      this.updateColorBands();
-    }
+    // if (renderSettings.dataUpdated) {
+    //   this.updateColorBands();
+    // }
 
     console.log("this", this);
     console.log("Rendering container", this.tracksContainer);

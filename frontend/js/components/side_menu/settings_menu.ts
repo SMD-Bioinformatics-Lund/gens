@@ -6,7 +6,7 @@ import {
   SIZES,
 } from "../../constants";
 import { removeChildren } from "../../util/utils";
-import { DataTrack } from "../tracks/base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { ChoiceSelect } from "../util/choice_select";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
@@ -177,7 +177,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private geneLists: ApiGeneList[];
-  private getDataTracks: () => DataTrack[];
+  // private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
   private getCurrentSamples: () => Sample[];
   private getAllSamples: () => Sample[];
@@ -203,7 +203,6 @@ export class SettingsMenu extends ShadowBaseElement {
     onChange: (renderSettings: RenderSettings) => void,
     allAnnotationSources: ApiAnnotationTrack[],
     geneLists: ApiGeneList[],
-    getDataTracks: () => DataTrack[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
     getAllSamples: () => Sample[],
     gotoHighlight: (region: Region) => void,
@@ -218,7 +217,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.allAnnotationSources = allAnnotationSources;
     this.geneLists = geneLists;
 
-    this.getDataTracks = getDataTracks;
+    // this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
 
     this.getCurrentSamples = () => session.getSamples();
@@ -405,19 +404,21 @@ export class SettingsMenu extends ShadowBaseElement {
     }
 
     removeChildren(this.tracksOverview);
-    const tracks = this.getDataTracks();
+    // const tracks = this.getDataTracks();
     const tracksSection = getTracksSection(
-      tracks,
-      (track: DataTrack, direction: "up" | "down") => {
-        this.onTrackMove(track.id, direction);
+      this.session.dataTrackSettings,
+      (trackId: string, direction: "up" | "down") => {
+        this.onTrackMove(trackId, direction);
         this.onChange({ layout: true });
       },
-      (track: DataTrack) => {
-        track.toggleHidden();
+      (trackId: string) => {
+        // track.toggleHidden();
+        this.session.toggleTrackHidden(trackId);
         this.onChange({ layout: true });
       },
-      (track: DataTrack) => {
-        track.toggleExpanded();
+      (trackId: string) => {
+        // track.toggleExpanded();
+        this.session.toggleTrackExpanded(trackId);
         this.onChange({ layout: true });
       },
     );
@@ -629,10 +630,10 @@ function getHighlightsSection(
 }
 
 function getTracksSection(
-  tracks: DataTrack[],
-  onMove: (track: DataTrack, direction: "up" | "down") => void,
-  onToggleShow: (track: DataTrack) => void,
-  onToggleCollapse: (track: DataTrack) => void,
+  tracks: DataTrackSettings[],
+  onMove: (trackId: string, direction: "up" | "down") => void,
+  onToggleShow: (trackId: string) => void,
+  onToggleCollapse: (trackId: string) => void,
 ): HTMLDivElement {
   const tracksSection = document.createElement("div");
 
@@ -644,8 +645,8 @@ function getTracksSection(
       onMove,
       onToggleShow,
       onToggleCollapse,
-      () => track.getIsHidden(),
-      () => track.getIsExpanded(),
+      () => track.isHidden,
+      () => track.isExpanded,
     );
     tracksSection.appendChild(trackRow);
   }

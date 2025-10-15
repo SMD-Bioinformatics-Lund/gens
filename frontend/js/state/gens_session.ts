@@ -469,8 +469,6 @@ export class GensSession {
     const startIndex = this.dataTrackSettings.findIndex(
       (track) => track.trackId == trackId,
     );
-    // const startTrack = this.dataTrackSettings[startIndex];
-    // const startIndex = this.dataTrackSettings.indexOf(startTrack);
 
     if (startIndex == -1) {
       console.warn(`trackID ${trackId} not found`);
@@ -484,23 +482,31 @@ export class GensSession {
       return;
     }
 
-    // const endTrack = this.dataTrackSettings[endIndex];
-
-    // this.dataTrackSettings[startIndex] = endTrack;
-    // this.dataTrackSettings[endIndex] = startTrack;
-
     [this.dataTrackSettings[startIndex], this.dataTrackSettings[endIndex]] = [
       this.dataTrackSettings[endIndex],
       this.dataTrackSettings[startIndex],
     ];
+  }
 
-    // console.log("After move", this.dataTrackSettings);
+  public toggleTrackHidden(trackId: string): void {
+    const trackSettings = this.dataTrackSettings.find(
+      (track) => track.trackId == trackId,
+    );
+    if (trackSettings == null) {
+      console.warn("Did not find track with ID:", trackId);
+      return;
+    }
+    trackSettings.isHidden = !trackSettings.isHidden;
+  }
 
-    // this.dataTrackSettings[
-    //   (this.dataTrackSettings[startIndex], this.dataTrackSettings[endIndex])
-    // ] =
-    //   this.dataTrackSettings[
-    //     (this.dataTrackSettings[endIndex], this.dataTrackSettings[startIndex])
-    //   ];
+  public toggleTrackExpanded(trackId: string): void {
+    const trackSettings = this.dataTrackSettings.find(
+      (track) => track.trackId == trackId,
+    );
+    if (trackSettings == null) {
+      console.warn("Did not find track with ID:", trackId);
+      return;
+    }
+    trackSettings.isExpanded = !trackSettings.isExpanded;
   }
 }
