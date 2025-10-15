@@ -86,6 +86,7 @@ export class TrackView extends ShadowBaseElement {
   private tracksContainer: HTMLDivElement;
   private bottomContainer: HTMLDivElement;
   private positionLabel: HTMLDivElement;
+  private requestRender!: (settings: RenderSettings) => void;
 
   private session: GensSession;
   private dataSource: RenderDataSource;
@@ -127,6 +128,7 @@ export class TrackView extends ShadowBaseElement {
   ) {
     this.dataSource = dataSources;
     this.session = session;
+    this.requestRender = render;
 
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
@@ -371,6 +373,7 @@ export class TrackView extends ShadowBaseElement {
       this.updateColorBands();
     }
 
+    console.log("this", this);
     console.log("Rendering container", this.tracksContainer);
 
     renderHighlights(
@@ -475,7 +478,7 @@ export class TrackView extends ShadowBaseElement {
 
     const showTrackContextMenu = getOpenTrackContextMenu(
       this.session,
-      this.render,
+      this.requestRender,
     );
 
     for (const settingId of addedIds) {
