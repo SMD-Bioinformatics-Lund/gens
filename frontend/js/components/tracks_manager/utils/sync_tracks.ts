@@ -69,7 +69,7 @@ export async function syncDataTrackSettings(
 
   // FIXME: Sync the ordering here as well
 
-  return { settings: returnTrackSettings, samples };
+  return { settings: returnTrackSettings, samples: [...samples] };
 }
 
 async function sampleDiff(
