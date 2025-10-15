@@ -54,7 +54,7 @@ export class GensSession {
   private chromViewActive: boolean;
   private scoutBaseURL: string;
   private gensBaseURL: string;
-  private settings: SettingsMenu;
+  // private settings: SettingsMenu;
   private genomeBuild: number;
 
   private idToAnnotSource: Record<string, ApiAnnotationTrack>;
@@ -69,6 +69,16 @@ export class GensSession {
   private layoutProfileKey: string;
 
   public dataTrackSettings: DataTrackSettings[] = [];
+
+  public updateDataTrackSetting(
+    trackId: string,
+    updatedSettings: DataTrackSettings,
+  ): void {
+    const settingIndex = this.dataTrackSettings.findIndex(
+      (setting) => setting.trackId == trackId,
+    );
+    this.dataTrackSettings[settingIndex] = updatedSettings;
+  }
 
   // private dataTracks: DataTrackSettings[] = [];
 
@@ -96,7 +106,6 @@ export class GensSession {
     trackHeights: TrackHeights,
     scoutBaseURL: string,
     gensBaseURL: string,
-    settings: SettingsMenu,
     genomeBuild: number,
     chromInfo: Record<Chromosome, ChromosomeInfo>,
     chromSizes: Record<Chromosome, number>,
@@ -116,7 +125,6 @@ export class GensSession {
     this.trackHeights = loadTrackHeights() || trackHeights;
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
-    this.settings = settings;
     this.genomeBuild = genomeBuild;
     this.chromInfo = chromInfo;
     this.chromSizes = chromSizes;
@@ -399,6 +407,7 @@ export class GensSession {
     this.render({});
   }
 
+  // FIXME: Why is this one here?
   public showContent(header: string, content: HTMLElement[], width: number) {
     this.sideMenu.showContent(header, content, width);
   }

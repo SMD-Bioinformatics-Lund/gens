@@ -28,7 +28,7 @@ import { removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
 import { syncDataTrackSettings } from "./utils/sync_tracks";
-import { getRawTrack as getTrack } from "./utils/create_tracks";
+import { getTrack as getTrack } from "./utils/create_tracks";
 import { getOpenTrackContextMenu } from "./utils/track_menues";
 
 const trackHeight = STYLE.tracks.trackHeight;
@@ -405,11 +405,17 @@ export class TrackView extends ShadowBaseElement {
       const setting = this.session.dataTrackSettings.filter(
         (setting) => setting.trackId == settingId,
       )[0];
+      const updateTrackSettings = (trackId: string, settings: DataTrackSettings) => {
+        console.log("Requesting a new render for settings", settings);
+        this.session.updateDataTrackSetting(trackId, settings);
+        this.requestRender({});
+      }
       const track = getTrack(
         this.session,
         this.dataSource,
         setting,
         showTrackContextMenu,
+        updateTrackSettings
       );
 
       const trackWrapper = makeTrackContainer(track, null);

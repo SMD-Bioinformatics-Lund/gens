@@ -13,11 +13,15 @@ import {
 } from "../../util/menu_content_utils";
 import { getSimpleButton } from "../../util/menu_utils";
 
-export function getRawTrack(
+export function getTrack(
   session: GensSession,
   dataSource: RenderDataSource,
   setting: DataTrackSettings,
   showTrackContextMenu: (track: DataTrack) => void,
+  updateDataTrackSettings: (
+    trackId: string,
+    settings: DataTrackSettings,
+  ) => void,
 ) {
   let rawTrack;
   if (setting.trackType == "annotation") {
@@ -82,6 +86,7 @@ export function getRawTrack(
       setting,
       getSampleCovDots,
       showTrackContextMenu,
+      updateDataTrackSettings,
     );
   } else if (setting.trackType == "dot-baf") {
     const getSampleBafDots = () =>
@@ -95,6 +100,7 @@ export function getRawTrack(
       setting,
       getSampleBafDots,
       showTrackContextMenu,
+      updateDataTrackSettings,
     );
   } else if (setting.trackType == "gene") {
     const getGeneBands = () =>
@@ -117,6 +123,10 @@ function getDotTrack(
   setting: DataTrackSettings,
   getDots: () => Promise<RenderDot[]>,
   showTrackContextMenu: (track: DataTrack) => void,
+  updateDataTrackSettings: (
+    trackId: string,
+    updatedSetting: DataTrackSettings,
+  ) => void,
 ): DotTrack {
   const dotTrack = new DotTrack(
     setting.trackId,
@@ -125,8 +135,8 @@ function getDotTrack(
     () => {
       return setting;
     },
-    (settings) => {
-      console.warn("Assigning a new setting does not seem to be implemented");
+    (updatedSettings) => {
+      updateDataTrackSettings(setting.trackId, updatedSettings);
     },
     () => session.getXRange(),
     () => {

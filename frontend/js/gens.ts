@@ -161,7 +161,6 @@ export async function initCanvases({
     trackHeights,
     scoutBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
-    settingsPage,
     genomeBuild,
     api.getChromInfo(),
     api.getChromSizes(),

@@ -142,6 +142,9 @@ export abstract class DataTrack extends CanvasTrack {
       eventKey,
       (event) => {
         event.preventDefault();
+
+        console.log("Expansion listener");
+
         const settings = this.getSettings();
         settings.isExpanded = !settings.isExpanded;
         this.updateSettings(settings);
@@ -283,8 +286,11 @@ export abstract class DataTrack extends CanvasTrack {
 
       this.lastRenderedExpanded = settings.isExpanded;
 
+      console.log("Has onExpand?", this.onExpand);
       if (this.onExpand) {
+        this.syncHeight();
         this.onExpand();
+        // this.syncDimensions();
       }
     }
 
@@ -347,8 +353,6 @@ export abstract class DataTrack extends CanvasTrack {
     this.ctx.restore();
 
     const settings = this.getSettings();
-
-    console.log(`Settings: ${settings.isExpanded} for track ${this.id}`);
 
     if (settings.isExpanded || settings.showLabelWhenCollapsed) {
       const yAxisWidth = STYLE.yAxis.width;
