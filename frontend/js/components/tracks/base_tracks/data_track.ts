@@ -188,6 +188,7 @@ export abstract class DataTrack extends CanvasTrack {
     this.updateSettings = updateSettings;
 
     this.getYRange = () => {
+      // console.log("Current settings", getSettings());
       return getSettings().yAxis.range;
     };
     this.getYScale = () => {

@@ -118,10 +118,11 @@ export function getTrack(
   return rawTrack;
 }
 
-function getDotTrack(
+export function getDotTrack(
   session: GensSession,
   setting: DataTrackSettings,
   getDots: () => Promise<RenderDot[]>,
+  // FIXME: Would it be enough with the track setting here?
   showTrackContextMenu: (track: DataTrack) => void,
   updateDataTrackSettings: (
     trackId: string,
@@ -155,7 +156,7 @@ function getDotTrack(
   return dotTrack;
 }
 
-function getBandTrack(
+export function getBandTrack(
   session: GensSession,
   dataSource: RenderDataSource,
   setting: DataTrackSettings,

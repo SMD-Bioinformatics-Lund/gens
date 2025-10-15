@@ -17,170 +17,119 @@ const trackHeight = STYLE.tracks.trackHeight;
 export const TRACK_HANDLE_CLASS = "track-handle";
 
 // FIXME: Still here for the chromosome view
-export function createAnnotTrack(
-  trackId: string,
-  label: string,
-  getXRange: () => Rng,
-  getAnnotationBands: () => Promise<RenderBand[]>,
-  getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
-  session: GensSession,
-  openTrackContextMenu: (track: DataTrack) => void,
-  settings: {
-    height: number;
-    showLabelWhenCollapsed: boolean;
-    yPadBands?: boolean;
-    startExpanded: boolean;
-  },
-): BandTrack {
-  // FIXME: Seems the x range should be separated from the annotations or?
-  async function getAnnotTrackData(
-    getAnnotation: () => Promise<RenderBand[]>,
-  ): Promise<BandTrackData> {
-    const bands = await getAnnotation();
-    return {
-      bands,
-    };
-  }
+// export function createAnnotTrack(
+//   trackId: string,
+//   label: string,
+//   getXRange: () => Rng,
+//   getAnnotationBands: () => Promise<RenderBand[]>,
+//   getAnnotationDetails: (id: string) => Promise<ApiAnnotationDetails>,
+//   session: GensSession,
+//   openTrackContextMenu: (track: DataTrack) => void,
+//   settings: {
+//     height: number;
+//     showLabelWhenCollapsed: boolean;
+//     yPadBands?: boolean;
+//     startExpanded: boolean;
+//   },
+// ): BandTrack {
+//   // FIXME: Seems the x range should be separated from the annotations or?
+//   async function getAnnotTrackData(
+//     getAnnotation: () => Promise<RenderBand[]>,
+//   ): Promise<BandTrackData> {
+//     const bands = await getAnnotation();
+//     return {
+//       bands,
+//     };
+//   }
 
-  const openContextMenuId = async (id: string) => {
-    // const details = await dataSource.getAnnotationDetails(id);
-    const details = await getAnnotationDetails(id);
-    const button = getSimpleButton("Set highlight", () => {
-      session.addHighlight([details.start, details.end]);
-    });
-    const container = document.createElement("div");
-    container.appendChild(button);
-    const entries = getAnnotationContextMenuContent(id, details);
-    const content = [container];
-    content.push(...entries);
-    session.showContent("Annotations", content, STYLE.menu.narrowWidth);
-  };
+//   const openContextMenuId = async (id: string) => {
+//     // const details = await dataSource.getAnnotationDetails(id);
+//     const details = await getAnnotationDetails(id);
+//     const button = getSimpleButton("Set highlight", () => {
+//       session.addHighlight([details.start, details.end]);
+//     });
+//     const container = document.createElement("div");
+//     container.appendChild(button);
+//     const entries = getAnnotationContextMenuContent(id, details);
+//     const content = [container];
+//     content.push(...entries);
+//     session.showContent("Annotations", content, STYLE.menu.narrowWidth);
+//   };
 
-  let fnSettings: DataTrackSettings = {
-    trackId: "FIXME",
-    trackLabel: "FIXME",
-    trackType: "annotation",
-    height: { collapsedHeight: settings.height },
-    showLabelWhenCollapsed: settings.showLabelWhenCollapsed,
-    yPadBands: settings.yPadBands,
-    isExpanded: settings.startExpanded,
-    isHidden: false,
-  };
+//   let fnSettings: DataTrackSettings = {
+//     trackId: "FIXME",
+//     trackLabel: "FIXME",
+//     trackType: "annotation",
+//     height: { collapsedHeight: settings.height },
+//     showLabelWhenCollapsed: settings.showLabelWhenCollapsed,
+//     yPadBands: settings.yPadBands,
+//     isExpanded: settings.startExpanded,
+//     isHidden: false,
+//   };
 
-  const track = new BandTrack(
-    trackId,
-    label,
-    "annotation",
-    () => fnSettings,
-    (settings) => {
-      fnSettings = settings;
-      session.setTrackExpanded(trackId, settings.isExpanded);
-    },
-    () => getXRange(),
-    () => getAnnotTrackData(getAnnotationBands),
-    openContextMenuId,
-    openTrackContextMenu,
-    () => session.getMarkerModeOn(),
-  );
-  return track;
-}
+//   const track = new BandTrack(
+//     trackId,
+//     label,
+//     "annotation",
+//     () => fnSettings,
+//     (settings) => {
+//       fnSettings = settings;
+//       session.setTrackExpanded(trackId, settings.isExpanded);
+//     },
+//     () => getXRange(),
+//     () => getAnnotTrackData(getAnnotationBands),
+//     openContextMenuId,
+//     openTrackContextMenu,
+//     () => session.getMarkerModeOn(),
+//   );
+//   return track;
+// }
 
-export function createDotTrack(
-  trackId: string,
-  label: string,
-  trackType: "dot-cov" | "dot-baf",
-  sample: Sample,
-  dataFn: (sample: Sample) => Promise<RenderDot[]>,
-  settings: {
-    startExpanded: boolean;
-    yAxis: Axis;
-    hasLabel: boolean;
-    fixedChrom: Chromosome | null;
-  },
-  getMarkerModeOn: () => boolean,
-  getXRange: () => Rng,
-  openTrackContextMenu: (track: DataTrack) => void,
-  getTrackHeights: () => TrackHeights,
-): DotTrack {
-  // FIXME: Move to session
-  let fnSettings: DataTrackSettings = {
-    trackId: "FIXME",
-    trackLabel: "FIXME",
-    trackType: "dot-cov",
-    height: {
-      collapsedHeight: getTrackHeights().dotCollapsed,
-      expandedHeight: getTrackHeights().dotExpanded,
-    },
-    yAxis: settings.yAxis,
-    showLabelWhenCollapsed: settings.hasLabel,
-    isExpanded: settings.startExpanded,
-    isHidden: false,
-  };
+// export function createVariantTrack(
+//   sampleId: string,
+//   trackId: string,
+//   label: string,
+//   dataFn: () => Promise<RenderBand[]>,
+//   getVariantDetails: (documentId: string) => Promise<ApiVariantDetails>,
+//   getVariantURL: (documentId: string) => string,
+//   session: GensSession,
+//   openTrackContextMenu: (track: DataTrack) => void,
+//   fnSettings: DataTrackSettings,
+// ): BandTrack {
+//   const variantTrack = new BandTrack(
+//     trackId,
+//     label,
+//     "variant",
+//     () => fnSettings,
+//     (settings) => (fnSettings = settings),
+//     () => session.getXRange(),
+//     async () => {
+//       return {
+//         xRange: session.getXRange(),
+//         bands: await dataFn(),
+//       };
+//     },
+//     async (variantId: string) => {
+//       const details = await getVariantDetails(variantId);
+//       const scoutUrl = getVariantURL(details.document_id);
 
-  const dotTrack = new DotTrack(
-    trackId,
-    label,
-    trackType,
-    () => fnSettings,
-    (settings) => (fnSettings = settings),
-    () => getXRange(),
-    async () => {
-      const data = await dataFn(sample);
-      return {
-        dots: data,
-      };
-    },
-    openTrackContextMenu,
-    getMarkerModeOn,
-  );
-  return dotTrack;
-}
+//       const button = getSimpleButton("Set highlight", () => {
+//         session.addHighlight([details.start, details.end]);
+//       });
+//       const container = document.createElement("div");
+//       container.appendChild(button);
 
-export function createVariantTrack(
-  sampleId: string,
-  trackId: string,
-  label: string,
-  dataFn: () => Promise<RenderBand[]>,
-  getVariantDetails: (documentId: string) => Promise<ApiVariantDetails>,
-  getVariantURL: (documentId: string) => string,
-  session: GensSession,
-  openTrackContextMenu: (track: DataTrack) => void,
-  fnSettings: DataTrackSettings,
-): BandTrack {
-  const variantTrack = new BandTrack(
-    trackId,
-    label,
-    "variant",
-    () => fnSettings,
-    (settings) => (fnSettings = settings),
-    () => session.getXRange(),
-    async () => {
-      return {
-        xRange: session.getXRange(),
-        bands: await dataFn(),
-      };
-    },
-    async (variantId: string) => {
-      const details = await getVariantDetails(variantId);
-      const scoutUrl = getVariantURL(details.document_id);
+//       const entries = getVariantContextMenuContent(sampleId, details, scoutUrl);
+//       const content = [container];
+//       content.push(...entries);
 
-      const button = getSimpleButton("Set highlight", () => {
-        session.addHighlight([details.start, details.end]);
-      });
-      const container = document.createElement("div");
-      container.appendChild(button);
-
-      const entries = getVariantContextMenuContent(sampleId, details, scoutUrl);
-      const content = [container];
-      content.push(...entries);
-
-      session.showContent("Variant", content, STYLE.menu.narrowWidth);
-    },
-    openTrackContextMenu,
-    () => session.getMarkerModeOn(),
-  );
-  return variantTrack;
-}
+//       session.showContent("Variant", content, STYLE.menu.narrowWidth);
+//     },
+//     openTrackContextMenu,
+//     () => session.getMarkerModeOn(),
+//   );
+//   return variantTrack;
+// }
 
 export function makeTrackContainer(
   track: DataTrack,
