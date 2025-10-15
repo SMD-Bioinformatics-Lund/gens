@@ -87,10 +87,11 @@ template.innerHTML = String.raw`
   <div>
     <choice-select id="annotation-select" multiple></choice-select>
   </div>
-  <div class="header-row">
+  <!-- FIXME: Bring back / unhide when institute question is resolved, i.e. gene lists are interesting in the context of an institute -->
+  <div class="header-row" hidden>
     <div class="header">Gene lists</div>
   </div>
-  <div>
+  <div hidden>
     <choice-select id="gene-lists-select" multiple></choice-select>
   </div>
   <div class="header-row">
