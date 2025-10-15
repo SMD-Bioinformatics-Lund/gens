@@ -52,7 +52,6 @@ export class TracksManager extends ShadowBaseElement {
 
   async initialize(
     render: (settings: RenderSettings) => void,
-    samples: Sample[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
     dataSource: RenderDataSource,
@@ -63,7 +62,6 @@ export class TracksManager extends ShadowBaseElement {
 
     this.trackView.initialize(
       render,
-      samples,
       chromSizes,
       chromClick,
       dataSource,
@@ -74,7 +72,8 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   setCovYRange(covHeights: Rng) {
-    this.trackView.setCovYRange(covHeights);
+    this.session.setCoverageRange(covHeights);
+    // this.trackView.setCovYRange(covHeights);
     this.chromosomeView.setCovYRange(covHeights);
   }
 
