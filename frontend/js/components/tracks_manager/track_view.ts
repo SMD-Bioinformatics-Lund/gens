@@ -451,6 +451,7 @@ export class TrackView extends ShadowBaseElement {
 
       // Load it after the other tracks
       if (!this.geneTrackInitialized) {
+        // FIXME: This should be initially configured somehow, not in here
         const geneTrackSettings: DataTrackSettings = {
           trackId: "genes",
           trackLabel: "Genes",
@@ -470,6 +471,13 @@ export class TrackView extends ShadowBaseElement {
       this.renderTracks(renderSettings);
     });
 
+    console.log(
+      "What are the data track settings",
+      this.session.dataTrackSettings,
+    );
+
+    this.syncTrackOrder();
+
     // FIXME: Only the active one needs to be rendered isn't it?
     Object.values(this.trackPages).forEach((trackPage) =>
       trackPage.render(renderSettings),
@@ -484,9 +492,46 @@ export class TrackView extends ShadowBaseElement {
     this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 
-  renderTracks(settings: RenderSettings) {
-    console.log("Tracks are rendered");
+  syncTrackOrder() {
+    console.log("Syncing track order");
 
+    const desiredOrder = this.session.dataTrackSettings.map((s) => s.trackId);
+
+    console.log("Desired order", desiredOrder);
+
+    for (let i = 0; i < desiredOrder.length; i++) {
+      const id = desiredOrder[i];
+      const element = this.tracksContainer.querySelector<HTMLElement>(
+        `[id="${id}-container"]`,
+      );
+      if (element) {
+        element.style.order = String(i);
+      }
+    }
+
+    // console.log("Sync track order called");
+    // const desired = this.session.dataTrackSettings.map((s) => s.trackId);
+    // const docFragment = document.createDocumentFragment();
+
+    // for (const id of desired) {
+    //   const el = this.tracksContainer.querySelector<HTMLElement>(
+    //     `[data-track-id="${id}"]`,
+    //   );
+    //   if (el) {
+    //     docFragment.appendChild(el);
+    //   }
+    // }
+
+    // for (const node of this.tracksContainer.children) {
+    //   if (!docFragment.contains(node)) {
+    //     docFragment.appendChild(node);
+    //   }
+    // }
+
+    // this.tracksContainer.appendChild(docFragment);
+  }
+
+  renderTracks(settings: RenderSettings) {
     const currIds = new Set(
       this.session.dataTrackSettings.map((setting) => setting.trackId),
     );

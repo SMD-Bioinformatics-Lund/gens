@@ -287,6 +287,7 @@ export function createOverviewTrack(
 
 export function createDataTrackWrapper(track: DataTrack) {
   const wrapper = document.createElement("div");
+  wrapper.id = `${track.id}-container`;
   // wrapper.classList.add("track-wrapper");
   wrapper.style.position = "relative";
   wrapper.appendChild(track);

@@ -456,10 +456,16 @@ export class GensSession {
   }
 
   public moveTrack(trackId: string, direction: "up" | "down"): void {
-    const startTrack = this.dataTrackSettings.find(
+    const startIndex = this.dataTrackSettings.findIndex(
       (track) => track.trackId == trackId,
     );
-    const startIndex = this.dataTrackSettings.indexOf(startTrack);
+    // const startTrack = this.dataTrackSettings[startIndex];
+    // const startIndex = this.dataTrackSettings.indexOf(startTrack);
+
+    if (startIndex == -1) {
+      console.warn(`trackID ${trackId} not found`);
+      return;
+    }
 
     const endIndex = direction == "up" ? startIndex - 1 : startIndex + 1;
 
@@ -468,12 +474,17 @@ export class GensSession {
       return;
     }
 
-    const endTrack = this.dataTrackSettings[endIndex];
+    // const endTrack = this.dataTrackSettings[endIndex];
 
-    this.dataTrackSettings[startIndex] = endTrack;
-    this.dataTrackSettings[endIndex] = startTrack;
+    // this.dataTrackSettings[startIndex] = endTrack;
+    // this.dataTrackSettings[endIndex] = startTrack;
 
-    console.log("Track moved in session");
+    [this.dataTrackSettings[startIndex], this.dataTrackSettings[endIndex]] = [
+      this.dataTrackSettings[endIndex],
+      this.dataTrackSettings[startIndex],
+    ];
+
+    console.log("After move", this.dataTrackSettings);
 
     // this.dataTrackSettings[
     //   (this.dataTrackSettings[startIndex], this.dataTrackSettings[endIndex])

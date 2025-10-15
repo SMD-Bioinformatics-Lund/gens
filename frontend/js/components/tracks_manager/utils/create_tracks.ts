@@ -305,8 +305,8 @@ function getOpenTrackContextMenu(
       (settings: { selectedOnly: boolean }) =>
         session.getAnnotationSources(settings),
       (direction: "up" | "down") => {
+        console.log("Move track clicked");
         session.moveTrack(track.id, direction);
-        console.log("Ready for new render");
         render({ layout: true });
       },
       () => {
