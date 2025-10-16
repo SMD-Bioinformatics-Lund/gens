@@ -104,10 +104,11 @@ export class ChromosomeView extends ShadowBaseElement {
         sample: settingSample,
       };
 
+      // FIXME: Need the real source ID
       const annotTrackSetting: DataTrackSettings = {
-        trackId: "annot track ID",
+        trackId: sampleAnnots[0].id,
         trackLabel: `Annot. track ${chrom}`,
-        trackType: "annotation",
+        trackType: "sample-annotation",
         height: {
           collapsedHeight: TRACK_HEIGHTS.m,
         },
@@ -136,7 +137,7 @@ export class ChromosomeView extends ShadowBaseElement {
       let track: DataTrack;
       let targetGroup: HTMLDivElement;
       if (trackSetting.trackType == "dot-cov") {
-        const dotTrack = getDotTrack(
+        track = getDotTrack(
           session,
           trackSetting,
           () => getCovData(trackSetting.sample, trackSetting.chromosome),
@@ -197,6 +198,7 @@ export class ChromosomeView extends ShadowBaseElement {
         sourceId: trackSetting.trackId,
         type: trackSetting.trackType,
       };
+      console.log("Adding track", info);
       this.onAddTrack(chromGroup.samples, info);
       // this.onAddTrack(info);
     }
@@ -312,7 +314,7 @@ function addSampleAnnotationTracks(
     const trackSettings: DataTrackSettings = {
       trackId,
       trackLabel: `Annot. track ${chrom}`,
-      trackType: "annotation",
+      trackType: "sample-annotation",
       height: {
         collapsedHeight: TRACK_HEIGHTS.m,
       },
