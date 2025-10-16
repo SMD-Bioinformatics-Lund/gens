@@ -211,25 +211,20 @@ export async function initCanvases({
     // FIXME: Something strange here in how things are organized,
     // why is the trackview looping to itself?
     async (sample: Sample) => {
-      // const isTrackView = true;
-      // gensTracks.trackView.addSample(sample, isTrackView);
       session.addSample(sample);
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (sample: Sample) => {
       // FIXME: This should eventually be session only, with tracks responding on rerender
       session.removeSample(sample);
-      // gensTracks.trackView.removeSample(sample);
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (trackHeights: TrackHeights) => {
       session.setTrackHeights(trackHeights);
-      // gensTracks.trackView.setTrackHeights(trackHeights);
       render({});
     },
     async (annotId: string | null) => {
       session.setColorAnnotation(annotId);
-      // await gensTracks.trackView.setColorAnnotation(annotId);
       await gensTracks.trackView.updateColorBands();
       render({});
     },

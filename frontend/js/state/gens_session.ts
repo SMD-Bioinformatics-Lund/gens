@@ -1,5 +1,4 @@
 import {
-  SettingsMenu,
   TrackHeights,
 } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";

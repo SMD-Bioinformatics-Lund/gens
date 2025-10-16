@@ -33,8 +33,7 @@ export function getOpenTrackContextMenu(
         render({ layout: true });
       },
       () => {
-        // track.toggleExpanded();
-        session.toggleTrackExpanded(track.id, "track");
+        session.toggleTrackExpanded(track.id);
         render({ layout: true });
       },
       () => track.getIsHidden(),
@@ -44,7 +43,7 @@ export function getOpenTrackContextMenu(
         track.setYAxis(newY);
         render({});
       },
-      async (annotId: string | null) => {
+      async (_annotId: string | null) => {
         console.warn("What is the intent here");
         // let colorBands = [];
         // if (annotId != null) {
