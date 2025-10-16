@@ -1,5 +1,5 @@
 import { ICONS, SIZES } from "../../constants";
-import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
+import { DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { IconButton } from "../util/icon_button";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 

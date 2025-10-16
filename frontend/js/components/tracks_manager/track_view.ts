@@ -401,26 +401,6 @@ export class TrackView extends ShadowBaseElement {
     );
 
     for (const settingId of addedIds) {
-      const setting = this.session.trackViewTracks.filter(
-        (setting) => setting.trackId == settingId,
-      )[0];
-      // const updateTrackSettings = (
-      //   trackId: string,
-      //   settings: DataTrackSettings,
-      // ) => {
-      //   console.log(`${trackId} Will look at settings`, settings);
-      //   const different = this.session.updateTrackViewSetting(
-      //     trackId,
-      //     settings,
-      //   );
-
-      //   console.log(`${trackId} Is different?`, different);
-
-      //   // if (different) {
-      //   this.requestRender({});
-      //   // }
-      // };
-
       const setIsExpanded = (trackId: string, isExpanded: boolean) => {
         this.session.setIsExpanded(trackId, isExpanded);
         this.requestRender({});
@@ -432,7 +412,7 @@ export class TrackView extends ShadowBaseElement {
       const track = getTrack(
         this.session,
         this.dataSource,
-        setting,
+        this.session.getTrackSetting(settingId),
         showTrackContextMenu,
         setIsExpanded,
         setExpandedHeight,

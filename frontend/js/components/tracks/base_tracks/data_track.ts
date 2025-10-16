@@ -36,7 +36,6 @@ export interface DataTrackSettings {
   yPadBands?: boolean;
   isExpanded: boolean;
   isHidden: boolean;
-  // For the chromosome view. Should it have its own setting type?
   chromosome?: string;
 }
 
@@ -122,18 +121,6 @@ export abstract class DataTrack extends CanvasTrack {
     }
   }
 
-  // protected toggleExpanded() {
-  //   const settings = this.getSettings();
-  //   settings.isExpanded = !settings.isExpanded;
-  //   this.updateSettings(settings);
-
-  //   if (settings.isExpanded && settings.height.expandedHeight == null) {
-  //     return;
-  //   }
-
-  //   this.syncHeight();
-  // }
-
   protected syncHeight() {
     this.currentHeight = this.getSettings().isExpanded
       ? this.getSettings().height.expandedHeight
@@ -185,7 +172,6 @@ export abstract class DataTrack extends CanvasTrack {
     this.getMarkerModeOn = getMarkerModeOn;
     this.setExpanded = setExpanded;
     this.setExpandedHeight = setExpandedHeight;
-    // this.updateSettings = updateSettings;
 
     this.getYRange = () => {
       // console.log("Current settings", getSettings());
@@ -288,7 +274,6 @@ export abstract class DataTrack extends CanvasTrack {
       if (this.onExpand) {
         this.syncHeight();
         this.onExpand();
-        // this.syncDimensions();
       }
     }
 
@@ -335,17 +320,6 @@ export abstract class DataTrack extends CanvasTrack {
     this.ctx.rect(clipX, clipY, clipWidth, clipHeight);
     this.ctx.clip();
   }
-
-  // setExpandedHeight(height: number) {
-  //   const settings = { ...this.getSettings() };
-  //   settings.height.expandedHeight = height;
-  //   // this.updateSettings(settings);
-  //   this.updateExpandedHeight(height);
-  //   if (settings.isExpanded) {
-  //     this.currentHeight = height;
-  //     this.syncDimensions();
-  //   }
-  // }
 
   protected drawEnd() {
     // Restore the clipping

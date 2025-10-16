@@ -1,8 +1,6 @@
 import { CHROMOSOMES, COLORS, SIZES, TRACK_HEIGHTS } from "../../constants";
-import { getRenderDataSource } from "../../state/data_source";
 import { GensSession } from "../../state/gens_session";
-import { div, removeOne } from "../../util/utils";
-import { TrackHeights } from "../side_menu/settings_menu";
+import { div } from "../../util/utils";
 import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { createDataTrackWrapper } from "./utils";
@@ -151,10 +149,6 @@ export class ChromosomeView extends ShadowBaseElement {
             this.session.setIsExpanded(trackId, isExpanded);
             this.render({});
           },
-          // (trackId: string, updatedSetting: DataTrackSettings) => {
-          //   this.session.updateChromosomeViewSetting(trackId, updatedSetting);
-          //   this.render({});
-          // },
         );
         targetGroup = chromGroup.samples;
       } else if (trackSetting.trackType == "sample-annotation") {
@@ -171,7 +165,6 @@ export class ChromosomeView extends ShadowBaseElement {
             console.warn("No context menu available in chromosome view");
           },
           (trackId: string, isExpanded: boolean) => {
-            console.log("Expanding in chromosome view");
             this.session.setIsExpanded(trackId, isExpanded);
             this.render({});
           },

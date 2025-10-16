@@ -177,7 +177,6 @@ export class SettingsMenu extends ShadowBaseElement {
   private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private geneLists: ApiGeneList[];
-  // private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
   private getCurrentSamples: () => Sample[];
   private getAllSamples: () => Sample[];
@@ -217,7 +216,6 @@ export class SettingsMenu extends ShadowBaseElement {
     this.allAnnotationSources = allAnnotationSources;
     this.geneLists = geneLists;
 
-    // this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
 
     this.getCurrentSamples = () => session.getSamples();
@@ -404,7 +402,6 @@ export class SettingsMenu extends ShadowBaseElement {
     }
 
     removeChildren(this.tracksOverview);
-    // const tracks = this.getDataTracks();
     const tracksSection = getTracksSection(
       this.session.trackViewTracks,
       (trackId: string, direction: "up" | "down") => {
@@ -412,13 +409,11 @@ export class SettingsMenu extends ShadowBaseElement {
         this.onChange({ layout: true });
       },
       (trackId: string) => {
-        // track.toggleHidden();
         this.session.toggleTrackHidden(trackId);
         this.onChange({ layout: true });
       },
       (trackId: string) => {
-        // track.toggleExpanded();
-        this.session.toggleTrackExpanded(trackId, "track");
+        this.session.toggleTrackExpanded(trackId);
         this.onChange({ layout: true });
       },
     );

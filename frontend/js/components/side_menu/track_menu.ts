@@ -79,8 +79,6 @@ export class TrackMenu extends ShadowBaseElement {
 
   // private yAxis: HTMLDivElement;
   private colors: HTMLDivElement;
-  private yAxisStart: HTMLSelectElement;
-  private yAxisEnd: HTMLSelectElement;
   private colorSelect: HTMLSelectElement;
 
   private moveUp: HTMLDivElement;
@@ -104,8 +102,8 @@ export class TrackMenu extends ShadowBaseElement {
     // this.yAxis = this.root.querySelector("#y-axis");
     this.colors = this.root.querySelector("#colors");
 
-    this.yAxisStart = this.root.querySelector("#y-axis-start");
-    this.yAxisEnd = this.root.querySelector("#y-axis-end");
+    // this.yAxisStart = this.root.querySelector("#y-axis-start");
+    // this.yAxisEnd = this.root.querySelector("#y-axis-end");
     this.colorSelect = this.root.querySelector("#color-select");
 
     this.moveUp = this.root.querySelector("#move-up");

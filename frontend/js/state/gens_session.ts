@@ -104,25 +104,37 @@ export class GensSession {
     return isDifferent;
   }
 
-  private getSetting(trackId: string) {
+  public getTrackSetting(trackId: string): DataTrackSettings {
     const allTrackSettings = [
       ...this.trackViewTracks,
       ...this.chromosomeViewTracks,
     ];
 
-    const settingIndex = allTrackSettings.findIndex(
+    const matches = allTrackSettings.filter(
       (setting) => setting.trackId == trackId,
     );
-    return allTrackSettings[settingIndex];
+
+    if (matches.length == 0) {
+      throw Error(`No matches found for ID: ${trackId}`);
+    } else if (matches.length > 1) {
+      console.warn(
+        matches.length,
+        "matches found for ID",
+        trackId,
+        "expected one. Returning the first one.",
+      );
+    }
+
+    return matches[0];
   }
 
   public setIsExpanded(trackId: string, isExpanded: boolean) {
-    const setting = this.getSetting(trackId);
+    const setting = this.getTrackSetting(trackId);
     setting.isExpanded = isExpanded;
   }
 
   public setExpandedHeight(trackId: string, trackHeight: number) {
-    const setting = this.getSetting(trackId);
+    const setting = this.getTrackSetting(trackId);
     setting.height.expandedHeight = trackHeight;
   }
 
@@ -544,36 +556,12 @@ export class GensSession {
   }
 
   public toggleTrackHidden(trackId: string): void {
-    const trackSettings = this.trackViewTracks.find(
-      (track) => track.trackId == trackId,
-    );
-    if (trackSettings == null) {
-      console.warn("Did not find track with ID:", trackId);
-      return;
-    }
-    trackSettings.isHidden = !trackSettings.isHidden;
+    const setting = this.getTrackSetting(trackId);
+    setting.isHidden = !setting.isHidden;
   }
 
-  public toggleTrackExpanded(
-    trackId: string,
-    view: "track" | "chromosome",
-  ): void {
-    let targetTracks: DataTrackSettings[];
-    if (view == "track") {
-      targetTracks = this.trackViewTracks;
-    } else if (view == "chromosome") {
-      targetTracks = this.chromosomeViewTracks;
-    } else {
-      console.warn(`Unknown view: ${view}, track and chromosome are supported`);
-    }
-    const trackSettings = this.trackViewTracks.find(
-      (track) => track.trackId == trackId,
-    );
-
-    if (trackSettings == null) {
-      console.warn("Did not find track with ID:", trackId);
-      return;
-    }
-    trackSettings.isExpanded = !trackSettings.isExpanded;
+  public toggleTrackExpanded(trackId: string): void {
+    const setting = this.getTrackSetting(trackId);
+    setting.isExpanded = !setting.isExpanded;
   }
 }
