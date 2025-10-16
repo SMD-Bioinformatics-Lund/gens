@@ -21,7 +21,6 @@ export async function syncDataTrackSettings(
   dataSources: RenderDataSource,
   lastRenderedSamples: Sample[],
 ): Promise<{ settings: DataTrackSettings[]; samples: Sample[] }> {
-  console.log("origTrackSettings", origTrackSettings);
 
   const annotSources = session.getAnnotationSources({
     selectedOnly: true,

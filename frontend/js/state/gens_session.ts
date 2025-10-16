@@ -439,17 +439,13 @@ export class GensSession {
   }
 
   public loadTrackLayout(): void {
-    console.log("Loading track layout for key", this.layoutProfileKey);
-
     const layout = loadTrackLayout(this.layoutProfileKey);
 
     if (!layout) {
-      console.log("No layout found");
       return;
     }
 
     const tracks = this.tracks.getTracks();
-    console.log("Original tracks", tracks);
 
     const byPortableId: Record<string, DataTrackSettings> = {};
     for (const info of tracks) {
@@ -458,7 +454,6 @@ export class GensSession {
         byPortableId[pid] = info;
       }
     }
-    console.log("Mapping tracks to portable ID", byPortableId);
 
     const picked = new Set<string>();
     const reorderedTracks: DataTrackSettings[] = [];

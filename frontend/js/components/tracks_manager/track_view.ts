@@ -98,11 +98,7 @@ export class TrackView extends ShadowBaseElement {
 
   private trackPages: Record<string, TrackMenu> = {};
 
-  private geneTrackInitialized = false;
-
   public saveTrackLayout() {
-    console.log("Save track layout");
-    // saveTrackLayout(this.session, this.session.trackViewTracks);
     this.session.saveTrackLayout();
   }
 
@@ -292,10 +288,7 @@ export class TrackView extends ShadowBaseElement {
     };
     dataTrackSettings.push(geneTrackSettings);
 
-    console.log("Initial sync tracks", dataTrackSettings);
-
     this.session.tracks.setTracks(dataTrackSettings);
-
     this.session.loadTrackLayout();
   }
 
@@ -396,8 +389,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   renderTracks(settings: RenderSettings) {
-    console.log("Render tracks start", new Date().toISOString());
-
     const currIds = new Set(
       this.session.tracks.getTracks().map((setting) => setting.trackId),
     );
@@ -442,8 +433,6 @@ export class TrackView extends ShadowBaseElement {
     for (const track of this.dataTracks) {
       track.track.render(settings);
     }
-
-    console.log("Render tracks end", new Date().toISOString());
   }
 }
 
