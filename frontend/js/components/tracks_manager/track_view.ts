@@ -102,7 +102,7 @@ export class TrackView extends ShadowBaseElement {
   private geneTrackInitialized = false;
 
   public saveTrackLayout() {
-    saveTrackLayout(this.session, this.dataTracks);
+    saveTrackLayout(this.session, this.session.trackViewTracks);
   }
 
   constructor() {

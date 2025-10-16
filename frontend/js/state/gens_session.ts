@@ -1,6 +1,4 @@
-import {
-  TrackHeights,
-} from "../components/side_menu/settings_menu";
+import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
@@ -523,11 +521,11 @@ export class GensSession {
     return this.layoutProfileKey;
   }
 
-  public loadTrackLayout(): TrackLayout | null {
+  public loadTrackLayout(): DataTrackSettings[] | null {
     return loadTrackLayout(this.layoutProfileKey);
   }
 
-  public saveTrackLayout(layout: TrackLayout): void {
+  public saveTrackLayout(layout: DataTrackSettings[]): void {
     saveTrackLayout(this.layoutProfileKey, layout);
   }
 

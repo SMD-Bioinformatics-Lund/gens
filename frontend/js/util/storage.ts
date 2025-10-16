@@ -1,3 +1,5 @@
+import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
+
 export interface TrackHeights {
   bandCollapsed: number;
   dotCollapsed: number;
@@ -19,11 +21,7 @@ type StorageValue =
   | Record<string, boolean>
   | TrackLayout;
 
-export type TrackLayout = {
-  order: string[];
-  hidden: Record<string, boolean>;
-  expanded: Record<string, boolean>;
-};
+export type TrackLayout = DataTrackSettings[];
 
 export function saveAnnotationSelections(ids: string[]): void {
   saveToBrowserSession(ids, ANNOT_SELECTIONS_KEY);
@@ -77,14 +75,19 @@ export function loadExpandedTracks(): Record<string, boolean> {
   return tracks;
 }
 
-export function saveTrackLayout(profileKey: string, layout: TrackLayout): void {
+export function saveTrackLayout(
+  profileKey: string,
+  layout: DataTrackSettings[],
+): void {
   saveToBrowserSession(layout, `${TRACK_LAYOUT_PREFIX}${profileKey}`);
 }
 
-export function loadTrackLayout(profileKey: string): TrackLayout | null {
-  return loadFromBrowserSession(`${TRACK_LAYOUT_PREFIX}${profileKey}`) as
-    | TrackLayout
-    | null;
+export function loadTrackLayout(
+  profileKey: string,
+): DataTrackSettings[] | null {
+  return loadFromBrowserSession(
+    `${TRACK_LAYOUT_PREFIX}${profileKey}`,
+  ) as TrackLayout | null;
 }
 
 function saveToBrowserSession(value: StorageValue, key: string): void {
