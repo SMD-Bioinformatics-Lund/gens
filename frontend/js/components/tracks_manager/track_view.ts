@@ -119,7 +119,7 @@ export class TrackView extends ShadowBaseElement {
     this.positionLabel = this.root.querySelector("#position-label");
   }
 
-  public initialize(
+  public async initialize(
     render: (settings: RenderSettings) => void,
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
@@ -270,6 +270,33 @@ export class TrackView extends ShadowBaseElement {
         session.setViewRange(updatedRange);
       }
     });
+
+    // FIXME: First sync of tracks here? Also a better location for the genes track
+
+    const { settings: dataTrackSettings, samples } =
+      await syncDataTrackSettings([], this.session, this.dataSource, []);
+
+    // this.session.tracks.setTracks(dataTrackSettings);
+    this.lastRenderedSamples = samples;
+
+    const geneTrackSettings: DataTrackSettings = {
+      trackId: "genes",
+      trackLabel: "Genes",
+      trackType: "gene",
+      height: {
+        collapsedHeight: TRACK_HEIGHTS.m,
+      },
+      showLabelWhenCollapsed: true,
+      isExpanded: true,
+      isHidden: false,
+    };
+    dataTrackSettings.push(geneTrackSettings);
+
+    console.log("Initial sync tracks", dataTrackSettings);
+
+    this.session.tracks.setTracks(dataTrackSettings);
+
+    this.session.loadTrackLayout();
   }
 
   private getXScale(inverted: boolean = false): Scale {
@@ -310,29 +337,8 @@ export class TrackView extends ShadowBaseElement {
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
-      console.log("Assigning the full bunch of tracks?", dataTrackSettings);
       this.session.tracks.setTracks(dataTrackSettings);
       this.lastRenderedSamples = samples;
-
-      // Load it after the other tracks
-      if (!this.geneTrackInitialized) {
-        // FIXME: This should be initially configured somehow, not in here
-        const geneTrackSettings: DataTrackSettings = {
-          trackId: "genes",
-          trackLabel: "Genes",
-          trackType: "gene",
-          height: {
-            collapsedHeight: TRACK_HEIGHTS.m,
-          },
-          showLabelWhenCollapsed: true,
-          isExpanded: true,
-          isHidden: false,
-        };
-
-        this.session.tracks.addTrack(geneTrackSettings);
-        this.geneTrackInitialized = true;
-      }
-
       this.renderTracks(renderSettings);
     });
 

@@ -50,7 +50,7 @@ export class TracksManager extends ShadowBaseElement {
     this.chromosomeView = this.root.querySelector("#chromosome-view");
   }
 
-  async initialize(
+  async initializeTrackView(
     render: (settings: RenderSettings) => void,
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
@@ -60,7 +60,10 @@ export class TracksManager extends ShadowBaseElement {
     this.session = session;
     this.onChange = render;
 
-    this.trackView.initialize(
+    this.trackView.hidden = false;
+    this.chromosomeView.hidden = true;
+
+    await this.trackView.initialize(
       render,
       chromSizes,
       chromClick,
@@ -68,8 +71,9 @@ export class TracksManager extends ShadowBaseElement {
       session,
     );
 
-    this.chromosomeView.initialize(session, dataSource);
+    await this.chromosomeView.initialize(session, dataSource);
   }
+
 
   setCovYRange(covHeights: Rng) {
     this.session.setCoverageRange(covHeights);

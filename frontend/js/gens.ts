@@ -171,8 +171,6 @@ export async function initCanvases({
     geneLists,
   );
 
-  session.loadTrackLayout();
-
   const renderDataSource = getRenderDataSource(
     api,
     () => session.getChromosome(),
@@ -271,7 +269,7 @@ export async function initCanvases({
     },
   );
 
-  await gensTracks.initialize(
+  await gensTracks.initializeTrackView(
     render,
     session.getChromSizes(),
     onChromClick,

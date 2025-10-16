@@ -119,6 +119,9 @@ export class GensSession {
     for (const geneList of allGeneLists) {
       this.idToGeneList[geneList.id] = geneList;
     }
+
+    this.tracks = new Tracks([]);
+    this.chromTracks = new Tracks([]);
   }
 
   public getMainSample(): Sample {
@@ -451,6 +454,7 @@ export class GensSession {
     }
 
     const tracks = this.tracks.getTracks();
+    console.log("Original tracks", tracks);
 
     const byPortableId: Record<string, DataTrackSettings> = {};
     for (const info of tracks) {
@@ -459,6 +463,7 @@ export class GensSession {
         byPortableId[pid] = info;
       }
     }
+    console.log("Mapping tracks to portable ID", byPortableId);
 
     const picked = new Set<string>();
     const reorderedTracks: DataTrackSettings[] = [];
@@ -470,12 +475,16 @@ export class GensSession {
       }
     }
 
+    console.log("Picked", picked);
+    console.log("Reordered tracks", reorderedTracks);
+
     // Reorder according to the used layout
     for (const info of tracks) {
       if (!picked.has(info.trackId)) {
         reorderedTracks.push(info);
       }
     }
+    console.log("Reordered according to layout", reorderedTracks);
 
     // Assign the tracks as hidden or expanded
     for (const info of reorderedTracks) {
@@ -488,6 +497,7 @@ export class GensSession {
       info.isExpanded = layout.expanded[pid];
     }
 
+    console.log("Final tracks", reorderedTracks);
     this.tracks.setTracks(reorderedTracks);
   }
 
@@ -519,6 +529,7 @@ export class Tracks {
   }
 
   public getTracks(): DataTrackSettings[] {
+    console.error("Grabbing tracks, getting", this.tracks);
     return this.tracks;
   }
 
