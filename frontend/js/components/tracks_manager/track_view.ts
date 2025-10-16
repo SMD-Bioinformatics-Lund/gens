@@ -25,7 +25,6 @@ import { zoomOut } from "../../util/navigation";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
-import { loadTrackLayout, saveTrackLayout } from "./utils/track_layout";
 import { syncDataTrackSettings } from "./utils/sync_tracks";
 import { getTrack as getTrack } from "./utils/create_tracks";
 import { getOpenTrackContextMenu } from "./utils/track_menues";
@@ -102,7 +101,9 @@ export class TrackView extends ShadowBaseElement {
   private geneTrackInitialized = false;
 
   public saveTrackLayout() {
-    saveTrackLayout(this.session, this.session.trackViewTracks);
+    console.log("Save track layout");
+    // saveTrackLayout(this.session, this.session.trackViewTracks);
+    this.session.saveTrackLayout();
   }
 
   constructor() {
@@ -403,7 +404,7 @@ export class TrackView extends ShadowBaseElement {
     for (const settingId of addedIds) {
       const setIsExpanded = (trackId: string, isExpanded: boolean) => {
         this.session.setIsExpanded(trackId, isExpanded);
-        this.requestRender({});
+        this.requestRender({ layout: true });
       };
       const setExpandedHeight = (trackId: string, expandedHeight: number) => {
         this.session.setExpandedHeight(trackId, expandedHeight);

@@ -103,6 +103,7 @@ export async function initCanvases({
   await api.initialize();
 
   const render = (settings: RenderSettings) => {
+    console.log("Main render with settings", settings);
     gensTracks.render(settings);
     settingsPage.render(settings);
     infoPage.render();
@@ -169,6 +170,8 @@ export async function initCanvases({
     allAnnotSources,
     geneLists,
   );
+
+  session.loadTrackLayout();
 
   const renderDataSource = getRenderDataSource(
     api,

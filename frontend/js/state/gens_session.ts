@@ -521,12 +521,13 @@ export class GensSession {
     return this.layoutProfileKey;
   }
 
-  public loadTrackLayout(): DataTrackSettings[] | null {
-    return loadTrackLayout(this.layoutProfileKey);
+  public loadTrackLayout(): void {
+    const trackLayout = loadTrackLayout(this.layoutProfileKey);
+    this.trackViewTracks = trackLayout;
   }
 
-  public saveTrackLayout(layout: DataTrackSettings[]): void {
-    saveTrackLayout(this.layoutProfileKey, layout);
+  public saveTrackLayout(): void {
+    saveTrackLayout(this.layoutProfileKey, this.trackViewTracks);
   }
 
   public moveTrack(trackId: string, direction: "up" | "down"): void {
