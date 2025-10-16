@@ -147,10 +147,13 @@ export class ChromosomeView extends ShadowBaseElement {
           (_track: DataTrack) => {
             console.warn("No context menu for chromosome view tracks");
           },
-          (trackId: string, updatedSetting: DataTrackSettings) => {
-            this.session.updateChromosomeViewSetting(trackId, updatedSetting);
-            this.render({});
+          (trackId: string, isExpanded: boolean) => {
+            this.session.setIsExpanded(trackId, isExpanded);
           },
+          // (trackId: string, updatedSetting: DataTrackSettings) => {
+          //   this.session.updateChromosomeViewSetting(trackId, updatedSetting);
+          //   this.render({});
+          // },
         );
         targetGroup = chromGroup.samples;
       } else if (trackSetting.trackType == "sample-annotation") {
@@ -166,9 +169,11 @@ export class ChromosomeView extends ShadowBaseElement {
           (_track: DataTrack) => {
             console.warn("No context menu available in chromosome view");
           },
-          (trackId: string, updatedSetting: DataTrackSettings) => {
-            this.session.updateChromosomeViewSetting(trackId, updatedSetting);
-            this.render({});
+          (trackId: string, isExpanded: boolean) => {
+            this.session.setIsExpanded(trackId, isExpanded);
+          },
+          (trackId: string, expandedHeight: number) => {
+            this.session.setExpandedHeight(trackId, expandedHeight);
           },
         );
         targetGroup = chromGroup.annotations;

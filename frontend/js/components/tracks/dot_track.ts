@@ -10,7 +10,7 @@ export class DotTrack extends DataTrack {
     label: string,
     trackType: TrackType,
     getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
+    setExpanded: (isExpanded: boolean) => void,
     getXRange: () => Rng,
     getRenderData: () => Promise<DotTrackData>,
     openTrackContextMenu: (track: DataTrack) => void,
@@ -33,7 +33,10 @@ export class DotTrack extends DataTrack {
       },
       openTrackContextMenu,
       getSettings,
-      updateSettings,
+      setExpanded,
+      (_height: number) => {
+        console.warn("Set expanded height not used for dot tracks");
+      },
       getMarkerModeOn,
     );
     this.getRenderData = getRenderData;

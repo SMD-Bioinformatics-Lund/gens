@@ -54,7 +54,7 @@ export abstract class DataTrack extends CanvasTrack {
   protected collapsedTrackHeight: number;
   // Callback to allow multi-layered settings object
   protected getSettings: () => DataTrackSettings;
-  protected updateSettings: (settings: DataTrackSettings) => void;
+  // protected updateSettings: (settings: DataTrackSettings) => void;
   protected renderData: BandTrackData | DotTrackData | null;
 
   private colorBands: RenderBand[] = [];
@@ -71,6 +71,9 @@ export abstract class DataTrack extends CanvasTrack {
 
   private onExpand: () => void;
   private lastRenderedExpanded: boolean;
+
+  protected setExpanded: ((isExpanded: boolean) => void) | null;
+  protected setExpandedHeight: ((expandedHeight: number) => void) | null;
 
   public getYDim(): Rng {
     return [Y_PAD, this.dimensions.height - Y_PAD];
@@ -147,11 +150,12 @@ export abstract class DataTrack extends CanvasTrack {
 
         console.log(`${this.id} Expansion listener`);
 
-        const settings = { ...this.getSettings() };
-        console.log(`${this.id} Initial settings`, settings);
-        settings.isExpanded = !settings.isExpanded;
-        console.log(`${this.id} Updated settings`, settings);
-        this.updateSettings(settings);
+        this.setExpanded(!this.getSettings().isExpanded);
+        // console.log(`${this.id} Initial settings`, settings);
+        // settings.isExpanded = !settings.isExpanded;
+        // console.log(`${this.id} Updated settings`, settings);
+        // this.updateSettings(settings);
+        // this.setExpanded(!settings.isExpanded);
         // this.toggleExpanded();
         // this.syncDimensions();
         // onExpand();
@@ -168,7 +172,8 @@ export abstract class DataTrack extends CanvasTrack {
     getXScale: () => Scale,
     openTrackContextMenu: ((track: DataTrack) => void) | null,
     getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
+    setExpanded: (isExpanded: boolean) => void | null,
+    setExpandedHeight: (height: number) => void | null,
     getMarkerModeOn: () => boolean,
   ) {
     const settings = getSettings != null ? getSettings() : null;
@@ -189,7 +194,9 @@ export abstract class DataTrack extends CanvasTrack {
     this.getXRange = getXRange;
     this.getXScale = getXScale;
     this.getMarkerModeOn = getMarkerModeOn;
-    this.updateSettings = updateSettings;
+    this.setExpanded = setExpanded;
+    this.setExpandedHeight = setExpandedHeight;
+    // this.updateSettings = updateSettings;
 
     this.getYRange = () => {
       // console.log("Current settings", getSettings());
@@ -340,15 +347,16 @@ export abstract class DataTrack extends CanvasTrack {
     this.ctx.clip();
   }
 
-  setExpandedHeight(height: number) {
-    const settings = { ...this.getSettings() };
-    settings.height.expandedHeight = height;
-    this.updateSettings(settings);
-    if (settings.isExpanded) {
-      this.currentHeight = height;
-      this.syncDimensions();
-    }
-  }
+  // setExpandedHeight(height: number) {
+  //   const settings = { ...this.getSettings() };
+  //   settings.height.expandedHeight = height;
+  //   // this.updateSettings(settings);
+  //   this.updateExpandedHeight(height);
+  //   if (settings.isExpanded) {
+  //     this.currentHeight = height;
+  //     this.syncDimensions();
+  //   }
+  // }
 
   protected drawEnd() {
     // Restore the clipping

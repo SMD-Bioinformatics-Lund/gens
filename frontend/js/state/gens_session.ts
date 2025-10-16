@@ -76,19 +76,22 @@ export class GensSession {
     trackId: string,
     updatedSetting: DataTrackSettings,
   ) {
-
-    console.log(`${trackId} ready to look at settings`, trackSettings, updatedSetting);
+    console.log(
+      `${trackId} ready to look at settings`,
+      trackSettings,
+      updatedSetting,
+    );
 
     const settingIndex = trackSettings.findIndex(
       (setting) => setting.trackId == trackId,
     );
-    const oldSetting = this.trackViewTracks[settingIndex];
+    const oldSetting = trackSettings[settingIndex];
 
     console.log("To check difference");
 
     let isDifferent = false;
     for (const key in oldSetting) {
-      console.log("Comparing", key, oldSetting[key], updatedSetting[key])
+      console.log("Comparing", key, oldSetting[key], updatedSetting[key]);
       if (oldSetting[key] !== updatedSetting[key]) {
         isDifferent = true;
         break;
@@ -96,9 +99,31 @@ export class GensSession {
     }
 
     if (isDifferent) {
-      this.trackViewTracks[settingIndex] = updatedSetting;
+      trackSettings[settingIndex] = updatedSetting;
     }
     return isDifferent;
+  }
+
+  private getSetting(trackId: string) {
+    const allTrackSettings = [
+      ...this.trackViewTracks,
+      ...this.chromosomeViewTracks,
+    ];
+
+    const settingIndex = allTrackSettings.findIndex(
+      (setting) => setting.trackId == trackId,
+    );
+    return allTrackSettings[settingIndex];
+  }
+
+  public setIsExpanded(trackId: string, isExpanded: boolean) {
+    const setting = this.getSetting(trackId);
+    setting.isExpanded = isExpanded;
+  }
+
+  public setExpandedHeight(trackId: string, trackHeight: number) {
+    const setting = this.getSetting(trackId);
+    setting.height.expandedHeight = trackHeight;
   }
 
   public updateTrackViewSetting(

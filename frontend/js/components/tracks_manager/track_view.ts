@@ -405,28 +405,37 @@ export class TrackView extends ShadowBaseElement {
       const setting = this.session.trackViewTracks.filter(
         (setting) => setting.trackId == settingId,
       )[0];
-      const updateTrackSettings = (
-        trackId: string,
-        settings: DataTrackSettings,
-      ) => {
-        console.log(`${trackId} Will look at settings`, settings);
-        const different = this.session.updateTrackViewSetting(
-          trackId,
-          settings,
-        );
+      // const updateTrackSettings = (
+      //   trackId: string,
+      //   settings: DataTrackSettings,
+      // ) => {
+      //   console.log(`${trackId} Will look at settings`, settings);
+      //   const different = this.session.updateTrackViewSetting(
+      //     trackId,
+      //     settings,
+      //   );
 
-        console.log(`${trackId} Is different?`, different);
+      //   console.log(`${trackId} Is different?`, different);
 
-        if (different) {
-          this.requestRender({});
-        }
+      //   // if (different) {
+      //   this.requestRender({});
+      //   // }
+      // };
+
+      const setIsExpanded = (trackId: string, isExpanded: boolean) => {
+        this.session.setIsExpanded(trackId, isExpanded);
       };
+      const setExpandedHeight = (trackId: string, expandedHeight: number) => {
+        this.session.setExpandedHeight(trackId, expandedHeight);
+      };
+
       const track = getTrack(
         this.session,
         this.dataSource,
         setting,
         showTrackContextMenu,
-        updateTrackSettings,
+        setIsExpanded,
+        setExpandedHeight,
       );
 
       const trackWrapper = makeTrackContainer(track, null);

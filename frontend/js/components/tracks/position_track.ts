@@ -25,7 +25,8 @@ export class PositionTrack extends DataTrack {
       getXScale,
       null,
       getSettings,
-      updateSettings,
+      null,
+      null,
       getMarkerModeOn,
     );
   }

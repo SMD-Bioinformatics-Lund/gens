@@ -18,10 +18,8 @@ export function getTrack(
   dataSource: RenderDataSource,
   setting: DataTrackSettings,
   showTrackContextMenu: (track: DataTrack) => void,
-  updateDataTrackSettings: (
-    trackId: string,
-    settings: DataTrackSettings,
-  ) => void,
+  setIsExpanded: (trackId: string, isExpanded: boolean) => void,
+  setExpandedHeight: (trackId: string, expandedHeight: number) => void,
 ) {
   let rawTrack;
   if (setting.trackType == "annotation") {
@@ -33,7 +31,8 @@ export function getTrack(
       setting,
       getAnnotationBands,
       showTrackContextMenu,
-      updateDataTrackSettings,
+      setIsExpanded,
+      setExpandedHeight,
     );
   } else if (setting.trackType == "gene-list") {
     const getGeneListBands = () =>
@@ -44,7 +43,8 @@ export function getTrack(
       setting,
       getGeneListBands,
       showTrackContextMenu,
-      updateDataTrackSettings,
+      setIsExpanded,
+      setExpandedHeight,
     );
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
@@ -58,7 +58,8 @@ export function getTrack(
       setting,
       getSampleAnnotBands,
       showTrackContextMenu,
-      updateDataTrackSettings,
+      setIsExpanded,
+      setExpandedHeight,
     );
   } else if (setting.trackType == "variant") {
     const getSampleAnnotBands = () =>
@@ -73,7 +74,8 @@ export function getTrack(
       setting,
       getSampleAnnotBands,
       showTrackContextMenu,
-      updateDataTrackSettings,
+      setIsExpanded,
+      setExpandedHeight,
     );
   } else if (setting.trackType == "dot-cov") {
     const getSampleCovDots = () => {
@@ -90,7 +92,7 @@ export function getTrack(
       setting,
       getSampleCovDots,
       showTrackContextMenu,
-      updateDataTrackSettings,
+      setIsExpanded,
     );
   } else if (setting.trackType == "dot-baf") {
     const getSampleBafDots = () =>
@@ -104,7 +106,7 @@ export function getTrack(
       setting,
       getSampleBafDots,
       showTrackContextMenu,
-      updateDataTrackSettings,
+      setIsExpanded,
     );
   } else if (setting.trackType == "gene") {
     const getGeneBands = () =>
@@ -115,7 +117,8 @@ export function getTrack(
       setting,
       getGeneBands,
       showTrackContextMenu,
-      updateDataTrackSettings,
+      setIsExpanded,
+      setExpandedHeight,
     );
   } else {
     throw Error(`Not yet supported track type ${setting.trackType}`);
@@ -129,10 +132,7 @@ export function getDotTrack(
   getDots: () => Promise<RenderDot[]>,
   // FIXME: Would it be enough with the track setting here?
   showTrackContextMenu: (track: DataTrack) => void,
-  updateDataTrackSettings: (
-    trackId: string,
-    updatedSetting: DataTrackSettings,
-  ) => void,
+  setIsExpanded: (trackId: string, isExpanded: boolean) => void,
 ): DotTrack {
   const dotTrack = new DotTrack(
     setting.trackId,
@@ -141,9 +141,7 @@ export function getDotTrack(
     () => {
       return setting;
     },
-    (updatedSettings) => {
-      updateDataTrackSettings(setting.trackId, updatedSettings);
-    },
+    (isExpanded) => setIsExpanded(setting.trackId, isExpanded),
     () => session.getXRange(),
     () => {
       return getDots().then((dots) => {
@@ -167,10 +165,8 @@ export function getBandTrack(
   setting: DataTrackSettings,
   getRenderBands: () => Promise<RenderBand[]>,
   showTrackContextMenu: (track: DataTrack) => void,
-  updateDataTrackSettings: (
-    trackId: string,
-    updatedSetting: DataTrackSettings,
-  ) => void,
+  setIsExpanded: (trackId: string, isExpanded: boolean) => void,
+  setExpandedHeight: (trackId: string, height: number) => void,
 ): BandTrack {
   const rawTrack = new BandTrack(
     setting.trackId,
@@ -179,8 +175,12 @@ export function getBandTrack(
     () => {
       return setting;
     },
-    (updatedSetting) => {
-      updateDataTrackSettings(setting.trackId, updatedSetting);
+    (isExpanded: boolean) => {
+      setIsExpanded(setting.trackId, isExpanded);
+    },
+    (expandedHeight: number) => {
+      setExpandedHeight(setting.trackId, expandedHeight);
+      // updateDataTrackSettings(setting.trackId, updatedSetting);
     },
     () => session.getXRange(),
     () => {
