@@ -295,7 +295,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(renderSettings: RenderSettings) {
-    console.error("Render call");
     renderHighlights(
       this.tracksContainer,
       this.session.getCurrentHighlights(),
@@ -424,6 +423,7 @@ export class TrackView extends ShadowBaseElement {
 
       const setIsExpanded = (trackId: string, isExpanded: boolean) => {
         this.session.setIsExpanded(trackId, isExpanded);
+        this.requestRender({});
       };
       const setExpandedHeight = (trackId: string, expandedHeight: number) => {
         this.session.setExpandedHeight(trackId, expandedHeight);

@@ -84,8 +84,8 @@ export class ChromosomeView extends ShadowBaseElement {
 
     for (const chrom of CHROMOSOMES) {
       const dataTrackSetting: DataTrackSettings = {
-        trackId: "track ID",
-        trackLabel: "Dot track label",
+        trackId: `chr-cov-${chrom}`,
+        trackLabel: `Log2 cov`,
         trackType: "dot-cov",
         height: {
           collapsedHeight: TRACK_HEIGHTS.m,
@@ -149,6 +149,7 @@ export class ChromosomeView extends ShadowBaseElement {
           },
           (trackId: string, isExpanded: boolean) => {
             this.session.setIsExpanded(trackId, isExpanded);
+            this.render({});
           },
           // (trackId: string, updatedSetting: DataTrackSettings) => {
           //   this.session.updateChromosomeViewSetting(trackId, updatedSetting);
@@ -170,7 +171,9 @@ export class ChromosomeView extends ShadowBaseElement {
             console.warn("No context menu available in chromosome view");
           },
           (trackId: string, isExpanded: boolean) => {
+            console.log("Expanding in chromosome view");
             this.session.setIsExpanded(trackId, isExpanded);
+            this.render({});
           },
           (trackId: string, expandedHeight: number) => {
             this.session.setExpandedHeight(trackId, expandedHeight);

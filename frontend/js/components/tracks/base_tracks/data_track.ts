@@ -147,18 +147,7 @@ export abstract class DataTrack extends CanvasTrack {
       eventKey,
       (event) => {
         event.preventDefault();
-
-        console.log(`${this.id} Expansion listener`);
-
         this.setExpanded(!this.getSettings().isExpanded);
-        // console.log(`${this.id} Initial settings`, settings);
-        // settings.isExpanded = !settings.isExpanded;
-        // console.log(`${this.id} Updated settings`, settings);
-        // this.updateSettings(settings);
-        // this.setExpanded(!settings.isExpanded);
-        // this.toggleExpanded();
-        // this.syncDimensions();
-        // onExpand();
       },
       { signal: this.getListenerAbortSignal() },
     );
