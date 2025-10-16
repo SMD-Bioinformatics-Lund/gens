@@ -26,12 +26,18 @@ export interface ExpandedTrackHeight {
 }
 
 export interface DataTrackSettings {
+  trackId: string;
+  trackLabel: string;
+  sample?: Sample;
+  trackType: TrackType;
   height: ExpandedTrackHeight;
   showLabelWhenCollapsed: boolean;
   yAxis?: Axis;
   yPadBands?: boolean;
   isExpanded: boolean;
   isHidden: boolean;
+  chromosome?: string;
+  sourceId?: string;
 }
 
 const DEBOUNCE_DELAY = 50;
@@ -48,7 +54,7 @@ export abstract class DataTrack extends CanvasTrack {
   protected collapsedTrackHeight: number;
   // Callback to allow multi-layered settings object
   protected getSettings: () => DataTrackSettings;
-  protected updateSettings: (settings: DataTrackSettings) => void;
+  // protected updateSettings: (settings: DataTrackSettings) => void;
   protected renderData: BandTrackData | DotTrackData | null;
 
   private colorBands: RenderBand[] = [];
@@ -62,6 +68,12 @@ export abstract class DataTrack extends CanvasTrack {
   protected getYScale: () => Scale;
   protected openTrackContextMenu: ((track: DataTrack) => void) | null;
   protected getMarkerModeOn: () => boolean;
+
+  private onExpand: () => void;
+  private lastRenderedExpanded: boolean;
+
+  protected setExpanded: ((isExpanded: boolean) => void) | null;
+  protected setExpandedHeight: ((expandedHeight: number) => void) | null;
 
   public getYDim(): Rng {
     return [Y_PAD, this.dimensions.height - Y_PAD];
@@ -110,18 +122,6 @@ export abstract class DataTrack extends CanvasTrack {
     }
   }
 
-  public toggleExpanded() {
-    const settings = this.getSettings();
-    settings.isExpanded = !settings.isExpanded;
-    this.updateSettings(settings);
-
-    if (settings.isExpanded && settings.height.expandedHeight == null) {
-      return;
-    }
-
-    this.syncHeight();
-  }
-
   protected syncHeight() {
     this.currentHeight = this.getSettings().isExpanded
       ? this.getSettings().height.expandedHeight
@@ -129,13 +129,13 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected initializeExpander(eventKey: string, onExpand: () => void) {
+    this.onExpand = onExpand;
+
     this.trackContainer.addEventListener(
       eventKey,
       (event) => {
         event.preventDefault();
-        this.toggleExpanded();
-        this.syncDimensions();
-        onExpand();
+        this.setExpanded(!this.getSettings().isExpanded);
       },
       { signal: this.getListenerAbortSignal() },
     );
@@ -149,7 +149,8 @@ export abstract class DataTrack extends CanvasTrack {
     getXScale: () => Scale,
     openTrackContextMenu: ((track: DataTrack) => void) | null,
     getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
+    setExpanded: (isExpanded: boolean) => void | null,
+    setExpandedHeight: (height: number) => void | null,
     getMarkerModeOn: () => boolean,
   ) {
     const settings = getSettings != null ? getSettings() : null;
@@ -170,9 +171,11 @@ export abstract class DataTrack extends CanvasTrack {
     this.getXRange = getXRange;
     this.getXScale = getXScale;
     this.getMarkerModeOn = getMarkerModeOn;
-    this.updateSettings = updateSettings;
+    this.setExpanded = setExpanded;
+    this.setExpandedHeight = setExpandedHeight;
 
     this.getYRange = () => {
+      // console.log("Current settings", getSettings());
       return getSettings().yAxis.range;
     };
     this.getYScale = () => {
@@ -265,6 +268,16 @@ export abstract class DataTrack extends CanvasTrack {
 
     const xScale = this.getXScale();
 
+    const settings = this.getSettings();
+    if (this.lastRenderedExpanded != settings.isExpanded) {
+      this.lastRenderedExpanded = settings.isExpanded;
+
+      if (this.onExpand) {
+        this.syncHeight();
+        this.onExpand();
+      }
+    }
+
     for (const band of this.colorBands) {
       const box = {
         x1: xScale(band.start),
@@ -309,21 +322,12 @@ export abstract class DataTrack extends CanvasTrack {
     this.ctx.clip();
   }
 
-  setExpandedHeight(height: number) {
-    const settings = this.getSettings();
-    settings.height.expandedHeight = height;
-    this.updateSettings(settings);
-    if (settings.isExpanded) {
-      this.currentHeight = height;
-      this.syncDimensions();
-    }
-  }
-
   protected drawEnd() {
     // Restore the clipping
     this.ctx.restore();
 
     const settings = this.getSettings();
+
     if (settings.isExpanded || settings.showLabelWhenCollapsed) {
       const yAxisWidth = STYLE.yAxis.width;
       const labelBox = this.drawTrackLabel(yAxisWidth);

@@ -21,6 +21,7 @@ export function getRenderDataSource(
   api: API,
   getChrom: () => string,
   getXRange: () => Rng,
+  getVariantURL: (id: string) => string,
 ): RenderDataSource {
   const getChromInfo = async () => {
     return api.getChromData(getChrom());
@@ -81,17 +82,18 @@ export function getRenderDataSource(
     const geneSymbols = new Set(await api.getGeneListGenes(listId, chrom));
     const onlyCanonical = true;
     const transcriptsRaw = await api.getTranscripts(chrom, onlyCanonical);
-    const matchingTranscripts = transcriptsRaw.filter((tr) => geneSymbols.has(tr.name));
+    const matchingTranscripts = transcriptsRaw.filter((tr) =>
+      geneSymbols.has(tr.name),
+    );
 
     return parseTranscripts(matchingTranscripts);
-  }
+  };
 
   const getVariantBands = async (
     sample: Sample,
     chrom: string,
     variantThres: number,
   ): Promise<RenderBand[]> => {
-
     const variantsRaw = await api.getVariants(
       sample.caseId,
       sample.sampleId,
@@ -170,6 +172,7 @@ export function getRenderDataSource(
     getVariantDetails: (id: string) => api.getVariantDetails(id),
     getOverviewCovData,
     getOverviewBafData,
+    getVariantURL,
   };
   return renderDataSource;
 }
@@ -275,10 +278,13 @@ export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
     const id = variant.document_id;
     const length = variant.end - variant.start;
 
-    const hetHomColors = VARIANT_COLORS[variant.sub_category] != undefined ? 
-      VARIANT_COLORS[variant.sub_category] : VARIANT_COLORS.default
+    const hetHomColors =
+      VARIANT_COLORS[variant.sub_category] != undefined
+        ? VARIANT_COLORS[variant.sub_category]
+        : VARIANT_COLORS.default;
 
-    const color = variant.genotype == "0/1" ? hetHomColors.het : hetHomColors.hom;
+    const color =
+      variant.genotype == "0/1" ? hetHomColors.het : hetHomColors.hom;
 
     return {
       id,
@@ -286,7 +292,7 @@ export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
       end: variant.end,
       hoverInfo: `${variant.sub_category} (${prefixNts(length)})`,
       label: `${variant.variant_type} ${variant.sub_category}`,
-      color
+      color,
     };
   });
 }

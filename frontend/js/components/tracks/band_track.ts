@@ -20,7 +20,8 @@ export class BandTrack extends DataTrack {
     label: string,
     trackType: TrackType,
     getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
+    setExpanded: (isExpanded: boolean) => void,
+    setExpandedHeight: (expandedHeight: number) => void,
     getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
@@ -43,7 +44,8 @@ export class BandTrack extends DataTrack {
       },
       openTrackContextMenu,
       getSettings,
-      updateSettings,
+      setExpanded,
+      setExpandedHeight,
       getMarkerModeOn,
     );
 
@@ -155,7 +157,7 @@ export class BandTrack extends DataTrack {
       style.bandPadding,
       showDetails,
     );
-    super.setExpandedHeight(expandedHeight);
+    this.setExpandedHeight(expandedHeight);
   }
 }
 

@@ -8,10 +8,9 @@ export class DotTrack extends DataTrack {
   constructor(
     id: string,
     label: string,
-    trackType: "dot-cov" | "dot-baf",
+    trackType: TrackType,
     getSettings: () => DataTrackSettings,
-    // FIXME: Is this one even used? Can probably be removed?
-    updateSettings: (settings: DataTrackSettings) => void,
+    setExpanded: (isExpanded: boolean) => void,
     getXRange: () => Rng,
     getRenderData: () => Promise<DotTrackData>,
     openTrackContextMenu: (track: DataTrack) => void,
@@ -34,7 +33,10 @@ export class DotTrack extends DataTrack {
       },
       openTrackContextMenu,
       getSettings,
-      updateSettings,
+      setExpanded,
+      (_height: number) => {
+        console.warn("Set expanded height not used for dot tracks");
+      },
       getMarkerModeOn,
     );
     this.getRenderData = getRenderData;

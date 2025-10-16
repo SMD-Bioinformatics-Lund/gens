@@ -22,7 +22,10 @@ import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/data_source";
-import { DEFAULT_VARIANT_THRES as DEFAULT_VARIANT_THRES, STYLE } from "./constants";
+import {
+  DEFAULT_VARIANT_THRES as DEFAULT_VARIANT_THRES,
+  STYLE,
+} from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
 import {
   SettingsMenu,
@@ -104,6 +107,10 @@ export async function initCanvases({
     settingsPage.render(settings);
     infoPage.render();
     inputControls.render(settings);
+
+    if (settings.layout) {
+      gensTracks.trackView.saveTrackLayout();
+    }
   };
 
   const trackHeights: TrackHeights = {
@@ -143,6 +150,9 @@ export async function initCanvases({
 
   const mainSample = getMainSample(samples);
 
+  const allAnnotSources = await api.getAnnotationSources();
+  const geneLists = await api.getGeneLists();
+
   const session = new GensSession(
     render,
     sideMenu,
@@ -151,18 +161,20 @@ export async function initCanvases({
     trackHeights,
     scoutBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
-    settingsPage,
     genomeBuild,
     api.getChromInfo(),
     api.getChromSizes(),
     startRegion,
     DEFAULT_VARIANT_THRES,
+    allAnnotSources,
+    geneLists,
   );
 
   const renderDataSource = getRenderDataSource(
     api,
     () => session.getChromosome(),
     () => session.getXRange(),
+    (id) => session.getVariantURL(id),
   );
 
   const onChromClick = async (chrom) => {
@@ -172,17 +184,15 @@ export async function initCanvases({
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
-  const allAnnotSources = await api.getAnnotationSources();
-  const geneLists = await api.getGeneLists();
-
   settingsPage.setSources(
     session,
     render,
     allAnnotSources,
     geneLists,
-    () => gensTracks.trackView.getDataTracks(),
-    (trackId: string, direction: "up" | "down") =>
-      gensTracks.trackView.moveTrack(trackId, direction),
+    (trackId: string, direction: "up" | "down") => {
+      // gensTracks.trackView.moveTrack(trackId, direction),
+      session.tracks.shiftTrack(trackId, direction);
+    },
     () => {
       const samples = session.getSamples();
       const currSampleIds = samples.map(
@@ -201,30 +211,26 @@ export async function initCanvases({
     // FIXME: Something strange here in how things are organized,
     // why is the trackview looping to itself?
     async (sample: Sample) => {
-      const isTrackView = true;
-      gensTracks.trackView.addSample(sample, isTrackView);
       session.addSample(sample);
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (sample: Sample) => {
       // FIXME: This should eventually be session only, with tracks responding on rerender
       session.removeSample(sample);
-      gensTracks.trackView.removeSample(sample);
       render({ dataUpdated: true, samplesUpdated: true });
     },
     (trackHeights: TrackHeights) => {
       session.setTrackHeights(trackHeights);
-      gensTracks.trackView.setTrackHeights(trackHeights);
       render({});
     },
     async (annotId: string | null) => {
       session.setColorAnnotation(annotId);
-      await gensTracks.trackView.setColorAnnotation(annotId);
+      await gensTracks.trackView.updateColorBands();
       render({});
     },
     (rng: Rng) => {
       gensTracks.setCovYRange(rng);
-      render({dataUpdated: true});
+      render({ dataUpdated: true });
     },
   );
 
@@ -262,9 +268,8 @@ export async function initCanvases({
     },
   );
 
-  await gensTracks.initialize(
+  await gensTracks.initializeTrackView(
     render,
-    samples,
     session.getChromSizes(),
     onChromClick,
     renderDataSource,

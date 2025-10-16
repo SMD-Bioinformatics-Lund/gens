@@ -1,23 +1,22 @@
-import {
-  SettingsMenu,
-  TrackHeights,
-} from "../components/side_menu/settings_menu";
+import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
+import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
+import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS } from "../constants";
 import {
   loadAnnotationSelections,
   loadColorAnnotation,
   loadCoverageRange,
-  loadExpandedTracks,
   loadTrackHeights,
   saveAnnotationSelections,
   saveColorAnnotation,
   saveCoverageRange,
-  saveExpandedTracks,
   saveTrackHeights,
   loadGeneListSelections,
   saveGeneListSelections,
+  loadTrackLayout,
+  saveTrackLayout,
 } from "../util/storage";
 import { generateID } from "../util/utils";
 
@@ -33,6 +32,7 @@ import { generateID } from "../util/utils";
  * Currently that is maintained by the tracks themselves though. But
  * it should probably be kept here as well.
  */
+
 export class GensSession {
   private chromosome: Chromosome;
   private start: number;
@@ -49,14 +49,23 @@ export class GensSession {
   private chromViewActive: boolean;
   private scoutBaseURL: string;
   private gensBaseURL: string;
-  private settings: SettingsMenu;
+  // private settings: SettingsMenu;
   private genomeBuild: number;
+
+  private idToAnnotSource: Record<string, ApiAnnotationTrack>;
+  private idToGeneList: Record<string, ApiGeneList>;
+
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
   private geneListSelections: string[] = [];
-  private coverageRange: [number, number] = COV_Y_RANGE;
+  private coverageRange: Rng = COV_Y_RANGE;
   private variantThreshold: number;
-  private expandedTracks: Record<string, boolean> = {};
+  // private expandedTracks: Record<string, boolean> = {};
+  private layoutProfileKey: string;
+
+  // FIXME: Small helper class for tracks management
+  public tracks: Tracks;
+  public chromTracks: Tracks;
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -66,12 +75,13 @@ export class GensSession {
     trackHeights: TrackHeights,
     scoutBaseURL: string,
     gensBaseURL: string,
-    settings: SettingsMenu,
     genomeBuild: number,
     chromInfo: Record<Chromosome, ChromosomeInfo>,
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
     variantThreshold: number,
+    allAnnotationSources: ApiAnnotationTrack[],
+    allGeneLists: ApiGeneList[],
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
@@ -84,7 +94,6 @@ export class GensSession {
     this.trackHeights = loadTrackHeights() || trackHeights;
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
-    this.settings = settings;
     this.genomeBuild = genomeBuild;
     this.chromInfo = chromInfo;
     this.chromSizes = chromSizes;
@@ -93,7 +102,21 @@ export class GensSession {
     this.colorAnnotationId = loadColorAnnotation();
     this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
     this.variantThreshold = variantThreshold;
-    this.expandedTracks = loadExpandedTracks() || {};
+    // this.expandedTracks = loadExpandedTracks() || {};
+    this.layoutProfileKey = this.computeProfileKey();
+
+    this.idToAnnotSource = {};
+    for (const annotSource of allAnnotationSources) {
+      this.idToAnnotSource[annotSource.track_id] = annotSource;
+    }
+
+    this.idToGeneList = {};
+    for (const geneList of allGeneLists) {
+      this.idToGeneList[geneList.id] = geneList;
+    }
+
+    this.tracks = new Tracks([]);
+    this.chromTracks = new Tracks([]);
   }
 
   public getMainSample(): Sample {
@@ -111,8 +134,25 @@ export class GensSession {
   public getAnnotationSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
+    if (settings.selectedOnly) {
+      return this.annotationSelections.map((id) => {
+        const track = this.idToAnnotSource[id];
+        return {
+          id,
+          label: track.name,
+        };
+      });
+    } else {
+      Object.values(this.idToAnnotSource).map((obj) => {
+        return {
+          id: obj.track_id,
+          label: obj.name,
+        };
+      });
+    }
+
     // FIXME: Should this be owned by the session?
-    return this.settings.getAnnotSources(settings);
+    // return this.settings.getAnnotSources(settings);
   }
 
   public getVariantURL(variantId: string): string {
@@ -152,7 +192,24 @@ export class GensSession {
   public getGeneListSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
-    return this.settings.getGeneListSources(settings);
+    if (settings.selectedOnly) {
+      return this.geneListSelections.map((id) => {
+        const geneList = this.idToGeneList[id];
+        return {
+          id,
+          label: geneList.name,
+        };
+      });
+    } else {
+      Object.values(this.idToGeneList).map((obj) => {
+        return {
+          id: obj.id,
+          label: obj.name,
+        };
+      });
+    }
+
+    // return this.settings.getGeneListSources(settings);
   }
 
   public setGeneListSelections(ids: string[]): void {
@@ -169,16 +226,16 @@ export class GensSession {
     saveTrackHeights(heights);
   }
 
-  public getTrackExpanded(id: string, defaultValue: boolean): boolean {
-    const expanded = this.expandedTracks[id];
-    const returnVal = expanded != null ? expanded : defaultValue;
-    return returnVal;
-  }
+  // public getTrackExpanded(id: string, defaultValue: boolean): boolean {
+  //   const expanded = this.expandedTracks[id];
+  //   const returnVal = expanded != null ? expanded : defaultValue;
+  //   return returnVal;
+  // }
 
-  public setTrackExpanded(id: string, value: boolean): void {
-    this.expandedTracks[id] = value;
-    saveExpandedTracks(this.expandedTracks);
-  }
+  // public setTrackExpanded(id: string, value: boolean): void {
+  //   this.expandedTracks[id] = value;
+  //   saveExpandedTracks(this.expandedTracks);
+  // }
 
   public getCoverageRange(): [number, number] {
     return this.coverageRange;
@@ -193,13 +250,37 @@ export class GensSession {
     return this.samples;
   }
 
+  public getSample(caseId: string, sampleId: string): Sample | null {
+    const matchedSamples = this.samples.filter(
+      (sample) => sample.caseId == caseId && sample.sampleId == sampleId,
+    );
+    if (matchedSamples.length == 1) {
+      return matchedSamples[0];
+    } else if (matchedSamples.length == 0) {
+      return null;
+    } else {
+      throw new Error(`Found multiple samples: ${matchedSamples}`);
+    }
+  }
+
   public addSample(sample: Sample) {
     this.samples.push(sample);
   }
 
   public removeSample(sample: Sample): void {
-    const pos = this.samples.indexOf(sample);
+    const pos = this.samples.findIndex(
+      (currSample) =>
+        currSample.caseId === sample.caseId &&
+        currSample.sampleId === sample.sampleId,
+    );
+
+    if (pos === -1) {
+      console.warn("Sample not found:", sample);
+      return;
+    }
+
     this.samples.splice(pos, 1);
+    this.layoutProfileKey = this.computeProfileKey();
   }
 
   public setViewRange(range: Rng): void {
@@ -298,6 +379,7 @@ export class GensSession {
     this.render({});
   }
 
+  // FIXME: Why is this one here?
   public showContent(header: string, content: HTMLElement[], width: number) {
     this.sideMenu.showContent(header, content, width);
   }
@@ -342,5 +424,174 @@ export class GensSession {
   public removeHighlight(id: string) {
     delete this.highlights[id];
     this.render({});
+  }
+
+  private computeProfileKey(): string {
+    const types = this.samples
+      .map((s) => (s.sampleType ? s.sampleType : "unknown"))
+      .sort();
+    const signature = types.join("+");
+    return `v1.${this.genomeBuild}.${signature}`;
+  }
+
+  public getLayoutProfileKey(): string {
+    return this.layoutProfileKey;
+  }
+
+  public loadTrackLayout(): void {
+    const layout = loadTrackLayout(this.layoutProfileKey);
+
+    if (!layout) {
+      return;
+    }
+
+    const tracks = this.tracks.getTracks();
+
+    const byPortableId: Record<string, DataTrackSettings> = {};
+    for (const info of tracks) {
+      const pid = getPortableId(info);
+      if (pid) {
+        byPortableId[pid] = info;
+      }
+    }
+
+    const picked = new Set<string>();
+    const reorderedTracks: DataTrackSettings[] = [];
+    for (const pid of layout.order) {
+      const info = byPortableId[pid];
+      if (info) {
+        reorderedTracks.push(info);
+        picked.add(info.trackId);
+      }
+    }
+
+    // Reorder according to the used layout
+    for (const info of tracks) {
+      if (!picked.has(info.trackId)) {
+        reorderedTracks.push(info);
+      }
+    }
+
+    // Assign the tracks as hidden or expanded
+    for (const info of reorderedTracks) {
+      const pid = getPortableId(info);
+      if (!pid) {
+        continue;
+      }
+
+      info.isHidden = layout.hidden[pid];
+      info.isExpanded = layout.expanded[pid];
+    }
+
+    this.tracks.setTracks(reorderedTracks);
+  }
+
+  public saveTrackLayout(): void {
+    const order: string[] = [];
+    const hidden: Record<string, boolean> = {};
+    const expanded: Record<string, boolean> = {};
+    for (const info of this.tracks.getTracks()) {
+      const pid = getPortableId(info);
+      order.push(pid);
+      hidden[pid] = info.isHidden;
+      expanded[pid] = info.isExpanded;
+    }
+
+    const layout = {
+      order,
+      hidden,
+      expanded,
+    };
+
+    saveTrackLayout(this.layoutProfileKey, layout);
+  }
+}
+
+export class Tracks {
+  private tracks: DataTrackSettings[];
+  constructor(tracks: DataTrackSettings[]) {
+    this.tracks = tracks;
+  }
+
+  public getTracks(): DataTrackSettings[] {
+    return this.tracks;
+  }
+
+  public addTrack(track: DataTrackSettings) {
+    this.tracks.push(track);
+  }
+
+  public get(trackId: string): DataTrackSettings {
+    const matches = this.tracks.filter((setting) => setting.trackId == trackId);
+
+    if (matches.length == 0) {
+      throw Error(`No matches found for ID: ${trackId}`);
+    } else if (matches.length > 1) {
+      throw Error(
+        `More than one (${matches.length}) match found for ID: ${trackId}`,
+      );
+    }
+
+    return matches[0];
+  }
+
+  public updateSetting(trackId: string, newSetting: DataTrackSettings) {
+    const trackIndex = this.tracks.findIndex(
+      (track) => track.trackId === trackId,
+    );
+    this.tracks[trackIndex] = newSetting;
+  }
+
+  public setIsExpanded(trackId: string, isExpanded: boolean) {
+    const setting = this.get(trackId);
+    setting.isExpanded = isExpanded;
+  }
+
+  public setExpandedHeight(trackId: string, trackHeight: number) {
+    const setting = this.get(trackId);
+    setting.height.expandedHeight = trackHeight;
+  }
+
+  public setTracks(tracks: DataTrackSettings[]) {
+    this.tracks = tracks;
+  }
+
+  public moveTrackToPos(trackId: string, newPos: number): void {
+    const origPos = this.tracks.findIndex((track) => track.trackId === trackId);
+    const [moved] = this.tracks.splice(origPos, 1);
+    this.tracks.splice(newPos, 0, moved);
+  }
+
+  public shiftTrack(trackId: string, direction: "up" | "down"): void {
+    const startIndex = this.tracks.findIndex(
+      (track) => track.trackId == trackId,
+    );
+
+    if (startIndex == -1) {
+      console.warn(`trackID ${trackId} not found`);
+      return;
+    }
+
+    const endIndex = direction == "up" ? startIndex - 1 : startIndex + 1;
+
+    // Don't move at the edge
+    if (endIndex < 0 || endIndex >= this.tracks.length) {
+      return;
+    }
+
+    [this.tracks[startIndex], this.tracks[endIndex]] = [
+      this.tracks[endIndex],
+      this.tracks[startIndex],
+    ];
+  }
+
+  public toggleTrackHidden(trackId: string): void {
+    const setting = this.get(trackId);
+    setting.isHidden = !setting.isHidden;
+  }
+
+  public toggleTrackExpanded(trackId: string): void {
+    const setting = this.get(trackId);
+    setting.isExpanded = !setting.isExpanded;
   }
 }

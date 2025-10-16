@@ -1,6 +1,12 @@
-import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
+import {
+  COLORS,
+  COMBINED_SAMPLE_ID_DIVIDER,
+  FONT_WEIGHT,
+  ICONS,
+  SIZES,
+} from "../../constants";
 import { removeChildren } from "../../util/utils";
-import { DataTrack } from "../tracks/base_tracks/data_track";
+import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { ChoiceSelect } from "../util/choice_select";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
@@ -81,10 +87,11 @@ template.innerHTML = String.raw`
   <div>
     <choice-select id="annotation-select" multiple></choice-select>
   </div>
-  <div class="header-row">
+  <!-- FIXME: Bring back / unhide when institute question is resolved, i.e. gene lists are interesting in the context of an institute -->
+  <div class="header-row" hidden>
     <div class="header">Gene lists</div>
   </div>
-  <div>
+  <div hidden>
     <choice-select id="gene-lists-select" multiple></choice-select>
   </div>
   <div class="header-row">
@@ -170,7 +177,6 @@ export class SettingsMenu extends ShadowBaseElement {
   private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private geneLists: ApiGeneList[];
-  private getDataTracks: () => DataTrack[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
   private getCurrentSamples: () => Sample[];
   private getAllSamples: () => Sample[];
@@ -196,7 +202,6 @@ export class SettingsMenu extends ShadowBaseElement {
     onChange: (renderSettings: RenderSettings) => void,
     allAnnotationSources: ApiAnnotationTrack[],
     geneLists: ApiGeneList[],
-    getDataTracks: () => DataTrack[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
     getAllSamples: () => Sample[],
     gotoHighlight: (region: Region) => void,
@@ -211,7 +216,6 @@ export class SettingsMenu extends ShadowBaseElement {
     this.allAnnotationSources = allAnnotationSources;
     this.geneLists = geneLists;
 
-    this.getDataTracks = getDataTracks;
     this.onTrackMove = onTrackMove;
 
     this.getCurrentSamples = () => session.getSamples();
@@ -274,7 +278,9 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
-      const [caseId, sampleId] = caseId_sampleId.split("___");
+      const [caseId, sampleId] = caseId_sampleId.split(
+        COMBINED_SAMPLE_ID_DIVIDER,
+      );
       this.onAddSample({ caseId, sampleId });
     });
 
@@ -380,7 +386,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const allSamples = rawSamples.map((s) => {
       return {
         label: `${s.sampleId} (case: ${s.caseId})`,
-        value: `${s.caseId}___${s.sampleId}`,
+        value: `${s.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${s.sampleId}`,
       };
     });
     this.sampleSelect.setValues(allSamples);
@@ -396,21 +402,19 @@ export class SettingsMenu extends ShadowBaseElement {
     }
 
     removeChildren(this.tracksOverview);
-    const tracks = this.getDataTracks();
-    // FIXME: Could part of this simply be part of the template?
     const tracksSection = getTracksSection(
-      tracks,
-      (track: DataTrack, direction: "up" | "down") => {
-        this.onTrackMove(track.id, direction);
-        this.onChange({});
+      this.session.tracks.getTracks(),
+      (trackId: string, direction: "up" | "down") => {
+        this.onTrackMove(trackId, direction);
+        this.onChange({ layout: true });
       },
-      (track: DataTrack) => {
-        track.toggleHidden();
-        this.onChange({});
+      (trackId: string) => {
+        this.session.tracks.toggleTrackHidden(trackId);
+        this.onChange({ layout: true });
       },
-      (track: DataTrack) => {
-        track.toggleExpanded();
-        this.onChange({});
+      (trackId: string) => {
+        this.session.tracks.toggleTrackExpanded(trackId);
+        this.onChange({ layout: true });
       },
     );
     this.tracksOverview.appendChild(tracksSection);
@@ -457,74 +461,88 @@ export class SettingsMenu extends ShadowBaseElement {
       this.colorBySelect.setValues(choices);
     }
   }
-
-  getGeneListSources(settings: {
-    selectedOnly: boolean;
-  }): { id: string; label: string }[] {
-    const sources = parseSources(
-      this.geneLists,
-      this.geneListSelect,
-      settings.selectedOnly,
-      this.session.getGeneListSelections(),
-      (source) => source.id,
-      (source) => `${source.name} + ${source.version}`,
-    );
-    return sources;
-  }
-
-  getAnnotSources(settings: {
-    selectedOnly: boolean;
-  }): { id: string; label: string }[] {
-    const sources = parseSources<ApiAnnotationTrack>(
-      this.allAnnotationSources,
-      this.annotSelect,
-      settings.selectedOnly,
-      this.session.getAnnotationSelections(),
-      (source) => source.track_id,
-      (source) => source.name,
-    );
-
-    return sources;
-  }
 }
 
-function parseSources<T>(
-  allSources: T[],
-  targetSelect: ChoiceSelect | null,
-  selectedOnly: boolean,
-  storedIds: string[],
-  getId: (source: T) => string,
-  getLabel: (source: T) => string,
-): { id: string; label: string }[] {
-  if (!selectedOnly) {
-    return allSources.map((source) => {
-      return {
-        id: getId(source),
-        label: getLabel(source),
-      };
-    });
-  }
+//   getGeneListSources(settings: {
+//     selectedOnly: boolean;
+//   }): { id: string; label: string }[] {
+//     const sources = parseSources(
+//       this.geneLists,
+//       this.geneListSelect,
+//       settings.selectedOnly,
+//       this.session.getGeneListSelections(),
+//       (source) => source.id,
+//       (source) => `${source.name} + ${source.version}`,
+//     );
+//     return sources;
+//   }
 
-  if (targetSelect == null) {
-    return allSources
-      .filter((source) => storedIds.includes(getId(source)))
-      .map((source) => {
-        return {
-          id: getId(source),
-          label: getLabel(source),
-        };
-      });
-  }
+//   // This state should not live here, but in session right
+//   getAnnotSources(settings: {
+//     selectedOnly: boolean;
+//   }): { id: string; label: string }[] {
 
-  const choices = targetSelect.getValues();
-  const returnVals = choices.map((obj) => {
-    return {
-      id: obj.value,
-      label: obj.label.toString(),
-    };
-  });
-  return returnVals;
-}
+//     console.log("Getting annotation sources with the select", this.annotSelect);
+
+//     const sources = parseSources<ApiAnnotationTrack>(
+//       this.allAnnotationSources,
+//       this.annotSelect,
+//       settings.selectedOnly,
+//       this.session.getAnnotationSelections(),
+//       (source) => source.track_id,
+//       (source) => source.name,
+//     );
+
+//     return sources;
+//   }
+// }
+
+// /**
+//  * FIXME: What is the actual intent of this one?
+//  * Messy to have the choice select being passed all the way in here
+//  */
+// function parseSources<T>(
+//   allSources: T[],
+//   targetSelect: ChoiceSelect | null,
+//   selectedOnly: boolean,
+//   storedIds: string[],
+//   getId: (source: T) => string,
+//   getLabel: (source: T) => string,
+// ): { id: string; label: string }[] {
+
+//   console.log("Parsing sources")
+//   console.log("All sources", allSources);
+//   console.log("Selected only active?", selectedOnly);
+
+//   if (!selectedOnly) {
+//     return allSources.map((source) => {
+//       return {
+//         id: getId(source),
+//         label: getLabel(source),
+//       };
+//     });
+//   }
+
+//   if (targetSelect == null) {
+//     return allSources
+//       .filter((source) => storedIds.includes(getId(source)))
+//       .map((source) => {
+//         return {
+//           id: getId(source),
+//           label: getLabel(source),
+//         };
+//       });
+//   }
+
+//   const choices = targetSelect.getValues();
+//   const returnVals = choices.map((obj) => {
+//     return {
+//       id: obj.value,
+//       label: obj.label.toString(),
+//     };
+//   });
+//   return returnVals;
+// }
 
 function getAnnotationChoices(
   annotationSources: ApiAnnotationTrack[],
@@ -607,10 +625,10 @@ function getHighlightsSection(
 }
 
 function getTracksSection(
-  tracks: DataTrack[],
-  onMove: (track: DataTrack, direction: "up" | "down") => void,
-  onToggleShow: (track: DataTrack) => void,
-  onToggleCollapse: (track: DataTrack) => void,
+  tracks: DataTrackSettings[],
+  onMove: (trackId: string, direction: "up" | "down") => void,
+  onToggleShow: (trackId: string) => void,
+  onToggleCollapse: (trackId: string) => void,
 ): HTMLDivElement {
   const tracksSection = document.createElement("div");
 
@@ -622,8 +640,8 @@ function getTracksSection(
       onMove,
       onToggleShow,
       onToggleCollapse,
-      () => track.getIsHidden(),
-      () => track.getIsExpanded(),
+      () => track.isHidden,
+      () => track.isExpanded,
     );
     tracksSection.appendChild(trackRow);
   }

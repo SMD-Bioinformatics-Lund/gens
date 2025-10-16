@@ -152,7 +152,7 @@ export function padRange(range: Rng, pad: number): Rng {
 export function clampRange(range: Rng, min: number, max: number): Rng {
   const clampedMin = Math.max(range[0], min);
   const clampedMax = Math.min(range[1], max);
-  return [clampedMin, clampedMax]
+  return [clampedMin, clampedMax];
 }
 
 export function removeChildren(container: HTMLElement) {
@@ -339,7 +339,7 @@ export function removeOne<T>(arr: T[], matchFn: (arg: T) => boolean): T {
 
   if (count !== 1) {
     throw new Error(
-      `${count} matches found. This function expects strictly one.`,
+      `${count} matches found for ${arr}. This function expects strictly one.`,
     );
   }
 
@@ -359,4 +359,14 @@ export function getMainSample(samples: Sample[]): Sample {
     return mainSample;
   }
   return samples[0];
+}
+
+export function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
+  const diff = new Set<T>();
+  for (const val of set1) {
+    if (!set2.has(val)) {
+      diff.add(val);
+    }
+  }
+  return diff;
 }

@@ -76,7 +76,7 @@ class ScoutMongoAdapter(InterpretationAdapter):
     # FIXME: Consider cleanup
     def get_variant(self, document_id: str) -> VariantRecord:
         raw_variant = self._db.get_collection("variant").find_one(
-            {"_id": document_id}, {"_id", False}
+            {"_id": document_id}, {"_id": False}
         )
         if raw_variant is None:
             LOG.warning(
