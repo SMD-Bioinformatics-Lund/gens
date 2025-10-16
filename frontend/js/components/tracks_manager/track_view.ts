@@ -409,12 +409,13 @@ export class TrackView extends ShadowBaseElement {
         trackId: string,
         settings: DataTrackSettings,
       ) => {
+        console.log(`${trackId} Will look at settings`, settings);
         const different = this.session.updateTrackViewSetting(
           trackId,
           settings,
         );
 
-        console.log("Is different?", different);
+        console.log(`${trackId} Is different?`, different);
 
         if (different) {
           this.requestRender({});

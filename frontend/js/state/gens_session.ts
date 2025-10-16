@@ -76,6 +76,9 @@ export class GensSession {
     trackId: string,
     updatedSetting: DataTrackSettings,
   ) {
+
+    console.log(`${trackId} ready to look at settings`, trackSettings, updatedSetting);
+
     const settingIndex = trackSettings.findIndex(
       (setting) => setting.trackId == trackId,
     );

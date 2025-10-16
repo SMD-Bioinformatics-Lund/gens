@@ -145,10 +145,12 @@ export abstract class DataTrack extends CanvasTrack {
       (event) => {
         event.preventDefault();
 
-        console.log("Expansion listener");
+        console.log(`${this.id} Expansion listener`);
 
-        const settings = this.getSettings();
+        const settings = { ...this.getSettings() };
+        console.log(`${this.id} Initial settings`, settings);
         settings.isExpanded = !settings.isExpanded;
+        console.log(`${this.id} Updated settings`, settings);
         this.updateSettings(settings);
         // this.toggleExpanded();
         // this.syncDimensions();
