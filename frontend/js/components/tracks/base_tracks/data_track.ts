@@ -339,7 +339,7 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   setExpandedHeight(height: number) {
-    const settings = this.getSettings();
+    const settings = { ...this.getSettings() };
     settings.height.expandedHeight = height;
     this.updateSettings(settings);
     if (settings.isExpanded) {

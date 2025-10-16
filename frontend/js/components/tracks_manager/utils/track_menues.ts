@@ -34,7 +34,7 @@ export function getOpenTrackContextMenu(
       },
       () => {
         // track.toggleExpanded();
-        session.toggleTrackExpanded(track.id);
+        session.toggleTrackExpanded(track.id, "track");
         render({ layout: true });
       },
       () => track.getIsHidden(),

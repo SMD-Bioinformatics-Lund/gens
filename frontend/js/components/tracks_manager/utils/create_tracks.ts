@@ -33,6 +33,7 @@ export function getTrack(
       setting,
       getAnnotationBands,
       showTrackContextMenu,
+      updateDataTrackSettings,
     );
   } else if (setting.trackType == "gene-list") {
     const getGeneListBands = () =>
@@ -43,6 +44,7 @@ export function getTrack(
       setting,
       getGeneListBands,
       showTrackContextMenu,
+      updateDataTrackSettings,
     );
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
@@ -56,6 +58,7 @@ export function getTrack(
       setting,
       getSampleAnnotBands,
       showTrackContextMenu,
+      updateDataTrackSettings,
     );
   } else if (setting.trackType == "variant") {
     const getSampleAnnotBands = () =>
@@ -70,6 +73,7 @@ export function getTrack(
       setting,
       getSampleAnnotBands,
       showTrackContextMenu,
+      updateDataTrackSettings,
     );
   } else if (setting.trackType == "dot-cov") {
     const getSampleCovDots = () => {
@@ -111,6 +115,7 @@ export function getTrack(
       setting,
       getGeneBands,
       showTrackContextMenu,
+      updateDataTrackSettings,
     );
   } else {
     throw Error(`Not yet supported track type ${setting.trackType}`);
@@ -162,6 +167,10 @@ export function getBandTrack(
   setting: DataTrackSettings,
   getRenderBands: () => Promise<RenderBand[]>,
   showTrackContextMenu: (track: DataTrack) => void,
+  updateDataTrackSettings: (
+    trackId: string,
+    updatedSetting: DataTrackSettings,
+  ) => void,
 ): BandTrack {
   const rawTrack = new BandTrack(
     setting.trackId,
@@ -170,10 +179,8 @@ export function getBandTrack(
     () => {
       return setting;
     },
-    (_settings) => {
-      // console.warn("Attempting to update setting", setting);
-      // fnSettings = settings;
-      // session.setTrackExpanded(trackId, settings.isExpanded);
+    (updatedSetting) => {
+      updateDataTrackSettings(setting.trackId, updatedSetting);
     },
     () => session.getXRange(),
     () => {

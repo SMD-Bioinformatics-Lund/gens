@@ -418,7 +418,7 @@ export class SettingsMenu extends ShadowBaseElement {
       },
       (trackId: string) => {
         // track.toggleExpanded();
-        this.session.toggleTrackExpanded(trackId);
+        this.session.toggleTrackExpanded(trackId, "track");
         this.onChange({ layout: true });
       },
     );

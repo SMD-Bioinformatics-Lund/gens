@@ -22,7 +22,6 @@ import { BAF_Y_RANGE } from "./tracks_manager";
 import { TrackMenu } from "../side_menu/track_menu";
 import { keyLogger } from "../util/keylogger";
 import { zoomOut } from "../../util/navigation";
-import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
@@ -296,6 +295,7 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(renderSettings: RenderSettings) {
+    console.error("Render call");
     renderHighlights(
       this.tracksContainer,
       this.session.getCurrentHighlights(),
@@ -409,9 +409,16 @@ export class TrackView extends ShadowBaseElement {
         trackId: string,
         settings: DataTrackSettings,
       ) => {
-        console.log("Requesting a new render for settings", settings);
-        this.session.updateTrackViewSetting(trackId, settings);
-        this.requestRender({});
+        const different = this.session.updateTrackViewSetting(
+          trackId,
+          settings,
+        );
+
+        console.log("Is different?", different);
+
+        if (different) {
+          this.requestRender({});
+        }
       };
       const track = getTrack(
         this.session,

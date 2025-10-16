@@ -71,24 +71,49 @@ export class GensSession {
   public trackViewTracks: DataTrackSettings[] = [];
   public chromosomeViewTracks: DataTrackSettings[] = [];
 
+  private updateSetting(
+    trackSettings: DataTrackSettings[],
+    trackId: string,
+    updatedSetting: DataTrackSettings,
+  ) {
+    const settingIndex = trackSettings.findIndex(
+      (setting) => setting.trackId == trackId,
+    );
+    const oldSetting = this.trackViewTracks[settingIndex];
+
+    console.log("To check difference");
+
+    let isDifferent = false;
+    for (const key in oldSetting) {
+      console.log("Comparing", key, oldSetting[key], updatedSetting[key])
+      if (oldSetting[key] !== updatedSetting[key]) {
+        isDifferent = true;
+        break;
+      }
+    }
+
+    if (isDifferent) {
+      this.trackViewTracks[settingIndex] = updatedSetting;
+    }
+    return isDifferent;
+  }
+
   public updateTrackViewSetting(
     trackId: string,
     updatedSettings: DataTrackSettings,
-  ): void {
-    const settingIndex = this.trackViewTracks.findIndex(
-      (setting) => setting.trackId == trackId,
-    );
-    this.trackViewTracks[settingIndex] = updatedSettings;
+  ): boolean {
+    return this.updateSetting(this.trackViewTracks, trackId, updatedSettings);
   }
 
   public updateChromosomeViewSetting(
     trackId: string,
     updatedSettings: DataTrackSettings,
-  ): void {
-    const settingIndex = this.chromosomeViewTracks.findIndex(
-      (setting) => setting.trackId == trackId,
+  ): boolean {
+    return this.updateSetting(
+      this.chromosomeViewTracks,
+      trackId,
+      updatedSettings,
     );
-    this.chromosomeViewTracks[settingIndex] = updatedSettings;
   }
 
   constructor(
@@ -501,10 +526,22 @@ export class GensSession {
     trackSettings.isHidden = !trackSettings.isHidden;
   }
 
-  public toggleTrackExpanded(trackId: string): void {
+  public toggleTrackExpanded(
+    trackId: string,
+    view: "track" | "chromosome",
+  ): void {
+    let targetTracks: DataTrackSettings[];
+    if (view == "track") {
+      targetTracks = this.trackViewTracks;
+    } else if (view == "chromosome") {
+      targetTracks = this.chromosomeViewTracks;
+    } else {
+      console.warn(`Unknown view: ${view}, track and chromosome are supported`);
+    }
     const trackSettings = this.trackViewTracks.find(
       (track) => track.trackId == trackId,
     );
+
     if (trackSettings == null) {
       console.warn("Did not find track with ID:", trackId);
       return;
