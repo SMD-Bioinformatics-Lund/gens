@@ -1,9 +1,6 @@
 import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
-import {
-  DataTrack,
-  DataTrackSettings,
-} from "../components/tracks/base_tracks/data_track";
+import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS } from "../constants";
@@ -11,12 +8,10 @@ import {
   loadAnnotationSelections,
   loadColorAnnotation,
   loadCoverageRange,
-  loadExpandedTracks,
   loadTrackHeights,
   saveAnnotationSelections,
   saveColorAnnotation,
   saveCoverageRange,
-  saveExpandedTracks,
   saveTrackHeights,
   loadGeneListSelections,
   saveGeneListSelections,
@@ -475,16 +470,12 @@ export class GensSession {
       }
     }
 
-    console.log("Picked", picked);
-    console.log("Reordered tracks", reorderedTracks);
-
     // Reorder according to the used layout
     for (const info of tracks) {
       if (!picked.has(info.trackId)) {
         reorderedTracks.push(info);
       }
     }
-    console.log("Reordered according to layout", reorderedTracks);
 
     // Assign the tracks as hidden or expanded
     for (const info of reorderedTracks) {
@@ -497,7 +488,6 @@ export class GensSession {
       info.isExpanded = layout.expanded[pid];
     }
 
-    console.log("Final tracks", reorderedTracks);
     this.tracks.setTracks(reorderedTracks);
   }
 
@@ -529,7 +519,6 @@ export class Tracks {
   }
 
   public getTracks(): DataTrackSettings[] {
-    console.error("Grabbing tracks, getting", this.tracks);
     return this.tracks;
   }
 

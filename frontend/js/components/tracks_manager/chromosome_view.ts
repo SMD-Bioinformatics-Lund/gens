@@ -78,8 +78,6 @@ export class ChromosomeView extends ShadowBaseElement {
       settingSample.sampleId,
     );
 
-    // this.session.chromTracks = [];
-
     for (const chrom of CHROMOSOMES) {
       const dataTrackSetting: DataTrackSettings = {
         trackId: `chr-cov-${chrom}`,

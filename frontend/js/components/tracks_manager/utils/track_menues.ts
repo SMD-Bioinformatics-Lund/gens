@@ -43,6 +43,7 @@ export function getOpenTrackContextMenu(
         track.setYAxis(newY);
         render({});
       },
+      // FIXME: Cleanup
       async (_annotId: string | null) => {
         console.warn("What is the intent here");
         // let colorBands = [];
