@@ -403,17 +403,17 @@ export class SettingsMenu extends ShadowBaseElement {
 
     removeChildren(this.tracksOverview);
     const tracksSection = getTracksSection(
-      this.session.trackViewTrackSettings,
+      this.session.tracks.getTracks(),
       (trackId: string, direction: "up" | "down") => {
         this.onTrackMove(trackId, direction);
         this.onChange({ layout: true });
       },
       (trackId: string) => {
-        this.session.toggleTrackHidden(trackId);
+        this.session.tracks.toggleTrackHidden(trackId);
         this.onChange({ layout: true });
       },
       (trackId: string) => {
-        this.session.toggleTrackExpanded(trackId);
+        this.session.tracks.toggleTrackExpanded(trackId);
         this.onChange({ layout: true });
       },
     );

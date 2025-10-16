@@ -137,8 +137,8 @@ export class TrackView extends ShadowBaseElement {
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
 
-        const [moved] = this.session.trackViewTrackSettings.splice(oldIndex, 1);
-        this.session.trackViewTrackSettings.splice(newIndex, 0, moved);
+        const targetTrack = this.session.tracks.getTracks()[oldIndex];
+        this.session.tracks.moveTrackToPos(targetTrack.trackId, newIndex);
 
         render({ layout: true });
       },
@@ -305,12 +305,13 @@ export class TrackView extends ShadowBaseElement {
     );
 
     syncDataTrackSettings(
-      this.session.trackViewTrackSettings,
+      this.session.tracks.getTracks(),
       this.session,
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
-      this.session.trackViewTrackSettings = dataTrackSettings;
+      console.log("Assigning the full bunch of tracks?", dataTrackSettings);
+      this.session.tracks.setTracks(dataTrackSettings);
       this.lastRenderedSamples = samples;
 
       // Load it after the other tracks
@@ -328,7 +329,7 @@ export class TrackView extends ShadowBaseElement {
           isHidden: false,
         };
 
-        this.session.trackViewTrackSettings.push(geneTrackSettings);
+        this.session.tracks.addTrack(geneTrackSettings);
         this.geneTrackInitialized = true;
       }
 
@@ -351,9 +352,7 @@ export class TrackView extends ShadowBaseElement {
   }
 
   syncTrackOrder() {
-    const desiredOrder = this.session.trackViewTrackSettings.map(
-      (s) => s.trackId,
-    );
+    const desiredOrder = this.session.tracks.getTracks().map((s) => s.trackId);
 
     if (desiredOrder.length == 0) {
       return;
@@ -392,7 +391,7 @@ export class TrackView extends ShadowBaseElement {
 
   renderTracks(settings: RenderSettings) {
     const currIds = new Set(
-      this.session.trackViewTrackSettings.map((setting) => setting.trackId),
+      this.session.tracks.getTracks().map((setting) => setting.trackId),
     );
     const trackIds = new Set(this.dataTracks.map((track) => track.track.id));
     const addedIds = setDiff(currIds, trackIds);
@@ -405,17 +404,17 @@ export class TrackView extends ShadowBaseElement {
 
     for (const settingId of addedIds) {
       const setIsExpanded = (trackId: string, isExpanded: boolean) => {
-        this.session.setIsExpanded(trackId, isExpanded);
+        this.session.tracks.setIsExpanded(trackId, isExpanded);
         this.requestRender({ layout: true });
       };
       const setExpandedHeight = (trackId: string, expandedHeight: number) => {
-        this.session.setExpandedHeight(trackId, expandedHeight);
+        this.session.tracks.setExpandedHeight(trackId, expandedHeight);
       };
 
       const track = getTrack(
         this.session,
         this.dataSource,
-        this.session.getTrackSetting(settingId),
+        this.session.tracks.get(settingId),
         showTrackContextMenu,
         setIsExpanded,
         setExpandedHeight,

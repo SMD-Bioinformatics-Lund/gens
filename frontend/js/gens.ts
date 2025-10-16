@@ -194,7 +194,7 @@ export async function initCanvases({
     geneLists,
     (trackId: string, direction: "up" | "down") => {
       // gensTracks.trackView.moveTrack(trackId, direction),
-      session.moveTrack(trackId, direction);
+      session.tracks.shiftTrack(trackId, direction);
     },
     () => {
       const samples = session.getSamples();

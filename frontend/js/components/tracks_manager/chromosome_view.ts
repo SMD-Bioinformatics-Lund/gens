@@ -78,7 +78,7 @@ export class ChromosomeView extends ShadowBaseElement {
       settingSample.sampleId,
     );
 
-    this.session.chromosomeViewTracks = [];
+    // this.session.chromTracks = [];
 
     for (const chrom of CHROMOSOMES) {
       const dataTrackSetting: DataTrackSettings = {
@@ -116,15 +116,14 @@ export class ChromosomeView extends ShadowBaseElement {
           isHidden: false,
           chromosome: chrom,
           sample: settingSample,
-          sourceId: sampleAnnot.id
+          sourceId: sampleAnnot.id,
         };
         annotTrackSettings.push(setting);
       }
 
-      this.session.chromosomeViewTracks.push(
-        dataTrackSetting,
-        ...annotTrackSettings,
-      );
+      for (const track of [dataTrackSetting, ...annotTrackSettings]) {
+        this.session.chromTracks.addTrack(track);
+      }
     }
 
     const getCovData = (sample: Sample, chrom: string) =>
@@ -133,7 +132,7 @@ export class ChromosomeView extends ShadowBaseElement {
         this.session.getChromSize(chrom),
       ]);
 
-    for (const trackSetting of this.session.chromosomeViewTracks) {
+    for (const trackSetting of this.session.chromTracks.getTracks()) {
       const chromGroup = this.chromosomeGroups[trackSetting.chromosome];
 
       let track: DataTrack;
@@ -147,7 +146,7 @@ export class ChromosomeView extends ShadowBaseElement {
             console.warn("No context menu for chromosome view tracks");
           },
           (trackId: string, isExpanded: boolean) => {
-            this.session.setIsExpanded(trackId, isExpanded);
+            this.session.chromTracks.setIsExpanded(trackId, isExpanded);
             this.render({});
           },
         );
@@ -166,11 +165,11 @@ export class ChromosomeView extends ShadowBaseElement {
             console.warn("No context menu available in chromosome view");
           },
           (trackId: string, isExpanded: boolean) => {
-            this.session.setIsExpanded(trackId, isExpanded);
+            this.session.chromTracks.setIsExpanded(trackId, isExpanded);
             this.render({});
           },
           (trackId: string, expandedHeight: number) => {
-            this.session.setExpandedHeight(trackId, expandedHeight);
+            this.session.chromTracks.setExpandedHeight(trackId, expandedHeight);
           },
         );
         targetGroup = chromGroup.annotations;

@@ -25,7 +25,7 @@ export function getOpenTrackContextMenu(
         session.getAnnotationSources(settings),
       (direction: "up" | "down") => {
         console.log("Move track clicked");
-        session.moveTrack(track.id, direction);
+        session.tracks.shiftTrack(track.id, direction);
         render({ layout: true });
       },
       () => {
@@ -33,7 +33,7 @@ export function getOpenTrackContextMenu(
         render({ layout: true });
       },
       () => {
-        session.toggleTrackExpanded(track.id);
+        session.tracks.toggleTrackExpanded(track.id);
         render({ layout: true });
       },
       () => track.getIsHidden(),

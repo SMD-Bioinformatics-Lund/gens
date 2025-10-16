@@ -1,6 +1,9 @@
 import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
-import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
+import {
+  DataTrack,
+  DataTrackSettings,
+} from "../components/tracks/base_tracks/data_track";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS } from "../constants";
@@ -65,100 +68,9 @@ export class GensSession {
   // private expandedTracks: Record<string, boolean> = {};
   private layoutProfileKey: string;
 
-  public trackViewTrackSettings: DataTrackSettings[] = [];
-  public chromosomeViewTracks: DataTrackSettings[] = [];
-
-  private updateSetting(
-    trackSettings: DataTrackSettings[],
-    trackId: string,
-    updatedSetting: DataTrackSettings,
-  ) {
-    console.log(
-      `${trackId} ready to look at settings`,
-      trackSettings,
-      updatedSetting,
-    );
-
-    const settingIndex = trackSettings.findIndex(
-      (setting) => setting.trackId == trackId,
-    );
-    const oldSetting = trackSettings[settingIndex];
-
-    console.log("To check difference");
-
-    let isDifferent = false;
-    for (const key in oldSetting) {
-      console.log("Comparing", key, oldSetting[key], updatedSetting[key]);
-      if (oldSetting[key] !== updatedSetting[key]) {
-        isDifferent = true;
-        break;
-      }
-    }
-
-    if (isDifferent) {
-      trackSettings[settingIndex] = updatedSetting;
-    }
-    return isDifferent;
-  }
-
-  public getTrackSetting(trackId: string): DataTrackSettings {
-    const allTrackSettings = [
-      ...this.trackViewTrackSettings,
-      ...this.chromosomeViewTracks,
-    ];
-
-    const matches = allTrackSettings.filter(
-      (setting) => setting.trackId == trackId,
-    );
-
-    if (matches.length == 0) {
-      throw Error(`No matches found for ID: ${trackId}`);
-    } else if (matches.length > 1) {
-      throw Error(
-        `More than one (${matches.length}) match found for ID: ${trackId}`,
-      );
-      // console.warn(
-      //   matches.length,
-      //   "matches found for ID",
-      //   trackId,
-      //   "expected one. Returning the first one.",
-      // );
-    }
-
-    return matches[0];
-  }
-
-  public setIsExpanded(trackId: string, isExpanded: boolean) {
-    const setting = this.getTrackSetting(trackId);
-    setting.isExpanded = isExpanded;
-  }
-
-  public setExpandedHeight(trackId: string, trackHeight: number) {
-    const setting = this.getTrackSetting(trackId);
-    setting.height.expandedHeight = trackHeight;
-  }
-
-  public updateTrackViewSetting(
-    trackId: string,
-    updatedSettings: DataTrackSettings,
-  ): boolean {
-    return this.updateSetting(
-      this.trackViewTrackSettings,
-      trackId,
-      updatedSettings,
-    );
-  }
-
-  public updateChromosomeViewSetting(
-    trackId: string,
-    updatedSettings: DataTrackSettings,
-  ): boolean {
-    return this.updateSetting(
-      this.chromosomeViewTracks,
-      trackId,
-      updatedSettings,
-    );
-  }
+  // FIXME: Small helper class for tracks management
+  public tracks: Tracks;
+  public chromTracks: Tracks;
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -529,13 +441,16 @@ export class GensSession {
   }
 
   public loadTrackLayout(): void {
+    console.log("Loading track layout for key", this.layoutProfileKey);
+
     const layout = loadTrackLayout(this.layoutProfileKey);
 
     if (!layout) {
+      console.log("No layout found");
       return;
     }
 
-    const tracks = this.trackViewTrackSettings;
+    const tracks = this.tracks.getTracks();
 
     const byPortableId: Record<string, DataTrackSettings> = {};
     for (const info of tracks) {
@@ -573,14 +488,14 @@ export class GensSession {
       info.isExpanded = layout.expanded[pid];
     }
 
-    this.trackViewTrackSettings = reorderedTracks;
+    this.tracks.setTracks(reorderedTracks);
   }
 
   public saveTrackLayout(): void {
     const order: string[] = [];
     const hidden: Record<string, boolean> = {};
     const expanded: Record<string, boolean> = {};
-    for (const info of this.trackViewTrackSettings) {
+    for (const info of this.tracks.getTracks()) {
       const pid = getPortableId(info);
       order.push(pid);
       hidden[pid] = info.isHidden;
@@ -595,9 +510,65 @@ export class GensSession {
 
     saveTrackLayout(this.layoutProfileKey, layout);
   }
+}
 
-  public moveTrack(trackId: string, direction: "up" | "down"): void {
-    const startIndex = this.trackViewTrackSettings.findIndex(
+export class Tracks {
+  private tracks: DataTrackSettings[];
+  constructor(tracks: DataTrackSettings[]) {
+    this.tracks = tracks;
+  }
+
+  public getTracks(): DataTrackSettings[] {
+    return this.tracks;
+  }
+
+  public addTrack(track: DataTrackSettings) {
+    this.tracks.push(track);
+  }
+
+  public get(trackId: string): DataTrackSettings {
+    const matches = this.tracks.filter((setting) => setting.trackId == trackId);
+
+    if (matches.length == 0) {
+      throw Error(`No matches found for ID: ${trackId}`);
+    } else if (matches.length > 1) {
+      throw Error(
+        `More than one (${matches.length}) match found for ID: ${trackId}`,
+      );
+    }
+
+    return matches[0];
+  }
+
+  public updateSetting(trackId: string, newSetting: DataTrackSettings) {
+    const trackIndex = this.tracks.findIndex(
+      (track) => track.trackId === trackId,
+    );
+    this.tracks[trackIndex] = newSetting;
+  }
+
+  public setIsExpanded(trackId: string, isExpanded: boolean) {
+    const setting = this.get(trackId);
+    setting.isExpanded = isExpanded;
+  }
+
+  public setExpandedHeight(trackId: string, trackHeight: number) {
+    const setting = this.get(trackId);
+    setting.height.expandedHeight = trackHeight;
+  }
+
+  public setTracks(tracks: DataTrackSettings[]) {
+    this.tracks = tracks;
+  }
+
+  public moveTrackToPos(trackId: string, newPos: number): void {
+    const origPos = this.tracks.findIndex((track) => track.trackId === trackId);
+    const [moved] = this.tracks.splice(origPos, 1);
+    this.tracks.splice(newPos, 0, moved);
+  }
+
+  public shiftTrack(trackId: string, direction: "up" | "down"): void {
+    const startIndex = this.tracks.findIndex(
       (track) => track.trackId == trackId,
     );
 
@@ -609,26 +580,23 @@ export class GensSession {
     const endIndex = direction == "up" ? startIndex - 1 : startIndex + 1;
 
     // Don't move at the edge
-    if (endIndex < 0 || endIndex >= this.trackViewTrackSettings.length) {
+    if (endIndex < 0 || endIndex >= this.tracks.length) {
       return;
     }
 
-    [
-      this.trackViewTrackSettings[startIndex],
-      this.trackViewTrackSettings[endIndex],
-    ] = [
-      this.trackViewTrackSettings[endIndex],
-      this.trackViewTrackSettings[startIndex],
+    [this.tracks[startIndex], this.tracks[endIndex]] = [
+      this.tracks[endIndex],
+      this.tracks[startIndex],
     ];
   }
 
   public toggleTrackHidden(trackId: string): void {
-    const setting = this.getTrackSetting(trackId);
+    const setting = this.get(trackId);
     setting.isHidden = !setting.isHidden;
   }
 
   public toggleTrackExpanded(trackId: string): void {
-    const setting = this.getTrackSetting(trackId);
+    const setting = this.get(trackId);
     setting.isExpanded = !setting.isExpanded;
   }
 }
