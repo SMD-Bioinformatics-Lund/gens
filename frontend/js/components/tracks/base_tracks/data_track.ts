@@ -37,6 +37,7 @@ export interface DataTrackSettings {
   isExpanded: boolean;
   isHidden: boolean;
   chromosome?: string;
+  sourceId?: string;
 }
 
 const DEBOUNCE_DELAY = 50;

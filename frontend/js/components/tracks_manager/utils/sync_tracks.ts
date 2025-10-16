@@ -21,6 +21,9 @@ export async function syncDataTrackSettings(
   dataSources: RenderDataSource,
   lastRenderedSamples: Sample[],
 ): Promise<{ settings: DataTrackSettings[]; samples: Sample[] }> {
+
+  console.log("origTrackSettings", origTrackSettings);
+
   const annotSources = session.getAnnotationSources({
     selectedOnly: true,
   });
@@ -107,8 +110,11 @@ async function sampleDiff(
     currentCombinedIds,
   );
 
+  console.log("Iterating IDs", newCombinedIds);
+
   const sampleSettings = [];
   for (const combinedId of newCombinedIds) {
+
     const [caseId, sampleId] = combinedId.split(COMBINED_SAMPLE_ID_DIVIDER);
     const sample = getSample(caseId, sampleId);
     const sampleSources = await getSampleAnnotSources(

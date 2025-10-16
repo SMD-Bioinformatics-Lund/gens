@@ -137,8 +137,8 @@ export class TrackView extends ShadowBaseElement {
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
 
-        const [moved] = this.session.trackViewTracks.splice(oldIndex, 1);
-        this.session.trackViewTracks.splice(newIndex, 0, moved);
+        const [moved] = this.session.trackViewTrackSettings.splice(oldIndex, 1);
+        this.session.trackViewTrackSettings.splice(newIndex, 0, moved);
 
         render({ layout: true });
       },
@@ -305,12 +305,12 @@ export class TrackView extends ShadowBaseElement {
     );
 
     syncDataTrackSettings(
-      this.session.trackViewTracks,
+      this.session.trackViewTrackSettings,
       this.session,
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
-      this.session.trackViewTracks = dataTrackSettings;
+      this.session.trackViewTrackSettings = dataTrackSettings;
       this.lastRenderedSamples = samples;
 
       // Load it after the other tracks
@@ -328,7 +328,7 @@ export class TrackView extends ShadowBaseElement {
           isHidden: false,
         };
 
-        this.session.trackViewTracks.push(geneTrackSettings);
+        this.session.trackViewTrackSettings.push(geneTrackSettings);
         this.geneTrackInitialized = true;
       }
 
@@ -351,7 +351,9 @@ export class TrackView extends ShadowBaseElement {
   }
 
   syncTrackOrder() {
-    const desiredOrder = this.session.trackViewTracks.map((s) => s.trackId);
+    const desiredOrder = this.session.trackViewTrackSettings.map(
+      (s) => s.trackId,
+    );
 
     if (desiredOrder.length == 0) {
       return;
@@ -390,7 +392,7 @@ export class TrackView extends ShadowBaseElement {
 
   renderTracks(settings: RenderSettings) {
     const currIds = new Set(
-      this.session.trackViewTracks.map((setting) => setting.trackId),
+      this.session.trackViewTrackSettings.map((setting) => setting.trackId),
     );
     const trackIds = new Set(this.dataTracks.map((track) => track.track.id));
     const addedIds = setDiff(currIds, trackIds);

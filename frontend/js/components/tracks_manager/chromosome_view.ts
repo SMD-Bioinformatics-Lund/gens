@@ -105,7 +105,7 @@ export class ChromosomeView extends ShadowBaseElement {
       const annotTrackSettings = [];
       for (const sampleAnnot of sampleAnnots) {
         const setting: DataTrackSettings = {
-          trackId: sampleAnnot.id,
+          trackId: `${sampleAnnot.id}-${chrom}`,
           trackLabel: `Annot. track ${chrom}`,
           trackType: "sample-annotation",
           height: {
@@ -116,6 +116,7 @@ export class ChromosomeView extends ShadowBaseElement {
           isHidden: false,
           chromosome: chrom,
           sample: settingSample,
+          sourceId: sampleAnnot.id
         };
         annotTrackSettings.push(setting);
       }
@@ -158,7 +159,7 @@ export class ChromosomeView extends ShadowBaseElement {
           trackSetting,
           () =>
             this.dataSource.getSampleAnnotationBands(
-              trackSetting.trackId,
+              trackSetting.sourceId,
               trackSetting.chromosome,
             ),
           (_track: DataTrack) => {
@@ -186,7 +187,7 @@ export class ChromosomeView extends ShadowBaseElement {
         container: wrapper,
         chromosome: trackSetting.chromosome,
         sampleId: trackSetting.sample.sampleId,
-        sourceId: trackSetting.trackId,
+        sourceId: trackSetting.sourceId,
         type: trackSetting.trackType,
       };
       this.onAddTrack(chromGroup.samples, info);

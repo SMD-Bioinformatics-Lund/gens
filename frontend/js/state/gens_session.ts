@@ -2,6 +2,7 @@ import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
+import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS } from "../constants";
 import {
   loadAnnotationSelections,
@@ -18,7 +19,6 @@ import {
   saveGeneListSelections,
   loadTrackLayout,
   saveTrackLayout,
-  TrackLayout,
 } from "../util/storage";
 import { generateID } from "../util/utils";
 
@@ -60,12 +60,12 @@ export class GensSession {
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
   private geneListSelections: string[] = [];
-  private coverageRange: [number, number] = COV_Y_RANGE;
+  private coverageRange: Rng = COV_Y_RANGE;
   private variantThreshold: number;
-  private expandedTracks: Record<string, boolean> = {};
+  // private expandedTracks: Record<string, boolean> = {};
   private layoutProfileKey: string;
 
-  public trackViewTracks: DataTrackSettings[] = [];
+  public trackViewTrackSettings: DataTrackSettings[] = [];
   public chromosomeViewTracks: DataTrackSettings[] = [];
 
   private updateSetting(
@@ -103,7 +103,7 @@ export class GensSession {
 
   public getTrackSetting(trackId: string): DataTrackSettings {
     const allTrackSettings = [
-      ...this.trackViewTracks,
+      ...this.trackViewTrackSettings,
       ...this.chromosomeViewTracks,
     ];
 
@@ -114,12 +114,15 @@ export class GensSession {
     if (matches.length == 0) {
       throw Error(`No matches found for ID: ${trackId}`);
     } else if (matches.length > 1) {
-      console.warn(
-        matches.length,
-        "matches found for ID",
-        trackId,
-        "expected one. Returning the first one.",
+      throw Error(
+        `More than one (${matches.length}) match found for ID: ${trackId}`,
       );
+      // console.warn(
+      //   matches.length,
+      //   "matches found for ID",
+      //   trackId,
+      //   "expected one. Returning the first one.",
+      // );
     }
 
     return matches[0];
@@ -139,7 +142,11 @@ export class GensSession {
     trackId: string,
     updatedSettings: DataTrackSettings,
   ): boolean {
-    return this.updateSetting(this.trackViewTracks, trackId, updatedSettings);
+    return this.updateSetting(
+      this.trackViewTrackSettings,
+      trackId,
+      updatedSettings,
+    );
   }
 
   public updateChromosomeViewSetting(
@@ -188,7 +195,7 @@ export class GensSession {
     this.colorAnnotationId = loadColorAnnotation();
     this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
     this.variantThreshold = variantThreshold;
-    this.expandedTracks = loadExpandedTracks() || {};
+    // this.expandedTracks = loadExpandedTracks() || {};
     this.layoutProfileKey = this.computeProfileKey();
 
     this.idToAnnotSource = {};
@@ -309,16 +316,16 @@ export class GensSession {
     saveTrackHeights(heights);
   }
 
-  public getTrackExpanded(id: string, defaultValue: boolean): boolean {
-    const expanded = this.expandedTracks[id];
-    const returnVal = expanded != null ? expanded : defaultValue;
-    return returnVal;
-  }
+  // public getTrackExpanded(id: string, defaultValue: boolean): boolean {
+  //   const expanded = this.expandedTracks[id];
+  //   const returnVal = expanded != null ? expanded : defaultValue;
+  //   return returnVal;
+  // }
 
-  public setTrackExpanded(id: string, value: boolean): void {
-    this.expandedTracks[id] = value;
-    saveExpandedTracks(this.expandedTracks);
-  }
+  // public setTrackExpanded(id: string, value: boolean): void {
+  //   this.expandedTracks[id] = value;
+  //   saveExpandedTracks(this.expandedTracks);
+  // }
 
   public getCoverageRange(): [number, number] {
     return this.coverageRange;
@@ -522,16 +529,75 @@ export class GensSession {
   }
 
   public loadTrackLayout(): void {
-    const trackLayout = loadTrackLayout(this.layoutProfileKey);
-    this.trackViewTracks = trackLayout;
+    const layout = loadTrackLayout(this.layoutProfileKey);
+
+    if (!layout) {
+      return;
+    }
+
+    const tracks = this.trackViewTrackSettings;
+
+    const byPortableId: Record<string, DataTrackSettings> = {};
+    for (const info of tracks) {
+      const pid = getPortableId(info);
+      if (pid) {
+        byPortableId[pid] = info;
+      }
+    }
+
+    const picked = new Set<string>();
+    const reorderedTracks: DataTrackSettings[] = [];
+    for (const pid of layout.order) {
+      const info = byPortableId[pid];
+      if (info) {
+        reorderedTracks.push(info);
+        picked.add(info.trackId);
+      }
+    }
+
+    // Reorder according to the used layout
+    for (const info of tracks) {
+      if (!picked.has(info.trackId)) {
+        reorderedTracks.push(info);
+      }
+    }
+
+    // Assign the tracks as hidden or expanded
+    for (const info of reorderedTracks) {
+      const pid = getPortableId(info);
+      if (!pid) {
+        continue;
+      }
+
+      info.isHidden = layout.hidden[pid];
+      info.isExpanded = layout.expanded[pid];
+    }
+
+    this.trackViewTrackSettings = reorderedTracks;
   }
 
   public saveTrackLayout(): void {
-    saveTrackLayout(this.layoutProfileKey, this.trackViewTracks);
+    const order: string[] = [];
+    const hidden: Record<string, boolean> = {};
+    const expanded: Record<string, boolean> = {};
+    for (const info of this.trackViewTrackSettings) {
+      const pid = getPortableId(info);
+      order.push(pid);
+      hidden[pid] = info.isHidden;
+      expanded[pid] = info.isExpanded;
+    }
+
+    const layout = {
+      order,
+      hidden,
+      expanded,
+    };
+
+    saveTrackLayout(this.layoutProfileKey, layout);
   }
 
   public moveTrack(trackId: string, direction: "up" | "down"): void {
-    const startIndex = this.trackViewTracks.findIndex(
+    const startIndex = this.trackViewTrackSettings.findIndex(
       (track) => track.trackId == trackId,
     );
 
@@ -543,13 +609,16 @@ export class GensSession {
     const endIndex = direction == "up" ? startIndex - 1 : startIndex + 1;
 
     // Don't move at the edge
-    if (endIndex < 0 || endIndex >= this.trackViewTracks.length) {
+    if (endIndex < 0 || endIndex >= this.trackViewTrackSettings.length) {
       return;
     }
 
-    [this.trackViewTracks[startIndex], this.trackViewTracks[endIndex]] = [
-      this.trackViewTracks[endIndex],
-      this.trackViewTracks[startIndex],
+    [
+      this.trackViewTrackSettings[startIndex],
+      this.trackViewTrackSettings[endIndex],
+    ] = [
+      this.trackViewTrackSettings[endIndex],
+      this.trackViewTrackSettings[startIndex],
     ];
   }
 

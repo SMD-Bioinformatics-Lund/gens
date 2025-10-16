@@ -677,3 +677,23 @@ interface SelectData {
   id: string;
   label: string;
 }
+
+interface TrackHeights {
+  bandCollapsed: number;
+  dotCollapsed: number;
+  dotExpanded: number;
+}
+
+type StorageValue =
+  | string
+  | string[]
+  | TrackHeights
+  | Rng
+  | Record<string, boolean>
+  | TrackLayout;
+
+type TrackLayout = {
+  order: string[];
+  hidden: Record<string, boolean>;
+  expanded: Record<string, boolean>;
+};

@@ -1,10 +1,3 @@
-import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
-
-export interface TrackHeights {
-  bandCollapsed: number;
-  dotCollapsed: number;
-  dotExpanded: number;
-}
 export const ANNOT_SELECTIONS_KEY = "gens.annotationSelections";
 export const GENE_LIST_SELECTIONS_KEY = "gens.geneListSelections";
 export const COLOR_ANNOTATIONS_KEY = "gens.colorAnnotation";
@@ -12,16 +5,6 @@ export const TRACK_HEIGHTS_KEY = "gens.trackHeights";
 export const COVERAGE_RANGE_KEY = "gens.coverageRange";
 export const EXPANDED_TRACKS_KEY = "gens.expandedTracks";
 export const TRACK_LAYOUT_PREFIX = "gens.trackLayout.";
-
-type StorageValue =
-  | string
-  | string[]
-  | TrackHeights
-  | Rng
-  | Record<string, boolean>
-  | TrackLayout;
-
-export type TrackLayout = DataTrackSettings[];
 
 export function saveAnnotationSelections(ids: string[]): void {
   saveToBrowserSession(ids, ANNOT_SELECTIONS_KEY);
@@ -75,16 +58,11 @@ export function loadExpandedTracks(): Record<string, boolean> {
   return tracks;
 }
 
-export function saveTrackLayout(
-  profileKey: string,
-  layout: DataTrackSettings[],
-): void {
+export function saveTrackLayout(profileKey: string, layout: TrackLayout): void {
   saveToBrowserSession(layout, `${TRACK_LAYOUT_PREFIX}${profileKey}`);
 }
 
-export function loadTrackLayout(
-  profileKey: string,
-): DataTrackSettings[] | null {
+export function loadTrackLayout(profileKey: string): TrackLayout | null {
   return loadFromBrowserSession(
     `${TRACK_LAYOUT_PREFIX}${profileKey}`,
   ) as TrackLayout | null;

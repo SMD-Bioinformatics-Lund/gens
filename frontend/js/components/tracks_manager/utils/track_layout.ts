@@ -1,7 +1,8 @@
 import { GensSession } from "../../../state/gens_session";
+import { saveTrackLayout } from "../../../util/storage";
 import { DataTrackSettings } from "../../tracks/base_tracks/data_track";
 
-function getPortableId(settings: DataTrackSettings): string {
+export function getPortableId(settings: DataTrackSettings): string {
   const trackId = settings.trackId;
   if (settings.sample != null) {
     const sampleType = settings.sample.sampleType || "unknown";
@@ -33,16 +34,19 @@ function getPortableId(settings: DataTrackSettings): string {
 // ) {
 //   // console.log("Saving track layout");
 
-//   // const order: string[] = [];
-//   // const hidden: Record<string, boolean> = {};
-//   // const expanded: Record<string, boolean> = {};
-//   // for (const info of dataTracks) {
-//   //   const pid = getPortableId(info);
-//   //   order.push(pid);
-//   //   hidden[pid] = info.isHidden;
-//   //   expanded[pid] = info.isExpanded;
-//   // }
-//   session.saveTrackLayout(dataTracks);
+//   const order: string[] = [];
+//   const hidden: Record<string, boolean> = {};
+//   const expanded: Record<string, boolean> = {};
+//   for (const info of dataTracks) {
+//     const pid = getPortableId(info);
+//     order.push(pid);
+//     hidden[pid] = info.isHidden;
+//     expanded[pid] = info.isExpanded;
+//   }
+
+//   // saveTrackLayout(session, dataTracks);
+
+//   // session.saveTrackLayout({ order, hidden, expanded });
 // }
 
 // export function loadTrackLayout(
@@ -52,41 +56,46 @@ function getPortableId(settings: DataTrackSettings): string {
 //   console.log("Loading track layout");
 
 //   const layout = session.loadTrackLayout();
-//   return layout;
-//   // const byPid: Record<string, DataTrackWrapper> = {};
-//   // for (const info of tracks) {
-//   //   const pid = getPortableId(info);
-//   //   if (pid) byPid[pid] = info;
-//   // }
-//   // const picked = new Set<string>();
-//   // const reordered: DataTrackWrapper[] = [];
-//   // for (const pid of layout.order) {
-//   //   const info = byPid[pid];
-//   //   if (info) {
-//   //     reordered.push(info);
-//   //     picked.add(info.track.id);
-//   //   }
-//   // }
-//   // for (const info of tracks) {
-//   //   if (!picked.has(info.track.id)) reordered.push(info);
-//   // }
-//   // for (const info of reordered) {
-//   //   const pid = getPortableId(info);
-//   //   if (!pid) continue;
-//   //   const desiredHidden = layout.hidden[pid];
-//   //   if (
-//   //     typeof desiredHidden === "boolean" &&
-//   //     info.track.getIsHidden() !== desiredHidden
-//   //   ) {
-//   //     info.track.toggleHidden();
-//   //   }
-//   //   const desiredExpanded = layout.expanded[pid];
-//   //   if (
-//   //     typeof desiredExpanded === "boolean" &&
-//   //     info.track.getIsExpanded() !== desiredExpanded
-//   //   ) {
-//   //     info.track.toggleExpanded();
-//   //   }
-//   // }
-//   // return reordered;
+
+//   // If no layout, return tracks as they are
+//   if (!layout) {
+//     return tracks;
+//   }
+
+//   const byPortableId: Record<string, DataTrackSettings> = {};
+//   for (const info of tracks) {
+//     const pid = getPortableId(info);
+//     if (pid) {
+//       byPortableId[pid] = info;
+//     }
+//   }
+
+//   const picked = new Set<string>();
+//   const reordered: DataTrackSettings[] = [];
+//   for (const pid of layout.order) {
+//     const info = byPortableId[pid];
+//     if (info) {
+//       reordered.push(info);
+//       picked.add(info.trackId);
+//     }
+//   }
+
+//   // Reorder according to the used layout
+//   for (const info of tracks) {
+//     if (!picked.has(info.trackId)) {
+//       reordered.push(info);
+//     }
+//   }
+
+//   // Assign the tracks as hidden or expanded
+//   for (const info of reordered) {
+//     const pid = getPortableId(info);
+//     if (!pid) {
+//       continue;
+//     }
+
+//     info.isHidden = layout.hidden[pid];
+//     info.isExpanded = layout.isExpanded[pid];
+//   }
+//   return reordered;
 // }
