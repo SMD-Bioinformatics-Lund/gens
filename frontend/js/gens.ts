@@ -108,7 +108,7 @@ export async function initCanvases({
     infoPage.render();
     inputControls.render(settings);
 
-    if (settings.layout) {
+    if (settings.saveLayoutChange) {
       gensTracks.trackView.saveTrackLayout();
     }
   };
@@ -179,60 +179,70 @@ export async function initCanvases({
 
   const onChromClick = async (chrom) => {
     session.setChromosome(chrom);
-    render({ dataUpdated: true });
+    render({ reloadData: true });
   };
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick);
 
-  settingsPage.setSources(
+  addSettingsPageSources(
+    settingsPage,
     session,
     render,
     allAnnotSources,
     geneLists,
-    (trackId: string, direction: "up" | "down") => {
-      // gensTracks.trackView.moveTrack(trackId, direction),
-      session.tracks.shiftTrack(trackId, direction);
-    },
-    () => {
-      const samples = session.getSamples();
-      const currSampleIds = samples.map(
-        (sample) => `${sample.caseId}_${sample.sampleId}`,
-      );
-      const filtered = allSamples.filter(
-        (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
-      );
-      return filtered;
-    },
-    (region: Region) => {
-      const positionOnly = region.chrom == session.getChromosome();
-      session.setChromosome(region.chrom, [region.start, region.end]);
-      render({ dataUpdated: true, positionOnly });
-    },
-    // FIXME: Something strange here in how things are organized,
-    // why is the trackview looping to itself?
-    async (sample: Sample) => {
-      session.addSample(sample);
-      render({ dataUpdated: true, samplesUpdated: true });
-    },
-    (sample: Sample) => {
-      // FIXME: This should eventually be session only, with tracks responding on rerender
-      session.removeSample(sample);
-      render({ dataUpdated: true, samplesUpdated: true });
-    },
-    (trackHeights: TrackHeights) => {
-      session.setTrackHeights(trackHeights);
-      render({});
-    },
-    async (annotId: string | null) => {
-      session.setColorAnnotation(annotId);
-      await gensTracks.trackView.updateColorBands();
-      render({});
-    },
-    (rng: Rng) => {
-      gensTracks.setCovYRange(rng);
-      render({ dataUpdated: true });
-    },
+    allSamples,
+    gensTracks,
   );
+
+  // settingsPage.setSources(
+  //   session,
+  //   // render,
+  //   allAnnotSources,
+  //   geneLists,
+  //   (trackId: string, direction: "up" | "down") => {
+  //     session.tracks.shiftTrack(trackId, direction);
+  //     render({ tracksReordered: true, saveLayoutChange: true });
+  //   },
+  //   () => {
+  //     const samples = session.getSamples();
+  //     const currSampleIds = samples.map(
+  //       (sample) => `${sample.caseId}_${sample.sampleId}`,
+  //     );
+  //     const filtered = allSamples.filter(
+  //       (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
+  //     );
+  //     return filtered;
+  //   },
+  //   (region: Region) => {
+  //     const positionOnly = region.chrom == session.getChromosome();
+  //     session.setChromosome(region.chrom, [region.start, region.end]);
+  //     render({ dataUpdated: true, positionOnly });
+  //   },
+  //   // FIXME: Something strange here in how things are organized,
+  //   // why is the trackview looping to itself?
+  //   async (sample: Sample) => {
+  //     session.addSample(sample);
+  //     render({ dataUpdated: true, samplesUpdated: true });
+  //   },
+  //   (sample: Sample) => {
+  //     // FIXME: This should eventually be session only, with tracks responding on rerender
+  //     session.removeSample(sample);
+  //     render({ dataUpdated: true, samplesUpdated: true });
+  //   },
+  //   (trackHeights: TrackHeights) => {
+  //     session.setTrackHeights(trackHeights);
+  //     render({});
+  //   },
+  //   async (annotId: string | null) => {
+  //     session.setColorAnnotation(annotId);
+  //     await gensTracks.trackView.updateColorBands();
+  //     render({});
+  //   },
+  //   (rng: Rng) => {
+  //     gensTracks.setCovYRange(rng);
+  //     render({ dataUpdated: true });
+  //   },
+  // );
 
   infoPage.setSources(() => session.getSamples());
 
@@ -240,13 +250,14 @@ export async function initCanvases({
     session,
     async (range) => {
       session.setViewRange(range);
-      render({ dataUpdated: true, positionOnly: true });
+      render({ reloadData: true, positionOnly: true });
     },
     () => {
       sideMenu.showContent("Settings", [settingsPage], STYLE.menu.width);
 
       if (!settingsPage.isInitialized) {
         settingsPage.initialize();
+        render({});
       }
     },
     () => {
@@ -276,5 +287,96 @@ export async function initCanvases({
     session,
   );
 
-  render({ dataUpdated: true, resized: true });
+  render({ reloadData: true, resized: true });
+}
+
+function addSettingsPageSources(
+  settingsPage: SettingsMenu,
+  session: GensSession,
+  render: (settings: RenderSettings) => void,
+  allAnnotSources: ApiAnnotationTrack[],
+  geneLists: ApiGeneList[],
+  allSamples: Sample[],
+  gensTracks: TracksManager,
+) {
+  const onTrackMove = (trackId: string, direction: "up" | "down") => {
+    session.tracks.shiftTrack(trackId, direction);
+    render({ tracksReordered: true, saveLayoutChange: true });
+  };
+  const getAllSamples = () => {
+    const samples = session.getSamples();
+    const currSampleIds = samples.map(
+      (sample) => `${sample.caseId}_${sample.sampleId}`,
+    );
+    const filtered = allSamples.filter(
+      (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
+    );
+    return filtered;
+  };
+  const gotoHighlight = (region: Region) => {
+    const positionOnly = region.chrom == session.getChromosome();
+    session.setChromosome(region.chrom, [region.start, region.end]);
+    render({ reloadData: true, positionOnly });
+  };
+  const onAddSample = async (sample: Sample) => {
+    session.addSample(sample);
+    render({ reloadData: true, samplesUpdated: true });
+  };
+  const onRemoveSample = (sample: Sample) => {
+    // FIXME: This should eventually be session only, with tracks responding on rerender
+    session.removeSample(sample);
+    render({ reloadData: true, samplesUpdated: true });
+  };
+  const setTrackInfo = (trackHeights: TrackHeights) => {
+    session.setTrackHeights(trackHeights);
+    render({});
+  };
+  const onColorByChange = async (annotId: string | null) => {
+    session.setColorAnnotation(annotId);
+    await gensTracks.trackView.updateColorBands();
+    render({});
+  };
+  const onApplyDefaultCovRange = (rng: Rng) => {
+    gensTracks.setCovYRange(rng);
+    render({ reloadData: true });
+  };
+  const onSetAnnotationSelection = (ids: string[]) => {
+    session.setAnnotationSelections(ids);
+    render({});
+  };
+  const onSetGeneListSelection = (ids: string[]) => {
+    session.setAnnotationSelections(ids);
+    render({});
+  };
+  const onSetVariantThreshold = (threshold: number) => {
+    session.setVariantThreshold(threshold);
+    render({ reloadData: true });
+  };
+  const onToggleTrackHidden = (trackId: string) => {
+    session.tracks.toggleTrackHidden(trackId);
+    render({ saveLayoutChange: true, targetTrackId: trackId });
+  };
+  const onToggleTrackExpanded = (trackId: string) => {
+    session.tracks.toggleTrackExpanded(trackId);
+    render({ saveLayoutChange: true, targetTrackId: trackId });
+  };
+
+  settingsPage.setSources(
+    session,
+    allAnnotSources,
+    geneLists,
+    onTrackMove,
+    getAllSamples,
+    gotoHighlight,
+    onAddSample,
+    onRemoveSample,
+    setTrackInfo,
+    onColorByChange,
+    onApplyDefaultCovRange,
+    onSetAnnotationSelection,
+    onSetGeneListSelection,
+    onSetVariantThreshold,
+    onToggleTrackHidden,
+    onToggleTrackExpanded,
+  );
 }

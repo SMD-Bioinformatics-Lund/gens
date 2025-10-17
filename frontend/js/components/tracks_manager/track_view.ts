@@ -136,7 +136,7 @@ export class TrackView extends ShadowBaseElement {
         const targetTrack = this.session.tracks.getTracks()[oldIndex];
         this.session.tracks.moveTrackToPos(targetTrack.trackId, newIndex);
 
-        render({ layout: true });
+        render({ saveLayoutChange: true });
       },
     });
 
@@ -149,7 +149,7 @@ export class TrackView extends ShadowBaseElement {
       const panDistance = scaledStart - scaledEnd;
 
       session.moveXRange(panDistance);
-      render({ dataUpdated: true, positionOnly: true });
+      render({ reloadData: true, positionOnly: true });
     });
 
     this.ideogramTrack = new IdeogramTrack(
@@ -164,7 +164,7 @@ export class TrackView extends ShadowBaseElement {
       },
       (band: RenderBand) => {
         session.setViewRange([band.start, band.end]);
-        render({ dataUpdated: true, positionOnly: true });
+        render({ reloadData: true, positionOnly: true });
       },
     );
 
@@ -251,7 +251,7 @@ export class TrackView extends ShadowBaseElement {
       () => session.getXRange(),
       (range: Rng) => {
         session.setViewRange(range);
-        render({ dataUpdated: true, positionOnly: true });
+        render({ reloadData: true, positionOnly: true });
       },
       (range: Rng) => session.addHighlight(range),
       (id: string) => session.removeHighlight(id),
@@ -316,6 +316,11 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(renderSettings: RenderSettings) {
+    if (renderSettings.tracksReordered) {
+      this.syncTrackOrder();
+      return;
+    }
+
     renderHighlights(
       this.tracksContainer,
       this.session.getCurrentHighlights(),
@@ -334,10 +339,6 @@ export class TrackView extends ShadowBaseElement {
       this.lastRenderedSamples = samples;
       this.renderTracks(renderSettings);
     });
-
-    if (renderSettings.tracksReordered) {
-      this.syncTrackOrder();
-    }
 
     // FIXME: Only the active one needs to be rendered isn't it?
     // Object.values(this.trackPages).forEach((trackPage) =>
@@ -393,13 +394,10 @@ export class TrackView extends ShadowBaseElement {
   renderTracks(settings: RenderSettings) {
     // Single track render, skip the full diff
     if (settings.targetTrackId != null) {
-      console.log("Single track render", settings.targetTrackId);
       const track = this.dataTracks.find(
         (track) => track.track.id == settings.targetTrackId,
       );
       track.track.render(settings);
-      // track.render();
-
       return;
     }
 
@@ -418,7 +416,7 @@ export class TrackView extends ShadowBaseElement {
     for (const settingId of addedIds) {
       const setIsExpanded = (trackId: string, isExpanded: boolean) => {
         this.session.tracks.setIsExpanded(trackId, isExpanded);
-        this.requestRender({ layout: true, targetTrackId: trackId });
+        this.requestRender({ saveLayoutChange: true, targetTrackId: trackId });
       };
       const setExpandedHeight = (trackId: string, expandedHeight: number) => {
         this.session.tracks.setExpandedHeight(trackId, expandedHeight);

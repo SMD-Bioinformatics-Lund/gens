@@ -151,7 +151,6 @@ export function getDotTrack(
       });
     },
     (track) => {
-      console.log("Passing in track", track);
       showTrackContextMenu(track);
     },
     () => session.getMarkerModeOn(),

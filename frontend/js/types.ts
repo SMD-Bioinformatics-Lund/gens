@@ -621,11 +621,11 @@ interface Axis {
 }
 
 interface RenderSettings {
-  dataUpdated?: boolean;
+  reloadData?: boolean;
   resized?: boolean;
   positionOnly?: boolean;
   samplesUpdated?: boolean;
-  layout?: boolean;
+  saveLayoutChange?: boolean;
   tracksReordered?: boolean;
   targetTrackId?: string;
 }

@@ -97,7 +97,7 @@ export class OverviewTrack extends CanvasTrack {
 
   async render(settings: RenderSettings) {
     const firstTime = this.renderData == null;
-    const dataChanged = firstTime || settings.dataUpdated;
+    const dataChanged = firstTime || settings.reloadData;
     const sizeChanged = firstTime || settings.resized;
 
     if (dataChanged) {
