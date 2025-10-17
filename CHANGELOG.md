@@ -15,6 +15,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - IndexedDB caching of loaded transcripts (https://github.com/SMD-Bioinformatics-Lund/gens/pull/526)
 - Allow displaying Scout panels as tracks in Gens (https://github.com/SMD-Bioinformatics-Lund/gens/pull/526)
 - Automatically store and reuse layouts, i.e. what tracks are shown, collapsed and their order (https://github.com/SMD-Bioinformatics-Lund/gens/pull/529)
+- Bring back the brief help text and help menu from Gens version 3 (https://github.com/SMD-Bioinformatics-Lund/gens/pull/539)
 
 ### Changed
 
@@ -29,6 +30,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 - Coloring of heterozygote variants now uses correct colors. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/514)
 - Start on zoom-level "a" for tracks instead of showing the overview dots also for the tracks. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/515)
+- Intron numbering OK also for reverse strand transcripts (https://github.com/SMD-Bioinformatics-Lund/gens/pull/539)
+- Boxpadding for sample info drawer, to prevent truncating at the bottom (https://github.com/SMD-Bioinformatics-Lund/gens/pull/539)
 
 ## 4.1.0
 

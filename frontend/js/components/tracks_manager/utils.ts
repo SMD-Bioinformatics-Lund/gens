@@ -40,13 +40,13 @@ export function createOverviewTrack(
     async () => {
       return {
         dotsPerChrom: await getData(),
-        xRange: session.getXRange(),
-        chromosome: session.getChromosome(),
+        xRange: session.pos.getXRange(),
+        chromosome: session.pos.getChromosome(),
       };
     },
     () => {
-      const xRange = session.getXRange();
-      const chrom = session.getChromosome();
+      const xRange = session.pos.getXRange();
+      const chrom = session.pos.getChromosome();
       return {
         chrom,
         start: xRange[0],

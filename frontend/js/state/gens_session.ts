@@ -19,6 +19,8 @@ import {
   saveTrackLayout,
 } from "../util/storage";
 import { generateID } from "../util/utils";
+import { SessionPosition } from "./session_helpers/session_position";
+import { Tracks } from "./session_helpers/session_tracks";
 
 /**
  * The purpose of this class is to keep track of the web session,
@@ -34,15 +36,10 @@ import { generateID } from "../util/utils";
  */
 
 export class GensSession {
-  private chromosome: Chromosome;
-  private start: number;
-  private end: number;
   private render: (settings: RenderSettings) => void;
   private sideMenu: SideMenu;
   private markerModeOn: boolean = false;
   private highlights: Record<string, RangeHighlight>;
-  private chromSizes: Record<Chromosome, number>;
-  private chromInfo: Record<Chromosome, ChromosomeInfo>;
   private mainSample: Sample;
   private samples: Sample[];
   private trackHeights: TrackHeights;
@@ -63,9 +60,9 @@ export class GensSession {
   // private expandedTracks: Record<string, boolean> = {};
   private layoutProfileKey: string;
 
-  // FIXME: Small helper class for tracks management
   public tracks: Tracks;
   public chromTracks: Tracks;
+  public pos: SessionPosition;
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -87,16 +84,12 @@ export class GensSession {
     this.sideMenu = sideMenu;
     this.mainSample = mainSample;
     this.highlights = {};
-    this.chromosome = startRegion ? startRegion.chrom : "1";
-    this.start = startRegion?.start ? startRegion.start : 1;
-    this.end = startRegion?.end ? startRegion.end : chromSizes["1"];
+
     this.samples = samples;
     this.trackHeights = loadTrackHeights() || trackHeights;
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
-    this.chromInfo = chromInfo;
-    this.chromSizes = chromSizes;
     this.annotationSelections = loadAnnotationSelections() || [];
     this.geneListSelections = loadGeneListSelections() || [];
     this.colorAnnotationId = loadColorAnnotation();
@@ -117,6 +110,17 @@ export class GensSession {
 
     this.tracks = new Tracks([]);
     this.chromTracks = new Tracks([]);
+
+    const chromosome = startRegion ? startRegion.chrom : "1";
+    const start = startRegion?.start ? startRegion.start : 1;
+    const end = startRegion?.end ? startRegion.end : chromSizes["1"];
+    this.pos = new SessionPosition(
+      chromosome,
+      start,
+      end,
+      chromSizes,
+      chromInfo,
+    );
   }
 
   public getMainSample(): Sample {
@@ -226,17 +230,6 @@ export class GensSession {
     saveTrackHeights(heights);
   }
 
-  // public getTrackExpanded(id: string, defaultValue: boolean): boolean {
-  //   const expanded = this.expandedTracks[id];
-  //   const returnVal = expanded != null ? expanded : defaultValue;
-  //   return returnVal;
-  // }
-
-  // public setTrackExpanded(id: string, value: boolean): void {
-  //   this.expandedTracks[id] = value;
-  //   saveExpandedTracks(this.expandedTracks);
-  // }
-
   public getCoverageRange(): [number, number] {
     return this.coverageRange;
   }
@@ -283,72 +276,6 @@ export class GensSession {
     this.layoutProfileKey = this.computeProfileKey();
   }
 
-  public setViewRange(range: Rng): void {
-    this.start = range[0];
-    this.end = range[1];
-  }
-
-  public getRegion(): Region {
-    return {
-      chrom: this.chromosome,
-      start: this.start,
-      end: this.end,
-    };
-  }
-
-  public setChromosome(chrom: Chromosome, range: Rng = null) {
-    this.chromosome = chrom;
-
-    const start = range != null ? range[0] : 1;
-    const end = range != null ? range[1] : this.chromSizes[chrom];
-
-    this.start = start;
-    this.end = end;
-  }
-
-  public updatePosition(range: Rng): void {
-    this.start = range[0];
-    this.end = range[1];
-  }
-
-  public getChromosome(): Chromosome {
-    return this.chromosome;
-  }
-
-  public getXRange(): Rng {
-    return [this.start, this.end] as Rng;
-  }
-
-  public getChrSegments(): [string, string] {
-    const startPos = this.start;
-    const endPos = this.end;
-
-    const currChromInfo = this.chromInfo[this.chromosome];
-
-    const startBand = currChromInfo.bands.find(
-      (band) => band.start <= startPos && band.end >= startPos,
-    );
-
-    const endBand = currChromInfo.bands.find(
-      (band) => band.start <= endPos && band.end >= endPos,
-    );
-
-    return [startBand.id, endBand.id];
-  }
-
-  // FIXME: Should be in data sources instead perhaps?
-  public getChromSize(chrom: string): number {
-    return this.chromSizes[chrom];
-  }
-
-  public getChromSizes(): Record<string, number> {
-    return this.chromSizes;
-  }
-
-  public getCurrentChromSize(): number {
-    return this.chromSizes[this.chromosome];
-  }
-
   public getMarkerModeOn(): boolean {
     return this.markerModeOn;
   }
@@ -359,19 +286,6 @@ export class GensSession {
 
   public getVariantThreshold(): number {
     return this.variantThreshold;
-  }
-
-  /**
-   * Distance can be negative
-   */
-  public moveXRange(distance: number): void {
-    const startRange = this.getXRange();
-    const chromSize = this.getCurrentChromSize();
-    const newRange: Rng = [
-      Math.max(0, Math.floor(startRange[0] + distance)),
-      Math.min(Math.floor(startRange[1] + distance), chromSize),
-    ];
-    this.setViewRange(newRange);
   }
 
   public toggleMarkerMode() {
@@ -396,7 +310,7 @@ export class GensSession {
    * Return highlights for the currently viewed chromosome
    */
   public getCurrentHighlights(): RangeHighlight[] {
-    return this.getHighlights(this.chromosome);
+    return this.getHighlights(this.pos.getChromosome());
   }
 
   public removeHighlights() {
@@ -411,7 +325,7 @@ export class GensSession {
 
     const highlight = {
       id,
-      chromosome: this.chromosome,
+      chromosome: this.pos.getChromosome(),
       range: intRange,
       color: COLORS.transparentBlue,
     };
@@ -504,94 +418,5 @@ export class GensSession {
     };
 
     saveTrackLayout(this.layoutProfileKey, layout);
-  }
-}
-
-export class Tracks {
-  private tracks: DataTrackSettings[];
-  constructor(tracks: DataTrackSettings[]) {
-    this.tracks = tracks;
-  }
-
-  public getTracks(): DataTrackSettings[] {
-    return this.tracks;
-  }
-
-  public addTrack(track: DataTrackSettings) {
-    this.tracks.push(track);
-  }
-
-  public get(trackId: string): DataTrackSettings {
-    const matches = this.tracks.filter((setting) => setting.trackId == trackId);
-
-    if (matches.length == 0) {
-      throw Error(`No matches found for ID: ${trackId}`);
-    } else if (matches.length > 1) {
-      throw Error(
-        `More than one (${matches.length}) match found for ID: ${trackId}`,
-      );
-    }
-
-    return matches[0];
-  }
-
-  public updateSetting(trackId: string, newSetting: DataTrackSettings) {
-    const trackIndex = this.tracks.findIndex(
-      (track) => track.trackId === trackId,
-    );
-    this.tracks[trackIndex] = newSetting;
-  }
-
-  public setIsExpanded(trackId: string, isExpanded: boolean) {
-    const setting = this.get(trackId);
-    setting.isExpanded = isExpanded;
-  }
-
-  public setExpandedHeight(trackId: string, trackHeight: number) {
-    const setting = this.get(trackId);
-    setting.height.expandedHeight = trackHeight;
-  }
-
-  public setTracks(tracks: DataTrackSettings[]) {
-    this.tracks = tracks;
-  }
-
-  public moveTrackToPos(trackId: string, newPos: number): void {
-    const origPos = this.tracks.findIndex((track) => track.trackId === trackId);
-    const [moved] = this.tracks.splice(origPos, 1);
-    this.tracks.splice(newPos, 0, moved);
-  }
-
-  public shiftTrack(trackId: string, direction: "up" | "down"): void {
-    const startIndex = this.tracks.findIndex(
-      (track) => track.trackId == trackId,
-    );
-
-    if (startIndex == -1) {
-      console.warn(`trackID ${trackId} not found`);
-      return;
-    }
-
-    const endIndex = direction == "up" ? startIndex - 1 : startIndex + 1;
-
-    // Don't move at the edge
-    if (endIndex < 0 || endIndex >= this.tracks.length) {
-      return;
-    }
-
-    [this.tracks[startIndex], this.tracks[endIndex]] = [
-      this.tracks[endIndex],
-      this.tracks[startIndex],
-    ];
-  }
-
-  public toggleTrackHidden(trackId: string): void {
-    const setting = this.get(trackId);
-    setting.isHidden = !setting.isHidden;
-  }
-
-  public toggleTrackExpanded(trackId: string): void {
-    const setting = this.get(trackId);
-    setting.isExpanded = !setting.isExpanded;
   }
 }

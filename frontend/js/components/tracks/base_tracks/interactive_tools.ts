@@ -26,7 +26,6 @@ export function initializeDragSelect(
   }
 
   element.addEventListener("mousedown", (event) => {
-
     const path = event.composedPath();
     const onCanvas = path.some((el) => el instanceof HTMLCanvasElement);
     if (!onCanvas) {
@@ -63,12 +62,8 @@ export function initializeDragSelect(
     }
 
     isMoved = true;
-
     const pos = getLocalPos(event);
-
-
     const xRange = sortRange([dragStart.x, pos.x]);
-
     marker.render(xRange);
   });
 

@@ -7,6 +7,7 @@ import "./components/side_menu/settings_menu";
 import "./components/side_menu/track_row";
 import "./components/side_menu/side_menu";
 import "./components/side_menu/info_menu";
+import "./components/side_menu/help_menu";
 import "./components/header_info";
 import "./movements/marker";
 import "./components/side_menu/track_menu";
@@ -38,6 +39,7 @@ import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
 import { setupShortcuts } from "./shortcuts";
 import { getMainSample } from "./util/utils";
+import { HelpMenu } from "./components/side_menu/help_menu";
 
 export async function samplesListInit(
   samples: SampleInfo[],
@@ -87,6 +89,7 @@ export async function initCanvases({
   const sideMenu = document.getElementById("side-menu") as SideMenu;
   const settingsPage = document.createElement("settings-page") as SettingsMenu;
   const infoPage = document.createElement("info-page") as InfoMenu;
+  const helpPage = document.createElement("help-page") as HelpMenu;
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
 
   headerInfo.initialize(
@@ -106,6 +109,7 @@ export async function initCanvases({
     gensTracks.render(settings);
     settingsPage.render(settings);
     infoPage.render();
+    helpPage.render();
     inputControls.render(settings);
 
     if (settings.saveLayoutChange) {
@@ -172,17 +176,17 @@ export async function initCanvases({
 
   const renderDataSource = getRenderDataSource(
     api,
-    () => session.getChromosome(),
-    () => session.getXRange(),
+    () => session.pos.getChromosome(),
+    () => session.pos.getXRange(),
     (id) => session.getVariantURL(id),
   );
 
   const onChromClick = async (chrom) => {
-    session.setChromosome(chrom);
+    session.pos.setChromosome(chrom);
     render({ reloadData: true });
   };
 
-  setupShortcuts(session, sideMenu, inputControls, onChromClick);
+  setupShortcuts(session, sideMenu, inputControls, onChromClick, render);
 
   addSettingsPageSources(
     settingsPage,
@@ -199,7 +203,7 @@ export async function initCanvases({
   inputControls.initialize(
     session,
     async (range) => {
-      session.setViewRange(range);
+      session.pos.setViewRange(range);
       render({ reloadData: true, positionOnly: true });
     },
     () => {
@@ -213,6 +217,10 @@ export async function initCanvases({
     () => {
       sideMenu.showContent("Sample info", [infoPage], STYLE.menu.width);
       infoPage.render();
+    },
+    () => {
+      sideMenu.showContent("Help", [helpPage], STYLE.menu.width);
+      helpPage.render();
     },
     () => {
       session.toggleChromViewActive();
@@ -231,7 +239,7 @@ export async function initCanvases({
 
   await gensTracks.initializeTrackView(
     render,
-    session.getChromSizes(),
+    session.pos.getChromSizes(),
     onChromClick,
     renderDataSource,
     session,
@@ -264,8 +272,8 @@ function addSettingsPageSources(
     return filtered;
   };
   const gotoHighlight = (region: Region) => {
-    const positionOnly = region.chrom == session.getChromosome();
-    session.setChromosome(region.chrom, [region.start, region.end]);
+    const positionOnly = region.chrom == session.pos.getChromosome();
+    session.pos.setChromosome(region.chrom, [region.start, region.end]);
     render({ reloadData: true, positionOnly });
   };
   const onAddSample = async (sample: Sample) => {

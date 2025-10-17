@@ -21,10 +21,14 @@ export function getTrack(
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   setExpandedHeight: (trackId: string, expandedHeight: number) => void,
 ) {
+
+  const getChromosome = () => session.pos.getChromosome();
+  const getXRange = () => session.pos.getXRange();
+
   let rawTrack;
   if (setting.trackType == "annotation") {
     const getAnnotationBands = () =>
-      dataSource.getAnnotationBands(setting.trackId, session.getChromosome());
+      dataSource.getAnnotationBands(setting.trackId, getChromosome());
     rawTrack = getBandTrack(
       session,
       dataSource,
@@ -36,7 +40,7 @@ export function getTrack(
     );
   } else if (setting.trackType == "gene-list") {
     const getGeneListBands = () =>
-      dataSource.getGeneListBands(setting.trackId, session.getChromosome());
+      dataSource.getGeneListBands(setting.trackId, getChromosome());
     rawTrack = getBandTrack(
       session,
       dataSource,
@@ -50,7 +54,7 @@ export function getTrack(
     const getSampleAnnotBands = () =>
       dataSource.getSampleAnnotationBands(
         setting.trackId,
-        session.getChromosome(),
+        getChromosome(),
       );
     rawTrack = getBandTrack(
       session,
@@ -65,7 +69,7 @@ export function getTrack(
     const getSampleAnnotBands = () =>
       dataSource.getVariantBands(
         setting.sample,
-        session.getChromosome(),
+        getChromosome(),
         session.getVariantThreshold(),
       );
     rawTrack = getBandTrack(
@@ -81,8 +85,8 @@ export function getTrack(
     const getSampleCovDots = () => {
       const data = dataSource.getCovData(
         setting.sample,
-        session.getChromosome(),
-        session.getXRange(),
+        getChromosome(),
+        getXRange(),
       );
       return data;
     };
@@ -98,8 +102,8 @@ export function getTrack(
     const getSampleBafDots = () =>
       dataSource.getBafData(
         setting.sample,
-        session.getChromosome(),
-        session.getXRange(),
+        getChromosome(),
+        getXRange(),
       );
     rawTrack = getDotTrack(
       session,
@@ -110,7 +114,7 @@ export function getTrack(
     );
   } else if (setting.trackType == "gene") {
     const getGeneBands = () =>
-      dataSource.getTranscriptBands(session.getChromosome());
+      dataSource.getTranscriptBands(getChromosome());
     rawTrack = getBandTrack(
       session,
       dataSource,
@@ -142,7 +146,7 @@ export function getDotTrack(
       return setting;
     },
     (isExpanded) => setIsExpanded(setting.trackId, isExpanded),
-    () => session.getXRange(),
+    () => session.pos.getXRange(),
     () => {
       return getDots().then((dots) => {
         return {
@@ -181,7 +185,7 @@ export function getBandTrack(
       setExpandedHeight(setting.trackId, expandedHeight);
       // updateDataTrackSettings(setting.trackId, updatedSetting);
     },
-    () => session.getXRange(),
+    () => session.pos.getXRange(),
     () => {
       async function getBandTrackData(
         getAnnotation: () => Promise<RenderBand[]>,

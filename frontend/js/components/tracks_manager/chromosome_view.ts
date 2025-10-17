@@ -127,7 +127,7 @@ export class ChromosomeView extends ShadowBaseElement {
     const getCovData = (sample: Sample, chrom: string) =>
       this.dataSource.getCovData(sample, chrom, [
         1,
-        this.session.getChromSize(chrom),
+        this.session.pos.getChromSize(chrom),
       ]);
 
     for (const trackSetting of this.session.chromTracks.getTracks()) {
