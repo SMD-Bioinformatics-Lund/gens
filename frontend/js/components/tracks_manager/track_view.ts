@@ -290,6 +290,8 @@ export class TrackView extends ShadowBaseElement {
 
     this.session.tracks.setTracks(dataTrackSettings);
     this.session.loadTrackLayout();
+
+    this.updateColorBands();
   }
 
   private getXScale(inverted: boolean = false): Scale {
