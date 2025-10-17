@@ -176,17 +176,17 @@ export async function initCanvases({
 
   const renderDataSource = getRenderDataSource(
     api,
-    () => session.getChromosome(),
-    () => session.getXRange(),
+    () => session.pos.getChromosome(),
+    () => session.pos.getXRange(),
     (id) => session.getVariantURL(id),
   );
 
   const onChromClick = async (chrom) => {
-    session.setChromosome(chrom);
+    session.pos.setChromosome(chrom);
     render({ reloadData: true });
   };
 
-  setupShortcuts(session, sideMenu, inputControls, onChromClick);
+  setupShortcuts(session, sideMenu, inputControls, onChromClick, render);
 
   addSettingsPageSources(
     settingsPage,
@@ -203,7 +203,7 @@ export async function initCanvases({
   inputControls.initialize(
     session,
     async (range) => {
-      session.setViewRange(range);
+      session.pos.setViewRange(range);
       render({ reloadData: true, positionOnly: true });
     },
     () => {
@@ -239,7 +239,7 @@ export async function initCanvases({
 
   await gensTracks.initializeTrackView(
     render,
-    session.getChromSizes(),
+    session.pos.getChromSizes(),
     onChromClick,
     renderDataSource,
     session,
@@ -272,8 +272,8 @@ function addSettingsPageSources(
     return filtered;
   };
   const gotoHighlight = (region: Region) => {
-    const positionOnly = region.chrom == session.getChromosome();
-    session.setChromosome(region.chrom, [region.start, region.end]);
+    const positionOnly = region.chrom == session.pos.getChromosome();
+    session.pos.setChromosome(region.chrom, [region.start, region.end]);
     render({ reloadData: true, positionOnly });
   };
   const onAddSample = async (sample: Sample) => {

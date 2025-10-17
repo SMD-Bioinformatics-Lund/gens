@@ -21,13 +21,14 @@ import { IdeogramTrack } from "../tracks/ideogram_track";
 import { BAF_Y_RANGE } from "./tracks_manager";
 import { TrackMenu } from "../side_menu/track_menu";
 import { keyLogger } from "../util/keylogger";
-import { zoomOut } from "../../util/navigation";
+import { zoomIn, zoomOut } from "../../util/navigation";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
 import { syncDataTrackSettings } from "./utils/sync_tracks";
 import { getTrack as getTrack } from "./utils/create_tracks";
 import { getOpenTrackContextMenu } from "./utils/track_menues";
+import { SessionPosition } from "../../state/session_helpers/session_position";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -87,6 +88,7 @@ export class TrackView extends ShadowBaseElement {
   private requestRender!: (settings: RenderSettings) => void;
 
   private session: GensSession;
+  private sessionPos: SessionPosition;
   private dataSource: RenderDataSource;
 
   private lastRenderedSamples: Sample[] = [];
@@ -95,7 +97,6 @@ export class TrackView extends ShadowBaseElement {
   private ideogramTrack: IdeogramTrack;
   private positionTrack: PositionTrack;
   private overviewTracks: OverviewTrack[] = [];
-
 
   public saveTrackLayout() {
     this.session.saveTrackLayout();
@@ -123,6 +124,8 @@ export class TrackView extends ShadowBaseElement {
   ) {
     this.dataSource = dataSources;
     this.session = session;
+    const sessionPos = session.pos;
+    this.sessionPos = sessionPos;
     this.requestRender = render;
 
     Sortable.create(this.tracksContainer, {
@@ -147,7 +150,7 @@ export class TrackView extends ShadowBaseElement {
       const scaledEnd = invertedXScale(dragRangePx[1]);
       const panDistance = scaledStart - scaledEnd;
 
-      session.moveXRange(panDistance);
+      this.sessionPos.moveXRange(panDistance);
       render({ reloadData: true, positionOnly: true });
     });
 
@@ -157,12 +160,14 @@ export class TrackView extends ShadowBaseElement {
       { height: trackHeight.xs },
       async () => {
         return {
-          xRange: session.getXRange(),
-          chromInfo: await dataSources.getChromInfo(session.getChromosome()),
+          xRange: this.sessionPos.getXRange(),
+          chromInfo: await dataSources.getChromInfo(
+            this.sessionPos.getChromosome(),
+          ),
         };
       },
       (band: RenderBand) => {
-        session.setViewRange([band.start, band.end]);
+        this.sessionPos.setViewRange([band.start, band.end]);
         render({ reloadData: true, positionOnly: true });
       },
     );
@@ -221,7 +226,7 @@ export class TrackView extends ShadowBaseElement {
       () => positionTrackSettings,
       (settings) => (positionTrackSettings = settings),
       () => session.getMarkerModeOn(),
-      () => session.getXRange(),
+      () => this.sessionPos.getXRange(),
     );
 
     const chromosomeRow = document.createElement("flex-row");
@@ -247,9 +252,9 @@ export class TrackView extends ShadowBaseElement {
     setupDrag(
       this.tracksContainer,
       () => session.getMarkerModeOn(),
-      () => session.getXRange(),
+      () => sessionPos.getXRange(),
       (range: Rng) => {
-        session.setViewRange(range);
+        sessionPos.setViewRange(range);
         render({ reloadData: true, positionOnly: true });
       },
       (range: Rng) => session.addHighlight(range),
@@ -259,19 +264,20 @@ export class TrackView extends ShadowBaseElement {
     this.addElementListener(this.tracksContainer, "click", () => {
       if (keyLogger.heldKeys.Control) {
         const updatedRange = zoomOut(
-          this.session.getXRange(),
-          this.session.getCurrentChromSize(),
+          sessionPos.getXRange(),
+          sessionPos.getCurrentChromSize(),
         );
-        session.setViewRange(updatedRange);
+        sessionPos.setViewRange(updatedRange);
+      }
+      if (keyLogger.heldKeys.Shift) {
+        sessionPos.zoomIn();
+        this.requestRender({ reloadData: true, positionOnly: true });
       }
     });
-
-    // FIXME: First sync of tracks here? Also a better location for the genes track
 
     const { settings: dataTrackSettings, samples } =
       await syncDataTrackSettings([], this.session, this.dataSource, []);
 
-    // this.session.tracks.setTracks(dataTrackSettings);
     this.lastRenderedSamples = samples;
 
     const geneTrackSettings: DataTrackSettings = {
@@ -294,7 +300,7 @@ export class TrackView extends ShadowBaseElement {
   }
 
   private getXScale(inverted: boolean = false): Scale {
-    const xRange = this.session.getXRange();
+    const xRange = this.sessionPos.getXRange();
     const yAxisWidth = STYLE.yAxis.width;
     const xDomain: Rng = [yAxisWidth, this.tracksContainer.offsetWidth];
     const xScale = !inverted
@@ -308,7 +314,7 @@ export class TrackView extends ShadowBaseElement {
     if (this.session.getColorAnnotation() != null) {
       colorBands = await this.dataSource.getAnnotationBands(
         this.session.getColorAnnotation(),
-        this.session.getChromosome(),
+        this.sessionPos.getChromosome(),
       );
     }
     for (const info of this.dataTracks) {
@@ -341,12 +347,11 @@ export class TrackView extends ShadowBaseElement {
       this.renderTracks(renderSettings);
     });
 
-
     this.ideogramTrack.render(renderSettings);
     this.positionTrack.render(renderSettings);
     this.overviewTracks.forEach((track) => track.render(renderSettings));
 
-    const [startChrSeg, endChrSeg] = this.session.getChrSegments();
+    const [startChrSeg, endChrSeg] = this.sessionPos.getChrSegments();
     this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 

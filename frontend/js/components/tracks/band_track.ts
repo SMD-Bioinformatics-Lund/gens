@@ -307,7 +307,6 @@ function getIntronHoverBoxes(
   midY: number,
   xScale: Scale,
 ): HoverBox[] {
-  console.log("Getting intron hover boxes");
   const exons = [...band.subFeatures].sort((a, b) => a.start - b.start);
   const introns: { start: number; end: number }[] = [];
   let prev = band.start;

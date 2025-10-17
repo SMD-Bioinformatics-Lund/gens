@@ -8,6 +8,7 @@ export function setupShortcuts(
   sideMenu: SideMenu,
   inputControls: InputControls,
   onChromClick: (chrom: string) => void,
+  onChange: (settings: RenderSettings) => void,
 ) {
   // Rebuild the keyboard shortcuts
   document.addEventListener("keydown", (e) => {
@@ -29,7 +30,7 @@ export function setupShortcuts(
       if (isEditing) return;
       e.preventDefault();
       if (e.ctrlKey || e.metaKey) {
-        const currChrom = session.getChromosome();
+        const currChrom = session.pos.getChromosome();
         const currIndex = CHROMOSOMES.indexOf(currChrom);
         if (currIndex > 0) {
           const newChrom = CHROMOSOMES[currIndex - 1];
@@ -43,7 +44,7 @@ export function setupShortcuts(
       if (isEditing) return;
       e.preventDefault();
       if (e.ctrlKey || e.metaKey) {
-        const currChrom = session.getChromosome();
+        const currChrom = session.pos.getChromosome();
         const currIndex = CHROMOSOMES.indexOf(currChrom);
         if (currIndex < CHROMOSOMES.length - 1) {
           const newChrom = CHROMOSOMES[currIndex + 1];
@@ -56,12 +57,14 @@ export function setupShortcuts(
     if (e.key === "ArrowUp") {
       if (isEditing) return;
       e.preventDefault();
-      inputControls.zoomIn();
+      session.pos.zoomIn();
+      onChange({ positionOnly: true, reloadData: true });
     }
     if (e.key === "ArrowDown") {
       if (isEditing) return;
       e.preventDefault();
-      inputControls.zoomOut();
+      session.pos.zoomOut();
+      onChange({ positionOnly: true, reloadData: true });
     }
     if (e.key === "r") {
       if (isEditing) return;

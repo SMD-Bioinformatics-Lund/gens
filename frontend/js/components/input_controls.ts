@@ -152,11 +152,13 @@ export class InputControls extends HTMLElement {
     };
 
     this.zoomInButton.onclick = () => {
-      this.zoomIn();
+      this.session.pos.zoomIn();
+      this.onChange({ positionOnly: true, reloadData: true });
     };
 
     this.zoomOutButton.onclick = () => {
-      this.zoomOut();
+      this.session.pos.zoomOut();
+      this.onChange({ positionOnly: true, reloadData: true });
     };
 
     this.zoomResetButton.onclick = () => {
@@ -203,7 +205,7 @@ export class InputControls extends HTMLElement {
 
     this.helpButton.addEventListener("click", () => {
       this.onOpenHelp();
-    })
+    });
 
     // FIXME: Also enter when inside the input?
     this.searchButton.addEventListener("click", () => {
@@ -211,10 +213,11 @@ export class InputControls extends HTMLElement {
       queryRegionOrGene(
         currentValue,
         (chrom: Chromosome, range?: Rng) => {
-          this.session.setChromosome(chrom, range);
+          this.session.pos.setChromosome(chrom, range);
           this.onChange({ reloadData: true, positionOnly: true });
         },
         this.onSearch,
+        () => this.session.pos.getCurrentChromSize(),
       );
     });
 
@@ -231,7 +234,7 @@ export class InputControls extends HTMLElement {
       ? COLORS.lightGray
       : "";
 
-    const region = this.session.getRegion();
+    const region = this.session.pos.getRegion();
     this.regionField.value = `${region.chrom}:${region.start}-${region.end}`;
 
     this.chromosomeViewButton.style.backgroundColor =
@@ -239,37 +242,23 @@ export class InputControls extends HTMLElement {
   }
 
   panLeft() {
-    const currRange = this.session.getXRange();
+    const currRange = this.session.pos.getXRange();
     const newXRange = getPan(currRange, "left", 1);
     this.onPositionChange(newXRange);
   }
 
   panRight() {
-    const currXRange = this.session.getXRange();
+    const currXRange = this.session.pos.getXRange();
     const newXRange = getPan(
       currXRange,
       "right",
-      this.session.getCurrentChromSize(),
-    );
-    this.onPositionChange(newXRange);
-  }
-
-  zoomIn() {
-    const currXRange = this.session.getXRange();
-    const newXRange = zoomIn(currXRange);
-    this.onPositionChange(newXRange);
-  }
-
-  zoomOut() {
-    const newXRange = zoomOut(
-      this.session.getXRange(),
-      this.session.getCurrentChromSize(),
+      this.session.pos.getCurrentChromSize(),
     );
     this.onPositionChange(newXRange);
   }
 
   resetZoom() {
-    const xRange = [1, this.session.getCurrentChromSize()] as Rng;
+    const xRange = [1, this.session.pos.getCurrentChromSize()] as Rng;
     this.onPositionChange(xRange);
   }
 
@@ -282,6 +271,7 @@ async function queryRegionOrGene(
   query: string,
   onChangePosition: (chrom: string, range?: Rng) => void,
   getSearchResult: (string) => Promise<ApiSearchResult | null>,
+  getCurrentChromSize: () => number,
 ) {
   let chrom: Chromosome;
   let range: Rng | undefined = undefined;
@@ -300,7 +290,7 @@ async function queryRegionOrGene(
 
     // Add visual padding at edges
     const rawRange = extendRange([searchResult.start, searchResult.end]);
-    range = clampRange(rawRange, 1, this.session.getCurrentChromSize());
+    range = clampRange(rawRange, 1, getCurrentChromSize());
   }
   onChangePosition(chrom, range);
 }
