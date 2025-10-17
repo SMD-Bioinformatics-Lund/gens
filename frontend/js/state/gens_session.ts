@@ -4,7 +4,6 @@ import { DataTrackSettings } from "../components/tracks/base_tracks/data_track";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS } from "../constants";
-import { zoomIn, zoomOut } from "../util/navigation";
 import {
   loadAnnotationSelections,
   loadColorAnnotation,
