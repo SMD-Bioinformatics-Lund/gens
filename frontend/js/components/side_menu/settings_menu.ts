@@ -174,7 +174,6 @@ export class SettingsMenu extends ShadowBaseElement {
 
   private session: GensSession;
 
-  // private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private geneLists: ApiGeneList[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;

@@ -99,11 +99,6 @@ export abstract class DataTrack extends CanvasTrack {
     this.syncHeight();
   }
 
-  // public toggleHidden() {
-  //   this.getSettings().isHidden = !this.getSettings().isHidden;
-  //   // FIXME: Consider using a CSS class for this
-  //   this.updateHidden();
-  // }
 
   public getIsHidden() {
     return this.getSettings().isHidden;

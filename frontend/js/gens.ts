@@ -194,56 +194,6 @@ export async function initCanvases({
     gensTracks,
   );
 
-  // settingsPage.setSources(
-  //   session,
-  //   // render,
-  //   allAnnotSources,
-  //   geneLists,
-  //   (trackId: string, direction: "up" | "down") => {
-  //     session.tracks.shiftTrack(trackId, direction);
-  //     render({ tracksReordered: true, saveLayoutChange: true });
-  //   },
-  //   () => {
-  //     const samples = session.getSamples();
-  //     const currSampleIds = samples.map(
-  //       (sample) => `${sample.caseId}_${sample.sampleId}`,
-  //     );
-  //     const filtered = allSamples.filter(
-  //       (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
-  //     );
-  //     return filtered;
-  //   },
-  //   (region: Region) => {
-  //     const positionOnly = region.chrom == session.getChromosome();
-  //     session.setChromosome(region.chrom, [region.start, region.end]);
-  //     render({ dataUpdated: true, positionOnly });
-  //   },
-  //   // FIXME: Something strange here in how things are organized,
-  //   // why is the trackview looping to itself?
-  //   async (sample: Sample) => {
-  //     session.addSample(sample);
-  //     render({ dataUpdated: true, samplesUpdated: true });
-  //   },
-  //   (sample: Sample) => {
-  //     // FIXME: This should eventually be session only, with tracks responding on rerender
-  //     session.removeSample(sample);
-  //     render({ dataUpdated: true, samplesUpdated: true });
-  //   },
-  //   (trackHeights: TrackHeights) => {
-  //     session.setTrackHeights(trackHeights);
-  //     render({});
-  //   },
-  //   async (annotId: string | null) => {
-  //     session.setColorAnnotation(annotId);
-  //     await gensTracks.trackView.updateColorBands();
-  //     render({});
-  //   },
-  //   (rng: Rng) => {
-  //     gensTracks.setCovYRange(rng);
-  //     render({ dataUpdated: true });
-  //   },
-  // );
-
   infoPage.setSources(() => session.getSamples());
 
   inputControls.initialize(

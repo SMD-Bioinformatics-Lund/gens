@@ -96,7 +96,6 @@ export class TrackView extends ShadowBaseElement {
   private positionTrack: PositionTrack;
   private overviewTracks: OverviewTrack[] = [];
 
-  // private trackPages: Record<string, TrackMenu> = {};
 
   public saveTrackLayout() {
     this.session.saveTrackLayout();
@@ -342,10 +341,6 @@ export class TrackView extends ShadowBaseElement {
       this.renderTracks(renderSettings);
     });
 
-    // FIXME: Only the active one needs to be rendered isn't it?
-    // Object.values(this.trackPages).forEach((trackPage) =>
-    //   trackPage.render(renderSettings),
-    // );
 
     this.ideogramTrack.render(renderSettings);
     this.positionTrack.render(renderSettings);
