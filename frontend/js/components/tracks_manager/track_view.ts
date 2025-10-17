@@ -263,11 +263,8 @@ export class TrackView extends ShadowBaseElement {
 
     this.addElementListener(this.tracksContainer, "click", () => {
       if (keyLogger.heldKeys.Control) {
-        const updatedRange = zoomOut(
-          sessionPos.getXRange(),
-          sessionPos.getCurrentChromSize(),
-        );
-        sessionPos.setViewRange(updatedRange);
+        sessionPos.zoomOut();
+        this.requestRender({ reloadData: true, positionOnly: true });
       }
       if (keyLogger.heldKeys.Shift) {
         sessionPos.zoomIn();

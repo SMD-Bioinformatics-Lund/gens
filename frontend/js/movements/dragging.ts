@@ -12,7 +12,6 @@ export function setupDrag(
   onRemoveHighlight: (id: string) => void,
 ) {
   const onDragEnd = (pxRangeX: Rng, _pxRangeY: Rng, shiftPress: boolean) => {
-
     const xRange = getXRange();
     if (xRange == null) {
       console.error("No xRange set");
@@ -64,7 +63,6 @@ export function setupDragging(
   });
 
   container.addEventListener("pointerdown", (event) => {
-
     if (isSpaceDown) {
       dragStartX = event.offsetX;
       container.setPointerCapture(event.pointerId);
@@ -73,7 +71,6 @@ export function setupDragging(
   });
 
   container.addEventListener("pointerup", (event) => {
-
     if (event.button === 0 && isSpaceDown) {
       const dragEndX = event.offsetX;
 

@@ -23,13 +23,13 @@ template.innerHTML = String.raw`
   <div id="help-container">
     <h3>Mouse navigation</h3>
     <ul>
-        <li><b>click</b> and <b>drag</b> with mouse while holding <b>space</b> to move region</li>
+        <li><b>click</b> and <b>drag</b> with mouse while holding <b>space</b> to move</li>
         <li>Navigate to a chromosome by <b>click</b> in the overview chart (bottom)</li>
         <li>Zoom in by <b>Shift+click</b></li>
+        <li>Zoom out by <b>Ctrl+click</b></li>
         <li>Zoom in on a region by <b>Shift</b> and <b>dragging</b> with the mouse</li>
-        <li>Zoom out in coverage figure by <b>Ctrl+click</b></li>
-        <li>Click chromosome bands in the ideogram chart to jump to that region</li>
-        <li>Right click tracks to toggle expanded / collapsed</li>
+        <li><b>Click</b> chromosome bands in the ideogram chart to jump to that region</li>
+        <li>Right click tracks to toggle tracks expanded / collapsed</li>
     </ul>
     <h3>Keyboard shortcuts</h3>
     <ul>
