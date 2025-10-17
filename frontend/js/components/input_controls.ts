@@ -200,7 +200,7 @@ export class InputControls extends HTMLElement {
         currentValue,
         (chrom: Chromosome, range?: Rng) => {
           this.session.setChromosome(chrom, range);
-          this.onChange({ dataUpdated: true, positionOnly: true });
+          this.onChange({ reloadData: true, positionOnly: true });
         },
         this.onSearch,
       );

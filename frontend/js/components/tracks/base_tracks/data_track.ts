@@ -99,11 +99,6 @@ export abstract class DataTrack extends CanvasTrack {
     this.syncHeight();
   }
 
-  public toggleHidden() {
-    this.getSettings().isHidden = !this.getSettings().isHidden;
-    // FIXME: Consider using a CSS class for this
-    this.updateHidden();
-  }
 
   public getIsHidden() {
     return this.getSettings().isHidden;
@@ -114,12 +109,14 @@ export abstract class DataTrack extends CanvasTrack {
     this.updateHidden();
   }
 
-  private updateHidden() {
-    if (this.getSettings().isHidden) {
+  private updateHidden(): boolean {
+    const isHidden = this.getSettings().isHidden;
+    if (isHidden) {
       this.trackContainer.style.display = "none";
     } else {
       this.trackContainer.style.display = "block";
     }
+    return isHidden;
   }
 
   protected syncHeight() {
@@ -226,7 +223,12 @@ export abstract class DataTrack extends CanvasTrack {
     super.disconnectedCallback();
   }
 
-  async render(settings: RenderSettings) {
+  async render(renderSettings: RenderSettings) {
+    const isHidden = this.updateHidden();
+    if (isHidden) {
+      return;
+    }
+
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
     // is to prevent repeated API requests when rapidly zooming/panning
     // Only the last request is of interest
@@ -248,10 +250,10 @@ export abstract class DataTrack extends CanvasTrack {
     // this.renderData is null here for components not requiring
     // accessing any data through API (i.e. position track)
     if (
-      (settings.dataUpdated || this.renderData == null) &&
+      (renderSettings.reloadData || this.renderData == null) &&
       this.getRenderData != null
     ) {
-      if (!settings.positionOnly) {
+      if (!renderSettings.positionOnly) {
         this.renderLoading();
       }
       fetchData();

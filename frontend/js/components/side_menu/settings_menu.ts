@@ -174,7 +174,6 @@ export class SettingsMenu extends ShadowBaseElement {
 
   private session: GensSession;
 
-  private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
   private geneLists: ApiGeneList[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
@@ -190,6 +189,11 @@ export class SettingsMenu extends ShadowBaseElement {
   private onColorByChange: (annotId: string | null) => void;
   private getColorAnnotation: () => string | null;
   private onApplyDefaultCovRange: (rng: Rng) => void;
+  private onSetAnnotationSelection: (ids: string[]) => void;
+  private onSetGeneListSelection: (ids: string[]) => void;
+  private onSetVariantThreshold: (threshold: number) => void;
+  private onToggleTrackHidden: (trackId: string) => void;
+  private onToggleTrackExpanded: (trackId: string) => void;
 
   public isInitialized: boolean = false;
 
@@ -199,7 +203,6 @@ export class SettingsMenu extends ShadowBaseElement {
 
   setSources(
     session: GensSession,
-    onChange: (renderSettings: RenderSettings) => void,
     allAnnotationSources: ApiAnnotationTrack[],
     geneLists: ApiGeneList[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
@@ -210,9 +213,14 @@ export class SettingsMenu extends ShadowBaseElement {
     setTrackInfo: (trackHeights: TrackHeights) => void,
     onColorByChange: (annotId: string | null) => void,
     onApplyDefaultCovRange: (rng: Rng) => void,
+    onSetAnnotationSelection: (ids: string[]) => void,
+    onSetGeneListSelection: (ids: string[]) => void,
+    onSetVariantThreshold: (threshold: number) => void,
+    onToggleTrackHidden: (trackId: string) => void,
+    onToggleTrackExpanded: (trackId: string) => void,
   ) {
     this.session = session;
-    this.onChange = onChange;
+    // this.onChange = onChange;
     this.allAnnotationSources = allAnnotationSources;
     this.geneLists = geneLists;
 
@@ -235,6 +243,12 @@ export class SettingsMenu extends ShadowBaseElement {
     this.getColorAnnotation = () => session.getColorAnnotation();
 
     this.onApplyDefaultCovRange = onApplyDefaultCovRange;
+
+    this.onSetAnnotationSelection = onSetAnnotationSelection;
+    this.onSetGeneListSelection = onSetGeneListSelection;
+    this.onSetVariantThreshold = onSetVariantThreshold;
+    this.onToggleTrackHidden = onToggleTrackHidden;
+    this.onToggleTrackExpanded = onToggleTrackExpanded;
   }
 
   connectedCallback() {
@@ -288,8 +302,7 @@ export class SettingsMenu extends ShadowBaseElement {
       const ids = this.annotSelect
         .getValues()
         .map((obj) => obj.value as string);
-      this.session.setAnnotationSelections(ids);
-      this.onChange({});
+      this.onSetAnnotationSelection(ids);
     });
 
     this.addElementListener(this.colorBySelect, "change", () => {
@@ -302,8 +315,7 @@ export class SettingsMenu extends ShadowBaseElement {
       const ids = this.geneListSelect
         .getValues()
         .map((obj) => obj.value as string);
-      this.session.setGeneListSelections(ids);
-      this.onChange({});
+      this.onSetGeneListSelection(ids);
     });
 
     this.addElementListener(this.sampleSelect, "change", () => {
@@ -351,8 +363,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.applyVariantFilter, "click", () => {
       const variantThreshold = Number.parseInt(this.variantThreshold.value);
-      this.session.setVariantThreshold(variantThreshold);
-      this.onChange({ dataUpdated: true });
+      this.onSetVariantThreshold(variantThreshold);
     });
   }
 
@@ -378,7 +389,6 @@ export class SettingsMenu extends ShadowBaseElement {
     ];
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
-    this.onChange({});
   }
 
   private setupSampleSelect() {
@@ -406,15 +416,12 @@ export class SettingsMenu extends ShadowBaseElement {
       this.session.tracks.getTracks(),
       (trackId: string, direction: "up" | "down") => {
         this.onTrackMove(trackId, direction);
-        this.onChange({ layout: true });
       },
       (trackId: string) => {
-        this.session.tracks.toggleTrackHidden(trackId);
-        this.onChange({ layout: true });
+        this.onToggleTrackHidden(trackId);
       },
       (trackId: string) => {
-        this.session.tracks.toggleTrackExpanded(trackId);
-        this.onChange({ layout: true });
+        this.onToggleTrackExpanded(trackId);
       },
     );
     this.tracksOverview.appendChild(tracksSection);

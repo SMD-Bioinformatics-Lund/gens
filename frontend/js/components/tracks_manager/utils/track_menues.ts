@@ -24,17 +24,16 @@ export function getOpenTrackContextMenu(
       (settings: { selectedOnly: boolean }) =>
         session.getAnnotationSources(settings),
       (direction: "up" | "down") => {
-        console.log("Move track clicked");
         session.tracks.shiftTrack(track.id, direction);
-        render({ layout: true });
+        render({ saveLayoutChange: true, tracksReordered: true });
       },
       () => {
-        track.toggleHidden();
-        render({ layout: true });
+        session.tracks.toggleTrackHidden(track.id);
+        render({ saveLayoutChange: true, targetTrackId: track.id });
       },
       () => {
         session.tracks.toggleTrackExpanded(track.id);
-        render({ layout: true });
+        render({ saveLayoutChange: true });
       },
       () => track.getIsHidden(),
       () => track.getIsExpanded(),
@@ -43,9 +42,9 @@ export function getOpenTrackContextMenu(
         track.setYAxis(newY);
         render({});
       },
-      // FIXME: Cleanup
+      // FIXME: Leftovers from rendering dots in colors
       async (_annotId: string | null) => {
-        console.warn("What is the intent here");
+        console.warn("Currently not implemented");
         // let colorBands = [];
         // if (annotId != null) {
         //   colorBands = await dataSource.getAnnotationBands(

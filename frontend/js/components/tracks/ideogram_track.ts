@@ -54,7 +54,7 @@ export class IdeogramTrack extends CanvasTrack {
   }
 
   async render(settings: RenderSettings) {
-    if (settings.dataUpdated || this.renderData == null) {
+    if (settings.reloadData || this.renderData == null) {
       this.renderData = await this.getRenderData();
     }
 
