@@ -626,6 +626,8 @@ interface RenderSettings {
   positionOnly?: boolean;
   samplesUpdated?: boolean;
   layout?: boolean;
+  tracksReordered?: boolean;
+  targetTrackId?: string;
 }
 
 interface RangeHighlight {

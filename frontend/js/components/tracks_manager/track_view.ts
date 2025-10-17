@@ -96,7 +96,7 @@ export class TrackView extends ShadowBaseElement {
   private positionTrack: PositionTrack;
   private overviewTracks: OverviewTrack[] = [];
 
-  private trackPages: Record<string, TrackMenu> = {};
+  // private trackPages: Record<string, TrackMenu> = {};
 
   public saveTrackLayout() {
     this.session.saveTrackLayout();
@@ -335,12 +335,14 @@ export class TrackView extends ShadowBaseElement {
       this.renderTracks(renderSettings);
     });
 
-    this.syncTrackOrder();
+    if (renderSettings.tracksReordered) {
+      this.syncTrackOrder();
+    }
 
     // FIXME: Only the active one needs to be rendered isn't it?
-    Object.values(this.trackPages).forEach((trackPage) =>
-      trackPage.render(renderSettings),
-    );
+    // Object.values(this.trackPages).forEach((trackPage) =>
+    //   trackPage.render(renderSettings),
+    // );
 
     this.ideogramTrack.render(renderSettings);
     this.positionTrack.render(renderSettings);
@@ -389,6 +391,18 @@ export class TrackView extends ShadowBaseElement {
   }
 
   renderTracks(settings: RenderSettings) {
+    // Single track render, skip the full diff
+    if (settings.targetTrackId != null) {
+      console.log("Single track render", settings.targetTrackId);
+      const track = this.dataTracks.find(
+        (track) => track.track.id == settings.targetTrackId,
+      );
+      track.track.render(settings);
+      // track.render();
+
+      return;
+    }
+
     const currIds = new Set(
       this.session.tracks.getTracks().map((setting) => setting.trackId),
     );
@@ -404,7 +418,7 @@ export class TrackView extends ShadowBaseElement {
     for (const settingId of addedIds) {
       const setIsExpanded = (trackId: string, isExpanded: boolean) => {
         this.session.tracks.setIsExpanded(trackId, isExpanded);
-        this.requestRender({ layout: true });
+        this.requestRender({ layout: true, targetTrackId: trackId });
       };
       const setExpandedHeight = (trackId: string, expandedHeight: number) => {
         this.session.tracks.setExpandedHeight(trackId, expandedHeight);
