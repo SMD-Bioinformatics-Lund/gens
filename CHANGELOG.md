@@ -29,6 +29,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 - Coloring of heterozygote variants now uses correct colors. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/514)
 - Start on zoom-level "a" for tracks instead of showing the overview dots also for the tracks. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/515)
+- 
 
 ## 4.1.0
 

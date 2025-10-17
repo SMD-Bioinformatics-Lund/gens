@@ -307,7 +307,8 @@ function getIntronHoverBoxes(
   midY: number,
   xScale: Scale,
 ): HoverBox[] {
-  const exons = band.subFeatures;
+  console.log("Getting intron hover boxes");
+  const exons = [...band.subFeatures].sort((a, b) => a.start - b.start);
   const introns: { start: number; end: number }[] = [];
   let prev = band.start;
   exons.forEach((e) => {
@@ -320,12 +321,21 @@ function getIntronHoverBoxes(
     introns.push({ start: prev, end: band.end });
   }
 
+  const totalIntrons = band.exonCount - 1;
+
   const hoverBoxes = introns.map((intron, i) => {
     const x1 = xScale(intron.start);
     const x2 = xScale(intron.end);
+
+    if (!["+", "-"].includes(band.direction)) {
+      console.warn("Expected a band direction, found", band.direction);
+    }
+
+    const labelIndex = band.direction === "+" ? i + 1 : totalIntrons - i;
+
     return {
       box: { x1, x2, y1: midY - 2, y2: midY + 2 },
-      label: `Intron ${i + 1}/${Math.max(band.exonCount - 1, 1)}`,
+      label: `Intron ${labelIndex}/${totalIntrons}`,
       element: band,
     };
   });
