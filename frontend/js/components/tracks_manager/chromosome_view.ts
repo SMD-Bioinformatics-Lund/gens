@@ -90,14 +90,11 @@ export class ChromosomeView extends ShadowBaseElement {
         showLabelWhenCollapsed: false,
         isExpanded: false,
         isHidden: false,
-        // FIXME: Here seems to be the place to configure the changes?
-        // Show only the center line in collapsed mode
-        // Show the max min values also in collapsed mode
         yAxis: {
           range: session.getCoverageRange(),
           label: "Log2 ratio",
           hideLabelOnCollapse: true,
-          highlightZero: true,
+          highlightedYs: [0],
         },
         chromosome: chrom,
         sample: settingSample,

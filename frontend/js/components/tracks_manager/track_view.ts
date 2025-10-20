@@ -4,6 +4,7 @@ import {
   SIZES,
   STYLE,
   TRACK_HEIGHTS,
+  USED_TRACK_HEIGHTS,
 } from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import Sortable, { SortableEvent } from "sortablejs";
@@ -274,19 +275,6 @@ export class TrackView extends ShadowBaseElement {
       await syncDataTrackSettings([], this.session, this.dataSource, []);
 
     this.lastRenderedSamples = samples;
-
-    const geneTrackSettings: DataTrackSettings = {
-      trackId: "genes",
-      trackLabel: "Genes",
-      trackType: "gene",
-      height: {
-        collapsedHeight: TRACK_HEIGHTS.m,
-      },
-      showLabelWhenCollapsed: true,
-      isExpanded: true,
-      isHidden: false,
-    };
-    dataTrackSettings.push(geneTrackSettings);
 
     this.session.tracks.setTracks(dataTrackSettings);
     this.session.loadTrackLayout();

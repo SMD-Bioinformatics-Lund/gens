@@ -343,7 +343,7 @@ export function renderYAxis(
   yScale: Scale,
   dimensions: Dimensions,
   settings: { isExpanded?: boolean },
-  axisSettings?: { highlightZero?: boolean },
+  axisSettings?: { highlightedYs?: number[] },
 ) {
   const tickSize = getTickSize(yAxis.range);
 
@@ -351,7 +351,9 @@ export function renderYAxis(
   // FIXME: Also extra highlight for the center line
   const ticks = generateTicks(yAxis.range, tickSize);
 
-  const highlightZero = axisSettings ? axisSettings.highlightZero : false;
+  const highlightedYs = axisSettings?.highlightedYs
+    ? axisSettings.highlightedYs
+    : [];
 
   for (const yTick of ticks) {
     const yPx = yScale(yTick);
@@ -369,8 +371,8 @@ export function renderYAxis(
     });
   }
 
-  if (highlightZero) {
-    const yPx = yScale(0);
+  for (const highlight of highlightedYs) {
+    const yPx = yScale(highlight);
 
     const lineDims = {
       x1: STYLE.yAxis.width,
@@ -392,7 +394,11 @@ export function renderYAxis(
     ? ticks
     : [ticks[0], ticks[ticks.length - 1]];
 
-  console.log("Rendering with ticks", renderTicks);
+  for (const highlightY of highlightedYs) {
+    if (!renderTicks.includes(highlightY)) {
+      renderTicks.push(highlightY);
+    }
+  }
 
-  drawYAxis(ctx, renderTicks, yScale, yAxis.range, label, highlightZero);
+  drawYAxis(ctx, renderTicks, yScale, yAxis.range, label);
 }

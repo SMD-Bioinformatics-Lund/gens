@@ -1,4 +1,7 @@
-import { COMBINED_SAMPLE_ID_DIVIDER, TRACK_HEIGHTS } from "../../../constants";
+import {
+  COMBINED_SAMPLE_ID_DIVIDER,
+  USED_TRACK_HEIGHTS,
+} from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import { removeOne, setDiff } from "../../../util/utils";
 
@@ -77,6 +80,21 @@ export async function syncDataTrackSettings(
   returnTrackSettings.push(...newAnnotationSettings);
   returnTrackSettings.push(...newGeneListSettings);
 
+  if (!returnTrackSettings.find((track) => track.trackId == "genes")) {
+    const geneTrackSettings: DataTrackSettings = {
+      trackId: "genes",
+      trackLabel: "Genes",
+      trackType: "gene",
+      height: {
+        collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand,
+      },
+      showLabelWhenCollapsed: true,
+      isExpanded: true,
+      isHidden: false,
+    };
+    returnTrackSettings.push(geneTrackSettings);
+  }
+
   return { settings: returnTrackSettings, samples: [...samples] };
 }
 
@@ -123,15 +141,15 @@ async function sampleDiff(
       trackType: "dot-cov",
       sample,
       height: {
-        collapsedHeight: TRACK_HEIGHTS.m,
-        expandedHeight: TRACK_HEIGHTS.xl,
+        collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand,
+        expandedHeight: USED_TRACK_HEIGHTS.trackView.expandedDot,
       },
       showLabelWhenCollapsed: true,
       yAxis: {
         range: [-2, 2],
         label: "Log2 Ratio",
         hideLabelOnCollapse: true,
-        highlightZero: true,
+        highlightedYs: [0],
       },
       isExpanded: true,
       isHidden: false,
@@ -143,8 +161,8 @@ async function sampleDiff(
       trackType: "dot-baf",
       sample,
       height: {
-        collapsedHeight: TRACK_HEIGHTS.m,
-        expandedHeight: TRACK_HEIGHTS.xl,
+        collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedDot,
+        expandedHeight: USED_TRACK_HEIGHTS.trackView.expandedDot,
       },
       showLabelWhenCollapsed: true,
       yAxis: {
@@ -162,8 +180,7 @@ async function sampleDiff(
       trackType: "variant",
       sample,
       height: {
-        collapsedHeight: TRACK_HEIGHTS.m,
-        expandedHeight: TRACK_HEIGHTS.xl,
+        collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand,
       },
       showLabelWhenCollapsed: true,
       yAxis: null,
@@ -178,7 +195,7 @@ async function sampleDiff(
         trackLabel: source.name,
         trackType: "sample-annotation",
         sample,
-        height: { collapsedHeight: TRACK_HEIGHTS.m },
+        height: { collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand },
         showLabelWhenCollapsed: true,
         yAxis: null,
         isExpanded: false,
@@ -222,7 +239,7 @@ function annotationDiff(
       trackId: id,
       trackLabel: targetSource.label,
       trackType: "annotation",
-      height: { collapsedHeight: TRACK_HEIGHTS.m },
+      height: { collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand },
       showLabelWhenCollapsed: true,
       yAxis: null,
       isExpanded: true,
@@ -262,7 +279,7 @@ function geneListDiff(
       trackId: id,
       trackLabel: "PLACEHOLDER",
       trackType: "annotation",
-      height: { collapsedHeight: TRACK_HEIGHTS.m },
+      height: { collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand },
       showLabelWhenCollapsed: true,
       yAxis: null,
       isExpanded: true,

@@ -637,7 +637,7 @@ interface Axis {
   range: Rng;
   label: string;
   hideLabelOnCollapse: boolean;
-  highlightZero?: boolean;
+  highlightedYs?: number[];
 }
 
 interface RenderSettings {

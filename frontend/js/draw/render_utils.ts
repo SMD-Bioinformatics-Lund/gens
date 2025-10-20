@@ -8,7 +8,6 @@ export function drawYAxis(
   yScale: Scale,
   yRange: Rng,
   label: string,
-  highlightZero: boolean,
 ) {
   const style = STYLE.yAxis;
   drawLine(
@@ -24,14 +23,6 @@ export function drawYAxis(
 
   for (const y of ys) {
     drawLabel(ctx, y.toString(), style.width - style.textPad, yScale(y), {
-      textBaseline: "middle",
-      textAlign: "right",
-      withFrame: false,
-    });
-  }
-
-  if (highlightZero) {
-    drawLabel(ctx, "0", style.width - style.textPad, yScale(0), {
       textBaseline: "middle",
       textAlign: "right",
       withFrame: false,
