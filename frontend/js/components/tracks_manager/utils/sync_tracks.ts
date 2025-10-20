@@ -143,7 +143,7 @@ async function sampleDiff(
       trackType: "dot-cov",
       sample,
       height: {
-        collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand,
+        collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedDot,
         expandedHeight: USED_TRACK_HEIGHTS.trackView.expandedDot,
       },
       showLabelWhenCollapsed: true,
