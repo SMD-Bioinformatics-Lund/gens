@@ -46,21 +46,21 @@ services:
 
 The `dump` folder should contain:
 
-* Scout db dump
-  * `hg002_variants.json`
-* Gens exports
-  * Sample data
-    * `hg00[234].baf.bed.gz`
-    * `hg00[234].baf.bed.gz.tbi`
-    * `hg00[234].cov.bed.gz`
-    * `hg00[234].cov.bed.gz.tbi`
-    * `hg00[234].overview.json.gz`
-  * HG002 meta data
-      * `hg002.upd-roh.bed.gz`
-      * `hg002.meta.tsv`
-      * `hg002.chr_meta.tsv`
-* Annotation tracks
-  * `annotation_tracks`
+- Scout db dump
+  - `hg002_variants.json`
+- Gens exports
+  - Sample data
+    - `hg00[234].baf.bed.gz`
+    - `hg00[234].baf.bed.gz.tbi`
+    - `hg00[234].cov.bed.gz`
+    - `hg00[234].cov.bed.gz.tbi`
+    - `hg00[234].overview.json.gz`
+  - HG002 meta data
+    - `hg002.upd-roh.bed.gz`
+    - `hg002.meta.tsv`
+    - `hg002.chr_meta.tsv`
+- Annotation tracks
+  - `annotation_tracks`
 
 If running the default configs, you might need to change the port of `gens_api_url` to `5000` in `config.toml`.
 
@@ -186,7 +186,7 @@ gens load sample \
   --sex M
 ```
 
-- [ ] Load the father (hg004)
+- [ ] Load the mother (hg004)
 
 ```
 gens load sample \
@@ -325,16 +325,16 @@ gens load annotations --file /access/annotation_tracks/ --genome-build 38
 On host (check the versions)
 
 ```
-curl --silent --output ./Homo_sapiens.GRCh38.113.gtf.gz https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.113.gtf.gz
+curl --silent --output ./Homo_sapiens.GRCh38.115.gtf.gz https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.115.gtf.gz
 curl --silent --output ./MANE.GRCh38.v1.4.summary.txt.gz https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
-docker cp Homo_sapiens.GRCh38.113.gtf.gz <container ID>:/tmp
+docker cp Homo_sapiens.GRCh38.115.gtf.gz <container ID>:/tmp
 docker cp MANE.GRCh38.v1.4.summary.txt.gz <container ID>:/tmp
 ```
 
-In container
+In container (this can take 5+ minutes)
 
 ```
-gens load transcripts --file /tmp/Homo_sapiens.GRCh38.113.gtf.gz --mane /tmp/MANE.GRCh38.v1.4.summary.txt.gz -b 38
+gens load transcripts --file /tmp/Homo_sapiens.GRCh38.115.gtf.gz --mane /tmp/MANE.GRCh38.v1.4.summary.txt.gz -b 38
 ```
 
 ## UI
@@ -351,5 +351,3 @@ General sanity check and testing things that cannot be tested in a test setup.
   - [ ] Gene track
 - [ ] Variant context menu
   - [ ] Clicking variant links back to Scout
-
-
