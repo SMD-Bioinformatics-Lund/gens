@@ -10,7 +10,7 @@
     "tippy.js": "^6.3.7"
   },
   "name": "gens",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "Interactive tool to visualize genomic copy number profiles from WGS data",
   "main": "gens.ts",
   "scripts": {
