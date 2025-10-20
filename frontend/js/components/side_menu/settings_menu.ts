@@ -207,6 +207,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private onSetVariantThreshold: (threshold: number) => void;
   private onToggleTrackHidden: (trackId: string) => void;
   private onToggleTrackExpanded: (trackId: string) => void;
+  private onApplyMainSample: (sample: Sample) => void;
 
   public isInitialized: boolean = false;
 
@@ -231,6 +232,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onSetVariantThreshold: (threshold: number) => void,
     onToggleTrackHidden: (trackId: string) => void,
     onToggleTrackExpanded: (trackId: string) => void,
+    onApplyMainSample: (sample: Sample) => void,
   ) {
     this.session = session;
     // this.onChange = onChange;
@@ -262,6 +264,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onSetVariantThreshold = onSetVariantThreshold;
     this.onToggleTrackHidden = onToggleTrackHidden;
     this.onToggleTrackExpanded = onToggleTrackExpanded;
+    this.onApplyMainSample = onApplyMainSample;
   }
 
   connectedCallback() {
@@ -324,7 +327,8 @@ export class SettingsMenu extends ShadowBaseElement {
         );
       });
       console.log("Assigning the sample", targetSample);
-      this.session.setMainSample(targetSample);
+      // this.session.setMainSample(targetSample);
+      this.onApplyMainSample(targetSample);
     });
 
     this.addElementListener(this.annotSelect, "change", () => {

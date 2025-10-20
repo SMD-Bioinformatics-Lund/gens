@@ -5,7 +5,6 @@ import {
   setupCanvasClick,
   getCanvasHover,
 } from "../../util/canvas_interaction";
-import { COLORS, STYLE, TRANSPARENCY } from "../../../constants";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
