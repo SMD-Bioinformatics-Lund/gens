@@ -353,7 +353,11 @@ export function renderYAxis(
     ? axisSettings.highlightedYs
     : [];
 
-  for (const yTick of ticks) {
+  const renderTicks = settings.isExpanded
+    ? ticks
+    : [ticks[0], ticks[ticks.length - 1]];
+
+  for (const yTick of renderTicks) {
     const yPx = yScale(yTick);
 
     const lineDims = {
@@ -388,9 +392,6 @@ export function renderYAxis(
   const hideLabel = yAxis.hideLabelOnCollapse && !settings.isExpanded;
 
   const label = hideLabel ? "" : yAxis.label;
-  const renderTicks = settings.isExpanded
-    ? ticks
-    : [ticks[0], ticks[ticks.length - 1]];
 
   for (const highlightY of highlightedYs) {
     if (!renderTicks.includes(highlightY)) {
