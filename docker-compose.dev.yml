@@ -18,10 +18,10 @@ services:
       - FLASK_DEBUG=1
       - AUTHENTICATION=disabled
     ports:
-      - 8080:8000
+      - 8080:5000
     volumes:
       - ./dump:/dump
       - ./gens:/home/worker/gens
       - ./tests:/home/worker/tests
       - ./utils:/home/worker/utils
-    command: uvicorn gens.app:create_app --reload --log-level debug --host 0.0.0.0
+    command: uvicorn gens.app:create_app --reload --log-level debug --host 0.0.0.0 --port 5000
