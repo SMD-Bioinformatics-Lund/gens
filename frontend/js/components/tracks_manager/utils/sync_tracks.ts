@@ -1,9 +1,11 @@
-import {
-  COMBINED_SAMPLE_ID_DIVIDER,
-  USED_TRACK_HEIGHTS,
-} from "../../../constants";
+import { USED_TRACK_HEIGHTS } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
-import { removeOne, setDiff } from "../../../util/utils";
+import {
+  getSampleFromID as getSampleIdsFromID,
+  getSampleID,
+  removeOne,
+  setDiff,
+} from "../../../util/utils";
 
 function getIDDiff(
   previousIds: string[],
@@ -52,14 +54,12 @@ export async function syncDataTrackSettings(
   );
   const removedSampleTrackIds = [];
   for (const combinedSampleId of removedSamples) {
-    const [caseId, sampleId] = combinedSampleId.split(
-      COMBINED_SAMPLE_ID_DIVIDER,
-    );
+    const targetSample = getSampleIdsFromID(combinedSampleId);
     for (const track of origTrackSettings) {
       if (
         track.sample &&
-        track.sample.caseId == caseId &&
-        track.sample.sampleId == sampleId
+        track.sample.caseId == targetSample.caseId &&
+        track.sample.sampleId == targetSample.sampleId
       ) {
         removedSampleTrackIds.push(track.trackId);
       }
@@ -112,13 +112,9 @@ async function sampleDiff(
   removedIds: Set<string>;
   sampleSettings: DataTrackSettings[];
 }> {
-  const currentCombinedIds = samples.map(
-    (sample) =>
-      `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}`,
-  );
-  const lastRenderedCombinedIds = lastRenderedSamples.map(
-    (sample) =>
-      `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}`,
+  const currentCombinedIds = samples.map((sample) => getSampleID(sample));
+  const lastRenderedCombinedIds = lastRenderedSamples.map((sample) =>
+    getSampleID(sample),
   );
 
   const { removedIds: removedCombinedIds, newIds: newCombinedIds } = getIDDiff(
@@ -128,8 +124,8 @@ async function sampleDiff(
 
   const sampleSettings = [];
   for (const combinedId of newCombinedIds) {
-    const [caseId, sampleId] = combinedId.split(COMBINED_SAMPLE_ID_DIVIDER);
-    const sample = getSample(caseId, sampleId);
+    const sampleIds = getSampleIdsFromID(combinedId);
+    const sample = getSample(sampleIds.caseId, sampleIds.sampleId);
     const sampleSources = await getSampleAnnotSources(
       sample.caseId,
       sample.sampleId,

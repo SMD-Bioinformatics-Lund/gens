@@ -1,11 +1,5 @@
-import {
-  COLORS,
-  COMBINED_SAMPLE_ID_DIVIDER,
-  FONT_WEIGHT,
-  ICONS,
-  SIZES,
-} from "../../constants";
-import { removeChildren } from "../../util/utils";
+import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
+import { getSampleFromID, getSampleID, removeChildren } from "../../util/utils";
 import { ChoiceSelect } from "../util/choice_select";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
@@ -310,24 +304,16 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
-      const [caseId, sampleId] = caseId_sampleId.split(
-        COMBINED_SAMPLE_ID_DIVIDER,
-      );
-      this.onAddSample({ caseId, sampleId });
+      const sample = getSampleFromID(caseId_sampleId);
+      this.onAddSample(sample);
     });
 
     this.addElementListener(this.applyMainSample, "click", () => {
-      console.log("Clicked apply main sample");
       const mainSample = this.mainSampleSelect.getValue().value;
       const samples = this.getCurrentSamples();
       const targetSample = samples.find((sample) => {
-        return (
-          `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}` ==
-          mainSample
-        );
+        return getSampleID(sample) == mainSample;
       });
-      console.log("Assigning the sample", targetSample);
-      // this.session.setMainSample(targetSample);
       this.onApplyMainSample(targetSample);
     });
 
@@ -429,7 +415,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const allSamples = rawSamples.map((s) => {
       return {
         label: `${s.sampleId} (case: ${s.caseId})`,
-        value: `${s.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${s.sampleId}`,
+        value: getSampleID(s),
       };
     });
     this.sampleSelect.setValues(allSamples);
@@ -466,10 +452,8 @@ export class SettingsMenu extends ShadowBaseElement {
     );
     this.samplesOverview.appendChild(samplesSection);
 
-    console.log("Rendering with samples", samples);
     const mainSample = this.session.getMainSample();
-    // FIXME: Util
-    const mainSampleId = `${mainSample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${mainSample.sampleId}`;
+    const mainSampleId = getSampleID(mainSample);
     const mainSampleChoices = getMainSampleChoices(samples, mainSampleId);
     this.mainSampleSelect.setValues(mainSampleChoices);
 
@@ -530,7 +514,7 @@ function getMainSampleChoices(
 ): InputChoice[] {
   const choices: InputChoice[] = [];
   for (const sample of samples) {
-    const id = `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}`;
+    const id = getSampleID(sample);
     const choice = {
       value: id,
       label: `${sample.sampleId} (${sample.sampleType}, case: ${sample.caseId})`,
