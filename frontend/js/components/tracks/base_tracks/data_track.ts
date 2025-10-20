@@ -280,6 +280,8 @@ export abstract class DataTrack extends CanvasTrack {
     );
 
     if (this.getSettings().yAxis != null) {
+      console.error("Grabbing the y axis", this.getSettings().yAxis);
+
       renderYAxis(
         this.ctx,
         this.getSettings().yAxis,

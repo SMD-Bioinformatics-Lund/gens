@@ -13,13 +13,15 @@ import { getSimpleButton } from "../../util/menu_utils";
 export function getTrack(
   session: GensSession,
   dataSource: RenderDataSource,
-  setting: DataTrackSettings,
+  getSettings: () => DataTrackSettings,
   showTrackContextMenu: (track: DataTrack) => void,
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   setExpandedHeight: (trackId: string, expandedHeight: number) => void,
 ) {
   const getChromosome = () => session.pos.getChromosome();
   const getXRange = () => session.pos.getXRange();
+
+  const setting = getSettings();
 
   let track;
   if (setting.trackType == "annotation") {
@@ -28,7 +30,7 @@ export function getTrack(
     track = getBandTrack(
       session,
       dataSource,
-      setting,
+      getSettings,
       getAnnotationBands,
       showTrackContextMenu,
       setIsExpanded,
@@ -40,7 +42,7 @@ export function getTrack(
     track = getBandTrack(
       session,
       dataSource,
-      setting,
+      getSettings,
       getGeneListBands,
       showTrackContextMenu,
       setIsExpanded,
@@ -52,7 +54,7 @@ export function getTrack(
     track = getBandTrack(
       session,
       dataSource,
-      setting,
+      getSettings,
       getSampleAnnotBands,
       showTrackContextMenu,
       setIsExpanded,
@@ -68,7 +70,7 @@ export function getTrack(
     track = getBandTrack(
       session,
       dataSource,
-      setting,
+      getSettings,
       getSampleAnnotBands,
       showTrackContextMenu,
       setIsExpanded,
@@ -86,7 +88,7 @@ export function getTrack(
 
     track = getDotTrack(
       session,
-      setting,
+      getSettings,
       getSampleCovDots,
       showTrackContextMenu,
       setIsExpanded,
@@ -96,7 +98,7 @@ export function getTrack(
       dataSource.getBafData(setting.sample, getChromosome(), getXRange());
     track = getDotTrack(
       session,
-      setting,
+      getSettings,
       getSampleBafDots,
       showTrackContextMenu,
       setIsExpanded,
@@ -106,7 +108,7 @@ export function getTrack(
     track = getBandTrack(
       session,
       dataSource,
-      setting,
+      getSettings,
       getGeneBands,
       showTrackContextMenu,
       setIsExpanded,
@@ -120,20 +122,19 @@ export function getTrack(
 
 export function getDotTrack(
   session: GensSession,
-  setting: DataTrackSettings,
+  getSettings: () => DataTrackSettings,
   getDots: () => Promise<RenderDot[]>,
   // FIXME: Would it be enough with the track setting here?
   showTrackContextMenu: (track: DataTrack) => void,
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
 ): DotTrack {
+  const settings = getSettings();
   const dotTrack = new DotTrack(
-    setting.trackId,
-    setting.trackLabel,
-    setting.trackType,
-    () => {
-      return setting;
-    },
-    (isExpanded) => setIsExpanded(setting.trackId, isExpanded),
+    settings.trackId,
+    settings.trackLabel,
+    settings.trackType,
+    getSettings,
+    (isExpanded) => setIsExpanded(settings.trackId, isExpanded),
     () => session.pos.getXRange(),
     () => {
       return getDots().then((dots) => {
@@ -153,19 +154,18 @@ export function getDotTrack(
 export function getBandTrack(
   session: GensSession,
   dataSource: RenderDataSource,
-  setting: DataTrackSettings,
+  getSettings: () => DataTrackSettings,
   getRenderBands: () => Promise<RenderBand[]>,
   showTrackContextMenu: (track: DataTrack) => void,
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   setExpandedHeight: (trackId: string, height: number) => void,
 ): BandTrack {
+  const setting = getSettings();
   const rawTrack = new BandTrack(
     setting.trackId,
     setting.trackLabel,
     setting.trackType,
-    () => {
-      return setting;
-    },
+    getSettings,
     (isExpanded: boolean) => {
       setIsExpanded(setting.trackId, isExpanded);
     },

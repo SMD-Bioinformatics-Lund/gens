@@ -48,6 +48,7 @@ export async function syncDataTrackSettings(
     lastRenderedSamples,
     (caseId: string, sampleId: string) => session.getSample(caseId, sampleId),
     (caseId, sampleId) => dataSources.getSampleAnnotSources(caseId, sampleId),
+    () => session.getCoverageRange(),
   );
   const removedSampleTrackIds = [];
   for (const combinedSampleId of removedSamples) {
@@ -106,6 +107,7 @@ async function sampleDiff(
     caseId: string,
     sampleId: string,
   ) => Promise<{ id: string; name: string }[]>,
+  getCoverageRange: () => Rng,
 ): Promise<{
   removedIds: Set<string>;
   sampleSettings: DataTrackSettings[];
@@ -146,7 +148,7 @@ async function sampleDiff(
       },
       showLabelWhenCollapsed: true,
       yAxis: {
-        range: [-2, 2],
+        range: getCoverageRange(),
         label: "Log2 Ratio",
         hideLabelOnCollapse: true,
         highlightedYs: [0],

@@ -138,7 +138,7 @@ export class ChromosomeView extends ShadowBaseElement {
       if (trackSetting.trackType == "dot-cov") {
         track = getDotTrack(
           session,
-          trackSetting,
+          () => this.session.chromTracks.get(trackSetting.trackId),
           () => getCovData(trackSetting.sample, trackSetting.chromosome),
           (_track: DataTrack) => {
             console.warn("No context menu for chromosome view tracks");
@@ -153,7 +153,7 @@ export class ChromosomeView extends ShadowBaseElement {
         track = getBandTrack(
           session,
           this.dataSource,
-          trackSetting,
+          () => this.session.chromTracks.get(trackSetting.trackId),
           () =>
             this.dataSource.getSampleAnnotationBands(
               trackSetting.sourceId,
@@ -192,6 +192,7 @@ export class ChromosomeView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
+    console.log("Rendering chromosome tracks with settings", settings);
     for (const track of this.tracks) {
       track.track.render(settings);
     }

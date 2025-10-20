@@ -377,6 +377,9 @@ export class TrackView extends ShadowBaseElement {
   }
 
   renderTracks(settings: RenderSettings) {
+
+    console.log("Rendering track view with settings", settings);
+
     // Single track render, skip the full diff
     if (settings.targetTrackId != null) {
       const track = this.dataTracks.find(
@@ -410,7 +413,7 @@ export class TrackView extends ShadowBaseElement {
       const track = getTrack(
         this.session,
         this.dataSource,
-        this.session.tracks.get(settingId),
+        () => this.session.tracks.get(settingId),
         showTrackContextMenu,
         setIsExpanded,
         setExpandedHeight,
