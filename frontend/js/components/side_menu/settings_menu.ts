@@ -58,7 +58,7 @@ template.innerHTML = String.raw`
     .height-input {
       max-width: 100px;
     }
-    .height-row {
+    .spread-row {
       justify-content: space-between;
       padding-bottom: ${SIZES.xs}px;
     }
@@ -74,6 +74,9 @@ template.innerHTML = String.raw`
     #sample-select {
       min-width: 150px;
       padding-right: ${SIZES.l}px;
+    }
+    #main-sample-select {
+      min-width: 300px;
     }
     #advanced-settings {
       padding-top: ${SIZES.l}px;
@@ -107,6 +110,15 @@ template.innerHTML = String.raw`
     </flex-row>
   </flex-row>
   <div id="samples-overview"></div>
+
+  <flex-row class="header-row">
+    <div class="header">Main sample</div>
+  </flex-row>
+  <flex-row class="spread-row">
+    <choice-select id="main-sample-select"></choice-select>
+    <icon-button id="apply-main-sample" icon="${ICONS.refresh}" title="Apply main sample selection"></icon-button>
+  </flex-row>
+
   <div class="header-row">
     <div class="header">Highlights</div>
   </div>
@@ -117,20 +129,20 @@ template.innerHTML = String.raw`
     <div class="header-row">
       <div class="header">Configure tracks</div>
     </div>
-    <flex-row class="height-row">
+    <flex-row class="spread-row">
       <div>Band track height</div>
       <flex-row class="height-inputs">
         <input title="Collapsed height" id="band-collapsed-height" class="height-input" type="number" step="5">
       </flex-row>
     </flex-row>
-    <flex-row class="height-row">
+    <flex-row class="spread-row">
       <div>Dot track heights</div>
       <flex-row class="height-inputs">
         <input title="Collapsed height" id="dot-collapsed-height" class="height-input" type="number" step="5">
         <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
       </flex-row>
     </flex-row>
-    <flex-row class="height-row">
+    <flex-row class="spread-row">
       <div>Default cov y-range</div>
       <flex-row class="height-inputs">
         <input id="coverage-y-start" class="height-input" type="number" step="0.1">
@@ -138,7 +150,7 @@ template.innerHTML = String.raw`
         <icon-button id="apply-default-cov-y-range" icon="${ICONS.refresh}" title="Apply coverage Y-range"></icon-button>
       </flex-row>
     </flex-row>
-    <flex-row class="height-row">
+    <flex-row class="spread-row">
       <div>Variant filter threshold</div>
       <flex-row>
         <input id="variant-filter" type="number" step="1" class="height-input">
@@ -160,6 +172,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private geneListSelect: ChoiceSelect;
   private colorBySelect: ChoiceSelect;
   private sampleSelect: ChoiceSelect;
+  private mainSampleSelect: ChoiceSelect;
   private addSampleButton: IconButton;
   private bandTrackCollapsedHeightElem: HTMLInputElement;
   private dotTrackCollapsedHeightElem: HTMLInputElement;
@@ -170,6 +183,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private applyDefaultCovYRange: HTMLButtonElement;
   private variantThreshold: HTMLInputElement;
   private applyVariantFilter: HTMLButtonElement;
+  private applyMainSample: HTMLButtonElement;
 
   private session: GensSession;
 
@@ -256,6 +270,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.geneListSelect = this.root.querySelector("#gene-lists-select");
     this.colorBySelect = this.root.querySelector("#color-by-select");
     this.sampleSelect = this.root.querySelector("#sample-select");
+    this.mainSampleSelect = this.root.querySelector("#main-sample-select");
     this.tracksOverview = this.root.querySelector("#tracks-overview");
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
@@ -265,6 +280,7 @@ export class SettingsMenu extends ShadowBaseElement {
     );
     this.applyVariantFilter = this.root.querySelector("#apply-variant-filter");
     this.variantThreshold = this.root.querySelector("#variant-filter");
+    this.applyMainSample = this.root.querySelector("#apply-main-sample");
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
       "#band-collapsed-height",
@@ -295,6 +311,10 @@ export class SettingsMenu extends ShadowBaseElement {
         COMBINED_SAMPLE_ID_DIVIDER,
       );
       this.onAddSample({ caseId, sampleId });
+    });
+
+    this.addElementListener(this.applyMainSample, "click", () => {
+      console.log("Clicked apply main sample");
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
@@ -432,6 +452,10 @@ export class SettingsMenu extends ShadowBaseElement {
     );
     this.samplesOverview.appendChild(samplesSection);
 
+    console.log("Rendering with samples", samples);
+    const mainSampleChoices = getMainSampleChoices(samples, null);
+    this.mainSampleSelect.setValues(mainSampleChoices);
+
     removeChildren(this.highlightsOverview);
     const highlightsSection = getHighlightsSection(
       this.getHighlights(),
@@ -549,6 +573,23 @@ export class SettingsMenu extends ShadowBaseElement {
 //   });
 //   return returnVals;
 // }
+
+function getMainSampleChoices(
+  samples: Sample[],
+  prevSelected: string | null,
+): InputChoice[] {
+  const choices: InputChoice[] = [];
+  for (const sample of samples) {
+    const id = `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}`;
+    const choice = {
+      value: id,
+      label: `${sample.sampleId} (${sample.sampleType}, case: ${sample.caseId})`,
+      selected: prevSelected == id,
+    };
+    choices.push(choice);
+  }
+  return choices;
+}
 
 function getAnnotationChoices(
   annotationSources: ApiAnnotationTrack[],
