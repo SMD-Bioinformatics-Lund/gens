@@ -166,7 +166,7 @@ export class TrackView extends ShadowBaseElement {
 
     const yAxisCov = {
       range: session.getCoverageRange(),
-      label: "Log2 Ratio",
+      label: `Log2 Ratio (${session.getMainSample().sampleId})`,
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
     };
@@ -183,7 +183,7 @@ export class TrackView extends ShadowBaseElement {
 
     const yAxisBaf = {
       range: BAF_Y_RANGE,
-      label: "B Allele Freq",
+      label: `B Allele Freq (${session.getMainSample().sampleId})`,
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
     };

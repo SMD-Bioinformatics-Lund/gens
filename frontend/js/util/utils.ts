@@ -1,3 +1,5 @@
+import { COMBINED_SAMPLE_ID_DIVIDER } from "../constants";
+
 export function getVisibleYCoordinates(
   element: { y1: number; y2: number },
   minHeight: number = 4,
@@ -369,4 +371,17 @@ export function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
     }
   }
   return diff;
+}
+
+export function getSampleID(sample: Sample): string {
+  return `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}`;
+}
+
+export function getSampleFromID(id: string): Sample {
+  const fields = id.split(COMBINED_SAMPLE_ID_DIVIDER);
+  const sample = {
+    caseId: fields[0],
+    sampleId: fields[1],
+  };
+  return sample;
 }

@@ -1,11 +1,5 @@
-import {
-  COLORS,
-  COMBINED_SAMPLE_ID_DIVIDER,
-  FONT_WEIGHT,
-  ICONS,
-  SIZES,
-} from "../../constants";
-import { removeChildren } from "../../util/utils";
+import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
+import { getSampleFromID, getSampleID, removeChildren } from "../../util/utils";
 import { ChoiceSelect } from "../util/choice_select";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
@@ -58,7 +52,7 @@ template.innerHTML = String.raw`
     .height-input {
       max-width: 100px;
     }
-    .height-row {
+    .spread-row {
       justify-content: space-between;
       padding-bottom: ${SIZES.xs}px;
     }
@@ -74,6 +68,9 @@ template.innerHTML = String.raw`
     #sample-select {
       min-width: 150px;
       padding-right: ${SIZES.l}px;
+    }
+    #main-sample-select {
+      min-width: 300px;
     }
     #advanced-settings {
       padding-top: ${SIZES.l}px;
@@ -107,6 +104,15 @@ template.innerHTML = String.raw`
     </flex-row>
   </flex-row>
   <div id="samples-overview"></div>
+
+  <flex-row class="header-row">
+    <div class="header">Main sample</div>
+  </flex-row>
+  <flex-row class="spread-row">
+    <choice-select id="main-sample-select"></choice-select>
+    <icon-button id="apply-main-sample" icon="${ICONS.refresh}" title="Apply main sample selection"></icon-button>
+  </flex-row>
+
   <div class="header-row">
     <div class="header">Highlights</div>
   </div>
@@ -117,20 +123,20 @@ template.innerHTML = String.raw`
     <div class="header-row">
       <div class="header">Configure tracks</div>
     </div>
-    <flex-row class="height-row">
+    <flex-row class="spread-row">
       <div>Band track height</div>
       <flex-row class="height-inputs">
         <input title="Collapsed height" id="band-collapsed-height" class="height-input" type="number" step="5">
       </flex-row>
     </flex-row>
-    <flex-row class="height-row">
+    <flex-row class="spread-row">
       <div>Dot track heights</div>
       <flex-row class="height-inputs">
         <input title="Collapsed height" id="dot-collapsed-height" class="height-input" type="number" step="5">
         <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
       </flex-row>
     </flex-row>
-    <flex-row class="height-row">
+    <flex-row class="spread-row">
       <div>Default cov y-range</div>
       <flex-row class="height-inputs">
         <input id="coverage-y-start" class="height-input" type="number" step="0.1">
@@ -138,7 +144,7 @@ template.innerHTML = String.raw`
         <icon-button id="apply-default-cov-y-range" icon="${ICONS.refresh}" title="Apply coverage Y-range"></icon-button>
       </flex-row>
     </flex-row>
-    <flex-row class="height-row">
+    <flex-row class="spread-row">
       <div>Variant filter threshold</div>
       <flex-row>
         <input id="variant-filter" type="number" step="1" class="height-input">
@@ -160,6 +166,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private geneListSelect: ChoiceSelect;
   private colorBySelect: ChoiceSelect;
   private sampleSelect: ChoiceSelect;
+  private mainSampleSelect: ChoiceSelect;
   private addSampleButton: IconButton;
   private bandTrackCollapsedHeightElem: HTMLInputElement;
   private dotTrackCollapsedHeightElem: HTMLInputElement;
@@ -170,6 +177,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private applyDefaultCovYRange: HTMLButtonElement;
   private variantThreshold: HTMLInputElement;
   private applyVariantFilter: HTMLButtonElement;
+  private applyMainSample: HTMLButtonElement;
 
   private session: GensSession;
 
@@ -193,6 +201,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private onSetVariantThreshold: (threshold: number) => void;
   private onToggleTrackHidden: (trackId: string) => void;
   private onToggleTrackExpanded: (trackId: string) => void;
+  private onApplyMainSample: (sample: Sample) => void;
 
   public isInitialized: boolean = false;
 
@@ -217,6 +226,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onSetVariantThreshold: (threshold: number) => void,
     onToggleTrackHidden: (trackId: string) => void,
     onToggleTrackExpanded: (trackId: string) => void,
+    onApplyMainSample: (sample: Sample) => void,
   ) {
     this.session = session;
     // this.onChange = onChange;
@@ -248,6 +258,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onSetVariantThreshold = onSetVariantThreshold;
     this.onToggleTrackHidden = onToggleTrackHidden;
     this.onToggleTrackExpanded = onToggleTrackExpanded;
+    this.onApplyMainSample = onApplyMainSample;
   }
 
   connectedCallback() {
@@ -256,6 +267,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.geneListSelect = this.root.querySelector("#gene-lists-select");
     this.colorBySelect = this.root.querySelector("#color-by-select");
     this.sampleSelect = this.root.querySelector("#sample-select");
+    this.mainSampleSelect = this.root.querySelector("#main-sample-select");
     this.tracksOverview = this.root.querySelector("#tracks-overview");
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
@@ -265,6 +277,7 @@ export class SettingsMenu extends ShadowBaseElement {
     );
     this.applyVariantFilter = this.root.querySelector("#apply-variant-filter");
     this.variantThreshold = this.root.querySelector("#variant-filter");
+    this.applyMainSample = this.root.querySelector("#apply-main-sample");
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
       "#band-collapsed-height",
@@ -291,10 +304,17 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
-      const [caseId, sampleId] = caseId_sampleId.split(
-        COMBINED_SAMPLE_ID_DIVIDER,
-      );
-      this.onAddSample({ caseId, sampleId });
+      const sample = getSampleFromID(caseId_sampleId);
+      this.onAddSample(sample);
+    });
+
+    this.addElementListener(this.applyMainSample, "click", () => {
+      const mainSample = this.mainSampleSelect.getValue().value;
+      const samples = this.getCurrentSamples();
+      const targetSample = samples.find((sample) => {
+        return getSampleID(sample) == mainSample;
+      });
+      this.onApplyMainSample(targetSample);
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
@@ -395,7 +415,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const allSamples = rawSamples.map((s) => {
       return {
         label: `${s.sampleId} (case: ${s.caseId})`,
-        value: `${s.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${s.sampleId}`,
+        value: getSampleID(s),
       };
     });
     this.sampleSelect.setValues(allSamples);
@@ -431,6 +451,11 @@ export class SettingsMenu extends ShadowBaseElement {
       this.onRemoveSample(sample),
     );
     this.samplesOverview.appendChild(samplesSection);
+
+    const mainSample = this.session.getMainSample();
+    const mainSampleId = getSampleID(mainSample);
+    const mainSampleChoices = getMainSampleChoices(samples, mainSampleId);
+    this.mainSampleSelect.setValues(mainSampleChoices);
 
     removeChildren(this.highlightsOverview);
     const highlightsSection = getHighlightsSection(
@@ -483,72 +508,22 @@ export class SettingsMenu extends ShadowBaseElement {
 //     return sources;
 //   }
 
-//   // This state should not live here, but in session right
-//   getAnnotSources(settings: {
-//     selectedOnly: boolean;
-//   }): { id: string; label: string }[] {
-
-//     console.log("Getting annotation sources with the select", this.annotSelect);
-
-//     const sources = parseSources<ApiAnnotationTrack>(
-//       this.allAnnotationSources,
-//       this.annotSelect,
-//       settings.selectedOnly,
-//       this.session.getAnnotationSelections(),
-//       (source) => source.track_id,
-//       (source) => source.name,
-//     );
-
-//     return sources;
-//   }
-// }
-
-// /**
-//  * FIXME: What is the actual intent of this one?
-//  * Messy to have the choice select being passed all the way in here
-//  */
-// function parseSources<T>(
-//   allSources: T[],
-//   targetSelect: ChoiceSelect | null,
-//   selectedOnly: boolean,
-//   storedIds: string[],
-//   getId: (source: T) => string,
-//   getLabel: (source: T) => string,
-// ): { id: string; label: string }[] {
-
-//   console.log("Parsing sources")
-//   console.log("All sources", allSources);
-//   console.log("Selected only active?", selectedOnly);
-
-//   if (!selectedOnly) {
-//     return allSources.map((source) => {
-//       return {
-//         id: getId(source),
-//         label: getLabel(source),
-//       };
-//     });
-//   }
-
-//   if (targetSelect == null) {
-//     return allSources
-//       .filter((source) => storedIds.includes(getId(source)))
-//       .map((source) => {
-//         return {
-//           id: getId(source),
-//           label: getLabel(source),
-//         };
-//       });
-//   }
-
-//   const choices = targetSelect.getValues();
-//   const returnVals = choices.map((obj) => {
-//     return {
-//       id: obj.value,
-//       label: obj.label.toString(),
-//     };
-//   });
-//   return returnVals;
-// }
+function getMainSampleChoices(
+  samples: Sample[],
+  prevSelected: string | null,
+): InputChoice[] {
+  const choices: InputChoice[] = [];
+  for (const sample of samples) {
+    const id = getSampleID(sample);
+    const choice = {
+      value: id,
+      label: `${sample.sampleId} (${sample.sampleType}, case: ${sample.caseId})`,
+      selected: prevSelected == id,
+    };
+    choices.push(choice);
+  }
+  return choices;
+}
 
 function getAnnotationChoices(
   annotationSources: ApiAnnotationTrack[],

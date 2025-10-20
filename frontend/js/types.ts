@@ -305,6 +305,7 @@ interface OverviewTrackData {
   dotsPerChrom: Record<string, RenderDot[]>;
   chromosome: string;
   xRange: Rng;
+  sampleLabel: string;
 }
 
 interface Box {
@@ -648,6 +649,7 @@ interface RenderSettings {
   saveLayoutChange?: boolean;
   tracksReordered?: boolean;
   targetTrackId?: string;
+  mainSampleChanged?: boolean;
 }
 
 interface RangeHighlight {

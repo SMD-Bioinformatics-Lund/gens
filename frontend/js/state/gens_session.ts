@@ -126,6 +126,10 @@ export class GensSession {
     return this.mainSample;
   }
 
+  public setMainSample(sample: Sample) {
+    this.mainSample = sample;
+  }
+
   public getGenomeBuild(): number {
     return this.genomeBuild;
   }

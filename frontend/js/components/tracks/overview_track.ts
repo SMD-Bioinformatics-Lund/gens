@@ -1,6 +1,6 @@
 import { drawBox, drawLabel, drawLine } from "../../draw/shapes";
 import { transformMap, padRange, generateID } from "../../util/utils";
-import { COLORS, SIZES, STYLE } from "../../constants";
+import { COLORS, SIZES, STYLE, TRANSPARENCY } from "../../constants";
 import { CanvasTrack, CanvasTrackSettings } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,
@@ -117,7 +117,7 @@ export class OverviewTrack extends CanvasTrack {
 
     this.pxRanges = metrics.pxRanges;
 
-    if (sizeChanged) {
+    if (sizeChanged || settings.mainSampleChanged) {
       this.staticBuffer.width = this.dimensions.width * PIXEL_RATIO;
       this.staticBuffer.height = this.dimensions.height * PIXEL_RATIO;
       this.staticCtx.resetTransform();
@@ -150,6 +150,19 @@ export class OverviewTrack extends CanvasTrack {
     );
 
     this.marker.render(metrics.viewPxRange);
+
+    const shiftRight = STYLE.yAxis.width + SIZES.xxs;
+    const shiftDown = STYLE.overviewTrack.titleSpace + SIZES.xxs;
+    drawLabel(
+      this.ctx,
+      this.renderData.sampleLabel,
+      STYLE.tracks.textPadding + shiftRight,
+      STYLE.tracks.textPadding + shiftDown,
+      {
+        textBaseline: "top",
+        boxStyle: { fillColor: `${COLORS.white}${TRANSPARENCY.s}` },
+      },
+    );
   }
 }
 

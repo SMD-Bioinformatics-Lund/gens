@@ -318,6 +318,10 @@ function addSettingsPageSources(
     session.tracks.toggleTrackExpanded(trackId);
     render({ saveLayoutChange: true, targetTrackId: trackId });
   };
+  const onAssignMainSample = (sample: Sample) => {
+    session.setMainSample(sample);
+    render({ mainSampleChanged: true, reloadData: true });
+  };
 
   settingsPage.setSources(
     session,
@@ -336,5 +340,6 @@ function addSettingsPageSources(
     onSetVariantThreshold,
     onToggleTrackHidden,
     onToggleTrackExpanded,
+    onAssignMainSample,
   );
 }
