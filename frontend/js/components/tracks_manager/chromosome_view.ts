@@ -153,7 +153,7 @@ export class ChromosomeView extends ShadowBaseElement {
         track = getBandTrack(
           session,
           this.dataSource,
-          () => this.session.chromTracks.get(trackSetting.trackId),
+          this.session.chromTracks.get(trackSetting.trackId),
           () =>
             this.dataSource.getSampleAnnotationBands(
               trackSetting.sourceId,
@@ -192,7 +192,6 @@ export class ChromosomeView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
-    console.log("Rendering chromosome tracks with settings", settings);
     for (const track of this.tracks) {
       track.track.render(settings);
     }

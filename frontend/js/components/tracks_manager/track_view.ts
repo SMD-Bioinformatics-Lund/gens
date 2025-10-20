@@ -1,11 +1,4 @@
-import {
-  ANIM_TIME,
-  COLORS,
-  SIZES,
-  STYLE,
-  TRACK_HEIGHTS,
-  USED_TRACK_HEIGHTS,
-} from "../../constants";
+import { ANIM_TIME, COLORS, SIZES, STYLE } from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import Sortable, { SortableEvent } from "sortablejs";
 import {
@@ -387,8 +380,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   renderTracks(settings: RenderSettings) {
-    console.log("Rendering track view with settings", settings);
-
     // Single track render, skip the full diff
     if (settings.targetTrackId != null) {
       const track = this.dataTracks.find(
@@ -422,7 +413,7 @@ export class TrackView extends ShadowBaseElement {
       const track = getTrack(
         this.session,
         this.dataSource,
-        () => this.session.tracks.get(settingId),
+        this.session.tracks.get(settingId),
         showTrackContextMenu,
         setIsExpanded,
         setExpandedHeight,

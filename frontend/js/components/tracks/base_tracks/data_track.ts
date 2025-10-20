@@ -280,8 +280,6 @@ export abstract class DataTrack extends CanvasTrack {
     );
 
     if (this.getSettings().yAxis != null) {
-      console.error("Grabbing the y axis", this.getSettings().yAxis);
-
       renderYAxis(
         this.ctx,
         this.getSettings().yAxis,
@@ -349,8 +347,6 @@ export function renderYAxis(
 ) {
   const tickSize = getTickSize(yAxis.range);
 
-  // FIXME: Zero line tick here for cov
-  // FIXME: Also extra highlight for the center line
   const ticks = generateTicks(yAxis.range, tickSize);
 
   const highlightedYs = axisSettings?.highlightedYs
