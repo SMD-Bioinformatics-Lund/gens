@@ -25,6 +25,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Removed default annotation track setting (https://github.com/SMD-Bioinformatics-Lund/gens/pull/526)
 - Generalize connection with Scout using an abstract class as interface, opening for interfacing with other alternative variant software (https://github.com/SMD-Bioinformatics-Lund/gens/pull/526)
 - Refactored track classes to work from track settings arrays living in the session class, rather than having state inside the track classes themselves (https://github.com/SMD-Bioinformatics-Lund/gens/pull/529)
+- Show max and min y values for collapsed dot tracks (https://github.com/SMD-Bioinformatics-Lund/gens/pull/541)
+- Show a thicker center line for cov tracks (https://github.com/SMD-Bioinformatics-Lund/gens/pull/541)
 
 ### Fixed
 
