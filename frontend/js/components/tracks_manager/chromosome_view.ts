@@ -17,7 +17,13 @@ template.innerHTML = String.raw`
       box-sizing: border-box;
       border-right: ${SIZES.one}px solid ${COLORS.lightGray};
     }
+    #sample-label {
+      margin-top: ${SIZES.m}px;
+      margin-bottom: ${SIZES.m}px;
+      margin-left: ${SIZES.m}px;
+    }
   </style>
+  <div id="sample-label"></div>
   <div id="chromosome-tracks-container"></div>
 `;
 
@@ -37,6 +43,7 @@ interface ChromViewTrackInfo {
 
 export class ChromosomeView extends ShadowBaseElement {
   private chromosomeTracksContainer: HTMLDivElement;
+  private sampleLabel: HTMLDivElement;
   private session: GensSession;
   private dataSource: RenderDataSource;
   private tracks: ChromViewTrackInfo[] = [];
@@ -52,6 +59,7 @@ export class ChromosomeView extends ShadowBaseElement {
     this.chromosomeTracksContainer = this.root.querySelector(
       "#chromosome-tracks-container",
     );
+    this.sampleLabel = this.root.querySelector("#sample-label");
   }
 
   async initialize(session: GensSession, dataSource: RenderDataSource) {
@@ -192,6 +200,9 @@ export class ChromosomeView extends ShadowBaseElement {
   }
 
   public render(settings: RenderSettings) {
+    const mainSample = this.session.getMainSample();
+    this.sampleLabel.innerHTML = `${mainSample.sampleId} (${mainSample.sampleType}, case: ${mainSample.caseId})`;
+
     for (const track of this.tracks) {
       track.track.render(settings);
     }
