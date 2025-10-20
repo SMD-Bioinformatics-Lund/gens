@@ -12,7 +12,7 @@ import {
   makeTrackContainer,
   TRACK_HANDLE_CLASS,
 } from "./utils";
-import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
+import { DataTrack } from "../tracks/base_tracks/data_track";
 import { setupDrag, setupDragging } from "../../movements/dragging";
 import { GensSession } from "../../state/gens_session";
 import { getLinearScale } from "../../draw/render_utils";

@@ -1,6 +1,12 @@
 import { STYLE } from "../../constants";
-import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
-import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
+import {
+  drawDotsScaled,
+  drawYAxis,
+  getLinearScale,
+} from "../../draw/render_utils";
+import { drawLine } from "../../draw/shapes";
+import { generateTicks, getTickSize } from "../../util/utils";
+import { DataTrack } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {
   startExpanded: boolean;
@@ -51,7 +57,17 @@ export class DotTrack extends DataTrack {
 
   override draw(renderData: DotTrackData) {
     super.syncDimensions();
-    super.drawStart();
+    // super.drawStart();
+
+    if (this.getSettings().yAxis != null) {
+      renderYAxis(
+        this.ctx,
+        this.getSettings().yAxis,
+        this.getYScale(),
+        this.dimensions,
+        this.getSettings(),
+      );
+    }
 
     const { dots } = renderData;
 
@@ -86,6 +102,44 @@ export class DotTrack extends DataTrack {
   disconnectedCallback(): void {
     super.disconnectedCallback();
   }
+}
+
+export function renderYAxis(
+  ctx: CanvasRenderingContext2D,
+  yAxis: Axis,
+  yScale: Scale,
+  dimensions: Dimensions,
+  settings: { isExpanded?: boolean },
+) {
+  const tickSize = getTickSize(yAxis.range);
+  const ticks = generateTicks(yAxis.range, tickSize);
+
+  for (const yTick of ticks) {
+    const yPx = yScale(yTick);
+
+    const lineDims = {
+      x1: STYLE.yAxis.width,
+      x2: dimensions.width,
+      y1: yPx,
+      y2: yPx,
+    };
+
+    drawLine(ctx, lineDims, {
+      color: STYLE.colors.lighterGray,
+      dashed: false,
+    });
+  }
+
+  const hideLabel = yAxis.hideLabelOnCollapse && !settings.isExpanded;
+
+  const label = hideLabel ? "" : yAxis.label;
+  const renderTicks = settings.isExpanded
+    ? ticks
+    : [ticks[0], ticks[ticks.length - 1]];
+
+  console.log("Rendering with ticks", renderTicks);
+
+  drawYAxis(ctx, renderTicks, yScale, yAxis.range, label);
 }
 
 customElements.define("dot-track", DotTrack);

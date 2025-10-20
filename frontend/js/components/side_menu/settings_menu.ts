@@ -6,7 +6,6 @@ import {
   SIZES,
 } from "../../constants";
 import { removeChildren } from "../../util/utils";
-import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
 import { ChoiceSelect } from "../util/choice_select";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";

@@ -9,7 +9,7 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { GensMarker } from "../../movements/marker";
-import { renderYAxis } from "./base_tracks/data_track";
+import { renderYAxis } from "./dot_track";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;

@@ -1,7 +1,7 @@
 import { CHROMOSOMES, COLORS, SIZES, TRACK_HEIGHTS } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { div } from "../../util/utils";
-import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
+import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { createDataTrackWrapper } from "./utils";
 import { getBandTrack, getDotTrack } from "./utils/create_tracks";
@@ -90,11 +90,13 @@ export class ChromosomeView extends ShadowBaseElement {
         showLabelWhenCollapsed: false,
         isExpanded: false,
         isHidden: false,
+        // FIXME: Here seems to be the place to configure the changes?
+        // Show only the center line in collapsed mode
+        // Show the max min values also in collapsed mode
         yAxis: {
           range: session.getCoverageRange(),
           label: "Log2 ratio",
           hideLabelOnCollapse: true,
-          hideTicksOnCollapse: true,
         },
         chromosome: chrom,
         sample: settingSample,

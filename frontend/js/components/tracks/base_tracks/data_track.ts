@@ -5,13 +5,8 @@ import {
   TRACK_HEIGHTS,
   TRANSPARENCY,
 } from "../../../constants";
-import {
-  drawYAxis,
-  getLinearScale,
-  renderBackground,
-} from "../../../draw/render_utils";
-import { drawBox, drawLabel, drawLine } from "../../../draw/shapes";
-import { generateTicks, getTickSize } from "../../../util/utils";
+import { getLinearScale, renderBackground } from "../../../draw/render_utils";
+import { drawBox, drawLabel } from "../../../draw/shapes";
 import {
   setupCanvasClick,
   setCanvasPointerCursor,
@@ -19,26 +14,6 @@ import {
 import { CanvasTrack } from "./canvas_track";
 
 import debounce from "lodash.debounce";
-
-export interface ExpandedTrackHeight {
-  collapsedHeight: number;
-  expandedHeight?: number;
-}
-
-export interface DataTrackSettings {
-  trackId: string;
-  trackLabel: string;
-  sample?: Sample;
-  trackType: TrackType;
-  height: ExpandedTrackHeight;
-  showLabelWhenCollapsed: boolean;
-  yAxis?: Axis;
-  yPadBands?: boolean;
-  isExpanded: boolean;
-  isHidden: boolean;
-  chromosome?: string;
-  sourceId?: string;
-}
 
 const DEBOUNCE_DELAY = 50;
 
@@ -98,7 +73,6 @@ export abstract class DataTrack extends CanvasTrack {
     }
     this.syncHeight();
   }
-
 
   public getIsHidden() {
     return this.getSettings().isHidden;
@@ -300,16 +274,6 @@ export abstract class DataTrack extends CanvasTrack {
       { fillColor: COLORS.extraLightGray },
     );
 
-    if (this.getSettings().yAxis != null) {
-      renderYAxis(
-        this.ctx,
-        this.getSettings().yAxis,
-        this.getYScale(),
-        this.dimensions,
-        this.getSettings(),
-      );
-    }
-
     this.startClip();
   }
 
@@ -355,40 +319,4 @@ export abstract class DataTrack extends CanvasTrack {
       },
     );
   }
-}
-
-export function renderYAxis(
-  ctx: CanvasRenderingContext2D,
-  yAxis: Axis,
-  yScale: Scale,
-  dimensions: Dimensions,
-  settings: { isExpanded?: boolean },
-) {
-  // const yScale = this.getYScale();
-  const tickSize = getTickSize(yAxis.range);
-  const ticks = generateTicks(yAxis.range, tickSize);
-
-  for (const yTick of ticks) {
-    const yPx = yScale(yTick);
-
-    const lineDims = {
-      x1: STYLE.yAxis.width,
-      x2: dimensions.width,
-      y1: yPx,
-      y2: yPx,
-    };
-
-    drawLine(ctx, lineDims, {
-      color: STYLE.colors.lighterGray,
-      dashed: false,
-    });
-  }
-
-  const hideLabel = yAxis.hideLabelOnCollapse && !settings.isExpanded;
-  const hideTicks = yAxis.hideTicksOnCollapse && !settings.isExpanded;
-
-  const label = hideLabel ? "" : yAxis.label;
-  const renderTicks = hideTicks ? [] : ticks;
-
-  drawYAxis(ctx, renderTicks, yScale, yAxis.range, label);
 }

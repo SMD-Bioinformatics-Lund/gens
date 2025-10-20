@@ -1,5 +1,3 @@
-import { DataTrackSettings } from "../../tracks/base_tracks/data_track";
-
 export function getPortableId(settings: DataTrackSettings): string {
   const trackId = settings.trackId;
   if (settings.sample != null) {

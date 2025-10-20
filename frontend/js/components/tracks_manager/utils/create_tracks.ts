@@ -1,10 +1,7 @@
 import { STYLE } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import { BandTrack } from "../../tracks/band_track";
-import {
-  DataTrack,
-  DataTrackSettings,
-} from "../../tracks/base_tracks/data_track";
+import { DataTrack } from "../../tracks/base_tracks/data_track";
 import { DotTrack } from "../../tracks/dot_track";
 import {
   getAnnotationContextMenuContent,
@@ -21,7 +18,6 @@ export function getTrack(
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   setExpandedHeight: (trackId: string, expandedHeight: number) => void,
 ) {
-
   const getChromosome = () => session.pos.getChromosome();
   const getXRange = () => session.pos.getXRange();
 
@@ -52,10 +48,7 @@ export function getTrack(
     );
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
-      dataSource.getSampleAnnotationBands(
-        setting.trackId,
-        getChromosome(),
-      );
+      dataSource.getSampleAnnotationBands(setting.trackId, getChromosome());
     rawTrack = getBandTrack(
       session,
       dataSource,
@@ -100,11 +93,7 @@ export function getTrack(
     );
   } else if (setting.trackType == "dot-baf") {
     const getSampleBafDots = () =>
-      dataSource.getBafData(
-        setting.sample,
-        getChromosome(),
-        getXRange(),
-      );
+      dataSource.getBafData(setting.sample, getChromosome(), getXRange());
     rawTrack = getDotTrack(
       session,
       setting,
@@ -113,8 +102,7 @@ export function getTrack(
       setIsExpanded,
     );
   } else if (setting.trackType == "gene") {
-    const getGeneBands = () =>
-      dataSource.getTranscriptBands(getChromosome());
+    const getGeneBands = () => dataSource.getTranscriptBands(getChromosome());
     rawTrack = getBandTrack(
       session,
       dataSource,

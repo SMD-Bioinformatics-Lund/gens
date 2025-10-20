@@ -1,7 +1,6 @@
 import { COMBINED_SAMPLE_ID_DIVIDER, TRACK_HEIGHTS } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import { removeOne, setDiff } from "../../../util/utils";
-import { DataTrackSettings } from "../../tracks/base_tracks/data_track";
 
 function getIDDiff(
   previousIds: string[],
@@ -21,7 +20,6 @@ export async function syncDataTrackSettings(
   dataSources: RenderDataSource,
   lastRenderedSamples: Sample[],
 ): Promise<{ settings: DataTrackSettings[]; samples: Sample[] }> {
-
   const annotSources = session.getAnnotationSources({
     selectedOnly: true,
   });
@@ -133,7 +131,6 @@ async function sampleDiff(
         range: [-2, 2],
         label: "Log2 Ratio",
         hideLabelOnCollapse: false,
-        hideTicksOnCollapse: false,
       },
       isExpanded: true,
       isHidden: false,
@@ -153,7 +150,6 @@ async function sampleDiff(
         range: [0, 1],
         label: "B Allele Freq",
         hideLabelOnCollapse: false,
-        hideTicksOnCollapse: false,
       },
       isExpanded: true,
       isHidden: false,

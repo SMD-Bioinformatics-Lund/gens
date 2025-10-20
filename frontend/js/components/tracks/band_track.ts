@@ -7,7 +7,7 @@ import {
 import { COLORS, STYLE } from "../../constants";
 import { getLinearScale } from "../../draw/render_utils";
 import { drawLabel, drawLine, drawArrow } from "../../draw/shapes";
-import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
+import { DataTrack } from "./base_tracks/data_track";
 
 const LEFT_PX_EDGE = STYLE.yAxis.width;
 
