@@ -1,10 +1,7 @@
 import { STYLE } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import { BandTrack } from "../../tracks/band_track";
-import {
-  DataTrack,
-  DataTrackSettings,
-} from "../../tracks/base_tracks/data_track";
+import { DataTrack } from "../../tracks/base_tracks/data_track";
 import { DotTrack } from "../../tracks/dot_track";
 import {
   getAnnotationContextMenuContent,
@@ -21,15 +18,14 @@ export function getTrack(
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   setExpandedHeight: (trackId: string, expandedHeight: number) => void,
 ) {
-
   const getChromosome = () => session.pos.getChromosome();
   const getXRange = () => session.pos.getXRange();
 
-  let rawTrack;
+  let track;
   if (setting.trackType == "annotation") {
     const getAnnotationBands = () =>
       dataSource.getAnnotationBands(setting.trackId, getChromosome());
-    rawTrack = getBandTrack(
+    track = getBandTrack(
       session,
       dataSource,
       setting,
@@ -41,7 +37,7 @@ export function getTrack(
   } else if (setting.trackType == "gene-list") {
     const getGeneListBands = () =>
       dataSource.getGeneListBands(setting.trackId, getChromosome());
-    rawTrack = getBandTrack(
+    track = getBandTrack(
       session,
       dataSource,
       setting,
@@ -52,11 +48,8 @@ export function getTrack(
     );
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
-      dataSource.getSampleAnnotationBands(
-        setting.trackId,
-        getChromosome(),
-      );
-    rawTrack = getBandTrack(
+      dataSource.getSampleAnnotationBands(setting.trackId, getChromosome());
+    track = getBandTrack(
       session,
       dataSource,
       setting,
@@ -72,7 +65,7 @@ export function getTrack(
         getChromosome(),
         session.getVariantThreshold(),
       );
-    rawTrack = getBandTrack(
+    track = getBandTrack(
       session,
       dataSource,
       setting,
@@ -91,31 +84,26 @@ export function getTrack(
       return data;
     };
 
-    rawTrack = getDotTrack(
+    track = getDotTrack(
       session,
-      setting,
+      () => setting,
       getSampleCovDots,
       showTrackContextMenu,
       setIsExpanded,
     );
   } else if (setting.trackType == "dot-baf") {
     const getSampleBafDots = () =>
-      dataSource.getBafData(
-        setting.sample,
-        getChromosome(),
-        getXRange(),
-      );
-    rawTrack = getDotTrack(
+      dataSource.getBafData(setting.sample, getChromosome(), getXRange());
+    track = getDotTrack(
       session,
-      setting,
+      () => setting,
       getSampleBafDots,
       showTrackContextMenu,
       setIsExpanded,
     );
   } else if (setting.trackType == "gene") {
-    const getGeneBands = () =>
-      dataSource.getTranscriptBands(getChromosome());
-    rawTrack = getBandTrack(
+    const getGeneBands = () => dataSource.getTranscriptBands(getChromosome());
+    track = getBandTrack(
       session,
       dataSource,
       setting,
@@ -127,25 +115,24 @@ export function getTrack(
   } else {
     throw Error(`Not yet supported track type ${setting.trackType}`);
   }
-  return rawTrack;
+  return track;
 }
 
 export function getDotTrack(
   session: GensSession,
-  setting: DataTrackSettings,
+  getSettings: () => DataTrackSettings,
   getDots: () => Promise<RenderDot[]>,
   // FIXME: Would it be enough with the track setting here?
   showTrackContextMenu: (track: DataTrack) => void,
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
 ): DotTrack {
+  const settings = getSettings();
   const dotTrack = new DotTrack(
-    setting.trackId,
-    setting.trackLabel,
-    setting.trackType,
-    () => {
-      return setting;
-    },
-    (isExpanded) => setIsExpanded(setting.trackId, isExpanded),
+    settings.trackId,
+    settings.trackLabel,
+    settings.trackType,
+    getSettings,
+    (isExpanded) => setIsExpanded(settings.trackId, isExpanded),
     () => session.pos.getXRange(),
     () => {
       return getDots().then((dots) => {
@@ -175,9 +162,7 @@ export function getBandTrack(
     setting.trackId,
     setting.trackLabel,
     setting.trackType,
-    () => {
-      return setting;
-    },
+    () => setting,
     (isExpanded: boolean) => {
       setIsExpanded(setting.trackId, isExpanded);
     },

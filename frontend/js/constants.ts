@@ -107,6 +107,14 @@ export const TRACK_HEIGHTS = {
   xxs: 10,
 };
 
+export const USED_TRACK_HEIGHTS = {
+  trackView: {
+    collapsedBand: TRACK_HEIGHTS.xs,
+    collapsedDot: TRACK_HEIGHTS.m,
+    expandedDot: TRACK_HEIGHTS.xl,
+  }
+}
+
 // FIXME: Consider. Can we separate hom / het variants and their colors here?
 const delColors = { hom: "rgb(102,0,0)", het: "rgb(204,0,0)" };
 const dupColors = { hom: "rgb(0,0,102)", het: "rgb(0,0,153)" };

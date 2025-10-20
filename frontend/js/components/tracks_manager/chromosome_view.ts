@@ -1,7 +1,7 @@
 import { CHROMOSOMES, COLORS, SIZES, TRACK_HEIGHTS } from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { div } from "../../util/utils";
-import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
+import { DataTrack } from "../tracks/base_tracks/data_track";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { createDataTrackWrapper } from "./utils";
 import { getBandTrack, getDotTrack } from "./utils/create_tracks";
@@ -94,7 +94,7 @@ export class ChromosomeView extends ShadowBaseElement {
           range: session.getCoverageRange(),
           label: "Log2 ratio",
           hideLabelOnCollapse: true,
-          hideTicksOnCollapse: true,
+          highlightedYs: [0],
         },
         chromosome: chrom,
         sample: settingSample,
@@ -138,7 +138,7 @@ export class ChromosomeView extends ShadowBaseElement {
       if (trackSetting.trackType == "dot-cov") {
         track = getDotTrack(
           session,
-          trackSetting,
+          () => this.session.chromTracks.get(trackSetting.trackId),
           () => getCovData(trackSetting.sample, trackSetting.chromosome),
           (_track: DataTrack) => {
             console.warn("No context menu for chromosome view tracks");
@@ -153,7 +153,7 @@ export class ChromosomeView extends ShadowBaseElement {
         track = getBandTrack(
           session,
           this.dataSource,
-          trackSetting,
+          this.session.chromTracks.get(trackSetting.trackId),
           () =>
             this.dataSource.getSampleAnnotationBands(
               trackSetting.sourceId,
@@ -197,6 +197,8 @@ export class ChromosomeView extends ShadowBaseElement {
     }
   }
 
+  // FIXME: This goes counter to having data track settings drive the visualization
+  // It would be better for the y axis to come through the data source
   public setCovYRange(covRange: Rng) {
     for (const track of this.tracks) {
       if (track.type == "dot-cov") {

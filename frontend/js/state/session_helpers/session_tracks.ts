@@ -1,5 +1,3 @@
-import { DataTrackSettings } from "../../components/tracks/base_tracks/data_track";
-
 export class Tracks {
   private tracks: DataTrackSettings[];
   constructor(tracks: DataTrackSettings[]) {

@@ -613,11 +613,31 @@ interface DragCallbacks {
   removeHighlight: (id: string) => void;
 }
 
+interface ExpandedTrackHeight {
+  collapsedHeight: number;
+  expandedHeight?: number;
+}
+
+interface DataTrackSettings {
+  trackId: string;
+  trackLabel: string;
+  sample?: Sample;
+  trackType: TrackType;
+  height: ExpandedTrackHeight;
+  showLabelWhenCollapsed: boolean;
+  yAxis?: Axis;
+  yPadBands?: boolean;
+  isExpanded: boolean;
+  isHidden: boolean;
+  chromosome?: string;
+  sourceId?: string;
+}
+
 interface Axis {
   range: Rng;
   label: string;
   hideLabelOnCollapse: boolean;
-  hideTicksOnCollapse: boolean;
+  highlightedYs?: number[];
 }
 
 interface RenderSettings {

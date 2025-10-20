@@ -225,7 +225,9 @@ function renderOverviewPlot(
     { x1: 0, x2: STYLE.yAxis.width, y1: 0, y2: dimensions.height },
     { fillColor: COLORS.extraLightGray },
   );
-  renderYAxis(ctx, yAxis, yScale, dimensions, { isExpanded: true });
+  renderYAxis(ctx, yAxis, yScale, dimensions, {
+    isExpanded: true,
+  });
 
   // Draw the initial lines
   Object.values(pxRanges).forEach(([_chromPxStart, chromPxEnd]) => {

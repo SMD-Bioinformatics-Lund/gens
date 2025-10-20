@@ -1,10 +1,4 @@
-import {
-  ANIM_TIME,
-  COLORS,
-  SIZES,
-  STYLE,
-  TRACK_HEIGHTS,
-} from "../../constants";
+import { ANIM_TIME, COLORS, SIZES, STYLE } from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import Sortable, { SortableEvent } from "sortablejs";
 import {
@@ -12,7 +6,7 @@ import {
   makeTrackContainer,
   TRACK_HANDLE_CLASS,
 } from "./utils";
-import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
+import { DataTrack } from "../tracks/base_tracks/data_track";
 import { setupDrag, setupDragging } from "../../movements/dragging";
 import { GensSession } from "../../state/gens_session";
 import { getLinearScale } from "../../draw/render_utils";
@@ -275,19 +269,6 @@ export class TrackView extends ShadowBaseElement {
 
     this.lastRenderedSamples = samples;
 
-    const geneTrackSettings: DataTrackSettings = {
-      trackId: "genes",
-      trackLabel: "Genes",
-      trackType: "gene",
-      height: {
-        collapsedHeight: TRACK_HEIGHTS.m,
-      },
-      showLabelWhenCollapsed: true,
-      isExpanded: true,
-      isHidden: false,
-    };
-    dataTrackSettings.push(geneTrackSettings);
-
     this.session.tracks.setTracks(dataTrackSettings);
     this.session.loadTrackLayout();
 
@@ -386,6 +367,16 @@ export class TrackView extends ShadowBaseElement {
 
     this.dataTracks = orderedDataTracks;
     this.tracksContainer.appendChild(fragment);
+  }
+
+  // FIXME: This goes counter to having data track settings drive the visualization
+  // It would be better for the y axis to come through the data source
+  public setCovYRange(covRange: Rng) {
+    for (const track of this.dataTracks) {
+      if (track.track.trackType == "dot-cov") {
+        track.track.setYAxis(covRange);
+      }
+    }
   }
 
   renderTracks(settings: RenderSettings) {

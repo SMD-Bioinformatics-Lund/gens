@@ -20,26 +20,6 @@ import { CanvasTrack } from "./canvas_track";
 
 import debounce from "lodash.debounce";
 
-export interface ExpandedTrackHeight {
-  collapsedHeight: number;
-  expandedHeight?: number;
-}
-
-export interface DataTrackSettings {
-  trackId: string;
-  trackLabel: string;
-  sample?: Sample;
-  trackType: TrackType;
-  height: ExpandedTrackHeight;
-  showLabelWhenCollapsed: boolean;
-  yAxis?: Axis;
-  yPadBands?: boolean;
-  isExpanded: boolean;
-  isHidden: boolean;
-  chromosome?: string;
-  sourceId?: string;
-}
-
 const DEBOUNCE_DELAY = 50;
 
 const Y_PAD = SIZES.s;
@@ -98,7 +78,6 @@ export abstract class DataTrack extends CanvasTrack {
     }
     this.syncHeight();
   }
-
 
   public getIsHidden() {
     return this.getSettings().isHidden;
@@ -306,7 +285,8 @@ export abstract class DataTrack extends CanvasTrack {
         this.getSettings().yAxis,
         this.getYScale(),
         this.dimensions,
-        this.getSettings(),
+        settings,
+        settings.yAxis,
       );
     }
 
@@ -363,10 +343,15 @@ export function renderYAxis(
   yScale: Scale,
   dimensions: Dimensions,
   settings: { isExpanded?: boolean },
+  axisSettings?: { highlightedYs?: number[] },
 ) {
-  // const yScale = this.getYScale();
   const tickSize = getTickSize(yAxis.range);
+
   const ticks = generateTicks(yAxis.range, tickSize);
+
+  const highlightedYs = axisSettings?.highlightedYs
+    ? axisSettings.highlightedYs
+    : [];
 
   for (const yTick of ticks) {
     const yPx = yScale(yTick);
@@ -384,11 +369,34 @@ export function renderYAxis(
     });
   }
 
+  for (const highlight of highlightedYs) {
+    const yPx = yScale(highlight);
+
+    const lineDims = {
+      x1: STYLE.yAxis.width,
+      x2: dimensions.width,
+      y1: yPx,
+      y2: yPx,
+    };
+
+    drawLine(ctx, lineDims, {
+      color: STYLE.colors.darkGray,
+      dashed: false,
+    });
+  }
+
   const hideLabel = yAxis.hideLabelOnCollapse && !settings.isExpanded;
-  const hideTicks = yAxis.hideTicksOnCollapse && !settings.isExpanded;
 
   const label = hideLabel ? "" : yAxis.label;
-  const renderTicks = hideTicks ? [] : ticks;
+  const renderTicks = settings.isExpanded
+    ? ticks
+    : [ticks[0], ticks[ticks.length - 1]];
+
+  for (const highlightY of highlightedYs) {
+    if (!renderTicks.includes(highlightY)) {
+      renderTicks.push(highlightY);
+    }
+  }
 
   drawYAxis(ctx, renderTicks, yScale, yAxis.range, label);
 }
