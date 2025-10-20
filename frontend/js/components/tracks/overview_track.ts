@@ -1,6 +1,6 @@
 import { drawBox, drawLabel, drawLine } from "../../draw/shapes";
 import { transformMap, padRange, generateID } from "../../util/utils";
-import { COLORS, SIZES, STYLE } from "../../constants";
+import { COLORS, SIZES, STYLE, TRANSPARENCY } from "../../constants";
 import { CanvasTrack, CanvasTrackSettings } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,

@@ -315,6 +315,16 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.applyMainSample, "click", () => {
       console.log("Clicked apply main sample");
+      const mainSample = this.mainSampleSelect.getValue().value;
+      const samples = this.getCurrentSamples();
+      const targetSample = samples.find((sample) => {
+        return (
+          `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}` ==
+          mainSample
+        );
+      });
+      console.log("Assigning the sample", targetSample);
+      this.session.setMainSample(targetSample);
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
@@ -453,7 +463,10 @@ export class SettingsMenu extends ShadowBaseElement {
     this.samplesOverview.appendChild(samplesSection);
 
     console.log("Rendering with samples", samples);
-    const mainSampleChoices = getMainSampleChoices(samples, null);
+    const mainSample = this.session.getMainSample();
+    // FIXME: Util
+    const mainSampleId = `${mainSample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${mainSample.sampleId}`;
+    const mainSampleChoices = getMainSampleChoices(samples, mainSampleId);
     this.mainSampleSelect.setValues(mainSampleChoices);
 
     removeChildren(this.highlightsOverview);
@@ -506,73 +519,6 @@ export class SettingsMenu extends ShadowBaseElement {
 //     );
 //     return sources;
 //   }
-
-//   // This state should not live here, but in session right
-//   getAnnotSources(settings: {
-//     selectedOnly: boolean;
-//   }): { id: string; label: string }[] {
-
-//     console.log("Getting annotation sources with the select", this.annotSelect);
-
-//     const sources = parseSources<ApiAnnotationTrack>(
-//       this.allAnnotationSources,
-//       this.annotSelect,
-//       settings.selectedOnly,
-//       this.session.getAnnotationSelections(),
-//       (source) => source.track_id,
-//       (source) => source.name,
-//     );
-
-//     return sources;
-//   }
-// }
-
-// /**
-//  * FIXME: What is the actual intent of this one?
-//  * Messy to have the choice select being passed all the way in here
-//  */
-// function parseSources<T>(
-//   allSources: T[],
-//   targetSelect: ChoiceSelect | null,
-//   selectedOnly: boolean,
-//   storedIds: string[],
-//   getId: (source: T) => string,
-//   getLabel: (source: T) => string,
-// ): { id: string; label: string }[] {
-
-//   console.log("Parsing sources")
-//   console.log("All sources", allSources);
-//   console.log("Selected only active?", selectedOnly);
-
-//   if (!selectedOnly) {
-//     return allSources.map((source) => {
-//       return {
-//         id: getId(source),
-//         label: getLabel(source),
-//       };
-//     });
-//   }
-
-//   if (targetSelect == null) {
-//     return allSources
-//       .filter((source) => storedIds.includes(getId(source)))
-//       .map((source) => {
-//         return {
-//           id: getId(source),
-//           label: getLabel(source),
-//         };
-//       });
-//   }
-
-//   const choices = targetSelect.getValues();
-//   const returnVals = choices.map((obj) => {
-//     return {
-//       id: obj.value,
-//       label: obj.label.toString(),
-//     };
-//   });
-//   return returnVals;
-// }
 
 function getMainSampleChoices(
   samples: Sample[],
