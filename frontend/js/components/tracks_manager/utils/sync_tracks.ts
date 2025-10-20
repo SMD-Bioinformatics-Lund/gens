@@ -130,7 +130,8 @@ async function sampleDiff(
       yAxis: {
         range: [-2, 2],
         label: "Log2 Ratio",
-        hideLabelOnCollapse: false,
+        hideLabelOnCollapse: true,
+        highlightZero: true,
       },
       isExpanded: true,
       isHidden: false,
@@ -149,7 +150,7 @@ async function sampleDiff(
       yAxis: {
         range: [0, 1],
         label: "B Allele Freq",
-        hideLabelOnCollapse: false,
+        hideLabelOnCollapse: true,
       },
       isExpanded: true,
       isHidden: false,

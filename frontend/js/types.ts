@@ -637,6 +637,7 @@ interface Axis {
   range: Rng;
   label: string;
   hideLabelOnCollapse: boolean;
+  highlightZero?: boolean;
 }
 
 interface RenderSettings {

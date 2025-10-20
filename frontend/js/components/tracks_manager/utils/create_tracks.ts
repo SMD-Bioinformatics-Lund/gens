@@ -21,11 +21,11 @@ export function getTrack(
   const getChromosome = () => session.pos.getChromosome();
   const getXRange = () => session.pos.getXRange();
 
-  let rawTrack;
+  let track;
   if (setting.trackType == "annotation") {
     const getAnnotationBands = () =>
       dataSource.getAnnotationBands(setting.trackId, getChromosome());
-    rawTrack = getBandTrack(
+    track = getBandTrack(
       session,
       dataSource,
       setting,
@@ -37,7 +37,7 @@ export function getTrack(
   } else if (setting.trackType == "gene-list") {
     const getGeneListBands = () =>
       dataSource.getGeneListBands(setting.trackId, getChromosome());
-    rawTrack = getBandTrack(
+    track = getBandTrack(
       session,
       dataSource,
       setting,
@@ -49,7 +49,7 @@ export function getTrack(
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
       dataSource.getSampleAnnotationBands(setting.trackId, getChromosome());
-    rawTrack = getBandTrack(
+    track = getBandTrack(
       session,
       dataSource,
       setting,
@@ -65,7 +65,7 @@ export function getTrack(
         getChromosome(),
         session.getVariantThreshold(),
       );
-    rawTrack = getBandTrack(
+    track = getBandTrack(
       session,
       dataSource,
       setting,
@@ -84,7 +84,7 @@ export function getTrack(
       return data;
     };
 
-    rawTrack = getDotTrack(
+    track = getDotTrack(
       session,
       setting,
       getSampleCovDots,
@@ -94,7 +94,7 @@ export function getTrack(
   } else if (setting.trackType == "dot-baf") {
     const getSampleBafDots = () =>
       dataSource.getBafData(setting.sample, getChromosome(), getXRange());
-    rawTrack = getDotTrack(
+    track = getDotTrack(
       session,
       setting,
       getSampleBafDots,
@@ -103,7 +103,7 @@ export function getTrack(
     );
   } else if (setting.trackType == "gene") {
     const getGeneBands = () => dataSource.getTranscriptBands(getChromosome());
-    rawTrack = getBandTrack(
+    track = getBandTrack(
       session,
       dataSource,
       setting,
@@ -115,7 +115,7 @@ export function getTrack(
   } else {
     throw Error(`Not yet supported track type ${setting.trackType}`);
   }
-  return rawTrack;
+  return track;
 }
 
 export function getDotTrack(

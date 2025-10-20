@@ -9,7 +9,7 @@ import {
   renderBackground,
 } from "../../draw/render_utils";
 import { GensMarker } from "../../movements/marker";
-import { renderYAxis } from "./dot_track";
+import { renderYAxis } from "./base_tracks/data_track";
 
 const X_PAD = 5;
 const DOT_SIZE = 2;
@@ -225,7 +225,9 @@ function renderOverviewPlot(
     { x1: 0, x2: STYLE.yAxis.width, y1: 0, y2: dimensions.height },
     { fillColor: COLORS.extraLightGray },
   );
-  renderYAxis(ctx, yAxis, yScale, dimensions, { isExpanded: true });
+  renderYAxis(ctx, yAxis, yScale, dimensions, {
+    isExpanded: true,
+  });
 
   // Draw the initial lines
   Object.values(pxRanges).forEach(([_chromPxStart, chromPxEnd]) => {

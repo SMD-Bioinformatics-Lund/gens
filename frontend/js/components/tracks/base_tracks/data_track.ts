@@ -5,8 +5,13 @@ import {
   TRACK_HEIGHTS,
   TRANSPARENCY,
 } from "../../../constants";
-import { getLinearScale, renderBackground } from "../../../draw/render_utils";
-import { drawBox, drawLabel } from "../../../draw/shapes";
+import {
+  drawYAxis,
+  getLinearScale,
+  renderBackground,
+} from "../../../draw/render_utils";
+import { drawBox, drawLabel, drawLine } from "../../../draw/shapes";
+import { generateTicks, getTickSize } from "../../../util/utils";
 import {
   setupCanvasClick,
   setCanvasPointerCursor,
@@ -274,6 +279,17 @@ export abstract class DataTrack extends CanvasTrack {
       { fillColor: COLORS.extraLightGray },
     );
 
+    if (this.getSettings().yAxis != null) {
+      renderYAxis(
+        this.ctx,
+        this.getSettings().yAxis,
+        this.getYScale(),
+        this.dimensions,
+        settings,
+        settings.yAxis,
+      );
+    }
+
     this.startClip();
   }
 
@@ -319,4 +335,64 @@ export abstract class DataTrack extends CanvasTrack {
       },
     );
   }
+}
+
+export function renderYAxis(
+  ctx: CanvasRenderingContext2D,
+  yAxis: Axis,
+  yScale: Scale,
+  dimensions: Dimensions,
+  settings: { isExpanded?: boolean },
+  axisSettings?: { highlightZero?: boolean },
+) {
+  const tickSize = getTickSize(yAxis.range);
+
+  // FIXME: Zero line tick here for cov
+  // FIXME: Also extra highlight for the center line
+  const ticks = generateTicks(yAxis.range, tickSize);
+
+  const highlightZero = axisSettings ? axisSettings.highlightZero : false;
+
+  for (const yTick of ticks) {
+    const yPx = yScale(yTick);
+
+    const lineDims = {
+      x1: STYLE.yAxis.width,
+      x2: dimensions.width,
+      y1: yPx,
+      y2: yPx,
+    };
+
+    drawLine(ctx, lineDims, {
+      color: STYLE.colors.lighterGray,
+      dashed: false,
+    });
+  }
+
+  if (highlightZero) {
+    const yPx = yScale(0);
+
+    const lineDims = {
+      x1: STYLE.yAxis.width,
+      x2: dimensions.width,
+      y1: yPx,
+      y2: yPx,
+    };
+
+    drawLine(ctx, lineDims, {
+      color: STYLE.colors.darkGray,
+      dashed: false,
+    });
+  }
+
+  const hideLabel = yAxis.hideLabelOnCollapse && !settings.isExpanded;
+
+  const label = hideLabel ? "" : yAxis.label;
+  const renderTicks = settings.isExpanded
+    ? ticks
+    : [ticks[0], ticks[ticks.length - 1]];
+
+  console.log("Rendering with ticks", renderTicks);
+
+  drawYAxis(ctx, renderTicks, yScale, yAxis.range, label, highlightZero);
 }
