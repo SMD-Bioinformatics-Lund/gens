@@ -151,8 +151,8 @@ export class OverviewTrack extends CanvasTrack {
 
     this.marker.render(metrics.viewPxRange);
 
-    const shiftRight = 40;
-    const shiftDown = 20;
+    const shiftRight = STYLE.yAxis.width + SIZES.xxs;
+    const shiftDown = STYLE.overviewTrack.titleSpace + SIZES.xxs;
     drawLabel(
       this.ctx,
       this.renderData.sampleLabel,
