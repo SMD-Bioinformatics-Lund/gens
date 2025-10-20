@@ -198,6 +198,8 @@ export class ChromosomeView extends ShadowBaseElement {
     }
   }
 
+  // FIXME: This goes counter to having data track settings drive the visualization
+  // It would be better for the y axis to come through the data source
   public setCovYRange(covRange: Rng) {
     for (const track of this.tracks) {
       if (track.type == "dot-cov") {

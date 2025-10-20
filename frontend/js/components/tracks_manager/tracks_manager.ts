@@ -74,10 +74,10 @@ export class TracksManager extends ShadowBaseElement {
     await this.chromosomeView.initialize(session, dataSource);
   }
 
-
   setCovYRange(covHeights: Rng) {
     this.session.setCoverageRange(covHeights);
     this.chromosomeView.setCovYRange(covHeights);
+    this.trackView.setCovYRange(covHeights);
   }
 
   render(settings: RenderSettings) {

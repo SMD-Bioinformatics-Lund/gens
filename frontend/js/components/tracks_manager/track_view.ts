@@ -376,8 +376,17 @@ export class TrackView extends ShadowBaseElement {
     this.tracksContainer.appendChild(fragment);
   }
 
-  renderTracks(settings: RenderSettings) {
+  // FIXME: This goes counter to having data track settings drive the visualization
+  // It would be better for the y axis to come through the data source
+  public setCovYRange(covRange: Rng) {
+    for (const track of this.dataTracks) {
+      if (track.track.trackType == "dot-cov") {
+        track.track.setYAxis(covRange);
+      }
+    }
+  }
 
+  renderTracks(settings: RenderSettings) {
     console.log("Rendering track view with settings", settings);
 
     // Single track render, skip the full diff
