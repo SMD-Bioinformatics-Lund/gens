@@ -384,6 +384,9 @@ export class TrackView extends ShadowBaseElement {
   }
 
   renderTracks(settings: RenderSettings) {
+
+    console.log("Starting track view rendering");
+
     // Single track render, skip the full diff
     if (settings.targetTrackId != null) {
       const track = this.dataTracks.find(
@@ -396,9 +399,16 @@ export class TrackView extends ShadowBaseElement {
     const currIds = new Set(
       this.session.tracks.getTracks().map((setting) => setting.trackId),
     );
+
+    console.log("currIds", currIds);
+
     const trackIds = new Set(this.dataTracks.map((track) => track.track.id));
     const addedIds = setDiff(currIds, trackIds);
     const removedIds = setDiff(trackIds, currIds);
+
+    console.log("trackIds", trackIds);
+    console.log("addedIds", addedIds);
+    console.log("removedIds", removedIds);
 
     const showTrackContextMenu = getOpenTrackContextMenu(
       this.session,

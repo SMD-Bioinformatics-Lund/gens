@@ -1,3 +1,5 @@
+// FIXME: How to deal with multiple "relative" samples?
+// OK, if multiple relatives, then they will have to randomly be slotted in
 export function getPortableId(settings: DataTrackSettings): string {
   const trackId = settings.trackId;
   if (settings.sample != null) {
@@ -11,6 +13,9 @@ export function getPortableId(settings: DataTrackSettings): string {
     if (trackId.endsWith("_variants")) {
       return `${sampleType}|variants`;
     }
+    // FIXME: Currently label contains the name. This does not work.
+    // Can a single sample annot slot be used and then multiple tracks added together there?
+
     // Sample-annotation tracks (per-sample band tracks)
     // Use label to get a portable identity across cases
     return `sample-annot|${sampleType}|${settings.trackLabel}`;
@@ -23,4 +28,3 @@ export function getPortableId(settings: DataTrackSettings): string {
   }
   return `annot|${trackId}`;
 }
-
