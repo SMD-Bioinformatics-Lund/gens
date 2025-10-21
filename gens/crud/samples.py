@@ -116,8 +116,8 @@ def get_samples_per_case(
         if not case_to_samples.get(case_id):
             case_to_samples[case_id] = []
 
-        baf_file_exists = Path(sample.get("baf_file", "")).is_file()
-        cov_file_exists = Path(sample.get("coverage_file", "")).is_file()
+        # baf_file_exists = Path(sample.get("baf_file", "")).is_file()
+        # cov_file_exists = Path(sample.get("coverage_file", "")).is_file()
 
         sample_obj = {
             "case_id": sample["case_id"],
@@ -126,7 +126,7 @@ def get_samples_per_case(
             "sex": sample.get("sex"),
             "genome_build": sample["genome_build"],
             "has_overview_file": sample["overview_file"] is not None,
-            "files_present": baf_file_exists and cov_file_exists,
+            "files_present": bool(sample["baf_file"] and sample["coverage_file"]),
             "created_at": sample["created_at"].astimezone(timezone.utc).isoformat(),
         }
 

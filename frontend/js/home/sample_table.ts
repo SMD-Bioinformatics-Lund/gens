@@ -4,8 +4,6 @@ export interface SampleInfo {
   case_id: string;
   sample_ids: string[];
   genome_build: number;
-  has_overview_file: boolean;
-  files_present: boolean;
   created_at: string;
 }
 
@@ -25,8 +23,6 @@ tableTemplate.innerHTML = String.raw`
         <th>Case id</th>
         <th>Sample id(s)</th>
         <th>Genome build</th>
-        <th>Overview file(s)</th>
-        <th>BAM/BAF(s) found</th>
         <th class="wide-cell">Import date</th>
       </tr>
     </thead>
@@ -87,8 +83,6 @@ export class SamplesTable extends HTMLElement {
         .map((id) => `<a href="${getGensURL(s.case_id, [id])}">${id}</a>`)
         .join(", "),
       s.genome_build.toString(),
-      s.has_overview_file ? "✓" : "✗",
-      s.files_present ? "✓" : "✗",
       prettyDate(s.created_at),
     ]);
 
