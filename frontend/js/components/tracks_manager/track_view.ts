@@ -272,8 +272,6 @@ export class TrackView extends ShadowBaseElement {
     this.session.tracks.setTracks(dataTrackSettings);
     this.session.loadTrackLayout();
 
-    console.log("In initialize");
-
     this.updateColorBands();
   }
 
@@ -291,8 +289,6 @@ export class TrackView extends ShadowBaseElement {
 
     
     const colorAnnot = this.session.getColorAnnotation();
-
-    console.log("Updating color bands with colorAnnot", colorAnnot);
 
     let colorBands: RenderBand[] = [];
     if (colorAnnot != null) {

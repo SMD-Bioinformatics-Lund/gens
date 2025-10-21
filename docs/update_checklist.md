@@ -313,9 +313,10 @@ Is content correctly displayed in the context menus for the different band track
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/chromosome_view.PNG" width=400 alt="Multiple chromosomes view">
 
-## Performance
+## Cleanup
 
 - [ ] Looking at performant actions (i.e. loading, jumping chromosome, zooming at different levels). Run a profiler for operations that feel slow. Resolve if needed.
+- [ ] Check the web console. Any lingering console logs to remove?
 
 # Test on Gens dev
 

@@ -157,8 +157,6 @@ export async function initCanvases({
   const allAnnotSources = await api.getAnnotationSources();
   const geneLists = await api.getGeneLists();
 
-  console.log("All annot sources", allAnnotSources);
-
   const session = new GensSession(
     render,
     sideMenu,
