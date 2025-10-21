@@ -50,6 +50,14 @@ export function setCanvasPointerCursor(
     { signal: abortSignal },
   );
 
+  document.addEventListener(
+    "keydown",
+    (_event) => {
+      updateCursor(lastOffset);
+    },
+    { signal: abortSignal },
+  );
+
   canvas.addEventListener(
     "mousemove",
     (event) => {
