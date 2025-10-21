@@ -73,7 +73,7 @@ export class BandTrack extends DataTrack {
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
-    this.syncDimensions();
+    // this.syncDimensions();
 
     const xScale = getLinearScale(xRange, [
       LEFT_PX_EDGE,
@@ -96,8 +96,9 @@ export class BandTrack extends DataTrack {
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
 
-    // FIXME: Investigate why background coloring disappears if doing this further up in function
-    // settings expanded track height
+    this.syncDimensions();
+
+    // Needs to be done after setting the height / syncing dimensions
     super.drawStart();
 
     const bandTopBottomPad =
@@ -148,6 +149,9 @@ export class BandTrack extends DataTrack {
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
+
+    console.log(this.label, "Number of lanes", numberLanes);
+
     const style = STYLE.bandTrack;
     const height = STYLE.tracks.trackHeight.m;
     const expandedHeight = getTrackHeight(
@@ -157,6 +161,7 @@ export class BandTrack extends DataTrack {
       style.bandPadding,
       showDetails,
     );
+    console.log(this.label, "Expanded height", expandedHeight);
     this.setExpandedHeight(expandedHeight);
   }
 }
