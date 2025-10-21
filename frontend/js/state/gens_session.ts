@@ -89,7 +89,6 @@ export class GensSession {
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
-    this.annotationSelections = loadAnnotationSelections() || [];
     this.geneListSelections = loadGeneListSelections() || [];
     this.colorAnnotationId = loadColorAnnotation();
     this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
@@ -100,6 +99,16 @@ export class GensSession {
     this.idToAnnotSource = {};
     for (const annotSource of allAnnotationSources) {
       this.idToAnnotSource[annotSource.track_id] = annotSource;
+    }
+
+    // A pre-selected track might disappear if the db is updated
+    this.annotationSelections = [];
+    for (const loadedSelectionId of loadAnnotationSelections()) {
+      if (!this.idToAnnotSource[loadedSelectionId]) {
+        console.warn(`Selection ID ${loadedSelectionId} not found, skipping`);
+        continue;
+      }
+      this.annotationSelections.push(loadedSelectionId);
     }
 
     this.idToGeneList = {};

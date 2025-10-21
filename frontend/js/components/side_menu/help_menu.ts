@@ -30,6 +30,7 @@ template.innerHTML = String.raw`
         <li>Zoom in on a region by <b>Shift</b> and <b>dragging</b> with the mouse</li>
         <li><b>Click</b> chromosome bands in the ideogram chart to jump to that region</li>
         <li>Right click tracks to toggle tracks expanded / collapsed</li>
+        <li>When in marker mode (toggle using the pen icon in the top bar), drag to place highlights. You can navigate directly to these later from the settings menu.</li>
     </ul>
     <h3>Keyboard shortcuts</h3>
     <ul>
@@ -38,6 +39,7 @@ template.innerHTML = String.raw`
         <li>Use <b>Ctrl + left</b> and <b>right</b> arrow keys to change chromosome</li>
         <li>Press <b>Escape</b> to close the context menu</li>
         <li>Press <b>R</b> to reset the zoom</li>
+        <li>Press <b>M</b> to toggle marker mode</li>
     </ul>
     <h3>Search</h3>
     <p>To search, type your query into the search box. If multiple entries matches, Gens will navigate to the first. Available queries are:</p>
