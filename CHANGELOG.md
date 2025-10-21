@@ -40,6 +40,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - When pressing shift or control, the cursor immediately switches to zoom indication (https://github.com/SMD-Bioinformatics-Lund/gens/pull/549)
 - When zooming in and out, the heights of the band tracks are updated to reflect the number of shown bands (https://github.com/SMD-Bioinformatics-Lund/gens/pull/549)
 
+
 ## 4.1.0
 
 ### Added

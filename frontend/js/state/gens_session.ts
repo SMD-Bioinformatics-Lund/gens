@@ -103,7 +103,7 @@ export class GensSession {
 
     // A pre-selected track might disappear if the db is updated
     this.annotationSelections = [];
-    for (const loadedSelectionId of loadAnnotationSelections()) {
+    for (const loadedSelectionId of loadAnnotationSelections() || []) {
       if (!this.idToAnnotSource[loadedSelectionId]) {
         console.warn(`Selection ID ${loadedSelectionId} not found, skipping`);
         continue;
