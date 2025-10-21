@@ -149,9 +149,6 @@ export class BandTrack extends DataTrack {
   }
 
   setExpandedTrackHeight(numberLanes: number, showDetails: boolean) {
-
-    console.log(this.label, "Number of lanes", numberLanes);
-
     const style = STYLE.bandTrack;
     const height = STYLE.tracks.trackHeight.m;
     const expandedHeight = getTrackHeight(
@@ -161,8 +158,10 @@ export class BandTrack extends DataTrack {
       style.bandPadding,
       showDetails,
     );
-    console.log(this.label, "Expanded height", expandedHeight);
-    this.setExpandedHeight(expandedHeight);
+    if (this.setExpandedHeight != null) {
+      this.setExpandedHeight(expandedHeight);
+    }
+    this.syncHeight();
   }
 }
 
