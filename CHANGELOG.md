@@ -37,6 +37,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Boxpadding for sample info drawer, to prevent truncating at the bottom (https://github.com/SMD-Bioinformatics-Lund/gens/pull/539)
 - Fix such that the same Gens port is used for dev and prod configs (5000), avoiding having to reconfigure during release testing (https://github.com/SMD-Bioinformatics-Lund/gens/pull/544)
 - A change in annotation db does no longer crash the load due to expecting pre-selected annotations to be there. These preselections are instead dropped with a (console) warning. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/548)
+- When pressing shift or control, the cursor immediately switches to zoom indication (https://github.com/SMD-Bioinformatics-Lund/gens/pull/549)
+- When zooming in and out, the heights of the band tracks are updated to reflect the number of shown bands (https://github.com/SMD-Bioinformatics-Lund/gens/pull/549)
 
 ## 4.1.0
 
