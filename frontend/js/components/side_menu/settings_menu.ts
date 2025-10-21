@@ -475,8 +475,8 @@ export class SettingsMenu extends ShadowBaseElement {
     this.coverageYStartElem.value = `${covStart}`;
     this.coverageYEndElem.value = `${covEnd}`;
     if (this.colorBySelect) {
-      const val = this.colorBySelect.getValue();
-      const selectedId = val ? val.value : "";
+      const selectedAnnotation = this.getColorAnnotation();
+      const selectedId = selectedAnnotation != null ? selectedAnnotation : "";
       const choices = this.allAnnotationSources.map((source) => {
         return {
           value: source.track_id,
