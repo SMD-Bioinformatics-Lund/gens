@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator, Optional, TypeAlias
 
 from pydantic import AnyHttpUrl, BaseModel, ValidationError
 from pydantic_core import PydanticCustomError
@@ -178,10 +178,10 @@ def _parse_aed_property(property_def: str) -> AedPropertyDefinition:
     return AedPropertyDefinition(prefix=prefix or "no_prefix", name=name, type=type)
 
 
-AedDatatypes = str | int | bool | datetime | Color | AnyHttpUrl
-AedFileMetadata = list[dict[str, AedDatatypes]]
-AedRecord = dict[str, AedDatatypes | None]
-AedRecords = list[AedRecord]
+AedDatatypes: TypeAlias = str | int | bool | datetime | Color | AnyHttpUrl
+AedFileMetadata: TypeAlias = list[dict[str, AedDatatypes]]
+AedRecord: TypeAlias = dict[str, AedDatatypes | None]
+AedRecords: TypeAlias = list[AedRecord]
 
 
 def format_aed_entry(value: str, format: str) -> AedDatatypes:

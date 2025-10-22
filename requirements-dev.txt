@@ -13,3 +13,4 @@ isort
 mypy
 types-requests
 types-tabulate
+pydantic_extra_types
