@@ -141,6 +141,8 @@ export class ChromosomeView extends ShadowBaseElement {
     for (const trackSetting of this.session.chromTracks.getTracks()) {
       const chromGroup = this.chromosomeGroups[trackSetting.chromosome];
 
+      const getColorBandsPlaceholder = () => [];
+
       let track: DataTrack;
       let targetGroup: HTMLDivElement;
       if (trackSetting.trackType == "dot-cov") {
@@ -155,6 +157,7 @@ export class ChromosomeView extends ShadowBaseElement {
             this.session.chromTracks.setIsExpanded(trackId, isExpanded);
             this.render({});
           },
+          getColorBandsPlaceholder,
         );
         targetGroup = chromGroup.samples;
       } else if (trackSetting.trackType == "sample-annotation") {
@@ -177,6 +180,7 @@ export class ChromosomeView extends ShadowBaseElement {
           (trackId: string, expandedHeight: number) => {
             this.session.chromTracks.setExpandedHeight(trackId, expandedHeight);
           },
+          getColorBandsPlaceholder,
         );
         targetGroup = chromGroup.annotations;
       } else {

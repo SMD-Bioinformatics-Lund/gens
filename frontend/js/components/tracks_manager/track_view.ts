@@ -90,6 +90,8 @@ export class TrackView extends ShadowBaseElement {
   private positionTrack: PositionTrack;
   private overviewTracks: OverviewTrack[] = [];
 
+  private colorBands: RenderBand[] = [];
+
   public saveTrackLayout() {
     this.session.saveTrackLayout();
   }
@@ -216,9 +218,9 @@ export class TrackView extends ShadowBaseElement {
       "position",
       "Position",
       () => positionTrackSettings,
-      (settings) => (positionTrackSettings = settings),
       () => session.getMarkerModeOn(),
       () => this.sessionPos.getXRange(),
+      () => this.colorBands,
     );
 
     const chromosomeRow = document.createElement("flex-row");
@@ -272,7 +274,7 @@ export class TrackView extends ShadowBaseElement {
     this.session.tracks.setTracks(dataTrackSettings);
     this.session.loadTrackLayout();
 
-    this.updateColorBands();
+    this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
   }
 
   private getXScale(inverted: boolean = false): Scale {
@@ -283,21 +285,6 @@ export class TrackView extends ShadowBaseElement {
       ? getLinearScale(xRange, xDomain)
       : getLinearScale(xDomain, xRange);
     return xScale;
-  }
-
-  public async updateColorBands() {
-    const colorAnnot = this.session.getColorAnnotation();
-
-    let colorBands: RenderBand[] = [];
-    if (colorAnnot != null) {
-      colorBands = await this.dataSource.getAnnotationBands(
-        this.session.getColorAnnotation(),
-        this.sessionPos.getChromosome(),
-      );
-    }
-    for (const info of this.dataTracks) {
-      info.track.setColorBands(colorBands);
-    }
   }
 
   public render(renderSettings: RenderSettings) {
@@ -420,6 +407,7 @@ export class TrackView extends ShadowBaseElement {
         showTrackContextMenu,
         setIsExpanded,
         setExpandedHeight,
+        () => this.colorBands,
       );
 
       const trackWrapper = makeTrackContainer(track, null);
@@ -437,6 +425,33 @@ export class TrackView extends ShadowBaseElement {
       track.track.render(settings);
     }
   }
+
+  public async updateColorBands() {
+    this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
+    console.log("Color bands updated to", this.colorBands);
+  }
+}
+
+async function getAnnotColorBands(
+  session: GensSession,
+  dataSource: RenderDataSource,
+) {
+  const colorAnnot = session.getColorAnnotation();
+  console.log("Updating color bands with annot", colorAnnot);
+
+  let colorBands: RenderBand[] = [];
+  if (colorAnnot != null) {
+    colorBands = await dataSource.getAnnotationBands(
+      session.getColorAnnotation(),
+      session.pos.getChromosome(),
+    );
+  }
+  return colorBands;
+  // this.colorBands = colorBands;
+  // console.log("Color bands", colorBands);
+  // for (const info of this.dataTracks) {
+  //   info.track.setColorBands(colorBands);
+  // }
 }
 
 customElements.define("track-view", TrackView);

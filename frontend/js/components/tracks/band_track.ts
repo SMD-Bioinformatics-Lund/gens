@@ -27,6 +27,7 @@ export class BandTrack extends DataTrack {
     openContextMenu: (id: string) => void,
     openTrackContextMenu: ((track: DataTrack) => void) | null,
     getMarkerModeOn: () => boolean,
+    getAnnotColorBands: () => RenderBand[],
   ) {
     super(
       id,
@@ -47,6 +48,7 @@ export class BandTrack extends DataTrack {
       setExpanded,
       setExpandedHeight,
       getMarkerModeOn,
+      getAnnotColorBands,
     );
 
     this.getRenderData = getRenderData;

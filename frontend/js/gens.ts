@@ -285,6 +285,7 @@ function addSettingsPageSources(
     render({});
   };
   const onColorByChange = async (annotId: string | null) => {
+    console.log("Running onColorByChange with ID", annotId);
     session.setColorAnnotation(annotId);
     await gensTracks.trackView.updateColorBands();
     render({});

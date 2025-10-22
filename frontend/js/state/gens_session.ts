@@ -190,6 +190,7 @@ export class GensSession {
   }
 
   public getColorAnnotation(): string | null {
+    console.log("Getting the color annotation ID", this.colorAnnotationId);
     return this.colorAnnotationId;
   }
 
