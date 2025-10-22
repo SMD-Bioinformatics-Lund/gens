@@ -1,4 +1,10 @@
-import { computePosition, autoUpdate, offset, flip, shift } from "@floating-ui/dom";
+import {
+  computePosition,
+  autoUpdate,
+  offset,
+  flip,
+  shift,
+} from "@floating-ui/dom";
 import { GensPopup } from "../components/util/popup";
 import { STYLE } from "../constants";
 
@@ -39,7 +45,7 @@ export function createPopup(
       placement: "top",
       middleware: [
         offset(style.margin),
-        flip({ fallbackPlacements: ["bottom", "right", "left"]}),
+        flip({ fallbackPlacements: ["bottom", "right", "left"] }),
         shift({ padding: style.margin }),
       ],
     }).then(({ x, y }) => {

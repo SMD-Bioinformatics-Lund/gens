@@ -154,7 +154,6 @@ function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
  * @returns
  */
 function parseTableData(meta: SampleMetaEntry): TableData {
-
   const grid = new Map<string, Map<string, TableCell>>();
   const colSet = new Set<string>();
 

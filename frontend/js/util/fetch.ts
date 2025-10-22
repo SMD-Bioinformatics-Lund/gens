@@ -1,7 +1,11 @@
 // Fetch.js
 // functions for making api requests to Gens
 
-async function request(url: string, params: string, method: RequestType = "GET") {
+async function request(
+  url: string,
+  params: string,
+  method: RequestType = "GET",
+) {
   // options passed to the fetch request
   const options: RequestOptions = {
     method,

@@ -11,7 +11,6 @@ const ZOOM_WINDOW_MULTIPLIER = 5;
 const IDB_CACHE_KEY = "gens-cache";
 const IDB_TRANSCRIPTS_KEY = "transcripts";
 
-
 export class API {
   genomeBuild: number;
   apiURI: string;

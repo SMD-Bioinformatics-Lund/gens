@@ -127,9 +127,8 @@ export class ChoiceSelect extends ShadowBaseElement {
         renderChoiceLimit: 20,
         searchResultLimit: 50,
       });
-  
+
       this.selectElement.addEventListener("change", () => {
-  
         const vals = this.choiceElement.getValue(true) as string[];
         this.dispatchEvent(
           new CustomEvent("change", {
@@ -153,7 +152,6 @@ export class ChoiceSelect extends ShadowBaseElement {
   }
 
   getValue(): EventChoice | null {
-
     return this.choiceElement.getValue()
       ? (this.choiceElement.getValue() as EventChoice)
       : null;

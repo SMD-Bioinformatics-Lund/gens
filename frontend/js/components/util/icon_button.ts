@@ -45,7 +45,6 @@ template.innerHTML = String.raw`
   <div id="icon" class="fas"></div>
 `;
 export class IconButton extends ShadowBaseElement {
-
   static get observedAttributes() {
     return ["icon", "disabled"];
   }
@@ -75,7 +74,6 @@ export class IconButton extends ShadowBaseElement {
   }
 
   attributeChangedCallback(name: string, _oldVal: string, newVal: string) {
-
     const iconEl = this.root.querySelector("#icon") as HTMLElement;
 
     if (name === "icon") {

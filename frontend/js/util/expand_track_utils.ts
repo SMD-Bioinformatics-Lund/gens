@@ -9,8 +9,7 @@ export function getOverlapInfo(
   bandOverlaps: Record<string, { nOverlapping: number; lane: number }>;
   numberLanes: number;
 } {
-
-  const ranges = rawRanges.sort((r1, r2) => r1.start < r2.start ? -1 : 1);
+  const ranges = rawRanges.sort((r1, r2) => (r1.start < r2.start ? -1 : 1));
 
   const bandOverlaps: Record<string, { nOverlapping: number; lane: number }> =
     {};
@@ -81,13 +80,13 @@ export function getTrackHeight(
   bandPadding: number,
   showLabels: boolean,
 ): number {
-
   // FIXME
   const labelHeight = showLabels ? 20 : 0;
 
   const singleBandHeight = trackHeight - (trackPadding + bandPadding) * 2;
 
   const multiTrackHeight =
-    trackPadding * 2 + (singleBandHeight + bandPadding * 2 + labelHeight) * numberTracks;
+    trackPadding * 2 +
+    (singleBandHeight + bandPadding * 2 + labelHeight) * numberTracks;
   return multiTrackHeight;
 }

@@ -59,7 +59,7 @@ export function getURLRow(text: string) {
 
   const combined_regex = new RegExp(
     [pmid, url, www, omim, orpha, vcv, rcv].join("|"),
-    "g"
+    "g",
   );
 
   const groups = {

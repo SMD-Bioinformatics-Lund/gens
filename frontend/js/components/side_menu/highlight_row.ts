@@ -59,7 +59,7 @@ export class HighlightRow extends ShadowBaseElement {
       chrom: this.highlight.chromosome,
       start: range[0],
       end: range[1],
-    }
+    };
 
     this.labelElem.innerHTML = `${this.highlight.chromosome}:${start}-${end}`;
     this.addElementListener(this.gotoElem, "click", () => {
@@ -68,7 +68,7 @@ export class HighlightRow extends ShadowBaseElement {
 
     this.addElementListener(this.removeElem, "click", () => {
       this.onRemoveHighlight(this.highlight.id);
-    })
+    });
   }
 }
 

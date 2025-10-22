@@ -1,6 +1,10 @@
 // A set of utility functions for interacting with the browsers built in IndexedDB
 
-function openDB(dbName: string, version: number, stores: string[]): Promise<IDBDatabase> {
+function openDB(
+  dbName: string,
+  version: number,
+  stores: string[],
+): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(dbName, version);
     request.onupgradeneeded = () => {
@@ -16,7 +20,11 @@ function openDB(dbName: string, version: number, stores: string[]): Promise<IDBD
   });
 }
 
-export async function idbGet<T>(dbName: string, store: string, key: string): Promise<T | null> {
+export async function idbGet<T>(
+  dbName: string,
+  store: string,
+  key: string,
+): Promise<T | null> {
   const db = await openDB(dbName, 1, [store]);
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, "readonly");
@@ -27,7 +35,12 @@ export async function idbGet<T>(dbName: string, store: string, key: string): Pro
   });
 }
 
-export async function idbSet<T>(dbName: string, store: string, key: string, value: T): Promise<void> {
+export async function idbSet<T>(
+  dbName: string,
+  store: string,
+  key: string,
+  value: T,
+): Promise<void> {
   const db = await openDB(dbName, 1, [store]);
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, "readwrite");
@@ -38,7 +51,11 @@ export async function idbSet<T>(dbName: string, store: string, key: string, valu
   });
 }
 
-export async function idbDelete(dbName: string, store: string, key: string): Promise<void> {
+export async function idbDelete(
+  dbName: string,
+  store: string,
+  key: string,
+): Promise<void> {
   const db = await openDB(dbName, 1, [store]);
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, "readwrite");
@@ -48,4 +65,3 @@ export async function idbDelete(dbName: string, store: string, key: string): Pro
     req.onerror = () => reject(req.error);
   });
 }
-

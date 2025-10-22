@@ -358,7 +358,7 @@ function computeProfileKey(samples: Sample[], genomeBuild: number): string {
   const types = new Set(
     samples.map((s) => (s.sampleType ? s.sampleType : "unknown")).sort(),
   );
-  
+
   const signature = Array.from(types).join("+");
   return `v1.${genomeBuild}.${signature}`;
 }
@@ -367,7 +367,6 @@ function getArrangedTracks(
   layout: TrackLayout,
   origTrackSettings: DataTrackSettings[],
 ): DataTrackSettings[] {
-
   // First create a map layout ID -> track settings
   const layoutIdToSettings: Record<string, DataTrackSettings[]> = {};
   for (const trackSetting of origTrackSettings) {
