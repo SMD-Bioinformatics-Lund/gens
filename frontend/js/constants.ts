@@ -14,8 +14,8 @@ export const ZOOM_STEPS = {
 
 export const SEARCH_PAD_FRAC = 0.02;
 
-// FIXME: This is hard-coded for the constitutional pipeline
-// Will need to consider how to generalize this for somatic (and micro?)
+// This is hard-coded for Scout at the moment. Will have to think about how to generalize
+// when we get to that point
 export const DEFAULT_VARIANT_THRES = 14;
 
 export const COMBINED_SAMPLE_ID_DIVIDER = "___";

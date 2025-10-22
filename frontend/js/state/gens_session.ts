@@ -2,7 +2,7 @@ import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
-import { COLORS } from "../constants";
+import { COLORS, DEFAULT_VARIANT_THRES } from "../constants";
 import { loadProfileSettings, saveProfileToBrowser } from "../util/storage";
 import { generateID } from "../util/utils";
 import { SessionPosition } from "./session_helpers/session_position";
@@ -62,7 +62,6 @@ export class GensSession {
     chromInfo: Record<Chromosome, ChromosomeInfo>,
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
-    variantThreshold: number,
     allAnnotationSources: ApiAnnotationTrack[],
   ) {
     this.render = render;
@@ -75,8 +74,8 @@ export class GensSession {
     this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
     console.log("Loading layout profile key", this.layoutProfileKey);
     const profile = loadProfileSettings(this.layoutProfileKey);
-    this.trackLayout = profile.layout;
-    console.log("Loaded track layout", this.trackLayout);
+    this.trackLayout = profile?.layout;
+    console.log("Loaded profile", profile);
 
     this.trackHeights = profile?.trackHeights || trackHeights;
     this.scoutBaseURL = scoutBaseURL;
@@ -84,8 +83,10 @@ export class GensSession {
     this.genomeBuild = genomeBuild;
     // this.colorAnnotationId = loadColorAnnotation();
     // this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
-    this.variantThreshold = variantThreshold;
+    this.variantThreshold = profile?.variantThreshold || DEFAULT_VARIANT_THRES;
     // this.expandedTracks = loadExpandedTracks() || {};
+
+    this.colorAnnotationId = profile?.colorAnnotationId || null;
 
     this.idToAnnotSource = {};
     for (const annotSource of allAnnotationSources) {
@@ -176,6 +177,7 @@ export class GensSession {
       annotationSelections: this.annotationSelections,
       coverageRange: this.coverageRange,
       trackHeights: this.trackHeights,
+      variantThreshold: this.variantThreshold,
     };
 
     console.log("Saving profile", profile, "to", this.layoutProfileKey);
@@ -338,18 +340,18 @@ export class GensSession {
   }
 
   public saveTrackLayout(): void {
-    const order: string[] = [];
+    const order: Set<string> = new Set();
     const hidden: Record<string, boolean> = {};
     const expanded: Record<string, boolean> = {};
     for (const info of this.tracks.getTracks()) {
       const pid = getPortableId(info);
-      order.push(pid);
+      order.add(pid);
       hidden[pid] = info.isHidden;
       expanded[pid] = info.isExpanded;
     }
 
     const layout = {
-      order,
+      order: Array.from(order),
       hidden,
       expanded,
     };
@@ -372,6 +374,8 @@ function getArrangedTracks(
   layout: TrackLayout,
   origTrackSettings: DataTrackSetting[],
 ): DataTrackSetting[] {
+  console.log("Original settings", origTrackSettings);
+
   // First create a map layout ID -> track settings
   const layoutIdToSettings: Record<string, DataTrackSetting[]> = {};
   for (const trackSetting of origTrackSettings) {
@@ -386,8 +390,20 @@ function getArrangedTracks(
 
   const orderedTracks = [];
 
+  console.log("layout.order", layout.order);
+
+  const orderedLayoutIds = new Set(layout.order);
+  if (layout.order.length != orderedLayoutIds.size) {
+    console.warn(
+      "Non-unique elements stored in layout. Proceeding with unique elements. Original:",
+      layout.order,
+      "Reduced:",
+      orderedLayoutIds,
+    );
+  }
+
   // Iterate through the IDs and grab all corresponding tracks
-  for (const layoutId of layout.order) {
+  for (const layoutId of orderedLayoutIds) {
     const tracks = layoutIdToSettings[layoutId] || [];
 
     const tracksHidden = layout.hidden[layoutId];
@@ -401,6 +417,8 @@ function getArrangedTracks(
 
     orderedTracks.push(...updatedTracks);
   }
+
+  console.log("Ordered settings", orderedTracks);
 
   return orderedTracks;
 }

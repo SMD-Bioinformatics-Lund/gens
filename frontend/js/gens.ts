@@ -168,7 +168,6 @@ export async function initCanvases({
     api.getChromInfo(),
     api.getChromSizes(),
     startRegion,
-    DEFAULT_VARIANT_THRES,
     allAnnotSources,
   );
 

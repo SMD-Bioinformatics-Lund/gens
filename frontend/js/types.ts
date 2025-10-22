@@ -719,6 +719,7 @@ type StorageValue =
 type ProfileSettings = {
   layout: TrackLayout;
   colorAnnotationId: string | null;
+  variantThreshold: number;
   annotationSelections: string[];
   coverageRange: Rng;
   trackHeights: TrackHeights;
