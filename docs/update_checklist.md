@@ -333,8 +333,8 @@ gens load annotations --file /access/annotation_tracks/ --genome-build 38
 On host (check the versions)
 
 ```
-curl --silent --output ./Homo_sapiens.GRCh38.115.gtf.gz https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.115.gtf.gz
-curl --silent --output ./MANE.GRCh38.v1.4.summary.txt.gz https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
+curl --output ./Homo_sapiens.GRCh38.115.gtf.gz https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.115.gtf.gz
+curl --output ./MANE.GRCh38.v1.4.summary.txt.gz https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
 docker cp Homo_sapiens.GRCh38.115.gtf.gz <container ID>:/tmp
 docker cp MANE.GRCh38.v1.4.summary.txt.gz <container ID>:/tmp
 ```
@@ -351,10 +351,10 @@ General sanity check and testing things that cannot be tested in a test setup.
 
 - [ ] The sample list looks correct
 - [ ] Does the case link to Scout work? (On PGM1)
-- [ ] Opening a trio for the the single-chromosome view, all tracks are shown
+- [ ] Opening a trio for the the single-chromosome view, all tracks are shown (check the side menu under advanced settings to see all tracks)
   - [ ] Three cov tracks
   - [ ] Three BAF tracks
-  - [ ] Variants for proband (parents hidden)
+  - [ ] Variants for proband
   - [ ] Sample annotations for proband
   - [ ] Gene track
 - [ ] Variant context menu
