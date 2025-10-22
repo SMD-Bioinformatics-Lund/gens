@@ -60,6 +60,6 @@ uvicorn gens.app:create_app --factory --reload --host 0.0.0.0 --port 5000
 
 Make sure the application is running by loading http://localhost:5000/ in your web browser. If that works, head to http://localhost:5000/app to open the app itself or http://localhost:5000/docs to explore the API.
 
-<img src="../img/gens_hello_world.PNG" width="400">
+<img src="../img/gens_hello_world.PNG" width="800">
 
 Finally you need to populate the databases with chromosome sizes and gene/transcript data (see more under section [Load data](./load_gens_data.md))
