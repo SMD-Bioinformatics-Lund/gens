@@ -40,6 +40,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - A change in annotation db does no longer crash the load due to expecting pre-selected annotations to be there. These preselections are instead dropped with a (console) warning. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/548)
 - When pressing shift or control, the cursor immediately switches to zoom indication (https://github.com/SMD-Bioinformatics-Lund/gens/pull/549)
 - When zooming in and out, the heights of the band tracks are updated to reflect the number of shown bands (https://github.com/SMD-Bioinformatics-Lund/gens/pull/549)
+- Admin page instructions updated to keep them up to date with the recent updates of Gens (https://github.com/SMD-Bioinformatics-Lund/gens/pull/552)
 
 ## 4.1.0
 
