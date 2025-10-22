@@ -212,7 +212,6 @@ export class SettingsMenu extends ShadowBaseElement {
   setSources(
     session: GensSession,
     allAnnotationSources: ApiAnnotationTrack[],
-    geneLists: ApiGeneList[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
     getAllSamples: () => Sample[],
     gotoHighlight: (region: Region) => void,
@@ -231,7 +230,6 @@ export class SettingsMenu extends ShadowBaseElement {
     this.session = session;
     // this.onChange = onChange;
     this.allAnnotationSources = allAnnotationSources;
-    this.geneLists = geneLists;
 
     this.onTrackMove = onTrackMove;
 
@@ -391,11 +389,6 @@ export class SettingsMenu extends ShadowBaseElement {
     const prevSelectedAnnots = this.session.getAnnotationSelections();
     this.annotSelect.setValues(
       getAnnotationChoices(this.allAnnotationSources, prevSelectedAnnots),
-    );
-
-    const prevSelectedGeneLists = this.session.getGeneListSelections();
-    this.geneListSelect.setValues(
-      getGeneListChoices(this.geneLists, prevSelectedGeneLists),
     );
 
     const allAnnotChoices = getAnnotationChoices(this.allAnnotationSources, []);

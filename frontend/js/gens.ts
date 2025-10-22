@@ -155,7 +155,6 @@ export async function initCanvases({
   const mainSample = getMainSample(samples);
 
   const allAnnotSources = await api.getAnnotationSources();
-  const geneLists = await api.getGeneLists();
 
   const session = new GensSession(
     render,
@@ -169,9 +168,7 @@ export async function initCanvases({
     api.getChromInfo(),
     api.getChromSizes(),
     startRegion,
-    DEFAULT_VARIANT_THRES,
     allAnnotSources,
-    geneLists,
   );
 
   const renderDataSource = getRenderDataSource(
@@ -193,7 +190,6 @@ export async function initCanvases({
     session,
     render,
     allAnnotSources,
-    geneLists,
     allSamples,
     gensTracks,
   );
@@ -253,7 +249,6 @@ function addSettingsPageSources(
   session: GensSession,
   render: (settings: RenderSettings) => void,
   allAnnotSources: ApiAnnotationTrack[],
-  geneLists: ApiGeneList[],
   allSamples: Sample[],
   gensTracks: TracksManager,
 ) {
@@ -326,7 +321,6 @@ function addSettingsPageSources(
   settingsPage.setSources(
     session,
     allAnnotSources,
-    geneLists,
     onTrackMove,
     getAllSamples,
     gotoHighlight,

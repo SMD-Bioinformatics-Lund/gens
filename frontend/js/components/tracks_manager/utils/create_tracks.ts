@@ -17,6 +17,7 @@ export function getTrack(
   showTrackContextMenu: (track: DataTrack) => void,
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   setExpandedHeight: (trackId: string, expandedHeight: number) => void,
+  getColorBands: () => RenderBand[],
 ) {
   const getChromosome = () => session.pos.getChromosome();
   const getXRange = () => session.pos.getXRange();
@@ -33,6 +34,7 @@ export function getTrack(
       showTrackContextMenu,
       setIsExpanded,
       setExpandedHeight,
+      getColorBands,
     );
   } else if (setting.trackType == "gene-list") {
     const getGeneListBands = () =>
@@ -45,6 +47,7 @@ export function getTrack(
       showTrackContextMenu,
       setIsExpanded,
       setExpandedHeight,
+      getColorBands,
     );
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
@@ -57,6 +60,7 @@ export function getTrack(
       showTrackContextMenu,
       setIsExpanded,
       setExpandedHeight,
+      getColorBands,
     );
   } else if (setting.trackType == "variant") {
     const getSampleAnnotBands = () =>
@@ -73,6 +77,7 @@ export function getTrack(
       showTrackContextMenu,
       setIsExpanded,
       setExpandedHeight,
+      getColorBands,
     );
   } else if (setting.trackType == "dot-cov") {
     const getSampleCovDots = () => {
@@ -90,6 +95,7 @@ export function getTrack(
       getSampleCovDots,
       showTrackContextMenu,
       setIsExpanded,
+      getColorBands,
     );
   } else if (setting.trackType == "dot-baf") {
     const getSampleBafDots = () =>
@@ -100,6 +106,7 @@ export function getTrack(
       getSampleBafDots,
       showTrackContextMenu,
       setIsExpanded,
+      getColorBands,
     );
   } else if (setting.trackType == "gene") {
     const getGeneBands = () => dataSource.getTranscriptBands(getChromosome());
@@ -111,6 +118,7 @@ export function getTrack(
       showTrackContextMenu,
       setIsExpanded,
       setExpandedHeight,
+      getColorBands,
     );
   } else {
     throw Error(`Not yet supported track type ${setting.trackType}`);
@@ -125,6 +133,7 @@ export function getDotTrack(
   // FIXME: Would it be enough with the track setting here?
   showTrackContextMenu: (track: DataTrack) => void,
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
+  getColorBands: () => RenderBand[],
 ): DotTrack {
   const settings = getSettings();
   const dotTrack = new DotTrack(
@@ -145,6 +154,7 @@ export function getDotTrack(
       showTrackContextMenu(track);
     },
     () => session.getMarkerModeOn(),
+    () => getColorBands(),
   );
   return dotTrack;
 }
@@ -157,6 +167,7 @@ export function getBandTrack(
   showTrackContextMenu: (track: DataTrack) => void,
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   setExpandedHeight: (trackId: string, height: number) => void,
+  getColorBands: () => RenderBand[],
 ): BandTrack {
   const rawTrack = new BandTrack(
     setting.trackId,
@@ -213,6 +224,7 @@ export function getBandTrack(
       showTrackContextMenu(track);
     },
     () => session.getMarkerModeOn(),
+    () => getColorBands(),
   );
   return rawTrack;
 }

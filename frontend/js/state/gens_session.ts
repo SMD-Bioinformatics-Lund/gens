@@ -2,21 +2,8 @@ import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
-import { COLORS } from "../constants";
-import {
-  loadAnnotationSelections,
-  loadColorAnnotation,
-  loadCoverageRange,
-  loadTrackHeights,
-  saveAnnotationSelections,
-  saveColorAnnotation,
-  saveCoverageRange,
-  saveTrackHeights,
-  loadGeneListSelections,
-  saveGeneListSelections,
-  loadTrackLayout,
-  saveTrackLayout,
-} from "../util/storage";
+import { COLORS, DEFAULT_VARIANT_THRES } from "../constants";
+import { loadProfileSettings, saveProfileToBrowser } from "../util/storage";
 import { generateID } from "../util/utils";
 import { SessionPosition } from "./session_helpers/session_position";
 import { Tracks } from "./session_helpers/session_tracks";
@@ -41,23 +28,23 @@ export class GensSession {
   private highlights: Record<string, RangeHighlight>;
   private mainSample: Sample;
   private samples: Sample[];
-  private trackHeights: TrackHeights;
   private chromViewActive: boolean;
+
+  // Constants
   private scoutBaseURL: string;
   private gensBaseURL: string;
   // private settings: SettingsMenu;
   private genomeBuild: number;
-
   private idToAnnotSource: Record<string, ApiAnnotationTrack>;
-  private idToGeneList: Record<string, ApiGeneList>;
 
+  // Loaded parameters
+  private layoutProfileKey: string;
+  private trackHeights: TrackHeights;
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
-  private geneListSelections: string[] = [];
   private coverageRange: Rng = COV_Y_RANGE;
   private variantThreshold: number;
-  // private expandedTracks: Record<string, boolean> = {};
-  private layoutProfileKey: string;
+  private trackLayout: TrackLayout;
 
   public tracks: Tracks;
   public chromTracks: Tracks;
@@ -75,9 +62,7 @@ export class GensSession {
     chromInfo: Record<Chromosome, ChromosomeInfo>,
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
-    variantThreshold: number,
     allAnnotationSources: ApiAnnotationTrack[],
-    allGeneLists: ApiGeneList[],
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
@@ -85,16 +70,18 @@ export class GensSession {
     this.highlights = {};
 
     this.samples = samples;
-    this.trackHeights = loadTrackHeights() || trackHeights;
+
+    this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
+    const profile = loadProfileSettings(this.layoutProfileKey);
+    this.trackLayout = profile?.layout;
+
+    this.trackHeights = profile?.trackHeights || trackHeights;
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
-    this.geneListSelections = loadGeneListSelections() || [];
-    this.colorAnnotationId = loadColorAnnotation();
-    this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
-    this.variantThreshold = variantThreshold;
-    // this.expandedTracks = loadExpandedTracks() || {};
-    this.layoutProfileKey = this.computeProfileKey();
+    this.variantThreshold = profile?.variantThreshold || DEFAULT_VARIANT_THRES;
+
+    this.colorAnnotationId = profile?.colorAnnotationId || null;
 
     this.idToAnnotSource = {};
     for (const annotSource of allAnnotationSources) {
@@ -103,17 +90,12 @@ export class GensSession {
 
     // A pre-selected track might disappear if the db is updated
     this.annotationSelections = [];
-    for (const loadedSelectionId of loadAnnotationSelections()) {
+    for (const loadedSelectionId of profile?.annotationSelections || []) {
       if (!this.idToAnnotSource[loadedSelectionId]) {
         console.warn(`Selection ID ${loadedSelectionId} not found, skipping`);
         continue;
       }
       this.annotationSelections.push(loadedSelectionId);
-    }
-
-    this.idToGeneList = {};
-    for (const geneList of allGeneLists) {
-      this.idToGeneList[geneList.id] = geneList;
     }
 
     this.tracks = new Tracks([]);
@@ -183,9 +165,22 @@ export class GensSession {
     this.chromViewActive = !this.chromViewActive;
   }
 
+  private saveProfile(): void {
+    const profile: ProfileSettings = {
+      layout: this.trackLayout,
+      colorAnnotationId: this.colorAnnotationId,
+      annotationSelections: this.annotationSelections,
+      coverageRange: this.coverageRange,
+      trackHeights: this.trackHeights,
+      variantThreshold: this.variantThreshold,
+    };
+
+    saveProfileToBrowser(this.layoutProfileKey, profile);
+  }
+
   public setColorAnnotation(id: string | null) {
     this.colorAnnotationId = id;
-    saveColorAnnotation(id);
+    this.saveProfile();
   }
 
   public getColorAnnotation(): string | null {
@@ -198,39 +193,7 @@ export class GensSession {
 
   public setAnnotationSelections(ids: string[]): void {
     this.annotationSelections = ids;
-    saveAnnotationSelections(ids);
-  }
-
-  public getGeneListSelections(): string[] {
-    return this.geneListSelections;
-  }
-
-  public getGeneListSources(settings: {
-    selectedOnly: boolean;
-  }): { id: string; label: string }[] {
-    if (settings.selectedOnly) {
-      return this.geneListSelections.map((id) => {
-        const geneList = this.idToGeneList[id];
-        return {
-          id,
-          label: geneList.name,
-        };
-      });
-    } else {
-      Object.values(this.idToGeneList).map((obj) => {
-        return {
-          id: obj.id,
-          label: obj.name,
-        };
-      });
-    }
-
-    // return this.settings.getGeneListSources(settings);
-  }
-
-  public setGeneListSelections(ids: string[]): void {
-    this.geneListSelections = ids;
-    saveGeneListSelections(ids);
+    this.saveProfile();
   }
 
   public getTrackHeights(): TrackHeights {
@@ -239,7 +202,7 @@ export class GensSession {
 
   public setTrackHeights(heights: TrackHeights) {
     this.trackHeights = heights;
-    saveTrackHeights(heights);
+    this.saveProfile();
   }
 
   public getCoverageRange(): [number, number] {
@@ -248,7 +211,7 @@ export class GensSession {
 
   public setCoverageRange(range: [number, number]) {
     this.coverageRange = range;
-    saveCoverageRange(range);
+    this.saveProfile();
   }
 
   public getSamples(): Sample[] {
@@ -285,7 +248,7 @@ export class GensSession {
     }
 
     this.samples.splice(pos, 1);
-    this.layoutProfileKey = this.computeProfileKey();
+    this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
   }
 
   public getMarkerModeOn(): boolean {
@@ -305,7 +268,9 @@ export class GensSession {
     this.render({});
   }
 
-  // FIXME: Why is this one here?
+  // FIXME: It is convenient for the session to know about the side menu
+  // But not clean. I think this should be worked away, passing a reference to the side menu instead
+  // to other parts of the code
   public showContent(header: string, content: HTMLElement[], width: number) {
     this.sideMenu.showContent(header, content, width);
   }
@@ -352,83 +317,96 @@ export class GensSession {
     this.render({});
   }
 
-  private computeProfileKey(): string {
-    const types = this.samples
-      .map((s) => (s.sampleType ? s.sampleType : "unknown"))
-      .sort();
-    const signature = types.join("+");
-    return `v1.${this.genomeBuild}.${signature}`;
-  }
-
   public getLayoutProfileKey(): string {
     return this.layoutProfileKey;
   }
 
   public loadTrackLayout(): void {
-    const layout = loadTrackLayout(this.layoutProfileKey);
-
+    const layout = this.trackLayout;
     if (!layout) {
       return;
     }
 
-    const tracks = this.tracks.getTracks();
-
-    const byPortableId: Record<string, DataTrackSettings> = {};
-    for (const info of tracks) {
-      const pid = getPortableId(info);
-      if (pid) {
-        byPortableId[pid] = info;
-      }
-    }
-
-    const picked = new Set<string>();
-    const reorderedTracks: DataTrackSettings[] = [];
-    for (const pid of layout.order) {
-      const info = byPortableId[pid];
-      if (info) {
-        reorderedTracks.push(info);
-        picked.add(info.trackId);
-      }
-    }
-
-    // Reorder according to the used layout
-    for (const info of tracks) {
-      if (!picked.has(info.trackId)) {
-        reorderedTracks.push(info);
-      }
-    }
-
-    // Assign the tracks as hidden or expanded
-    for (const info of reorderedTracks) {
-      const pid = getPortableId(info);
-      if (!pid) {
-        continue;
-      }
-
-      info.isHidden = layout.hidden[pid];
-      info.isExpanded = layout.expanded[pid];
-    }
-
-    this.tracks.setTracks(reorderedTracks);
+    const arrangedTracks = getArrangedTracks(layout, this.tracks.getTracks());
+    this.tracks.setTracks(arrangedTracks);
   }
 
   public saveTrackLayout(): void {
-    const order: string[] = [];
+    const order: Set<string> = new Set();
     const hidden: Record<string, boolean> = {};
     const expanded: Record<string, boolean> = {};
     for (const info of this.tracks.getTracks()) {
       const pid = getPortableId(info);
-      order.push(pid);
+      order.add(pid);
       hidden[pid] = info.isHidden;
       expanded[pid] = info.isExpanded;
     }
 
     const layout = {
-      order,
+      order: Array.from(order),
       hidden,
       expanded,
     };
 
-    saveTrackLayout(this.layoutProfileKey, layout);
+    this.trackLayout = layout;
+
+    this.saveProfile();
   }
+}
+
+function computeProfileKey(samples: Sample[], genomeBuild: number): string {
+  const types = new Set(
+    samples.map((s) => (s.sampleType ? s.sampleType : "unknown")).sort(),
+  );
+  
+  const signature = Array.from(types).join("+");
+  return `v1.${genomeBuild}.${signature}`;
+}
+
+function getArrangedTracks(
+  layout: TrackLayout,
+  origTrackSettings: DataTrackSettings[],
+): DataTrackSettings[] {
+
+  // First create a map layout ID -> track settings
+  const layoutIdToSettings: Record<string, DataTrackSettings[]> = {};
+  for (const trackSetting of origTrackSettings) {
+    const layoutId = getPortableId(trackSetting);
+
+    if (!layoutIdToSettings[layoutId]) {
+      layoutIdToSettings[layoutId] = [];
+    }
+
+    layoutIdToSettings[layoutId].push(trackSetting);
+  }
+
+  const orderedTracks = [];
+
+  const orderedLayoutIds = new Set(layout.order);
+  if (layout.order.length != orderedLayoutIds.size) {
+    console.warn(
+      "Non-unique elements stored in layout. Proceeding with unique elements. Original:",
+      layout.order,
+      "Reduced:",
+      orderedLayoutIds,
+    );
+  }
+
+  // Iterate through the IDs and grab all corresponding tracks
+  for (const layoutId of orderedLayoutIds) {
+    const tracks = layoutIdToSettings[layoutId] || [];
+
+    const tracksHidden = layout.hidden[layoutId];
+    const tracksExpanded = layout.expanded[layoutId];
+
+    const updatedTracks = tracks.map((track) => {
+      track.isHidden = tracksHidden;
+      track.isExpanded = tracksExpanded;
+      return track;
+    });
+
+    orderedTracks.push(...updatedTracks);
+  }
+
+  return orderedTracks;
 }

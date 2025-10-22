@@ -26,9 +26,6 @@ const Y_PAD = SIZES.s;
 
 export abstract class DataTrack extends CanvasTrack {
   public trackType: TrackType;
-  public setColorBands(colorBands: RenderBand[]) {
-    this.colorBands = colorBands;
-  }
 
   protected defaultTrackHeight: number;
   protected collapsedTrackHeight: number;
@@ -48,6 +45,7 @@ export abstract class DataTrack extends CanvasTrack {
   protected getYScale: () => Scale;
   protected openTrackContextMenu: ((track: DataTrack) => void) | null;
   protected getMarkerModeOn: () => boolean;
+  protected getColorBands: () => RenderBand[];
 
   private onExpand: () => void;
   private lastRenderedExpanded: boolean;
@@ -128,6 +126,7 @@ export abstract class DataTrack extends CanvasTrack {
     setExpanded: (isExpanded: boolean) => void | null,
     setExpandedHeight: (height: number) => void | null,
     getMarkerModeOn: () => boolean,
+    getColorBands: () => RenderBand[],
   ) {
     const settings = getSettings != null ? getSettings() : null;
     const heightConf = settings != null ? settings.height : null;
@@ -149,6 +148,7 @@ export abstract class DataTrack extends CanvasTrack {
     this.getMarkerModeOn = getMarkerModeOn;
     this.setExpanded = setExpanded;
     this.setExpandedHeight = setExpandedHeight;
+    this.getColorBands = getColorBands;
 
     this.getYRange = () => {
       // console.log("Current settings", getSettings());
@@ -259,7 +259,8 @@ export abstract class DataTrack extends CanvasTrack {
       }
     }
 
-    for (const band of this.colorBands) {
+    const colorBands = this.getColorBands();
+    for (const band of colorBands) {
       const box = {
         x1: xScale(band.start),
         x2: xScale(band.end),

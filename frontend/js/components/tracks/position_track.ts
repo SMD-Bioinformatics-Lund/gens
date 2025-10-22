@@ -9,9 +9,9 @@ export class PositionTrack extends DataTrack {
     id: string,
     label: string,
     getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
     getMarkerModeOn: () => boolean,
     getXRange: () => Rng,
+    getAnnotColorBands: () => RenderBand[],
   ) {
     const getXScale = () => {
       const xRange = getXRange();
@@ -28,6 +28,7 @@ export class PositionTrack extends DataTrack {
       null,
       null,
       getMarkerModeOn,
+      getAnnotColorBands,
     );
   }
 

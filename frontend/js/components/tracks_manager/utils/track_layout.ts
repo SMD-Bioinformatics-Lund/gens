@@ -1,26 +1,38 @@
+import { TRACK_IDS } from "../../../constants";
+
 export function getPortableId(settings: DataTrackSettings): string {
   const trackId = settings.trackId;
   if (settings.sample != null) {
     const sampleType = settings.sample.sampleType || "unknown";
-    if (trackId.endsWith("_log2_cov")) {
-      return `${sampleType}|log2_cov`;
+
+    if (settings.trackType == "dot-cov") {
+      return `${sampleType}|${TRACK_IDS.cov}`;
     }
-    if (trackId.endsWith("_log2_baf")) {
-      return `${sampleType}|log2_baf`;
+    if (settings.trackType == "dot-baf") {
+      return `${sampleType}|${TRACK_IDS.baf}`;
     }
-    if (trackId.endsWith("_variants")) {
-      return `${sampleType}|variants`;
+    if (settings.trackType == "variant") {
+      return `${sampleType}|${TRACK_IDS.variants}`;
     }
-    // Sample-annotation tracks (per-sample band tracks)
-    // Use label to get a portable identity across cases
-    return `sample-annot|${sampleType}|${settings.trackLabel}`;
+    if (settings.trackType == "sample-annotation") {
+      return `${sampleType}|${TRACK_IDS.sample_annot}`;
+    }
+
+    throw Error(
+      "Sample found " +
+        settings.sample +
+        " but track type is not matching expected sample types " +
+        settings.trackType,
+    );
   }
-  if (trackId.startsWith("gene-list_")) {
-    return `gene-list|${trackId.substring("gene-list_".length)}`;
-  }
-  if (trackId === "genes") {
+  if (settings.trackType == "gene") {
     return "genes";
   }
-  return `annot|${trackId}`;
+  if (settings.trackType == "annotation") {
+    return `annot|${trackId}`;
+  }
+  throw Error(
+    "Sample not found and track type not matching any expected non-sample types: " +
+      settings.trackType,
+  );
 }
-

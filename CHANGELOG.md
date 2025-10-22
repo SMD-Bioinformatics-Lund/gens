@@ -14,7 +14,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Allow using sample types T/N as aliases for tumor/normal. They are stored internally as "tumor" and "normal". (https://github.com/SMD-Bioinformatics-Lund/gens/pull/518)
 - IndexedDB caching of loaded transcripts (https://github.com/SMD-Bioinformatics-Lund/gens/pull/526)
 - Allow displaying Scout panels as tracks in Gens (https://github.com/SMD-Bioinformatics-Lund/gens/pull/526)
-- Automatically store and reuse layouts, i.e. what tracks are shown, collapsed and their order (https://github.com/SMD-Bioinformatics-Lund/gens/pull/529)
+- Automatically store and reuse layouts, i.e. what tracks are shown, collapsed and their order (https://github.com/SMD-Bioinformatics-Lund/gens/pull/529).
+- Store layouts and other stored settings together in profiles, calculated based on what types of samples are present (https://github.com/SMD-Bioinformatics-Lund/gens/pull/550).
 - Bring back the brief help text and help menu from Gens version 3 (https://github.com/SMD-Bioinformatics-Lund/gens/pull/539)
 - Option to select main sample among the currently loaded samples. This is used for displaying the overview chart and the chromosome view. (https://github.com/SMD-Bioinformatics-Lund/gens/pull/543)
 

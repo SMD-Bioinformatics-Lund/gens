@@ -15,6 +15,7 @@ export class DotTrack extends DataTrack {
     getRenderData: () => Promise<DotTrackData>,
     openTrackContextMenu: (track: DataTrack) => void,
     getMarkerModeOn: () => boolean,
+    getAnnotColorBands: () => RenderBand[],
   ) {
     super(
       id,
@@ -38,6 +39,7 @@ export class DotTrack extends DataTrack {
         console.warn("Set expanded height not used for dot tracks");
       },
       getMarkerModeOn,
+      getAnnotColorBands,
     );
     this.getRenderData = getRenderData;
   }

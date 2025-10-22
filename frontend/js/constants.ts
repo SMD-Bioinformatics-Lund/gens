@@ -14,8 +14,8 @@ export const ZOOM_STEPS = {
 
 export const SEARCH_PAD_FRAC = 0.02;
 
-// FIXME: This is hard-coded for the constitutional pipeline
-// Will need to consider how to generalize this for somatic (and micro?)
+// This is hard-coded for Scout at the moment. Will have to think about how to generalize
+// when we get to that point
 export const DEFAULT_VARIANT_THRES = 14;
 
 export const COMBINED_SAMPLE_ID_DIVIDER = "___";
@@ -67,6 +67,14 @@ export const TRANSPARENCY = {
   l: "22",
 };
 
+export const TRACK_IDS = {
+  cov: "log2_cov",
+  baf: "baf",
+  variants: "variants",
+  sample_annot: "sample_annot",
+  genes: "genes",
+};
+
 export const COLORS = {
   white: "#FFFFFF",
   black: "#222",
@@ -112,8 +120,8 @@ export const USED_TRACK_HEIGHTS = {
     collapsedBand: TRACK_HEIGHTS.xs,
     collapsedDot: TRACK_HEIGHTS.m,
     expandedDot: TRACK_HEIGHTS.xl,
-  }
-}
+  },
+};
 
 // FIXME: Consider. Can we separate hom / het variants and their colors here?
 const delColors = { hom: "rgb(102,0,0)", het: "rgb(204,0,0)" };
