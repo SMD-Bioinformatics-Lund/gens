@@ -38,7 +38,7 @@ export class TrackRow extends ShadowBaseElement {
   private toggleHide: IconButton;
   private toggleExpand: IconButton;
 
-  track: DataTrackSetting;
+  track: DataTrackSettings;
   onMove: (trackId: string, direction: "up" | "down") => void;
   onToggleShow: (trackId: string) => void;
   onToggleExpand: (trackId: string) => void;
@@ -51,7 +51,7 @@ export class TrackRow extends ShadowBaseElement {
   }
 
   initialize(
-    track: DataTrackSetting,
+    track: DataTrackSettings,
     onMove: (trackId: string, direction: "up" | "down") => void,
     onToggleShow: (trackId: string) => void,
     onToggleCollapse: (trackId: string) => void,

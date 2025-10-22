@@ -9,7 +9,7 @@ export class DotTrack extends DataTrack {
     id: string,
     label: string,
     trackType: TrackType,
-    getSettings: () => DataTrackSetting,
+    getSettings: () => DataTrackSettings,
     setExpanded: (isExpanded: boolean) => void,
     getXRange: () => Rng,
     getRenderData: () => Promise<DotTrackData>,

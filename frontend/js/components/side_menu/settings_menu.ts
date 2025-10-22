@@ -599,7 +599,7 @@ function getHighlightsSection(
 }
 
 function getTracksSection(
-  tracks: DataTrackSetting[],
+  tracks: DataTrackSettings[],
   onMove: (trackId: string, direction: "up" | "down") => void,
   onToggleShow: (trackId: string) => void,
   onToggleCollapse: (trackId: string) => void,

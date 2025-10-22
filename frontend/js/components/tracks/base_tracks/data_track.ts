@@ -26,14 +26,11 @@ const Y_PAD = SIZES.s;
 
 export abstract class DataTrack extends CanvasTrack {
   public trackType: TrackType;
-  // public setColorBands(colorBands: RenderBand[]) {
-  //   this.colorBands = colorBands;
-  // }
 
   protected defaultTrackHeight: number;
   protected collapsedTrackHeight: number;
   // Callback to allow multi-layered settings object
-  protected getSettings: () => DataTrackSetting;
+  protected getSettings: () => DataTrackSettings;
   // protected updateSettings: (settings: DataTrackSettings) => void;
   protected renderData: BandTrackData | DotTrackData | null;
 
@@ -125,7 +122,7 @@ export abstract class DataTrack extends CanvasTrack {
     getXRange: () => Rng,
     getXScale: () => Scale,
     openTrackContextMenu: ((track: DataTrack) => void) | null,
-    getSettings: () => DataTrackSetting,
+    getSettings: () => DataTrackSettings,
     setExpanded: (isExpanded: boolean) => void | null,
     setExpandedHeight: (height: number) => void | null,
     getMarkerModeOn: () => boolean,
@@ -263,9 +260,6 @@ export abstract class DataTrack extends CanvasTrack {
     }
 
     const colorBands = this.getColorBands();
-    if (this.trackType == "dot-cov") {
-      console.log("Rendering color bands", colorBands);
-    }
     for (const band of colorBands) {
       const box = {
         x1: xScale(band.start),

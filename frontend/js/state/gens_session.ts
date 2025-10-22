@@ -72,19 +72,14 @@ export class GensSession {
     this.samples = samples;
 
     this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
-    console.log("Loading layout profile key", this.layoutProfileKey);
     const profile = loadProfileSettings(this.layoutProfileKey);
     this.trackLayout = profile?.layout;
-    console.log("Loaded profile", profile);
 
     this.trackHeights = profile?.trackHeights || trackHeights;
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
-    // this.colorAnnotationId = loadColorAnnotation();
-    // this.coverageRange = loadCoverageRange() || COV_Y_RANGE;
     this.variantThreshold = profile?.variantThreshold || DEFAULT_VARIANT_THRES;
-    // this.expandedTracks = loadExpandedTracks() || {};
 
     this.colorAnnotationId = profile?.colorAnnotationId || null;
 
@@ -180,7 +175,6 @@ export class GensSession {
       variantThreshold: this.variantThreshold,
     };
 
-    console.log("Saving profile", profile, "to", this.layoutProfileKey);
     saveProfileToBrowser(this.layoutProfileKey, profile);
   }
 
@@ -190,7 +184,6 @@ export class GensSession {
   }
 
   public getColorAnnotation(): string | null {
-    console.log("Getting the color annotation ID", this.colorAnnotationId);
     return this.colorAnnotationId;
   }
 
@@ -201,7 +194,6 @@ export class GensSession {
   public setAnnotationSelections(ids: string[]): void {
     this.annotationSelections = ids;
     this.saveProfile();
-    // saveAnnotationSelections(ids);
   }
 
   public getTrackHeights(): TrackHeights {
@@ -330,7 +322,6 @@ export class GensSession {
   }
 
   public loadTrackLayout(): void {
-    console.log("loadTrackLayout top function");
     const layout = this.trackLayout;
     if (!layout) {
       return;
@@ -364,21 +355,21 @@ export class GensSession {
 }
 
 function computeProfileKey(samples: Sample[], genomeBuild: number): string {
-  const types = samples
-    .map((s) => (s.sampleType ? s.sampleType : "unknown"))
-    .sort();
-  const signature = types.join("+");
+  const types = new Set(
+    samples.map((s) => (s.sampleType ? s.sampleType : "unknown")).sort(),
+  );
+  
+  const signature = Array.from(types).join("+");
   return `v1.${genomeBuild}.${signature}`;
 }
 
 function getArrangedTracks(
   layout: TrackLayout,
-  origTrackSettings: DataTrackSetting[],
-): DataTrackSetting[] {
-  console.log("Original settings", origTrackSettings);
+  origTrackSettings: DataTrackSettings[],
+): DataTrackSettings[] {
 
   // First create a map layout ID -> track settings
-  const layoutIdToSettings: Record<string, DataTrackSetting[]> = {};
+  const layoutIdToSettings: Record<string, DataTrackSettings[]> = {};
   for (const trackSetting of origTrackSettings) {
     const layoutId = getPortableId(trackSetting);
 
@@ -390,8 +381,6 @@ function getArrangedTracks(
   }
 
   const orderedTracks = [];
-
-  console.log("layout.order", layout.order);
 
   const orderedLayoutIds = new Set(layout.order);
   if (layout.order.length != orderedLayoutIds.size) {
@@ -418,8 +407,6 @@ function getArrangedTracks(
 
     orderedTracks.push(...updatedTracks);
   }
-
-  console.log("Ordered settings", orderedTracks);
 
   return orderedTracks;
 }

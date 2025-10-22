@@ -1,14 +1,10 @@
-// FIXME: How to deal with multiple "relative" samples?
-
 import { TRACK_IDS } from "../../../constants";
 
-// OK, if multiple relatives, then they will have to randomly be slotted in
-export function getPortableId(settings: DataTrackSetting): string {
+export function getPortableId(settings: DataTrackSettings): string {
   const trackId = settings.trackId;
   if (settings.sample != null) {
     const sampleType = settings.sample.sampleType || "unknown";
 
-    // FIXME: Constants for the track IDs, instead of hard-coded here
     if (settings.trackType == "dot-cov") {
       return `${sampleType}|${TRACK_IDS.cov}`;
     }

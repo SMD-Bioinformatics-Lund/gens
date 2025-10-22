@@ -202,7 +202,7 @@ export class TrackView extends ShadowBaseElement {
 
     this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
-    let positionTrackSettings: DataTrackSetting = {
+    let positionTrackSettings: DataTrackSettings = {
       trackId: "position",
       trackLabel: "Position",
       trackType: "position",
@@ -428,7 +428,6 @@ export class TrackView extends ShadowBaseElement {
 
   public async updateColorBands() {
     this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
-    console.log("Color bands updated to", this.colorBands);
   }
 }
 
@@ -437,7 +436,6 @@ async function getAnnotColorBands(
   dataSource: RenderDataSource,
 ) {
   const colorAnnot = session.getColorAnnotation();
-  console.log("Updating color bands with annot", colorAnnot);
 
   let colorBands: RenderBand[] = [];
   if (colorAnnot != null) {
@@ -447,11 +445,6 @@ async function getAnnotColorBands(
     );
   }
   return colorBands;
-  // this.colorBands = colorBands;
-  // console.log("Color bands", colorBands);
-  // for (const info of this.dataTracks) {
-  //   info.track.setColorBands(colorBands);
-  // }
 }
 
 customElements.define("track-view", TrackView);
