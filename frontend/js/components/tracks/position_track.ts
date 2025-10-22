@@ -8,8 +8,8 @@ export class PositionTrack extends DataTrack {
   constructor(
     id: string,
     label: string,
-    getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
+    getSettings: () => DataTrackSetting,
+    updateSettings: (settings: DataTrackSetting) => void,
     getMarkerModeOn: () => boolean,
     getXRange: () => Rng,
   ) {

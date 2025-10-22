@@ -87,7 +87,7 @@ export class ChromosomeView extends ShadowBaseElement {
     );
 
     for (const chrom of CHROMOSOMES) {
-      const dataTrackSetting: DataTrackSettings = {
+      const dataTrackSetting: DataTrackSetting = {
         trackId: `chr-cov-${chrom}`,
         trackLabel: `Log2 cov`,
         trackType: "dot-cov",
@@ -110,7 +110,7 @@ export class ChromosomeView extends ShadowBaseElement {
 
       const annotTrackSettings = [];
       for (const sampleAnnot of sampleAnnots) {
-        const setting: DataTrackSettings = {
+        const setting: DataTrackSetting = {
           trackId: `${sampleAnnot.id}-${chrom}`,
           trackLabel: `Annot. track ${chrom}`,
           trackType: "sample-annotation",

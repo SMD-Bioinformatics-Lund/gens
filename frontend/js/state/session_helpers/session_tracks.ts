@@ -1,18 +1,18 @@
 export class Tracks {
-  private tracks: DataTrackSettings[];
-  constructor(tracks: DataTrackSettings[]) {
+  private tracks: DataTrackSetting[];
+  constructor(tracks: DataTrackSetting[]) {
     this.tracks = tracks;
   }
 
-  public getTracks(): DataTrackSettings[] {
+  public getTracks(): DataTrackSetting[] {
     return this.tracks;
   }
 
-  public addTrack(track: DataTrackSettings) {
+  public addTrack(track: DataTrackSetting) {
     this.tracks.push(track);
   }
 
-  public get(trackId: string): DataTrackSettings {
+  public get(trackId: string): DataTrackSetting {
     const matches = this.tracks.filter((setting) => setting.trackId == trackId);
 
     if (matches.length == 0) {
@@ -26,7 +26,7 @@ export class Tracks {
     return matches[0];
   }
 
-  public updateSetting(trackId: string, newSetting: DataTrackSettings) {
+  public updateSetting(trackId: string, newSetting: DataTrackSetting) {
     const trackIndex = this.tracks.findIndex(
       (track) => track.trackId === trackId,
     );
@@ -43,7 +43,7 @@ export class Tracks {
     setting.height.expandedHeight = trackHeight;
   }
 
-  public setTracks(tracks: DataTrackSettings[]) {
+  public setTracks(tracks: DataTrackSetting[]) {
     this.tracks = tracks;
   }
 

@@ -67,12 +67,13 @@ export const TRANSPARENCY = {
   l: "22",
 };
 
-export const TRACK_ID_SUFFIXES = {
+export const TRACK_IDS = {
   cov: "log2_cov",
   baf: "baf",
   variants: "variants",
-  sample_annot: "sample_annot"
-}
+  sample_annot: "sample_annot",
+  genes: "genes",
+};
 
 export const COLORS = {
   white: "#FFFFFF",
@@ -119,8 +120,8 @@ export const USED_TRACK_HEIGHTS = {
     collapsedBand: TRACK_HEIGHTS.xs,
     collapsedDot: TRACK_HEIGHTS.m,
     expandedDot: TRACK_HEIGHTS.xl,
-  }
-}
+  },
+};
 
 // FIXME: Consider. Can we separate hom / het variants and their colors here?
 const delColors = { hom: "rgb(102,0,0)", het: "rgb(204,0,0)" };

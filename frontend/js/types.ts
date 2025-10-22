@@ -619,7 +619,7 @@ interface ExpandedTrackHeight {
   expandedHeight?: number;
 }
 
-interface DataTrackSettings {
+interface DataTrackSetting {
   trackId: string;
   trackLabel: string;
   sample?: Sample;

@@ -33,7 +33,7 @@ export abstract class DataTrack extends CanvasTrack {
   protected defaultTrackHeight: number;
   protected collapsedTrackHeight: number;
   // Callback to allow multi-layered settings object
-  protected getSettings: () => DataTrackSettings;
+  protected getSettings: () => DataTrackSetting;
   // protected updateSettings: (settings: DataTrackSettings) => void;
   protected renderData: BandTrackData | DotTrackData | null;
 
@@ -124,7 +124,7 @@ export abstract class DataTrack extends CanvasTrack {
     getXRange: () => Rng,
     getXScale: () => Scale,
     openTrackContextMenu: ((track: DataTrack) => void) | null,
-    getSettings: () => DataTrackSettings,
+    getSettings: () => DataTrackSetting,
     setExpanded: (isExpanded: boolean) => void | null,
     setExpandedHeight: (height: number) => void | null,
     getMarkerModeOn: () => boolean,

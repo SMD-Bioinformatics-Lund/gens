@@ -19,7 +19,7 @@ export class BandTrack extends DataTrack {
     id: string,
     label: string,
     trackType: TrackType,
-    getSettings: () => DataTrackSettings,
+    getSettings: () => DataTrackSetting,
     setExpanded: (isExpanded: boolean) => void,
     setExpandedHeight: (expandedHeight: number) => void,
     getXRange: () => Rng,

@@ -67,20 +67,20 @@ export class GensSession {
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
     variantThreshold: number,
     allAnnotationSources: ApiAnnotationTrack[],
-    allGeneLists: ApiGeneList[],
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
     this.mainSample = mainSample;
     this.highlights = {};
 
-    const layoutProfileKey = this.computeProfileKey();
+    this.samples = samples;
+
+    const layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
     console.log("Loading layout profile key", layoutProfileKey);
     const profile = loadProfileSettings(layoutProfileKey);
     console.log("Loaded track layout", this.trackLayout);
 
-    this.samples = samples;
-    this.trackHeights = profile.trackHeights || trackHeights;
+    this.trackHeights = profile?.trackHeights || trackHeights;
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
@@ -96,7 +96,7 @@ export class GensSession {
 
     // A pre-selected track might disappear if the db is updated
     this.annotationSelections = [];
-    for (const loadedSelectionId of profile.annotationSelections) {
+    for (const loadedSelectionId of profile?.annotationSelections || []) {
       if (!this.idToAnnotSource[loadedSelectionId]) {
         console.warn(`Selection ID ${loadedSelectionId} not found, skipping`);
         continue;
@@ -171,7 +171,7 @@ export class GensSession {
     this.chromViewActive = !this.chromViewActive;
   }
 
-  private makeProfileObject(): ProfileSettings {
+  private saveProfile(): void {
     const profile: ProfileSettings = {
       layout: this.trackLayout,
       colorAnnotationId: this.colorAnnotationId,
@@ -179,12 +179,8 @@ export class GensSession {
       coverageRange: this.coverageRange,
       trackHeights: this.trackHeights,
     };
-    return profile;
-  }
 
-  private saveProfile(): void {
-    const prof = this.makeProfileObject();
-    saveTrackLayout(this.layoutProfileKey, prof);
+    saveTrackLayout(this.layoutProfileKey, profile);
   }
 
   public setColorAnnotation(id: string | null) {
@@ -258,7 +254,7 @@ export class GensSession {
     }
 
     this.samples.splice(pos, 1);
-    this.layoutProfileKey = this.computeProfileKey();
+    this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
   }
 
   public getMarkerModeOn(): boolean {
@@ -325,56 +321,15 @@ export class GensSession {
     this.render({});
   }
 
-  private computeProfileKey(): string {
-    const types = this.samples
-      .map((s) => (s.sampleType ? s.sampleType : "unknown"))
-      .sort();
-    const signature = types.join("+");
-    return `v1.${this.genomeBuild}.${signature}`;
-  }
-
   public getLayoutProfileKey(): string {
     return this.layoutProfileKey;
   }
 
   public loadTrackLayout(): void {
-    // const profile = loadProfileSettings(this.layoutProfileKey);
-
     const layout = this.trackLayout;
 
-    const trackSettings = this.tracks.getTracks();
-
-    // First create a map layout ID -> track settings
-    const layoutIdToSettings: Record<string, DataTrackSettings[]> = {};
-    for (const trackSetting of trackSettings) {
-      const layoutId = getPortableId(trackSetting);
-
-      if (!layoutIdToSettings[layoutId]) {
-        layoutIdToSettings[layoutId] = [];
-      }
-
-      layoutIdToSettings[layoutId].push(trackSetting);
-    }
-
-    const orderedTracks = [];
-
-    // Iterate through the IDs and grab all corresponding tracks
-    for (const layoutId of layout.order) {
-      const tracks = layoutIdToSettings[layoutId] || [];
-
-      const tracksHidden = layout.hidden[layoutId];
-      const tracksExpanded = layout.expanded[layoutId];
-
-      const updatedTracks = tracks.map((track) => {
-        track.isHidden = tracksHidden;
-        track.isExpanded = tracksExpanded;
-        return track;
-      });
-
-      orderedTracks.push(...updatedTracks);
-    }
-
-    this.tracks.setTracks(orderedTracks);
+    const arrangedTracks = getArrangedTracks(layout, this.tracks.getTracks());
+    this.tracks.setTracks(arrangedTracks);
   }
 
   public saveTrackLayout(): void {
@@ -398,4 +353,53 @@ export class GensSession {
 
     this.saveProfile();
   }
+}
+
+function computeProfileKey(samples: Sample[], genomeBuild: number): string {
+  const types = samples
+    .map((s) => (s.sampleType ? s.sampleType : "unknown"))
+    .sort();
+  const signature = types.join("+");
+  return `v1.${genomeBuild}.${signature}`;
+}
+
+function getArrangedTracks(
+  layout: TrackLayout,
+  origTrackSettings: DataTrackSetting[],
+): DataTrackSetting[] {
+  if (!layout) {
+    return;
+  }
+
+  // First create a map layout ID -> track settings
+  const layoutIdToSettings: Record<string, DataTrackSetting[]> = {};
+  for (const trackSetting of origTrackSettings) {
+    const layoutId = getPortableId(trackSetting);
+
+    if (!layoutIdToSettings[layoutId]) {
+      layoutIdToSettings[layoutId] = [];
+    }
+
+    layoutIdToSettings[layoutId].push(trackSetting);
+  }
+
+  const orderedTracks = [];
+
+  // Iterate through the IDs and grab all corresponding tracks
+  for (const layoutId of layout.order) {
+    const tracks = layoutIdToSettings[layoutId] || [];
+
+    const tracksHidden = layout.hidden[layoutId];
+    const tracksExpanded = layout.expanded[layoutId];
+
+    const updatedTracks = tracks.map((track) => {
+      track.isHidden = tracksHidden;
+      track.isExpanded = tracksExpanded;
+      return track;
+    });
+
+    orderedTracks.push(...updatedTracks);
+  }
+
+  return orderedTracks;
 }

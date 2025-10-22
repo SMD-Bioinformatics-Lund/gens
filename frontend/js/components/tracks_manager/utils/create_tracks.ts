@@ -13,7 +13,7 @@ import { getSimpleButton } from "../../util/menu_utils";
 export function getTrack(
   session: GensSession,
   dataSource: RenderDataSource,
-  setting: DataTrackSettings,
+  setting: DataTrackSetting,
   showTrackContextMenu: (track: DataTrack) => void,
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   setExpandedHeight: (trackId: string, expandedHeight: number) => void,
@@ -120,7 +120,7 @@ export function getTrack(
 
 export function getDotTrack(
   session: GensSession,
-  getSettings: () => DataTrackSettings,
+  getSettings: () => DataTrackSetting,
   getDots: () => Promise<RenderDot[]>,
   // FIXME: Would it be enough with the track setting here?
   showTrackContextMenu: (track: DataTrack) => void,
@@ -152,7 +152,7 @@ export function getDotTrack(
 export function getBandTrack(
   session: GensSession,
   dataSource: RenderDataSource,
-  setting: DataTrackSettings,
+  setting: DataTrackSetting,
   getRenderBands: () => Promise<RenderBand[]>,
   showTrackContextMenu: (track: DataTrack) => void,
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,

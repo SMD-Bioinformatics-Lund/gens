@@ -1,4 +1,4 @@
-import { TRACK_ID_SUFFIXES, USED_TRACK_HEIGHTS } from "../../../constants";
+import { TRACK_IDS, USED_TRACK_HEIGHTS } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import {
   getSampleFromID as getSampleIdsFromID,
@@ -20,11 +20,11 @@ function getIDDiff(
 }
 
 export async function syncDataTrackSettings(
-  origTrackSettings: DataTrackSettings[],
+  origTrackSettings: DataTrackSetting[],
   session: GensSession,
   dataSources: RenderDataSource,
   lastRenderedSamples: Sample[],
-): Promise<{ settings: DataTrackSettings[]; samples: Sample[] }> {
+): Promise<{ settings: DataTrackSetting[]; samples: Sample[] }> {
   const annotSources = session.getAnnotationSources({
     selectedOnly: true,
   });
@@ -68,8 +68,8 @@ export async function syncDataTrackSettings(
   returnTrackSettings.push(...newAnnotationSettings);
 
   if (!returnTrackSettings.find((track) => track.trackId == "genes")) {
-    const geneTrackSettings: DataTrackSettings = {
-      trackId: "genes",
+    const geneTrackSettings: DataTrackSetting = {
+      trackId: TRACK_IDS.genes,
       trackLabel: "Genes",
       trackType: "gene",
       height: {
@@ -96,7 +96,7 @@ async function sampleDiff(
   getCoverageRange: () => Rng,
 ): Promise<{
   removedIds: Set<string>;
-  sampleSettings: DataTrackSettings[];
+  sampleSettings: DataTrackSetting[];
 }> {
   const currentCombinedIds = samples.map((sample) => getSampleID(sample));
   const lastRenderedCombinedIds = lastRenderedSamples.map((sample) =>
@@ -119,8 +119,8 @@ async function sampleDiff(
 
     // FIXME: Some logic here to distinguish if single or multiple samples opened
     // FIXME: Loading defaulting
-    const cov: DataTrackSettings = {
-      trackId: `${sample.sampleId}_${TRACK_ID_SUFFIXES.cov}`,
+    const cov: DataTrackSetting = {
+      trackId: `${sample.sampleId}_${TRACK_IDS.cov}`,
       trackLabel: `${sample.sampleId} cov`,
       trackType: "dot-cov",
       sample,
@@ -139,8 +139,8 @@ async function sampleDiff(
       isHidden: false,
     };
 
-    const baf: DataTrackSettings = {
-      trackId: `${sample.sampleId}_${TRACK_ID_SUFFIXES.baf}`,
+    const baf: DataTrackSetting = {
+      trackId: `${sample.sampleId}_${TRACK_IDS.baf}`,
       trackLabel: `${sample.sampleId} baf`,
       trackType: "dot-baf",
       sample,
@@ -158,8 +158,8 @@ async function sampleDiff(
       isHidden: false,
     };
 
-    const variants: DataTrackSettings = {
-      trackId: `${sample.sampleId}_${TRACK_ID_SUFFIXES.variants}`,
+    const variants: DataTrackSetting = {
+      trackId: `${sample.sampleId}_${TRACK_IDS.variants}`,
       trackLabel: `${sample.sampleId} Variants`,
       trackType: "variant",
       sample,
@@ -174,7 +174,7 @@ async function sampleDiff(
 
     const sampleAnnots = [];
     for (const source of sampleSources) {
-      const sampleAnnot: DataTrackSettings = {
+      const sampleAnnot: DataTrackSetting = {
         trackId: source.id,
         trackLabel: source.name,
         trackType: "sample-annotation",
@@ -197,10 +197,10 @@ async function sampleDiff(
 }
 
 function annotationDiff(
-  origTrackSettings: DataTrackSettings[],
+  origTrackSettings: DataTrackSetting[],
   annotationSources: { id: string; label: string }[],
   // getLabel: (id: string) => string,
-): { newAnnotationSettings: DataTrackSettings[]; removedIds: Set<string> } {
+): { newAnnotationSettings: DataTrackSetting[]; removedIds: Set<string> } {
   const origAnnotTrackSettings = origTrackSettings.filter(
     (track) => track.trackType == "annotation",
   );
@@ -219,7 +219,7 @@ function annotationDiff(
     const targetSource = annotationSources.filter(
       (source) => source.id == id,
     )[0];
-    const newSetting: DataTrackSettings = {
+    const newSetting: DataTrackSetting = {
       trackId: id,
       trackLabel: targetSource.label,
       trackType: "annotation",
@@ -239,10 +239,10 @@ function annotationDiff(
 }
 
 function geneListDiff(
-  origTrackSettings: DataTrackSettings[],
+  origTrackSettings: DataTrackSetting[],
   geneListSources: { id: string; label: string }[],
 ): {
-  newGeneListSettings: DataTrackSettings[];
+  newGeneListSettings: DataTrackSetting[];
   removedIds: Set<string>;
 } {
   const origGeneListTrackSettings = origTrackSettings.filter(
@@ -259,7 +259,7 @@ function geneListDiff(
     currentlySelectedGeneListIds,
   );
   const newGeneListSettings = Array.from(newGeneListIds).map((id) => {
-    const newSetting: DataTrackSettings = {
+    const newSetting: DataTrackSetting = {
       trackId: id,
       trackLabel: "PLACEHOLDER",
       trackType: "annotation",
