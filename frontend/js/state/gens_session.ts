@@ -3,10 +3,7 @@ import { SideMenu } from "../components/side_menu/side_menu";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS } from "../constants";
-import {
-  loadTrackLayout as loadProfileSettings,
-  saveTrackLayout,
-} from "../util/storage";
+import { loadProfileSettings, saveProfileToBrowser } from "../util/storage";
 import { generateID } from "../util/utils";
 import { SessionPosition } from "./session_helpers/session_position";
 import { Tracks } from "./session_helpers/session_tracks";
@@ -75,9 +72,10 @@ export class GensSession {
 
     this.samples = samples;
 
-    const layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
-    console.log("Loading layout profile key", layoutProfileKey);
-    const profile = loadProfileSettings(layoutProfileKey);
+    this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
+    console.log("Loading layout profile key", this.layoutProfileKey);
+    const profile = loadProfileSettings(this.layoutProfileKey);
+    this.trackLayout = profile.layout;
     console.log("Loaded track layout", this.trackLayout);
 
     this.trackHeights = profile?.trackHeights || trackHeights;
@@ -180,7 +178,8 @@ export class GensSession {
       trackHeights: this.trackHeights,
     };
 
-    saveTrackLayout(this.layoutProfileKey, profile);
+    console.log("Saving profile", profile, "to", this.layoutProfileKey);
+    saveProfileToBrowser(this.layoutProfileKey, profile);
   }
 
   public setColorAnnotation(id: string | null) {
@@ -274,7 +273,9 @@ export class GensSession {
     this.render({});
   }
 
-  // FIXME: Why is this one here?
+  // FIXME: It is convenient for the session to know about the side menu
+  // But not clean. I think this should be worked away, passing a reference to the side menu instead
+  // to other parts of the code
   public showContent(header: string, content: HTMLElement[], width: number) {
     this.sideMenu.showContent(header, content, width);
   }
@@ -326,7 +327,11 @@ export class GensSession {
   }
 
   public loadTrackLayout(): void {
+    console.log("loadTrackLayout top function");
     const layout = this.trackLayout;
+    if (!layout) {
+      return;
+    }
 
     const arrangedTracks = getArrangedTracks(layout, this.tracks.getTracks());
     this.tracks.setTracks(arrangedTracks);
@@ -367,10 +372,6 @@ function getArrangedTracks(
   layout: TrackLayout,
   origTrackSettings: DataTrackSetting[],
 ): DataTrackSetting[] {
-  if (!layout) {
-    return;
-  }
-
   // First create a map layout ID -> track settings
   const layoutIdToSettings: Record<string, DataTrackSetting[]> = {};
   for (const trackSetting of origTrackSettings) {

@@ -58,14 +58,16 @@ export const TRACK_LAYOUT_PREFIX = "gens.trackLayout.";
 //   return tracks;
 // }
 
-export function saveTrackLayout(
+export function saveProfileToBrowser(
   profileKey: string,
   layout: ProfileSettings,
 ): void {
   saveToBrowserSession(layout, `${TRACK_LAYOUT_PREFIX}${profileKey}`);
 }
 
-export function loadTrackLayout(profileKey: string): ProfileSettings | null {
+export function loadProfileSettings(
+  profileKey: string,
+): ProfileSettings | null {
   return loadFromBrowserSession(
     `${TRACK_LAYOUT_PREFIX}${profileKey}`,
   ) as ProfileSettings | null;
