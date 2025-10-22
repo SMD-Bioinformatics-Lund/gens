@@ -1,17 +1,17 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
-from types import ModuleType
 from pathlib import Path
-from typing import Callable
+from types import ModuleType
 
 import mongomock
 import pytest
-import logging
 
 from gens.db.collections import ANNOTATION_TRACKS_COLLECTION, ANNOTATIONS_COLLECTION
 
 LOG = logging.getLogger(__name__)
+
 
 @dataclass
 class AnnotEntry:
@@ -74,7 +74,7 @@ def test_load_annotations_from_bed(
     assert track_info is not None
     assert track_info["name"] == "track"
     assert track_info["description"] == ""
-    assert track_info["maintainer"] == None
+    assert track_info["maintainer"] is None
     assert track_info["metadata"] == []
     assert track_info["genome_build"] == 38
 
@@ -98,8 +98,14 @@ def test_load_annotations_from_tsv(
 ):
     header = "\t".join(["Chromosome", "Start", "Stop", "Name", "Color"])
     content = "\t".join(
-            [annot_entry.chrom, str(annot_entry.start_pos), str(annot_entry.end_pos), annot_entry.label, annot_entry.color]
-        )
+        [
+            annot_entry.chrom,
+            str(annot_entry.start_pos),
+            str(annot_entry.end_pos),
+            annot_entry.label,
+            annot_entry.color,
+        ]
+    )
 
     file_content = "\n".join([header, content])
 
@@ -118,7 +124,7 @@ def test_load_annotations_from_tsv(
     assert track_info is not None
     assert track_info["name"] == "track"
     assert track_info["description"] == ""
-    assert track_info["maintainer"] == None
+    assert track_info["maintainer"] is None
     assert track_info["metadata"] == []
     assert track_info["genome_build"] == 38
 
@@ -141,14 +147,16 @@ def test_load_annotations_from_tsv_with_comments(
     db: mongomock.Database,
     annot_entry: AnnotEntry,
 ):
-    header = "\t".join([
-        "Chromosome",
-        "Start",
-        "Stop",
-        "Name",
-        "Color",
-        "Comments",
-    ])
+    header = "\t".join(
+        [
+            "Chromosome",
+            "Start",
+            "Stop",
+            "Name",
+            "Color",
+            "Comments",
+        ]
+    )
     content = "\t".join(
         [
             annot_entry.chrom,
@@ -200,7 +208,7 @@ def test_load_annotations_parses_aed(
     assert track_info is not None
     assert track_info["name"] == "chas"
     assert track_info["description"] == ""
-    assert track_info["maintainer"] == None
+    assert track_info["maintainer"] is None
     assert len(track_info["metadata"]) == 4
     assert track_info["genome_build"] == 38
 

@@ -7,7 +7,7 @@ import {
 import { COLORS, STYLE } from "../../constants";
 import { getLinearScale } from "../../draw/render_utils";
 import { drawLabel, drawLine, drawArrow } from "../../draw/shapes";
-import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
+import { DataTrack } from "./base_tracks/data_track";
 
 const LEFT_PX_EDGE = STYLE.yAxis.width;
 
@@ -20,12 +20,14 @@ export class BandTrack extends DataTrack {
     label: string,
     trackType: TrackType,
     getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
+    setExpanded: (isExpanded: boolean) => void,
+    setExpandedHeight: (expandedHeight: number) => void,
     getXRange: () => Rng,
     getRenderData: () => Promise<BandTrackData>,
     openContextMenu: (id: string) => void,
     openTrackContextMenu: ((track: DataTrack) => void) | null,
     getMarkerModeOn: () => boolean,
+    getAnnotColorBands: () => RenderBand[],
   ) {
     super(
       id,
@@ -43,8 +45,10 @@ export class BandTrack extends DataTrack {
       },
       openTrackContextMenu,
       getSettings,
-      updateSettings,
+      setExpanded,
+      setExpandedHeight,
       getMarkerModeOn,
+      getAnnotColorBands,
     );
 
     this.getRenderData = getRenderData;
@@ -71,8 +75,6 @@ export class BandTrack extends DataTrack {
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
 
-    this.syncDimensions();
-
     const xScale = getLinearScale(xRange, [
       LEFT_PX_EDGE,
       this.dimensions.width,
@@ -93,9 +95,9 @@ export class BandTrack extends DataTrack {
       this.getIsExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
+    this.syncDimensions();
 
-    // FIXME: Investigate why background coloring disappears if doing this further up in function
-    // settings expanded track height
+    // Needs to be done after setting the height / syncing dimensions
     super.drawStart();
 
     const bandTopBottomPad =
@@ -155,7 +157,10 @@ export class BandTrack extends DataTrack {
       style.bandPadding,
       showDetails,
     );
-    super.setExpandedHeight(expandedHeight);
+    if (this.setExpandedHeight != null) {
+      this.setExpandedHeight(expandedHeight);
+    }
+    this.syncHeight();
   }
 }
 
@@ -305,7 +310,7 @@ function getIntronHoverBoxes(
   midY: number,
   xScale: Scale,
 ): HoverBox[] {
-  const exons = band.subFeatures;
+  const exons = [...band.subFeatures].sort((a, b) => a.start - b.start);
   const introns: { start: number; end: number }[] = [];
   let prev = band.start;
   exons.forEach((e) => {
@@ -318,12 +323,21 @@ function getIntronHoverBoxes(
     introns.push({ start: prev, end: band.end });
   }
 
+  const totalIntrons = band.exonCount - 1;
+
   const hoverBoxes = introns.map((intron, i) => {
     const x1 = xScale(intron.start);
     const x2 = xScale(intron.end);
+
+    if (!["+", "-"].includes(band.direction)) {
+      console.warn("Expected a band direction, found", band.direction);
+    }
+
+    const labelIndex = band.direction === "+" ? i + 1 : totalIntrons - i;
+
     return {
       box: { x1, x2, y1: midY - 2, y2: midY + 2 },
-      label: `Intron ${i + 1}/${Math.max(band.exonCount - 1, 1)}`,
+      label: `Intron ${labelIndex}/${totalIntrons}`,
       element: band,
     };
   });

@@ -50,6 +50,14 @@ export function setCanvasPointerCursor(
     { signal: abortSignal },
   );
 
+  document.addEventListener(
+    "keydown",
+    (_event) => {
+      updateCursor(lastOffset);
+    },
+    { signal: abortSignal },
+  );
+
   canvas.addEventListener(
     "mousemove",
     (event) => {
@@ -77,6 +85,8 @@ export function setCanvasPointerCursor(
       }
     } else if (keyLogger.heldKeys.Shift) {
       canvas.style.cursor = "zoom-in";
+    } else if (keyLogger.heldKeys.Control) {
+      canvas.style.cursor = "zoom-out";
     } else {
       const hoverTargets = getHoverTargets();
 

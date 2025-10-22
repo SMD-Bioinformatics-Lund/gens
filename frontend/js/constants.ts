@@ -6,9 +6,19 @@ export const ZINDICES = {
   sideMenu: 2000,
 };
 
-// FIXME: This is hard-coded for the constitutional pipeline
-// Will need to consider how to generalize this for somatic (and micro?)
+export const ZOOM_STEPS = {
+  A: 50 * 10 ** 6,
+  B: 10 * 10 ** 6,
+  C: 500 * 10 ** 3,
+};
+
+export const SEARCH_PAD_FRAC = 0.02;
+
+// This is hard-coded for Scout at the moment. Will have to think about how to generalize
+// when we get to that point
 export const DEFAULT_VARIANT_THRES = 14;
+
+export const COMBINED_SAMPLE_ID_DIVIDER = "___";
 
 export const FONT_SIZE = {
   small: 10,
@@ -30,17 +40,18 @@ export const ICONS = {
   collapse: "fa-minimize",
   down: "fa-arrow-down",
   expand: "fa-maximize",
+  help: "fa-circle-question",
   hide: "fa-eye-slash",
-  play: "fa-play",
-  plus: "fa-plus",
+  info: "fa-table-cells",
   left: "fa-arrow-left",
   marker: "fa-marker",
   minus: "fa-minus",
+  play: "fa-play",
+  plus: "fa-plus",
   reset: "fa-rotate-right",
   right: "fa-arrow-right",
   search: "fa-search",
   settings: "fa-cog",
-  info: "fa-circle-info",
   refresh: "fa-arrows-rotate",
   show: "fa-eye",
   trash: "fa-trash",
@@ -54,6 +65,14 @@ export const TRANSPARENCY = {
   s: "CC",
   m: "44",
   l: "22",
+};
+
+export const TRACK_IDS = {
+  cov: "log2_cov",
+  baf: "baf",
+  variants: "variants",
+  sample_annot: "sample_annot",
+  genes: "genes",
 };
 
 export const COLORS = {
@@ -94,6 +113,14 @@ export const TRACK_HEIGHTS = {
   s: 30,
   xs: 20,
   xxs: 10,
+};
+
+export const USED_TRACK_HEIGHTS = {
+  trackView: {
+    collapsedBand: TRACK_HEIGHTS.xs,
+    collapsedDot: TRACK_HEIGHTS.m,
+    expandedDot: TRACK_HEIGHTS.xl,
+  },
 };
 
 // FIXME: Consider. Can we separate hom / het variants and their colors here?

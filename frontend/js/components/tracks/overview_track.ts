@@ -1,6 +1,6 @@
 import { drawBox, drawLabel, drawLine } from "../../draw/shapes";
 import { transformMap, padRange, generateID } from "../../util/utils";
-import { COLORS, SIZES, STYLE } from "../../constants";
+import { COLORS, SIZES, STYLE, TRANSPARENCY } from "../../constants";
 import { CanvasTrack, CanvasTrackSettings } from "./base_tracks/canvas_track";
 import {
   drawDotsScaled,
@@ -97,7 +97,7 @@ export class OverviewTrack extends CanvasTrack {
 
   async render(settings: RenderSettings) {
     const firstTime = this.renderData == null;
-    const dataChanged = firstTime || settings.dataUpdated;
+    const dataChanged = firstTime || settings.reloadData;
     const sizeChanged = firstTime || settings.resized;
 
     if (dataChanged) {
@@ -117,7 +117,7 @@ export class OverviewTrack extends CanvasTrack {
 
     this.pxRanges = metrics.pxRanges;
 
-    if (sizeChanged) {
+    if (sizeChanged || settings.mainSampleChanged) {
       this.staticBuffer.width = this.dimensions.width * PIXEL_RATIO;
       this.staticBuffer.height = this.dimensions.height * PIXEL_RATIO;
       this.staticCtx.resetTransform();
@@ -150,6 +150,19 @@ export class OverviewTrack extends CanvasTrack {
     );
 
     this.marker.render(metrics.viewPxRange);
+
+    const shiftRight = STYLE.yAxis.width + SIZES.xxs;
+    const shiftDown = STYLE.overviewTrack.titleSpace + SIZES.xxs;
+    drawLabel(
+      this.ctx,
+      this.renderData.sampleLabel,
+      STYLE.tracks.textPadding + shiftRight,
+      STYLE.tracks.textPadding + shiftDown,
+      {
+        textBaseline: "top",
+        boxStyle: { fillColor: `${COLORS.white}${TRANSPARENCY.s}` },
+      },
+    );
   }
 }
 
@@ -225,7 +238,9 @@ function renderOverviewPlot(
     { x1: 0, x2: STYLE.yAxis.width, y1: 0, y2: dimensions.height },
     { fillColor: COLORS.extraLightGray },
   );
-  renderYAxis(ctx, yAxis, yScale, dimensions, { isExpanded: true });
+  renderYAxis(ctx, yAxis, yScale, dimensions, {
+    isExpanded: true,
+  });
 
   // Draw the initial lines
   Object.values(pxRanges).forEach(([_chromPxStart, chromPxEnd]) => {

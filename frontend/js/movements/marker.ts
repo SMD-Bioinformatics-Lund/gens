@@ -105,7 +105,6 @@ export class GensMarker extends ShadowBaseElement {
   }
 
   render(pxRange: Rng) {
-
     const sortedRange = sortRange(pxRange);
     const width = rangeSize(sortedRange);
     this.style.left = `${sortedRange[0]}px`;

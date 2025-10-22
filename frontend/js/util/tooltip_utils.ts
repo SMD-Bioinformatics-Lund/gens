@@ -2,36 +2,36 @@ import { createPopper } from "@popperjs/core";
 import { STYLE } from "../constants";
 
 export class Tooltip {
-    public tooltipEl: HTMLDivElement;
-    public popperInstance: ReturnType<typeof createPopper> | null = null;
+  public tooltipEl: HTMLDivElement;
+  public popperInstance: ReturnType<typeof createPopper> | null = null;
 
-    constructor(container: HTMLElement) {
-        const tt = createTooltipDiv();
-        this.tooltipEl = tt;
-        container.appendChild(tt);
+  constructor(container: HTMLElement) {
+    const tt = createTooltipDiv();
+    this.tooltipEl = tt;
+    container.appendChild(tt);
+  }
+
+  onMouseMove(canvas: HTMLCanvasElement, offsetX: number, offsetY: number) {
+    const virtualElement = makeVirtualElementNew(canvas, offsetX, offsetY);
+
+    if (this.popperInstance) {
+      this.popperInstance.destroy();
     }
+    this.popperInstance = createPopper(virtualElement, this.tooltipEl, {
+      placement: "top",
+      modifiers: [{ name: "offset", options: { offset: [0, 8] } }],
+    });
 
-    onMouseMove(canvas: HTMLCanvasElement, offsetX: number, offsetY: number) {
-        const virtualElement = makeVirtualElementNew(canvas, offsetX, offsetY);
+    this.tooltipEl.style.display = "block";
+  }
 
-        if (this.popperInstance) {
-            this.popperInstance.destroy();
-        }
-        this.popperInstance = createPopper(virtualElement, this.tooltipEl, {
-          placement: "top",
-          modifiers: [{ name: "offset", options: { offset: [0, 8] } }],
-        });
-      
-        this.tooltipEl.style.display = "block";
+  onMouseLeave() {
+    this.tooltipEl.style.display = "none";
+    if (this.popperInstance) {
+      this.popperInstance.destroy();
+      this.popperInstance = null;
     }
-
-    onMouseLeave() {
-        this.tooltipEl.style.display = "none";
-        if (this.popperInstance) {
-          this.popperInstance.destroy();
-          this.popperInstance = null;
-        }
-    }
+  }
 }
 
 export function makeVirtualElementNew(

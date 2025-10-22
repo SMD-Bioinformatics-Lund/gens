@@ -7,6 +7,7 @@ import "./components/side_menu/settings_menu";
 import "./components/side_menu/track_row";
 import "./components/side_menu/side_menu";
 import "./components/side_menu/info_menu";
+import "./components/side_menu/help_menu";
 import "./components/header_info";
 import "./movements/marker";
 import "./components/side_menu/track_menu";
@@ -22,7 +23,7 @@ import { API } from "./state/api";
 import { TracksManager } from "./components/tracks_manager/tracks_manager";
 import { InputControls } from "./components/input_controls";
 import { getRenderDataSource } from "./state/data_source";
-import { DEFAULT_VARIANT_THRES as DEFAULT_VARIANT_THRES, STYLE } from "./constants";
+import { STYLE } from "./constants";
 import { SideMenu } from "./components/side_menu/side_menu";
 import {
   SettingsMenu,
@@ -35,6 +36,7 @@ import { GensHome } from "./home/gens_home";
 import { SampleInfo } from "./home/sample_table";
 import { setupShortcuts } from "./shortcuts";
 import { getMainSample } from "./util/utils";
+import { HelpMenu } from "./components/side_menu/help_menu";
 
 export async function samplesListInit(
   samples: SampleInfo[],
@@ -65,7 +67,6 @@ export async function initCanvases({
   scoutBaseURL,
   gensApiURL,
   mainSampleTypes,
-  annotationFile: defaultAnnotationName,
   startRegion,
   version,
   allSamples,
@@ -85,6 +86,7 @@ export async function initCanvases({
   const sideMenu = document.getElementById("side-menu") as SideMenu;
   const settingsPage = document.createElement("settings-page") as SettingsMenu;
   const infoPage = document.createElement("info-page") as InfoMenu;
+  const helpPage = document.createElement("help-page") as HelpMenu;
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
 
   headerInfo.initialize(
@@ -104,7 +106,12 @@ export async function initCanvases({
     gensTracks.render(settings);
     settingsPage.render(settings);
     infoPage.render();
+    helpPage.render();
     inputControls.render(settings);
+
+    if (settings.saveLayoutChange) {
+      gensTracks.trackView.saveTrackLayout();
+    }
   };
 
   const trackHeights: TrackHeights = {
@@ -144,6 +151,8 @@ export async function initCanvases({
 
   const mainSample = getMainSample(samples);
 
+  const allAnnotSources = await api.getAnnotationSources();
+
   const session = new GensSession(
     render,
     sideMenu,
@@ -152,89 +161,34 @@ export async function initCanvases({
     trackHeights,
     scoutBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
-    settingsPage,
     genomeBuild,
     api.getChromInfo(),
     api.getChromSizes(),
     startRegion,
-    DEFAULT_VARIANT_THRES,
+    allAnnotSources,
   );
 
   const renderDataSource = getRenderDataSource(
     api,
-    () => session.getChromosome(),
-    () => session.getXRange(),
+    () => session.pos.getChromosome(),
+    () => session.pos.getXRange(),
+    (id) => session.getVariantURL(id),
   );
 
   const onChromClick = async (chrom) => {
-    session.setChromosome(chrom);
-    render({ dataUpdated: true });
+    session.pos.setChromosome(chrom);
+    render({ reloadData: true });
   };
 
-  setupShortcuts(session, sideMenu, inputControls, onChromClick);
+  setupShortcuts(session, sideMenu, inputControls, onChromClick, render);
 
-  const allAnnotSources = await api.getAnnotationSources();
-
-  const defaultAnnot = allAnnotSources
-    .filter((track) => track.name === defaultAnnotationName)
-    .map((track) => {
-      return {
-        id: track.track_id,
-        label: track.name,
-      };
-    });
-
-  settingsPage.setSources(
+  addSettingsPageSources(
+    settingsPage,
     session,
     render,
     allAnnotSources,
-    defaultAnnot,
-    () => gensTracks.trackView.getDataTracks(),
-    (trackId: string, direction: "up" | "down") =>
-      gensTracks.trackView.moveTrack(trackId, direction),
-    () => {
-      const samples = session.getSamples();
-      const currSampleIds = samples.map(
-        (sample) => `${sample.caseId}_${sample.sampleId}`,
-      );
-      const filtered = allSamples.filter(
-        (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
-      );
-      return filtered;
-    },
-    (region: Region) => {
-      const positionOnly = region.chrom == session.getChromosome();
-      session.setChromosome(region.chrom, [region.start, region.end]);
-      render({ dataUpdated: true, positionOnly });
-    },
-    // FIXME: Something strange here in how things are organized,
-    // why is the trackview looping to itself?
-    async (sample: Sample) => {
-      const isTrackView = true;
-      gensTracks.trackView.addSample(sample, isTrackView);
-      session.addSample(sample);
-      render({ dataUpdated: true, samplesUpdated: true });
-    },
-    (sample: Sample) => {
-      // FIXME: This should eventually be session only, with tracks responding on rerender
-      session.removeSample(sample);
-      gensTracks.trackView.removeSample(sample);
-      render({ dataUpdated: true, samplesUpdated: true });
-    },
-    (trackHeights: TrackHeights) => {
-      session.setTrackHeights(trackHeights);
-      gensTracks.trackView.setTrackHeights(trackHeights);
-      render({});
-    },
-    async (annotId: string | null) => {
-      session.setColorAnnotation(annotId);
-      await gensTracks.trackView.setColorAnnotation(annotId);
-      render({});
-    },
-    (rng: Rng) => {
-      gensTracks.setCovYRange(rng);
-      render({dataUpdated: true});
-    },
+    allSamples,
+    gensTracks,
   );
 
   infoPage.setSources(() => session.getSamples());
@@ -242,19 +196,24 @@ export async function initCanvases({
   inputControls.initialize(
     session,
     async (range) => {
-      session.setViewRange(range);
-      render({ dataUpdated: true, positionOnly: true });
+      session.pos.setViewRange(range);
+      render({ reloadData: true, positionOnly: true });
     },
     () => {
       sideMenu.showContent("Settings", [settingsPage], STYLE.menu.width);
 
       if (!settingsPage.isInitialized) {
         settingsPage.initialize();
+        render({});
       }
     },
     () => {
       sideMenu.showContent("Sample info", [infoPage], STYLE.menu.width);
       infoPage.render();
+    },
+    () => {
+      sideMenu.showContent("Help", [helpPage], STYLE.menu.width);
+      helpPage.render();
     },
     () => {
       session.toggleChromViewActive();
@@ -271,14 +230,107 @@ export async function initCanvases({
     },
   );
 
-  await gensTracks.initialize(
+  await gensTracks.initializeTrackView(
     render,
-    samples,
-    session.getChromSizes(),
+    session.pos.getChromSizes(),
     onChromClick,
     renderDataSource,
     session,
   );
 
-  render({ dataUpdated: true, resized: true });
+  render({ reloadData: true, resized: true });
+}
+
+function addSettingsPageSources(
+  settingsPage: SettingsMenu,
+  session: GensSession,
+  render: (settings: RenderSettings) => void,
+  allAnnotSources: ApiAnnotationTrack[],
+  allSamples: Sample[],
+  gensTracks: TracksManager,
+) {
+  const onTrackMove = (trackId: string, direction: "up" | "down") => {
+    session.tracks.shiftTrack(trackId, direction);
+    render({ tracksReordered: true, saveLayoutChange: true });
+  };
+  const getAllSamples = () => {
+    const samples = session.getSamples();
+    const currSampleIds = samples.map(
+      (sample) => `${sample.caseId}_${sample.sampleId}`,
+    );
+    const filtered = allSamples.filter(
+      (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
+    );
+    return filtered;
+  };
+  const gotoHighlight = (region: Region) => {
+    const positionOnly = region.chrom == session.pos.getChromosome();
+    session.pos.setChromosome(region.chrom, [region.start, region.end]);
+    render({ reloadData: true, positionOnly });
+  };
+  const onAddSample = async (sample: Sample) => {
+    session.addSample(sample);
+    render({ reloadData: true, samplesUpdated: true });
+  };
+  const onRemoveSample = (sample: Sample) => {
+    // FIXME: This should eventually be session only, with tracks responding on rerender
+    session.removeSample(sample);
+    render({ reloadData: true, samplesUpdated: true });
+  };
+  const setTrackInfo = (trackHeights: TrackHeights) => {
+    session.setTrackHeights(trackHeights);
+    render({});
+  };
+  const onColorByChange = async (annotId: string | null) => {
+    session.setColorAnnotation(annotId);
+    await gensTracks.trackView.updateColorBands();
+    render({});
+  };
+  const onApplyDefaultCovRange = (rng: Rng) => {
+    gensTracks.setCovYRange(rng);
+    render({ reloadData: true });
+  };
+  const onSetAnnotationSelection = (ids: string[]) => {
+    session.setAnnotationSelections(ids);
+    render({});
+  };
+  const onSetGeneListSelection = (ids: string[]) => {
+    session.setAnnotationSelections(ids);
+    render({});
+  };
+  const onSetVariantThreshold = (threshold: number) => {
+    session.setVariantThreshold(threshold);
+    render({ reloadData: true });
+  };
+  const onToggleTrackHidden = (trackId: string) => {
+    session.tracks.toggleTrackHidden(trackId);
+    render({ saveLayoutChange: true, targetTrackId: trackId });
+  };
+  const onToggleTrackExpanded = (trackId: string) => {
+    session.tracks.toggleTrackExpanded(trackId);
+    render({ saveLayoutChange: true, targetTrackId: trackId });
+  };
+  const onAssignMainSample = (sample: Sample) => {
+    session.setMainSample(sample);
+    render({ mainSampleChanged: true, reloadData: true });
+  };
+
+  settingsPage.setSources(
+    session,
+    allAnnotSources,
+    onTrackMove,
+    getAllSamples,
+    gotoHighlight,
+    onAddSample,
+    onRemoveSample,
+    setTrackInfo,
+    onColorByChange,
+    onApplyDefaultCovRange,
+    onSetAnnotationSelection,
+    onSetGeneListSelection,
+    onSetVariantThreshold,
+    onToggleTrackHidden,
+    onToggleTrackExpanded,
+    onAssignMainSample,
+  );
 }

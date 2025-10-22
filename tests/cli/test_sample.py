@@ -1,16 +1,15 @@
-import importlib
 import logging
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable
+from typing import Any
+
 import mongomock
 import pytest
 
+from gens.crud.samples import update_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
-
-from gens.crud.samples import update_sample, delete_sample
 
 LOG = logging.getLogger(__name__)
 
@@ -18,7 +17,9 @@ LOG = logging.getLogger(__name__)
 @pytest.fixture(autouse=True)
 def ensure_indexes(db: mongomock.Database):
     coll = db.get_collection(SAMPLES_COLLECTION)
-    coll.create_index([("sample_id", 1), ("case_id", 1), ("genome_build", 1)], unique=True)
+    coll.create_index(
+        [("sample_id", 1), ("case_id", 1), ("genome_build", 1)], unique=True
+    )
 
 
 def test_load_sample_cli(
@@ -69,7 +70,7 @@ def test_load_sample_cli(
     assert len(doc["meta"]) == 2
 
     assert doc["meta"][0]["file_name"] == "meta_simple.tsv"
-    assert doc["meta"][0]["row_name_header"] == None
+    assert doc["meta"][0]["row_name_header"] is None
     assert len(doc["meta"][0]["data"]) == 1
     assert doc["meta"][0]["data"][0] == {
         "type": "A",
@@ -138,12 +139,48 @@ def test_load_sample_cli_with_string_genome_build_fails(
     assert sample_coll.count_documents({}) == 1
 
 
+@pytest.mark.parametrize("alias,expected", [("T", "tumor"), ("N", "normal")])
+def test_load_sample_cli_accepts_aliases(
+    cli_load: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+    alias: str,
+    expected: str,
+) -> None:
+    baf_file = tmp_path / "baf"
+    baf_file.write_text("baf")
+    cov_file = tmp_path / "cov"
+    cov_file.write_text("cov")
+    overview_file = tmp_path / "overview"
+    overview_file.write_text("{}")
+
+    cli_load.sample.callback(
+        sample_id=f"sample-{alias}",
+        genome_build=38,
+        baf=baf_file,
+        coverage=cov_file,
+        case_id=f"case-{alias}",
+        overview_json=overview_file,
+        meta_files=[],
+        sample_type=alias,
+        sex=None,
+    )
+
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one(
+        {"sample_id": f"sample-{alias}"}
+    )
+    assert doc is not None
+    assert doc["sample_type"] == expected
+
+
 def test_delete_sample_cli_removes_document(
     cli_delete: ModuleType,
     db: mongomock.Database,
 ) -> None:
     coll = db.get_collection(SAMPLES_COLLECTION)
-    coll.insert_one({"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(19)})
+    coll.insert_one(
+        {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(19)}
+    )
 
     cli_delete.sample.callback(sample_id="sample1", genome_build=19, case_id="caseA")
 
@@ -167,11 +204,20 @@ def test_update_sample_updates_document(
         meta=[],
     )
 
-    monkeypatch.setattr(cli_update, "get_sample", lambda db, sample_id, case_id, genome_build: sample_obj)
+    monkeypatch.setattr(
+        cli_update,
+        "get_sample",
+        lambda db, sample_id, case_id, genome_build: sample_obj,
+    )
     # monkeypatch.setattr(update_sample_cmd, "parse_meta_file", lambda p: "META")
 
     meta_file = tmp_path / "meta.tsv"
     meta_file.write_text("type\tvalue\nA\t1\n")
+
+    baf_file = tmp_path / "baf"
+    baf_file.write_text("baf")
+    cov_file = tmp_path / "cov"
+    cov_file.write_text("cov")
 
     # assert update_sample_cmd.sample.callback is not None
 
@@ -181,6 +227,8 @@ def test_update_sample_updates_document(
         genome_build=GenomeBuild(19),
         sample_type="tumor",
         sex=SampleSex("M"),
+        baf=baf_file,
+        coverage=cov_file,
         meta_files=(meta_file,),
     )
 
@@ -191,6 +239,8 @@ def test_update_sample_updates_document(
     assert doc is not None
     assert doc["sample_type"] == "tumor"
     assert doc.get("sex") in ("M", SampleSex("M"), SampleSex.MALE)
+    assert Path(doc["baf_file"]) == baf_file
+    assert Path(doc["coverage_file"]) == cov_file
 
     LOG.debug(doc)
 
@@ -202,7 +252,7 @@ def test_update_sample_updates_document(
     assert len(meta[0]["data"]) == 1
     assert meta[0]["data"][0]["type"] == "A"
     assert meta[0]["data"][0]["value"] == "1"
-    assert meta[0]["data"][0]["row_name"] == None
+    assert meta[0]["data"][0]["row_name"] is None
     assert meta[0]["data"][0]["color"] == "rgb(0,0,0)"
 
 

@@ -53,17 +53,20 @@ class Settings(BaseSettings):
 
     # For scout integration
     gens_db: MongoDbConfig
-    scout_db: MongoDbConfig
-    scout_url: HttpUrl = Field(..., description="Base URL to Scout.")
+    variant_db: MongoDbConfig
+    variant_url: HttpUrl = Field(
+        ..., description="Base URL to interpretation software."
+    )
     gens_api_url: HttpUrl = Field(..., description="Gens API URL")
+    variant_software_backend: str = Field(
+        default="scout_mongo",
+        description="Implementation used for interpretation software integration.",
+    )
 
     main_sample_types: list[str] = Field(
         default_factory=lambda: ["proband", "tumor"],
         description="Sample types treated as main samples",
     )
-
-    # Annotation
-    default_annotation_track: str | None = None
 
     # Authentication options
     authentication: AuthMethod = AuthMethod.DISABLED
@@ -80,10 +83,9 @@ class Settings(BaseSettings):
     def get_dict(self) -> dict[str, Any]:
         return {
             "gens_db": self.gens_db.database,
-            "scout_db": self.scout_db.database,
-            "scout_url": self.scout_url,
+            "variant_db": self.variant_db.database,
+            "scout_url": self.variant_url,
             "gens_api_url": self.gens_api_url,
-            "default_annotation_track": self.default_annotation_track,
             "main_sample_types": self.main_sample_types,
             "authentication": self.authentication.value,
             "oauth": self.oauth,
@@ -93,7 +95,7 @@ class Settings(BaseSettings):
     def check_oauth_opts(self) -> "Settings":
         """Check that OAUTH options are set if authentication is oauth."""
         if self.authentication == AuthMethod.OAUTH:
-            if not self.oauth is None:
+            if self.oauth is not None:
                 raise ValueError(
                     "OAUTH require you to configure client_id, secret and discovery_url"
                 )
@@ -115,9 +117,9 @@ class Settings(BaseSettings):
         )
 
         # scout
-        conn_info = parse_uri(str(self.scout_db.connection))
-        self.scout_db.database = (
-            self.scout_db.database
+        conn_info = parse_uri(str(self.variant_db.connection))
+        self.variant_db.database = (
+            self.variant_db.database
             if conn_info["database"] is None
             else conn_info["database"]
         )

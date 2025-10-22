@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator, Optional, TypeAlias
 
 from pydantic import AnyHttpUrl, BaseModel, ValidationError
 from pydantic_core import PydanticCustomError
@@ -178,10 +178,10 @@ def _parse_aed_property(property_def: str) -> AedPropertyDefinition:
     return AedPropertyDefinition(prefix=prefix or "no_prefix", name=name, type=type)
 
 
-AedDatatypes = str | int | bool | datetime | Color | AnyHttpUrl
-AedFileMetadata = list[dict[str, AedDatatypes]]
-AedRecord = dict[str, AedDatatypes | None]
-AedRecords = list[AedRecord]
+AedDatatypes: TypeAlias = str | int | bool | datetime | Color | AnyHttpUrl
+AedFileMetadata: TypeAlias = list[dict[str, AedDatatypes]]
+AedRecord: TypeAlias = dict[str, AedDatatypes | None]
+AedRecords: TypeAlias = list[AedRecord]
 
 
 def format_aed_entry(value: str, format: str) -> AedDatatypes:
@@ -308,7 +308,11 @@ def parse_tsv_file(file: Path) -> Iterator[dict[str, Any]]:
 
             yield {
                 "name": row.get("name", ""),
-                "chrom": chromosome.upper() if not chromosome.startswith("chr") else chromosome,
+                "chrom": (
+                    chromosome.upper()
+                    if not chromosome.startswith("chr")
+                    else chromosome
+                ),
                 "start": int(start) + 1,
                 "end": int(end),
                 "color": color,
@@ -332,7 +336,9 @@ def _parse_color(color_cell: str):
     return color
 
 
-def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata, AedRecords]:
+def parse_aed_file(
+    file: Path, continue_on_error: bool
+) -> tuple[AedFileMetadata, AedRecords]:
     """Read aed file.
 
     Reference: https://assets.thermofisher.com/TFS-Assets/GSD/Handbooks/Chromosome_analysis_suite_v4.2_user-guide.pdf
@@ -343,7 +349,11 @@ def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata
 
         # This can deal with quote surrounded comments containing line breaks
         reader = csv.reader(
-            aed_fh, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL, escapechar="\\"
+            aed_fh,
+            delimiter="\t",
+            quotechar='"',
+            quoting=csv.QUOTE_MINIMAL,
+            escapechar="\\",
         )
 
         records: list[dict[str, AedDatatypes | None]] = []
@@ -361,7 +371,9 @@ def parse_aed_file(file: Path, continue_on_error: bool) -> tuple[AedFileMetadata
                         result = format_aed_entry(raw_value, col_def.type)
                     except ValueError:
                         LOG.warning(
-                            "Failed to format AED entry %s as format %s", raw_value, col_def.type
+                            "Failed to format AED entry %s as format %s",
+                            raw_value,
+                            col_def.type,
                         )
                         if not continue_on_error:
                             raise
@@ -396,6 +408,7 @@ def format_bed_data(data_type: str, value: str) -> str | int | Color | None:
     return new_value
 
 
+# FIXME: Reduce complexity to satisfy flake8 warnings
 def fmt_aed_to_annotation(
     record: AedRecord,
     track_id: PydanticObjectId,
@@ -420,7 +433,7 @@ def fmt_aed_to_annotation(
                                 {"title": match.group(1), "pmid": match.group(2)}
                             )
                         )
-                    except ValidationError as err:
+                    except ValidationError:
                         continue
             elif "http" in note or "www" in note:
                 match = re.search(AED_URL_REFERENCE_NOTE, note)
@@ -431,7 +444,7 @@ def fmt_aed_to_annotation(
                                 {"title": match.group(1), "url": match.group(2)}
                             )
                         )
-                    except ValidationError as err:
+                    except ValidationError:
                         continue
             else:
                 continue
@@ -447,20 +460,32 @@ def fmt_aed_to_annotation(
         "value",
     ]
     # cast to database metadata format
-    metadata: list[DatetimeMetadata | GenericMetadata | UrlMetadata | DnaStrandMetadata] = []
+    metadata: list[
+        DatetimeMetadata | GenericMetadata | UrlMetadata | DnaStrandMetadata
+    ] = []
     for field_name, value in record.items():
         if any([field_name in EXCLUDE_FIELDS, value is None and exclude_na]):
             continue
         if isinstance(value, datetime):
-            metadata.append(DatetimeMetadata(field_name=field_name, value=value, type="datetime"))
+            metadata.append(
+                DatetimeMetadata(field_name=field_name, value=value, type="datetime")
+            )
         elif isinstance(value, str):
-            metadata.append(GenericMetadata(field_name=field_name, value=value, type="string"))
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=value, type="string")
+            )
         elif isinstance(value, int):
-            metadata.append(GenericMetadata(field_name=field_name, value=value, type="integer"))
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=value, type="integer")
+            )
         elif isinstance(value, float):
-            metadata.append(GenericMetadata(field_name=field_name, value=value, type="float"))
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=value, type="float")
+            )
         elif isinstance(value, bool):
-            metadata.append(GenericMetadata(field_name=field_name, value=value, type="bool"))
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=value, type="bool")
+            )
         elif isinstance(value, AnyHttpUrl):
             metadata.append(
                 UrlMetadata(
@@ -471,7 +496,9 @@ def fmt_aed_to_annotation(
             )
         else:
 
-            metadata.append(GenericMetadata(field_name=field_name, value=str(value), type="string"))
+            metadata.append(
+                GenericMetadata(field_name=field_name, value=str(value), type="string")
+            )
 
     # Various checks to make sure the received data is in expected format
     # This data is manually entered, meaning that various types of errors might and will be found here
@@ -493,7 +520,9 @@ def fmt_aed_to_annotation(
             )
 
     if rec_end is None or not isinstance(rec_end, int):
-        raise ValueError(f"end expected in int format, found: {rec_end} for record {record}")
+        raise ValueError(
+            f"end expected in int format, found: {rec_end} for record {record}"
+        )
 
     if not rec_color or not isinstance(rec_color, Color):
         LOG.error(f"Unknown color: {rec_color}, assigning black")
@@ -504,7 +533,7 @@ def fmt_aed_to_annotation(
 
     try:
         chromosome = Chromosome(rec_sequence.strip("chr"))
-    except ValueError as e:
+    except ValueError:
         LOG.error(f"Failed to parse chromosome: {rec_sequence}, skipping")
         return None
 

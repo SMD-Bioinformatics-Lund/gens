@@ -1,10 +1,10 @@
 """CRUD operations for sample info."""
 
-from datetime import timezone
 import logging
+from datetime import timezone
+from pathlib import Path
 from typing import Any, Dict, List
 
-from pydantic import ValidationError
 from pymongo import DESCENDING
 from pymongo.collection import Collection
 from pymongo.database import Database
@@ -113,9 +113,12 @@ def get_samples_per_case(
         #     continue
 
         case_id = sample["case_id"]
-        # case_id = sample_data.case_id
         if not case_to_samples.get(case_id):
             case_to_samples[case_id] = []
+
+        # baf_file_exists = Path(sample.get("baf_file", "")).is_file()
+        # cov_file_exists = Path(sample.get("coverage_file", "")).is_file()
+
         sample_obj = {
             "case_id": sample["case_id"],
             "sample_id": sample["sample_id"],
@@ -136,7 +139,7 @@ def get_samples_for_case(
     samples_c: Collection[dict[str, Any]],
     case_id: str,
 ) -> list[SampleInfo]:
-    
+
     cursor = samples_c.find({"case_id": case_id}).sort("created_at", DESCENDING)
 
     samples: list[SampleInfo] = []
@@ -147,22 +150,33 @@ def get_samples_for_case(
 
         sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
 
+        baf_file = Path(result["baf_file"])
+        coverage_file = Path(result["coverage_file"])
+        for file_path in (baf_file, coverage_file):
+            if not file_path.is_file():
+                raise FileNotFoundError(f"{file_path} was not found")
+            index_path = file_path.with_suffix(file_path.suffix + ".tbi")
+            if not index_path.is_file():
+                raise FileNotFoundError(f"{index_path} was not found")
+        if overview_file is not None and not Path(overview_file).is_file():
+            raise FileNotFoundError(f"{overview_file} was not found")
+
         sample = SampleInfo(
             sample_id=result["sample_id"],
             case_id=result["case_id"],
             genome_build=GenomeBuild(int(result["genome_build"])),
-            baf_file=result["baf_file"],
-            coverage_file=result["coverage_file"],
-            overview_file=overview_file,
+            baf_file=baf_file,
+            coverage_file=coverage_file,
+            overview_file=Path(overview_file) if overview_file is not None else None,
             sample_type=result.get("sample_type"),
             sex=result.get("sex"),
             meta=sample_meta,
             created_at=result["created_at"],
         )
         samples.append(sample)
-    
+
     return samples
-    
+
 
 def get_sample(
     samples_c: Collection[dict[str, Any]],
@@ -181,7 +195,9 @@ def get_sample(
     result = samples_c.find_one(sample_filter)
 
     if result is None:
-        raise SampleNotFoundError(f'No sample with id: "{sample_id}" in database', sample_id)
+        raise SampleNotFoundError(
+            f'No sample with id: "{sample_id}" in database', sample_id
+        )
 
     overview_file = result.get("overview_file")
     if overview_file == "None":

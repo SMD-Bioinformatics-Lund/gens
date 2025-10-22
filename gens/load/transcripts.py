@@ -1,11 +1,11 @@
 """Load transcripts into database"""
 
 import csv
-from dataclasses import dataclass
 import logging
 from collections import defaultdict
+from dataclasses import dataclass
 from itertools import chain
-from typing import Any, Generator, Iterable, Iterator, Optional, TextIO, TypedDict
+from typing import Generator, Iterable, Optional, TextIO, TypedDict
 
 import click
 from pydantic import ValidationError
@@ -37,7 +37,6 @@ class TranscriptEntry(TypedDict):
     start: int
     end: int
     strand: str
-    height_order: Optional[int]
     transcript_id: str
     transcript_biotype: str
     mane: Optional[str]
@@ -46,11 +45,12 @@ class TranscriptEntry(TypedDict):
     features: list
 
 
+# FIXME: Reduce complexity to satisfy flake8 warnings
 def build_transcripts(
     transc_file: TextIO, mane_file: TextIO, genome_build: GenomeBuild
 ) -> Iterable[TranscriptRecord]:
     """Build transcript object from transcript and mane file."""
-    mane_info = _parse_mane_transc(mane_file)
+    mane_info = parse_mane_transc(mane_file)
 
     LOG.info("%s MANE entries loaded", len(mane_info))
 
@@ -79,14 +79,20 @@ def build_transcripts(
                     continue
 
                 try:
-                    transcript_entry = _make_transcript_entry(
+                    transcript_entry = make_transcript_entry(
                         transcript_id, selected_mane, transc, genome_build
                     )
                 except ValidationError as e:
-                    LOG.warning("Skipping transcript %r: validation failed: %s", transcript_id, e)
+                    LOG.warning(
+                        "Skipping transcript %r: validation failed: %s",
+                        transcript_id,
+                        e,
+                    )
                     continue
                 transc_index[transcript_id] = transcript_entry
-                annotated_mane_transc[transc.attribs["gene_name"]].append(transcript_entry)
+                annotated_mane_transc[transc.attribs["gene_name"]].append(
+                    transcript_entry
+                )
             elif transc.feature in ["exon", "three_prime_utr", "five_prime_utr"]:
                 # add features to existing transcript
                 if transcript_id in transc_index:
@@ -120,14 +126,13 @@ def build_transcripts(
     return flat_transcripts
 
 
-def _make_transcript_entry(
+def make_transcript_entry(
     transcript_id: str,
-    selected_name: dict[
+    selected_mane: dict[
         str,
         str,
     ],
     transc: GTFEntry,
-    # attribs: dict[str, str],
     genome_build: GenomeBuild,
 ) -> TranscriptRecord:
 
@@ -139,18 +144,17 @@ def _make_transcript_entry(
             "start": transc.start,
             "end": transc.end,
             "strand": transc.strand,
-            "height_order": None,  # will be set later
             "transcript_id": transcript_id,
             "transcript_biotype": transc.attribs["transcript_biotype"],
-            "mane": selected_name.get("mane_status"),
-            "hgnc_id": selected_name.get("hgnc_id"),
-            "refseq_id": selected_name.get("refseq_id"),
+            "mane": selected_mane.get("mane_status"),
+            "hgnc_id": selected_mane.get("hgnc_id"),
+            "refseq_id": selected_mane.get("refseq_id"),
             "features": [],
         }
     )
 
 
-def _parse_mane_transc(mane_file: Iterable[str]) -> dict[str, dict[str, str]]:
+def parse_mane_transc(mane_file: Iterable[str]) -> dict[str, dict[str, str]]:
     """Parse mane tranascript file and index on ensemble id."""
     mane_info: dict[str, dict[str, str]] = {}
     LOG.info("parsing mane transcripts")
@@ -235,7 +239,9 @@ def _parse_transcript_gtf(
         feature = row_fields["feature"]
         strand = row_fields["strand"]
 
-        gtf_entry = GTFEntry(seqname, start, end, feature, strand, attribs, is_canonical)
+        gtf_entry = GTFEntry(
+            seqname, start, end, feature, strand, attribs, is_canonical
+        )
 
         # skip non protein coding genes
         yield gtf_entry

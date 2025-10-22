@@ -12,14 +12,16 @@ from flask_compress import Compress  # type: ignore
 from flask_login import current_user  # type: ignore
 from werkzeug.wrappers.response import Response
 
+from gens.blueprints.gens.views import gens_bp
+from gens.blueprints.home.views import home_bp
+from gens.blueprints.login.views import login_bp
 from gens.db.db import init_database_connection
 from gens.exceptions import SampleNotFoundError
 
 from .auth import login_manager, oauth_client
-from .blueprints import gens_bp, home_bp, login_bp
 from .config import AuthMethod, settings
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
-from .routes import annotations, base, sample, sample_annotations
+from .routes import annotations, base, gene_lists, sample, sample_annotations
 
 dictConfig(
     {
@@ -100,6 +102,7 @@ def add_api_routers(app: FastAPI):
     app.include_router(sample.router)
     app.include_router(annotations.router)
     app.include_router(sample_annotations.router)
+    app.include_router(gene_lists.router)
 
 
 def initialize_extensions(app: Flask) -> None:

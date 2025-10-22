@@ -3,6 +3,7 @@
 from typing import Any
 
 from pydantic import Field
+
 from gens.models.annotation import AnnotationRecord
 from gens.models.base import CreatedAtModel, ModifiedAtModel, PydanticObjectId, RWModel
 from gens.models.genomic import GenomeBuild

@@ -1,10 +1,12 @@
 import logging
 from types import ModuleType
+
 import mongomock
 
 from gens.db.index import INDEXES
 
 LOG = logging.getLogger(__name__)
+
 
 def _index_name(model) -> str:
     name = model.document.get("name")
@@ -15,7 +17,7 @@ def _index_name(model) -> str:
 
 def test_index_creates_indexes(cli_index: ModuleType, db: mongomock.Database):
     """Ensure that the index command builds all indexes."""
-    
+
     cli_index.index.callback(build=True, update=False)
 
     for collection_name, models in INDEXES.items():
@@ -37,5 +39,3 @@ def test_index_updates_indexes(cli_index: ModuleType, db: mongomock.Database):
         info = db.get_collection(collection_name).index_information()
         for model in models:
             assert _index_name(model) in info
-
-

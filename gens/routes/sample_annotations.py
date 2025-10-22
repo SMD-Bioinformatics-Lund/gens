@@ -1,4 +1,5 @@
 from http import HTTPStatus
+
 from fastapi import APIRouter, HTTPException
 
 from gens.crud.sample_annotations import (
@@ -9,9 +10,11 @@ from gens.crud.sample_annotations import (
 from gens.models.annotation import SimplifiedTrackInfo
 from gens.models.base import PydanticObjectId
 from gens.models.genomic import Chromosome, GenomeBuild
-from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrackInDb
+from gens.models.sample_annotation import (
+    SampleAnnotationRecord,
+    SampleAnnotationTrackInDb,
+)
 from gens.routes.utils import ApiTags, GensDb
-
 
 router = APIRouter(prefix="/sample-tracks")
 
@@ -33,12 +36,15 @@ async def get_sample_annotation_tracks_route(
 async def get_sample_annotations_route(
     track_id: PydanticObjectId, chromosome: Chromosome, db: GensDb
 ) -> list[SimplifiedTrackInfo]:
-    return get_sample_annotations_for_track(track_id=track_id, chromosome=chromosome, db=db)
+    return get_sample_annotations_for_track(
+        track_id=track_id, chromosome=chromosome, db=db
+    )
 
 
 @router.get("/annotations/record/{record_id}", tags=[ApiTags.SAMPLE_ANNOT])
 async def get_sample_annotation_record_route(
-    record_id: PydanticObjectId, db: GensDb,
+    record_id: PydanticObjectId,
+    db: GensDb,
 ) -> SampleAnnotationRecord:
     result = get_sample_annotations(record_id, db)
     if result is None:

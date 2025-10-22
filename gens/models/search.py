@@ -1,6 +1,5 @@
 """Models for searching."""
 
-from typing import Any
 from pydantic import BaseModel
 
 from gens.models.base import PydanticObjectId

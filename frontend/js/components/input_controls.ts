@@ -1,6 +1,13 @@
-import { CHROMOSOMES, COLORS, ICONS, SIZES } from "../constants";
+import {
+  CHROMOSOMES,
+  COLORS,
+  ICONS,
+  SEARCH_PAD_FRAC,
+  SIZES,
+} from "../constants";
 import { GensSession } from "../state/gens_session";
-import { getPan, zoomIn, zoomOut } from "../util/navigation";
+import { getPan } from "../util/navigation";
+import { clampRange, rangeSize } from "../util/utils";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -75,6 +82,9 @@ template.innerHTML = String.raw`
       <button title="Open info menu" id="info-button" class="button">
         <span class="fas ${ICONS.info}"></span>
       </button>
+      <button title="Open help menu" id="help-button" class="button">
+        <span class="fas ${ICONS.help}"></span>
+      </button>
       <button title="Open settings menu" id="settings-button" class='button'>
         <span class="fas ${ICONS.settings}"></span>
       </button>
@@ -93,6 +103,7 @@ export class InputControls extends HTMLElement {
   private toggleMarkerButton: HTMLButtonElement;
   private chromosomeViewButton: HTMLButtonElement;
   private infoButton: HTMLButtonElement;
+  private helpButton: HTMLButtonElement;
   private settingsButton: HTMLButtonElement;
 
   private searchButton: HTMLButtonElement;
@@ -104,6 +115,7 @@ export class InputControls extends HTMLElement {
   private onToggleMarker: () => void;
   private onOpenSettings: () => void;
   private onOpenInfo: () => void;
+  private onOpenHelp: () => void;
   private onToggleChromView: () => void;
   private onSearch: (query: string) => Promise<ApiSearchResult | null>;
   private onChange: (settings: RenderSettings) => void;
@@ -115,6 +127,7 @@ export class InputControls extends HTMLElement {
     onPositionChange: (newXRange: [number, number]) => void,
     onOpenSettings: () => void,
     onOpenInfo: () => void,
+    onOpenHelp: () => void,
     onToggleChromView: () => void,
     onSearch: (query: string) => Promise<ApiSearchResult | null>,
     onChange: (settings: RenderSettings) => void,
@@ -122,6 +135,7 @@ export class InputControls extends HTMLElement {
     this.session = session;
     this.onOpenSettings = onOpenSettings;
     this.onOpenInfo = onOpenInfo;
+    this.onOpenHelp = onOpenHelp;
     this.onToggleChromView = onToggleChromView;
     this.getMarkerOn = () => this.session.getMarkerModeOn();
     this.onToggleMarker = () => this.session.toggleMarkerMode();
@@ -138,11 +152,13 @@ export class InputControls extends HTMLElement {
     };
 
     this.zoomInButton.onclick = () => {
-      this.zoomIn();
+      this.session.pos.zoomIn();
+      this.onChange({ positionOnly: true, reloadData: true });
     };
 
     this.zoomOutButton.onclick = () => {
-      this.zoomOut();
+      this.session.pos.zoomOut();
+      this.onChange({ positionOnly: true, reloadData: true });
     };
 
     this.zoomResetButton.onclick = () => {
@@ -170,6 +186,7 @@ export class InputControls extends HTMLElement {
 
     this.chromosomeViewButton = this.querySelector("#chromosome-view-button");
     this.infoButton = this.querySelector("#info-button");
+    this.helpButton = this.querySelector("#help-button");
     this.settingsButton = this.querySelector("#settings-button");
 
     this.searchButton = this.querySelector("#search");
@@ -184,19 +201,23 @@ export class InputControls extends HTMLElement {
 
     this.infoButton.addEventListener("click", () => {
       this.onOpenInfo();
-    })
+    });
+
+    this.helpButton.addEventListener("click", () => {
+      this.onOpenHelp();
+    });
 
     // FIXME: Also enter when inside the input?
     this.searchButton.addEventListener("click", () => {
       const currentValue = this.regionField.value;
-      // console.log("Search", currentValue);
       queryRegionOrGene(
         currentValue,
         (chrom: Chromosome, range?: Rng) => {
-          this.session.setChromosome(chrom, range);
-          this.onChange({ dataUpdated: true, positionOnly: true });
+          this.session.pos.setChromosome(chrom, range);
+          this.onChange({ reloadData: true, positionOnly: true });
         },
         this.onSearch,
+        () => this.session.pos.getCurrentChromSize(),
       );
     });
 
@@ -213,7 +234,7 @@ export class InputControls extends HTMLElement {
       ? COLORS.lightGray
       : "";
 
-    const region = this.session.getRegion();
+    const region = this.session.pos.getRegion();
     this.regionField.value = `${region.chrom}:${region.start}-${region.end}`;
 
     this.chromosomeViewButton.style.backgroundColor =
@@ -221,37 +242,23 @@ export class InputControls extends HTMLElement {
   }
 
   panLeft() {
-    const currRange = this.session.getXRange();
+    const currRange = this.session.pos.getXRange();
     const newXRange = getPan(currRange, "left", 1);
     this.onPositionChange(newXRange);
   }
 
   panRight() {
-    const currXRange = this.session.getXRange();
+    const currXRange = this.session.pos.getXRange();
     const newXRange = getPan(
       currXRange,
       "right",
-      this.session.getCurrentChromSize(),
-    );
-    this.onPositionChange(newXRange);
-  }
-
-  zoomIn() {
-    const currXRange = this.session.getXRange();
-    const newXRange = zoomIn(currXRange);
-    this.onPositionChange(newXRange);
-  }
-
-  zoomOut() {
-    const newXRange = zoomOut(
-      this.session.getXRange(),
-      this.session.getCurrentChromSize(),
+      this.session.pos.getCurrentChromSize(),
     );
     this.onPositionChange(newXRange);
   }
 
   resetZoom() {
-    const xRange = [1, this.session.getCurrentChromSize()] as Rng;
+    const xRange = [1, this.session.pos.getCurrentChromSize()] as Rng;
     this.onPositionChange(xRange);
   }
 
@@ -264,6 +271,7 @@ async function queryRegionOrGene(
   query: string,
   onChangePosition: (chrom: string, range?: Rng) => void,
   getSearchResult: (string) => Promise<ApiSearchResult | null>,
+  getCurrentChromSize: () => number,
 ) {
   let chrom: Chromosome;
   let range: Rng | undefined = undefined;
@@ -279,9 +287,20 @@ async function queryRegionOrGene(
       return;
     }
     chrom = searchResult.chromosome as Chromosome;
-    range = [searchResult.start, searchResult.end];
+
+    // Add visual padding at edges
+    const rawRange = extendRange([searchResult.start, searchResult.end]);
+    range = clampRange(rawRange, 1, getCurrentChromSize());
   }
   onChangePosition(chrom, range);
+}
+
+function extendRange(startRange: Rng): Rng {
+  const range = rangeSize(startRange);
+  const fracDiff = range * SEARCH_PAD_FRAC;
+  const usedStart = Math.ceil(startRange[0] - fracDiff / 2);
+  const usedEnd = Math.floor(startRange[1] + fracDiff / 2);
+  return [usedStart, usedEnd];
 }
 
 customElements.define("input-controls", InputControls);

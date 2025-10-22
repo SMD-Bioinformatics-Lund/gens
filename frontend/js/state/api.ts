@@ -1,5 +1,6 @@
 import { CHROMOSOMES } from "../constants";
 import { get } from "../util/fetch";
+import { idbGet, idbSet } from "../util/indexeddb";
 import { zip } from "../util/utils";
 
 const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
@@ -7,6 +8,8 @@ const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 // FIXME: This will need to be made configurable eventually
 const DEFAULT_VARIANT_TYPES = ["del", "dup", "tdup"];
 const ZOOM_WINDOW_MULTIPLIER = 5;
+const IDB_CACHE_KEY = "gens-cache";
+const IDB_TRANSCRIPTS_KEY = "transcripts";
 
 export class API {
   genomeBuild: number;
@@ -103,6 +106,22 @@ export class API {
       genome_build: this.genomeBuild,
     }) as Promise<ApiAnnotationTrack[]>;
     return annotSources;
+  }
+
+  getGeneLists(): Promise<ApiGeneList[]> {
+    const geneLists = get(
+      new URL("gene_lists", this.apiURI).href,
+      {},
+    ) as Promise<ApiGeneList[]>;
+    return geneLists;
+  }
+
+  getGeneListGenes(panelId: string, chromosome: string): Promise<string[]> {
+    const geneSymbols = get(
+      new URL(`gene_lists/track/${panelId}`, this.apiURI).href,
+      { chromosome, genome_build: this.genomeBuild },
+    ) as Promise<string[]>;
+    return geneSymbols;
   }
 
   getSampleAnnotationSources(
@@ -347,27 +366,67 @@ export class API {
     }
   }
 
+  private transcriptUpdateTimestamp: string | null = null;
+  private async getTranscriptUpdateTimestamp(): Promise<string | null> {
+    if (this.transcriptUpdateTimestamp != null) {
+      return this.transcriptUpdateTimestamp;
+    }
+    const resp = (await get(new URL("tracks/updates", this.apiURI).href, {
+      track: "transcripts",
+    })) as { track: string; timestamp: string | null };
+    this.transcriptUpdateTimestamp = resp ? resp.timestamp : null;
+    return this.transcriptUpdateTimestamp;
+  }
+
   private transcriptCache: Record<string, Promise<ApiSimplifiedTranscript[]>> =
     {};
   getTranscripts(
     chrom: string,
     onlyCanonical: boolean,
   ): Promise<ApiSimplifiedTranscript[]> {
-    const isCached = this.transcriptCache[chrom] !== undefined;
-    if (!isCached) {
+    const cacheKey = `${this.genomeBuild}|${chrom}|${onlyCanonical ? 1 : 0}`;
+
+    if (this.transcriptCache[cacheKey] !== undefined) {
+      return this.transcriptCache[cacheKey];
+    }
+
+    const promise = (async () => {
+      const serverTs = await this.getTranscriptUpdateTimestamp();
+      const cached = await idbGet<IDBTranscripts>(
+        IDB_CACHE_KEY,
+        IDB_TRANSCRIPTS_KEY,
+        cacheKey,
+      );
+      if (cached != null && Array.isArray(cached.transcripts)) {
+        if (serverTs == null) {
+          return cached.transcripts as ApiSimplifiedTranscript[];
+        }
+        if (cached.serverTimestamp === serverTs) {
+          return cached.transcripts as ApiSimplifiedTranscript[];
+        }
+      }
+
       const query = {
         chromosome: chrom,
         genome_build: this.genomeBuild,
         only_canonical: onlyCanonical,
       };
-      const transcripts = get(
+      const transcripts = (await get(
         new URL("tracks/transcripts", this.apiURI).href,
         query,
-      ) as Promise<ApiSimplifiedTranscript[]>;
+      )) as ApiSimplifiedTranscript[];
 
-      this.transcriptCache[chrom] = transcripts;
-    }
-    return this.transcriptCache[chrom];
+      await idbSet(IDB_CACHE_KEY, IDB_TRANSCRIPTS_KEY, cacheKey, {
+        transcripts,
+        serverTimestamp: serverTs,
+        cachedAt: new Date().toISOString(),
+      });
+
+      return transcripts;
+    })();
+
+    this.transcriptCache[cacheKey] = promise;
+    return promise;
   }
 
   private cachedThreshold: number;
@@ -381,7 +440,6 @@ export class API {
     chrom: string,
     rank_score_threshold: number,
   ): Promise<ApiSimplifiedVariant[]> {
-
     // Invalidate cache if changing the rank score threshold
     if (this.cachedThreshold != rank_score_threshold) {
       this.cachedThreshold = rank_score_threshold;

@@ -5,8 +5,8 @@ from collections import defaultdict
 from itertools import groupby
 from typing import Any
 
-from pymongo.cursor import Cursor
 from pymongo import DESCENDING
+from pymongo.cursor import Cursor
 from pymongo.database import Database
 
 from gens.db.collections import (
@@ -105,7 +105,13 @@ def get_annotations_for_track(
     track_id: PydanticObjectId, db: Database[Any]
 ) -> list[SimplifiedTrackInfo]:
     """Get annotation track from database."""
-    projection: dict[str, bool] = {"name": True, "start": True, "end": True, "chrom": True, "color": True}
+    projection: dict[str, bool] = {
+        "name": True,
+        "start": True,
+        "end": True,
+        "chrom": True,
+        "color": True,
+    }
     cursor: Cursor = db.get_collection(ANNOTATIONS_COLLECTION).find(
         {"track_id": track_id}, projection
     )
@@ -197,7 +203,7 @@ def get_data_update_timestamp(
                 {
                     "tack": entry["track"],
                     "name": entry["name"],
-                    "timestamp": entry["timestamp"].strftime("%Y-%m-%d"),
+                    "timestamp": entry["timestamp"].isoformat(),
                 }
             )
     return results

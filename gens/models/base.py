@@ -1,10 +1,10 @@
 """Base datamodels that other inherits from."""
 
 import datetime
-from typing import Annotated, Any, Callable
+from typing import Annotated, Any, Callable, TypeAlias
 
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from pydantic_core import core_schema
 
 from gens.utils import get_timestamp
@@ -53,7 +53,7 @@ class _ObjectIdPydanticAnnotation:
         )
 
 
-PydanticObjectId = Annotated[ObjectId, _ObjectIdPydanticAnnotation]
+PydanticObjectId: TypeAlias = Annotated[ObjectId, _ObjectIdPydanticAnnotation]
 
 
 class User(CreatedAtModel, ModifiedAtModel):

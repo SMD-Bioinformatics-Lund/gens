@@ -1,12 +1,9 @@
-import importlib
 import json
 import logging
-from types import ModuleType
 from pathlib import Path
-from typing import Callable
+from types import ModuleType
 
 import mongomock
-import pytest
 
 from gens.db.collections import CHROMSIZES_COLLECTION
 from gens.models.genomic import GenomeBuild
@@ -35,8 +32,20 @@ def test_load_chromosomes_from_file(
                     "end": 5,
                 },
                 "bands": [
-                    {"id": "p11.1", "stain": "acen", "start": 1, "end": 2, "strand": "0"},
-                    {"id": "p11.2", "stain": "gvar", "start": 4, "end": 5, "strand": "0"},
+                    {
+                        "id": "p11.1",
+                        "stain": "acen",
+                        "start": 1,
+                        "end": 2,
+                        "strand": "0",
+                    },
+                    {
+                        "id": "p11.2",
+                        "stain": "gvar",
+                        "start": 4,
+                        "end": 5,
+                        "strand": "0",
+                    },
                 ],
             },
             {
@@ -52,8 +61,20 @@ def test_load_chromosomes_from_file(
                     "end": 4,
                 },
                 "bands": [
-                    {"id": "p11.1", "stain": "acen", "start": 1, "end": 3, "strand": "0"},
-                    {"id": "p11.2", "stain": "gvar", "start": 4, "end": 6, "strand": "0"},
+                    {
+                        "id": "p11.1",
+                        "stain": "acen",
+                        "start": 1,
+                        "end": 3,
+                        "strand": "0",
+                    },
+                    {
+                        "id": "p11.2",
+                        "stain": "gvar",
+                        "start": 4,
+                        "end": 6,
+                        "strand": "0",
+                    },
                 ],
             },
             {"name": "MT", "length": 5, "coord_system": "chromosome"},

@@ -20,35 +20,18 @@ import { CanvasTrack } from "./canvas_track";
 
 import debounce from "lodash.debounce";
 
-export interface ExpandedTrackHeight {
-  collapsedHeight: number;
-  expandedHeight?: number;
-}
-
-export interface DataTrackSettings {
-  height: ExpandedTrackHeight;
-  showLabelWhenCollapsed: boolean;
-  yAxis?: Axis;
-  yPadBands?: boolean;
-  isExpanded: boolean;
-  isHidden: boolean;
-}
-
 const DEBOUNCE_DELAY = 50;
 
 const Y_PAD = SIZES.s;
 
 export abstract class DataTrack extends CanvasTrack {
   public trackType: TrackType;
-  public setColorBands(colorBands: RenderBand[]) {
-    this.colorBands = colorBands;
-  }
 
   protected defaultTrackHeight: number;
   protected collapsedTrackHeight: number;
   // Callback to allow multi-layered settings object
   protected getSettings: () => DataTrackSettings;
-  protected updateSettings: (settings: DataTrackSettings) => void;
+  // protected updateSettings: (settings: DataTrackSettings) => void;
   protected renderData: BandTrackData | DotTrackData | null;
 
   private colorBands: RenderBand[] = [];
@@ -62,6 +45,13 @@ export abstract class DataTrack extends CanvasTrack {
   protected getYScale: () => Scale;
   protected openTrackContextMenu: ((track: DataTrack) => void) | null;
   protected getMarkerModeOn: () => boolean;
+  protected getColorBands: () => RenderBand[];
+
+  private onExpand: () => void;
+  private lastRenderedExpanded: boolean;
+
+  protected setExpanded: ((isExpanded: boolean) => void) | null;
+  protected setExpandedHeight: ((expandedHeight: number) => void) | null;
 
   public getYDim(): Rng {
     return [Y_PAD, this.dimensions.height - Y_PAD];
@@ -87,12 +77,6 @@ export abstract class DataTrack extends CanvasTrack {
     this.syncHeight();
   }
 
-  public toggleHidden() {
-    this.getSettings().isHidden = !this.getSettings().isHidden;
-    // FIXME: Consider using a CSS class for this
-    this.updateHidden();
-  }
-
   public getIsHidden() {
     return this.getSettings().isHidden;
   }
@@ -102,24 +86,14 @@ export abstract class DataTrack extends CanvasTrack {
     this.updateHidden();
   }
 
-  private updateHidden() {
-    if (this.getSettings().isHidden) {
+  private updateHidden(): boolean {
+    const isHidden = this.getSettings().isHidden;
+    if (isHidden) {
       this.trackContainer.style.display = "none";
     } else {
       this.trackContainer.style.display = "block";
     }
-  }
-
-  public toggleExpanded() {
-    const settings = this.getSettings();
-    settings.isExpanded = !settings.isExpanded;
-    this.updateSettings(settings);
-
-    if (settings.isExpanded && settings.height.expandedHeight == null) {
-      return;
-    }
-
-    this.syncHeight();
+    return isHidden;
   }
 
   protected syncHeight() {
@@ -129,13 +103,13 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected initializeExpander(eventKey: string, onExpand: () => void) {
+    this.onExpand = onExpand;
+
     this.trackContainer.addEventListener(
       eventKey,
       (event) => {
         event.preventDefault();
-        this.toggleExpanded();
-        this.syncDimensions();
-        onExpand();
+        this.setExpanded(!this.getSettings().isExpanded);
       },
       { signal: this.getListenerAbortSignal() },
     );
@@ -149,8 +123,10 @@ export abstract class DataTrack extends CanvasTrack {
     getXScale: () => Scale,
     openTrackContextMenu: ((track: DataTrack) => void) | null,
     getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
+    setExpanded: (isExpanded: boolean) => void | null,
+    setExpandedHeight: (height: number) => void | null,
     getMarkerModeOn: () => boolean,
+    getColorBands: () => RenderBand[],
   ) {
     const settings = getSettings != null ? getSettings() : null;
     const heightConf = settings != null ? settings.height : null;
@@ -170,9 +146,12 @@ export abstract class DataTrack extends CanvasTrack {
     this.getXRange = getXRange;
     this.getXScale = getXScale;
     this.getMarkerModeOn = getMarkerModeOn;
-    this.updateSettings = updateSettings;
+    this.setExpanded = setExpanded;
+    this.setExpandedHeight = setExpandedHeight;
+    this.getColorBands = getColorBands;
 
     this.getYRange = () => {
+      // console.log("Current settings", getSettings());
       return getSettings().yAxis.range;
     };
     this.getYScale = () => {
@@ -223,7 +202,12 @@ export abstract class DataTrack extends CanvasTrack {
     super.disconnectedCallback();
   }
 
-  async render(settings: RenderSettings) {
+  async render(renderSettings: RenderSettings) {
+    const isHidden = this.updateHidden();
+    if (isHidden) {
+      return;
+    }
+
     // The intent with the debounce keeping track of the rendering number (_renderSeq)
     // is to prevent repeated API requests when rapidly zooming/panning
     // Only the last request is of interest
@@ -245,10 +229,10 @@ export abstract class DataTrack extends CanvasTrack {
     // this.renderData is null here for components not requiring
     // accessing any data through API (i.e. position track)
     if (
-      (settings.dataUpdated || this.renderData == null) &&
+      (renderSettings.reloadData || this.renderData == null) &&
       this.getRenderData != null
     ) {
-      if (!settings.positionOnly) {
+      if (!renderSettings.positionOnly) {
         this.renderLoading();
       }
       fetchData();
@@ -265,7 +249,18 @@ export abstract class DataTrack extends CanvasTrack {
 
     const xScale = this.getXScale();
 
-    for (const band of this.colorBands) {
+    const settings = this.getSettings();
+    if (this.lastRenderedExpanded != settings.isExpanded) {
+      this.lastRenderedExpanded = settings.isExpanded;
+
+      if (this.onExpand) {
+        this.syncHeight();
+        this.onExpand();
+      }
+    }
+
+    const colorBands = this.getColorBands();
+    for (const band of colorBands) {
       const box = {
         x1: xScale(band.start),
         x2: xScale(band.end),
@@ -291,7 +286,8 @@ export abstract class DataTrack extends CanvasTrack {
         this.getSettings().yAxis,
         this.getYScale(),
         this.dimensions,
-        this.getSettings(),
+        settings,
+        settings.yAxis,
       );
     }
 
@@ -309,21 +305,12 @@ export abstract class DataTrack extends CanvasTrack {
     this.ctx.clip();
   }
 
-  setExpandedHeight(height: number) {
-    const settings = this.getSettings();
-    settings.height.expandedHeight = height;
-    this.updateSettings(settings);
-    if (settings.isExpanded) {
-      this.currentHeight = height;
-      this.syncDimensions();
-    }
-  }
-
   protected drawEnd() {
     // Restore the clipping
     this.ctx.restore();
 
     const settings = this.getSettings();
+
     if (settings.isExpanded || settings.showLabelWhenCollapsed) {
       const yAxisWidth = STYLE.yAxis.width;
       const labelBox = this.drawTrackLabel(yAxisWidth);
@@ -357,12 +344,21 @@ export function renderYAxis(
   yScale: Scale,
   dimensions: Dimensions,
   settings: { isExpanded?: boolean },
+  axisSettings?: { highlightedYs?: number[] },
 ) {
-  // const yScale = this.getYScale();
   const tickSize = getTickSize(yAxis.range);
+
   const ticks = generateTicks(yAxis.range, tickSize);
 
-  for (const yTick of ticks) {
+  const highlightedYs = axisSettings?.highlightedYs
+    ? axisSettings.highlightedYs
+    : [];
+
+  const renderTicks = settings.isExpanded
+    ? ticks
+    : [ticks[0], ticks[ticks.length - 1]];
+
+  for (const yTick of renderTicks) {
     const yPx = yScale(yTick);
 
     const lineDims = {
@@ -378,11 +374,31 @@ export function renderYAxis(
     });
   }
 
+  for (const highlight of highlightedYs) {
+    const yPx = yScale(highlight);
+
+    const lineDims = {
+      x1: STYLE.yAxis.width,
+      x2: dimensions.width,
+      y1: yPx,
+      y2: yPx,
+    };
+
+    drawLine(ctx, lineDims, {
+      color: STYLE.colors.darkGray,
+      dashed: false,
+    });
+  }
+
   const hideLabel = yAxis.hideLabelOnCollapse && !settings.isExpanded;
-  const hideTicks = yAxis.hideTicksOnCollapse && !settings.isExpanded;
 
   const label = hideLabel ? "" : yAxis.label;
-  const renderTicks = hideTicks ? [] : ticks;
+
+  for (const highlightY of highlightedYs) {
+    if (!renderTicks.includes(highlightY)) {
+      renderTicks.push(highlightY);
+    }
+  }
 
   drawYAxis(ctx, renderTicks, yScale, yAxis.range, label);
 }

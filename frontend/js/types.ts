@@ -26,6 +26,12 @@ interface ApiAnnotationTrack {
   genome_build: number;
 }
 
+interface ApiGeneList {
+  id: string;
+  name: string;
+  version: string;
+}
+
 interface ApiSampleAnnotationTrack {
   // FIXME: What to do with this one
   _id: string;
@@ -299,6 +305,7 @@ interface OverviewTrackData {
   dotsPerChrom: Record<string, RenderDot[]>;
   chromosome: string;
   xRange: Rng;
+  sampleLabel: string;
 }
 
 interface Box {
@@ -384,11 +391,19 @@ interface RenderDataSource {
   getTranscriptBands: (chrom: string) => Promise<RenderBand[]>;
   getTranscriptDetails: (geneId: string) => Promise<ApiGeneDetails>;
 
-  getVariantBands: (sample: Sample, chrom: string, rankScoreThres: number) => Promise<RenderBand[]>;
+  getGeneListBands: (listId: string, chrom: string) => Promise<RenderBand[]>;
+
+  getVariantBands: (
+    sample: Sample,
+    chrom: string,
+    rankScoreThres: number,
+  ) => Promise<RenderBand[]>;
   getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>;
 
   getOverviewCovData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
   getOverviewBafData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
+
+  getVariantURL: (doc_id: string) => string;
 }
 
 type Rng = [number, number];
@@ -599,18 +614,42 @@ interface DragCallbacks {
   removeHighlight: (id: string) => void;
 }
 
+interface ExpandedTrackHeight {
+  collapsedHeight: number;
+  expandedHeight?: number;
+}
+
+interface DataTrackSettings {
+  trackId: string;
+  trackLabel: string;
+  sample?: Sample;
+  trackType: TrackType;
+  height: ExpandedTrackHeight;
+  showLabelWhenCollapsed: boolean;
+  yAxis?: Axis;
+  yPadBands?: boolean;
+  isExpanded: boolean;
+  isHidden: boolean;
+  chromosome?: string;
+  sourceId?: string;
+}
+
 interface Axis {
   range: Rng;
   label: string;
   hideLabelOnCollapse: boolean;
-  hideTicksOnCollapse: boolean;
+  highlightedYs?: number[];
 }
 
 interface RenderSettings {
-  dataUpdated?: boolean;
+  reloadData?: boolean;
   resized?: boolean;
   positionOnly?: boolean;
   samplesUpdated?: boolean;
+  saveLayoutChange?: boolean;
+  tracksReordered?: boolean;
+  targetTrackId?: string;
+  mainSampleChanged?: boolean;
 }
 
 interface RangeHighlight {
@@ -622,7 +661,7 @@ interface RangeHighlight {
 
 interface ApiSample {
   baf_file: string;
-  baf_index: string,
+  baf_index: string;
   case_id: string;
   coverage_file: string;
   coverage_index: string;
@@ -643,4 +682,51 @@ interface Sample {
   meta?: SampleMetaEntry[];
 }
 
-type TrackType = "annotation" | "variant" | "dot-cov" | "dot-baf" | "gene" | "position";
+type TrackType =
+  | "annotation"
+  | "sample-annotation"
+  | "variant"
+  | "dot-cov"
+  | "dot-baf"
+  | "gene"
+  | "position"
+  | "gene-list";
+
+type IDBTranscripts = {
+  transcripts: ApiSimplifiedTranscript[];
+  serverTimestamp: string;
+};
+
+interface SelectData {
+  id: string;
+  label: string;
+}
+
+interface TrackHeights {
+  bandCollapsed: number;
+  dotCollapsed: number;
+  dotExpanded: number;
+}
+
+type StorageValue =
+  | string
+  | string[]
+  | TrackHeights
+  | Rng
+  | Record<string, boolean>
+  | ProfileSettings;
+
+type ProfileSettings = {
+  layout: TrackLayout;
+  colorAnnotationId: string | null;
+  variantThreshold: number;
+  annotationSelections: string[];
+  coverageRange: Rng;
+  trackHeights: TrackHeights;
+};
+
+type TrackLayout = {
+  order: string[];
+  hidden: Record<string, boolean>;
+  expanded: Record<string, boolean>;
+};

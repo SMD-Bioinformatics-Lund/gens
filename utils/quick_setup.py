@@ -2,11 +2,12 @@
 
 
 import argparse
-from dataclasses import dataclass
 import logging
-from pathlib import Path
 import re
 import subprocess
+from dataclasses import dataclass
+from pathlib import Path
+
 import requests
 
 DESCRIPTION = """
@@ -21,6 +22,7 @@ Quickly setup the database
 
 LOG = logging.getLogger("quick_setup")
 logging.basicConfig(level=logging.INFO)
+
 
 def main(
     samples_dir: Path,
@@ -131,7 +133,10 @@ def get_transcript_paths(
     transcripts_path = annot_dir / transcripts_file
     if not transcripts_path.exists():
         LOG.info("%s not found, downloading ...", transcripts_path)
-        url = f"https://ftp.ensembl.org/pub/release-{transcripts_version}/gtf/homo_sapiens/" + transcripts_file
+        url = (
+            f"https://ftp.ensembl.org/pub/release-{transcripts_version}/gtf/homo_sapiens/"
+            + transcripts_file
+        )
         LOG.info("Attempting to GET URL: %s", url)
         response = requests.get(url)
         response.raise_for_status()
@@ -205,7 +210,9 @@ def find_samples(
 
             if not overview.exists():
                 LOG.info("Missing overview file %s", overview)
-            sample = SampleSet(file_id, file_id, cov_file, cov_tbi, baf, baf_tbi, overview)
+            sample = SampleSet(
+                file_id, file_id, cov_file, cov_tbi, baf, baf_tbi, overview
+            )
             samples.append(sample)
     return samples
 
@@ -213,10 +220,16 @@ def find_samples(
 def parse_arguments():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument(
-        "--samples_dir", type=str, help="The folder containing the dump files.", required=True
+        "--samples_dir",
+        type=str,
+        help="The folder containing the dump files.",
+        required=True,
     )
     parser.add_argument(
-        "--annotations_dir", type=str, help="The folder containing the annotations.", required=True
+        "--annotations_dir",
+        type=str,
+        help="The folder containing the annotations.",
+        required=True,
     )
     parser.add_argument("--build", type=int, help="Genome build.", default=38)
     parser.add_argument(

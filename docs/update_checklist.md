@@ -46,21 +46,21 @@ services:
 
 The `dump` folder should contain:
 
-* Scout db dump
-  * `hg002_variants.json`
-* Gens exports
-  * Sample data
-    * `hg00[234].baf.bed.gz`
-    * `hg00[234].baf.bed.gz.tbi`
-    * `hg00[234].cov.bed.gz`
-    * `hg00[234].cov.bed.gz.tbi`
-    * `hg00[234].overview.json.gz`
-  * HG002 meta data
-      * `hg002.upd-roh.bed.gz`
-      * `hg002.meta.tsv`
-      * `hg002.chr_meta.tsv`
-* Annotation tracks
-  * `annotation_tracks`
+- Scout db dump
+  - `hg002_variants.json`
+- Gens exports
+  - Sample data
+    - `hg00[234].baf.bed.gz`
+    - `hg00[234].baf.bed.gz.tbi`
+    - `hg00[234].cov.bed.gz`
+    - `hg00[234].cov.bed.gz.tbi`
+    - `hg00[234].overview.json.gz`
+  - HG002 meta data
+    - `hg002.upd-roh.bed.gz`
+    - `hg002.meta.tsv`
+    - `hg002.chr_meta.tsv`
+- Annotation tracks
+  - `annotation_tracks`
 
 If running the default configs, you might need to change the port of `gens_api_url` to `5000` in `config.toml`.
 
@@ -130,7 +130,7 @@ First, download / copy into the `dump` folder:
 
 ```
 # ~60MB
-wget https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.113.gtf.gz
+wget https://ftp.ensembl.org/pub/release-115/gtf/homo_sapiens/Homo_sapiens.GRCh38.115.gtf.gz
 wget https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
 ```
 
@@ -186,7 +186,7 @@ gens load sample \
   --sex M
 ```
 
-- [ ] Load the father (hg004)
+- [ ] Load the mother (hg004)
 
 ```
 gens load sample \
@@ -263,7 +263,7 @@ Is content correctly displayed in the context menus for the different band track
 ### Navigation
 
 - [ ] Panning (arrow buttons, left/right arrow keys, space + drag)
-- [ ] Zooming (zoom buttons, up/down arrow keys, space + shift + drag)
+- [ ] Zooming (zoom buttons, up/down arrow keys, space + shift + drag, shift + click, control + click)
 - [ ] Direct navigation (writing a chromosome + region in the search box)
 - [ ] Clicking the overview chart
 - [ ] Clicking bands in the chromosome ideogram (top track)
@@ -274,6 +274,7 @@ Is content correctly displayed in the context menus for the different band track
   - [ ] Open setting menu and find the highlight. Click and see if you navigate to it.
   - [ ] Try removing a highlight by hovering and pressing the "X"
 - [ ] Rearrange tracks by drag and drop
+- [ ] Refresh the page. Make sure that the track arrangement + expanded state + hidden state is retained.
 
 ### Meta data
 
@@ -288,27 +289,34 @@ Is content correctly displayed in the context menus for the different band track
 
 - [ ] Track settings
   - [ ] Open a dot track menu by clicking its label
-  - [ ] Adjust the Y-axis. These changes should be shown directly in the viewer for that track.
   - [ ] Hide the track.
   - [ ] Navigate to the settings side menu. Unhide the track.
 - [ ] Adding / removing samples
   - [ ] In the settings menu, try removing a sample. The corresponding tracks should be removed.
   - [ ] In the settings menu, try adding a sample. The corresponding tracks should be added at the bottom of the tracks.
-- Try changing the variant threshold to 6. More bands should appear in chromosome 1.
-- Try updating the default Y-axis range and click apply. All coverage tracks should change Y-axis.
+- [ ] Try changing the variant threshold to 6. More bands should appear in chromosome 1.
+- [ ] Try updating the default Y-axis range and click apply. All coverage tracks should change Y-axis.
 - [ ] Persistent settings
   - [ ] Try adjusting track height
   - [ ] Assign mimisbrunnr as "Color tracks by"
   - [ ] Add another annotation track
   - [ ] Expand / collapse annotation tracks and the gene track
   - [ ] Refresh the page. These settings should persist.
+- [ ] Update the "Main sample" and press refresh updates the overview chart label and data
 
 ## Multiple-chromosomes page
 
 - [ ] Coverage for all chromosomes is shown correctly
 - [ ] Sample annotation for chromosomes is shown correctly
+- [ ] Updates to coverage Y max / min are reflected
+- [ ] Updates to the main sample updates the label and the data
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/chromosome_view.PNG" width=400 alt="Multiple chromosomes view">
+
+## Cleanup
+
+- [ ] Looking at performant actions (i.e. loading, jumping chromosome, zooming at different levels). Run a profiler for operations that feel slow. Resolve if needed.
+- [ ] Check the web console. Any lingering console logs to remove?
 
 # Test on Gens dev
 
@@ -325,16 +333,16 @@ gens load annotations --file /access/annotation_tracks/ --genome-build 38
 On host (check the versions)
 
 ```
-curl --silent --output ./Homo_sapiens.GRCh38.113.gtf.gz https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.113.gtf.gz
-curl --silent --output ./MANE.GRCh38.v1.4.summary.txt.gz https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
-docker cp Homo_sapiens.GRCh38.113.gtf.gz <container ID>:/tmp
+curl --output ./Homo_sapiens.GRCh38.115.gtf.gz https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.115.gtf.gz
+curl --output ./MANE.GRCh38.v1.4.summary.txt.gz https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
+docker cp Homo_sapiens.GRCh38.115.gtf.gz <container ID>:/tmp
 docker cp MANE.GRCh38.v1.4.summary.txt.gz <container ID>:/tmp
 ```
 
-In container
+In container (this can take 5+ minutes)
 
 ```
-gens load transcripts --file /tmp/Homo_sapiens.GRCh38.113.gtf.gz --mane /tmp/MANE.GRCh38.v1.4.summary.txt.gz -b 38
+gens load transcripts --file /tmp/Homo_sapiens.GRCh38.115.gtf.gz --mane /tmp/MANE.GRCh38.v1.4.summary.txt.gz -b 38
 ```
 
 ## UI
@@ -343,13 +351,11 @@ General sanity check and testing things that cannot be tested in a test setup.
 
 - [ ] The sample list looks correct
 - [ ] Does the case link to Scout work? (On PGM1)
-- [ ] Opening a trio for the the single-chromosome view, all tracks are shown
+- [ ] Opening a trio for the the single-chromosome view, all tracks are shown (check the side menu under advanced settings to see all tracks)
   - [ ] Three cov tracks
   - [ ] Three BAF tracks
-  - [ ] Variants for proband (parents hidden)
+  - [ ] Variants for proband
   - [ ] Sample annotations for proband
   - [ ] Gene track
 - [ ] Variant context menu
   - [ ] Clicking variant links back to Scout
-
-

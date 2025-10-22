@@ -1,6 +1,5 @@
 import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
-import { removeChildren } from "../../util/utils";
-import { DataTrack } from "../tracks/base_tracks/data_track";
+import { getSampleFromID, getSampleID, removeChildren } from "../../util/utils";
 import { ChoiceSelect } from "../util/choice_select";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
@@ -53,7 +52,7 @@ template.innerHTML = String.raw`
     .height-input {
       max-width: 100px;
     }
-    .height-row {
+    .spread-row {
       justify-content: space-between;
       padding-bottom: ${SIZES.xs}px;
     }
@@ -70,12 +69,26 @@ template.innerHTML = String.raw`
       min-width: 150px;
       padding-right: ${SIZES.l}px;
     }
+    #main-sample-select {
+      min-width: 300px;
+    }
+    #advanced-settings {
+      padding-top: ${SIZES.l}px;
+      cursor: pointer;
+    }
   </style>
   <div class="header-row">
     <div class="header">Annotation sources</div>
   </div>
   <div>
     <choice-select id="annotation-select" multiple></choice-select>
+  </div>
+  <!-- FIXME: Bring back / unhide when institute question is resolved, i.e. gene lists are interesting in the context of an institute -->
+  <div class="header-row" hidden>
+    <div class="header">Gene lists</div>
+  </div>
+  <div hidden>
+    <choice-select id="gene-lists-select" multiple></choice-select>
   </div>
   <div class="header-row">
     <div class="header">Color tracks by</div>
@@ -91,42 +104,58 @@ template.innerHTML = String.raw`
     </flex-row>
   </flex-row>
   <div id="samples-overview"></div>
+
+  <flex-row class="header-row">
+    <div class="header">Main sample</div>
+  </flex-row>
+  <flex-row class="spread-row">
+    <choice-select id="main-sample-select"></choice-select>
+    <icon-button id="apply-main-sample" icon="${ICONS.refresh}" title="Apply main sample selection"></icon-button>
+  </flex-row>
+
   <div class="header-row">
     <div class="header">Highlights</div>
   </div>
   <div id="highlights-overview"></div>
-  <div class="header-row">
-    <div class="header">Tracks</div>
-  </div>
-  <flex-row class="height-row">
-    <div>Band track height</div>
-    <flex-row class="height-inputs">
-      <input title="Collapsed height" id="band-collapsed-height" class="height-input" type="number" step="5">
+
+  <details id="advanced-settings">
+    <summary>Toggle advanced settings</summary>
+    <div class="header-row">
+      <div class="header">Configure tracks</div>
+    </div>
+    <flex-row class="spread-row">
+      <div>Band track height</div>
+      <flex-row class="height-inputs">
+        <input title="Collapsed height" id="band-collapsed-height" class="height-input" type="number" step="5">
+      </flex-row>
     </flex-row>
-  </flex-row>
-  <flex-row class="height-row">
-    <div>Dot track heights</div>
-    <flex-row class="height-inputs">
-      <input title="Collapsed height" id="dot-collapsed-height" class="height-input" type="number" step="5">
-      <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
+    <flex-row class="spread-row">
+      <div>Dot track heights</div>
+      <flex-row class="height-inputs">
+        <input title="Collapsed height" id="dot-collapsed-height" class="height-input" type="number" step="5">
+        <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
+      </flex-row>
     </flex-row>
-  </flex-row>
-  <flex-row class="height-row">
-    <div>Default cov y-range</div>
-    <flex-row class="height-inputs">
-      <input id="coverage-y-start" class="height-input" type="number" step="0.1">
-      <input id="coverage-y-end" class="height-input" type="number" step="0.1">
-      <icon-button id="apply-default-cov-y-range" icon="${ICONS.refresh}" title="Apply coverage Y-range"></icon-button>
+    <flex-row class="spread-row">
+      <div>Default cov y-range</div>
+      <flex-row class="height-inputs">
+        <input id="coverage-y-start" class="height-input" type="number" step="0.1">
+        <input id="coverage-y-end" class="height-input" type="number" step="0.1">
+        <icon-button id="apply-default-cov-y-range" icon="${ICONS.refresh}" title="Apply coverage Y-range"></icon-button>
+      </flex-row>
     </flex-row>
-  </flex-row>
-  <flex-row class="height-row">
-    <div>Variant filter threshold</div>
-    <flex-row>
-      <input id="variant-filter" type="number" step="1" class="height-input">
-      <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
+    <flex-row class="spread-row">
+      <div>Variant filter threshold</div>
+      <flex-row>
+        <input id="variant-filter" type="number" step="1" class="height-input">
+        <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
+      </flex-row>
     </flex-row>
-  </flex-row>
-  <div id="tracks-overview"></div>
+    <div class="header-row">
+      <div class="header">Tracks overview</div>
+    </div>
+    <div id="tracks-overview"></div>
+  </details>
 `;
 
 export class SettingsMenu extends ShadowBaseElement {
@@ -134,8 +163,10 @@ export class SettingsMenu extends ShadowBaseElement {
   private tracksOverview: HTMLDivElement;
   private highlightsOverview: HTMLDivElement;
   private annotSelect: ChoiceSelect;
+  private geneListSelect: ChoiceSelect;
   private colorBySelect: ChoiceSelect;
   private sampleSelect: ChoiceSelect;
+  private mainSampleSelect: ChoiceSelect;
   private addSampleButton: IconButton;
   private bandTrackCollapsedHeightElem: HTMLInputElement;
   private dotTrackCollapsedHeightElem: HTMLInputElement;
@@ -146,13 +177,12 @@ export class SettingsMenu extends ShadowBaseElement {
   private applyDefaultCovYRange: HTMLButtonElement;
   private variantThreshold: HTMLInputElement;
   private applyVariantFilter: HTMLButtonElement;
+  private applyMainSample: HTMLButtonElement;
 
   private session: GensSession;
 
-  private onChange: (renderSettings: RenderSettings) => void;
   private allAnnotationSources: ApiAnnotationTrack[];
-  private defaultAnnots: { id: string; label: string }[];
-  private getDataTracks: () => DataTrack[];
+  private geneLists: ApiGeneList[];
   private onTrackMove: (trackId: string, direction: "up" | "down") => void;
   private getCurrentSamples: () => Sample[];
   private getAllSamples: () => Sample[];
@@ -166,6 +196,12 @@ export class SettingsMenu extends ShadowBaseElement {
   private onColorByChange: (annotId: string | null) => void;
   private getColorAnnotation: () => string | null;
   private onApplyDefaultCovRange: (rng: Rng) => void;
+  private onSetAnnotationSelection: (ids: string[]) => void;
+  private onSetGeneListSelection: (ids: string[]) => void;
+  private onSetVariantThreshold: (threshold: number) => void;
+  private onToggleTrackHidden: (trackId: string) => void;
+  private onToggleTrackExpanded: (trackId: string) => void;
+  private onApplyMainSample: (sample: Sample) => void;
 
   public isInitialized: boolean = false;
 
@@ -175,10 +211,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
   setSources(
     session: GensSession,
-    onChange: (renderSettings: RenderSettings) => void,
     allAnnotationSources: ApiAnnotationTrack[],
-    defaultAnnots: { id: string; label: string }[],
-    getDataTracks: () => DataTrack[],
     onTrackMove: (trackId: string, direction: "up" | "down") => void,
     getAllSamples: () => Sample[],
     gotoHighlight: (region: Region) => void,
@@ -187,18 +220,17 @@ export class SettingsMenu extends ShadowBaseElement {
     setTrackInfo: (trackHeights: TrackHeights) => void,
     onColorByChange: (annotId: string | null) => void,
     onApplyDefaultCovRange: (rng: Rng) => void,
+    onSetAnnotationSelection: (ids: string[]) => void,
+    onSetGeneListSelection: (ids: string[]) => void,
+    onSetVariantThreshold: (threshold: number) => void,
+    onToggleTrackHidden: (trackId: string) => void,
+    onToggleTrackExpanded: (trackId: string) => void,
+    onApplyMainSample: (sample: Sample) => void,
   ) {
     this.session = session;
-    this.onChange = onChange;
+    // this.onChange = onChange;
     this.allAnnotationSources = allAnnotationSources;
-    const stored = session.getAnnotationSelections();
-    if (stored && stored.length > 0) {
-      defaultAnnots = allAnnotationSources
-        .filter((src) => stored.includes(src.track_id))
-        .map((src) => ({ id: src.track_id, label: src.name }));
-    }
-    this.defaultAnnots = defaultAnnots;
-    this.getDataTracks = getDataTracks;
+
     this.onTrackMove = onTrackMove;
 
     this.getCurrentSamples = () => session.getSamples();
@@ -218,13 +250,22 @@ export class SettingsMenu extends ShadowBaseElement {
     this.getColorAnnotation = () => session.getColorAnnotation();
 
     this.onApplyDefaultCovRange = onApplyDefaultCovRange;
+
+    this.onSetAnnotationSelection = onSetAnnotationSelection;
+    this.onSetGeneListSelection = onSetGeneListSelection;
+    this.onSetVariantThreshold = onSetVariantThreshold;
+    this.onToggleTrackHidden = onToggleTrackHidden;
+    this.onToggleTrackExpanded = onToggleTrackExpanded;
+    this.onApplyMainSample = onApplyMainSample;
   }
 
   connectedCallback() {
     super.connectedCallback();
     this.annotSelect = this.root.querySelector("#annotation-select");
+    this.geneListSelect = this.root.querySelector("#gene-lists-select");
     this.colorBySelect = this.root.querySelector("#color-by-select");
     this.sampleSelect = this.root.querySelector("#sample-select");
+    this.mainSampleSelect = this.root.querySelector("#main-sample-select");
     this.tracksOverview = this.root.querySelector("#tracks-overview");
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
@@ -234,6 +275,7 @@ export class SettingsMenu extends ShadowBaseElement {
     );
     this.applyVariantFilter = this.root.querySelector("#apply-variant-filter");
     this.variantThreshold = this.root.querySelector("#variant-filter");
+    this.applyMainSample = this.root.querySelector("#apply-main-sample");
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
       "#band-collapsed-height",
@@ -260,22 +302,37 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
-      const [caseId, sampleId] = caseId_sampleId.split("___");
-      this.onAddSample({ caseId, sampleId });
+      const sample = getSampleFromID(caseId_sampleId);
+      this.onAddSample(sample);
+    });
+
+    this.addElementListener(this.applyMainSample, "click", () => {
+      const mainSample = this.mainSampleSelect.getValue().value;
+      const samples = this.getCurrentSamples();
+      const targetSample = samples.find((sample) => {
+        return getSampleID(sample) == mainSample;
+      });
+      this.onApplyMainSample(targetSample);
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
       const ids = this.annotSelect
         .getValues()
         .map((obj) => obj.value as string);
-      this.session.setAnnotationSelections(ids);
-      this.onChange({});
+      this.onSetAnnotationSelection(ids);
     });
 
     this.addElementListener(this.colorBySelect, "change", () => {
       const val = this.colorBySelect.getValue();
       const id = val && val.value != "" ? val.value : null;
       this.onColorByChange(id);
+    });
+
+    this.addElementListener(this.geneListSelect, "change", () => {
+      const ids = this.geneListSelect
+        .getValues()
+        .map((obj) => obj.value as string);
+      this.onSetGeneListSelection(ids);
     });
 
     this.addElementListener(this.sampleSelect, "change", () => {
@@ -323,32 +380,27 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.applyVariantFilter, "click", () => {
       const variantThreshold = Number.parseInt(this.variantThreshold.value);
-      this.session.setVariantThreshold(variantThreshold);
-      this.onChange({dataUpdated: true});
+      this.onSetVariantThreshold(variantThreshold);
     });
   }
 
   initialize() {
     this.isInitialized = true;
+    const prevSelectedAnnots = this.session.getAnnotationSelections();
     this.annotSelect.setValues(
-      getAnnotationChoices(
-        this.allAnnotationSources,
-        this.defaultAnnots.map((a) => a.id),
-      ).sort((source1, source2) =>
-        source1.label.toString().localeCompare(source2.label.toString()),
-      ),
+      getAnnotationChoices(this.allAnnotationSources, prevSelectedAnnots),
     );
+
+    const allAnnotChoices = getAnnotationChoices(this.allAnnotationSources, []);
     const colorChoices = [
       { label: "None", value: "", selected: this.getColorAnnotation() == null },
-      ...getAnnotationChoices(this.allAnnotationSources, []).map((c) => ({
+      ...allAnnotChoices.map((c) => ({
         ...c,
         selected: c.value === this.getColorAnnotation(),
       })),
     ];
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
-    this.session.setAnnotationSelections(this.defaultAnnots.map((a) => a.id));
-    this.onChange({});
   }
 
   private setupSampleSelect() {
@@ -356,7 +408,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const allSamples = rawSamples.map((s) => {
       return {
         label: `${s.sampleId} (case: ${s.caseId})`,
-        value: `${s.caseId}___${s.sampleId}`,
+        value: getSampleID(s),
       };
     });
     this.sampleSelect.setValues(allSamples);
@@ -372,21 +424,16 @@ export class SettingsMenu extends ShadowBaseElement {
     }
 
     removeChildren(this.tracksOverview);
-    const tracks = this.getDataTracks();
-    // FIXME: Could part of this simply be part of the template?
     const tracksSection = getTracksSection(
-      tracks,
-      (track: DataTrack, direction: "up" | "down") => {
-        this.onTrackMove(track.id, direction);
-        this.onChange({});
+      this.session.tracks.getTracks(),
+      (trackId: string, direction: "up" | "down") => {
+        this.onTrackMove(trackId, direction);
       },
-      (track: DataTrack) => {
-        track.toggleHidden();
-        this.onChange({});
+      (trackId: string) => {
+        this.onToggleTrackHidden(trackId);
       },
-      (track: DataTrack) => {
-        track.toggleExpanded();
-        this.onChange({});
+      (trackId: string) => {
+        this.onToggleTrackExpanded(trackId);
       },
     );
     this.tracksOverview.appendChild(tracksSection);
@@ -397,6 +444,11 @@ export class SettingsMenu extends ShadowBaseElement {
       this.onRemoveSample(sample),
     );
     this.samplesOverview.appendChild(samplesSection);
+
+    const mainSample = this.session.getMainSample();
+    const mainSampleId = getSampleID(mainSample);
+    const mainSampleChoices = getMainSampleChoices(samples, mainSampleId);
+    this.mainSampleSelect.setValues(mainSampleChoices);
 
     removeChildren(this.highlightsOverview);
     const highlightsSection = getHighlightsSection(
@@ -416,8 +468,8 @@ export class SettingsMenu extends ShadowBaseElement {
     this.coverageYStartElem.value = `${covStart}`;
     this.coverageYEndElem.value = `${covEnd}`;
     if (this.colorBySelect) {
-      const val = this.colorBySelect.getValue();
-      const selectedId = val ? val.value : "";
+      const selectedAnnotation = this.getColorAnnotation();
+      const selectedId = selectedAnnotation != null ? selectedAnnotation : "";
       const choices = this.allAnnotationSources.map((source) => {
         return {
           value: source.track_id,
@@ -433,48 +485,55 @@ export class SettingsMenu extends ShadowBaseElement {
       this.colorBySelect.setValues(choices);
     }
   }
+}
 
-  getAnnotSources(settings: {
-    selectedOnly: boolean;
-  }): { id: string; label: string }[] {
-    if (!settings.selectedOnly) {
-      return this.allAnnotationSources.map((source) => {
-        return {
-          id: source.track_id,
-          label: source.name,
-        };
-      });
-    }
+//   getGeneListSources(settings: {
+//     selectedOnly: boolean;
+//   }): { id: string; label: string }[] {
+//     const sources = parseSources(
+//       this.geneLists,
+//       this.geneListSelect,
+//       settings.selectedOnly,
+//       this.session.getGeneListSelections(),
+//       (source) => source.id,
+//       (source) => `${source.name} + ${source.version}`,
+//     );
+//     return sources;
+//   }
 
-    if (this.annotSelect == null) {
-      return this.defaultAnnots;
-    }
-
-    const choices = this.annotSelect.getValues();
-    const returnVals = choices.map((obj) => {
-      return {
-        id: obj.value,
-        label: obj.label.toString(),
-      };
-    });
-    return returnVals;
+function getMainSampleChoices(
+  samples: Sample[],
+  prevSelected: string | null,
+): InputChoice[] {
+  const choices: InputChoice[] = [];
+  for (const sample of samples) {
+    const id = getSampleID(sample);
+    const choice = {
+      value: id,
+      label: `${sample.sampleId} (${sample.sampleType}, case: ${sample.caseId})`,
+      selected: prevSelected == id,
+    };
+    choices.push(choice);
   }
+  return choices;
 }
 
 function getAnnotationChoices(
   annotationSources: ApiAnnotationTrack[],
-  defaultAnnotIds: string[],
+  prevSelected: string[],
 ): InputChoice[] {
   const choices: InputChoice[] = [];
   for (const source of annotationSources) {
     const choice = {
       value: source.track_id,
       label: source.name,
-      selected: defaultAnnotIds.includes(source.track_id),
+      selected: prevSelected.includes(source.track_id),
     };
     choices.push(choice);
   }
-  return choices;
+  return choices.sort((source1, source2) =>
+    source1.label.toString().localeCompare(source2.label.toString()),
+  );
 }
 
 function getSamplesSection(
@@ -522,10 +581,10 @@ function getHighlightsSection(
 }
 
 function getTracksSection(
-  tracks: DataTrack[],
-  onMove: (track: DataTrack, direction: "up" | "down") => void,
-  onToggleShow: (track: DataTrack) => void,
-  onToggleCollapse: (track: DataTrack) => void,
+  tracks: DataTrackSettings[],
+  onMove: (trackId: string, direction: "up" | "down") => void,
+  onToggleShow: (trackId: string) => void,
+  onToggleCollapse: (trackId: string) => void,
 ): HTMLDivElement {
   const tracksSection = document.createElement("div");
 
@@ -537,8 +596,8 @@ function getTracksSection(
       onMove,
       onToggleShow,
       onToggleCollapse,
-      () => track.getIsHidden(),
-      () => track.getIsExpanded(),
+      () => track.isHidden,
+      () => track.isExpanded,
     );
     tracksSection.appendChild(trackRow);
   }

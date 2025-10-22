@@ -3,12 +3,13 @@
 import logging
 from typing import Any, Generator
 
-import pymongo
 from flask import Flask
 from pydantic import MongoDsn
 from pymongo import MongoClient
 from pymongo.database import Database
 
+from gens.adapters.base import InterpretationAdapter
+from gens.adapters.scout import ScoutMongoAdapter
 from gens.config import settings
 
 LOG = logging.getLogger(__name__)
@@ -16,13 +17,9 @@ LOG = logging.getLogger(__name__)
 
 def init_database_connection(app: Flask) -> None:
     """Initialize database connection and store variables to the two databases."""
-    # verify that database was properly configured
+
     LOG.info("Initialize db connection")
 
-    # connect to database
-    app.config["SCOUT_DB"] = MongoClient(
-        str(settings.scout_db.connection)
-    ).get_database(name=settings.scout_db.database)
     app.config["GENS_DB"] = MongoClient(str(settings.gens_db.connection)).get_database(
         name=settings.gens_db.database
     )
@@ -35,18 +32,26 @@ def get_db_connection(mongo_uri: MongoDsn, db_name: str) -> Database[Any]:
 
 
 def get_gens_db() -> Generator[Database[Any], None, None]:
-    """Connect to a database."""
+    """Connect to the Gens database."""
+    client: MongoClient[Any] = MongoClient(str(settings.gens_db.connection))
     try:
-        client: MongoClient[Any] = MongoClient(str(settings.gens_db.connection))
         yield client.get_database(settings.gens_db.database)
     finally:
         client.close()
 
 
-def get_scout_db() -> Generator[Database[Any], None, None]:
-    """Connect to the Scout database."""
+def get_variant_software_adapter() -> Generator[InterpretationAdapter, None, None]:
+    """Return the configured interpretation adapter."""
+
+    if settings.variant_software_backend != "scout_mongo":
+        raise ValueError(
+            f"Unsupported variant software backend: {settings.variant_software_backend}"
+        )
+
+    client: MongoClient[Any] = MongoClient(str(settings.variant_db.connection))
+
     try:
-        client: MongoClient[Any] = MongoClient(str(settings.scout_db.connection))
-        yield client.get_database(settings.scout_db.database)
+        db = client.get_database(settings.variant_db.database)
+        yield ScoutMongoAdapter(db)
     finally:
         client.close()

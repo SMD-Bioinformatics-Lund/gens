@@ -64,6 +64,7 @@ class VariantType(StrEnum):
     CLIN = "clinical"
     RESEARCH = "research"
 
+
 class VariantCategory(StrEnum):
     """Valid categories for variants."""
 

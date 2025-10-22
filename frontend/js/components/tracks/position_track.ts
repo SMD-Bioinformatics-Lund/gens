@@ -2,16 +2,16 @@ import { SIZES, STYLE } from "../../constants";
 import { drawLabel, drawLine } from "../../draw/shapes";
 import { getLinearScale } from "../../draw/render_utils";
 import { padRange, prefixNts } from "../../util/utils";
-import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
+import { DataTrack } from "./base_tracks/data_track";
 
 export class PositionTrack extends DataTrack {
   constructor(
     id: string,
     label: string,
     getSettings: () => DataTrackSettings,
-    updateSettings: (settings: DataTrackSettings) => void,
     getMarkerModeOn: () => boolean,
     getXRange: () => Rng,
+    getAnnotColorBands: () => RenderBand[],
   ) {
     const getXScale = () => {
       const xRange = getXRange();
@@ -25,8 +25,10 @@ export class PositionTrack extends DataTrack {
       getXScale,
       null,
       getSettings,
-      updateSettings,
+      null,
+      null,
       getMarkerModeOn,
+      getAnnotColorBands,
     );
   }
 

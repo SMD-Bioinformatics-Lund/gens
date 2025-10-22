@@ -1,17 +1,15 @@
-import { STYLE, VARIANT_COLORS } from "../constants";
+import { STYLE, VARIANT_COLORS, ZOOM_STEPS } from "../constants";
 import { prefixNts, transformMap } from "../util/utils";
 import { API } from "./api";
 
 function calculateZoom(xRange: Rng) {
   const xRangeSize = xRange[1] - xRange[0];
   let returnVal;
-  if (xRangeSize > 100 * 10 ** 6) {
-    returnVal = "o";
-  } else if (xRangeSize > 50 * 10 ** 6) {
+  if (xRangeSize > ZOOM_STEPS.A) {
     returnVal = "a";
-  } else if (xRangeSize > 10 * 10 ** 6) {
+  } else if (xRangeSize > ZOOM_STEPS.B) {
     returnVal = "b";
-  } else if (xRangeSize > 500 * 10 ** 3) {
+  } else if (xRangeSize > ZOOM_STEPS.C) {
     returnVal = "c";
   } else {
     returnVal = "d";
@@ -23,6 +21,7 @@ export function getRenderDataSource(
   api: API,
   getChrom: () => string,
   getXRange: () => Rng,
+  getVariantURL: (id: string) => string,
 ): RenderDataSource {
   const getChromInfo = async () => {
     return api.getChromData(getChrom());
@@ -76,12 +75,25 @@ export function getRenderDataSource(
     return parseTranscripts(transcriptsRaw);
   };
 
+  const getGeneListBands = async (
+    listId: string,
+    chrom: string,
+  ): Promise<RenderBand[]> => {
+    const geneSymbols = new Set(await api.getGeneListGenes(listId, chrom));
+    const onlyCanonical = true;
+    const transcriptsRaw = await api.getTranscripts(chrom, onlyCanonical);
+    const matchingTranscripts = transcriptsRaw.filter((tr) =>
+      geneSymbols.has(tr.name),
+    );
+
+    return parseTranscripts(matchingTranscripts);
+  };
+
   const getVariantBands = async (
     sample: Sample,
     chrom: string,
     variantThres: number,
   ): Promise<RenderBand[]> => {
-
     const variantsRaw = await api.getVariants(
       sample.caseId,
       sample.sampleId,
@@ -155,10 +167,12 @@ export function getRenderDataSource(
     getBafData,
     getTranscriptBands,
     getTranscriptDetails: (id: string) => api.getTranscriptDetails(id),
+    getGeneListBands,
     getVariantBands,
     getVariantDetails: (id: string) => api.getVariantDetails(id),
     getOverviewCovData,
     getOverviewBafData,
+    getVariantURL,
   };
   return renderDataSource;
 }
@@ -264,10 +278,13 @@ export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
     const id = variant.document_id;
     const length = variant.end - variant.start;
 
-    const hetHomColors = VARIANT_COLORS[variant.sub_category] != undefined ? 
-      VARIANT_COLORS[variant.sub_category] : VARIANT_COLORS.default
+    const hetHomColors =
+      VARIANT_COLORS[variant.sub_category] != undefined
+        ? VARIANT_COLORS[variant.sub_category]
+        : VARIANT_COLORS.default;
 
-    const color = variant.genotype == "1/0" ? hetHomColors.het : hetHomColors.hom;
+    const color =
+      variant.genotype == "0/1" ? hetHomColors.het : hetHomColors.hom;
 
     return {
       id,
@@ -275,7 +292,7 @@ export function parseVariants(variants: ApiSimplifiedVariant[]): RenderBand[] {
       end: variant.end,
       hoverInfo: `${variant.sub_category} (${prefixNts(length)})`,
       label: `${variant.variant_type} ${variant.sub_category}`,
-      color
+      color,
     };
   });
 }

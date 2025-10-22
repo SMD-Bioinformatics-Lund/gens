@@ -33,7 +33,7 @@ class ZoomLevel(StrEnum):
     B = "b"
     C = "c"
     D = "d"
-    O = "o"
+    overview = "o"
 
 
 class SampleSex(StrEnum):
@@ -50,6 +50,7 @@ class MetaValue(RWModel):
     For a table, a row name needs to be present.
     Tables are stored in long format, i.e. one row represents one cell with a row and col name.
     """
+
     type: str
     value: str
     row_name: str | None = None

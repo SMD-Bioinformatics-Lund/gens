@@ -58,11 +58,7 @@ export class HeaderInfo extends ShadowBaseElement {
     this.versionElem = this.root.querySelector("#version");
   }
 
-  initialize(
-    caseId: string,
-    caseURL: string,
-    version: string,
-  ) {
+  initialize(caseId: string, caseURL: string, version: string) {
     this.caseIdElem.innerHTML = caseId;
     this.caseIdElem.href = caseURL;
     this.versionElem.innerHTML = version;

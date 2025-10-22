@@ -39,6 +39,7 @@ async def get_multiple_samples(
     resp = samples.get_samples(samples_c=db[SAMPLES_COLLECTION], limit=limit, skip=skip)
     return resp
 
+
 @router.get("/sample", tags=[ApiTags.SAMPLE])
 async def get_sample_route(
     sample_id: str, case_id: str, genome_build: GenomeBuild, db: GensDb
@@ -90,7 +91,10 @@ async def get_cov_overview(
         db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id
     )
 
-    if sample_info.overview_file is not None and Path(sample_info.overview_file).is_file():
+    if (
+        sample_info.overview_file is not None
+        and Path(sample_info.overview_file).is_file()
+    ):
         return get_overview_data(sample_info.overview_file, data_type)
 
     return get_overview_from_tabix(sample_info, data_type)

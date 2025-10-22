@@ -14,7 +14,7 @@ from gens.models.annotation import (
     UtrFeature,
 )
 from gens.models.base import PydanticObjectId
-from gens.models.genomic import GenomeBuild, GenomePosition, GenomicRegion
+from gens.models.genomic import GenomeBuild, GenomicRegion
 
 from .utils import query_genomic_region
 
@@ -59,7 +59,7 @@ def get_transcripts(
         **query_genomic_region(region.start, region.end),
     }
     # build sort order
-    sort_order: list[tuple[str, int]] = [("start", 1), ("height_order", 1)]
+    sort_order: list[tuple[str, int]] = [("start", 1)]
 
     projection: dict[str, bool] = {
         "gene_name": True,
@@ -70,9 +70,12 @@ def get_transcripts(
         "transcript_biotype": True,
         "features": True,
     }
-    cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(query, projection, sort=sort_order)
-    return [
-        SimplifiedTranscriptInfo.model_validate(
+    cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
+        query, projection, sort=sort_order
+    )
+    transcripts = []
+    for doc in cursor:
+        tr = SimplifiedTranscriptInfo.model_validate(
             {
                 "record_id": doc["_id"],
                 "name": doc["gene_name"],
@@ -84,11 +87,13 @@ def get_transcripts(
                 "features": _format_features(doc["features"]),
             }
         )
-        for doc in cursor
-    ]
+        transcripts.append(tr)
+    return transcripts
 
 
-def get_transcript(transcript_id: PydanticObjectId, db: Database[Any]) -> TranscriptRecord | None:
+def get_transcript(
+    transcript_id: PydanticObjectId, db: Database[Any]
+) -> TranscriptRecord | None:
     """Get transcript with id."""
     resp = db.get_collection(TRANSCRIPTS_COLLECTION).find_one({"_id": transcript_id})
     if resp is not None:
@@ -96,8 +101,41 @@ def get_transcript(transcript_id: PydanticObjectId, db: Database[Any]) -> Transc
     return None
 
 
+def get_simplified_transcripts_by_gene_symbol(
+    gene_symbol: str, genome_build: GenomeBuild, db: Database[Any], only_mane: bool
+) -> list[SimplifiedTranscriptInfo]:
+    cursor = db.get_collection(TRANSCRIPTS_COLLECTION).find(
+        {"gene_name": gene_symbol, "genome_build": genome_build},
+        sort=[("chrom", 1), ("start", 1)],
+        allow_disk_use=True,
+    )
+
+    return_transcripts = []
+    for doc in cursor:
+        if only_mane and not doc["mane"]:
+            continue
+        simple_tr = SimplifiedTranscriptInfo.model_validate(
+            {
+                "record_id": doc["_id"],
+                "name": doc["gene_name"],
+                "chrom": doc["chrom"],
+                "start": doc["start"],
+                "end": doc["end"],
+                "type": doc["mane"] if doc["mane"] is not None else "non-mane",
+                "strand": doc["strand"],
+                "is_protein_coding": doc["transcript_biotype"] == "protein_coding",
+                "features": _format_features(doc["features"]),
+            }
+        )
+        return_transcripts.append(simple_tr)
+
+    return return_transcripts
+
+
 def create_transcripts(transcripts: Iterable[TranscriptRecord], db: Database[Any]):
     """Insert many transcripts in the database."""
 
-    db.get_collection(TRANSCRIPTS_COLLECTION).insert_many([tr.model_dump() for tr in transcripts])
+    db.get_collection(TRANSCRIPTS_COLLECTION).insert_many(
+        [tr.model_dump() for tr in transcripts]
+    )
     register_data_update(db, TRANSCRIPTS_COLLECTION)

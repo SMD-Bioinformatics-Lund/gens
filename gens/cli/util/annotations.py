@@ -1,7 +1,8 @@
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
 from pymongo.database import Database
 
 from gens.crud.annotations import create_annotation_track, get_annotation_track
@@ -29,10 +30,14 @@ def upsert_annotation_track(
     db: Database, annot_file: Path, genome_build: GenomeBuild
 ) -> InsertTrackResult:
     annotation_name = annot_file.name[: -len(annot_file.suffix)]
-    existing_track = get_annotation_track(name=annotation_name, genome_build=genome_build, db=db)
+    existing_track = get_annotation_track(
+        name=annotation_name, genome_build=genome_build, db=db
+    )
 
     if existing_track is None:
-        track = AnnotationTrack(name=annotation_name, description="", genome_build=genome_build)
+        track = AnnotationTrack(
+            name=annotation_name, description="", genome_build=genome_build
+        )
         track_id = create_annotation_track(track, db)
     else:
         track_id = existing_track.track_id
@@ -46,6 +51,7 @@ class ParseRawResult:
     file_meta: list
 
 
+# FIXME: Reduce complexity to satisfy flake8 warnings
 def parse_raw_records(
     file_format: str,
     is_tsv: bool,
@@ -62,7 +68,7 @@ def parse_raw_records(
         file_format = "tsv"
 
     if file_format == "tsv":
-        for rec in  parse_tsv_file(file):
+        for rec in parse_tsv_file(file):
             validated_rec = AnnotationRecord.model_validate(
                 {"track_id": track_result.track_id, "genome_build": genome_build, **rec}
             )
@@ -78,7 +84,9 @@ def parse_raw_records(
         records = []
         for rec in aed_records:
             try:
-                formatted_rec = fmt_aed_to_annotation(rec, track_result.track_id, genome_build)
+                formatted_rec = fmt_aed_to_annotation(
+                    rec, track_result.track_id, genome_build
+                )
             except ValueError:
                 LOG.warning("Failed to format rec to annotation: %s", rec)
                 if not ignore_errors:

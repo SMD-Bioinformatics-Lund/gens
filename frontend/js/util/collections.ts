@@ -21,7 +21,7 @@ export function moveElement<T>(
  * Retrieve elements only present in arr1
  * Optionally provide a function to extract the value (V) to compare
  */
-export function diff<T,V>(arr1: T[], arr2: T[], idFn?: (T) => V): T[] {
+export function diff<T, V>(arr1: T[], arr2: T[], idFn?: (T) => V): T[] {
   if (idFn == null) {
     return arr1.filter((value) => !arr2.includes(value));
   } else {

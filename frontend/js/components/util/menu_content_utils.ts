@@ -9,11 +9,11 @@ export interface InfoField {
 }
 
 export function getVariantContextMenuContent(
-  sampleId: string,
+  sampleId: string | null,
   details: ApiVariantDetails,
   variantUrl: string,
 ): HTMLDivElement[] {
-  const sample = details.samples.find((s) => s.sample_id === sampleId)
+  const sample = details.samples.find((s) => s.sample_id === sampleId);
   const info: InfoField[] = [
     { key: "Range", value: `${details.start} - ${details.end}` },
     {
@@ -26,9 +26,10 @@ export function getVariantContextMenuContent(
     },
     {
       key: "Allele depths",
-      value: sample && details.sample?.allele_depths
-        ? details.sample.allele_depths.join(", ")
-        : null,
+      value:
+        sample && details.sample?.allele_depths
+          ? details.sample.allele_depths.join(", ")
+          : null,
     },
     {
       key: "Read depth",

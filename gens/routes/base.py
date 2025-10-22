@@ -7,7 +7,7 @@ from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
 
-from gens import version
+from gens.__version__ import VERSION as version
 from gens.crud.search import search_annotations_and_transcripts, text_search_suggestion
 from gens.crud.user import create_user as crud_create_user
 from gens.crud.user import get_user as crud_get_user

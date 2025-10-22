@@ -1,6 +1,6 @@
 import { STYLE } from "../../constants";
 import { drawDotsScaled, getLinearScale } from "../../draw/render_utils";
-import { DataTrack, DataTrackSettings } from "./base_tracks/data_track";
+import { DataTrack } from "./base_tracks/data_track";
 
 export class DotTrack extends DataTrack {
   startExpanded: boolean;
@@ -8,14 +8,14 @@ export class DotTrack extends DataTrack {
   constructor(
     id: string,
     label: string,
-    trackType: "dot-cov" | "dot-baf",
+    trackType: TrackType,
     getSettings: () => DataTrackSettings,
-    // FIXME: Is this one even used? Can probably be removed?
-    updateSettings: (settings: DataTrackSettings) => void,
+    setExpanded: (isExpanded: boolean) => void,
     getXRange: () => Rng,
     getRenderData: () => Promise<DotTrackData>,
     openTrackContextMenu: (track: DataTrack) => void,
     getMarkerModeOn: () => boolean,
+    getAnnotColorBands: () => RenderBand[],
   ) {
     super(
       id,
@@ -34,8 +34,12 @@ export class DotTrack extends DataTrack {
       },
       openTrackContextMenu,
       getSettings,
-      updateSettings,
+      setExpanded,
+      (_height: number) => {
+        console.warn("Set expanded height not used for dot tracks");
+      },
       getMarkerModeOn,
+      getAnnotColorBands,
     );
     this.getRenderData = getRenderData;
   }

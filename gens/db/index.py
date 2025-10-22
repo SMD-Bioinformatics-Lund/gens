@@ -3,7 +3,7 @@
 import logging
 from typing import Any
 
-from pymongo import ASCENDING, IndexModel, TEXT
+from pymongo import ASCENDING, TEXT, IndexModel
 from pymongo.database import Database
 
 from gens.db.collections import SAMPLES_COLLECTION
@@ -36,11 +36,6 @@ INDEXES = {
             background=True,
         ),
         IndexModel(
-            [("height_order", ASCENDING)],
-            name="height_order",
-            background=True,
-        ),
-        IndexModel(
             [("genome_build", ASCENDING)],
             name="genome_build",
             background=True,
@@ -58,13 +53,13 @@ INDEXES = {
             background=True,
         ),
         IndexModel(
-            [("height_order", ASCENDING)],
-            name="height_order",
+            [("genome_build", ASCENDING)],
+            name="genome_build",
             background=True,
         ),
         IndexModel(
-            [("genome_build", ASCENDING)],
-            name="genome_build",
+            [("gene_name", ASCENDING), ("genome_build", ASCENDING)],
+            name="gene_name_genome_build",
             background=True,
         ),
         IndexModel(

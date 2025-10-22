@@ -1,12 +1,11 @@
-import importlib
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import mongomock
 import pytest
 
-from gens.models.genomic import GenomeBuild
 from gens.db.collections import TRANSCRIPTS_COLLECTION
+from gens.models.genomic import GenomeBuild
 
 
 def _build_transcript():
@@ -56,7 +55,8 @@ def test_load_transcripts_invokes_crud(
     gtf.write_text(gtf_content)
     mane = tmp_path / "mane.txt"
     mane.write_text(
-        "Ensembl_nuc\tHGNC_ID\tRefSeq_nuc\tMANE_status\n" "t1\tHGNC:1\trs1\tMANE Select\n"
+        "Ensembl_nuc\tHGNC_ID\tRefSeq_nuc\tMANE_status\n"
+        "t1\tHGNC:1\trs1\tMANE Select\n"
     )
 
     assert cli_load.transcripts.callback is not None
@@ -77,7 +77,9 @@ def test_load_transcripts_invokes_crud(
     assert rec["mane"] == "MANE Select"
 
 
-def test_create_transcripts_adds_documents(monkeypatch: pytest.MonkeyPatch, db: mongomock.Database) -> None:
+def test_create_transcripts_adds_documents(
+    monkeypatch: pytest.MonkeyPatch, db: mongomock.Database
+) -> None:
 
     from gens.crud import transcripts as transcripts_mod
 

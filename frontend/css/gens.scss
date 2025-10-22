@@ -7,10 +7,10 @@ $white-color: white;
 $dark-gray-color: #333;
 $gens-blue: #567;
 // FIXME: Merge with other colors
-$button-white: #FAFBFC;
+$button-white: #fafbfc;
 $button-black: rgba(27, 31, 35, 0.15);
 $button-gray: #444;
-$button-hover-white: #E7EEF2;
+$button-hover-white: #e7eef2;
 $header-background-blue: #4c6d94;
 $source-border-color: rgba(27, 31, 35, 0.15);
 $marker-gray-color: #7c7c7c;
@@ -41,15 +41,15 @@ $button-border: #444;
   &[data-popper-placement^="top"] > .arrow {
     bottom: -4px;
   }
-  
+
   &[data-popper-placement^="bottom"] > .arrow {
     top: -4px;
   }
-  
+
   &[data-popper-placement^="left"] > .arrow {
     right: -4px;
   }
-  
+
   &[data-popper-placement^="right"] > .arrow {
     left: -4px;
   }

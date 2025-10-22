@@ -2,31 +2,25 @@ import { ANIM_TIME, COLORS, SIZES, STYLE } from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import Sortable, { SortableEvent } from "sortablejs";
 import {
-  createAnnotTrack,
-  createDotTrack,
-  createGeneTrack,
   createOverviewTrack,
-  createVariantTrack,
   makeTrackContainer,
   TRACK_HANDLE_CLASS,
 } from "./utils";
-import { DataTrack, DataTrackSettings } from "../tracks/base_tracks/data_track";
+import { DataTrack } from "../tracks/base_tracks/data_track";
 import { setupDrag, setupDragging } from "../../movements/dragging";
 import { GensSession } from "../../state/gens_session";
 import { getLinearScale } from "../../draw/render_utils";
 import { OverviewTrack } from "../tracks/overview_track";
 import { IdeogramTrack } from "../tracks/ideogram_track";
 import { BAF_Y_RANGE } from "./tracks_manager";
-import { TrackMenu } from "../side_menu/track_menu";
-import { DotTrack } from "../tracks/dot_track";
 import { keyLogger } from "../util/keylogger";
-import { zoomOut } from "../../util/navigation";
-import { BandTrack } from "../tracks/band_track";
-import { TrackHeights } from "../side_menu/settings_menu";
-import { moveElement } from "../../util/collections";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
-import { removeOne } from "../../util/utils";
+import { removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
+import { syncDataTrackSettings } from "./utils/sync_tracks";
+import { getTrack as getTrack } from "./utils/create_tracks";
+import { getOpenTrackContextMenu } from "./utils/track_menues";
+import { SessionPosition } from "../../state/session_helpers/session_position";
 
 const trackHeight = STYLE.tracks.trackHeight;
 
@@ -42,6 +36,8 @@ template.innerHTML = String.raw`
     }
 
     #tracks-container {
+      display: flex;
+      flex-direction: column;
       position: relative;
       width: 100%;
       max-width: 100%;
@@ -70,7 +66,7 @@ template.innerHTML = String.raw`
   <div id="bottom-container"></div>
 `;
 
-export interface TrackViewTrackInfo {
+export interface DataTrackWrapper {
   track: DataTrack;
   container: HTMLDivElement;
   sample: Sample | null;
@@ -81,26 +77,24 @@ export class TrackView extends ShadowBaseElement {
   private tracksContainer: HTMLDivElement;
   private bottomContainer: HTMLDivElement;
   private positionLabel: HTMLDivElement;
+  private requestRender!: (settings: RenderSettings) => void;
 
   private session: GensSession;
+  private sessionPos: SessionPosition;
   private dataSource: RenderDataSource;
 
-  private dataTracks: TrackViewTrackInfo[] = [];
+  private lastRenderedSamples: Sample[] = [];
+
+  private dataTracks: DataTrackWrapper[] = [];
   private ideogramTrack: IdeogramTrack;
   private positionTrack: PositionTrack;
   private overviewTracks: OverviewTrack[] = [];
 
-  private openTrackContextMenu: (track: DataTrack) => void;
-  private trackPages: Record<string, TrackMenu> = {};
+  private colorBands: RenderBand[] = [];
 
-  private sampleToTracks: Record<
-    string,
-    {
-      cov: TrackViewTrackInfo;
-      baf: TrackViewTrackInfo;
-      variant: TrackViewTrackInfo;
-    }
-  > = {};
+  public saveTrackLayout() {
+    this.session.saveTrackLayout();
+  }
 
   constructor() {
     super(template);
@@ -115,9 +109,8 @@ export class TrackView extends ShadowBaseElement {
     this.positionLabel = this.root.querySelector("#position-label");
   }
 
-  public initialize(
+  public async initialize(
     render: (settings: RenderSettings) => void,
-    samples: Sample[],
     chromSizes: Record<string, number>,
     chromClick: (chrom: string) => void,
     dataSources: RenderDataSource,
@@ -125,9 +118,9 @@ export class TrackView extends ShadowBaseElement {
   ) {
     this.dataSource = dataSources;
     this.session = session;
-
-    const openTrackContextMenu = this.createOpenTrackContextMenu(render);
-    this.openTrackContextMenu = openTrackContextMenu;
+    const sessionPos = session.pos;
+    this.sessionPos = sessionPos;
+    this.requestRender = render;
 
     Sortable.create(this.tracksContainer, {
       animation: ANIM_TIME.medium,
@@ -135,10 +128,11 @@ export class TrackView extends ShadowBaseElement {
       swapThreshold: 0.5,
       onEnd: (evt: SortableEvent) => {
         const { oldIndex, newIndex } = evt;
-        const [moved] = this.dataTracks.splice(oldIndex, 1);
-        this.dataTracks.splice(newIndex, 0, moved);
 
-        render({});
+        const targetTrack = this.session.tracks.getTracks()[oldIndex];
+        this.session.tracks.moveTrackToPos(targetTrack.trackId, newIndex);
+
+        render({ saveLayoutChange: true });
       },
     });
 
@@ -150,14 +144,9 @@ export class TrackView extends ShadowBaseElement {
       const scaledEnd = invertedXScale(dragRangePx[1]);
       const panDistance = scaledStart - scaledEnd;
 
-      session.moveXRange(panDistance);
-      render({ dataUpdated: true, positionOnly: true });
+      this.sessionPos.moveXRange(panDistance);
+      render({ reloadData: true, positionOnly: true });
     });
-
-    const covTracks: TrackViewTrackInfo[] = [];
-    const bafTracks: TrackViewTrackInfo[] = [];
-    const variantTracks: TrackViewTrackInfo[] = [];
-    const sampleAnnotTracks: TrackViewTrackInfo[] = [];
 
     this.ideogramTrack = new IdeogramTrack(
       "ideogram",
@@ -165,19 +154,21 @@ export class TrackView extends ShadowBaseElement {
       { height: trackHeight.xs },
       async () => {
         return {
-          xRange: session.getXRange(),
-          chromInfo: await dataSources.getChromInfo(session.getChromosome()),
+          xRange: this.sessionPos.getXRange(),
+          chromInfo: await dataSources.getChromInfo(
+            this.sessionPos.getChromosome(),
+          ),
         };
       },
       (band: RenderBand) => {
-        session.setViewRange([band.start, band.end]);
-        render({ dataUpdated: true, positionOnly: true });
+        this.sessionPos.setViewRange([band.start, band.end]);
+        render({ reloadData: true, positionOnly: true });
       },
     );
 
     const yAxisCov = {
       range: session.getCoverageRange(),
-      label: "Log2 Ratio",
+      label: `Log2 Ratio (${session.getMainSample().sampleId})`,
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
     };
@@ -194,7 +185,7 @@ export class TrackView extends ShadowBaseElement {
 
     const yAxisBaf = {
       range: BAF_Y_RANGE,
-      label: "B Allele Freq",
+      label: `B Allele Freq (${session.getMainSample().sampleId})`,
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
     };
@@ -211,45 +202,10 @@ export class TrackView extends ShadowBaseElement {
 
     this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
-    for (const sample of samples) {
-      const startExpanded = samples.length == 1 ? true : false;
-
-      const sampleTracks = createSampleTracks(
-        sample,
-        dataSources,
-        startExpanded,
-        session,
-        true,
-        openTrackContextMenu,
-      );
-
-      this.sampleToTracks[sample.sampleId] = sampleTracks;
-
-      covTracks.push(sampleTracks.cov);
-      bafTracks.push(sampleTracks.baf);
-      variantTracks.push(sampleTracks.variant);
-
-      this.setupSampleAnnotationTracks(sample);
-    }
-
-    const genesTrack = createGeneTrack(
-      "genes",
-      "Genes",
-      (chrom: string) => dataSources.getTranscriptBands(chrom),
-      (id: string) => dataSources.getTranscriptDetails(id),
-      session,
-      openTrackContextMenu,
-    );
-
-    const tracks: TrackViewTrackInfo[] = [
-      ...bafTracks,
-      ...covTracks,
-      ...variantTracks,
-      ...sampleAnnotTracks,
-      genesTrack,
-    ];
-
-    let positionTrackSettings: DataTrackSettings = {
+    const positionTrackSettings: DataTrackSettings = {
+      trackId: "position",
+      trackLabel: "Position",
+      trackType: "position",
       height: {
         collapsedHeight: STYLE.tracks.trackHeight.xs,
       },
@@ -262,9 +218,9 @@ export class TrackView extends ShadowBaseElement {
       "position",
       "Position",
       () => positionTrackSettings,
-      (settings) => (positionTrackSettings = settings),
       () => session.getMarkerModeOn(),
-      () => session.getXRange(),
+      () => this.sessionPos.getXRange(),
+      () => this.colorBands,
     );
 
     const chromosomeRow = document.createElement("flex-row");
@@ -281,14 +237,6 @@ export class TrackView extends ShadowBaseElement {
     this.positionTrack.initialize();
     this.positionTrack.renderLoading();
 
-    tracks.forEach(({ track, container }) => {
-      this.tracksContainer.appendChild(container);
-      track.initialize();
-      track.renderLoading();
-    });
-
-    this.dataTracks = tracks;
-
     this.overviewTracks.forEach((track) => {
       this.bottomContainer.appendChild(track);
       track.initialize();
@@ -298,10 +246,10 @@ export class TrackView extends ShadowBaseElement {
     setupDrag(
       this.tracksContainer,
       () => session.getMarkerModeOn(),
-      () => session.getXRange(),
+      () => sessionPos.getXRange(),
       (range: Rng) => {
-        session.setViewRange(range);
-        render({ dataUpdated: true, positionOnly: true });
+        sessionPos.setViewRange(range);
+        render({ reloadData: true, positionOnly: true });
       },
       (range: Rng) => session.addHighlight(range),
       (id: string) => session.removeHighlight(id),
@@ -309,17 +257,28 @@ export class TrackView extends ShadowBaseElement {
 
     this.addElementListener(this.tracksContainer, "click", () => {
       if (keyLogger.heldKeys.Control) {
-        const updatedRange = zoomOut(
-          this.session.getXRange(),
-          this.session.getCurrentChromSize(),
-        );
-        session.setViewRange(updatedRange);
+        sessionPos.zoomOut();
+        this.requestRender({ reloadData: true, positionOnly: true });
+      }
+      if (keyLogger.heldKeys.Shift) {
+        sessionPos.zoomIn();
+        this.requestRender({ reloadData: true, positionOnly: true });
       }
     });
+
+    const { settings: dataTrackSettings, samples } =
+      await syncDataTrackSettings([], this.session, this.dataSource, []);
+
+    this.lastRenderedSamples = samples;
+
+    this.session.tracks.setTracks(dataTrackSettings);
+    this.session.loadTrackLayout();
+
+    this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
   }
 
   private getXScale(inverted: boolean = false): Scale {
-    const xRange = this.session.getXRange();
+    const xRange = this.sessionPos.getXRange();
     const yAxisWidth = STYLE.yAxis.width;
     const xDomain: Rng = [yAxisWidth, this.tracksContainer.offsetWidth];
     const xScale = !inverted
@@ -328,199 +287,10 @@ export class TrackView extends ShadowBaseElement {
     return xScale;
   }
 
-  // FIXME: Lift this one up one level
-  private createOpenTrackContextMenu(
-    render: (settings: RenderSettings) => void,
-  ) {
-    const openTrackContextMenu = (track: DataTrack) => {
-      const isDotTrack = track instanceof DotTrack;
-
-      if (this.trackPages[track.id] == null) {
-        const trackPage = new TrackMenu();
-        const trackSettings = {
-          showYAxis: isDotTrack,
-          showColor: false,
-        };
-        trackPage.configure(track.id, trackSettings);
-        this.trackPages[track.id] = trackPage;
-      }
-
-      const trackPage = this.trackPages[track.id];
-      this.session.showContent(
-        track.label,
-        [trackPage],
-        STYLE.menu.narrowWidth,
-      );
-
-      trackPage.initialize(
-        (settings: { selectedOnly: boolean }) =>
-          this.session.getAnnotationSources(settings),
-        (direction: "up" | "down") => this.moveTrack(track.id, direction),
-        () => {
-          track.toggleHidden();
-          render({});
-        },
-        () => {
-          track.toggleExpanded();
-          render({});
-        },
-        () => track.getIsHidden(),
-        () => track.getIsExpanded(),
-        isDotTrack ? () => track.getYAxis().range : null,
-        (newY: Rng) => {
-          track.setYAxis(newY);
-          render({});
-        },
-        async (annotId: string | null) => {
-          let colorBands = [];
-          if (annotId != null) {
-            colorBands = await this.dataSource.getAnnotationBands(
-              annotId,
-              this.session.getChromosome(),
-            );
-          }
-          track.setColorBands(colorBands);
-          render({});
-        },
-      );
-    };
-    return openTrackContextMenu;
-  }
-
-  public getDataTracks(): DataTrack[] {
-    return this.dataTracks.map((info) => info.track);
-  }
-
-  public async setColorAnnotation(annotId: string | null) {
-    this.session.setColorAnnotation(annotId);
-    await this.updateColorBands();
-  }
-
-  private async updateColorBands() {
-    let colorBands: RenderBand[] = [];
-    if (this.session.getColorAnnotation() != null) {
-      colorBands = await this.dataSource.getAnnotationBands(
-        this.session.getColorAnnotation(),
-        this.session.getChromosome(),
-      );
-    }
-    for (const info of this.dataTracks) {
-      info.track.setColorBands(colorBands);
-    }
-  }
-
-  public moveTrack(trackId: string, direction: "up" | "down") {
-    const trackInfo = getDataTrackInfoById(this.dataTracks, trackId);
-    const trackInfoIndex = this.dataTracks.indexOf(trackInfo);
-
-    if (direction == "up" && trackInfoIndex == 0) {
+  public render(renderSettings: RenderSettings) {
+    if (renderSettings.tracksReordered) {
+      this.syncTrackOrder();
       return;
-    }
-    if (direction == "down" && trackInfoIndex == this.dataTracks.length - 1) {
-      return;
-    }
-
-    const shift = direction == "up" ? -1 : 1;
-    const trackContainer = trackInfo.container;
-    // FIXME: Shouldn't this always be the same container? Test it
-    const trackSContainer = trackContainer.parentNode;
-    if (direction == "up") {
-      trackSContainer.insertBefore(
-        trackContainer,
-        this.dataTracks[trackInfoIndex - 1].container,
-      );
-    } else {
-      trackSContainer.insertBefore(
-        trackContainer,
-        this.dataTracks[trackInfoIndex + 1].container.nextSibling,
-      );
-    }
-
-    moveElement(this.dataTracks, trackInfoIndex, shift, true);
-  }
-
-  public addSample(sample: Sample, isTrackViewTrack: boolean) {
-    const sampleTracks = createSampleTracks(
-      sample,
-      this.dataSource,
-      false,
-      this.session,
-      isTrackViewTrack,
-      this.openTrackContextMenu,
-    );
-
-    this.setupSampleAnnotationTracks(sample);
-
-    this.dataTracks.push(
-      sampleTracks.cov,
-      sampleTracks.baf,
-      sampleTracks.variant,
-    );
-
-    this.tracksContainer.appendChild(sampleTracks.cov.container);
-    this.tracksContainer.appendChild(sampleTracks.baf.container);
-    this.tracksContainer.appendChild(sampleTracks.variant.container);
-
-    sampleTracks.cov.track.initialize();
-    sampleTracks.baf.track.initialize();
-    sampleTracks.variant.track.initialize();
-  }
-
-  public removeSample(sample: Sample) {
-    const trackMatches = (trackInfo: TrackViewTrackInfo) =>
-      trackInfo.sample != null &&
-      trackInfo.sample.sampleId === sample.sampleId &&
-      trackInfo.sample.caseId === sample.caseId;
-
-    const removeInfos = this.dataTracks.filter((track: TrackViewTrackInfo) =>
-      trackMatches(track),
-    );
-
-    this.dataTracks = this.dataTracks.filter(
-      (track: TrackViewTrackInfo) => !trackMatches(track),
-    );
-
-    for (const removeInfo of removeInfos) {
-      this.tracksContainer.removeChild(removeInfo.container);
-    }
-  }
-
-  public showTrack(trackId: string) {
-    const track = getDataTrackInfoById(this.dataTracks, trackId);
-    this.tracksContainer.appendChild(track.container);
-  }
-
-  public hideTrack(trackId: string) {
-    const track = getDataTrackInfoById(this.dataTracks, trackId);
-    this.tracksContainer.removeChild(track.container);
-  }
-
-  public setTrackHeights(trackHeights: TrackHeights) {
-    for (const track of this.dataTracks) {
-      if (track.track instanceof BandTrack) {
-        track.track.setHeights(trackHeights.bandCollapsed);
-      } else if (track.track instanceof DotTrack) {
-        track.track.setHeights(
-          trackHeights.dotCollapsed,
-          trackHeights.dotExpanded,
-        );
-      } else {
-        console.error("Track of unknown DataTrack category:", track);
-      }
-    }
-  }
-
-  public setCovYRange(yRange: Rng) {
-    for (const trackContainer of this.dataTracks) {
-      if (trackContainer.track.trackType == "dot-cov") {
-        trackContainer.track.setYAxis(yRange);
-      }
-    }
-  }
-
-  public render(settings: RenderSettings) {
-    if (settings.dataUpdated) {
-      this.updateColorBands();
     }
 
     renderHighlights(
@@ -531,265 +301,150 @@ export class TrackView extends ShadowBaseElement {
       (id) => this.session.removeHighlight(id),
     );
 
-    updateAnnotationTracks(
-      this.dataTracks.filter(
-        (info) => info.track.trackType == "annotation" && info.sample == null,
-      ),
-      (sourceId: string, chrom: string) =>
-        this.dataSource.getAnnotationBands(sourceId, chrom),
-      (bandId: string) => this.dataSource.getAnnotationDetails(bandId),
+    syncDataTrackSettings(
+      this.session.tracks.getTracks(),
       this.session,
-      this.openTrackContextMenu,
-      (track: DataTrack) => {
-        const annotTrack = makeTrackContainer(track, null);
-        this.dataTracks.push(annotTrack);
-        this.tracksContainer.appendChild(annotTrack.container);
-        annotTrack.track.initialize();
-      },
-      (id: string) => {
-        const match = removeOne(
-          this.dataTracks,
-          (info) => info.track.id === id,
-        );
-        this.tracksContainer.removeChild(match.container);
-      },
-    );
+      this.dataSource,
+      this.lastRenderedSamples,
+    ).then(({ settings: dataTrackSettings, samples }) => {
+      this.session.tracks.setTracks(dataTrackSettings);
+      this.lastRenderedSamples = samples;
+      this.renderTracks(renderSettings);
+    });
 
-    // FIXME: Only the active one needs to be rendered isn't it?
-    Object.values(this.trackPages).forEach((trackPage) =>
-      trackPage.render(settings),
-    );
+    this.ideogramTrack.render(renderSettings);
+    this.positionTrack.render(renderSettings);
+    this.overviewTracks.forEach((track) => track.render(renderSettings));
 
-    this.ideogramTrack.render(settings);
-    this.positionTrack.render(settings);
-    this.dataTracks.forEach((trackInfo) => trackInfo.track.render(settings));
-    this.overviewTracks.forEach((track) => track.render(settings));
-
-    const [startChrSeg, endChrSeg] = this.session.getChrSegments();
-
+    const [startChrSeg, endChrSeg] = this.sessionPos.getChrSegments();
     this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
   }
 
-  private setupSampleAnnotationTracks(sample: Sample) {
-    getSampleAnnotationTracks(
-      sample,
-      this.dataSource,
-      this.session,
-      this.openTrackContextMenu,
-    ).then((tracks: BandTrack[]) => {
-      for (const track of tracks) {
-        const container = makeTrackContainer(track, sample);
-        this.dataTracks.push(container);
-        this.tracksContainer.appendChild(container.container);
-        track.initialize();
-        track.render({});
-      }
-    });
-  }
-}
+  syncTrackOrder() {
+    const desiredOrder = this.session.tracks.getTracks().map((s) => s.trackId);
 
-function getDataTrackInfoById(
-  tracks: TrackViewTrackInfo[],
-  trackId: string,
-): TrackViewTrackInfo {
-  for (let i = 0; i < tracks.length; i++) {
-    if (tracks[i].track.id == trackId) {
-      const track = tracks[i];
-      return track;
+    if (desiredOrder.length == 0) {
+      return;
+    }
+
+    const trackById = new Map(
+      this.dataTracks.map((wrapper) => [wrapper.track.id, wrapper]),
+    );
+    const appendedIds = new Set<string>();
+    const orderedDataTracks: DataTrackWrapper[] = [];
+    const fragment = document.createDocumentFragment();
+
+    for (const id of desiredOrder) {
+      const wrapper = trackById.get(id);
+      if (!wrapper) {
+        continue;
+      }
+
+      appendedIds.add(id);
+      orderedDataTracks.push(wrapper);
+      fragment.appendChild(wrapper.container);
+    }
+
+    for (const wrapper of this.dataTracks) {
+      if (appendedIds.has(wrapper.track.id)) {
+        continue;
+      }
+
+      orderedDataTracks.push(wrapper);
+      fragment.appendChild(wrapper.container);
+    }
+
+    this.dataTracks = orderedDataTracks;
+    this.tracksContainer.appendChild(fragment);
+  }
+
+  // FIXME: This goes counter to having data track settings drive the visualization
+  // It would be better for the y axis to come through the data source
+  public setCovYRange(covRange: Rng) {
+    for (const track of this.dataTracks) {
+      if (track.track.trackType == "dot-cov") {
+        track.track.setYAxis(covRange);
+      }
     }
   }
-  console.error("Did not find any track with ID", trackId);
-}
 
-function createSampleTracks(
-  sample: Sample,
-  dataSources: RenderDataSource,
-  startExpanded: boolean,
-  session: GensSession,
-  isTrackViewTrack: boolean,
-  openTrackContextMenu: (track: DataTrack) => void,
-): {
-  cov: TrackViewTrackInfo;
-  baf: TrackViewTrackInfo;
-  variant: TrackViewTrackInfo;
-} {
-  const coverageTrack = createDotTrack(
-    `${sample.sampleId}_log2_cov`,
-    `${sample.sampleId} cov`,
-    "dot-cov",
-    sample,
-    (sample: Sample) =>
-      dataSources.getCovData(
-        sample,
-        session.getChromosome(),
-        session.getXRange(),
-      ),
-    {
-      startExpanded,
-      yAxis: {
-        range: session.getCoverageRange(),
-        label: "Log2 Ratio",
-        hideLabelOnCollapse: true,
-        hideTicksOnCollapse: true,
-      },
-      hasLabel: isTrackViewTrack,
-      fixedChrom: null,
-    },
-    () => session.getMarkerModeOn(),
-    () => session.getXRange(),
-    openTrackContextMenu,
-    () => session.getTrackHeights(),
-  );
-  const bafTrack = createDotTrack(
-    `${sample.sampleId}_log2_baf`,
-    `${sample.sampleId} baf`,
-    "dot-baf",
-    sample,
-    (sample: Sample) =>
-      dataSources.getBafData(
-        sample,
-        session.getChromosome(),
-        session.getXRange(),
-      ),
-    {
-      startExpanded,
-      yAxis: {
-        range: BAF_Y_RANGE,
-        label: "B Allele Freq",
-        hideLabelOnCollapse: true,
-        hideTicksOnCollapse: true,
-      },
-      hasLabel: isTrackViewTrack,
-      fixedChrom: null,
-    },
-    () => session.getMarkerModeOn(),
-    () => session.getXRange(),
-    openTrackContextMenu,
-    () => session.getTrackHeights(),
-  );
+  renderTracks(settings: RenderSettings) {
+    // Single track render, skip the full diff
+    if (settings.targetTrackId != null) {
+      const track = this.dataTracks.find(
+        (track) => track.track.id == settings.targetTrackId,
+      );
+      track.track.render(settings);
+      return;
+    }
 
-  const variantTrack = createVariantTrack(
-    sample.sampleId,
-    `${sample.sampleId}_variants`,
-    `${sample.sampleId} Variants`,
-    () =>
-      dataSources.getVariantBands(
-        sample,
-        session.getChromosome(),
-        session.getVariantThreshold(),
-      ),
-    (variantId: string) => dataSources.getVariantDetails(variantId),
-    (variantId: string) => session.getVariantURL(variantId),
-    session,
-    openTrackContextMenu,
-    {
-      height: {
-        collapsedHeight: session.getTrackHeights().bandCollapsed,
-      },
-      showLabelWhenCollapsed: true,
-      isExpanded: false,
-      isHidden: sample.sampleId !== session.getMainSample().sampleId,
-    },
-  );
-
-  const cov = makeTrackContainer(coverageTrack, sample);
-  const baf = makeTrackContainer(bafTrack, sample);
-  const variant = makeTrackContainer(variantTrack, sample);
-
-  return {
-    cov,
-    baf,
-    variant,
-  };
-}
-
-function updateAnnotationTracks(
-  currAnnotTracks: TrackViewTrackInfo[],
-  getAnnotationBands: (
-    sourceId: string,
-    chrom: string,
-  ) => Promise<RenderBand[]>,
-  getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>,
-  session: GensSession,
-  openTrackContextMenu: (track: DataTrack) => void,
-  addTrack: (track: DataTrack) => void,
-  removeTrack: (id: string) => void,
-) {
-  const sources = session.getAnnotationSources({
-    selectedOnly: true,
-  });
-
-  const currTrackIds = currAnnotTracks.map((info) => info.track.id);
-  const sourceIds = sources.map((source) => source.id);
-
-  const newSources = sources.filter(
-    (source) => !currTrackIds.includes(source.id),
-  );
-  const removedSourceIds = currAnnotTracks
-    .map((info) => info.track.id)
-    .filter((id) => !sourceIds.includes(id));
-
-  newSources.forEach((source) => {
-    const hasLabel = true;
-    const newTrack = createAnnotTrack(
-      source.id,
-      source.label,
-      () => session.getXRange(),
-      () => getAnnotationBands(source.id, session.getChromosome()),
-      (bandId: string) => getAnnotationDetails(bandId),
-      session,
-      openTrackContextMenu,
-      {
-        height: session.getTrackHeights().bandCollapsed,
-        showLabelWhenCollapsed: hasLabel,
-        startExpanded: session.getTrackExpanded(source.id, true),
-      },
+    const currIds = new Set(
+      this.session.tracks.getTracks().map((setting) => setting.trackId),
     );
-    addTrack(newTrack);
-  });
 
-  removedSourceIds.forEach((id) => {
-    removeTrack(id);
-  });
-}
+    const trackIds = new Set(this.dataTracks.map((track) => track.track.id));
+    const addedIds = setDiff(currIds, trackIds);
+    const removedIds = setDiff(trackIds, currIds);
 
-async function getSampleAnnotationTracks(
-  sample: Sample,
-  dataSources: RenderDataSource,
-  session: GensSession,
-  openTrackContextMenu: (track: DataTrack) => void,
-): Promise<BandTrack[]> {
-  const sampleAnnotSources = await dataSources.getSampleAnnotSources(
-    sample.caseId,
-    sample.sampleId,
-  );
-
-  const sampleAnnotTracks = [];
-  for (const sampleAnnotSource of sampleAnnotSources) {
-    const annotTrack = createAnnotTrack(
-      sampleAnnotSource.id,
-      sampleAnnotSource.name,
-      () => session.getXRange(),
-      () => {
-        const bands = dataSources.getSampleAnnotationBands(
-          sampleAnnotSource.id,
-          session.getChromosome(),
-        );
-        return bands;
-      },
-      (id: string) => dataSources.getSampleAnnotationDetails(id),
-      session,
-      openTrackContextMenu,
-      {
-        height: session.getTrackHeights().bandCollapsed,
-        showLabelWhenCollapsed: true,
-        startExpanded: true,
-      },
+    const showTrackContextMenu = getOpenTrackContextMenu(
+      this.session,
+      this.requestRender,
     );
-    sampleAnnotTracks.push(annotTrack);
+
+    for (const settingId of addedIds) {
+      const setIsExpanded = (trackId: string, isExpanded: boolean) => {
+        this.session.tracks.setIsExpanded(trackId, isExpanded);
+        this.requestRender({ saveLayoutChange: true, targetTrackId: trackId });
+      };
+      const setExpandedHeight = (trackId: string, expandedHeight: number) => {
+        this.session.tracks.setExpandedHeight(trackId, expandedHeight);
+      };
+
+      const track = getTrack(
+        this.session,
+        this.dataSource,
+        this.session.tracks.get(settingId),
+        showTrackContextMenu,
+        setIsExpanded,
+        setExpandedHeight,
+        () => this.colorBands,
+      );
+
+      const trackWrapper = makeTrackContainer(track, null);
+      this.dataTracks.push(trackWrapper);
+      this.tracksContainer.appendChild(trackWrapper.container);
+      track.initialize();
+    }
+
+    for (const id of removedIds) {
+      const match = removeOne(this.dataTracks, (info) => info.track.id === id);
+      this.tracksContainer.removeChild(match.container);
+    }
+
+    for (const track of this.dataTracks) {
+      track.track.render(settings);
+    }
   }
 
-  return sampleAnnotTracks;
+  public async updateColorBands() {
+    this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
+  }
+}
+
+async function getAnnotColorBands(
+  session: GensSession,
+  dataSource: RenderDataSource,
+) {
+  const colorAnnot = session.getColorAnnotation();
+
+  let colorBands: RenderBand[] = [];
+  if (colorAnnot != null) {
+    colorBands = await dataSource.getAnnotationBands(
+      session.getColorAnnotation(),
+      session.pos.getChromosome(),
+    );
+  }
+  return colorBands;
 }
 
 customElements.define("track-view", TrackView);

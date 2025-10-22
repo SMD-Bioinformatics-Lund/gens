@@ -6,15 +6,13 @@ from datetime import date
 from flask import Blueprint, abort, current_app, render_template, request
 from pymongo.database import Database
 
-from gens import version
+from gens.__version__ import VERSION as version
 from gens.config import settings
 from gens.crud.genomic import get_chromosome_info
 from gens.crud.samples import get_samples_for_case, get_samples_per_case
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.genomic import parse_region_str
 from gens.models.genomic import GenomeBuild
-
-from gens.config import settings
 
 LOG = logging.getLogger(__name__)
 
@@ -54,7 +52,9 @@ def display_samples(case_id: str) -> str:
 
     sample_id_list = request.args.get("sample_ids")
     if not sample_id_list:
-        case_samples = get_samples_for_case(db.get_collection(SAMPLES_COLLECTION), case_id)
+        case_samples = get_samples_for_case(
+            db.get_collection(SAMPLES_COLLECTION), case_id
+        )
         if not case_samples:
             raise ValueError(f"Expected sample_ids for case_id: {case_id}")
         sample_ids = [sample.sample_id for sample in case_samples]
@@ -67,13 +67,12 @@ def display_samples(case_id: str) -> str:
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
 
-    # get annotation track
-    annotation = request.args.get("annotation", settings.default_annotation_track)
-
     if parsed_region.end is None:
         chrom_info = get_chromosome_info(db, parsed_region.chromosome, genome_build)
         if chrom_info is None:
-            raise ValueError(f"Chromosome {parsed_region.chromosome} is not found in the database")
+            raise ValueError(
+                f"Chromosome {parsed_region.chromosome} is not found in the database"
+            )
         parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})
 
     samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
@@ -91,7 +90,7 @@ def display_samples(case_id: str) -> str:
 
     return render_template(
         "gens.html",
-        scout_base_url=settings.scout_url,
+        scout_base_url=settings.variant_url,
         chrom=parsed_region.chromosome,
         start=parsed_region.start,
         end=parsed_region.end,
@@ -100,7 +99,6 @@ def display_samples(case_id: str) -> str:
         all_samples=list(all_samples),
         genome_build=genome_build.value,
         print_page=print_page,
-        annotation=annotation,
         selected_variant=selected_variant,
         todays_date=date.today(),
         version=version,

@@ -100,7 +100,6 @@ export class GensPopup extends ShadowBaseElement {
     closeButton.addEventListener("click", () => {
       this.remove();
     });
-
   }
 
   activateDrag(cleanup: () => void) {
@@ -109,7 +108,11 @@ export class GensPopup extends ShadowBaseElement {
   }
 }
 
-function setupDrag(host: HTMLElement, dragArea: HTMLElement, cleanup: () => void) {
+function setupDrag(
+  host: HTMLElement,
+  dragArea: HTMLElement,
+  cleanup: () => void,
+) {
   let isDragging = false;
   let startX = 0;
   let startY = 0;
@@ -150,6 +153,5 @@ function setupDrag(host: HTMLElement, dragArea: HTMLElement, cleanup: () => void
     dragArea.classList.remove("dragging");
   });
 }
-
 
 customElements.define("gens-popup", GensPopup);

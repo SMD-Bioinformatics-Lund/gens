@@ -2,9 +2,15 @@
 
 import click
 from pymongo.database import Database
+
 from gens.config import settings
+from gens.constants import SAMPLE_TYPE_ALIASES
 from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
+
+
+def normalize_sample_type(sample_type: str) -> str:
+    return SAMPLE_TYPE_ALIASES.get(sample_type.lower(), sample_type)
 
 
 class ChoiceType(click.Choice):
@@ -23,12 +29,13 @@ class ChoiceType(click.Choice):
         return next(v for v in self.enum if str(v) == value)
 
 
-
 def db_setup(collections: list[str]) -> Database:
     gens_db_name = settings.gens_db.database
 
     if gens_db_name is None:
-        raise ValueError("No Gens database name provided in settings (settings.gens_db.database)")
+        raise ValueError(
+            "No Gens database name provided in settings (settings.gens_db.database)"
+        )
 
     db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
 
@@ -37,4 +44,3 @@ def db_setup(collections: list[str]) -> Database:
             create_index(db, coll)
 
     return db
-
