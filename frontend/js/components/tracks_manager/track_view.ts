@@ -202,7 +202,7 @@ export class TrackView extends ShadowBaseElement {
 
     this.overviewTracks = [overviewTrackBaf, overviewTrackCov];
 
-    let positionTrackSettings: DataTrackSettings = {
+    const positionTrackSettings: DataTrackSettings = {
       trackId: "position",
       trackLabel: "Position",
       trackType: "position",

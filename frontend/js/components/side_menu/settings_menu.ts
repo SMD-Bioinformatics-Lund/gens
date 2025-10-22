@@ -536,24 +536,6 @@ function getAnnotationChoices(
   );
 }
 
-function getGeneListChoices(
-  geneLists: ApiGeneList[],
-  prevSelected: string[],
-): InputChoice[] {
-  const choices: InputChoice[] = [];
-  for (const geneList of geneLists) {
-    const choice = {
-      value: geneList.id,
-      label: `${geneList.name} (v${geneList.version})`,
-      selected: prevSelected.includes(geneList.id),
-    };
-    choices.push(choice);
-  }
-  return choices.sort((source1, source2) =>
-    source1.label.toString().localeCompare(source2.label.toString()),
-  );
-}
-
 function getSamplesSection(
   samples: Sample[],
   removeSample: (sample: Sample) => void,

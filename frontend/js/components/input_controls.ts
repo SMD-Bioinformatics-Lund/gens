@@ -6,7 +6,7 @@ import {
   SIZES,
 } from "../constants";
 import { GensSession } from "../state/gens_session";
-import { getPan, zoomIn, zoomOut } from "../util/navigation";
+import { getPan } from "../util/navigation";
 import { clampRange, rangeSize } from "../util/utils";
 
 const template = document.createElement("template");

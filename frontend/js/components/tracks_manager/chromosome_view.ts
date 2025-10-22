@@ -144,7 +144,6 @@ export class ChromosomeView extends ShadowBaseElement {
       const getColorBandsPlaceholder = () => [];
 
       let track: DataTrack;
-      let targetGroup: HTMLDivElement;
       if (trackSetting.trackType == "dot-cov") {
         track = getDotTrack(
           session,
@@ -159,7 +158,6 @@ export class ChromosomeView extends ShadowBaseElement {
           },
           getColorBandsPlaceholder,
         );
-        targetGroup = chromGroup.samples;
       } else if (trackSetting.trackType == "sample-annotation") {
         track = getBandTrack(
           session,
@@ -182,7 +180,6 @@ export class ChromosomeView extends ShadowBaseElement {
           },
           getColorBandsPlaceholder,
         );
-        targetGroup = chromGroup.annotations;
       } else {
         console.warn(
           `Unsupported track setting type: ${trackSetting.trackType}`,
