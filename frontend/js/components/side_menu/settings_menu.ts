@@ -393,11 +393,6 @@ export class SettingsMenu extends ShadowBaseElement {
       getAnnotationChoices(this.allAnnotationSources, prevSelectedAnnots),
     );
 
-    const prevSelectedGeneLists = this.session.getGeneListSelections();
-    this.geneListSelect.setValues(
-      getGeneListChoices(this.geneLists, prevSelectedGeneLists),
-    );
-
     const allAnnotChoices = getAnnotationChoices(this.allAnnotationSources, []);
     const colorChoices = [
       { label: "None", value: "", selected: this.getColorAnnotation() == null },

@@ -67,6 +67,13 @@ export const TRANSPARENCY = {
   l: "22",
 };
 
+export const TRACK_ID_SUFFIXES = {
+  cov: "log2_cov",
+  baf: "baf",
+  variants: "variants",
+  sample_annot: "sample_annot"
+}
+
 export const COLORS = {
   white: "#FFFFFF",
   black: "#222",

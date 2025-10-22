@@ -714,7 +714,15 @@ type StorageValue =
   | TrackHeights
   | Rng
   | Record<string, boolean>
-  | TrackLayout;
+  | ProfileSettings;
+
+type ProfileSettings = {
+  layout: TrackLayout;
+  colorAnnotationId: string | null;
+  annotationSelections: string[];
+  coverageRange: Rng;
+  trackHeights: TrackHeights;
+};
 
 type TrackLayout = {
   order: string[];

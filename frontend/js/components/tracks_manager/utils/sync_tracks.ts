@@ -1,4 +1,4 @@
-import { USED_TRACK_HEIGHTS } from "../../../constants";
+import { TRACK_ID_SUFFIXES, USED_TRACK_HEIGHTS } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import {
   getSampleFromID as getSampleIdsFromID,
@@ -28,21 +28,12 @@ export async function syncDataTrackSettings(
   const annotSources = session.getAnnotationSources({
     selectedOnly: true,
   });
-  const geneListSources = session.getGeneListSources({
-    selectedOnly: true,
-  });
 
   const samples = session.getSamples();
 
   const { removedIds: removedAnnotIds, newAnnotationSettings } = annotationDiff(
     origTrackSettings,
     annotSources,
-  );
-
-  // GENE LIST DIFF
-  const { newGeneListSettings, removedIds: removedGeneListIds } = geneListDiff(
-    origTrackSettings,
-    geneListSources,
   );
 
   const { removedIds: removedSamples, sampleSettings } = await sampleDiff(
@@ -67,11 +58,7 @@ export async function syncDataTrackSettings(
   }
 
   const returnTrackSettings = [...origTrackSettings];
-  const removeIds = [
-    ...removedAnnotIds,
-    ...removedGeneListIds,
-    ...removedSampleTrackIds,
-  ];
+  const removeIds = [...removedAnnotIds, ...removedSampleTrackIds];
 
   for (const removeId of removeIds) {
     removeOne(returnTrackSettings, (setting) => setting.trackId == removeId);
@@ -79,7 +66,6 @@ export async function syncDataTrackSettings(
 
   returnTrackSettings.push(...sampleSettings);
   returnTrackSettings.push(...newAnnotationSettings);
-  returnTrackSettings.push(...newGeneListSettings);
 
   if (!returnTrackSettings.find((track) => track.trackId == "genes")) {
     const geneTrackSettings: DataTrackSettings = {
@@ -134,7 +120,7 @@ async function sampleDiff(
     // FIXME: Some logic here to distinguish if single or multiple samples opened
     // FIXME: Loading defaulting
     const cov: DataTrackSettings = {
-      trackId: `${sample.sampleId}_log2_cov`,
+      trackId: `${sample.sampleId}_${TRACK_ID_SUFFIXES.cov}`,
       trackLabel: `${sample.sampleId} cov`,
       trackType: "dot-cov",
       sample,
@@ -154,7 +140,7 @@ async function sampleDiff(
     };
 
     const baf: DataTrackSettings = {
-      trackId: `${sample.sampleId}_baf`,
+      trackId: `${sample.sampleId}_${TRACK_ID_SUFFIXES.baf}`,
       trackLabel: `${sample.sampleId} baf`,
       trackType: "dot-baf",
       sample,
@@ -173,7 +159,7 @@ async function sampleDiff(
     };
 
     const variants: DataTrackSettings = {
-      trackId: `${sample.sampleId}_variants`,
+      trackId: `${sample.sampleId}_${TRACK_ID_SUFFIXES.variants}`,
       trackLabel: `${sample.sampleId} Variants`,
       trackType: "variant",
       sample,
