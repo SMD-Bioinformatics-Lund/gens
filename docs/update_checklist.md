@@ -29,7 +29,7 @@ Furthermore, current annotation tracks for testing can be copied from `/access/a
 ```
 # Note: ~1.6 GB
 rsync --bwlimit 20000 -avPh Trannel:/data/bnf/dev/jakob/data/gens_test_data dump
-rsync --bwlimit 20000 -avPh Trannel:/access/annotation_tracks/{Mimisbrunnr.Lund-hg38.aed,DECIPHER.DDG2P.250216-hg38.aed,IlluminaRL100.dark.gene.annotations-hg38.aed} test_dump/annotation_tracks
+rsync --bwlimit 20000 -avPh Trannel:/access/annotation_tracks/{Mimisbrunnr.Lund-hg38.aed,DECIPHER.DDG2P.250216-hg38.aed,IlluminaRL100.dark.gene.annotations-hg38.aed} dump/annotation_tracks
 ```
 
 This can be achieved by placing the `dump` folder in the repo and adding the following `docker-compose.override.yml`:
