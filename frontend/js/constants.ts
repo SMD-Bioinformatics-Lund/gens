@@ -75,6 +75,7 @@ export const TRACK_IDS = {
   variants: "variants",
   sample_annot: "sample_annot",
   genes: "genes",
+  annot: "annot"
 };
 
 export const COLORS = {

@@ -329,8 +329,10 @@ export class GensSession {
     return this.layoutProfileKey;
   }
 
-  public loadTrackLayout(assignedLayout: TrackLayout | null, forceAnnotations: boolean): void {
-
+  public loadTrackLayout(
+    assignedLayout: TrackLayout | null,
+    forceAnnotations: boolean,
+  ): void {
     console.log("Loading track layout");
 
     if (assignedLayout != null) {
@@ -345,7 +347,6 @@ export class GensSession {
     }
 
     if (forceAnnotations) {
-
       console.log("Forcing annotations");
 
       const nextSelections: string[] = [];
@@ -362,8 +363,11 @@ export class GensSession {
         nextSelections.push(annotId);
       }
 
-      const selectionsChanged = nextSelections.length !== this.annotationSelections.length ||
-        nextSelections.some((id, index) => this.annotationSelections[index] !== id)
+      const selectionsChanged =
+        nextSelections.length !== this.annotationSelections.length ||
+        nextSelections.some(
+          (id, index) => this.annotationSelections[index] !== id,
+        );
       if (selectionsChanged) {
         const saveProfile = false;
         this.setAnnotationSelections(nextSelections, saveProfile);
@@ -379,7 +383,15 @@ export class GensSession {
     const hidden: Record<string, boolean> = {};
     const expanded: Record<string, boolean> = {};
     for (const info of this.tracks.getTracks()) {
-      const pid = getPortableId(info);
+      let label = null;
+      if (
+        info.trackType == "annotation" ||
+        info.trackType == "sample-annotation"
+      ) {
+        label = info.trackLabel;
+      }
+
+      const pid = getPortableId(info, label);
       order.add(pid);
       hidden[pid] = info.isHidden;
       expanded[pid] = info.isExpanded;

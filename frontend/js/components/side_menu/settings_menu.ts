@@ -560,8 +560,10 @@ export class SettingsMenu extends ShadowBaseElement {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const layoutKey = this.session.getLayoutProfileKey();
+    const sanitizedLayoutKey = layoutKey.replace(/[^a-z0-9._-]/gi, "_");
     link.href = url;
-    link.download = `track-layout-${timestamp}.json`;
+    link.download = `track-layout-${sanitizedLayoutKey}-${timestamp}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
