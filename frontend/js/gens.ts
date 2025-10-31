@@ -319,14 +319,14 @@ function addSettingsPageSources(
 
   const getProfile = () => {
     return session.getProfile();
-  }
+  };
 
   const applyProfile = (profile: ProfileSettings) => {
     session.loadProfile(profile);
     // session.loadTrackLayout(layout, forceLayout);
-    render({ reloadData: true, tracksReordered: true });
+    render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
     console.log("Done rendering");
-  }
+  };
 
   settingsPage.setSources(
     session,

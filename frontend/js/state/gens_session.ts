@@ -56,8 +56,6 @@ export class GensSession {
   public chromTracks: Tracks;
   public pos: SessionPosition;
 
-  private trackheights: TrackHeights;
-
   constructor(
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
@@ -80,18 +78,18 @@ export class GensSession {
     this.samples = samples;
     this.trackHeights = trackHeights;
 
-    this.layoutProfileKey = computeProfileKey(this.samples, genomeBuild);
-    const profile = loadProfileSettings(this.layoutProfileKey);
-    this.loadProfile(profile);
+    this.idToAnnotSource = {};
+    for (const annotSource of allAnnotationSources) {
+      this.idToAnnotSource[annotSource.track_id] = annotSource;
+    }
 
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
 
-    this.idToAnnotSource = {};
-    for (const annotSource of allAnnotationSources) {
-      this.idToAnnotSource[annotSource.track_id] = annotSource;
-    }
+    this.layoutProfileKey = computeProfileKey(this.samples, genomeBuild);
+    const profile = loadProfileSettings(this.layoutProfileKey);
+    this.loadProfile(profile);
 
     this.tracks = new Tracks([]);
     this.chromTracks = new Tracks([]);
@@ -352,9 +350,6 @@ export class GensSession {
     assignedLayout: TrackLayout | null,
     forceAnnotations: boolean,
   ): void {
-    if (assignedLayout != null) {
-      this.trackLayout = assignedLayout;
-    }
 
     const layout = this.trackLayout;
 
@@ -372,48 +367,48 @@ export class GensSession {
       return;
     }
 
-    if (forceAnnotations) {
-      const nextSelections: string[] = [];
-      const seen = new Set<string>();
-      for (const layoutId of layout.order) {
-        const [trackType, annotId, _label] = layoutId.split("|");
+    // if (forceAnnotations) {
+    //   const nextSelections: string[] = [];
+    //   const seen = new Set<string>();
+    //   for (const layoutId of layout.order) {
+    //     const [trackType, annotId, _label] = layoutId.split("|");
 
-        if (trackType != TRACK_IDS.annot) {
-          continue;
-        }
-        if (!this.idToAnnotSource[annotId] || seen.has(annotId)) {
-          continue;
-        }
-        seen.add(annotId);
-        nextSelections.push(annotId);
-      }
+    //     if (trackType != TRACK_IDS.annot) {
+    //       continue;
+    //     }
+    //     if (!this.idToAnnotSource[annotId] || seen.has(annotId)) {
+    //       continue;
+    //     }
+    //     seen.add(annotId);
+    //     nextSelections.push(annotId);
+    //   }
 
-      const selectionsChanged =
-        nextSelections.length !== this.annotationSelections.length ||
-        nextSelections.some(
-          (id, index) => this.annotationSelections[index] !== id,
-        );
-      if (selectionsChanged) {
-        const saveProfile = false;
-        this.setAnnotationSelections(nextSelections, saveProfile);
+    //   const selectionsChanged =
+    //     nextSelections.length !== this.annotationSelections.length ||
+    //     nextSelections.some(
+    //       (id, index) => this.annotationSelections[index] !== id,
+    //     );
+    //   if (selectionsChanged) {
+    //     const saveProfile = false;
+    //     this.setAnnotationSelections(nextSelections, saveProfile);
 
-        const annotSelections = this.annotationSelections.map((id) => {
-          return {
-            id,
-            label: this.idToAnnotSource[id].name,
-          };
-        });
+    //     const annotSelections = this.annotationSelections.map((id) => {
+    //       return {
+    //         id,
+    //         label: this.idToAnnotSource[id].name,
+    //       };
+    //     });
 
-        const diff = annotationDiff(this.tracks.getTracks(), annotSelections);
-        console.log("Found the diff", diff);
-        for (const track of diff.newAnnotationSettings) {
-          this.tracks.addTrack(track);
-        }
-        for (const removedId of diff.removedIds) {
-          this.tracks.removeTrack(removedId);
-        }
-      }
-    }
+    //     const diff = annotationDiff(this.tracks.getTracks(), annotSelections);
+    //     console.log("Found the diff", diff);
+    //     for (const track of diff.newAnnotationSettings) {
+    //       this.tracks.addTrack(track);
+    //     }
+    //     for (const removedId of diff.removedIds) {
+    //       this.tracks.removeTrack(removedId);
+    //     }
+    //   }
+    // }
 
     const arrangedTracks = getArrangedTracks(layout, this.tracks.getTracks());
 
