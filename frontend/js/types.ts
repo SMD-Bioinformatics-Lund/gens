@@ -730,3 +730,5 @@ type TrackLayout = {
   hidden: Record<string, boolean>;
   expanded: Record<string, boolean>;
 };
+
+type PortableTrackId = string;

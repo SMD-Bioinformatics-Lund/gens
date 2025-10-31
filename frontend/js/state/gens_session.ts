@@ -426,7 +426,7 @@ function getArrangedTracks(
   // First create a map layout ID -> track settings
   const layoutIdToSettings: Record<string, DataTrackSettings[]> = {};
   for (const trackSetting of origTrackSettings) {
-    const layoutId = getPortableId(trackSetting);
+    const layoutId = getPortableId(trackSetting, null);
 
     if (!layoutIdToSettings[layoutId]) {
       layoutIdToSettings[layoutId] = [];

@@ -1,6 +1,6 @@
 import { TRACK_IDS } from "../../../constants";
 
-export function getPortableId(settings: DataTrackSettings, label: string|null): string {
+export function getPortableId(settings: DataTrackSettings, label: string|null): PortableTrackId {
   const trackId = settings.trackId;
 
   let trackType = null;
