@@ -317,13 +317,13 @@ function addSettingsPageSources(
     render({ mainSampleChanged: true, reloadData: true });
   };
 
-  const getTrackLayout = () => {
-    return session.getTrackLayout();
+  const getProfile = () => {
+    return session.getProfile();
   }
 
-  const applyTrackLayout = (layout: TrackLayout) => {
-    const forceLayout = true;
-    session.loadTrackLayout(layout, forceLayout);
+  const applyProfile = (profile: ProfileSettings) => {
+    session.loadProfile(profile);
+    // session.loadTrackLayout(layout, forceLayout);
     render({ reloadData: true, tracksReordered: true });
     console.log("Done rendering");
   }
@@ -345,7 +345,7 @@ function addSettingsPageSources(
     onToggleTrackHidden,
     onToggleTrackExpanded,
     onAssignMainSample,
-    getTrackLayout,
-    applyTrackLayout,
+    getProfile,
+    applyProfile,
   );
 }

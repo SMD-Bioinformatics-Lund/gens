@@ -56,6 +56,8 @@ export class GensSession {
   public chromTracks: Tracks;
   public pos: SessionPosition;
 
+  private trackheights: TrackHeights;
+
   constructor(
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
@@ -76,33 +78,19 @@ export class GensSession {
     this.highlights = {};
 
     this.samples = samples;
+    this.trackHeights = trackHeights;
 
     this.layoutProfileKey = computeProfileKey(this.samples, genomeBuild);
     const profile = loadProfileSettings(this.layoutProfileKey);
-    console.log("Initial track layout", profile?.layout);
-    this.trackLayout = profile?.layout;
+    this.loadProfile(profile);
 
-    this.trackHeights = profile?.trackHeights || trackHeights;
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
-    this.variantThreshold = profile?.variantThreshold || DEFAULT_VARIANT_THRES;
-
-    this.colorAnnotationId = profile?.colorAnnotationId || null;
 
     this.idToAnnotSource = {};
     for (const annotSource of allAnnotationSources) {
       this.idToAnnotSource[annotSource.track_id] = annotSource;
-    }
-
-    // A pre-selected track might disappear if the db is updated
-    this.annotationSelections = [];
-    for (const loadedSelectionId of profile?.annotationSelections || []) {
-      if (!this.idToAnnotSource[loadedSelectionId]) {
-        console.warn(`Selection ID ${loadedSelectionId} not found, skipping`);
-        continue;
-      }
-      this.annotationSelections.push(loadedSelectionId);
     }
 
     this.tracks = new Tracks([]);
@@ -118,6 +106,24 @@ export class GensSession {
       chromSizes,
       chromInfo,
     );
+  }
+
+  public loadProfile(profile: ProfileSettings): void {
+    this.trackLayout = profile?.layout;
+    this.trackHeights = profile?.trackHeights || this.trackHeights;
+    this.variantThreshold = profile?.variantThreshold || DEFAULT_VARIANT_THRES;
+    this.colorAnnotationId = profile?.colorAnnotationId || null;
+
+    // A pre-selected track might disappear if the db is updated
+    this.annotationSelections = [];
+    for (const loadedSelectionId of profile?.annotationSelections || []) {
+      if (!this.idToAnnotSource[loadedSelectionId]) {
+        console.warn(`Selection ID ${loadedSelectionId} not found, skipping`);
+        continue;
+      }
+      this.annotationSelections.push(loadedSelectionId);
+    }
+
   }
 
   public getMainSample(): Sample {
@@ -160,10 +166,9 @@ export class GensSession {
     // return this.settings.getAnnotSources(settings);
   }
 
-  public getTrackLayout(): TrackLayout {
-    console.log("Getting the track layout");
-    return this.trackLayout;
-  }
+  // public getTrackLayout(): TrackLayout {
+  //   return this.trackLayout;
+  // }
 
   public getVariantURL(variantId: string): string {
     return `${this.scoutBaseURL}/document_id/${variantId}`;
@@ -177,8 +182,8 @@ export class GensSession {
     this.chromViewActive = !this.chromViewActive;
   }
 
-  private saveProfile(): void {
-    const profile: ProfileSettings = {
+  public getProfile(): ProfileSettings {
+    return {
       layout: this.trackLayout,
       colorAnnotationId: this.colorAnnotationId,
       annotationSelections: this.annotationSelections,
@@ -186,7 +191,11 @@ export class GensSession {
       trackHeights: this.trackHeights,
       variantThreshold: this.variantThreshold,
     };
+  }
 
+  private saveProfile(): void {
+
+    const profile = this.getProfile();
     saveProfileToBrowser(this.layoutProfileKey, profile);
   }
 
@@ -335,12 +344,14 @@ export class GensSession {
     return this.layoutProfileKey;
   }
 
+  /**
+   * @param assignedLayout 
+   * @param forceAnnotations Add / remove annotations to reflect those in the loaded layout
+   */
   public loadTrackLayout(
     assignedLayout: TrackLayout | null,
     forceAnnotations: boolean,
   ): void {
-    console.log("Loading track layout");
-
     if (assignedLayout != null) {
       this.trackLayout = assignedLayout;
     }
@@ -362,8 +373,6 @@ export class GensSession {
     }
 
     if (forceAnnotations) {
-      console.log("Forcing annotations");
-
       const nextSelections: string[] = [];
       const seen = new Set<string>();
       for (const layoutId of layout.order) {
@@ -406,10 +415,7 @@ export class GensSession {
       }
     }
 
-    // Aha, this does not include the recently added annot tracks right?
     const arrangedTracks = getArrangedTracks(layout, this.tracks.getTracks());
-
-    console.log("Arranged tracks", arrangedTracks);
 
     this.tracks.setTracks(arrangedTracks);
   }

@@ -272,6 +272,7 @@ export class TrackView extends ShadowBaseElement {
     this.lastRenderedSamples = samples;
 
     this.session.tracks.setTracks(dataTrackSettings);
+    // FIXME: Cleanup
     const forceLayout = false;
     this.session.loadTrackLayout(null, forceLayout);
 
@@ -304,15 +305,12 @@ export class TrackView extends ShadowBaseElement {
 
     const existingTracks = this.session.tracks.getTracks();
 
-    console.log("Existing tracks", existingTracks);
-
     syncDataTrackSettings(
       existingTracks,
       this.session,
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
-      console.log("Assigned tracks", dataTrackSettings);
       this.session.tracks.setTracks(dataTrackSettings);
       this.lastRenderedSamples = samples;
       this.renderTracks(renderSettings);
@@ -396,8 +394,6 @@ export class TrackView extends ShadowBaseElement {
     const addedIds = setDiff(currIds, trackIds);
     const removedIds = setDiff(trackIds, currIds);
 
-    console.log("Track view ID collections", trackIds, addedIds, removedIds);
-
     const showTrackContextMenu = getOpenTrackContextMenu(
       this.session,
       this.requestRender,
@@ -423,12 +419,8 @@ export class TrackView extends ShadowBaseElement {
       );
 
       const trackWrapper = makeTrackContainer(track, null);
-
-      // Here it is, location is not always last
       this.dataTracks.push(trackWrapper);
       this.tracksContainer.appendChild(trackWrapper.container);
-      //
-
       track.initialize();
     }
 
