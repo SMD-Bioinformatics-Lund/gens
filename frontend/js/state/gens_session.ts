@@ -113,13 +113,15 @@ export class GensSession {
       console.warn(
         `Version mismatch. Found ${profile.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
       );
-      return;
+      profile = undefined;
     }
 
     this.trackLayout = profile?.layout;
     this.trackHeights = profile?.trackHeights || this.trackHeights;
     this.variantThreshold = profile?.variantThreshold || DEFAULT_VARIANT_THRES;
     this.colorAnnotationId = profile?.colorAnnotationId || null;
+
+    console.log("Assigned variant threshold", this.variantThreshold);
 
     // A pre-selected track might disappear if the db is updated
     this.annotationSelections = [];
@@ -190,6 +192,7 @@ export class GensSession {
 
   public getProfile(): ProfileSettings {
     return {
+      version: TRACK_LAYOUT_VERSION,
       layout: this.trackLayout,
       colorAnnotationId: this.colorAnnotationId,
       annotationSelections: this.annotationSelections,
