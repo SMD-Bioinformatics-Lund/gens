@@ -291,11 +291,13 @@ function addSettingsPageSources(
     render({ reloadData: true });
   };
   const onSetAnnotationSelection = (ids: string[]) => {
-    session.setAnnotationSelections(ids);
+    const saveProfile = true;
+    session.setAnnotationSelections(ids, saveProfile);
     render({});
   };
   const onSetGeneListSelection = (ids: string[]) => {
-    session.setAnnotationSelections(ids);
+    const saveProfile = true;
+    session.setAnnotationSelections(ids, saveProfile);
     render({});
   };
   const onSetVariantThreshold = (threshold: number) => {

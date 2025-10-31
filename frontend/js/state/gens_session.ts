@@ -197,9 +197,11 @@ export class GensSession {
     return this.annotationSelections;
   }
 
-  public setAnnotationSelections(ids: string[]): void {
+  public setAnnotationSelections(ids: string[], saveProfile: boolean): void {
     this.annotationSelections = ids;
-    this.saveProfile();
+    if (saveProfile) {
+      this.saveProfile();
+    }
   }
 
   public getTrackHeights(): TrackHeights {
@@ -343,13 +345,16 @@ export class GensSession {
     }
 
     if (forceAnnotations) {
+
+      console.log("Forcing annotations");
+
       const nextSelections: string[] = [];
       const seen = new Set<string>();
       for (const layoutId of layout.order) {
         if (!layoutId.startsWith("annot|")) {
           continue;
         }
-        const annotId = this.colorAnnotationId.split("|")[1];
+        const annotId = layoutId.split("|")[1];
         if (!this.idToAnnotSource[annotId] || seen.has(annotId)) {
           continue;
         }
@@ -360,7 +365,8 @@ export class GensSession {
       const selectionsChanged = nextSelections.length !== this.annotationSelections.length ||
         nextSelections.some((id, index) => this.annotationSelections[index] !== id)
       if (selectionsChanged) {
-        this.setAnnotationSelections(nextSelections);
+        const saveProfile = false;
+        this.setAnnotationSelections(nextSelections, saveProfile);
       }
     }
 
