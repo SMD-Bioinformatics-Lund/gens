@@ -118,6 +118,20 @@ template.innerHTML = String.raw`
   </div>
   <div id="highlights-overview"></div>
 
+  <flex-row class="header-row">
+    <icon-button
+      id="export-track-layout"
+      icon="${ICONS.download}"
+      title="Export track layout"
+    ></icon-button>
+    <icon-button
+      id="import-track-layout"
+      icon="${ICONS.upload}"
+      title="Import track layout"
+    ></icon-button>
+  </flex-row>
+  <input type="file" id="import-layout-input" accept="application/json,.json,.txt" hidden />
+
   <details id="advanced-settings">
     <summary>Toggle advanced settings</summary>
     <div class="header-row">
@@ -173,6 +187,9 @@ export class SettingsMenu extends ShadowBaseElement {
   private dotTrackExpandedHeightElem: HTMLInputElement;
   private coverageYStartElem: HTMLInputElement;
   private coverageYEndElem: HTMLInputElement;
+  private exportTrackLayoutButton: IconButton;
+  private importTrackLayoutButton: IconButton;
+  private importLayoutInput: HTMLInputElement;
 
   private applyDefaultCovYRange: HTMLButtonElement;
   private variantThreshold: HTMLInputElement;
@@ -202,6 +219,8 @@ export class SettingsMenu extends ShadowBaseElement {
   private onToggleTrackHidden: (trackId: string) => void;
   private onToggleTrackExpanded: (trackId: string) => void;
   private onApplyMainSample: (sample: Sample) => void;
+  private getTrackLayout: () => TrackLayout;
+  private applyTrackLayout: (layout: TrackLayout) => void;
 
   public isInitialized: boolean = false;
 
@@ -226,6 +245,8 @@ export class SettingsMenu extends ShadowBaseElement {
     onToggleTrackHidden: (trackId: string) => void,
     onToggleTrackExpanded: (trackId: string) => void,
     onApplyMainSample: (sample: Sample) => void,
+    getTrackLayout: () => TrackLayout,
+    applyTrackLayout: (layout: TrackLayout) => void,
   ) {
     this.session = session;
     // this.onChange = onChange;
@@ -257,6 +278,8 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onToggleTrackHidden = onToggleTrackHidden;
     this.onToggleTrackExpanded = onToggleTrackExpanded;
     this.onApplyMainSample = onApplyMainSample;
+    this.getTrackLayout = getTrackLayout;
+    this.applyTrackLayout = applyTrackLayout;
   }
 
   connectedCallback() {
@@ -270,6 +293,11 @@ export class SettingsMenu extends ShadowBaseElement {
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
     this.addSampleButton = this.root.querySelector("#add-sample");
+
+    this.exportTrackLayoutButton = this.root.querySelector("#export-track-layout") as IconButton;
+    this.importTrackLayoutButton = this.root.querySelector("#import-track-layout") as IconButton;
+    this.importLayoutInput = this.root.querySelector("#import-layout-input") as HTMLInputElement;
+
     this.applyDefaultCovYRange = this.root.querySelector(
       "#apply-default-cov-y-range",
     );
@@ -305,6 +333,26 @@ export class SettingsMenu extends ShadowBaseElement {
       const sample = getSampleFromID(caseId_sampleId);
       this.onAddSample(sample);
     });
+
+    this.addElementListener(this.exportTrackLayoutButton, "click", () => {
+      this.downloadTrackLayout();
+    })
+
+    this.addElementListener(this.importTrackLayoutButton, "click", () => {
+      this.importLayoutInput.click();
+    })
+
+    this.addElementListener(this.importLayoutInput, "change", async () => {
+      if (this.importLayoutInput.files == null) {
+        return;
+      }
+      const [file] = this.importLayoutInput.files;
+      if (!file) {
+        return;
+      }
+      await this.loadTrackLayoutFile(file);
+      this.importLayoutInput.value = "";
+    })
 
     this.addElementListener(this.applyMainSample, "click", () => {
       const mainSample = this.mainSampleSelect.getValue().value;
@@ -483,6 +531,44 @@ export class SettingsMenu extends ShadowBaseElement {
         selected: selectedId === "",
       });
       this.colorBySelect.setValues(choices);
+    }
+  }
+
+  // FIXME: Understand these steps
+  // Move to util
+  private downloadTrackLayout() {
+    if (this.getTrackLayout) {
+      return;
+    }
+    const layout = this.getTrackLayout();
+    const serialized = JSON.stringify(layout, null, 2);
+    const blob = new Blob([serialized], { type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    link.href = url;
+    link.download = `track-layout-${timestamp}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  // FIXME: Move to util
+  private async loadTrackLayoutFile(file: File) {
+    if (!this.applyTrackLayout) {
+      return;
+    }
+    try {
+      const text = await file.text();
+      const layout = JSON.parse(text) as TrackLayout;
+      if (!layout) {
+        throw new Error("Invalid track layout file");
+      }
+      this.applyTrackLayout(layout);
+    } catch (error) {
+      console.error("Failed to import track layout", error);
+      window.alert("Failed to import track layout. Please ensure the file is valid.");
     }
   }
 }
