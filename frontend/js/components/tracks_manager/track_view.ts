@@ -408,6 +408,7 @@ export class TrackView extends ShadowBaseElement {
         setIsExpanded,
         setExpandedHeight,
         () => this.colorBands,
+        () => this.session.pos.getXRange()
       );
 
       const trackWrapper = makeTrackContainer(track, null);
