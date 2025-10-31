@@ -390,6 +390,9 @@ export class GensSession {
     }
 
     const arrangedTracks = getArrangedTracks(layout, this.tracks.getTracks());
+
+    console.log("Arranged tracks", arrangedTracks);
+
     this.tracks.setTracks(arrangedTracks);
   }
 
@@ -406,7 +409,7 @@ export class GensSession {
         label = info.trackLabel;
       }
 
-      const pid = getPortableId(info, label);
+      const pid = getPortableId(info);
       order.add(pid);
       hidden[pid] = info.isHidden;
       expanded[pid] = info.isExpanded;
@@ -442,7 +445,7 @@ function getArrangedTracks(
   // First create a map layout ID -> track settings
   const layoutIdToSettings: Record<string, DataTrackSettings[]> = {};
   for (const trackSetting of origTrackSettings) {
-    const layoutId = getPortableId(trackSetting, null);
+    const layoutId = getPortableId(trackSetting);
 
     if (!layoutIdToSettings[layoutId]) {
       layoutIdToSettings[layoutId] = [];

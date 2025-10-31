@@ -324,7 +324,9 @@ function addSettingsPageSources(
   const applyTrackLayout = (layout: TrackLayout) => {
     const forceLayout = true;
     session.loadTrackLayout(layout, forceLayout);
+    console.log("Track loaded, ready to render");
     render({ reloadData: true });
+    console.log("Done rendering");
   }
 
   settingsPage.setSources(

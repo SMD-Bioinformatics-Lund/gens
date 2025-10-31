@@ -1,6 +1,6 @@
 import { TRACK_IDS } from "../../../constants";
 
-export function getPortableId(settings: DataTrackSettings, label: string|null): PortableTrackId {
+export function getPortableId(settings: DataTrackSettings): PortableTrackId {
   const trackId = settings.trackId;
 
   let trackType = null;
@@ -33,19 +33,17 @@ export function getPortableId(settings: DataTrackSettings, label: string|null): 
           settings.trackType,
       );
     }
-  }
-  else if (settings.trackType == "gene") {
+  } else if (settings.trackType == "gene") {
     trackType = TRACK_IDS.genes;
     specifier = "";
-  }
-  else if (settings.trackType == "annotation") {
-    trackType = TRACK_IDS.annot
+  } else if (settings.trackType == "annotation") {
+    trackType = TRACK_IDS.annot;
     specifier = trackId;
   }
 
   if (trackType != null) {
-    const outLabel = label || "";
-    return `${trackType}|${specifier}|${outLabel}`
+    const outLabel = settings.trackLabel || "";
+    return `${trackType}|${specifier}|${outLabel}`;
   }
 
   throw Error(
