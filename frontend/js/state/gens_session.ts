@@ -107,6 +107,15 @@ export class GensSession {
   }
 
   public loadProfile(profile: ProfileSettings): void {
+    console.log("Loading profile", profile);
+
+    if (profile.version != TRACK_LAYOUT_VERSION) {
+      console.warn(
+        `Version mismatch. Found ${profile.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
+      );
+      return;
+    }
+
     this.trackLayout = profile?.layout;
     this.trackHeights = profile?.trackHeights || this.trackHeights;
     this.variantThreshold = profile?.variantThreshold || DEFAULT_VARIANT_THRES;
@@ -121,7 +130,6 @@ export class GensSession {
       }
       this.annotationSelections.push(loadedSelectionId);
     }
-
   }
 
   public getMainSample(): Sample {
@@ -192,7 +200,6 @@ export class GensSession {
   }
 
   private saveProfile(): void {
-
     const profile = this.getProfile();
     saveProfileToBrowser(this.layoutProfileKey, profile);
   }
@@ -342,27 +349,11 @@ export class GensSession {
     return this.layoutProfileKey;
   }
 
-  /**
-   * @param assignedLayout 
-   * @param forceAnnotations Add / remove annotations to reflect those in the loaded layout
-   */
-  public loadTrackLayout(
-    assignedLayout: TrackLayout | null,
-    forceAnnotations: boolean,
-  ): void {
-
+  public loadTrackLayout(): void {
     const layout = this.trackLayout;
 
     if (!layout) {
       // If layout saved, save the initial one
-      this.saveTrackLayout();
-      return;
-    }
-
-    if (layout.version != TRACK_LAYOUT_VERSION) {
-      console.warn(
-        `Version mismatch. Found ${layout.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
-      );
       this.saveTrackLayout();
       return;
     }
@@ -420,14 +411,6 @@ export class GensSession {
     const hidden: Record<string, boolean> = {};
     const expanded: Record<string, boolean> = {};
     for (const info of this.tracks.getTracks()) {
-      let label = null;
-      if (
-        info.trackType == "annotation" ||
-        info.trackType == "sample-annotation"
-      ) {
-        label = info.trackLabel;
-      }
-
       const pid = getPortableId(info);
       order.add(pid);
       hidden[pid] = info.isHidden;
@@ -461,7 +444,6 @@ function getArrangedTracks(
   layout: TrackLayout,
   origTrackSettings: DataTrackSettings[],
 ): DataTrackSettings[] {
-
   console.log("Get arranged tracks", layout, origTrackSettings);
 
   // First create a map layout ID -> track settings

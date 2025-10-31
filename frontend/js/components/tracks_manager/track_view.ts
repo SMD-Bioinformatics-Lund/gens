@@ -272,9 +272,7 @@ export class TrackView extends ShadowBaseElement {
     this.lastRenderedSamples = samples;
 
     this.session.tracks.setTracks(dataTrackSettings);
-    // FIXME: Cleanup
-    const forceLayout = false;
-    this.session.loadTrackLayout(null, forceLayout);
+    this.session.loadTrackLayout();
 
     this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
   }
@@ -313,6 +311,9 @@ export class TrackView extends ShadowBaseElement {
     ).then(({ settings: dataTrackSettings, samples }) => {
       this.session.tracks.setTracks(dataTrackSettings);
       this.lastRenderedSamples = samples;
+
+      console.log("Track order", dataTrackSettings);
+
       this.renderTracks(renderSettings);
 
       if (renderSettings.tracksReordered) {

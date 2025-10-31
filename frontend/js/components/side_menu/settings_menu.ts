@@ -570,11 +570,11 @@ export class SettingsMenu extends ShadowBaseElement {
     }
     try {
       const text = await file.text();
-      const layout = JSON.parse(text) as ProfileSettings;
-      if (!layout) {
+      const profileSettings = JSON.parse(text) as ProfileSettings;
+      if (!profileSettings) {
         throw new Error("Invalid track layout file");
       }
-      this.applyProfileSettings(layout);
+      this.applyProfileSettings(profileSettings);
     } catch (error) {
       console.error("Failed to import track layout", error);
       window.alert(
