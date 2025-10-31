@@ -1,6 +1,7 @@
 import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
+import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import {
   COLORS,
@@ -386,9 +387,26 @@ export class GensSession {
       if (selectionsChanged) {
         const saveProfile = false;
         this.setAnnotationSelections(nextSelections, saveProfile);
+
+        const annotSelections = this.annotationSelections.map((id) => {
+          return {
+            id,
+            label: this.idToAnnotSource[id].name,
+          };
+        });
+
+        const diff = annotationDiff(this.tracks.getTracks(), annotSelections);
+        console.log("Found the diff", diff);
+        for (const track of diff.newAnnotationSettings) {
+          this.tracks.addTrack(track);
+        }
+        for (const removedId of diff.removedIds) {
+          this.tracks.removeTrack(removedId);
+        }
       }
     }
 
+    // Aha, this does not include the recently added annot tracks right?
     const arrangedTracks = getArrangedTracks(layout, this.tracks.getTracks());
 
     console.log("Arranged tracks", arrangedTracks);
@@ -466,6 +484,8 @@ function getArrangedTracks(
     );
   }
 
+  const seenLayoutIds = new Set<string>();
+
   // Iterate through the IDs and grab all corresponding tracks
   for (const layoutId of orderedLayoutIds) {
     const tracks = layoutIdToSettings[layoutId] || [];
@@ -480,6 +500,18 @@ function getArrangedTracks(
     });
 
     orderedTracks.push(...updatedTracks);
+    if (tracks.length > 0) {
+      seenLayoutIds.add(layoutId);
+    }
+  }
+
+  // Don't drop leftover tracks
+  for (const [layoutId, tracks] of Object.entries(layoutIdToSettings)) {
+    if (seenLayoutIds.has(layoutId)) {
+      continue;
+    }
+
+    orderedTracks.push(...tracks);
   }
 
   return orderedTracks;
