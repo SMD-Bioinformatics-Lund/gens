@@ -123,22 +123,33 @@ template.innerHTML = String.raw`
   </div>
   <div id="highlights-overview"></div>
 
-  <flex-row class="header-row">
-    <icon-button
-      id="export-settings"
-      icon="${ICONS.download}"
-      title="Export settings"
-    ></icon-button>
-    <icon-button
-      id="import-settings"
-      icon="${ICONS.upload}"
-      title="Import settings"
-    ></icon-button>
-  </flex-row>
-  <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
-
   <details id="advanced-settings">
     <summary>Toggle advanced settings</summary>
+
+    <!-- Profile settings -->
+    <div class="header-row">
+      <div class="header">Import and export profile settings</div>
+    </div>
+    <flex-row class="spread-row">
+      <div>Export profile settings</div>
+      <icon-button
+        id="export-settings"
+        icon="${ICONS.download}"
+        title="Export settings"
+      ></icon-button>
+    </flex-row>
+    <flex-row class="spread-row">
+      <div>Import profile settings</div>
+      <icon-button
+        id="import-settings"
+        icon="${ICONS.upload}"
+        title="Import settings"
+      ></icon-button>
+      <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
+    </flex-row>
+
+
+    <!-- Configure tracks -->
     <div class="header-row">
       <div class="header">Configure tracks</div>
     </div>
@@ -170,6 +181,8 @@ template.innerHTML = String.raw`
         <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
       </flex-row>
     </flex-row>
+
+    <!-- Tracks overview -->
     <div class="header-row">
       <div class="header">Tracks overview</div>
     </div>
@@ -353,17 +366,21 @@ export class SettingsMenu extends ShadowBaseElement {
       this.importProfileSettingsInput.click();
     });
 
-    this.addElementListener(this.importProfileSettingsInput, "change", async () => {
-      if (this.importProfileSettingsInput.files == null) {
-        return;
-      }
-      const [file] = this.importProfileSettingsInput.files;
-      if (!file) {
-        return;
-      }
-      await this.loadProfileSettings(file);
-      this.importProfileSettingsInput.value = "";
-    });
+    this.addElementListener(
+      this.importProfileSettingsInput,
+      "change",
+      async () => {
+        if (this.importProfileSettingsInput.files == null) {
+          return;
+        }
+        const [file] = this.importProfileSettingsInput.files;
+        if (!file) {
+          return;
+        }
+        await this.loadProfileSettings(file);
+        this.importProfileSettingsInput.value = "";
+      },
+    );
 
     this.addElementListener(this.applyMainSample, "click", () => {
       const mainSample = this.mainSampleSelect.getValue().value;

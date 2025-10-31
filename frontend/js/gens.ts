@@ -321,9 +321,10 @@ function addSettingsPageSources(
     return session.getProfile();
   };
 
-  const applyProfile = (profile: ProfileSettings) => {
+  const applyProfile = async (profile: ProfileSettings) => {
     session.loadProfile(profile);
     session.loadTrackLayout();
+    await gensTracks.trackView.updateColorBands();
     render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
   };
 
