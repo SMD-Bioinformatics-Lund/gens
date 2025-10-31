@@ -322,12 +322,9 @@ function addSettingsPageSources(
   };
 
   const applyProfile = (profile: ProfileSettings) => {
-    console.log("Apply profile settings", profile);
     session.loadProfile(profile);
     session.loadTrackLayout();
-    // session.loadTrackLayout(layout, forceLayout);
     render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
-    console.log("Done rendering");
   };
 
   settingsPage.setSources(

@@ -312,8 +312,6 @@ export class TrackView extends ShadowBaseElement {
       this.session.tracks.setTracks(dataTrackSettings);
       this.lastRenderedSamples = samples;
 
-      console.log("Track order", dataTrackSettings);
-
       this.renderTracks(renderSettings);
 
       if (renderSettings.tracksReordered) {

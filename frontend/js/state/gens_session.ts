@@ -6,7 +6,6 @@ import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import {
   COLORS,
   DEFAULT_VARIANT_THRES,
-  TRACK_IDS,
   TRACK_LAYOUT_VERSION,
 } from "../constants";
 import { loadProfileSettings, saveProfileToBrowser } from "../util/storage";
@@ -121,7 +120,7 @@ export class GensSession {
       this.trackLayout = profile.layout;
       this.trackHeights = profile.trackHeights;
       this.colorAnnotationId = profile.colorAnnotationId;
-      
+
       // A pre-selected track might disappear if the db is updated
       this.annotationSelections = [];
       for (const loadedSelectionId of profile.annotationSelections) {
@@ -132,7 +131,6 @@ export class GensSession {
         this.annotationSelections.push(loadedSelectionId);
       }
     }
-
   }
 
   public getMainSample(): Sample {
@@ -357,48 +355,20 @@ export class GensSession {
     const layout = this.trackLayout;
 
     if (!layout) {
-      // If layout saved, save the initial one
+      // If no layout saved, save the initial one
       this.saveTrackLayout();
       return;
     }
 
-    // FIXME: A fat util function
-    // const nextSelections: string[] = [];
-    // const seen = new Set<string>();
-    // for (const layoutId of layout.order) {
-    //   const [trackType, annotId, _label] = layoutId.split("|");
-
-    //   if (trackType != TRACK_IDS.annot) {
-    //     continue;
-    //   }
-    //   if (!this.idToAnnotSource[annotId] || seen.has(annotId)) {
-    //     continue;
-    //   }
-    //   seen.add(annotId);
-    //   nextSelections.push(annotId);
-    // }
-
-    // const selectionsChanged =
-    //   nextSelections.length !== this.annotationSelections.length ||
-    //   nextSelections.some(
-    //     (id, index) => this.annotationSelections[index] !== id,
-    //   );
-
-    // console.log("Have selections changed?", selectionsChanged);
-
-    // if (selectionsChanged) {
-    //   const saveProfile = false;
-    //   this.setAnnotationSelections(nextSelections, saveProfile);
-
+    // Make sure annotation selections are reflected in track settings
+    // prior to attempting reordering
     const annotSelections = this.annotationSelections.map((id) => {
       return {
         id,
         label: this.idToAnnotSource[id].name,
       };
     });
-
     const diff = annotationDiff(this.tracks.getTracks(), annotSelections);
-    console.log("Found the diff", diff);
     for (const track of diff.newAnnotationSettings) {
       this.tracks.addTrack(track);
     }
@@ -429,7 +399,6 @@ export class GensSession {
       expanded,
     };
 
-    console.log("Saving track layout", layout);
     this.trackLayout = layout;
 
     this.saveProfile();
@@ -449,7 +418,6 @@ function getArrangedTracks(
   layout: TrackLayout,
   origTrackSettings: DataTrackSettings[],
 ): DataTrackSettings[] {
-  console.log("Get arranged tracks", layout, origTrackSettings);
 
   // First create a map layout ID -> track settings
   const layoutIdToSettings: Record<string, DataTrackSettings[]> = {};
@@ -504,8 +472,6 @@ function getArrangedTracks(
 
     orderedTracks.push(...tracks);
   }
-
-  console.log("End of arranged tracks", orderedTracks);
 
   return orderedTracks;
 }
