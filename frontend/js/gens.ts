@@ -251,7 +251,7 @@ function addSettingsPageSources(
 ) {
   const onTrackMove = (trackId: string, direction: "up" | "down") => {
     session.tracks.shiftTrack(trackId, direction);
-    render({ tracksReordered: true, saveLayoutChange: true });
+    render({ tracksReorderedOnly: true, saveLayoutChange: true });
   };
   const getAllSamples = () => {
     const samples = session.getSamples();
@@ -324,7 +324,6 @@ function addSettingsPageSources(
   const applyTrackLayout = (layout: TrackLayout) => {
     const forceLayout = true;
     session.loadTrackLayout(layout, forceLayout);
-    console.log("Track loaded, ready to render");
     render({ reloadData: true, tracksReordered: true });
     console.log("Done rendering");
   }

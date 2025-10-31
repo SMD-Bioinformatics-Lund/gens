@@ -289,7 +289,7 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(renderSettings: RenderSettings) {
-    if (renderSettings.tracksReordered) {
+    if (renderSettings.tracksReorderedOnly) {
       this.syncTrackOrder();
       return;
     }
@@ -302,15 +302,24 @@ export class TrackView extends ShadowBaseElement {
       (id) => this.session.removeHighlight(id),
     );
 
+    const existingTracks = this.session.tracks.getTracks();
+
+    console.log("Existing tracks", existingTracks);
+
     syncDataTrackSettings(
-      this.session.tracks.getTracks(),
+      existingTracks,
       this.session,
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
+      console.log("Assigned tracks", dataTrackSettings);
       this.session.tracks.setTracks(dataTrackSettings);
       this.lastRenderedSamples = samples;
       this.renderTracks(renderSettings);
+
+      if (renderSettings.tracksReordered) {
+        this.syncTrackOrder();
+      }
     });
 
     this.ideogramTrack.render(renderSettings);
@@ -387,6 +396,8 @@ export class TrackView extends ShadowBaseElement {
     const addedIds = setDiff(currIds, trackIds);
     const removedIds = setDiff(trackIds, currIds);
 
+    console.log("Track view ID collections", trackIds, addedIds, removedIds);
+
     const showTrackContextMenu = getOpenTrackContextMenu(
       this.session,
       this.requestRender,
@@ -412,8 +423,12 @@ export class TrackView extends ShadowBaseElement {
       );
 
       const trackWrapper = makeTrackContainer(track, null);
+
+      // Here it is, location is not always last
       this.dataTracks.push(trackWrapper);
       this.tracksContainer.appendChild(trackWrapper.container);
+      //
+
       track.initialize();
     }
 
