@@ -288,7 +288,7 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(renderSettings: RenderSettings) {
-    if (renderSettings.tracksReordered) {
+    if (renderSettings.tracksReorderedOnly) {
       this.syncTrackOrder();
       return;
     }
@@ -301,15 +301,22 @@ export class TrackView extends ShadowBaseElement {
       (id) => this.session.removeHighlight(id),
     );
 
+    const existingTracks = this.session.tracks.getTracks();
+
     syncDataTrackSettings(
-      this.session.tracks.getTracks(),
+      existingTracks,
       this.session,
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
       this.session.tracks.setTracks(dataTrackSettings);
       this.lastRenderedSamples = samples;
+
       this.renderTracks(renderSettings);
+
+      if (renderSettings.tracksReordered) {
+        this.syncTrackOrder();
+      }
     });
 
     this.ideogramTrack.render(renderSettings);
