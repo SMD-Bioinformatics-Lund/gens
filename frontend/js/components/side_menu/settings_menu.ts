@@ -294,9 +294,15 @@ export class SettingsMenu extends ShadowBaseElement {
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
     this.addSampleButton = this.root.querySelector("#add-sample");
 
-    this.exportTrackLayoutButton = this.root.querySelector("#export-track-layout") as IconButton;
-    this.importTrackLayoutButton = this.root.querySelector("#import-track-layout") as IconButton;
-    this.importLayoutInput = this.root.querySelector("#import-layout-input") as HTMLInputElement;
+    this.exportTrackLayoutButton = this.root.querySelector(
+      "#export-track-layout",
+    ) as IconButton;
+    this.importTrackLayoutButton = this.root.querySelector(
+      "#import-track-layout",
+    ) as IconButton;
+    this.importLayoutInput = this.root.querySelector(
+      "#import-layout-input",
+    ) as HTMLInputElement;
 
     this.applyDefaultCovYRange = this.root.querySelector(
       "#apply-default-cov-y-range",
@@ -336,11 +342,11 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.exportTrackLayoutButton, "click", () => {
       this.downloadTrackLayout();
-    })
+    });
 
     this.addElementListener(this.importTrackLayoutButton, "click", () => {
       this.importLayoutInput.click();
-    })
+    });
 
     this.addElementListener(this.importLayoutInput, "change", async () => {
       if (this.importLayoutInput.files == null) {
@@ -352,7 +358,7 @@ export class SettingsMenu extends ShadowBaseElement {
       }
       await this.loadTrackLayoutFile(file);
       this.importLayoutInput.value = "";
-    })
+    });
 
     this.addElementListener(this.applyMainSample, "click", () => {
       const mainSample = this.mainSampleSelect.getValue().value;
@@ -471,6 +477,13 @@ export class SettingsMenu extends ShadowBaseElement {
       this.setupSampleSelect();
     }
 
+    if (this.annotSelect) {
+      const selectAnnots = this.session.getAnnotationSelections();
+      this.annotSelect.setValues(
+        getAnnotationChoices(this.allAnnotationSources, selectAnnots),
+      );
+    }
+
     removeChildren(this.tracksOverview);
     const tracksSection = getTracksSection(
       this.session.tracks.getTracks(),
@@ -543,7 +556,7 @@ export class SettingsMenu extends ShadowBaseElement {
     }
     const layout = this.getTrackLayout();
     const serialized = JSON.stringify(layout, null, 2);
-    const blob = new Blob([serialized], { type: "application/json"});
+    const blob = new Blob([serialized], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -557,7 +570,6 @@ export class SettingsMenu extends ShadowBaseElement {
 
   // FIXME: Move to util
   private async loadTrackLayoutFile(file: File) {
-
     console.log("Attempting to load track");
     console.log(file.name, file.type, file.size);
 
@@ -573,7 +585,9 @@ export class SettingsMenu extends ShadowBaseElement {
       this.applyTrackLayout(layout);
     } catch (error) {
       console.error("Failed to import track layout", error);
-      window.alert("Failed to import track layout. Please ensure the file is valid.");
+      window.alert(
+        "Failed to import track layout. Please ensure the file is valid.",
+      );
     }
   }
 }

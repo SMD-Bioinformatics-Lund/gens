@@ -320,7 +320,8 @@ function addSettingsPageSources(
   }
 
   const applyTrackLayout = (layout: TrackLayout) => {
-    session.loadTrackLayout(layout);
+    const forceLayout = true;
+    session.loadTrackLayout(layout, forceLayout);
     render({ reloadData: true });
   }
 

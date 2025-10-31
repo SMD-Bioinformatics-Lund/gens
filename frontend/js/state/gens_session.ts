@@ -327,7 +327,7 @@ export class GensSession {
     return this.layoutProfileKey;
   }
 
-  public loadTrackLayout(assignedLayout: TrackLayout | null): void {
+  public loadTrackLayout(assignedLayout: TrackLayout | null, forceAnnotations: boolean): void {
 
     console.log("Loading track layout");
 
@@ -340,6 +340,28 @@ export class GensSession {
       // If layout saved, save the initial one
       this.saveTrackLayout();
       return;
+    }
+
+    if (forceAnnotations) {
+      const nextSelections: string[] = [];
+      const seen = new Set<string>();
+      for (const layoutId of layout.order) {
+        if (!layoutId.startsWith("annot|")) {
+          continue;
+        }
+        const annotId = this.colorAnnotationId.split("|")[1];
+        if (!this.idToAnnotSource[annotId] || seen.has(annotId)) {
+          continue;
+        }
+        seen.add(annotId);
+        nextSelections.push(annotId);
+      }
+
+      const selectionsChanged = nextSelections.length !== this.annotationSelections.length ||
+        nextSelections.some((id, index) => this.annotationSelections[index] !== id)
+      if (selectionsChanged) {
+        this.setAnnotationSelections(nextSelections);
+      }
     }
 
     const arrangedTracks = getArrangedTracks(layout, this.tracks.getTracks());
