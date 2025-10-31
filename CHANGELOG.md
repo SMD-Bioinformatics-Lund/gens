@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## TBD
+
+### Fixed
+
+- Chromosome does not respond to zooming in the track view.
+
 ## 4.2.0
 
 ### Added

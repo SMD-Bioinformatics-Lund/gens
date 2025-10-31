@@ -138,7 +138,7 @@ Then load them into Gens:
 
 ```
 gens load transcripts \
-    --file /dump/Homo_sapiens.GRCh38.113.gtf.gz \
+    --file /dump/Homo_sapiens.GRCh38.115.gtf.gz \
     --mane /dump/MANE.GRCh38.v1.4.summary.txt.gz \
     -b 38
 ```
