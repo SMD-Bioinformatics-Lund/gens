@@ -224,8 +224,8 @@ export class SettingsMenu extends ShadowBaseElement {
   private onToggleTrackHidden: (trackId: string) => void;
   private onToggleTrackExpanded: (trackId: string) => void;
   private onApplyMainSample: (sample: Sample) => void;
-  private getProfileSettings: () => TrackLayout;
-  private applyProfileSettings: (layout: TrackLayout) => void;
+  private getProfileSettings: () => ProfileSettings;
+  private applyProfileSettings: (layout: ProfileSettings) => void;
 
   public isInitialized: boolean = false;
 
@@ -250,8 +250,8 @@ export class SettingsMenu extends ShadowBaseElement {
     onToggleTrackHidden: (trackId: string) => void,
     onToggleTrackExpanded: (trackId: string) => void,
     onApplyMainSample: (sample: Sample) => void,
-    getProfileSettings: () => TrackLayout,
-    applyProfileSettings: (layout: TrackLayout) => void,
+    getProfileSettings: () => ProfileSettings,
+    applyProfileSettings: (layout: ProfileSettings) => void,
   ) {
     this.session = session;
     // this.onChange = onChange;
@@ -570,7 +570,7 @@ export class SettingsMenu extends ShadowBaseElement {
     }
     try {
       const text = await file.text();
-      const layout = JSON.parse(text) as TrackLayout;
+      const layout = JSON.parse(text) as ProfileSettings;
       if (!layout) {
         throw new Error("Invalid track layout file");
       }
