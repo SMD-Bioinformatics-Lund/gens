@@ -76,7 +76,7 @@ export class GensSession {
 
     this.samples = samples;
 
-    this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
+    this.layoutProfileKey = computeProfileKey(this.samples, genomeBuild);
     const profile = loadProfileSettings(this.layoutProfileKey);
     console.log("Initial track layout", profile?.layout);
     this.trackLayout = profile?.layout;
@@ -435,7 +435,7 @@ function computeProfileKey(samples: Sample[], genomeBuild: number): string {
   );
 
   const signature = Array.from(types).join("+");
-  return `v1.${genomeBuild}.${signature}`;
+  return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
 }
 
 function getArrangedTracks(
