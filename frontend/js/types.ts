@@ -726,6 +726,7 @@ type ProfileSettings = {
 };
 
 type TrackLayout = {
+  version?: number;
   order: string[];
   hidden: Record<string, boolean>;
   expanded: Record<string, boolean>;

@@ -2,7 +2,12 @@ import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
-import { COLORS, DEFAULT_VARIANT_THRES } from "../constants";
+import {
+  COLORS,
+  DEFAULT_VARIANT_THRES,
+  TRACK_IDS,
+  TRACK_LAYOUT_VERSION,
+} from "../constants";
 import { loadProfileSettings, saveProfileToBrowser } from "../util/storage";
 import { generateID } from "../util/utils";
 import { SessionPosition } from "./session_helpers/session_position";
@@ -340,8 +345,17 @@ export class GensSession {
     }
 
     const layout = this.trackLayout;
+
     if (!layout) {
       // If layout saved, save the initial one
+      this.saveTrackLayout();
+      return;
+    }
+
+    if (layout.version != TRACK_LAYOUT_VERSION) {
+      console.warn(
+        `Version mismatch. Found ${layout.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
+      );
       this.saveTrackLayout();
       return;
     }
@@ -352,10 +366,11 @@ export class GensSession {
       const nextSelections: string[] = [];
       const seen = new Set<string>();
       for (const layoutId of layout.order) {
-        if (!layoutId.startsWith("annot|")) {
+        const [trackType, annotId, _label] = layoutId.split("|");
+
+        if (trackType != TRACK_IDS.annot) {
           continue;
         }
-        const annotId = layoutId.split("|")[1];
         if (!this.idToAnnotSource[annotId] || seen.has(annotId)) {
           continue;
         }
@@ -398,6 +413,7 @@ export class GensSession {
     }
 
     const layout = {
+      version: TRACK_LAYOUT_VERSION,
       order: Array.from(order),
       hidden,
       expanded,

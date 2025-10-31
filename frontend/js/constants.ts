@@ -78,6 +78,8 @@ export const TRACK_IDS = {
   annot: "annot"
 };
 
+export const TRACK_LAYOUT_VERSION = 2;
+
 export const COLORS = {
   white: "#FFFFFF",
   black: "#222",
