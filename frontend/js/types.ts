@@ -647,6 +647,7 @@ interface RenderSettings {
   positionOnly?: boolean;
   samplesUpdated?: boolean;
   saveLayoutChange?: boolean;
+  tracksReorderedOnly?: boolean;
   tracksReordered?: boolean;
   targetTrackId?: string;
   mainSampleChanged?: boolean;
@@ -717,6 +718,7 @@ type StorageValue =
   | ProfileSettings;
 
 type ProfileSettings = {
+  version: number;
   layout: TrackLayout;
   colorAnnotationId: string | null;
   variantThreshold: number;

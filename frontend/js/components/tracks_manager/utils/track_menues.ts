@@ -25,7 +25,7 @@ export function getOpenTrackContextMenu(
         session.getAnnotationSources(settings),
       (direction: "up" | "down") => {
         session.tracks.shiftTrack(track.id, direction);
-        render({ saveLayoutChange: true, tracksReordered: true });
+        render({ saveLayoutChange: true, tracksReorderedOnly: true });
       },
       () => {
         session.tracks.toggleTrackHidden(track.id);

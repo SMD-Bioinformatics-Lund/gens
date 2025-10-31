@@ -6,7 +6,6 @@
  * [Collapsing tracks and changing track height](#collapsing-tracks-and-changing-track-heights)
  * [Selecting multiple annotations](#selecting-multiple-annotations) 
  * [Navigating to highlights](#navigating-to-highlights)
- * [Changing the Y-axis](#changing-the-y-axis)
  * [Highlight tracks by annotation](#highlight-tracks-by-annotation)
  * [View, add and remove samples](#view-add-and-remove-samples)
 
@@ -51,12 +50,6 @@ Highlights can be added in the marker mode, toggled using the pencil button at t
 When added, they can quickly be navigated to using the arrow button next to the highlight in the settings menu.
 
 ![Navigate to highlights](https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/settings_gifs/navigate_to_highlights.gif)
-
-## Changing the Y-axis scale
-
-The Y-axis scale can be adjusted for individual dot tracks through the track menu.
-
-![Change Y-axis scale](https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/settings_gifs/change_y_height.gif)
 
 ## Highlight tracks by annotation
 

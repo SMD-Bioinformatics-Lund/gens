@@ -251,7 +251,7 @@ function addSettingsPageSources(
 ) {
   const onTrackMove = (trackId: string, direction: "up" | "down") => {
     session.tracks.shiftTrack(trackId, direction);
-    render({ tracksReordered: true, saveLayoutChange: true });
+    render({ tracksReorderedOnly: true, saveLayoutChange: true });
   };
   const getAllSamples = () => {
     const samples = session.getSamples();
@@ -291,11 +291,13 @@ function addSettingsPageSources(
     render({ reloadData: true });
   };
   const onSetAnnotationSelection = (ids: string[]) => {
-    session.setAnnotationSelections(ids);
+    const saveProfile = true;
+    session.setAnnotationSelections(ids, saveProfile);
     render({});
   };
   const onSetGeneListSelection = (ids: string[]) => {
-    session.setAnnotationSelections(ids);
+    const saveProfile = true;
+    session.setAnnotationSelections(ids, saveProfile);
     render({});
   };
   const onSetVariantThreshold = (threshold: number) => {
@@ -315,6 +317,17 @@ function addSettingsPageSources(
     render({ mainSampleChanged: true, reloadData: true });
   };
 
+  const getProfile = () => {
+    return session.getProfile();
+  };
+
+  const applyProfile = async (profile: ProfileSettings) => {
+    session.loadProfile(profile);
+    session.loadTrackLayout();
+    await gensTracks.trackView.updateColorBands();
+    render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
+  };
+
   settingsPage.setSources(
     session,
     allAnnotSources,
@@ -332,5 +345,7 @@ function addSettingsPageSources(
     onToggleTrackHidden,
     onToggleTrackExpanded,
     onAssignMainSample,
+    getProfile,
+    applyProfile,
   );
 }

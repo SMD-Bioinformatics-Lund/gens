@@ -1,5 +1,10 @@
 import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
-import { getSampleFromID, getSampleID, removeChildren } from "../../util/utils";
+import {
+  downloadAsJSON,
+  getSampleFromID,
+  getSampleID,
+  removeChildren,
+} from "../../util/utils";
 import { ChoiceSelect } from "../util/choice_select";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import { InputChoice } from "choices.js";
@@ -120,6 +125,31 @@ template.innerHTML = String.raw`
 
   <details id="advanced-settings">
     <summary>Toggle advanced settings</summary>
+
+    <!-- Profile settings -->
+    <div class="header-row">
+      <div class="header">Import and export profile settings</div>
+    </div>
+    <flex-row class="spread-row">
+      <div>Export profile settings</div>
+      <icon-button
+        id="export-settings"
+        icon="${ICONS.download}"
+        title="Export settings"
+      ></icon-button>
+    </flex-row>
+    <flex-row class="spread-row">
+      <div>Import profile settings</div>
+      <icon-button
+        id="import-settings"
+        icon="${ICONS.upload}"
+        title="Import settings"
+      ></icon-button>
+      <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
+    </flex-row>
+
+
+    <!-- Configure tracks -->
     <div class="header-row">
       <div class="header">Configure tracks</div>
     </div>
@@ -151,6 +181,8 @@ template.innerHTML = String.raw`
         <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
       </flex-row>
     </flex-row>
+
+    <!-- Tracks overview -->
     <div class="header-row">
       <div class="header">Tracks overview</div>
     </div>
@@ -173,6 +205,9 @@ export class SettingsMenu extends ShadowBaseElement {
   private dotTrackExpandedHeightElem: HTMLInputElement;
   private coverageYStartElem: HTMLInputElement;
   private coverageYEndElem: HTMLInputElement;
+  private exportProfileSettingsButton: IconButton;
+  private importProfileSettingsButton: IconButton;
+  private importProfileSettingsInput: HTMLInputElement;
 
   private applyDefaultCovYRange: HTMLButtonElement;
   private variantThreshold: HTMLInputElement;
@@ -202,6 +237,8 @@ export class SettingsMenu extends ShadowBaseElement {
   private onToggleTrackHidden: (trackId: string) => void;
   private onToggleTrackExpanded: (trackId: string) => void;
   private onApplyMainSample: (sample: Sample) => void;
+  private getProfileSettings: () => ProfileSettings;
+  private applyProfileSettings: (layout: ProfileSettings) => void;
 
   public isInitialized: boolean = false;
 
@@ -226,6 +263,8 @@ export class SettingsMenu extends ShadowBaseElement {
     onToggleTrackHidden: (trackId: string) => void,
     onToggleTrackExpanded: (trackId: string) => void,
     onApplyMainSample: (sample: Sample) => void,
+    getProfileSettings: () => ProfileSettings,
+    applyProfileSettings: (layout: ProfileSettings) => void,
   ) {
     this.session = session;
     // this.onChange = onChange;
@@ -257,6 +296,8 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onToggleTrackHidden = onToggleTrackHidden;
     this.onToggleTrackExpanded = onToggleTrackExpanded;
     this.onApplyMainSample = onApplyMainSample;
+    this.getProfileSettings = getProfileSettings;
+    this.applyProfileSettings = applyProfileSettings;
   }
 
   connectedCallback() {
@@ -270,6 +311,17 @@ export class SettingsMenu extends ShadowBaseElement {
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
     this.addSampleButton = this.root.querySelector("#add-sample");
+
+    this.exportProfileSettingsButton = this.root.querySelector(
+      "#export-settings",
+    ) as IconButton;
+    this.importProfileSettingsButton = this.root.querySelector(
+      "#import-settings",
+    ) as IconButton;
+    this.importProfileSettingsInput = this.root.querySelector(
+      "#import-settings-input",
+    ) as HTMLInputElement;
+
     this.applyDefaultCovYRange = this.root.querySelector(
       "#apply-default-cov-y-range",
     );
@@ -305,6 +357,30 @@ export class SettingsMenu extends ShadowBaseElement {
       const sample = getSampleFromID(caseId_sampleId);
       this.onAddSample(sample);
     });
+
+    this.addElementListener(this.exportProfileSettingsButton, "click", () => {
+      this.downloadProfileSettings();
+    });
+
+    this.addElementListener(this.importProfileSettingsButton, "click", () => {
+      this.importProfileSettingsInput.click();
+    });
+
+    this.addElementListener(
+      this.importProfileSettingsInput,
+      "change",
+      async () => {
+        if (this.importProfileSettingsInput.files == null) {
+          return;
+        }
+        const [file] = this.importProfileSettingsInput.files;
+        if (!file) {
+          return;
+        }
+        await this.loadProfileSettings(file);
+        this.importProfileSettingsInput.value = "";
+      },
+    );
 
     this.addElementListener(this.applyMainSample, "click", () => {
       const mainSample = this.mainSampleSelect.getValue().value;
@@ -423,6 +499,13 @@ export class SettingsMenu extends ShadowBaseElement {
       this.setupSampleSelect();
     }
 
+    if (this.annotSelect) {
+      const selectAnnots = this.session.getAnnotationSelections();
+      this.annotSelect.setValues(
+        getAnnotationChoices(this.allAnnotationSources, selectAnnots),
+      );
+    }
+
     removeChildren(this.tracksOverview);
     const tracksSection = getTracksSection(
       this.session.tracks.getTracks(),
@@ -483,6 +566,37 @@ export class SettingsMenu extends ShadowBaseElement {
         selected: selectedId === "",
       });
       this.colorBySelect.setValues(choices);
+    }
+  }
+
+  private downloadProfileSettings() {
+    if (!this.getProfileSettings) {
+      return;
+    }
+    const layout = this.getProfileSettings();
+    const layoutKey = this.session.getLayoutProfileKey();
+    const cleanLayoutKey = layoutKey.replace(/[^a-z0-9._-]/gi, "_");
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = `track-layout-${cleanLayoutKey}-${timestamp}.json`;
+    downloadAsJSON(layout, filename);
+  }
+
+  private async loadProfileSettings(file: File) {
+    if (!this.applyProfileSettings) {
+      return;
+    }
+    try {
+      const text = await file.text();
+      const profileSettings = JSON.parse(text) as ProfileSettings;
+      if (!profileSettings) {
+        throw new Error("Invalid track layout file");
+      }
+      this.applyProfileSettings(profileSettings);
+    } catch (error) {
+      console.error("Failed to import track layout", error);
+      window.alert(
+        "Failed to import track layout. Please ensure the file is valid.",
+      );
     }
   }
 }

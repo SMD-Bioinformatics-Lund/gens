@@ -39,6 +39,7 @@ export const ICONS = {
   chromosomes: "fa-chart-bar",
   collapse: "fa-minimize",
   down: "fa-arrow-down",
+  download: "fa-download",
   expand: "fa-maximize",
   help: "fa-circle-question",
   hide: "fa-eye-slash",
@@ -56,6 +57,7 @@ export const ICONS = {
   show: "fa-eye",
   trash: "fa-trash",
   up: "fa-arrow-up",
+  upload: "fa-upload",
   xmark: "fa-xmark",
   zoomin: "fa-search-plus",
   zoomout: "fa-search-minus",
@@ -73,7 +75,10 @@ export const TRACK_IDS = {
   variants: "variants",
   sample_annot: "sample_annot",
   genes: "genes",
+  annot: "annot"
 };
+
+export const TRACK_LAYOUT_VERSION = 2;
 
 export const COLORS = {
   white: "#FFFFFF",

@@ -12,6 +12,13 @@ export class Tracks {
     this.tracks.push(track);
   }
 
+  public removeTrack(trackId: string) {
+    const trackIndex = this.tracks.findIndex(
+      (track) => track.trackId == trackId,
+    );
+    this.tracks.splice(trackIndex, 1);
+  }
+
   public get(trackId: string): DataTrackSettings {
     const matches = this.tracks.filter((setting) => setting.trackId == trackId);
 

@@ -196,7 +196,7 @@ async function sampleDiff(
   };
 }
 
-function annotationDiff(
+export function annotationDiff(
   origTrackSettings: DataTrackSettings[],
   annotationSources: { id: string; label: string }[],
   // getLabel: (id: string) => string,

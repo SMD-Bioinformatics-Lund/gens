@@ -18,9 +18,9 @@ export function getTrack(
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   setExpandedHeight: (trackId: string, expandedHeight: number) => void,
   getColorBands: () => RenderBand[],
+  getXRange: () => Rng,
 ) {
   const getChromosome = () => session.pos.getChromosome();
-  const getXRange = () => session.pos.getXRange();
 
   let track;
   if (setting.trackType == "annotation") {
@@ -35,6 +35,7 @@ export function getTrack(
       setIsExpanded,
       setExpandedHeight,
       getColorBands,
+      getXRange,
     );
   } else if (setting.trackType == "gene-list") {
     const getGeneListBands = () =>
@@ -48,6 +49,7 @@ export function getTrack(
       setIsExpanded,
       setExpandedHeight,
       getColorBands,
+      getXRange,
     );
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
@@ -61,6 +63,7 @@ export function getTrack(
       setIsExpanded,
       setExpandedHeight,
       getColorBands,
+      getXRange,
     );
   } else if (setting.trackType == "variant") {
     const getSampleAnnotBands = () =>
@@ -78,6 +81,7 @@ export function getTrack(
       setIsExpanded,
       setExpandedHeight,
       getColorBands,
+      getXRange,
     );
   } else if (setting.trackType == "dot-cov") {
     const getSampleCovDots = () => {
@@ -96,6 +100,7 @@ export function getTrack(
       showTrackContextMenu,
       setIsExpanded,
       getColorBands,
+      getXRange,
     );
   } else if (setting.trackType == "dot-baf") {
     const getSampleBafDots = () =>
@@ -107,6 +112,7 @@ export function getTrack(
       showTrackContextMenu,
       setIsExpanded,
       getColorBands,
+      getXRange,
     );
   } else if (setting.trackType == "gene") {
     const getGeneBands = () => dataSource.getTranscriptBands(getChromosome());
@@ -119,6 +125,7 @@ export function getTrack(
       setIsExpanded,
       setExpandedHeight,
       getColorBands,
+      getXRange,
     );
   } else {
     throw Error(`Not yet supported track type ${setting.trackType}`);
@@ -134,22 +141,26 @@ export function getDotTrack(
   showTrackContextMenu: (track: DataTrack) => void,
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   getColorBands: () => RenderBand[],
+  getXRange: () => Rng,
 ): DotTrack {
   const settings = getSettings();
+
+  const getRenderData = () => {
+    return getDots().then((dots) => {
+      return {
+        dots,
+      };
+    });
+  };
+
   const dotTrack = new DotTrack(
     settings.trackId,
     settings.trackLabel,
     settings.trackType,
     getSettings,
     (isExpanded) => setIsExpanded(settings.trackId, isExpanded),
-    () => session.pos.getXRange(),
-    () => {
-      return getDots().then((dots) => {
-        return {
-          dots,
-        };
-      });
-    },
+    () => getXRange(),
+    getRenderData,
     (track) => {
       showTrackContextMenu(track);
     },
@@ -168,58 +179,66 @@ export function getBandTrack(
   setIsExpanded: (trackId: string, isExpanded: boolean) => void,
   setExpandedHeight: (trackId: string, height: number) => void,
   getColorBands: () => RenderBand[],
+  getXRange: () => Rng,
 ): BandTrack {
+
+  const getSettings = () => setting;
+  const mySetIsExpanded = (isExpanded: boolean) => {
+    setIsExpanded(setting.trackId, isExpanded);
+  }
+  const mySetExpandedHeight = (expandedHeight: number) => {
+    setExpandedHeight(setting.trackId, expandedHeight);
+    // updateDataTrackSettings(setting.trackId, updatedSetting);
+  }
+  const getRenderData = () => {
+    async function getBandTrackData(
+      getAnnotation: () => Promise<RenderBand[]>,
+    ): Promise<BandTrackData> {
+      const bands = await getAnnotation();
+      return {
+        bands,
+      };
+    }
+
+    return getBandTrackData(getRenderBands);
+  }
+  const openContextMenu = (id) => {
+    console.warn("Attempting to open context menu for ID", id);
+    let contextMenuFn: (id: string) => void;
+    if (setting.trackType == "annotation") {
+      contextMenuFn = getAnnotOpenContextMenu(session, (id: string) =>
+        dataSource.getAnnotationDetails(id),
+      );
+    } else if (setting.trackType == "variant") {
+      contextMenuFn = getVariantOpenContextMenu(
+        session,
+        dataSource,
+        setting.sample.sampleId,
+      );
+    } else if (setting.trackType == "gene-list") {
+      throw new Error("Not implemented yet");
+    } else if (setting.trackType == "gene") {
+      contextMenuFn = getGenesOpenContextMenu(session, dataSource);
+    } else if (setting.trackType == "sample-annotation") {
+      contextMenuFn = getAnnotOpenContextMenu(session, (id: string) =>
+        dataSource.getSampleAnnotationDetails(id),
+      );
+    } else {
+      throw new Error(`Track type not supported: ${setting.trackType}`);
+    }
+    contextMenuFn(id);
+  }
+
   const rawTrack = new BandTrack(
     setting.trackId,
     setting.trackLabel,
     setting.trackType,
-    () => setting,
-    (isExpanded: boolean) => {
-      setIsExpanded(setting.trackId, isExpanded);
-    },
-    (expandedHeight: number) => {
-      setExpandedHeight(setting.trackId, expandedHeight);
-      // updateDataTrackSettings(setting.trackId, updatedSetting);
-    },
-    () => session.pos.getXRange(),
-    () => {
-      async function getBandTrackData(
-        getAnnotation: () => Promise<RenderBand[]>,
-      ): Promise<BandTrackData> {
-        const bands = await getAnnotation();
-        return {
-          bands,
-        };
-      }
-
-      return getBandTrackData(getRenderBands);
-    },
-    (id) => {
-      console.warn("Attempting to open context menu for ID", id);
-      let contextMenuFn: (id: string) => void;
-      if (setting.trackType == "annotation") {
-        contextMenuFn = getAnnotOpenContextMenu(session, (id: string) =>
-          dataSource.getAnnotationDetails(id),
-        );
-      } else if (setting.trackType == "variant") {
-        contextMenuFn = getVariantOpenContextMenu(
-          session,
-          dataSource,
-          setting.sample.sampleId,
-        );
-      } else if (setting.trackType == "gene-list") {
-        throw new Error("Not implemented yet");
-      } else if (setting.trackType == "gene") {
-        contextMenuFn = getGenesOpenContextMenu(session, dataSource);
-      } else if (setting.trackType == "sample-annotation") {
-        contextMenuFn = getAnnotOpenContextMenu(session, (id: string) =>
-          dataSource.getSampleAnnotationDetails(id),
-        );
-      } else {
-        throw new Error(`Track type not supported: ${setting.trackType}`);
-      }
-      contextMenuFn(id);
-    },
+    getSettings,
+    mySetIsExpanded,
+    mySetExpandedHeight,
+    () => getXRange(),
+    getRenderData,
+    openContextMenu,
     (track) => {
       showTrackContextMenu(track);
     },
