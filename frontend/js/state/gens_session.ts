@@ -460,6 +460,9 @@ function getArrangedTracks(
   layout: TrackLayout,
   origTrackSettings: DataTrackSettings[],
 ): DataTrackSettings[] {
+
+  console.log("Get arranged tracks", layout, origTrackSettings);
+
   // First create a map layout ID -> track settings
   const layoutIdToSettings: Record<string, DataTrackSettings[]> = {};
   for (const trackSetting of origTrackSettings) {

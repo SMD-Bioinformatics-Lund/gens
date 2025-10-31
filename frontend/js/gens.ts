@@ -325,7 +325,7 @@ function addSettingsPageSources(
     const forceLayout = true;
     session.loadTrackLayout(layout, forceLayout);
     console.log("Track loaded, ready to render");
-    render({ reloadData: true });
+    render({ reloadData: true, tracksReordered: true });
     console.log("Done rendering");
   }
 
