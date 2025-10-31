@@ -49,8 +49,8 @@ export class GensSession {
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
   private coverageRange: Rng = COV_Y_RANGE;
-  private variantThreshold: number;
-  private trackLayout: TrackLayout;
+  private variantThreshold: number = DEFAULT_VARIANT_THRES;
+  private trackLayout: TrackLayout | null = null;
 
   public tracks: Tracks;
   public chromTracks: Tracks;
@@ -116,22 +116,23 @@ export class GensSession {
       profile = undefined;
     }
 
-    this.trackLayout = profile?.layout;
-    this.trackHeights = profile?.trackHeights || this.trackHeights;
-    this.variantThreshold = profile?.variantThreshold || DEFAULT_VARIANT_THRES;
-    this.colorAnnotationId = profile?.colorAnnotationId || null;
-
-    console.log("Assigned variant threshold", this.variantThreshold);
-
-    // A pre-selected track might disappear if the db is updated
-    this.annotationSelections = [];
-    for (const loadedSelectionId of profile?.annotationSelections || []) {
-      if (!this.idToAnnotSource[loadedSelectionId]) {
-        console.warn(`Selection ID ${loadedSelectionId} not found, skipping`);
-        continue;
+    if (profile) {
+      this.variantThreshold = profile.variantThreshold;
+      this.trackLayout = profile.layout;
+      this.trackHeights = profile.trackHeights;
+      this.colorAnnotationId = profile.colorAnnotationId;
+      
+      // A pre-selected track might disappear if the db is updated
+      this.annotationSelections = [];
+      for (const loadedSelectionId of profile.annotationSelections) {
+        if (!this.idToAnnotSource[loadedSelectionId]) {
+          console.warn(`Selection ID ${loadedSelectionId} not found, skipping`);
+          continue;
+        }
+        this.annotationSelections.push(loadedSelectionId);
       }
-      this.annotationSelections.push(loadedSelectionId);
     }
+
   }
 
   public getMainSample(): Sample {
@@ -361,48 +362,49 @@ export class GensSession {
       return;
     }
 
-    // if (forceAnnotations) {
-    //   const nextSelections: string[] = [];
-    //   const seen = new Set<string>();
-    //   for (const layoutId of layout.order) {
-    //     const [trackType, annotId, _label] = layoutId.split("|");
+    // FIXME: A fat util function
+    // const nextSelections: string[] = [];
+    // const seen = new Set<string>();
+    // for (const layoutId of layout.order) {
+    //   const [trackType, annotId, _label] = layoutId.split("|");
 
-    //     if (trackType != TRACK_IDS.annot) {
-    //       continue;
-    //     }
-    //     if (!this.idToAnnotSource[annotId] || seen.has(annotId)) {
-    //       continue;
-    //     }
-    //     seen.add(annotId);
-    //     nextSelections.push(annotId);
+    //   if (trackType != TRACK_IDS.annot) {
+    //     continue;
     //   }
-
-    //   const selectionsChanged =
-    //     nextSelections.length !== this.annotationSelections.length ||
-    //     nextSelections.some(
-    //       (id, index) => this.annotationSelections[index] !== id,
-    //     );
-    //   if (selectionsChanged) {
-    //     const saveProfile = false;
-    //     this.setAnnotationSelections(nextSelections, saveProfile);
-
-    //     const annotSelections = this.annotationSelections.map((id) => {
-    //       return {
-    //         id,
-    //         label: this.idToAnnotSource[id].name,
-    //       };
-    //     });
-
-    //     const diff = annotationDiff(this.tracks.getTracks(), annotSelections);
-    //     console.log("Found the diff", diff);
-    //     for (const track of diff.newAnnotationSettings) {
-    //       this.tracks.addTrack(track);
-    //     }
-    //     for (const removedId of diff.removedIds) {
-    //       this.tracks.removeTrack(removedId);
-    //     }
+    //   if (!this.idToAnnotSource[annotId] || seen.has(annotId)) {
+    //     continue;
     //   }
+    //   seen.add(annotId);
+    //   nextSelections.push(annotId);
     // }
+
+    // const selectionsChanged =
+    //   nextSelections.length !== this.annotationSelections.length ||
+    //   nextSelections.some(
+    //     (id, index) => this.annotationSelections[index] !== id,
+    //   );
+
+    // console.log("Have selections changed?", selectionsChanged);
+
+    // if (selectionsChanged) {
+    //   const saveProfile = false;
+    //   this.setAnnotationSelections(nextSelections, saveProfile);
+
+    const annotSelections = this.annotationSelections.map((id) => {
+      return {
+        id,
+        label: this.idToAnnotSource[id].name,
+      };
+    });
+
+    const diff = annotationDiff(this.tracks.getTracks(), annotSelections);
+    console.log("Found the diff", diff);
+    for (const track of diff.newAnnotationSettings) {
+      this.tracks.addTrack(track);
+    }
+    for (const removedId of diff.removedIds) {
+      this.tracks.removeTrack(removedId);
+    }
 
     const arrangedTracks = getArrangedTracks(layout, this.tracks.getTracks());
 
@@ -502,6 +504,8 @@ function getArrangedTracks(
 
     orderedTracks.push(...tracks);
   }
+
+  console.log("End of arranged tracks", orderedTracks);
 
   return orderedTracks;
 }
