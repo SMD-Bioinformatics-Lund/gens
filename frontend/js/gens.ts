@@ -315,6 +315,15 @@ function addSettingsPageSources(
     render({ mainSampleChanged: true, reloadData: true });
   };
 
+  const getTrackLayout = () => {
+    return session.getTrackLayout();
+  }
+
+  const applyTrackLayout = (layout: TrackLayout) => {
+    session.loadTrackLayout(layout);
+    render({ reloadData: true });
+  }
+
   settingsPage.setSources(
     session,
     allAnnotSources,
@@ -332,5 +341,7 @@ function addSettingsPageSources(
     onToggleTrackHidden,
     onToggleTrackExpanded,
     onAssignMainSample,
+    getTrackLayout,
+    applyTrackLayout,
   );
 }

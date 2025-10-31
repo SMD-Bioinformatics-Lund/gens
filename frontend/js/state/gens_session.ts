@@ -153,6 +153,10 @@ export class GensSession {
     // return this.settings.getAnnotSources(settings);
   }
 
+  public getTrackLayout(): TrackLayout {
+    return this.trackLayout;
+  }
+
   public getVariantURL(variantId: string): string {
     return `${this.scoutBaseURL}/document_id/${variantId}`;
   }
@@ -321,7 +325,12 @@ export class GensSession {
     return this.layoutProfileKey;
   }
 
-  public loadTrackLayout(): void {
+  public loadTrackLayout(assignedLayout: TrackLayout | null): void {
+
+    if (assignedLayout != null) {
+      this.trackLayout = assignedLayout;
+    }
+
     const layout = this.trackLayout;
     if (!layout) {
       return;

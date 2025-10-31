@@ -272,7 +272,7 @@ export class TrackView extends ShadowBaseElement {
     this.lastRenderedSamples = samples;
 
     this.session.tracks.setTracks(dataTrackSettings);
-    this.session.loadTrackLayout();
+    this.session.loadTrackLayout(null);
 
     this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
   }
