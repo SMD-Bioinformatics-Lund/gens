@@ -537,7 +537,8 @@ export class SettingsMenu extends ShadowBaseElement {
   // FIXME: Understand these steps
   // Move to util
   private downloadTrackLayout() {
-    if (this.getTrackLayout) {
+    console.log("Download track layout", this.getTrackLayout);
+    if (!this.getTrackLayout) {
       return;
     }
     const layout = this.getTrackLayout();
@@ -556,6 +557,10 @@ export class SettingsMenu extends ShadowBaseElement {
 
   // FIXME: Move to util
   private async loadTrackLayoutFile(file: File) {
+
+    console.log("Attempting to load track");
+    console.log(file.name, file.type, file.size);
+
     if (!this.applyTrackLayout) {
       return;
     }

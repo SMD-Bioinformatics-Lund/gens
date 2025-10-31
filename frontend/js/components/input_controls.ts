@@ -79,13 +79,6 @@ template.innerHTML = String.raw`
       <button title="Toggle chromosome view" id="chromosome-view-button" class='button'>
         <span class="fas ${ICONS.chromosomes}"></span>
       </button>
-      <!-- FIXME: Move these to the settings menu -->
-      <button title="Export track layout" id="export-layout" class='button'>
-        <span class="fas ${ICONS.download}"></span>
-      </button>
-      <button title="Import track layout" id="import-layout" class='button'>
-        <span class="fas ${ICONS.upload}"></span>
-      </button>
       <button title="Open info menu" id="info-button" class="button">
         <span class="fas ${ICONS.info}"></span>
       </button>

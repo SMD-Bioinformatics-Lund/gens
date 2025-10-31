@@ -73,6 +73,7 @@ export class GensSession {
 
     this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
     const profile = loadProfileSettings(this.layoutProfileKey);
+    console.log("Initial track layout", profile?.layout);
     this.trackLayout = profile?.layout;
 
     this.trackHeights = profile?.trackHeights || trackHeights;
@@ -154,6 +155,7 @@ export class GensSession {
   }
 
   public getTrackLayout(): TrackLayout {
+    console.log("Getting the track layout");
     return this.trackLayout;
   }
 
@@ -327,12 +329,16 @@ export class GensSession {
 
   public loadTrackLayout(assignedLayout: TrackLayout | null): void {
 
+    console.log("Loading track layout");
+
     if (assignedLayout != null) {
       this.trackLayout = assignedLayout;
     }
 
     const layout = this.trackLayout;
     if (!layout) {
+      // If layout saved, save the initial one
+      this.saveTrackLayout();
       return;
     }
 
@@ -357,6 +363,7 @@ export class GensSession {
       expanded,
     };
 
+    console.log("Saving track layout", layout);
     this.trackLayout = layout;
 
     this.saveProfile();
