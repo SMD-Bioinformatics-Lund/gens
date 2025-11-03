@@ -1,7 +1,7 @@
 import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
 import {
   downloadAsJSON,
-  getSampleFromID,
+  getSampleFromID as getSampleIDObjFromID,
   getSampleKey,
   removeChildren,
 } from "../../util/utils";
@@ -366,7 +366,12 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
-      const sample = getSampleFromID(caseId_sampleId);
+
+      const sampleIdObj = getSampleIDObjFromID(caseId_sampleId);
+      const sample = this.session.getSample(
+        sampleIdObj.caseId,
+        sampleIdObj.sampleId,
+      );
       this.onAddSample(sample);
     });
 

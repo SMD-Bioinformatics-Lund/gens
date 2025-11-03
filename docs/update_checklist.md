@@ -216,9 +216,9 @@ Perform the tests with an open web console. Log messages are OK. Errors are usua
 - [ ] Information about the last db update is shown
 - [ ] Configuration settings are shown
 
-## Single-chromosome page
+## Track page
 
-Opening hg002. Does all tracks show up in the initial view?
+Opening hg002. Do all tracks show up in the initial view?
 
 - [ ] Chromosome ideogram
 - [ ] Position track
@@ -226,7 +226,7 @@ Opening hg002. Does all tracks show up in the initial view?
 - [ ] Log2 ratio track
 - [ ] Overview track
 - [ ] Transcript track
-- [ ] Annotation track
+- [ ] Annotation track (after selecting one)
 - [ ] Sample annotation track
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/single.PNG" width=400 alt="Single sample single chromosome view">
@@ -235,7 +235,7 @@ Opening a trio case. Are the additional tracks there:
 
 - [ ] B allele frequency tracks for mother / father
 - [ ] Log2 ratio tracks for mother / father
-- [ ] Hidden variant tracks for mother / father (seen in the tracks list in the settings menu)
+- [ ] Variant tracks for mother / father (seen in the tracks list in the settings menu)
 
 Zooming in, and expanding tracks. Are details shown for the gene track?
 
@@ -263,7 +263,7 @@ Is content correctly displayed in the context menus for the different band track
 ### Navigation
 
 - [ ] Panning (arrow buttons, left/right arrow keys, space + drag)
-- [ ] Zooming (zoom buttons, up/down arrow keys, space + shift + drag, shift + click, control + click)
+- [ ] Zooming (zoom buttons, up/down arrow keys, shift + drag, shift + click, control + click)
 - [ ] Direct navigation (writing a chromosome + region in the search box)
 - [ ] Clicking the overview chart
 - [ ] Clicking bands in the chromosome ideogram (top track)
@@ -295,12 +295,13 @@ Is content correctly displayed in the context menus for the different band track
   - [ ] In the settings menu, try removing a sample. The corresponding tracks should be removed.
   - [ ] In the settings menu, try adding a sample. The corresponding tracks should be added at the bottom of the tracks.
 - [ ] Try changing the variant threshold to 6. More bands should appear in chromosome 1.
-- [ ] Try updating the default Y-axis range and click apply. All coverage tracks should change Y-axis.
+- [ ] Try updating the default Y-axis range (`Default cov y-range` under `Toggle advanced settings`) and click apply. All coverage tracks should change Y-axis.
 - [ ] Persistent settings
   - [ ] Try adjusting track height
   - [ ] Assign mimisbrunnr as "Color tracks by"
-  - [ ] Add another annotation track
+  - [ ] Add another annotation track and place it at the top
   - [ ] Expand / collapse annotation tracks and the gene track
+  - [ ] Change the variant threshold
   - [ ] Refresh the page. These settings should persist.
 - [ ] Update the "Main sample" and press refresh updates the overview chart label and data
 
@@ -310,6 +311,7 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Sample annotation for chromosomes is shown correctly
 - [ ] Updates to coverage Y max / min are reflected
 - [ ] Updates to the main sample updates the label and the data
+- [ ] Zooming is *not* reflected in the chromosome view
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/chromosome_view.PNG" width=400 alt="Multiple chromosomes view">
 
