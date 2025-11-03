@@ -75,7 +75,7 @@ export const TRACK_IDS = {
   variants: "variants",
   sample_annot: "sample_annot",
   genes: "genes",
-  annot: "annot"
+  annot: "annot",
 };
 
 export const TRACK_LAYOUT_VERSION = 2;
@@ -266,3 +266,12 @@ export const CHROMOSOMES: Chromosome[] = [
   "X",
   "Y",
 ];
+
+export const bandTrackTypes: TrackType[] = [
+  "annotation",
+  "gene",
+  "gene-list",
+  "sample-annotation",
+  "variant",
+];
+export const dotTrackTypes: TrackType[] = ["dot-baf", "dot-cov"];

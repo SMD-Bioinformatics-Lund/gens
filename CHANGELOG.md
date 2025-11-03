@@ -11,6 +11,10 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 - Support for exporting and importing profile settings (https://github.com/SMD-Bioinformatics-Lund/gens/pull/562).
 
+### Changed
+
+- Confirm track heights updates with button rather than directly with number changes (https://github.com/SMD-Bioinformatics-Lund/gens/pull/569).
+
 ### Fixed
 
 - Chromosome does not respond to zooming in the track view (https://github.com/SMD-Bioinformatics-Lund/gens/pull/561).

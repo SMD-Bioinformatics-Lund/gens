@@ -277,9 +277,9 @@ function addSettingsPageSources(
     session.removeSample(sample);
     render({ reloadData: true, samplesUpdated: true });
   };
-  const setTrackInfo = (trackHeights: TrackHeights) => {
+  const setTrackHeights = (trackHeights: TrackHeights) => {
     session.setTrackHeights(trackHeights);
-    render({});
+    render({ reloadData: true });
   };
   const onColorByChange = async (annotId: string | null) => {
     session.setColorAnnotation(annotId);
@@ -336,7 +336,7 @@ function addSettingsPageSources(
     gotoHighlight,
     onAddSample,
     onRemoveSample,
-    setTrackInfo,
+    setTrackHeights,
     onColorByChange,
     onApplyDefaultCovRange,
     onSetAnnotationSelection,
