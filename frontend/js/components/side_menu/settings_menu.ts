@@ -130,6 +130,9 @@ template.innerHTML = String.raw`
     <div class="header-row">
       <div class="header">Import and export profile settings</div>
     </div>
+    <flex-row>
+      <div>Current profile: <span id="current-profile"></span></div>
+    </flex-row>
     <flex-row class="spread-row">
       <div>Export profile settings</div>
       <icon-button
@@ -217,6 +220,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private applyMainSample: HTMLButtonElement;
   private applyDotTrackHeightsButton: HTMLButtonElement;
   private applyBandTrackHeightButton: HTMLButtonElement;
+  private currentProfile: HTMLSpanElement;
 
   private session: GensSession;
 
@@ -352,6 +356,9 @@ export class SettingsMenu extends ShadowBaseElement {
     );
     this.coverageYStartElem = this.root.querySelector("#coverage-y-start");
     this.coverageYEndElem = this.root.querySelector("#coverage-y-end");
+
+    this.currentProfile = this.root.querySelector("#current-profile");
+    this.currentProfile.innerHTML = this.getProfileSettings().profileKey;
 
     const trackSizes = this.getTrackHeights();
 

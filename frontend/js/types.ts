@@ -719,6 +719,7 @@ type StorageValue =
 
 type ProfileSettings = {
   version: number;
+  profileKey: string;
   layout: TrackLayout;
   colorAnnotationId: string | null;
   variantThreshold: number;

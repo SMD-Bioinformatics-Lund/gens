@@ -192,6 +192,7 @@ export class GensSession {
   public getProfile(): ProfileSettings {
     return {
       version: TRACK_LAYOUT_VERSION,
+      profileKey: this.layoutProfileKey,
       layout: this.trackLayout,
       colorAnnotationId: this.colorAnnotationId,
       annotationSelections: this.annotationSelections,
