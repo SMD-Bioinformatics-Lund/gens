@@ -1,4 +1,11 @@
-import { ANIM_TIME, bandTrackTypes, COLORS, dotTrackTypes, SIZES, STYLE } from "../../constants";
+import {
+  ANIM_TIME,
+  bandTrackTypes,
+  COLORS,
+  dotTrackTypes,
+  SIZES,
+  STYLE,
+} from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import Sortable, { SortableEvent } from "sortablejs";
 import {
@@ -432,7 +439,7 @@ export class TrackView extends ShadowBaseElement {
     const trackHeights = this.session.getTrackHeights();
     for (const track of this.dataTracks) {
       // Assigning track heights
-      // FIXME: Consider approaches here. Might be that the track heights 
+      // FIXME: Consider approaches here. Might be that the track heights
       // shoudl be part of the render object.
       if (bandTrackTypes.includes(track.track.trackType)) {
         track.track.setHeights(trackHeights.bandCollapsed);

@@ -432,19 +432,6 @@ export class SettingsMenu extends ShadowBaseElement {
       parseFloat(this.coverageYEndElem.value),
     ];
 
-    // this.addElementListener(this.bandTrackCollapsedHeightElem, "change", () => {
-    //   this.setTrackHeights(myGetTrackHeights());
-    //   this.render({});
-    // });
-    // this.addElementListener(this.dotTrackCollapsedHeightElem, "change", () => {
-    //   this.setTrackHeights(myGetTrackHeights());
-    //   this.render({});
-    // });
-    // this.addElementListener(this.dotTrackExpandedHeightElem, "change", () => {
-    //   this.setTrackHeights(myGetTrackHeights());
-    //   this.render({});
-    // });
-
     this.addElementListener(this.coverageYStartElem, "change", () => {
       this.session.setCoverageRange(getCovRange());
     });

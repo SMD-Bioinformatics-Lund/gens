@@ -278,7 +278,6 @@ function addSettingsPageSources(
     render({ reloadData: true, samplesUpdated: true });
   };
   const setTrackHeights = (trackHeights: TrackHeights) => {
-    console.log("Assigning track heights", trackHeights);
     session.setTrackHeights(trackHeights);
     render({ reloadData: true });
   };
