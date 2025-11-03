@@ -373,7 +373,7 @@ export function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
   return diff;
 }
 
-export function getSampleID(sample: Sample): string {
+export function getSampleKey(sample: Sample): string {
   return `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}`;
 }
 
@@ -384,4 +384,18 @@ export function getSampleFromID(id: string): Sample {
     sampleId: fields[1],
   };
   return sample;
+}
+
+export function downloadAsJSON(object: any, filename: string) {
+    const serialized = JSON.stringify(object, null, 2);
+    const blob = new Blob([serialized], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }

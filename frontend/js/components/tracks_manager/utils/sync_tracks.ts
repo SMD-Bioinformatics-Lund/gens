@@ -2,7 +2,7 @@ import { TRACK_IDS, USED_TRACK_HEIGHTS } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import {
   getSampleFromID as getSampleIdsFromID,
-  getSampleID,
+  getSampleKey,
   removeOne,
   setDiff,
 } from "../../../util/utils";
@@ -98,9 +98,9 @@ async function sampleDiff(
   removedIds: Set<string>;
   sampleSettings: DataTrackSettings[];
 }> {
-  const currentCombinedIds = samples.map((sample) => getSampleID(sample));
+  const currentCombinedIds = samples.map((sample) => getSampleKey(sample));
   const lastRenderedCombinedIds = lastRenderedSamples.map((sample) =>
-    getSampleID(sample),
+    getSampleKey(sample),
   );
 
   const { removedIds: removedCombinedIds, newIds: newCombinedIds } = getIDDiff(
@@ -196,7 +196,7 @@ async function sampleDiff(
   };
 }
 
-function annotationDiff(
+export function annotationDiff(
   origTrackSettings: DataTrackSettings[],
   annotationSources: { id: string; label: string }[],
   // getLabel: (id: string) => string,

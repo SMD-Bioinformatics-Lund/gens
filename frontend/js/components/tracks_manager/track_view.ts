@@ -1,4 +1,11 @@
-import { ANIM_TIME, COLORS, SIZES, STYLE } from "../../constants";
+import {
+  ANIM_TIME,
+  bandTrackTypes,
+  COLORS,
+  dotTrackTypes,
+  SIZES,
+  STYLE,
+} from "../../constants";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 import Sortable, { SortableEvent } from "sortablejs";
 import {
@@ -288,7 +295,7 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(renderSettings: RenderSettings) {
-    if (renderSettings.tracksReordered) {
+    if (renderSettings.tracksReorderedOnly) {
       this.syncTrackOrder();
       return;
     }
@@ -301,15 +308,22 @@ export class TrackView extends ShadowBaseElement {
       (id) => this.session.removeHighlight(id),
     );
 
+    const existingTracks = this.session.tracks.getTracks();
+
     syncDataTrackSettings(
-      this.session.tracks.getTracks(),
+      existingTracks,
       this.session,
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
       this.session.tracks.setTracks(dataTrackSettings);
       this.lastRenderedSamples = samples;
+
       this.renderTracks(renderSettings);
+
+      if (renderSettings.tracksReordered) {
+        this.syncTrackOrder();
+      }
     });
 
     this.ideogramTrack.render(renderSettings);
@@ -408,6 +422,7 @@ export class TrackView extends ShadowBaseElement {
         setIsExpanded,
         setExpandedHeight,
         () => this.colorBands,
+        () => this.session.pos.getXRange(),
       );
 
       const trackWrapper = makeTrackContainer(track, null);
@@ -421,7 +436,19 @@ export class TrackView extends ShadowBaseElement {
       this.tracksContainer.removeChild(match.container);
     }
 
+    const trackHeights = this.session.getTrackHeights();
     for (const track of this.dataTracks) {
+      // Assigning track heights
+      // FIXME: Consider approaches here. Might be that the track heights
+      // should be part of the render object.
+      if (bandTrackTypes.includes(track.track.trackType)) {
+        track.track.setHeights(trackHeights.bandCollapsed);
+      } else if (dotTrackTypes.includes(track.track.trackType)) {
+        track.track.setHeights(
+          trackHeights.dotCollapsed,
+          trackHeights.dotExpanded,
+        );
+      }
       track.track.render(settings);
     }
   }
