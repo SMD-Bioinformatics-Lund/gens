@@ -15,6 +15,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 - Chromosome does not respond to zooming in the track view (https://github.com/SMD-Bioinformatics-Lund/gens/pull/561).
 - Sample caching now considers what case it belongs to. Before if having multiple samples with the same ID from different cases, the caches would not distinguish them (https://github.com/SMD-Bioinformatics-Lund/gens/pull/566).
+- Fix query for getting sample-specific variants (https://github.com/SMD-Bioinformatics-Lund/gens/pull/568).
 
 ## 4.2.0
 
