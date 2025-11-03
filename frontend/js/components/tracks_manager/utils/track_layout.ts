@@ -42,7 +42,10 @@ export function getPortableId(settings: DataTrackSettings): string {
   }
 
   if (trackType != null) {
-    const outLabel = settings.trackLabel || "";
+    let outLabel = "";
+    if (settings.trackType == "annotation") {
+      outLabel = settings.trackLabel;
+    }
     return `${trackType}|${specifier}|${outLabel}`;
   }
 
