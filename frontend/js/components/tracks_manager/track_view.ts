@@ -440,7 +440,7 @@ export class TrackView extends ShadowBaseElement {
     for (const track of this.dataTracks) {
       // Assigning track heights
       // FIXME: Consider approaches here. Might be that the track heights
-      // shoudl be part of the render object.
+      // should be part of the render object.
       if (bandTrackTypes.includes(track.track.trackType)) {
         track.track.setHeights(trackHeights.bandCollapsed);
       } else if (dotTrackTypes.includes(track.track.trackType)) {

@@ -304,6 +304,7 @@ Is content correctly displayed in the context menus for the different band track
   - [ ] Change the variant threshold
   - [ ] Refresh the page. These settings should persist.
 - [ ] Update the "Main sample" and press refresh updates the overview chart label and data
+- [ ] Download the settings. Do changes in your settings and try uploading the JSON again. They should be restored to the previous settings.
 
 ## Multiple-chromosomes page
 

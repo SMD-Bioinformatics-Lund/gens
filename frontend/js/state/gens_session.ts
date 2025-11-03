@@ -177,10 +177,6 @@ export class GensSession {
     // return this.settings.getAnnotSources(settings);
   }
 
-  // public getTrackLayout(): TrackLayout {
-  //   return this.trackLayout;
-  // }
-
   public getVariantURL(variantId: string): string {
     return `${this.scoutBaseURL}/document_id/${variantId}`;
   }
