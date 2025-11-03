@@ -373,7 +373,7 @@ export function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
   return diff;
 }
 
-export function getSampleID(sample: Sample): string {
+export function getSampleKey(sample: Sample): string {
   return `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}`;
 }
 
