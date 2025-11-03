@@ -130,11 +130,11 @@ template.innerHTML = String.raw`
   </style>
   <div id="settings-drawer">
     <div id="resize-handle"></div>
+    <div id="header-row">
+      <div id="header">Placeholder header</div>
+      <button id="close-drawer">&times;</button>
+    </div>
     <div id="content">
-      <div id="header-row">
-        <div id="header">Placeholder header</div>
-        <button id="close-drawer">&times;</button>
-      </div>
       <div id="entries">
         <div>Placeholder</div>
         <div>Placeholder</div>
