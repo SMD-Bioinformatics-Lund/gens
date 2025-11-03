@@ -2,7 +2,7 @@ import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
 import {
   downloadAsJSON,
   getSampleFromID,
-  getSampleID,
+  getSampleKey,
   removeChildren,
 } from "../../util/utils";
 import { ChoiceSelect } from "../util/choice_select";
@@ -386,7 +386,7 @@ export class SettingsMenu extends ShadowBaseElement {
       const mainSample = this.mainSampleSelect.getValue().value;
       const samples = this.getCurrentSamples();
       const targetSample = samples.find((sample) => {
-        return getSampleID(sample) == mainSample;
+        return getSampleKey(sample) == mainSample;
       });
       this.onApplyMainSample(targetSample);
     });
@@ -484,7 +484,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const allSamples = rawSamples.map((s) => {
       return {
         label: `${s.sampleId} (case: ${s.caseId})`,
-        value: getSampleID(s),
+        value: getSampleKey(s),
       };
     });
     this.sampleSelect.setValues(allSamples);
@@ -529,7 +529,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.samplesOverview.appendChild(samplesSection);
 
     const mainSample = this.session.getMainSample();
-    const mainSampleId = getSampleID(mainSample);
+    const mainSampleId = getSampleKey(mainSample);
     const mainSampleChoices = getMainSampleChoices(samples, mainSampleId);
     this.mainSampleSelect.setValues(mainSampleChoices);
 
@@ -621,7 +621,7 @@ function getMainSampleChoices(
 ): InputChoice[] {
   const choices: InputChoice[] = [];
   for (const sample of samples) {
-    const id = getSampleID(sample);
+    const id = getSampleKey(sample);
     const choice = {
       value: id,
       label: `${sample.sampleId} (${sample.sampleType}, case: ${sample.caseId})`,

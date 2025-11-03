@@ -1,7 +1,7 @@
 import { CHROMOSOMES } from "../constants";
 import { get } from "../util/fetch";
 import { idbGet, idbSet } from "../util/indexeddb";
-import { zip } from "../util/utils";
+import { getSampleKey, zip } from "../util/utils";
 
 const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 
@@ -25,7 +25,7 @@ export class API {
 
   getChromSizes(): Record<Chromosome, number> {
     if (this.allChromData == null) {
-      throw Error("Must initialize before accessing the chromosome sizes");
+      throw Error("API.initialize must be called and awaited before accessing the chromosome sizes");
     }
 
     const allChromSizes = {} as Record<Chromosome, number>;
@@ -63,7 +63,7 @@ export class API {
       annotation_track_ids: annotationTrackIds.join(","),
     };
 
-    const details = get(new URL(`search/result`, this.apiURI), params).then(
+    const details = get(new URL(`search/result`, this.apiURI).href, params).then(
       (result) => {
         if (result === null) {
           return null;
@@ -214,24 +214,25 @@ export class API {
     xRange: Rng,
   ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/coverage";
+    const sampleKey = getSampleKey({caseId, sampleId});
 
-    if (this.covSampleChrZoomCache[sampleId] == null) {
-      this.covSampleChrZoomCache[sampleId] = {};
+    if (this.covSampleChrZoomCache[sampleKey] == null) {
+      this.covSampleChrZoomCache[sampleKey] = {};
     }
 
     if (CACHED_ZOOM_LEVELS.includes(zoom)) {
       const chromIsCached =
-        this.covSampleChrZoomCache[sampleId][chrom] !== undefined;
+        this.covSampleChrZoomCache[sampleKey][chrom] !== undefined;
 
       if (!chromIsCached) {
-        this.covSampleChrZoomCache[sampleId][chrom] = {};
+        this.covSampleChrZoomCache[sampleKey][chrom] = {};
       }
 
       const zoomIsCached =
-        this.covSampleChrZoomCache[sampleId][chrom][zoom] !== undefined;
+        this.covSampleChrZoomCache[sampleKey][chrom][zoom] !== undefined;
 
       if (!zoomIsCached) {
-        this.covSampleChrZoomCache[sampleId][chrom][zoom] = getCovData(
+        this.covSampleChrZoomCache[sampleKey][chrom][zoom] = getCovData(
           this.apiURI,
           endpoint,
           sampleId,
@@ -241,15 +242,16 @@ export class API {
           [1, this.getChromSizes()[chrom]],
         );
       }
-      return this.covSampleChrZoomCache[sampleId][chrom][zoom];
+      return this.covSampleChrZoomCache[sampleKey][chrom][zoom];
     } else {
       // Zoom D level
+      // FIXME: This should be generalized to be configurable
 
-      if (this.covSampleDWindowCache[sampleId] == null) {
-        this.covSampleDWindowCache[sampleId] = {};
+      if (this.covSampleDWindowCache[sampleKey] == null) {
+        this.covSampleDWindowCache[sampleKey] = {};
       }
 
-      const cached = this.covSampleDWindowCache[sampleId][chrom];
+      const cached = this.covSampleDWindowCache[sampleKey][chrom];
       const withinCache =
         cached !== undefined &&
         xRange[0] >= cached.range[0] &&
@@ -275,7 +277,7 @@ export class API {
         extended,
       );
 
-      this.covSampleDWindowCache[sampleId][chrom] = {
+      this.covSampleDWindowCache[sampleKey][chrom] = {
         range: extended,
         promise,
       };
@@ -300,23 +302,25 @@ export class API {
     xRange: Rng,
   ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/baf";
+    const sampleKey = getSampleKey({caseId, sampleId});
 
-    if (this.bafSampleZoomChrCache[sampleId] == null) {
-      this.bafSampleZoomChrCache[sampleId] = {};
+
+    if (this.bafSampleZoomChrCache[sampleKey] == null) {
+      this.bafSampleZoomChrCache[sampleKey] = {};
     }
 
     if (CACHED_ZOOM_LEVELS.includes(zoom)) {
       const chrIsCached =
-        this.bafSampleZoomChrCache[sampleId][chrom] !== undefined;
+        this.bafSampleZoomChrCache[sampleKey][chrom] !== undefined;
       if (!chrIsCached) {
-        this.bafSampleZoomChrCache[sampleId][chrom] = {};
+        this.bafSampleZoomChrCache[sampleKey][chrom] = {};
       }
 
       const zoomIsCached =
-        this.bafSampleZoomChrCache[sampleId][chrom][zoom] !== undefined;
+        this.bafSampleZoomChrCache[sampleKey][chrom][zoom] !== undefined;
 
       if (!zoomIsCached) {
-        this.bafSampleZoomChrCache[sampleId][chrom][zoom] = getCovData(
+        this.bafSampleZoomChrCache[sampleKey][chrom][zoom] = getCovData(
           this.apiURI,
           endpoint,
           sampleId,
@@ -326,13 +330,13 @@ export class API {
           [1, this.getChromSizes()[chrom]],
         );
       }
-      return this.bafSampleZoomChrCache[sampleId][chrom][zoom];
+      return this.bafSampleZoomChrCache[sampleKey][chrom][zoom];
     } else {
-      if (this.bafSampleDWindowCache[sampleId] == null) {
-        this.bafSampleDWindowCache[sampleId] = {};
+      if (this.bafSampleDWindowCache[sampleKey] == null) {
+        this.bafSampleDWindowCache[sampleKey] = {};
       }
 
-      const cached = this.bafSampleDWindowCache[sampleId][chrom];
+      const cached = this.bafSampleDWindowCache[sampleKey][chrom];
       const withinCache =
         cached !== undefined &&
         xRange[0] >= cached.range[0] &&
@@ -358,7 +362,7 @@ export class API {
         extended,
       );
 
-      this.bafSampleDWindowCache[sampleId][chrom] = {
+      this.bafSampleDWindowCache[sampleKey][chrom] = {
         range: extended,
         promise,
       };
@@ -440,18 +444,21 @@ export class API {
     chrom: string,
     rank_score_threshold: number,
   ): Promise<ApiSimplifiedVariant[]> {
+
+    const sampleKey = getSampleKey({caseId, sampleId});
+
     // Invalidate cache if changing the rank score threshold
     if (this.cachedThreshold != rank_score_threshold) {
       this.cachedThreshold = rank_score_threshold;
       this.variantsSampleChromCache = {};
     }
 
-    if (this.variantsSampleChromCache[sampleId] == null) {
-      this.variantsSampleChromCache[sampleId] = {};
+    if (this.variantsSampleChromCache[sampleKey] == null) {
+      this.variantsSampleChromCache[sampleKey] = {};
     }
 
     const isCached =
-      this.variantsSampleChromCache[sampleId][chrom] !== undefined;
+      this.variantsSampleChromCache[sampleKey][chrom] !== undefined;
     if (!isCached) {
       const query = {
         sample_id: sampleId,
@@ -464,9 +471,9 @@ export class API {
       };
       const url = new URL("tracks/variants", this.apiURI).href;
       const variants = get(url, query) as Promise<ApiSimplifiedVariant[]>;
-      this.variantsSampleChromCache[sampleId][chrom] = variants;
+      this.variantsSampleChromCache[sampleKey][chrom] = variants;
     }
-    return this.variantsSampleChromCache[sampleId][chrom];
+    return this.variantsSampleChromCache[sampleKey][chrom];
   }
 
   private chromCache: Record<string, Promise<ChromosomeInfo>> = {};
@@ -493,8 +500,11 @@ export class API {
     caseId: string,
     sampleId: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
-    if (this.overviewSampleCovCache[sampleId] == null) {
-      this.overviewSampleCovCache[sampleId] = getOverviewData(
+
+    const sampleKey = getSampleKey({caseId, sampleId});
+
+    if (this.overviewSampleCovCache[sampleKey] == null) {
+      this.overviewSampleCovCache[sampleKey] = getOverviewData(
         sampleId,
         caseId,
         "cov",
@@ -502,7 +512,7 @@ export class API {
       );
     }
 
-    return this.overviewSampleCovCache[sampleId];
+    return this.overviewSampleCovCache[sampleKey];
   }
 
   private overviewBafCache: Record<
@@ -513,15 +523,18 @@ export class API {
     caseId: string,
     sampleId: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
-    if (this.overviewBafCache[sampleId] == null) {
-      this.overviewBafCache[sampleId] = getOverviewData(
+
+    const sampleKey = getSampleKey({caseId, sampleId})
+
+    if (this.overviewBafCache[sampleKey] == null) {
+      this.overviewBafCache[sampleKey] = getOverviewData(
         sampleId,
         caseId,
         "baf",
         this.apiURI,
       );
     }
-    return this.overviewBafCache[sampleId];
+    return this.overviewBafCache[sampleKey];
   }
 
   getSample(caseId: string, sampleId: string): Promise<ApiSample> {
