@@ -593,7 +593,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const layoutKey = this.session.getLayoutProfileKey();
     const cleanLayoutKey = layoutKey.replace(/[^a-z0-9._-]/gi, "_");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const filename = `track-layout-${cleanLayoutKey}-${timestamp}.json`;
+    const filename = `profile-settings-${cleanLayoutKey}-${timestamp}.json`;
     downloadAsJSON(layout, filename);
   }
 
