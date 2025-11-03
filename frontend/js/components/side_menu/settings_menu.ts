@@ -157,6 +157,7 @@ template.innerHTML = String.raw`
       <div>Band track height</div>
       <flex-row class="height-inputs">
         <input title="Collapsed height" id="band-collapsed-height" class="height-input" type="number" step="5">
+        <icon-button id="apply-band-track-height" icon="${ICONS.refresh}" title="Apply band track height"></icon-button>
       </flex-row>
     </flex-row>
     <flex-row class="spread-row">
@@ -164,6 +165,7 @@ template.innerHTML = String.raw`
       <flex-row class="height-inputs">
         <input title="Collapsed height" id="dot-collapsed-height" class="height-input" type="number" step="5">
         <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
+        <icon-button id="apply-dot-track-heights" icon="${ICONS.refresh}" title="Apply dot track heights"></icon-button>
       </flex-row>
     </flex-row>
     <flex-row class="spread-row">
@@ -209,10 +211,12 @@ export class SettingsMenu extends ShadowBaseElement {
   private importProfileSettingsButton: IconButton;
   private importProfileSettingsInput: HTMLInputElement;
 
-  private applyDefaultCovYRange: HTMLButtonElement;
-  private variantThreshold: HTMLInputElement;
-  private applyVariantFilter: HTMLButtonElement;
+  private applyDefaultCovYRangeButton: HTMLButtonElement;
+  private variantThresholdInput: HTMLInputElement;
+  private applyVariantFilterButton: HTMLButtonElement;
   private applyMainSample: HTMLButtonElement;
+  private applyDotTrackHeightsButton: HTMLButtonElement;
+  private applyBandTrackHeightButton: HTMLButtonElement;
 
   private session: GensSession;
 
@@ -311,6 +315,12 @@ export class SettingsMenu extends ShadowBaseElement {
     this.samplesOverview = this.root.querySelector("#samples-overview");
     this.highlightsOverview = this.root.querySelector("#highlights-overview");
     this.addSampleButton = this.root.querySelector("#add-sample");
+    this.applyDotTrackHeightsButton = this.root.querySelector(
+      "#apply-dot-track-heights",
+    );
+    this.applyBandTrackHeightButton = this.root.querySelector(
+      "#apply-band-track-height",
+    );
 
     this.exportProfileSettingsButton = this.root.querySelector(
       "#export-settings",
@@ -322,11 +332,13 @@ export class SettingsMenu extends ShadowBaseElement {
       "#import-settings-input",
     ) as HTMLInputElement;
 
-    this.applyDefaultCovYRange = this.root.querySelector(
+    this.applyDefaultCovYRangeButton = this.root.querySelector(
       "#apply-default-cov-y-range",
     );
-    this.applyVariantFilter = this.root.querySelector("#apply-variant-filter");
-    this.variantThreshold = this.root.querySelector("#variant-filter");
+    this.applyVariantFilterButton = this.root.querySelector(
+      "#apply-variant-filter",
+    );
+    this.variantThresholdInput = this.root.querySelector("#variant-filter");
     this.applyMainSample = this.root.querySelector("#apply-main-sample");
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
@@ -350,7 +362,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
     this.coverageYStartElem.value = `${coverageRange[0]}`;
     this.coverageYEndElem.value = `${coverageRange[1]}`;
-    this.variantThreshold.value = `${this.session.getVariantThreshold()}`;
+    this.variantThresholdInput.value = `${this.session.getVariantThreshold()}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
@@ -415,31 +427,23 @@ export class SettingsMenu extends ShadowBaseElement {
       this.render({});
     });
 
-    const myGetTrackHeights = (): TrackHeights => {
-      return {
-        bandCollapsed: parseInt(this.bandTrackCollapsedHeightElem.value),
-        dotCollapsed: parseInt(this.dotTrackCollapsedHeightElem.value),
-        dotExpanded: parseInt(this.dotTrackExpandedHeightElem.value),
-      };
-    };
-
     const getCovRange = (): [number, number] => [
       parseFloat(this.coverageYStartElem.value),
       parseFloat(this.coverageYEndElem.value),
     ];
 
-    this.addElementListener(this.bandTrackCollapsedHeightElem, "change", () => {
-      this.setTrackHeights(myGetTrackHeights());
-      this.render({});
-    });
-    this.addElementListener(this.dotTrackCollapsedHeightElem, "change", () => {
-      this.setTrackHeights(myGetTrackHeights());
-      this.render({});
-    });
-    this.addElementListener(this.dotTrackExpandedHeightElem, "change", () => {
-      this.setTrackHeights(myGetTrackHeights());
-      this.render({});
-    });
+    // this.addElementListener(this.bandTrackCollapsedHeightElem, "change", () => {
+    //   this.setTrackHeights(myGetTrackHeights());
+    //   this.render({});
+    // });
+    // this.addElementListener(this.dotTrackCollapsedHeightElem, "change", () => {
+    //   this.setTrackHeights(myGetTrackHeights());
+    //   this.render({});
+    // });
+    // this.addElementListener(this.dotTrackExpandedHeightElem, "change", () => {
+    //   this.setTrackHeights(myGetTrackHeights());
+    //   this.render({});
+    // });
 
     this.addElementListener(this.coverageYStartElem, "change", () => {
       this.session.setCoverageRange(getCovRange());
@@ -448,15 +452,35 @@ export class SettingsMenu extends ShadowBaseElement {
       this.session.setCoverageRange(getCovRange());
     });
 
-    this.addElementListener(this.applyDefaultCovYRange, "click", () => {
+    this.addElementListener(this.applyDefaultCovYRangeButton, "click", () => {
       const defaultCovStart = Number.parseFloat(this.coverageYStartElem.value);
       const defaultCovEnd = Number.parseFloat(this.coverageYEndElem.value);
       this.onApplyDefaultCovRange([defaultCovStart, defaultCovEnd]);
     });
 
-    this.addElementListener(this.applyVariantFilter, "click", () => {
-      const variantThreshold = Number.parseInt(this.variantThreshold.value);
+    this.addElementListener(this.applyVariantFilterButton, "click", () => {
+      const variantThreshold = Number.parseInt(
+        this.variantThresholdInput.value,
+      );
       this.onSetVariantThreshold(variantThreshold);
+    });
+
+    const myGetTrackHeights = (): TrackHeights => {
+      return {
+        bandCollapsed: parseInt(this.bandTrackCollapsedHeightElem.value),
+        dotCollapsed: parseInt(this.dotTrackCollapsedHeightElem.value),
+        dotExpanded: parseInt(this.dotTrackExpandedHeightElem.value),
+      };
+    };
+
+    this.addElementListener(this.applyBandTrackHeightButton, "click", () => {
+      const trackheights = myGetTrackHeights();
+      this.setTrackHeights(trackheights);
+    });
+
+    this.addElementListener(this.applyDotTrackHeightsButton, "click", () => {
+      const trackheights = myGetTrackHeights();
+      this.setTrackHeights(trackheights);
     });
   }
 
