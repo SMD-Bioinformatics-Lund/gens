@@ -118,6 +118,7 @@ export class GensSession {
         `Version mismatch. Found ${profile.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
       );
       profile = undefined;
+      return;
     }
 
     this.variantThreshold = profile.variantThreshold;
