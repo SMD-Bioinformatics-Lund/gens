@@ -90,7 +90,9 @@ template.innerHTML = String.raw`
       cursor: pointer;
       color: ${style.closeColor};
       padding: 0;
-      margin-left: ${style.padding}px;
+      margin-left: 0;
+      flex: 0 0 auto;
+      align-self: flex-start;
     }
     #entries {
       display: flex;
@@ -111,7 +113,8 @@ template.innerHTML = String.raw`
       display: flex;
       flex-direction: row;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
+      gap: ${SIZES.xs}px;
       margin-bottom: ${style.margin}px;
       flex: 0 0 auto;
     }
@@ -119,6 +122,10 @@ template.innerHTML = String.raw`
       font-weight: ${FONT_WEIGHT.header};
       font-size: ${style.headerSize}px;
       color: ${style.textColor};
+      flex: 1 1 0;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
   </style>
   <div id="settings-drawer">
