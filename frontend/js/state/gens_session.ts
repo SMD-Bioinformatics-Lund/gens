@@ -291,6 +291,7 @@ export class GensSession {
 
   public setVariantThreshold(threshold: number) {
     this.variantThreshold = threshold;
+    this.saveProfile();
   }
 
   public getVariantThreshold(): number {
