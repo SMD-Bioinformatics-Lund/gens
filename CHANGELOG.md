@@ -9,7 +9,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
-* CLI modules defaults to INFO level log and can be adjusted by environment variable.
+* CLI modules defaults to INFO level log and can be adjusted by environment variable (https://github.com/SMD-Bioinformatics-Lund/gens/pull/573).
 
 ## 4.3.0
 
