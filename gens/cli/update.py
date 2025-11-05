@@ -1,6 +1,7 @@
 """CLI commands for updating entries in the database."""
 
 import logging
+from os import getenv
 from pathlib import Path
 
 import click
@@ -14,6 +15,11 @@ from gens.load.meta import parse_meta_file
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleSex
 
+log_level = getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+)
 LOG = logging.getLogger(__name__)
 
 

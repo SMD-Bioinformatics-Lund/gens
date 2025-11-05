@@ -2,6 +2,7 @@
 
 import gzip
 import logging
+from os import getenv
 from pathlib import Path
 from typing import TextIO
 
@@ -47,6 +48,11 @@ from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
 from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrack
 
+log_level = getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+)
 LOG = logging.getLogger(__name__)
 
 
@@ -253,7 +259,12 @@ def annotations(
 
     files = file.glob("*") if file.is_dir() else [file]
 
+    print("Print test")
+    LOG.info("Inside")
+    LOG.error("Testing error")
+
     for annot_file in files:
+        print("annot_file", annot_file)
         if annot_file.suffix not in [".bed", ".aed", ".tsv"]:
             continue
         LOG.info("Processing %s", annot_file)
@@ -263,6 +274,7 @@ def annotations(
         file_format = annot_file.suffix[1:]
 
         try:
+            print("Trying")
             parse_recs_res = parse_raw_records(
                 file_format,
                 is_tsv,
@@ -272,11 +284,14 @@ def annotations(
                 genome_build,
             )
         except ValueError as err:
+            print("Failing")
             click.secho(
                 f"An error occured when creating loading annotation: {err}",
                 fg="red",
             )
             raise click.Abort()
+
+        print("After, length", len(parse_recs_res.records))
 
         if len(parse_recs_res.file_meta) > 0:
             LOG.debug("Updating existing annotation track with metadata from file.")
@@ -289,6 +304,8 @@ def annotations(
             raise ValueError(
                 "Something went wrong parsing the annotations file, no valid annotations found."
             )
+
+        print("Track in DB", track_result.track_in_db)
 
         if track_result.track_in_db is not None:
             LOG.info("Removing old entries from the database")
