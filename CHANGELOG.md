@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
-## TBD
+## 4.3.1
 
 ### Changed
 - Changed the BAF position parameter for `generate_gens_data.py` from `--gnomad` to `--baf_positions`. Clarified it in the docs. Added a downloadable example file based on positions having > 5% frequency in Gnomad [#576](https://github.com/SMD-Bioinformatics-Lund/gens/pull/576).
