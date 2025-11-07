@@ -29,7 +29,7 @@ Resolutions for coverage files are calculated by using different window sizes.
 Resolution for BAF files are calculated by sub-sampling the BAF.
 """
 
-VERSION = "1.0.1"
+VERSION = "1.1.0"
 
 CHR_ORDER = [
     "1",
@@ -67,7 +67,14 @@ BAF_MIN_DEPTH = 10
 
 
 def main(
-    label: str, coverage: Path, gvcf: Path, gnomad: Path, out_dir: Path, bigwig: bool
+    label: str,
+    coverage: Path,
+    gvcf: Path,
+    gnomad: Path,
+    out_dir: Path,
+    bigwig: bool,
+    bgzip_tabix_output: bool,
+    threads: int,
 ) -> None:
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -103,11 +110,13 @@ def main(
         print("Generating baf bigwig", file=sys.stderr)
         gens_bed_to_bigwig(baf_output, baf_sizes, baf_bw_output)
 
-    print("Compressing bed files", file=sys.stderr)
-    subprocess.run(["bgzip", "-f", "-@10", str(baf_output)], check=True)
-    subprocess.run(["tabix", "-f", "-p", "bed", str(baf_output) + ".gz"], check=True)
-    subprocess.run(["bgzip", "-f", "-@10", str(cov_output)], check=True)
-    subprocess.run(["tabix", "-f", "-p", "bed", str(cov_output) + ".gz"], check=True)
+    if bgzip_tabix_output:
+        print("Compressing bed files", file=sys.stderr)
+        subprocess.run(["bgzip", "-f", f"-@{threads}", str(baf_output)], check=True)
+        subprocess.run(["tabix", "-f", "-p", "bed", str(baf_output) + ".gz"], check=True)
+        subprocess.run(["bgzip", "-f", f"-@{threads}", str(cov_output)], check=True)
+        subprocess.run(["tabix", "-f", "-p", "bed", str(cov_output) + ".gz"], check=True)
+
     os.unlink(tmp_baf)
 
 
@@ -364,10 +373,10 @@ def normalize_chr(chrom: str) -> str:
 
     if chrom.lower().startswith("chr"):
         chrom = chrom[3:]
-    
+
     if chrom.lower() in {"m", "mt"}:
         return "MT"
-    
+
     return chrom
 
 
@@ -377,11 +386,34 @@ def parse_arguments():
 
     parser.add_argument("--label", help="Output label", required=True)
     parser.add_argument(
-        "--coverage", help="Standardized coverage, typically calculated using GATK's CollectReadCounts and DenoiseReadCounts", required=True, type=Path
+        "--coverage",
+        help="Standardized coverage, typically calculated using GATK's CollectReadCounts and DenoiseReadCounts",
+        required=True,
+        type=Path,
     )
-    parser.add_argument("--gvcf", help="gVCF file for calculating B-allele frequencies", required=True, type=Path)
     parser.add_argument(
-        "--gnomad", help="File with gnomAD SNP positions, used for sampling the gVCF", required=True, type=Path
+        "--gvcf",
+        help="gVCF file for calculating B-allele frequencies",
+        required=True,
+        type=Path,
+    )
+    parser.add_argument(
+        "--gnomad",
+        help="File with gnomAD SNP positions, used for sampling the gVCF",
+        required=True,
+        type=Path,
+    )
+    parser.add_argument(
+        "--threads",
+        help="Number of threads to use when bgzipping output",
+        type=int,
+        default=10,
+    )
+    parser.add_argument(
+        "--bgzip_tabix_output",
+        help="BGZip and tabix index outputs (requires bgzip and tabix to be present in PATH)",
+        action="store_true",
+        default=True
     )
 
     parser.add_argument(
@@ -398,4 +430,13 @@ def parse_arguments():
 if __name__ == "__main__":
     args = parse_arguments()
 
-    main(args.label, args.coverage, args.gvcf, args.gnomad, args.outdir, args.bigwig)
+    main(
+        args.label,
+        args.coverage,
+        args.gvcf,
+        args.gnomad,
+        args.outdir,
+        args.bigwig,
+        args.bgzip_tabix_output,
+        args.threads,
+    )
