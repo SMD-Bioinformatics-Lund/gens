@@ -29,7 +29,7 @@ Resolutions for coverage files are calculated by using different window sizes.
 Resolution for BAF files are calculated by sub-sampling the BAF.
 """
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 CHR_ORDER = [
     "1",
@@ -126,7 +126,7 @@ def generate_baf_bed(fn: str, skip: int, prefix: str, out_fh: TextIO) -> None:
 def generate_cov_bed(
     cov_file: Path, win_size: int, prefix: str, out_fh: TextIO
 ) -> None:
-    """Convert standardized coverage to Gens bed format."""
+    """Convert GATK standardized coverage to Gens bed format."""
     active_region = None
     force_end = False
     reg_ratios: list[float] = []
@@ -244,7 +244,8 @@ def parse_gvcfvaf(
     with open(gnomad_file, "r") as gnomad_fh:
         for line in gnomad_fh:
             line = line.rstrip()
-            chrom, pos = line.split("\t")
+            chrom_raw, pos = line.split("\t")
+            chrom = normalize_chr(chrom_raw)
             pos_key = f"{chrom}_{pos}"
             gnomad_positions.add(pos_key)
 
@@ -294,7 +295,7 @@ def gvcf_region(line: str) -> Region:
 
 class Region:
     def __init__(self, chr: str, start: int, end: int):
-        self.chrom = chr
+        self.chrom = normalize_chr(chr)
         self.start = start
         self.end = end
 
@@ -303,7 +304,7 @@ class GVCFEntry:
     def __init__(self, line: str):
         cols = line.split("\t")
 
-        self.chrom = cols[0]
+        self.chrom = normalize_chr(cols[0])
         self.start = int(cols[1])
         self.ref = cols[3]
         self.alt_alleles = cols[4].split(",")
@@ -350,17 +351,29 @@ class GVCFEntry:
         return f"{self.chrom} {self.start} {self.ref} {",".join(self.alt_alleles)}"
 
 
+def normalize_chr(chrom: str) -> str:
+    """Return chromosome name without 'chr' and with MT normalized"""
+
+    if chrom.lower().startswith("chr"):
+        chrom = chrom[3:]
+    
+    if chrom.lower() in {"m", "mt"}:
+        return "MT"
+    
+    return chrom
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument("-v", "--version", action="version", version=VERSION)
 
     parser.add_argument("--label", help="Output label", required=True)
     parser.add_argument(
-        "--coverage", help="Standardized coverage file", required=True, type=Path
+        "--coverage", help="Standardized coverage, typically calculated using GATK's CollectReadCounts and DenoiseReadCounts", required=True, type=Path
     )
-    parser.add_argument("--gvcf", help="gVCF file", required=True, type=Path)
+    parser.add_argument("--gvcf", help="gVCF file for calculating B-allele frequencies", required=True, type=Path)
     parser.add_argument(
-        "--gnomad", help="File with gnomAD SNP positions", required=True, type=Path
+        "--gnomad", help="File with gnomAD SNP positions, used for sampling the gVCF", required=True, type=Path
     )
 
     parser.add_argument(
