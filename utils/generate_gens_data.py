@@ -7,6 +7,7 @@ import argparse
 import gzip
 import os
 import re
+import shutil
 import statistics
 import subprocess
 import sys
@@ -105,6 +106,16 @@ def main(
         gens_bed_to_bigwig(baf_output, baf_sizes, baf_bw_output)
 
     if bgzip_tabix_output:
+
+        bgzip_present = shutil.which("bgzip")
+        tabix_present = shutil.which("tabix")
+        if not (bgzip_present and tabix_present):
+            print(
+                f"Cannot bgzip and tabix output as commands are not present in path. bgzip present: {bgzip_present}, tabix present: {tabix_present}",
+                file=sys.err
+            )
+            sys.exit(1)
+
         print("Compressing bed files", file=sys.stderr)
         subprocess.run(["bgzip", "-f", f"-@{threads}", str(baf_output)], check=True)
         subprocess.run(
@@ -221,6 +232,10 @@ def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
             chrom = zoom_chrom.split("_")[1]
 
             print(f"{chrom}\t{start}\t{end_str}\t{val}", file=tmp_cov_bed)
+
+    if not shutil.which("bedGraphToBigWig"):
+        print("Did not find bedGraphToBigWig in PATH, required to generate BigWig files", file=sys.stderr)
+        sys.exit(1)
 
     subprocess.run(
         [
@@ -416,7 +431,6 @@ def parse_arguments():
         "--bgzip_tabix_output",
         help="BGZip and tabix index outputs (requires bgzip and tabix to be present in PATH)",
         action="store_true",
-        default=True,
     )
 
     parser.add_argument(

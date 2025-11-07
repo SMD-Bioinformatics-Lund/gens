@@ -7,6 +7,9 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## TBD
 
+### Changed
+- Changed the BAF position parameter for `generate_gens_data.py` from `--gnomad` to `--baf_positions`. Clarified it in the docs. Added a downloadable example file based on positions having > 5% frequency in Gnomad [#576](https://github.com/SMD-Bioinformatics-Lund/gens/pull/576).
+
 ### Fixed
 
 - CLI modules defaults to INFO level log and can be adjusted by environment variable [#573](https://github.com/SMD-Bioinformatics-Lund/gens/pull/573).

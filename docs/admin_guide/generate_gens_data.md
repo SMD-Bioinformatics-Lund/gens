@@ -41,6 +41,7 @@ utils/generate_gens_data.py \
     --gvcf hg002.dnascope.gvcf.gz \
     --label hg002 \
     --baf_positions gnomad_hg38.0.05.txt \
+    --bgzip_tabix_output \
     --outdir output
 ```
 
