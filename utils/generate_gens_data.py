@@ -112,7 +112,7 @@ def main(
         if not (bgzip_present and tabix_present):
             print(
                 f"Cannot bgzip and tabix output as commands are not present in path. bgzip present: {bgzip_present}, tabix present: {tabix_present}",
-                file=sys.err
+                file=sys.stderr
             )
             sys.exit(1)
 
