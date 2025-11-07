@@ -10,6 +10,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
 
 - Added support for parsing chr-prefixed in data to `generate_gens_data.py` [#576](https://github.com/SMD-Bioinformatics-Lund/gens/pull/576).
+- Allow user to control whether to bgzip+tabix and number threads used in `generate_gens_data.py` [#576](https://github.com/SMD-Bioinformatics-Lund/gens/pull/576).
 
 ## 4.3.0
 
