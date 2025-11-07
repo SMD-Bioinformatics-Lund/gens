@@ -59,12 +59,11 @@ CHR_ORDER = [
 CHR_ORDER_MAP = {c: i for i, c in enumerate(CHR_ORDER)}
 
 
-
 def main(
     label: str,
     coverage: Path,
     gvcf: Path,
-    gnomad: Path,
+    baf_positions: Path,
     out_dir: Path,
     bigwig: bool,
     baf_min_depth: int,
@@ -85,7 +84,7 @@ def main(
     print("Calculating BAFs from gvcf...", file=sys.stderr)
     tmp_baf = out_dir / f"{label}.baf.tmp"
     with open(tmp_baf, "w", encoding="utf-8") as tmpout:
-        parse_gvcfvaf(gvcf, gnomad, tmpout, baf_min_depth)
+        parse_gvcfvaf(gvcf, baf_positions, tmpout, baf_min_depth)
 
     with open(baf_output, "w", encoding="utf-8") as bafout:
         for skip_n, prefix in zip(BAF_SKIP_N, PREFIXES):
@@ -108,9 +107,13 @@ def main(
     if bgzip_tabix_output:
         print("Compressing bed files", file=sys.stderr)
         subprocess.run(["bgzip", "-f", f"-@{threads}", str(baf_output)], check=True)
-        subprocess.run(["tabix", "-f", "-p", "bed", str(baf_output) + ".gz"], check=True)
+        subprocess.run(
+            ["tabix", "-f", "-p", "bed", str(baf_output) + ".gz"], check=True
+        )
         subprocess.run(["bgzip", "-f", f"-@{threads}", str(cov_output)], check=True)
-        subprocess.run(["tabix", "-f", "-p", "bed", str(cov_output) + ".gz"], check=True)
+        subprocess.run(
+            ["tabix", "-f", "-p", "bed", str(cov_output) + ".gz"], check=True
+        )
 
     os.unlink(tmp_baf)
 
@@ -234,7 +237,7 @@ def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
 
 
 def parse_gvcfvaf(
-    gvcf_file: Path, gnomad_file: Path, out_fh: TextIO, depth_threshold: int
+    gvcf_file: Path, baf_positions: Path, out_fh: TextIO, depth_threshold: int
 ) -> None:
     """
     Calculate BAF frequencies for provided gnomad file positions
@@ -246,14 +249,14 @@ def parse_gvcfvaf(
     - If having AD reads but less than threshold, skip
     """
 
-    gnomad_positions = set()
-    with open(gnomad_file, "r", encoding="utf-8") as gnomad_fh:
-        for line in gnomad_fh:
+    baf_positions = set()
+    with open(baf_positions, "r", encoding="utf-8") as baf_positions_fh:
+        for line in baf_positions_fh:
             line = line.rstrip()
             chrom_raw, pos = line.split("\t")
             chrom = normalize_chr(chrom_raw)
             pos_key = f"{chrom}_{pos}"
-            gnomad_positions.add(pos_key)
+            baf_positions.add(pos_key)
 
     with gzip.open(gvcf_file, "rt", encoding="utf-8") as gvcf_fh:
 
@@ -267,7 +270,7 @@ def parse_gvcfvaf(
             gvcf_count += 1
             gvcf_pos: Region = gvcf_region(gvcf_line)
             position_key = f"{gvcf_pos.chrom}_{gvcf_pos.start}"
-            if position_key not in gnomad_positions:
+            if position_key not in baf_positions:
                 continue
 
             entry = GVCFEntry(gvcf_line)
@@ -373,7 +376,9 @@ def normalize_chr(chrom: str) -> str:
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description=DESCRIPTION, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=DESCRIPTION, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("-v", "--version", action="version", version=VERSION)
 
     parser.add_argument("--label", help="Output label", required=True)
@@ -390,8 +395,8 @@ def parse_arguments():
         type=Path,
     )
     parser.add_argument(
-        "--gnomad",
-        help="File with gnomAD SNP positions, used for sampling the gVCF",
+        "--baf_positions",
+        help="Two column tsv file SNP positions for which to calculate BAFs. An example file with sites > 0.05 in Gnomad can be downloaded from here: https://github.com/SMD-Bioinformatics-Lund/gens/releases/download/v4.3.0/gnomad_hg38.0.05.txt.gz",
         required=True,
         type=Path,
     )
@@ -399,7 +404,7 @@ def parse_arguments():
         "--baf_min_depth",
         help="Minimum depth of variant in gVCF to be included in BAF output",
         type=int,
-        default=10
+        default=10,
     )
     parser.add_argument(
         "--threads",
@@ -411,7 +416,7 @@ def parse_arguments():
         "--bgzip_tabix_output",
         help="BGZip and tabix index outputs (requires bgzip and tabix to be present in PATH)",
         action="store_true",
-        default=True
+        default=True,
     )
 
     parser.add_argument(
@@ -432,7 +437,7 @@ if __name__ == "__main__":
         args.label,
         args.coverage,
         args.gvcf,
-        args.gnomad,
+        args.baf_positions,
         args.outdir,
         args.bigwig,
         args.baf_min_depth,

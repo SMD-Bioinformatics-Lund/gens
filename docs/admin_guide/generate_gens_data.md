@@ -29,22 +29,18 @@ It is possible to use the GATK tools to create BAF data as well, but we have fou
 
 Once you have the standardized coverage file from GATK and a gVCF you can create Gens formatted data files using the command below. The script should accept any properly formatted gVCF but only output from GATK HaplotypeCaller and Sentieon DNAscope have been tested.
 
-``` bash
-utils/generate_gens_data.pl subject.standardizedCR.tsv subject.gvcf SAMPLE_ID gnomad_hg38.0.05.txt.gz
-```
-
 The script requires that **bgzip** and **tabix** are installed in a $PATH directory.
 
 The final output should be two files named: **SAMPLE_ID.baf.bed.gz** and **SAMPLE_ID.cov.bed.gz**
 
-A Python version of this script is available with argparse interface. This will eventually replace the Perl script shown above.
+The baf_positions file is a two columns tsv-file with chromosome and position of the SNPs. An example file with variants found to have frequency > 0.05 in Gnomad can be downloaded from [here](https://github.com/SMD-Bioinformatics-Lund/gens/releases/download/v4.3.0/gnomad_hg38.0.05.txt.gz).
 
 ```python3
 utils/generate_gens_data.py \
     --coverage hg002.standardizedCR.tsv \
     --gvcf hg002.dnascope.gvcf.gz \
     --label hg002 \
-    --gnomad gnomad_hg38.0.05.txt \
+    --baf_positions gnomad_hg38.0.05.txt \
     --outdir output
 ```
 
