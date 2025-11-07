@@ -119,7 +119,8 @@ def generate_baf_bed(fn: str, skip: int, prefix: str, out_fh: TextIO) -> None:
                 parts = line.rstrip().split("\t")
                 if len(parts) != 3:
                     continue
-                chrom, pos, val = parts
+                raw_chrom, pos, val = parts
+                chrom = normalize_chr(raw_chrom)
                 out_fh.write(f"{prefix}_{chrom}\t{int(pos) - 1}\t{pos}\t{val}\n")
 
 
@@ -136,7 +137,8 @@ def generate_cov_bed(
             if line.startswith("@") or line.startswith("CONTIG"):
                 continue
 
-            chrom, start_str, end_str, ratio_str = line.rstrip().split("\t")
+            raw_chrom, start_str, end_str, ratio_str = line.rstrip().split("\t")
+            chrom = normalize_chr(raw_chrom)
             curr = Region(chrom, int(start_str), int(end_str))
             orig_end = curr.end
             curr_ratio = float(ratio_str)
@@ -240,6 +242,8 @@ def parse_gvcfvaf(
     - If having AD reads but less than threshold, skip
     """
 
+    print("hi")
+
     gnomad_positions = set()
     with open(gnomad_file, "r") as gnomad_fh:
         for line in gnomad_fh:
@@ -255,6 +259,7 @@ def parse_gvcfvaf(
         match_count = 0
 
         for gvcf_line in gvcf_fh:
+            print("Iterating line", gvcf_line)
             if gvcf_line.startswith("#"):
                 continue
 
@@ -288,14 +293,17 @@ def parse_gvcfvaf(
 def gvcf_region(line: str) -> Region:
     """Return END from info column if present. Else, return the start position."""
     cols = line.rstrip().split("\t")
-    match = re.search(r"(?:^|;)END=(.*?)(?:;|$)", cols[7])
-    end = int(match.group(1)) if match else int(cols[1])
-    return Region(cols[0], int(cols[1]), end)
+    chrom = normalize_chr(cols[0])
+    pos = int(cols[1])
+    info = cols[7]
+    info_end_match = re.search(r"(?:^|;)END=(.*?)(?:;|$)", info)
+    end = int(info_end_match.group(1)) if info_end_match else pos
+    return Region(chrom, pos, end)
 
 
 class Region:
     def __init__(self, chr: str, start: int, end: int):
-        self.chrom = normalize_chr(chr)
+        self.chrom = chr
         self.start = start
         self.end = end
 

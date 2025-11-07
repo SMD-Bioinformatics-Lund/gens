@@ -23,8 +23,8 @@ def test_generate_baf_bed(tmp_path: Path):
     lines = output.getvalue().splitlines()
 
     assert lines == [
-        "x_chr1\t9\t10\t0.1",
-        "x_chr1\t29\t30\t0.3",
+        "x_1\t9\t10\t0.1",
+        "x_1\t29\t30\t0.3",
     ]
 
 
@@ -46,8 +46,8 @@ def test_generate_cov_bed(tmp_path: Path):
     lines = output.getvalue().splitlines()
 
     assert lines == [
-        "x_chr1\t49\t50\t0.15000000000000002",
-        "x_chr1\t149\t150\t0.5",
+        "x_1\t49\t50\t0.15000000000000002",
+        "x_1\t149\t150\t0.5",
     ]
 
 
@@ -67,8 +67,8 @@ def test_generate_cov_bed_gap_and_chromosome(tmp_path: Path):
     generate_cov_bed(cov_file, win_size=100, prefix="x", out_fh=output)
 
     assert output.getvalue().splitlines() == [
-        "x_chr1\t29\t30\t0.1",
-        "x_chr2\t49\t50\t0.30000000000000004",
+        "x_1\t29\t30\t0.1",
+        "x_2\t49\t50\t0.30000000000000004",
     ]
 
 
@@ -90,15 +90,17 @@ def test_generate_cov_bed_incomplete_window(tmp_path: Path):
 
 
 def test_parse_gvcfvaf(tmp_path: Path, capsys):
+
     gvcf_file = tmp_path / "sample.vcf.gz"
     with gzip.open(gvcf_file, "wt") as fh:
         fh.write("##header\n")
-        fh.write("1\t10\t.\tA\tC\t.\tPASS\tEND=10\tGT:AD:DP\t0/1:8,2:10\n")
-        fh.write("1\t20\t.\tA\tC\t.\tPASS\tEND=20\tGT:AD:DP\t0/0:10,0:10\n")
-        fh.write("1\t30\t.\tA\tC\t.\tPASS\tEND=30\tGT:AD:DP\t0/1:5,5:8\n")
+        fh.write("chr1\t10\t.\tA\tC\t.\tPASS\tEND=10\tGT:AD:DP\t0/1:8,2:10\n")
+        fh.write("chr1\t20\t.\tA\tC\t.\tPASS\tEND=20\tGT:AD:DP\t0/0:10,0:10\n")
+        fh.write("chr1\t30\t.\tA\tC\t.\tPASS\tEND=30\tGT:AD:DP\t0/1:5,5:8\n")
+        fh.write("chrM\t40\t.\tA\tC\t.\tPASS\tEND=40\tGT:AD:DP\t0/1:6,6:12\n")
 
     gnomad_file = tmp_path / "gnomad.tsv"
-    gnomad_file.write_text("\n".join(["1\t10", "1\t20", "1\t30"]))
+    gnomad_file.write_text("\n".join(["chr1\t10", "chr1\t20", "chr1\t30", "chrM\t40"]))
 
     depth_threshold = 10
 
@@ -109,5 +111,6 @@ def test_parse_gvcfvaf(tmp_path: Path, capsys):
     assert output.getvalue().splitlines() == [
         "1\t10\t0.2",
         "1\t20\t0.0",
+        "MT\t40\t0.5"
     ]
     assert "1 variants skipped!" in captured.err

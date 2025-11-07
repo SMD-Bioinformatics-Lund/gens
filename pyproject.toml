@@ -34,7 +34,6 @@ dependencies = [
   "pysam",
   "fastapi",
   "flask-compress",
-  "pydantic[email]",
   "pydantic-settings",
   "pydantic-extra-types",
   "gunicorn",
