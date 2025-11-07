@@ -252,7 +252,7 @@ def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
 
 
 def parse_gvcfvaf(
-    gvcf_file: Path, baf_positions: Path, out_fh: TextIO, depth_threshold: int
+    gvcf_file: Path, baf_positions_file: Path, out_fh: TextIO, depth_threshold: int
 ) -> None:
     """
     Calculate BAF frequencies for provided gnomad file positions
@@ -265,7 +265,7 @@ def parse_gvcfvaf(
     """
 
     baf_positions = set()
-    with open(baf_positions, "r", encoding="utf-8") as baf_positions_fh:
+    with open(baf_positions_file, "r", encoding="utf-8") as baf_positions_fh:
         for line in baf_positions_fh:
             line = line.rstrip()
             chrom_raw, pos = line.split("\t")
