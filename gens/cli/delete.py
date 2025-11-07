@@ -1,6 +1,7 @@
 """CLI commands for removing entries from the database."""
 
 import logging
+from os import getenv
 
 import click
 
@@ -28,7 +29,13 @@ from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
 from gens.models.genomic import GenomeBuild
 
+log_level = getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+)
 LOG = logging.getLogger(__name__)
+
 valid_genome_builds = [str(gb.value) for gb in GenomeBuild]
 
 

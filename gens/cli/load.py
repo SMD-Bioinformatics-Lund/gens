@@ -2,6 +2,7 @@
 
 import gzip
 import logging
+from os import getenv
 from pathlib import Path
 from typing import TextIO
 
@@ -47,6 +48,11 @@ from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
 from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrack
 
+log_level = getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+)
 LOG = logging.getLogger(__name__)
 
 

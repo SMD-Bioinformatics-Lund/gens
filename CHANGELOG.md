@@ -9,6 +9,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- CLI modules defaults to INFO level log and can be adjusted by environment variable [#573](https://github.com/SMD-Bioinformatics-Lund/gens/pull/573).
 - Added support for parsing chr-prefixed in data to `generate_gens_data.py` [#576](https://github.com/SMD-Bioinformatics-Lund/gens/pull/576).
 - Extend CLI interface so the user can control whether to write bgzip+tabix output, number threads used for bgzip and BAF coverage depth threshold in `generate_gens_data.py` [#576](https://github.com/SMD-Bioinformatics-Lund/gens/pull/576).
 
