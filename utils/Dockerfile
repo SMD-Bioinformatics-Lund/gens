@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY generate_gens_data.py /usr/local/bin
+COPY utils/generate_gens_data.py /usr/local/bin
 RUN chmod +x /usr/local/bin/generate_gens_data.py
 
 CMD ["python3"]

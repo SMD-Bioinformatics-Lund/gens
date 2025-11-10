@@ -50,8 +50,7 @@ There is a container provided in `utils/Dockerfile` with the dependencies needed
 Example syntax if you want to try it out locally.
 
 ```python3
-cd utils/
-docker build -f Dockerfile -t generate_gens_data:my_version .
+docker build -f utils/Dockerfile -t generate_gens_data:my_version .
 docker run --rm -v /path/to/your/data:/data -it generate_gens_data:my_version /bin/bash
 
 # Inside the container
