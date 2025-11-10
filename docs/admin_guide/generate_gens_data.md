@@ -45,6 +45,19 @@ utils/generate_gens_data.py \
     --outdir output
 ```
 
+There is a container provided in `utils/Dockerfile` with the dependencies needed to run it (`tabix` and `bgzip` if you want it to produce zipped and indexed output).
+
+Example syntax if you want to try it out locally.
+
+```python3
+cd utils/
+docker build -f Dockerfile -t generate_gens_data:my_version .
+docker run --rm -v /path/to/your/data:/data -it generate_gens_data:my_version /bin/bash
+
+# Inside the container
+root@<container> generate_gens_data.py ... # The full command, input data in /data
+```
+
 ## Data format
 
 If you want to generate the data in some other way than described above you need to make sure the data conforms to these standards.
