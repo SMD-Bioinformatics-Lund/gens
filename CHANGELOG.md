@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## TBD
+
+### Fixed
+
+- Updated the `Dockerfile` for `generate_gens_data.py` to support the updated Docker version.
+
 ## 4.3.1
 
 ### Changed
