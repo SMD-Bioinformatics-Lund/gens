@@ -49,13 +49,15 @@ There is a container provided in `utils/Dockerfile` with the dependencies needed
 
 Example syntax if you want to try it out locally.
 
-```python3
+```bash
 docker build -f utils/Dockerfile -t generate_gens_data:my_version .
 docker run --rm -v /path/to/your/data:/data -it generate_gens_data:my_version /bin/bash
 
 # Inside the container
 root@<container> generate_gens_data.py ... # The full command, input data in /data
 ```
+
+A pre-built container is available at: docker://clinicalgenomicslund/generate_gens_data:latest
 
 ## Data format
 
