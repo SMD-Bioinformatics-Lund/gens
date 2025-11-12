@@ -29,7 +29,7 @@ Coverage: Given a per-range coverage file. Given certain window sizes, calculate
 Both yields bed files with different levels of resolutions, distinguished with prefixes in the output ({joined_prefixes}).
 """
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 
 CHR_ORDER = [
     "1",
