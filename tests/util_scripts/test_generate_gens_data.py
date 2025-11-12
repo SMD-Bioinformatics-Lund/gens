@@ -2,7 +2,12 @@ import gzip
 import io
 from pathlib import Path
 
-from utils.generate_gens_data import generate_baf_bed, generate_cov_bed, parse_gvcfvaf
+from utils.generate_gens_data import (
+    generate_baf_bed,
+    generate_cov_bed,
+    main,
+    parse_gvcfvaf,
+)
 
 
 def test_generate_baf_bed(tmp_path: Path):
@@ -132,16 +137,11 @@ def test_parse_gvcfvaf(tmp_path: Path, capsys):
     parse_gvcfvaf(gvcf_file, gnomad_file, output, depth_threshold)
     captured = capsys.readouterr()
 
-    assert output.getvalue().splitlines() == [
-        "1\t10\t0.2",
-        "1\t20\t0.0",
-        "MT\t40\t0.5"
-    ]
+    assert output.getvalue().splitlines() == ["1\t10\t0.2", "1\t20\t0.0", "MT\t40\t0.5"]
     assert "1 variants skipped!" in captured.err
 
 
 def test_parse_gvcfvaf_with_chr_prefix(tmp_path: Path, capsys):
-
 
     gvcf_file = tmp_path / "sample.vcf.gz"
     with gzip.open(gvcf_file, "wt") as fh:
@@ -153,7 +153,9 @@ def test_parse_gvcfvaf_with_chr_prefix(tmp_path: Path, capsys):
         fh.write("chrM\t41\t.\tA\tC\t.\tPASS\tEND=40\tGT:AD:DP\t0/1:6,6:12\n")
 
     gnomad_file = tmp_path / "gnomad.tsv"
-    gnomad_file.write_text("\n".join(["1\t10", "1\t20", "chr1\t30", "chrMT\t40", "chrMT\t41"]))
+    gnomad_file.write_text(
+        "\n".join(["1\t10", "1\t20", "chr1\t30", "chrMT\t40", "chrMT\t41"])
+    )
 
     depth_threshold = 10
 
@@ -168,3 +170,58 @@ def test_parse_gvcfvaf_with_chr_prefix(tmp_path: Path, capsys):
         "MT\t41\t0.5",
     ]
     assert "1 variants skipped!" in captured.err
+
+
+def test_generate_gens_data_end_to_end(tmp_path: Path):
+
+    outdir = tmp_path / "out"
+    coverage_file = tmp_path / "coverage.tsv"
+    coverage_file.write_text(
+        "\n".join(
+            [
+                "chr1\t1\t50\t0.1",
+                "chr1\t51\t100\t0.2",
+            ]
+        )
+    )
+
+    gvcf_file = tmp_path / "sample.g.vcf.gz"
+    with gzip.open(gvcf_file, "wt", encoding="utf-8") as fh:
+        fh.write("##header\n")
+        fh.write("1\t10\t.\tA\tC\t.\tPASS\tEND=10\tGT:AD:DP\t0/1:8,2:10\n")
+        fh.write("1\t20\t.\tG\tT\t.\tPASS\tEND=20\tGT:AD:DP\t0/0:10,0:10\n")
+
+    positions_file = tmp_path / "positions.tsv"
+    positions_file.write_text("\n".join(["1\t10", "1\t20"]))
+
+    main(
+        label="sample",
+        coverage=coverage_file,
+        gvcf=gvcf_file,
+        baf_positions=positions_file,
+        out_dir=outdir,
+        bigwig=False,
+        baf_min_depth=1,
+        bgzip_tabix_output=False,
+        threads=1,
+    )
+
+    cov_output = outdir / "sample.cov.bed"
+    baf_output = outdir / "sample.baf.bed"
+
+    assert cov_output.exists()
+    assert baf_output.exists()
+    assert not (outdir / "sample.baf.tmp").exists()
+
+    assert cov_output.read_text().splitlines() == [
+        "d_1\t49\t50\t0.15000000000000002",
+    ]
+
+    assert baf_output.read_text().splitlines() == [
+        "o_1\t9\t10\t0.2",
+        "a_1\t9\t10\t0.2",
+        "b_1\t9\t10\t0.2",
+        "c_1\t9\t10\t0.2",
+        "d_1\t9\t10\t0.2",
+        "d_1\t19\t20\t0.0",
+    ]

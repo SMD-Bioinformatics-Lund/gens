@@ -7,9 +7,14 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## TBD
 
+### Added
+
+- Extended unit test suite for `generate_gens_data.py` with an end-to-end test [#580](https://github.com/SMD-Bioinformatics-Lund/gens/pull/580).
+
 ### Fixed
 
-- Updated the `Dockerfile` for `generate_gens_data.py` to support the updated Docker version.
+- Updated the `Dockerfile` for `generate_gens_data.py` to support the updated Docker version [#578](https://github.com/SMD-Bioinformatics-Lund/gens/pull/578).
+- Updated f-string syntax in `generate_gens_data.py` to avoid using nested double quotes (only supported since Python 3.12) [#580](https://github.com/SMD-Bioinformatics-Lund/gens/pull/580).
 
 ## 4.3.1
 
