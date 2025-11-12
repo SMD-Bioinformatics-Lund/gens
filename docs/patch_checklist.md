@@ -11,3 +11,8 @@ In the Gens repo, update the version in:
 
 - [ ] `package.json`
 - [ ] `__version__.py`
+
+Post merge:
+
+- [ ] Tag
+- [ ] Make a release
