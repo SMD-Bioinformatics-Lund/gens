@@ -13,7 +13,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
-- Updated the `Dockerfile` for `generate_gens_data.py` to support the updated Docker version [#578](https://github.com/SMD-Bioinformatics-Lund/gens/pull/578).
+- Updated the `Dockerfile` for `generate_gens_data.py` to support the Python version used in Gens [#578](https://github.com/SMD-Bioinformatics-Lund/gens/pull/578).
 - Updated f-string syntax in `generate_gens_data.py` to avoid using nested double quotes (only supported since Python 3.12) [#580](https://github.com/SMD-Bioinformatics-Lund/gens/pull/580).
 
 ## 4.3.1
