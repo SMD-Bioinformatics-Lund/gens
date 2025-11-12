@@ -18,6 +18,7 @@ COV_WINDOW_SIZES = [100000, 25000, 5000, 1000, 100]
 BAF_SKIP_N = [160, 40, 10, 4, 1]
 PREFIXES = ["o", "a", "b", "c", "d"]
 
+joined_prefixes = ", ".join(PREFIXES)
 DESCRIPTION = f"""
 Generate Gens BAF and coverage data.
 
@@ -25,7 +26,7 @@ BAF: Given a set of predefined coordinates (i.e. common variants in Gnomad). Loo
 
 Coverage: Given a per-range coverage file. Given certain window sizes, calculate the average coverage within  these larger ranges. Zoom levels are set to the following cov windows: {", ".join([str(n) for n in COV_WINDOW_SIZES])}.
 
-Both yields bed files with different levels of resolutions, distinguished with prefixes in the output ({", ".join(PREFIXES)}).
+Both yields bed files with different levels of resolutions, distinguished with prefixes in the output ({joined_prefixes}).
 """
 
 VERSION = "1.1.0"
@@ -375,7 +376,8 @@ class GVCFEntry:
         return b_allele_freq
 
     def __str__(self) -> str:
-        return f"{self.chrom} {self.start} {self.ref} {",".join(self.alt_alleles)}"
+        alt_alleles = ",".join(self.alt_alleles)
+        return f"{self.chrom} {self.start} {self.ref} {alt_alleles}"
 
 
 def normalize_chr(chrom: str) -> str:
