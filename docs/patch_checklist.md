@@ -16,3 +16,9 @@ Post merge:
 
 - [ ] Tag
 - [ ] Make a release
+- [ ] Build and deploy a container
+
+```bash
+docker build -t clinicalgenomicslund/gens:<version> .
+docker push clinicalgenomicslund/gens:<version>
+```
