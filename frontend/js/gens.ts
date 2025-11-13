@@ -197,7 +197,7 @@ export async function initCanvases({
     session,
     async (range) => {
       session.pos.setViewRange(range);
-      render({ reloadData: true, positionOnly: true });
+      render({ positionOnly: true });
     },
     () => {
       sideMenu.showContent("Settings", [settingsPage], STYLE.menu.width);
@@ -266,7 +266,7 @@ function addSettingsPageSources(
   const gotoHighlight = (region: Region) => {
     const positionOnly = region.chrom == session.pos.getChromosome();
     session.pos.setChromosome(region.chrom, [region.start, region.end]);
-    render({ reloadData: true, positionOnly });
+    render({ reloadData: !positionOnly, positionOnly });
   };
   const onAddSample = async (sample: Sample) => {
     session.addSample(sample);
