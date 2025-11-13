@@ -299,6 +299,7 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Persistent settings
   - [ ] Try adjusting track height
   - [ ] Assign mimisbrunnr as "Color tracks by"
+  - [ ] Switch to a different chromosome and ensure that the coloring from the correct chromosome is used
   - [ ] Add another annotation track and place it at the top
   - [ ] Expand / collapse annotation tracks and the gene track
   - [ ] Change the variant threshold
