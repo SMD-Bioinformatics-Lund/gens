@@ -9,7 +9,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
-- Fix issue "Color tracs by" bands did not update when a new chromosome was selected [#584](https://github.com/SMD-Bioinformatics-Lund/gens/pull/584)
+- Fix issue "Color tracks by" bands did not update when a new chromosome was selected [#584](https://github.com/SMD-Bioinformatics-Lund/gens/pull/584)
+- Fix issue where the dockerfile for `generate_gens_data.py` could not be run in Nextflow pipeline due to missing `ps` command [#585](https://github.com/SMD-Bioinformatics-Lund/gens/pull/585).
 
 ## 4.3.2
 
