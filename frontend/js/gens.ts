@@ -177,7 +177,7 @@ export async function initCanvases({
 
   const onChromClick = async (chrom) => {
     session.pos.setChromosome(chrom);
-    render({ reloadData: true });
+    render({ reloadData: true, chromosomeChange: true });
   };
 
   setupShortcuts(session, sideMenu, inputControls, onChromClick, render);
@@ -197,7 +197,7 @@ export async function initCanvases({
     session,
     async (range) => {
       session.pos.setViewRange(range);
-      render({ positionOnly: true });
+      render({ reloadData: true, positionOnly: true });
     },
     () => {
       sideMenu.showContent("Settings", [settingsPage], STYLE.menu.width);
@@ -266,7 +266,7 @@ function addSettingsPageSources(
   const gotoHighlight = (region: Region) => {
     const positionOnly = region.chrom == session.pos.getChromosome();
     session.pos.setChromosome(region.chrom, [region.start, region.end]);
-    render({ reloadData: !positionOnly, positionOnly });
+    render({ reloadData: true, positionOnly, chromosomeChange: !positionOnly });
   };
   const onAddSample = async (sample: Sample) => {
     session.addSample(sample);
@@ -283,8 +283,7 @@ function addSettingsPageSources(
   };
   const onColorByChange = async (annotId: string | null) => {
     session.setColorAnnotation(annotId);
-    await gensTracks.trackView.updateColorBands();
-    render({});
+    render({ colorByChange: true });
   };
   const onApplyDefaultCovRange = (rng: Rng) => {
     gensTracks.setCovYRange(rng);
@@ -324,8 +323,12 @@ function addSettingsPageSources(
   const applyProfile = async (profile: ProfileSettings) => {
     session.loadProfile(profile);
     session.loadTrackLayout();
-    await gensTracks.trackView.updateColorBands();
-    render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
+    render({
+      reloadData: true,
+      tracksReordered: true,
+      saveLayoutChange: true,
+      colorByChange: true,
+    });
   };
 
   settingsPage.setSources(
