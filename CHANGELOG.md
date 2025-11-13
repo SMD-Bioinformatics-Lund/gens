@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## TBD
+
+### Fixed
+
+- Fix issue "Color tracs by" bands did not update when a new chromosome was selected [#584](https://github.com/SMD-Bioinformatics-Lund/gens/pull/584)
+
 ## 4.3.2
 
 ### Added
