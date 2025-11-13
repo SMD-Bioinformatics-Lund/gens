@@ -300,6 +300,19 @@ export class TrackView extends ShadowBaseElement {
       return;
     }
 
+    // Every time a new chromosome is selected, the color bands needs to be updated
+    // This is hard to avoid, as it requires an API call
+    // Let's ponder ahead if this could be done in a nicer way
+    if (
+      renderSettings.chromosomeChange ||
+      renderSettings.samplesUpdated ||
+      renderSettings.colorByChange
+    ) {
+      this.updateColorBands().then(() => {
+        this.requestRender({});
+      });
+    }
+
     renderHighlights(
       this.tracksContainer,
       this.session.getCurrentHighlights(),
@@ -453,7 +466,7 @@ export class TrackView extends ShadowBaseElement {
     }
   }
 
-  public async updateColorBands() {
+  private async updateColorBands() {
     this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
   }
 }

@@ -643,6 +643,8 @@ interface Axis {
 
 interface RenderSettings {
   reloadData?: boolean;
+  chromosomeChange?: boolean;
+  colorByChange?: boolean;
   resized?: boolean;
   positionOnly?: boolean;
   samplesUpdated?: boolean;
