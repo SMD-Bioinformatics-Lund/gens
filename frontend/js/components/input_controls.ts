@@ -213,8 +213,9 @@ export class InputControls extends HTMLElement {
       queryRegionOrGene(
         currentValue,
         (chrom: Chromosome, range?: Rng) => {
+          const newChrom = chrom != this.session.pos.getChromosome();
           this.session.pos.setChromosome(chrom, range);
-          this.onChange({ reloadData: true, positionOnly: true });
+          this.onChange({ reloadData: true, positionOnly: true, chromosomeChange: newChrom });
         },
         this.onSearch,
         () => this.session.pos.getCurrentChromSize(),
