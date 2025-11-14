@@ -42,10 +42,19 @@ function getWarnings(
   }
 }
 
-function parseChromosome(value: string): Chromosome | null {
+export function parseChromosome(value: string): Chromosome | null {
   if (value in CHROMOSOMES) {
     return value as Chromosome;
   }
+  console.warn(`Unable to parse ${value} as chromosome. Expected 1-22,M,F. Returning null.`)
+  return null;
+}
+
+export function parseSex(value: string): Sex | null {
+  if (value in ["M", "F"]) {
+    return value as Sex;
+  }
+  console.warn(`Unable to parse ${value} as sex. Expected M or F. Returning null.`)
   return null;
 }
 

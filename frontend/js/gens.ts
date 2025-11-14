@@ -29,7 +29,7 @@ import {
   SettingsMenu,
   TrackHeights,
 } from "./components/side_menu/settings_menu";
-import { hasMetaWarnings, InfoMenu } from "./components/side_menu/info_menu";
+import { InfoMenu } from "./components/side_menu/info_menu";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
@@ -37,6 +37,7 @@ import { SampleInfo } from "./home/sample_table";
 import { setupShortcuts } from "./shortcuts";
 import { getMainSample } from "./util/utils";
 import { HelpMenu } from "./components/side_menu/help_menu";
+import { parseSex } from "./util/meta_warnings";
 
 export async function samplesListInit(
   samples: SampleInfo[],
@@ -139,11 +140,14 @@ export async function initCanvases({
     sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
   );
   const samples = orderSamples(unorderedSamples).map((sample) => {
+
+    const parsedSex = parseSex(sample.sex);
+
     const result: Sample = {
       caseId: sample.case_id,
       sampleId: sample.sample_id,
       sampleType: sample.sample_type,
-      sex: sample.sex,
+      sex: parsedSex,
       meta: sample.meta,
     };
     return result;
@@ -237,13 +241,7 @@ function initializeInputControls(
   getSearchResults: (query: string) => Promise<ApiSearchResult>,
 ) {
 
-  const sample = session.getMainSample();
-  let showBadge = false;
-  if (sample.meta) {
-    showBadge = hasMetaWarnings(sample.meta, sample.sex);
-  }
-
-
+  const showBadge = session.hasMetaWarnings();
 
   const onPositionChange = async (range) => {
     session.pos.setViewRange(range);

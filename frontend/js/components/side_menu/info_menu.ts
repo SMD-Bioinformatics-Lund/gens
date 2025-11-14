@@ -124,7 +124,7 @@ export class InfoMenu extends ShadowBaseElement {
       const metas = sample.meta;
 
       if (metas != null) {
-        const elements = getMetaElements(metas, sample.sex);
+        const elements = getMetaElements(metas);
         for (const elem of elements) {
           this.entries.appendChild(elem);
         }
@@ -133,10 +133,7 @@ export class InfoMenu extends ShadowBaseElement {
   }
 }
 
-function getMetaElements(
-  metas: SampleMetaEntry[],
-  sex?: string,
-): HTMLDivElement[] {
+function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
   const simple_metas = metas.filter((meta) => meta.row_name_header == null);
 
   const htmlEntries: HTMLDivElement[] = [];
@@ -153,7 +150,7 @@ function getMetaElements(
 
   const table_metas = metas.filter((meta) => meta.row_name_header != null);
   for (const meta of table_metas) {
-    const { tableData } = parseTableFromMeta(meta, sex);
+    const { tableData } = parseTableFromMeta(meta);
     htmlEntries.push(createTable(tableData));
   }
 
