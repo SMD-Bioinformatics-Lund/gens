@@ -37,6 +37,7 @@ import { SampleInfo } from "./home/sample_table";
 import { setupShortcuts } from "./shortcuts";
 import { getMainSample } from "./util/utils";
 import { HelpMenu } from "./components/side_menu/help_menu";
+import { parseSex } from "./util/meta_warnings";
 
 export async function samplesListInit(
   samples: SampleInfo[],
@@ -139,11 +140,14 @@ export async function initCanvases({
     sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
   );
   const samples = orderSamples(unorderedSamples).map((sample) => {
+
+    const parsedSex = parseSex(sample.sex);
+
     const result: Sample = {
       caseId: sample.case_id,
       sampleId: sample.sample_id,
       sampleType: sample.sample_type,
-      sex: sample.sex,
+      sex: parsedSex,
       meta: sample.meta,
     };
     return result;
@@ -193,41 +197,26 @@ export async function initCanvases({
 
   infoPage.setSources(() => session.getSamples());
 
-  inputControls.initialize(
-    session,
-    async (range) => {
-      session.pos.setViewRange(range);
-      render({ reloadData: true, positionOnly: true });
-    },
-    () => {
-      sideMenu.showContent("Settings", [settingsPage], STYLE.menu.width);
+  // infoPage.setWarningHandler((hasWarning) => {
+  //   inputControls.setInfoWarning(hasWarning);
+  // })
 
-      if (!settingsPage.isInitialized) {
-        settingsPage.initialize();
-        render({});
-      }
-    },
-    () => {
-      sideMenu.showContent("Sample info", [infoPage], STYLE.menu.width);
-      infoPage.render();
-    },
-    () => {
-      sideMenu.showContent("Help", [helpPage], STYLE.menu.width);
-      helpPage.render();
-    },
-    () => {
-      session.toggleChromViewActive();
-      render({});
-    },
-    (query: string) => {
-      const annotIds = session
-        .getAnnotationSources({ selectedOnly: true })
-        .map((annot) => annot.id);
-      return api.getSearchResult(query, annotIds);
-    },
-    (settings: RenderSettings) => {
-      render(settings);
-    },
+  const getSearchResults = (query: string) => {
+    const annotIds = session
+      .getAnnotationSources({ selectedOnly: true })
+      .map((annot) => annot.id);
+    return api.getSearchResult(query, annotIds);
+  };
+
+  initializeInputControls(
+    session,
+    inputControls,
+    sideMenu,
+    render,
+    settingsPage,
+    infoPage,
+    helpPage,
+    getSearchResults,
   );
 
   await gensTracks.initializeTrackView(
@@ -239,6 +228,59 @@ export async function initCanvases({
   );
 
   render({ reloadData: true, resized: true });
+}
+
+function initializeInputControls(
+  session: GensSession,
+  inputControls: InputControls,
+  sideMenu: SideMenu,
+  render: (settings: RenderSettings) => void,
+  settingsPage: SettingsMenu,
+  infoPage: InfoMenu,
+  helpPage: HelpMenu,
+  getSearchResults: (query: string) => Promise<ApiSearchResult>,
+) {
+
+  const showBadge = session.hasMetaWarnings();
+
+  const onPositionChange = async (range) => {
+    session.pos.setViewRange(range);
+    render({ reloadData: true, positionOnly: true });
+  };
+  const onOpenSettings = () => {
+    sideMenu.showContent("Settings", [settingsPage], STYLE.menu.width);
+    if (!settingsPage.isInitialized) {
+      settingsPage.initialize();
+      render({});
+    }
+  };
+  const onOpenInfo = () => {
+    sideMenu.showContent("Sample info", [infoPage], STYLE.menu.width);
+    infoPage.render();
+  };
+  const onOpenHelp = () => {
+    sideMenu.showContent("Help", [helpPage], STYLE.menu.width);
+    helpPage.render();
+  };
+  const onToggleChromView = () => {
+    session.toggleChromViewActive();
+    render({});
+  };
+  const onChange = (settings: RenderSettings) => {
+    render(settings);
+  };
+
+  inputControls.initialize(
+    session,
+    onPositionChange,
+    onOpenSettings,
+    onOpenInfo,
+    onOpenHelp,
+    onToggleChromView,
+    getSearchResults,
+    onChange,
+    showBadge,
+  );
 }
 
 function addSettingsPageSources(

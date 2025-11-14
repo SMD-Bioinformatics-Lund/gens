@@ -681,7 +681,7 @@ interface Sample {
   caseId: string;
   sampleId: string;
   sampleType?: string;
-  sex?: string;
+  sex?: Sex;
   meta?: SampleMetaEntry[];
 }
 
@@ -735,3 +735,29 @@ type TrackLayout = {
   hidden: Record<string, boolean>;
   expanded: Record<string, boolean>;
 };
+
+interface TableCell {
+  value: string;
+  color?: string;
+}
+
+interface TableRowStyle {
+  className?: string;
+  cellClasses?: (string | undefined)[];
+}
+
+interface TableData {
+  columns: string[];
+  rows: TableCell[][];
+  rowNames: string[];
+  rowNameHeader?: string;
+  rowStyles?: (TableRowStyle | undefined)[];
+}
+
+type CellWarning = {
+  colName: string;
+  position: number;
+  warning: string | null;
+}
+
+type Sex = "M" | "F";
