@@ -44,7 +44,7 @@ template.innerHTML = String.raw`
       top: ${SIZES.xxs}px;
       right: ${SIZES.xxs}px;
       width: ${SIZES.m}px;
-      height: ${SIZES.m}10px;
+      height: ${SIZES.m}px;
       border-radius: 50%;
       background: ${COLORS.red};
       display: none;
@@ -137,7 +137,6 @@ export class InputControls extends HTMLElement {
   private onToggleChromView: () => void;
   private onSearch: (query: string) => Promise<ApiSearchResult | null>;
   private onChange: (settings: RenderSettings) => void;
-  private hasInfoWarning: boolean;
 
   private session: GensSession;
 
@@ -162,7 +161,6 @@ export class InputControls extends HTMLElement {
     this.onPositionChange = onPositionChange;
     this.onSearch = onSearch;
     this.onChange = onChange;
-    this.hasInfoWarning = hasInfoWarning;
 
     this.panLeftButton.onclick = () => {
       this.panLeft();
@@ -190,6 +188,12 @@ export class InputControls extends HTMLElement {
     this.toggleMarkerButton.onclick = () => this.session.toggleMarkerMode();
 
     this.gensHomeLink.href = session.getGensBaseURL();
+
+    if (hasInfoWarning) {
+      this.infoWarningBadge.classList.add("visible");
+    } else {
+      this.infoWarningBadge.classList.remove("visible");
+    }
   }
 
   connectedCallback() {
@@ -211,11 +215,6 @@ export class InputControls extends HTMLElement {
     this.settingsButton = this.querySelector("#settings-button");
 
     this.infoWarningBadge = this.querySelector("#info-warning-badge");
-    if (this.hasInfoWarning) {
-      this.infoWarningBadge.classList.add("visible");
-    } else {
-      this.infoWarningBadge.classList.remove("visible");
-    }
 
     this.searchButton = this.querySelector("#search");
 
@@ -243,7 +242,11 @@ export class InputControls extends HTMLElement {
         (chrom: Chromosome, range?: Rng) => {
           const newChrom = chrom != this.session.pos.getChromosome();
           this.session.pos.setChromosome(chrom, range);
-          this.onChange({ reloadData: true, positionOnly: true, chromosomeChange: newChrom });
+          this.onChange({
+            reloadData: true,
+            positionOnly: true,
+            chromosomeChange: newChrom,
+          });
         },
         this.onSearch,
         () => this.session.pos.getCurrentChromSize(),

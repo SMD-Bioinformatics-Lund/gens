@@ -182,6 +182,17 @@ function getMetaElements(
   return { elements: htmlEntries, hasWarnings };
 }
 
+// FIXME: Very temporary
+export function hasMetaWarnings(metas: SampleMetaEntry[], sex: string | null): boolean {
+  for (const meta of metas) {
+    const { hasCopyNumberWarnings } = parseTableData(meta, sex);
+    if (hasCopyNumberWarnings) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
  * This function takes long-format meta data and pivots it to wide-form data
  * I.e. to start with, each value lives on its own row
@@ -256,6 +267,35 @@ function parseTableData(
 
   return { tableData, hasCopyNumberWarnings };
 }
+
+
+// function getSampleHasWarning(meta: SampleMetaEntry, sex: string | null): boolean {
+
+//   for (const row of meta.)
+
+//   const rowStyles = new Array<TableRowStyle | undefined>(rowNames.length);
+//   const copyNumberColIndex = colNames.indexOf(COPY_NUMBER_COLUMN);
+//   let hasCopyNumberWarnings = false;
+
+//   if (copyNumberColIndex >= 0) {
+//     for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+//       const row = rows[rowIndex];
+//       const cell = row[copyNumberColIndex];
+
+//       if (exceedsCopyNumberDeviation(rowNames[rowIndex], cell?.value, sex)) {
+//         hasCopyNumberWarnings = true;
+//         if (!rowStyles[rowIndex]) {
+//           rowStyles[rowIndex] = { cellClasses: new Array(colNames.length) };
+//         }
+//         rowStyles[rowIndex]!.className = WARNING_ROW_CLASS;
+//         rowStyles[rowIndex]!.cellClasses![copyNumberColIndex] =
+//           WARNING_CELL_CLASS;
+//       }
+//     }
+//   }
+
+// }
+
 
 function exceedsCopyNumberDeviation(
   rowName: string,

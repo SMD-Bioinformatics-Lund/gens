@@ -29,7 +29,7 @@ import {
   SettingsMenu,
   TrackHeights,
 } from "./components/side_menu/settings_menu";
-import { InfoMenu } from "./components/side_menu/info_menu";
+import { hasMetaWarnings, InfoMenu } from "./components/side_menu/info_menu";
 import { HeaderInfo } from "./components/header_info";
 import { GensSession } from "./state/gens_session";
 import { GensHome } from "./home/gens_home";
@@ -236,7 +236,15 @@ function initializeInputControls(
   helpPage: HelpMenu,
   getSearchResults: (query: string) => Promise<ApiSearchResult>,
 ) {
-  const showBadge = true;
+
+  const sample = session.getMainSample();
+  let showBadge = false;
+  if (sample.meta) {
+    showBadge = hasMetaWarnings(sample.meta, sample.sex);
+  }
+
+
+
   const onPositionChange = async (range) => {
     session.pos.setViewRange(range);
     render({ reloadData: true, positionOnly: true });
