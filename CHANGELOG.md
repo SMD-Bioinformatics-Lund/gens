@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## TBD
+
+- Skip missing genotype variants in `generate_gens_data.py` [#588](https://github.com/SMD-Bioinformatics-Lund/gens/pull/588)
+
 ## 4.3.3
 
 ### Fixed
