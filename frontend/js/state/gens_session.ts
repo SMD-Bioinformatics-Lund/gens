@@ -8,7 +8,9 @@ import {
   DEFAULT_VARIANT_THRES,
   TRACK_LAYOUT_VERSION,
 } from "../constants";
+import { getTableWarnings } from "../util/meta_warnings";
 import { loadProfileSettings, saveProfileToBrowser } from "../util/storage";
+import { parseTableFromMeta } from "../util/table";
 import { generateID } from "../util/utils";
 import { SessionPosition } from "./session_helpers/session_position";
 import { Tracks } from "./session_helpers/session_tracks";
@@ -139,6 +141,22 @@ export class GensSession {
 
   public getMainSample(): Sample {
     return this.mainSample;
+  }
+
+  public hasMetaWarnings(): boolean {
+    const sample = this.getMainSample();
+
+    // FIXME: Shouldn't do the parsing repeatedly. Do it once and that's it.
+    // FIXME: Should there be a sample sub module in session?
+    for (const meta of sample.meta) {
+      // const { hasCopyNumberWarnings } = parseTableData(meta, sample.sex);
+      const table = parseTableFromMeta(meta);
+      const tableWarnings = getTableWarnings(table, sample.sex)
+      if (tableWarnings.length > 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public setMainSample(sample: Sample) {
@@ -476,3 +494,4 @@ function getArrangedTracks(
 
   return orderedTracks;
 }
+

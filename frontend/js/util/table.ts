@@ -1,27 +1,12 @@
+export const COPY_NUMBER_COLUMN = "Estimated chromosomal copy numbers";
+export const MAX_COPY_NUMBER_DEVIATION = 0.1;
+
 export function formatValue(value: string): string {
   const num = parseFloat(value);
   return Number.isNaN(num) ? value : num.toFixed(2);
 }
 
-export interface TableCell {
-  value: string;
-  color?: string;
-}
-
-export interface TableRowStyle {
-  className?: string;
-  cellClasses?: (string | undefined)[];
-}
-
-export interface TableOptions {
-  columns: string[];
-  rows: TableCell[][];
-  rowNames: string[];
-  rowNameHeader?: string;
-  rowStyles?: (TableRowStyle | undefined)[];
-}
-
-export function createTable(options: TableOptions): HTMLDivElement {
+export function createTable(options: TableData): HTMLDivElement {
   const container = document.createElement("div");
 
   container.className = "table-wrapper";
@@ -55,7 +40,11 @@ export function createTable(options: TableOptions): HTMLDivElement {
   return container;
 }
 
-function createRow(rowName: string, row: TableCell[], rowStyle?: TableRowStyle): HTMLTableRowElement {
+function createRow(
+  rowName: string,
+  row: TableCell[],
+  rowStyle?: TableRowStyle,
+): HTMLTableRowElement {
   const rowElem = document.createElement("tr");
   if (rowStyle?.className) {
     rowElem.classList.add(rowStyle.className);
@@ -77,3 +66,102 @@ function createRow(rowName: string, row: TableCell[], rowStyle?: TableRowStyle):
   });
   return rowElem;
 }
+
+/**
+ * This function takes long-format meta data and pivots it to wide-form data
+ * I.e. to start with, each value lives on its own row
+ * At the end, each data type has its own column, similar to how it is displayed
+ *
+ * @param meta
+ * @returns
+ */
+export function parseTableFromMeta(meta: SampleMetaEntry): Table {
+  const grid = new Map<string, Map<string, TableCell>>();
+  const colSet = new Set<string>();
+
+  for (const cell of meta.data) {
+    const rowName = cell.row_name;
+    if (rowName == null) {
+      continue;
+    }
+    colSet.add(cell.type);
+
+    let rowMap = grid.get(rowName);
+    if (!rowMap) {
+      rowMap = new Map<string, TableCell>();
+      grid.set(rowName, rowMap);
+    }
+
+    rowMap.set(cell.type, { value: cell.value, color: cell.color });
+  }
+
+  const rowNames = Array.from(grid.keys());
+  const colNames = Array.from(colSet);
+
+  const rows: TableCell[][] = rowNames.map((rowName) => {
+    const rowMap = grid.get(rowName);
+    return colNames.map((colName) => {
+      return rowMap.get(colName) ?? { value: "", color: "" };
+    });
+  });
+
+  // const rowStyles = new Array<TableRowStyle | undefined>(rowNames.length);
+  // const copyNumberColIndex = colNames.indexOf(COPY_NUMBER_COLUMN);
+  // let hasCopyNumberWarnings = false;
+
+  // if (copyNumberColIndex >= 0) {
+  //   for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+  //     const row = rows[rowIndex];
+  //     const cell = row[copyNumberColIndex];
+
+  //     if (exceedsCopyNumberDeviation(rowNames[rowIndex], cell?.value, sex)) {
+  //       hasCopyNumberWarnings = true;
+  //       if (!rowStyles[rowIndex]) {
+  //         rowStyles[rowIndex] = { cellClasses: new Array(colNames.length) };
+  //       }
+  //       rowStyles[rowIndex]!.className = WARNING_ROW_CLASS;
+  //       rowStyles[rowIndex]!.cellClasses![copyNumberColIndex] =
+  //         WARNING_CELL_CLASS;
+  //     }
+  //   }
+  // }
+
+  // const hasRowStyles = rowStyles.some((style) => style != null);
+
+  const tableData: TableData = {
+    columns: colNames,
+    rowNames: rowNames,
+    rowNameHeader: meta.row_name_header ?? "",
+    rows: rows,
+    // rowStyles: hasRowStyles ? rowStyles : undefined,
+  };
+
+  return new Table(tableData);
+}
+
+export class Table {
+  tableData: TableData;
+  constructor(tableData: TableData) {
+    this.tableData = tableData;
+  }
+
+  getColumnNames(): string[] {
+    return this.tableData.columns;
+  }
+
+  hasColumn(colName: string) {
+    return this.tableData.columns.includes(colName);
+  }
+
+  getColumn(colName: string): TableCell[] {
+    const colIndex = this.tableData.columns.indexOf(colName);
+    if (colIndex > -1) {
+      const column = this.tableData.rows.map((row) => row[colIndex]);
+      return column;
+    }
+    throw Error(
+      `Did not find column ${colName} among columns ${this.tableData.columns}`,
+    );
+  }
+}
+

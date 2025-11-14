@@ -1,19 +1,11 @@
 import { COLORS, FONT_WEIGHT, SIZES } from "../../constants";
-import {
-  createTable,
-  TableOptions as TableData,
-  formatValue,
-  TableCell,
-  TableRowStyle,
-} from "../../util/table";
+import { createTable, formatValue, parseTableFromMeta } from "../../util/table";
 import { removeChildren } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
-const COPY_NUMBER_COLUMN = "Estimated chromosomal copy numbers";
 const WARNING_ROW_CLASS = "meta-table__warning-row";
 const WARNING_CELL_CLASS = "meta-table__warning-cell";
-const MAX_COPY_NUMBER_DEVIATION = 0.1;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -109,7 +101,6 @@ export class InfoMenu extends ShadowBaseElement {
     }
     removeChildren(this.entries);
     const samples = this.getSamples ? this.getSamples() : [];
-    let hasWarnings = false;
 
     for (const sample of samples) {
       const header = document.createElement("div");
@@ -133,30 +124,19 @@ export class InfoMenu extends ShadowBaseElement {
       const metas = sample.meta;
 
       if (metas != null) {
-        const metaElements = getMetaElements(metas, sample.sex);
-        for (const elem of metaElements.elements) {
+        const elements = getMetaElements(metas, sample.sex);
+        for (const elem of elements) {
           this.entries.appendChild(elem);
         }
-        hasWarnings = hasWarnings || metaElements.hasWarnings;
       }
     }
-
-    this.notifyWarningState(hasWarnings);
-  }
-
-  private notifyWarningState(hasWarnings: boolean) {
-    if (this.lastWarningState === hasWarnings) {
-      return;
-    }
-    this.lastWarningState = hasWarnings;
-    this.warningHandler(hasWarnings);
   }
 }
 
 function getMetaElements(
   metas: SampleMetaEntry[],
   sex?: string,
-): { elements: HTMLDivElement[]; hasWarnings: boolean } {
+): HTMLDivElement[] {
   const simple_metas = metas.filter((meta) => meta.row_name_header == null);
 
   const htmlEntries: HTMLDivElement[] = [];
@@ -172,102 +152,13 @@ function getMetaElements(
   }
 
   const table_metas = metas.filter((meta) => meta.row_name_header != null);
-  // FIXME: Better way to check this globally?
-  let hasWarnings = false;
   for (const meta of table_metas) {
-    const { tableData, hasCopyNumberWarnings } = parseTableData(meta, sex);
+    const { tableData } = parseTableFromMeta(meta, sex);
     htmlEntries.push(createTable(tableData));
   }
 
-  return { elements: htmlEntries, hasWarnings };
+  return htmlEntries;
 }
-
-// FIXME: Very temporary
-export function hasMetaWarnings(metas: SampleMetaEntry[], sex: string | null): boolean {
-  for (const meta of metas) {
-    const { hasCopyNumberWarnings } = parseTableData(meta, sex);
-    if (hasCopyNumberWarnings) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * This function takes long-format meta data and pivots it to wide-form data
- * I.e. to start with, each value lives on its own row
- * At the end, each data type has its own column, similar to how it is displayed
- *
- * @param meta
- * @returns
- */
-function parseTableData(
-  meta: SampleMetaEntry,
-  sex?: string,
-): { tableData: TableData; hasCopyNumberWarnings: boolean } {
-  const grid = new Map<string, Map<string, TableCell>>();
-  const colSet = new Set<string>();
-
-  for (const cell of meta.data) {
-    const rowName = cell.row_name;
-    if (rowName == null) {
-      continue;
-    }
-    colSet.add(cell.type);
-
-    let rowMap = grid.get(rowName);
-    if (!rowMap) {
-      rowMap = new Map<string, TableCell>();
-      grid.set(rowName, rowMap);
-    }
-
-    rowMap.set(cell.type, { value: cell.value, color: cell.color });
-  }
-
-  const rowNames = Array.from(grid.keys());
-  const colNames = Array.from(colSet);
-
-  const rows: TableCell[][] = rowNames.map((rowName) => {
-    const rowMap = grid.get(rowName);
-    return colNames.map((colName) => {
-      return rowMap.get(colName) ?? { value: "", color: "" };
-    });
-  });
-
-  const rowStyles = new Array<TableRowStyle | undefined>(rowNames.length);
-  const copyNumberColIndex = colNames.indexOf(COPY_NUMBER_COLUMN);
-  let hasCopyNumberWarnings = false;
-
-  if (copyNumberColIndex >= 0) {
-    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-      const row = rows[rowIndex];
-      const cell = row[copyNumberColIndex];
-
-      if (exceedsCopyNumberDeviation(rowNames[rowIndex], cell?.value, sex)) {
-        hasCopyNumberWarnings = true;
-        if (!rowStyles[rowIndex]) {
-          rowStyles[rowIndex] = { cellClasses: new Array(colNames.length) };
-        }
-        rowStyles[rowIndex]!.className = WARNING_ROW_CLASS;
-        rowStyles[rowIndex]!.cellClasses![copyNumberColIndex] =
-          WARNING_CELL_CLASS;
-      }
-    }
-  }
-
-  const hasRowStyles = rowStyles.some((style) => style != null);
-
-  const tableData: TableData = {
-    columns: colNames,
-    rowNames: rowNames,
-    rowNameHeader: meta.row_name_header ?? "",
-    rows: rows,
-    rowStyles: hasRowStyles ? rowStyles : undefined,
-  };
-
-  return { tableData, hasCopyNumberWarnings };
-}
-
 
 // function getSampleHasWarning(meta: SampleMetaEntry, sex: string | null): boolean {
 
@@ -295,40 +186,5 @@ function parseTableData(
 //   }
 
 // }
-
-
-function exceedsCopyNumberDeviation(
-  rowName: string,
-  value?: string,
-  sex?: string,
-): boolean {
-  const parsedValue = parseFloat(value ?? "");
-  if (Number.isNaN(parsedValue)) {
-    return false;
-  }
-  const normalizedRow = normalizeChromosomeLabel(rowName);
-  const isMale = isMaleSex(sex);
-  const targetValue =
-    isMale && (normalizedRow === "X" || normalizedRow === "Y") ? 1 : 2;
-  return Math.abs(parsedValue - targetValue) > MAX_COPY_NUMBER_DEVIATION;
-}
-
-function normalizeChromosomeLabel(label: string | undefined): string {
-  if (!label) {
-    return "";
-  }
-  return label
-    .replace(/[^a-z0-9]/gi, "")
-    .replace(/^CHR/i, "")
-    .toUpperCase();
-}
-
-function isMaleSex(sex?: string): boolean {
-  if (!sex) {
-    return false;
-  }
-  const normalized = sex.trim().toLowerCase();
-  return normalized === "male" || normalized === "m";
-}
 
 customElements.define("info-page", InfoMenu);
