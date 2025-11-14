@@ -8,11 +8,17 @@ export interface TableCell {
   color?: string;
 }
 
+export interface TableRowStyle {
+  className?: string;
+  cellClasses?: (string | undefined)[];
+}
+
 export interface TableOptions {
   columns: string[];
   rows: TableCell[][];
   rowNames: string[];
   rowNameHeader?: string;
+  rowStyles?: (TableRowStyle | undefined)[];
 }
 
 export function createTable(options: TableOptions): HTMLDivElement {
@@ -21,7 +27,7 @@ export function createTable(options: TableOptions): HTMLDivElement {
   container.className = "table-wrapper";
   container.style.overflowX = "auto";
 
-  const { rows, columns, rowNames, rowNameHeader } = options;
+  const { rows, columns, rowNames, rowNameHeader, rowStyles } = options;
 
   const table = document.createElement("table");
   table.className = "meta-table";
@@ -41,7 +47,7 @@ export function createTable(options: TableOptions): HTMLDivElement {
 
   const tbody = document.createElement("tbody");
   rows.forEach((row, index) => {
-    const rowElem = createRow(rowNames[index] ?? "", row);
+    const rowElem = createRow(rowNames[index] ?? "", row, rowStyles?.[index]);
     tbody.appendChild(rowElem);
   });
   table.appendChild(tbody);
@@ -49,18 +55,25 @@ export function createTable(options: TableOptions): HTMLDivElement {
   return container;
 }
 
-function createRow(rowName: string, row: TableCell[]): HTMLTableRowElement {
+function createRow(rowName: string, row: TableCell[], rowStyle?: TableRowStyle): HTMLTableRowElement {
   const rowElem = document.createElement("tr");
+  if (rowStyle?.className) {
+    rowElem.classList.add(rowStyle.className);
+  }
   const nameTd = document.createElement("td");
   nameTd.textContent = rowName;
   rowElem.appendChild(nameTd);
-  for (const cell of row) {
+  row.forEach((cell, index) => {
     const td = document.createElement("td");
     td.textContent = cell.value;
     if (cell.color) {
       td.style.color = cell.color;
     }
+    const cellClass = rowStyle?.cellClasses?.[index];
+    if (cellClass) {
+      td.classList.add(cellClass);
+    }
     rowElem.appendChild(td);
-  }
+  });
   return rowElem;
 }

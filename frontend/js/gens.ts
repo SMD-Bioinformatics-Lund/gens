@@ -192,6 +192,9 @@ export async function initCanvases({
   );
 
   infoPage.setSources(() => session.getSamples());
+  infoPage.setWarningHandler((hasWarning) => {
+    inputControls.setInfoWarning(hasWarning);
+  })
 
   inputControls.initialize(
     session,

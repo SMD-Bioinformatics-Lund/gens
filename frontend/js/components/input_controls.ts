@@ -36,6 +36,22 @@ template.innerHTML = String.raw`
       display: flex;
       flex-direction: row;
     }
+    #info-button {
+      position: relative;
+    }
+    #info-warning-badge {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: ${COLORS.red};
+      display: none;
+    }
+    #info-warning-badge.visible {
+      display: inline-block;
+    }
   </style>
   <div id="input-controls-container">
     <div id="logo-part">
@@ -80,6 +96,7 @@ template.innerHTML = String.raw`
         <span class="fas ${ICONS.chromosomes}"></span>
       </button>
       <button title="Open info menu" id="info-button" class="button">
+        <span id="info-warning-badge"></span>
         <span class="fas ${ICONS.info}"></span>
       </button>
       <button title="Open help menu" id="help-button" class="button">
@@ -107,6 +124,9 @@ export class InputControls extends HTMLElement {
   private settingsButton: HTMLButtonElement;
 
   private searchButton: HTMLButtonElement;
+
+  private infoWarningBadge?: HTMLSpanElement;
+  private infoWarningActive = false;
 
   private gensHomeLink: HTMLAnchorElement;
 
@@ -189,6 +209,9 @@ export class InputControls extends HTMLElement {
     this.helpButton = this.querySelector("#help-button");
     this.settingsButton = this.querySelector("#settings-button");
 
+    this.infoWarningBadge = this.querySelector("#info-warning-badge");
+    this.updateInfoWarningBadge();
+
     this.searchButton = this.querySelector("#search");
 
     this.chromosomeViewButton.addEventListener("click", () => {
@@ -228,6 +251,23 @@ export class InputControls extends HTMLElement {
         this.searchButton.click();
       }
     });
+  }
+
+  // FIXME: This should be in the render part
+  setInfoWarning(hasWarning: boolean) {
+    this.infoWarningActive = hasWarning;
+    this.updateInfoWarningBadge();
+  }
+
+  private updateInfoWarningBadge() {
+    if (!this.infoWarningBadge) {
+      return;
+    }
+    if (this.infoWarningBadge) {
+      this.infoWarningBadge.classList.add("visible");
+    } else {
+      this.infoWarningBadge.classList.remove("visible");
+    }
   }
 
   render(_settings: RenderSettings) {

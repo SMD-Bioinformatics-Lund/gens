@@ -4,10 +4,16 @@ import {
   TableOptions as TableData,
   formatValue,
   TableCell,
+  TableRowStyle,
 } from "../../util/table";
 import { removeChildren } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
+
+const COPY_NUMBER_COLUMN = "Estimated chromosomal copy numbers";
+const WARNING_ROW_CLASS = "meta-table__warning-row";
+const WARNING_CELL_CLASS = "meta-table__warning-cell";
+const MAX_COPY_NUMBER_DEVIATION = 0.1;
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -62,6 +68,13 @@ template.innerHTML = String.raw`
       background: ${COLORS.extraLightGray};
       font-weight: ${FONT_WEIGHT.header};
     }
+    table.meta-table tr.${WARNING_ROW_CLASS} {
+      background: rgba(255, 0, 0, 0.15);
+    }
+    table.meta-table td.${WARNING_CELL_CLASS} {
+      background: rgba(255, 0, 0, 0.3);
+      font-weight: ${FONT_WEIGHT.header};
+    }
   </style>
   <div id="entries"></div>
 `;
@@ -70,12 +83,19 @@ export class InfoMenu extends ShadowBaseElement {
   private entries!: HTMLDivElement;
   private getSamples!: () => Sample[];
 
+  private warningHandler?: (hasWarning: boolean) => void;
+  private lastWarningState = false;
+
   constructor() {
     super(template);
   }
 
   setSources(getSamples: () => Sample[]) {
     this.getSamples = getSamples;
+  }
+
+  setWarningHandler(onWarningChange: (hasWarning: boolean) => void) {
+    this.warningHandler = onWarningChange;
   }
 
   connectedCallback(): void {
@@ -89,6 +109,7 @@ export class InfoMenu extends ShadowBaseElement {
     }
     removeChildren(this.entries);
     const samples = this.getSamples ? this.getSamples() : [];
+    let hasWarnings = false;
 
     for (const sample of samples) {
       const header = document.createElement("div");
@@ -112,19 +133,33 @@ export class InfoMenu extends ShadowBaseElement {
       const metas = sample.meta;
 
       if (metas != null) {
-        const metaElements = getMetaElements(metas);
-        for (const elem of metaElements) {
+        const metaElements = getMetaElements(metas, sample.sex);
+        for (const elem of metaElements.elements) {
           this.entries.appendChild(elem);
         }
+        hasWarnings = hasWarnings || metaElements.hasWarnings;
       }
     }
+
+    this.notifyWarningState(hasWarnings);
+  }
+
+  private notifyWarningState(hasWarnings: boolean) {
+    if (this.lastWarningState === hasWarnings) {
+      return;
+    }
+    this.lastWarningState = hasWarnings;
+    this.warningHandler?.(hasWarnings);
   }
 }
 
-function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
+function getMetaElements(
+  metas: SampleMetaEntry[],
+  sex?: string,
+): { elements: HTMLDivElement[]; hasWarnings: boolean } {
   const simple_metas = metas.filter((meta) => meta.row_name_header == null);
 
-  const htmlEntries = [];
+  const htmlEntries: HTMLDivElement[] = [];
   for (const meta of simple_metas) {
     for (const entry of meta.data) {
       const htmlEntry = getEntry({
@@ -137,12 +172,14 @@ function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
   }
 
   const table_metas = metas.filter((meta) => meta.row_name_header != null);
+  // FIXME: Better way to check this globally?
+  let hasWarnings = false;
   for (const meta of table_metas) {
-    const tableData = parseTableData(meta);
+    const { tableData, hasCopyNumberWarnings } = parseTableData(meta, sex);
     htmlEntries.push(createTable(tableData));
   }
 
-  return htmlEntries;
+  return { elements: htmlEntries, hasWarnings };
 }
 
 /**
@@ -153,7 +190,10 @@ function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
  * @param meta
  * @returns
  */
-function parseTableData(meta: SampleMetaEntry): TableData {
+function parseTableData(
+  meta: SampleMetaEntry,
+  sex?: string,
+): { tableData: TableData; hasCopyNumberWarnings: boolean } {
   const grid = new Map<string, Map<string, TableCell>>();
   const colSet = new Set<string>();
 
@@ -183,14 +223,72 @@ function parseTableData(meta: SampleMetaEntry): TableData {
     });
   });
 
+  const rowStyles = new Array<TableRowStyle | undefined>(rowNames.length);
+  const copyNumberColIndex = colNames.indexOf(COPY_NUMBER_COLUMN);
+  let hasCopyNumberWarnings = false;
+
+  if (copyNumberColIndex >= 0) {
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+      const row = rows[rowIndex];
+      const cell = row[copyNumberColIndex];
+
+      if (exceedsCopyNumberDeviation(rowNames[rowIndex], cell?.value, sex)) {
+        hasCopyNumberWarnings = true;
+        if (!rowStyles[rowIndex]) {
+          rowStyles[rowIndex] = { cellClasses: new Array(colNames.length) };
+        }
+        rowStyles[rowIndex]!.className = WARNING_ROW_CLASS;
+        rowStyles[rowIndex]!.cellClasses![copyNumberColIndex] =
+          WARNING_CELL_CLASS;
+      }
+    }
+  }
+
+  const hasRowStyles = rowStyles.some((style) => style != null);
+
   const tableData: TableData = {
     columns: colNames,
     rowNames: rowNames,
     rowNameHeader: meta.row_name_header ?? "",
     rows: rows,
+    rowStyles: hasRowStyles ? rowStyles : undefined,
   };
 
-  return tableData;
+  return { tableData, hasCopyNumberWarnings };
+}
+
+function exceedsCopyNumberDeviation(
+  rowName: string,
+  value?: string,
+  sex?: string,
+): boolean {
+  const parsedValue = parseFloat(value ?? "");
+  if (Number.isNaN(parsedValue)) {
+    return false;
+  }
+  const normalizedRow = normalizeChromosomeLabel(rowName);
+  const isMale = isMaleSex(sex);
+  const targetValue =
+    isMale && (normalizedRow === "X" || normalizedRow === "Y") ? 1 : 2;
+  return Math.abs(parsedValue - targetValue) > MAX_COPY_NUMBER_DEVIATION;
+}
+
+function normalizeChromosomeLabel(label: string | undefined): string {
+  if (!label) {
+    return "";
+  }
+  return label
+    .replace(/[^a-z0-9]/gi, "")
+    .replace(/^CHR/i, "")
+    .toUpperCase();
+}
+
+function isMaleSex(sex?: string): boolean {
+  if (!sex) {
+    return false;
+  }
+  const normalized = sex.trim().toLowerCase();
+  return normalized === "male" || normalized === "m";
 }
 
 customElements.define("info-page", InfoMenu);
