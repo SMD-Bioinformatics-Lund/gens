@@ -354,6 +354,7 @@ class GVCFEntry:
         """
         If the alt allele is non-SNV (i.e. several inserted bases), return None
         Otherwise return alt allele count / allele depth
+        Returns None for variants without genotype call (./.)
         """
 
         gt = self.sample_entries["GT"]
