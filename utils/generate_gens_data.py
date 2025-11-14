@@ -357,6 +357,8 @@ class GVCFEntry:
         """
 
         gt = self.sample_entries["GT"]
+        if "." in gt:
+            return None
         _ref_str, alt_str = gt.replace("|", "/").split("/")
         alt = int(alt_str)
 
