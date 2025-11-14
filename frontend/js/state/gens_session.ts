@@ -152,6 +152,7 @@ export class GensSession {
       // const { hasCopyNumberWarnings } = parseTableData(meta, sample.sex);
       const table = parseTableFromMeta(meta);
       const tableWarnings = getTableWarnings(table, sample.sex)
+      console.log("Found warnigns:", tableWarnings);
       if (tableWarnings.length > 0) {
         return true;
       }

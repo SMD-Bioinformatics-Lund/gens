@@ -1,5 +1,3 @@
-export const COPY_NUMBER_COLUMN = "Estimated chromosomal copy numbers";
-export const MAX_COPY_NUMBER_DEVIATION = 0.1;
 
 export function formatValue(value: string): string {
   const num = parseFloat(value);
