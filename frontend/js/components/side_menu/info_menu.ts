@@ -149,7 +149,7 @@ export class InfoMenu extends ShadowBaseElement {
       return;
     }
     this.lastWarningState = hasWarnings;
-    this.warningHandler?.(hasWarnings);
+    this.warningHandler(hasWarnings);
   }
 }
 

@@ -41,10 +41,10 @@ template.innerHTML = String.raw`
     }
     #info-warning-badge {
       position: absolute;
-      top: 2px;
-      right: 2px;
-      width: 10px;
-      height: 10px;
+      top: ${SIZES.xxs}px;
+      right: ${SIZES.xxs}px;
+      width: ${SIZES.m}px;
+      height: ${SIZES.m}10px;
       border-radius: 50%;
       background: ${COLORS.red};
       display: none;
@@ -124,9 +124,7 @@ export class InputControls extends HTMLElement {
   private settingsButton: HTMLButtonElement;
 
   private searchButton: HTMLButtonElement;
-
-  private infoWarningBadge?: HTMLSpanElement;
-  private infoWarningActive = false;
+  private infoWarningBadge: HTMLSpanElement;
 
   private gensHomeLink: HTMLAnchorElement;
 
@@ -139,6 +137,7 @@ export class InputControls extends HTMLElement {
   private onToggleChromView: () => void;
   private onSearch: (query: string) => Promise<ApiSearchResult | null>;
   private onChange: (settings: RenderSettings) => void;
+  private hasInfoWarning: boolean;
 
   private session: GensSession;
 
@@ -151,6 +150,7 @@ export class InputControls extends HTMLElement {
     onToggleChromView: () => void,
     onSearch: (query: string) => Promise<ApiSearchResult | null>,
     onChange: (settings: RenderSettings) => void,
+    hasInfoWarning: boolean,
   ) {
     this.session = session;
     this.onOpenSettings = onOpenSettings;
@@ -162,6 +162,7 @@ export class InputControls extends HTMLElement {
     this.onPositionChange = onPositionChange;
     this.onSearch = onSearch;
     this.onChange = onChange;
+    this.hasInfoWarning = hasInfoWarning;
 
     this.panLeftButton.onclick = () => {
       this.panLeft();
@@ -210,7 +211,11 @@ export class InputControls extends HTMLElement {
     this.settingsButton = this.querySelector("#settings-button");
 
     this.infoWarningBadge = this.querySelector("#info-warning-badge");
-    this.updateInfoWarningBadge();
+    if (this.hasInfoWarning) {
+      this.infoWarningBadge.classList.add("visible");
+    } else {
+      this.infoWarningBadge.classList.remove("visible");
+    }
 
     this.searchButton = this.querySelector("#search");
 
@@ -251,23 +256,6 @@ export class InputControls extends HTMLElement {
         this.searchButton.click();
       }
     });
-  }
-
-  // FIXME: This should be in the render part
-  setInfoWarning(hasWarning: boolean) {
-    this.infoWarningActive = hasWarning;
-    this.updateInfoWarningBadge();
-  }
-
-  private updateInfoWarningBadge() {
-    if (!this.infoWarningBadge) {
-      return;
-    }
-    if (this.infoWarningBadge) {
-      this.infoWarningBadge.classList.add("visible");
-    } else {
-      this.infoWarningBadge.classList.remove("visible");
-    }
   }
 
   render(_settings: RenderSettings) {
