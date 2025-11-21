@@ -36,6 +36,22 @@ template.innerHTML = String.raw`
       display: flex;
       flex-direction: row;
     }
+    #info-button {
+      position: relative;
+    }
+    #info-warning-badge {
+      position: absolute;
+      top: ${SIZES.xxs}px;
+      right: ${SIZES.xxs}px;
+      width: ${SIZES.m}px;
+      height: ${SIZES.m}px;
+      border-radius: 50%;
+      background: ${COLORS.red};
+      display: none;
+    }
+    #info-warning-badge.visible {
+      display: inline-block;
+    }
   </style>
   <div id="input-controls-container">
     <div id="logo-part">
@@ -80,6 +96,7 @@ template.innerHTML = String.raw`
         <span class="fas ${ICONS.chromosomes}"></span>
       </button>
       <button title="Open info menu" id="info-button" class="button">
+        <span id="info-warning-badge"></span>
         <span class="fas ${ICONS.info}"></span>
       </button>
       <button title="Open help menu" id="help-button" class="button">
@@ -107,6 +124,7 @@ export class InputControls extends HTMLElement {
   private settingsButton: HTMLButtonElement;
 
   private searchButton: HTMLButtonElement;
+  private infoWarningBadge: HTMLSpanElement;
 
   private gensHomeLink: HTMLAnchorElement;
 
@@ -131,6 +149,7 @@ export class InputControls extends HTMLElement {
     onToggleChromView: () => void,
     onSearch: (query: string) => Promise<ApiSearchResult | null>,
     onChange: (settings: RenderSettings) => void,
+    hasInfoWarning: boolean,
   ) {
     this.session = session;
     this.onOpenSettings = onOpenSettings;
@@ -169,6 +188,12 @@ export class InputControls extends HTMLElement {
     this.toggleMarkerButton.onclick = () => this.session.toggleMarkerMode();
 
     this.gensHomeLink.href = session.getGensBaseURL();
+
+    if (hasInfoWarning) {
+      this.infoWarningBadge.classList.add("visible");
+    } else {
+      this.infoWarningBadge.classList.remove("visible");
+    }
   }
 
   connectedCallback() {
@@ -188,6 +213,8 @@ export class InputControls extends HTMLElement {
     this.infoButton = this.querySelector("#info-button");
     this.helpButton = this.querySelector("#help-button");
     this.settingsButton = this.querySelector("#settings-button");
+
+    this.infoWarningBadge = this.querySelector("#info-warning-badge");
 
     this.searchButton = this.querySelector("#search");
 
@@ -215,7 +242,11 @@ export class InputControls extends HTMLElement {
         (chrom: Chromosome, range?: Rng) => {
           const newChrom = chrom != this.session.pos.getChromosome();
           this.session.pos.setChromosome(chrom, range);
-          this.onChange({ reloadData: true, positionOnly: true, chromosomeChange: newChrom });
+          this.onChange({
+            reloadData: true,
+            positionOnly: true,
+            chromosomeChange: newChrom,
+          });
         },
         this.onSearch,
         () => this.session.pos.getCurrentChromSize(),
