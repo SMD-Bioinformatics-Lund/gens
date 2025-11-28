@@ -93,10 +93,10 @@ def sample(sample_id: str, genome_build: int, case_id: str) -> None:
             click.echo("Aborted.")
             return
 
-    for sample in samples_to_delete:
+    for sample_to_delete_id in samples_to_delete:
         delete_sample(
             db=db,
-            sample_id=sample_id,
+            sample_id=sample_to_delete_id,
             case_id=case_id,
             genome_build=GenomeBuild(genome_build),
         )
