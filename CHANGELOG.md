@@ -7,6 +7,12 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## TBD
 
+### Added
+
+- Shorthand `-b` flag for `--genome-build` [#606](https://github.com/SMD-Bioinformatics-Lund/gens/pull/606).
+
+### Fixed
+
 - Skip missing genotype variants in `generate_gens_data.py` [#588](https://github.com/SMD-Bioinformatics-Lund/gens/pull/588).
 
 ## 4.3.3
