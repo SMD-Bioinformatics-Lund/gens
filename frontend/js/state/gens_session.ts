@@ -44,6 +44,9 @@ export class GensSession {
 
   // Loaded parameters
   private layoutProfileKey: string;
+  private profileDefaults: Record<string, ProfileSettings>;
+  private profileSignature: string;
+  private fallbackProfile: ProfileSettings | null;
   private trackHeights: TrackHeights;
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
@@ -64,6 +67,7 @@ export class GensSession {
     scoutBaseURL: string,
     gensBaseURL: string,
     genomeBuild: number,
+    profileDefaults: Record<string, ProfileSettings>,
     chromInfo: Record<Chromosome, ChromosomeInfo>,
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
@@ -85,9 +89,15 @@ export class GensSession {
     this.scoutBaseURL = scoutBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
+    this.profileDefaults = profileDefaults;
 
-    this.layoutProfileKey = computeProfileKey(this.samples, genomeBuild);
-    const profile = loadProfileSettings(this.layoutProfileKey);
+    this.updateProfileKey();
+    const profile =
+      loadProfileSettings(this.layoutProfileKey) ??
+      this.cloneProfile(this.fallbackProfile);
+
+    // this.layoutProfileKey = computeProfileKey(this.samples, genomeBuild);
+    // const profile = loadProfileSettings(this.layoutProfileKey);
     this.loadProfile(profile);
 
     this.tracks = new Tracks([]);
@@ -125,6 +135,7 @@ export class GensSession {
     this.trackLayout = profile.layout;
     this.trackHeights = profile.trackHeights;
     this.colorAnnotationId = profile.colorAnnotationId;
+    this.coverageRange = profile.coverageRange;
 
     // A pre-selected track might disappear if the db is updated
     this.annotationSelections = [];
@@ -207,6 +218,27 @@ export class GensSession {
     saveProfileToBrowser(this.layoutProfileKey, profile);
   }
 
+  private updateProfileKey(): void {
+    this.profileSignature = computeProfileSignature(this.samples);
+    this.layoutProfileKey = computeProfileSignature(
+      this.profileSignature,
+      this.genomeBuild
+    )
+    this.fallbackProfile = this.cloneProfile(
+      this.profileDefaults[this.profileSignature];
+    )
+  }
+
+  private cloneProfile(
+    profile?: ProfileSettings | null,
+  ): ProfileSettings | null {
+    if (!profile) {
+      return null;
+    }
+
+    return JSON.parse(JSON.stringify(profile)) as ProfileSettings;
+  }
+
   public setColorAnnotation(id: string | null) {
     this.colorAnnotationId = id;
     this.saveProfile();
@@ -264,6 +296,7 @@ export class GensSession {
 
   public addSample(sample: Sample) {
     this.samples.push(sample);
+    this.updateProfileKey();
   }
 
   public removeSample(sample: Sample): void {
@@ -279,7 +312,8 @@ export class GensSession {
     }
 
     this.samples.splice(pos, 1);
-    this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
+    this.updateProfileKey();
+    // this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
   }
 
   public getMarkerModeOn(): boolean {
@@ -407,14 +441,21 @@ export class GensSession {
   }
 }
 
-function computeProfileKey(samples: Sample[], genomeBuild: number): string {
+function computeProfileSignature(samples: Sample[]): string {
   const types = new Set(
     samples.map((s) => (s.sampleType ? s.sampleType : "unknown")).sort(),
   );
 
-  const signature = Array.from(types).join("+");
+  return Array.from(types).join("+");
+
+  // const signature = Array.from(types).join("+");
+  // return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
+}
+
+function computeProfileKey(signature: string, genomeBuild: number): string {
   return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
 }
+
 
 function getArrangedTracks(
   layout: TrackLayout,

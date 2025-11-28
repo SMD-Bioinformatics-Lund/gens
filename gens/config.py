@@ -24,6 +24,9 @@ if custom_config is not None:
     if user_cnf.exists():
         config_file.append(user_cnf)
 
+CONFIG_PATHS = [path.resolve() for path in config_file if path.exists()]
+CONFIG_DIRS = [path.parent for path in CONFIG_PATHS]
+
 
 class AuthMethod(Enum):
     """Valid authentication options"""
@@ -80,6 +83,11 @@ class Settings(BaseSettings):
         env_nested_delimiter="__",
     )
 
+    default_profile: dict[str, dict[str, Any] | str] = Field(
+        default_factory=dict,
+        description="Mapping between profile types and default profile definitions. Values are paths to JSON files relative to the config file.",
+    )
+
     def get_dict(self) -> dict[str, Any]:
         return {
             "gens_db": self.gens_db.database,
@@ -89,6 +97,7 @@ class Settings(BaseSettings):
             "main_sample_types": self.main_sample_types,
             "authentication": self.authentication.value,
             "oauth": self.oauth,
+            "default_profiles": self.default_profile,
         }
 
     @model_validator(mode="after")
@@ -126,6 +135,20 @@ class Settings(BaseSettings):
 
         return self
 
+    @model_validator(mode="after")
+    def load_default_profile_files(self) -> "Settings":
+        """Load default profiles defined via adjacent JSON files"""
+
+        resolved_default_profiles: dict[str, str] = {}
+
+        for signature, profile_path in self.default_profiles.items():
+            profile_path = _resolve_profile_path(Path(profile))
+            resolved_default_profiles[signature] = _load_profile(profile_path)
+        
+        self.default_profiles = resolved_default_profiles
+        return self
+            
+
     @classmethod
     def settings_customise_sources(
         cls,
@@ -144,6 +167,28 @@ class Settings(BaseSettings):
             toml_settings,
         )
 
+
+def _resolve_profile_path(profile_path: Path) -> Path:
+    if profile_path.is_absolute():
+        return profile_path
+    
+    for config_dir in CONFIG_DIRS:
+        candidate = config_dir.joinpath(profile_path)
+        if candidate.exists():
+            return candidate
+    
+    return profile_path
+
+
+def _load_profile(profile_path: Path) -> dict[str, Any]:
+    if not profile_path.exists():
+        raise ValueError(f"Default profile file not found: {profile_path}")
+    
+    with profile_path.open("r", encoding="utf-8") as profile_file:
+        try: 
+            return json.load(profile_file)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Default profile file {profile_path} contains invalid JSON") from error
 
 UI_COLORS = {
     "variants": {"del": "#C84630", "dup": "#4C6D94"},
