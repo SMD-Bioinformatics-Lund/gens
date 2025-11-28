@@ -31,8 +31,7 @@ from gens.models.genomic import GenomeBuild
 
 log_level = getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+    level=logging.INFO, format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
 )
 LOG = logging.getLogger(__name__)
 
@@ -114,7 +113,11 @@ def sample_annotation(
 
 @delete.command("annotation")
 @click.option(
-    "--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build"
+    "-b",
+    "--genome-build",
+    type=ChoiceType(GenomeBuild),
+    required=True,
+    help="Genome build",
 )
 @click.option("--name", required=True, help="Name of the annotation track")
 def annotation(genome_build: GenomeBuild, name: str) -> None:
