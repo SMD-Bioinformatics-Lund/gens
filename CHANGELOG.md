@@ -10,12 +10,12 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Added
 
 - Shorthand `-b` flag for `--genome-build` [#606](https://github.com/SMD-Bioinformatics-Lund/gens/pull/606).
+- CLI option to delete full case [#609](https://github.com/SMD-Bioinformatics-Lund/gens/pull/609)
+- Allow reading all input as either raw text or gzip-format in `generate_gens_data.py` [#605](https://github.com/SMD-Bioinformatics-Lund/gens/pull/605).
 
 ### Fixed
 
 - Skip missing genotype variants in `generate_gens_data.py` [#588](https://github.com/SMD-Bioinformatics-Lund/gens/pull/588).
-
-- CLI option to delete full case [#609](https://github.com/SMD-Bioinformatics-Lund/gens/pull/609)
 
 ## 4.3.3
 
