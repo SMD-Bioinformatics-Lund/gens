@@ -10,7 +10,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
 
 - Skip missing genotype variants in `generate_gens_data.py` [#588](https://github.com/SMD-Bioinformatics-Lund/gens/pull/588).
-- Allow reading all input as either raw text or gzip-format in `generate_gens_data.py` []().
+- Allow reading all input as either raw text or gzip-format in `generate_gens_data.py` [#605](https://github.com/SMD-Bioinformatics-Lund/gens/pull/605).
 
 ## 4.3.3
 
