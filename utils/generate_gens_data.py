@@ -151,7 +151,7 @@ def generate_cov_bed(
     force_end = False
     reg_ratios: list[float] = []
 
-    with open(cov_file, "r", encoding="utf-8") as fh:
+    with read_file(cov_file) as fh:
         for line in fh:
             if line.startswith("@") or line.startswith("CONTIG"):
                 continue
@@ -195,7 +195,7 @@ def generate_cov_bed(
 def write_chrom_sizes(cov_bed_file: Path, out_path: Path) -> None:
     chrom_sizes: dict[str, int] = {}
     chrom_order: list[str] = []
-    with open(cov_bed_file, "r", encoding="utf-8") as cov_in_fh:
+    with read_file(cov_bed_file) as cov_in_fh:
         for line in cov_in_fh:
             line = line.rstrip()
 
@@ -220,7 +220,7 @@ def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
 
     d_only_bed = str(bed_file) + ".d_only"
 
-    with open(bed_file, "r", encoding="utf-8") as bed_in_fh, open(
+    with read_file(bed_file) as bed_in_fh, open(
         d_only_bed, "w"
     ) as tmp_cov_bed:
         for line in bed_in_fh:
@@ -266,7 +266,7 @@ def parse_gvcfvaf(
     """
 
     baf_positions = set()
-    with open(baf_positions_file, "r", encoding="utf-8") as baf_positions_fh:
+    with read_file(baf_positions_file) as baf_positions_fh:
         for line in baf_positions_fh:
             line = line.rstrip()
             chrom_raw, pos = line.split("\t")
@@ -274,7 +274,7 @@ def parse_gvcfvaf(
             pos_key = f"{chrom}_{pos}"
             baf_positions.add(pos_key)
 
-    with gzip.open(gvcf_file, "rt", encoding="utf-8") as gvcf_fh:
+    with read_file(gvcf_file) as gvcf_fh:
 
         gvcf_count = 0
         match_count = 0
@@ -393,6 +393,13 @@ def normalize_chr(chrom: str) -> str:
         return "MT"
 
     return chrom
+
+
+def read_file(file_path: Path) -> TextIO:
+    if file_path.suffix == ".gz":
+        return gzip.open(file_path, "rt", encoding="utf-8")
+    else:
+        return open(file_path, encoding="utf-8")
 
 
 def parse_arguments():
