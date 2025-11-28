@@ -82,11 +82,11 @@ def main(
         print(f"BAF-positions file {str(baf_positions)} does not exist or is not a valid file. Exiting.")
         sys.exit(1)
 
-    if not coverage.exists() or not baf_positions.is_file():
+    if not coverage.exists() or not coverage.is_file():
         print(f"Coverage file {str(coverage)} does not exist or is not a valid file. Exiting.")
         sys.exit(1)
 
-    if not gvcf.exists() or not baf_positions.is_file():
+    if not gvcf.exists() or not gvcf.is_file():
         print(f"gVCF {str(gvcf)} does not exist or is not a valid file. Exiting.")
         sys.exit(1)
 
