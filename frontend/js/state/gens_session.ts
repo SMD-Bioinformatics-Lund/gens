@@ -95,7 +95,7 @@ export class GensSession {
 
     const chromosome = startRegion ? startRegion.chrom : "1";
     const start = startRegion?.start ? startRegion.start : 1;
-    const end = startRegion?.end ? startRegion.end : chromSizes["1"];
+    const end = startRegion?.end ? startRegion.end : chromSizes[chromosome];
     this.pos = new SessionPosition(
       chromosome,
       start,
