@@ -387,6 +387,12 @@ export class GensSession {
     return this.layoutProfileKey;
   }
 
+  public resetTrackLayout(): void {
+    this.trackLayout = null;
+    this.tracks.setTracks([]);
+    this.saveProfile();
+  }
+
   public loadTrackLayout(): void {
     const layout = this.trackLayout;
 

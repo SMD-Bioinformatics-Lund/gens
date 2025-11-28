@@ -334,6 +334,11 @@ function addSettingsPageSources(
     });
   };
 
+  const resetLayout = () => {
+    session.resetTrackLayout();
+    render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
+  };
+
   settingsPage.setSources(
     session,
     allAnnotSources,
@@ -353,5 +358,6 @@ function addSettingsPageSources(
     onAssignMainSample,
     getProfile,
     applyProfile,
+    resetLayout,
   );
 }
