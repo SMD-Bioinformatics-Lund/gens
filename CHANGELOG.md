@@ -9,6 +9,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 - Skip missing genotype variants in `generate_gens_data.py` [#588](https://github.com/SMD-Bioinformatics-Lund/gens/pull/588).
 
+- Add support for default profiles [#608](https://github.com/SMD-Bioinformatics-Lund/gens/pull/608).
+
 ## 4.3.3
 
 ### Fixed

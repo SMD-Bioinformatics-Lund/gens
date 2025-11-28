@@ -150,6 +150,14 @@ template.innerHTML = String.raw`
       ></icon-button>
       <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
     </flex-row>
+    <flex-row class="spread_row">
+      <div>Reset layout</div>
+      <icon-button
+        id="reset-layout"
+        icon="${ICONS.reset}"
+        title="Reset layout to default"
+      ></icon-button>
+    </flex-row>
 
 
     <!-- Configure tracks -->
@@ -220,6 +228,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private applyMainSample: HTMLButtonElement;
   private applyDotTrackHeightsButton: HTMLButtonElement;
   private applyBandTrackHeightButton: HTMLButtonElement;
+  private resetLayoutButton: IconButton;
   private currentProfile: HTMLSpanElement;
 
   private session: GensSession;
@@ -247,6 +256,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private onApplyMainSample: (sample: Sample) => void;
   private getProfileSettings: () => ProfileSettings;
   private applyProfileSettings: (layout: ProfileSettings) => void;
+  private onResetLayout: () => void;
 
   public isInitialized: boolean = false;
 
@@ -273,6 +283,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onApplyMainSample: (sample: Sample) => void,
     getProfileSettings: () => ProfileSettings,
     applyProfileSettings: (layout: ProfileSettings) => void,
+    onResetLayout: () => void,
   ) {
     this.session = session;
     // this.onChange = onChange;
@@ -306,6 +317,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onApplyMainSample = onApplyMainSample;
     this.getProfileSettings = getProfileSettings;
     this.applyProfileSettings = applyProfileSettings;
+    this.onResetLayout = onResetLayout;
   }
 
   connectedCallback() {
@@ -344,6 +356,7 @@ export class SettingsMenu extends ShadowBaseElement {
     );
     this.variantThresholdInput = this.root.querySelector("#variant-filter");
     this.applyMainSample = this.root.querySelector("#apply-main-sample");
+    this.resetLayoutButton = this.root.querySelector("#reset-layout");
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
       "#band-collapsed-height",
@@ -388,6 +401,10 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.importProfileSettingsButton, "click", () => {
       this.importProfileSettingsInput.click();
+    });
+
+    this.addElementListener(this.resetLayoutButton, "click", () => {
+      this.onResetLayout();
     });
 
     this.addElementListener(

@@ -70,6 +70,7 @@ export async function initCanvases({
   startRegion,
   version,
   allSamples,
+  defaultProfiles,
 }: {
   caseId: string;
   sampleIds: string[];
@@ -81,6 +82,7 @@ export async function initCanvases({
   startRegion: { chrom: Chromosome; start?: number; end?: number } | null;
   version: string;
   allSamples: Sample[];
+  defaultProfiles: Record<string, ProfileSettings>;
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
   const sideMenu = document.getElementById("side-menu") as SideMenu;
@@ -162,6 +164,7 @@ export async function initCanvases({
     scoutBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
     genomeBuild,
+    defaultProfiles,
     api.getChromInfo(),
     api.getChromSizes(),
     startRegion,
@@ -331,6 +334,11 @@ function addSettingsPageSources(
     });
   };
 
+  const resetLayout = () => {
+    session.resetTrackLayout();
+    render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
+  };
+
   settingsPage.setSources(
     session,
     allAnnotSources,
@@ -350,5 +358,6 @@ function addSettingsPageSources(
     onAssignMainSample,
     getProfile,
     applyProfile,
+    resetLayout,
   );
 }
