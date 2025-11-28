@@ -78,16 +78,16 @@ def main(
     cov_output = out_dir / f"{label}.cov.bed"
     baf_output = out_dir / f"{label}.baf.bed"
 
-    if not baf_positions.exists():
-        print(f"BAF-positions file {str(baf_positions)} does not exist. Exiting.")
+    if not baf_positions.exists() or not baf_positions.is_file():
+        print(f"BAF-positions file {str(baf_positions)} does not exist or is not a valid file. Exiting.")
         sys.exit(1)
 
-    if not coverage.exists():
-        print(f"Coverage file {str(coverage)} does not exist. Exiting.")
+    if not coverage.exists() or not baf_positions.is_file():
+        print(f"Coverage file {str(coverage)} does not exist or is not a valid file. Exiting.")
         sys.exit(1)
 
-    if not gvcf.exists():
-        print(f"gVCF {str(gvcf)} does not exist. Exiting.")
+    if not gvcf.exists() or not baf_positions.is_file():
+        print(f"gVCF {str(gvcf)} does not exist or is not a valid file. Exiting.")
         sys.exit(1)
 
     print("Calculating coverage data", file=sys.stderr)
