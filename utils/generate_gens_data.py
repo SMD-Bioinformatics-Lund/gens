@@ -29,7 +29,7 @@ Coverage: Given a per-range coverage file. Given certain window sizes, calculate
 Both yields bed files with different levels of resolutions, distinguished with prefixes in the output ({joined_prefixes}).
 """
 
-VERSION = "1.1.2"
+VERSION = "1.1.3"
 
 CHR_ORDER = [
     "1",
@@ -77,6 +77,18 @@ def main(
 
     cov_output = out_dir / f"{label}.cov.bed"
     baf_output = out_dir / f"{label}.baf.bed"
+
+    if not baf_positions.exists():
+        print(f"BAF-positions file {str(baf_positions)} does not exist. Exiting.")
+        sys.exit(1)
+
+    if not coverage.exists():
+        print(f"Coverage file {str(coverage)} does not exist. Exiting.")
+        sys.exit(1)
+
+    if not gvcf.exists():
+        print(f"gVCF {str(gvcf)} does not exist. Exiting.")
+        sys.exit(1)
 
     print("Calculating coverage data", file=sys.stderr)
     with open(cov_output, "w", encoding="utf-8") as covout:
