@@ -17,7 +17,7 @@ from gens.crud.sample_annotations import (
     delete_sample_annotations_for_track,
     get_sample_annotation_track,
 )
-from gens.crud.samples import delete_sample
+from gens.crud.samples import delete_sample, get_sample_ids_for_case_and_build
 from gens.db.collections import (
     ANNOTATION_TRACKS_COLLECTION,
     ANNOTATIONS_COLLECTION,
@@ -70,7 +70,6 @@ def sample(sample_id: str, genome_build: int, case_id: str) -> None:
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
-
 
     samples_c = db.get_collection(SAMPLES_COLLECTION)
     samples_to_delete = (
