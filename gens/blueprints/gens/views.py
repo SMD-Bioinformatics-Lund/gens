@@ -62,8 +62,13 @@ def display_samples(case_id: str):
         region = request.form.get("region", "1:1-None")
 
     # Parse region, default to grch38
-    with current_app.app_context():
-        genome_build = GenomeBuild(int(request.args.get("genome_build", "38")))
+    genome_build_arg = request.args.get("genome_build", "38")
+    try:
+        with current_app.app_context():
+            genome_build = GenomeBuild(int(genome_build_arg))
+    except (TypeError, ValueError):
+        LOG.exception("Invalid genome build provided: %s", genome_build_arg)
+        return _render_sample_error("The provided genome build is not supported.")
 
     parsed_region = parse_region_str(region)
     if not parsed_region:
