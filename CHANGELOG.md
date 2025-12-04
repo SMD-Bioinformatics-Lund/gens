@@ -7,7 +7,23 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## TBD
 
+### Added
+
+- Shorthand `-b` flag for `--genome-build` [#606](https://github.com/SMD-Bioinformatics-Lund/gens/pull/606).
+- CLI option to delete full case [#609](https://github.com/SMD-Bioinformatics-Lund/gens/pull/609)
+- Allow reading all input as either raw text or gzip-format in `generate_gens_data.py` [#605](https://github.com/SMD-Bioinformatics-Lund/gens/pull/605).
+
+### Changed
+
+- BAF 0.5 line highlighted, and tick range changed to 0.25 to make sure one of the ticks end up at 0.5 [#619](https://github.com/SMD-Bioinformatics-Lund/gens/pull/619)
+
+### Fixed
+
 - Skip missing genotype variants in `generate_gens_data.py` [#588](https://github.com/SMD-Bioinformatics-Lund/gens/pull/588).
+- Input checking when loading samples through CLI [#611](https://github.com/SMD-Bioinformatics-Lund/gens/pull/611)
+- Sample validation when accessing sample through URL [#611](https://github.com/SMD-Bioinformatics-Lund/gens/pull/611)
+- Prevent extra zoom step when drag-select zooming [#618](https://github.com/SMD-Bioinformatics-Lund/gens/pull/618)
+- Make sure band tracks respond to browser based zooming [#618](https://github.com/SMD-Bioinformatics-Lund/gens/pull/618)
 
 - Go to full chromosome view when specifying only the chromosome in URL [#607](https://github.com/SMD-Bioinformatics-Lund/gens/pull/607).
 
