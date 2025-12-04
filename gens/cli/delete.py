@@ -17,7 +17,7 @@ from gens.crud.sample_annotations import (
     delete_sample_annotations_for_track,
     get_sample_annotation_track,
 )
-from gens.crud.samples import delete_sample
+from gens.crud.samples import delete_sample, get_sample_ids_for_case_and_build
 from gens.db.collections import (
     ANNOTATION_TRACKS_COLLECTION,
     ANNOTATIONS_COLLECTION,
@@ -31,8 +31,7 @@ from gens.models.genomic import GenomeBuild
 
 log_level = getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+    level=logging.INFO, format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
 )
 LOG = logging.getLogger(__name__)
 
@@ -45,7 +44,7 @@ def delete() -> None:
 
 
 @delete.command()
-@click.option("-i", "--sample-id", type=str, required=True, help="Sample id")
+@click.option("-i", "--sample-id", type=str, help="Sample id")
 @click.option(
     "-b",
     "--genome-build",
@@ -70,13 +69,37 @@ def sample(sample_id: str, genome_build: int, case_id: str) -> None:
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
-    delete_sample(
-        db=db,
-        sample_id=sample_id,
-        case_id=case_id,
-        genome_build=GenomeBuild(genome_build),
+
+    samples_c = db.get_collection(SAMPLES_COLLECTION)
+    samples_to_delete = (
+        [sample_id]
+        if sample_id is not None
+        else get_sample_ids_for_case_and_build(
+            samples_c=samples_c,
+            case_id=case_id,
+            genome_build=GenomeBuild(genome_build),
+        )
     )
-    click.secho("Finished removing a sample from database ✔", fg="green")
+
+    if not samples_to_delete:
+        raise click.ClickException(f"No samples found for case_id '{case_id}' and genome build '{genome_build}'")
+
+    if sample_id is None:
+        click.echo("The following samples will be removed:")
+        for sample in samples_to_delete:
+            click.echo(f" - {sample}")
+        if not click.confirm("Proceed with deletion?", default=False):
+            click.echo("Aborted.")
+            return
+
+    for sample_to_delete_id in samples_to_delete:
+        delete_sample(
+            db=db,
+            sample_id=sample_to_delete_id,
+            case_id=case_id,
+            genome_build=GenomeBuild(genome_build),
+        )
+    click.secho(f"Finished removing {len(samples_to_delete)} samples from database ✔", fg="green")
 
 
 @delete.command("sample-annotation")
@@ -114,7 +137,11 @@ def sample_annotation(
 
 @delete.command("annotation")
 @click.option(
-    "--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build"
+    "-b",
+    "--genome-build",
+    type=ChoiceType(GenomeBuild),
+    required=True,
+    help="Genome build",
 )
 @click.option("--name", required=True, help="Name of the annotation track")
 def annotation(genome_build: GenomeBuild, name: str) -> None:

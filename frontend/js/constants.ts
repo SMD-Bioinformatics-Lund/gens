@@ -275,3 +275,6 @@ export const bandTrackTypes: TrackType[] = [
   "variant",
 ];
 export const dotTrackTypes: TrackType[] = ["dot-baf", "dot-cov"];
+
+export const BAF_Y_RANGE: [number, number] = [0, 1];
+export const COV_Y_RANGE: [number, number] = [-3, 3];

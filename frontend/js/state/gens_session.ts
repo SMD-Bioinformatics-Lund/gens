@@ -1,10 +1,10 @@
 import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
-import { COV_Y_RANGE } from "../components/tracks_manager/tracks_manager";
 import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import {
   COLORS,
+  COV_Y_RANGE,
   DEFAULT_VARIANT_THRES,
   TRACK_LAYOUT_VERSION,
 } from "../constants";
