@@ -84,7 +84,7 @@ class Settings(BaseSettings):
         env_nested_delimiter="__",
     )
 
-    default_profile_paths: dict[str, str] = Field(
+    default_profile_paths: dict[str, Path] = Field(
         default_factory=dict,
         description="Mapping between profile types and default profile definitions. Values are paths to JSON files relative to the config file.",
     )
@@ -145,12 +145,12 @@ class Settings(BaseSettings):
 
         if self.default_profile_paths is None:
             return None
-        
+
         loaded_profiles = {}
         for key, json_path in self.default_profile_paths.items():
-            with open(json_path, "r") as json_fh:
-                loaded_profile = json.load(json_fh)
-                loaded_profiles[key] = loaded_profile
+            print(f">>> Looping with key and path {key} {json_path}")
+            resolved = _resolve_profile_path(json_path)
+            loaded_profiles = _load_profile(resolved)
         
         return loaded_profiles
 
