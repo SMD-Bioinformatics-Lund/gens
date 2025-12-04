@@ -35,7 +35,6 @@ def _validate_sample_files(samples: Iterable[SampleInfo]) -> None:
             if file_path is None or not Path(file_path).is_file():
                 raise FileNotFoundError(file_path)
 
-
 def _render_sample_error(message: str):
     return (
         render_template(
@@ -91,22 +90,14 @@ def display_samples(case_id: str):
         
         except FileNotFoundError:
             LOG.exception("Missing coverage or baf files for case %s", case_id)
-
             return _render_sample_error("Was not able to find the cov/baf data for the sample")
 
-        # case_samples = get_samples_for_case(
-        #     db.get_collection(SAMPLES_COLLECTION), case_id
-        # )
-        # if not case_samples:
-        #     raise ValueError(f"Expected sample_ids for case_id: {case_id}")
         sample_ids = [sample.sample_id for sample in case_samples]
 
         if request.args.get("genome_build") is None:
             genome_build = GenomeBuild(case_samples[0].genome_build)
     else:
-        # sample_ids = sample_id_list.split(",")
         sample_ids = [sample_id for sample_id in sample_id_list.split(",") if sample_id]
-
         try:
             requested_samples = [
                 get_sample(
