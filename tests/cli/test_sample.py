@@ -1,3 +1,4 @@
+import gzip
 import logging
 from pathlib import Path
 from types import ModuleType
@@ -15,7 +16,8 @@ LOG = logging.getLogger(__name__)
 
 
 def write_sample_track(file_path: Path) -> Path:
-    file_path.write_text("0_1\t0\t1\t0.1\n")
+    with gzip.open(file_path, "wt", encoding="utf-8") as fh:
+        fh.write("0_1\t0\t1\t0.1\n")
     return file_path
 
 
@@ -32,8 +34,8 @@ def test_load_sample_cli(
     db: mongomock.Database,
     tmp_path: Path,
 ):
-    baf_file = write_sample_track(tmp_path / "baf")
-    cov_file = write_sample_track(tmp_path / "cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
     overview_file = tmp_path / "overview"
     overview_file.write_text("{}")
     meta_file_simple = tmp_path / "meta_simple.tsv"
@@ -98,8 +100,8 @@ def test_load_sample_cli_with_string_genome_build_fails(
     tmp_path: Path,
     db: mongomock.Database,
 ):
-    baf_file = write_sample_track(tmp_path / "baf")
-    cov_file = write_sample_track(tmp_path / "cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
     overview_file = tmp_path / "overview"
     overview_file.write_text("{}")
     meta_file = tmp_path / "meta.tsv"
@@ -148,8 +150,8 @@ def test_load_sample_cli_accepts_aliases(
     alias: str,
     expected: str,
 ) -> None:
-    baf_file = write_sample_track(tmp_path / "baf")
-    cov_file = write_sample_track(tmp_path / "cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
     overview_file = tmp_path / "overview"
     overview_file.write_text("{}")
 
@@ -214,8 +216,8 @@ def test_update_sample_updates_document(
     meta_file = tmp_path / "meta.tsv"
     meta_file.write_text("type\tvalue\nA\t1\n")
 
-    baf_file = write_sample_track(tmp_path / "baf")
-    cov_file = write_sample_track(tmp_path / "cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
 
     # assert update_sample_cmd.sample.callback is not None
 
