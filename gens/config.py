@@ -95,7 +95,7 @@ class Settings(BaseSettings):
     def check_oauth_opts(self) -> "Settings":
         """Check that OAUTH options are set if authentication is oauth."""
         if self.authentication == AuthMethod.OAUTH:
-            if self.oauth is not None:
+            if self.oauth is None:
                 raise ValueError(
                     "OAUTH require you to configure client_id, secret and discovery_url"
                 )
