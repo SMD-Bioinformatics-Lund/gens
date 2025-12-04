@@ -25,6 +25,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Prevent extra zoom step when drag-select zooming [#618](https://github.com/SMD-Bioinformatics-Lund/gens/pull/618)
 - Make sure band tracks respond to browser based zooming [#618](https://github.com/SMD-Bioinformatics-Lund/gens/pull/618)
 
+- Go to full chromosome view when specifying only the chromosome in URL [#607](https://github.com/SMD-Bioinformatics-Lund/gens/pull/607).
+
 ## 4.3.3
 
 ### Fixed
