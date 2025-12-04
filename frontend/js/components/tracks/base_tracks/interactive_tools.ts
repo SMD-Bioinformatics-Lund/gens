@@ -11,6 +11,8 @@ export function initializeDragSelect(
 ) {
   let isDragging = false;
   let isMoved = false;
+  // Otherwise, the drag also causes a shift + click, i.e. zoom in
+  let suppressNextClick = false;
   let dragStart: { x: number; y: number };
   let marker: GensMarker | null = null;
 
@@ -74,6 +76,7 @@ export function initializeDragSelect(
       const sortedY = sortRange([dragStart.y, pos.y]);
 
       onDragRelease(sortedX, sortedY, keyLogger.heldKeys.Shift);
+      suppressNextClick = true;
     }
     if (marker) {
       marker.remove();
@@ -81,6 +84,16 @@ export function initializeDragSelect(
     }
     isDragging = false;
     isMoved = false;
+  });
+
+  element.addEventListener("click", (event) => {
+    if (!suppressNextClick) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    suppressNextClick = false;
   });
 }
 
