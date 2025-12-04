@@ -227,7 +227,7 @@ export class GensSession {
       this.genomeBuild
     )
     this.fallbackProfile = this.cloneProfile(
-      this.profileDefaults[this.profileSignature];
+      this.profileDefaults[this.profileSignature]
     )
   }
 

@@ -13,6 +13,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - CLI option to delete full case [#609](https://github.com/SMD-Bioinformatics-Lund/gens/pull/609)
 - Allow reading all input as either raw text or gzip-format in `generate_gens_data.py` [#605](https://github.com/SMD-Bioinformatics-Lund/gens/pull/605).
 - Add util scripts for normalization of coverage without panel of normal, and for creating additional sample tracks (ROH, UPD) and meta data (coverage, UPD) [#625](https://github.com/SMD-Bioinformatics-Lund/gens/pull/625).
+- Add support for default track profiles, that are loaded if nothing else is loaded and which a user can reset the track layout / settings to [#608](https://github.com/SMD-Bioinformatics-Lund/gens/pull/608).
 
 ### Changed
 
@@ -28,8 +29,6 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Go to full chromosome view when specifying only the chromosome in URL [#607](https://github.com/SMD-Bioinformatics-Lund/gens/pull/607).
 - Typo would crash all attempts to use OAuth [#623](https://github.com/SMD-Bioinformatics-Lund/gens/pull/623).
 - Make variant intepretation software URL and connections fully optional [#624](https://github.com/SMD-Bioinformatics-Lund/gens/pull/624).
-
-- Add support for default profiles [#608](https://github.com/SMD-Bioinformatics-Lund/gens/pull/608).
 
 ## 4.3.3
 

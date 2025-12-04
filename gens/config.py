@@ -1,5 +1,6 @@
 """Gens default configuration."""
 
+import json
 import os
 from enum import Enum
 from pathlib import Path
@@ -83,7 +84,7 @@ class Settings(BaseSettings):
         env_nested_delimiter="__",
     )
 
-    default_profile: dict[str, dict[str, Any] | str] = Field(
+    default_profile_paths: dict[str, str] = Field(
         default_factory=dict,
         description="Mapping between profile types and default profile definitions. Values are paths to JSON files relative to the config file.",
     )
@@ -97,7 +98,7 @@ class Settings(BaseSettings):
             "main_sample_types": self.main_sample_types,
             "authentication": self.authentication.value,
             "oauth": self.oauth,
-            "default_profiles": self.default_profile,
+            "default_profiles": self.default_profiles,
         }
 
     @model_validator(mode="after")
@@ -136,19 +137,23 @@ class Settings(BaseSettings):
 
         return self
 
-    @model_validator(mode="after")
-    def load_default_profile_files(self) -> "Settings":
-        """Load default profiles defined via adjacent JSON files"""
+    @property
+    def default_profiles(self) -> dict[str, Any] | list | None:
+        """
+        Loaded JSON from default_profile_paths
+        """
 
-        resolved_default_profiles: dict[str, str] = {}
-
-        for signature, profile_path in self.default_profiles.items():
-            profile_path = _resolve_profile_path(Path(profile))
-            resolved_default_profiles[signature] = _load_profile(profile_path)
+        if self.default_profile_paths is None:
+            return None
         
-        self.default_profiles = resolved_default_profiles
-        return self
-            
+        loaded_profiles = {}
+        for key, json_path in self.default_profile_paths.items():
+            with open(json_path, "r") as json_fh:
+                loaded_profile = json.load(json_fh)
+                loaded_profiles[key] = loaded_profile
+        
+        return loaded_profiles
+
 
     @classmethod
     def settings_customise_sources(
@@ -181,6 +186,7 @@ def _resolve_profile_path(profile_path: Path) -> Path:
     return profile_path
 
 
+# FIXME: Should this one be used?
 def _load_profile(profile_path: Path) -> dict[str, Any]:
     if not profile_path.exists():
         raise ValueError(f"Default profile file not found: {profile_path}")

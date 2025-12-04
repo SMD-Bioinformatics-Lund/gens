@@ -13,5 +13,5 @@ connection = "mongodb://mongodb:27017/scout"
 # If running on localhost, change to the following
 # connection = "mongodb://localhost:27017/gens"
 
-# [default_profiles]
-# "proband+relative" = "profiles/proband_relative.json"
+[default_profile_paths]
+"proband+relative" = "profiles/proband_relative.json"
