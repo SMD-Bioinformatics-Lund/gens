@@ -19,6 +19,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 - Input checking when loading samples through CLI [#611](https://github.com/SMD-Bioinformatics-Lund/gens/pull/611)
 - Sample validation when accessing sample through URL [#611](https://github.com/SMD-Bioinformatics-Lund/gens/pull/611)
+- Zooming issues
 
 ## 4.3.3
 
