@@ -10,6 +10,7 @@ from pymongo import MongoClient
 from pymongo.database import Database
 
 from gens.adapters.base import InterpretationAdapter
+from gens.adapters.null import NullInterpretationAdapter
 from gens.adapters.scout import ScoutMongoAdapter
 from gens.config import settings
 
@@ -45,9 +46,8 @@ def get_variant_software_adapter() -> Generator[InterpretationAdapter, None, Non
     """Return the configured interpretation adapter."""
 
     if not settings.variant_db:
-        raise HTTPException(
-            status_code=503, detail="Variant software integration not configured"
-        )
+        yield NullInterpretationAdapter()
+        return
 
     if settings.variant_software_backend != "scout_mongo":
         raise HTTPException(
