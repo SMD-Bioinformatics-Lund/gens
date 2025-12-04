@@ -6,8 +6,6 @@ import { DataTrack } from "../tracks/base_tracks/data_track";
 import { TrackView } from "./track_view";
 import { ChromosomeView } from "./chromosome_view";
 
-export const COV_Y_RANGE: [number, number] = [-3, 3];
-export const BAF_Y_RANGE: [number, number] = [0, 1];
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`

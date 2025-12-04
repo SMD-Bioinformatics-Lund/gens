@@ -1,5 +1,6 @@
 import {
   ANIM_TIME,
+  BAF_Y_RANGE,
   bandTrackTypes,
   COLORS,
   dotTrackTypes,
@@ -19,7 +20,6 @@ import { GensSession } from "../../state/gens_session";
 import { getLinearScale } from "../../draw/render_utils";
 import { OverviewTrack } from "../tracks/overview_track";
 import { IdeogramTrack } from "../tracks/ideogram_track";
-import { BAF_Y_RANGE } from "./tracks_manager";
 import { keyLogger } from "../util/keylogger";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
 import { removeOne, setDiff } from "../../util/utils";
