@@ -145,7 +145,7 @@ def display_samples(case_id: str):
 
     return render_template(
         "gens.html",
-        scout_base_url=str(settings.variant_url) if settings.variant_url else "",
+        variant_software_base_url=settings.variant_url,
         chrom=parsed_region.chromosome,
         start=parsed_region.start,
         end=parsed_region.end,

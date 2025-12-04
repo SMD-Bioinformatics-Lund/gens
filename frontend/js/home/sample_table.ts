@@ -65,7 +65,7 @@ export class SamplesTable extends HTMLElement {
 
   initialize(
     sampleInfo: SampleInfo[],
-    scoutBaseURL: string,
+    variantSoftwareUrl: string | null,
     getGensURL: (caseId: string, sampleIds?: string[]) => string,
   ) {
     if (!this.isConnected) {
@@ -77,14 +77,22 @@ export class SamplesTable extends HTMLElement {
     this.loadingPlaceholder.hidden = true;
     this.tableContainer.hidden = false;
 
-    const newRows = sampleInfo.map((s) => [
-      `<a href="${getGensURL(s.case_id)}">${s.case_id}</a> (<a href="${scoutBaseURL}/case/case_id/${s.case_id}" target="_blank" rel="noopener noreferrer">Scout</a>)`,
-      s.sample_ids
-        .map((id) => `<a href="${getGensURL(s.case_id, [id])}">${id}</a>`)
-        .join(", "),
-      s.genome_build.toString(),
-      prettyDate(s.created_at),
-    ]);
+    // FIXME: URL needs to be generalized when more software are introduced
+    const newRows = sampleInfo.map((s) => {
+      const gensCaseLink = `<a href="${getGensURL(s.case_id)}">${s.case_id}</a>`;
+      const variantSoftwareCaseLink = variantSoftwareUrl
+        ? `(<a href="${variantSoftwareUrl}/case/case_id/${s.case_id}" target="_blank" rel="noopener noreferrer">Scout</a>)`
+        : "";
+
+      return [
+        `${gensCaseLink} ${variantSoftwareCaseLink}`,
+        s.sample_ids
+          .map((id) => `<a href="${getGensURL(s.case_id, [id])}">${id}</a>`)
+          .join(", "),
+        s.genome_build.toString(),
+        prettyDate(s.created_at),
+      ];
+    });
 
     this.dataTable.insert({ data: newRows });
   }

@@ -22,9 +22,9 @@
     const samplesJSON = JSON.parse(`{{ samples | tojson }}`);
     // FIXME: Get from the backend
     const genomeBuild = '{{ genome_build | safe }}';
-    const scoutBaseURL = '{{ scout_base_url | safe }}';
+    const variantSoftwareBaseURL = '{{ variant_software_base_url | tojson }}';
     const gensBaseURL = '{{ gens_api_url | safe }}';
-    gens.samplesListInit(samplesJSON, scoutBaseURL, gensBaseURL, genomeBuild);
+    gens.samplesListInit(samplesJSON, variantSoftwareBaseURL, gensBaseURL, genomeBuild);
   </script>
 {% endblock %}
 
