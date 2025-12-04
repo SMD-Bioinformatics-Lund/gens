@@ -3,7 +3,7 @@
 - [ ] Resolve checks
 - [ ] Tested locally
 - [ ] Self review
-- [ ] Codex review: https://github.com/Jakob37/gens/pull/XX
+- [ ] Codex review: https://github.com/Jakob37/gens/pulls
 
 Close: #XX
 
