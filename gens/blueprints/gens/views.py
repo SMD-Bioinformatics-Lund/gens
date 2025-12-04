@@ -115,6 +115,9 @@ def display_samples(case_id: str):
         except FileNotFoundError:
             LOG.exception("Requested sample missing coverage or baf files for case %s", case_id)
             return _render_sample_error("Was not able to find the cov/baf data for the sample")
+        except ValueError:
+            LOG.exception("Requested sample points to files containing empty or invalid data for case %s", case_id)
+            return _render_sample_error("The requested sample points to files containing empty or invalid data")
 
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
