@@ -1,7 +1,6 @@
 import { initializeDragSelect } from "../components/tracks/base_tracks/interactive_tools";
 import { STYLE } from "../constants";
 import { getLinearScale } from "../draw/render_utils";
-import { sortRange } from "../util/utils";
 
 // FIXME: Both needed? Probably not
 export function setupDrag(
