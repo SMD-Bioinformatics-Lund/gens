@@ -195,6 +195,7 @@ export class TrackView extends ShadowBaseElement {
       label: `B Allele Freq (${session.getMainSample().sampleId})`,
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
+      highlightedYs: [0.5],
     };
     const overviewTrackBaf = createOverviewTrack(
       "overview_baf",

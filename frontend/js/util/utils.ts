@@ -262,7 +262,7 @@ export function generateTicks(range: Rng, step: number): number[] {
 
   const ticks = [];
   for (let v = first; v <= range[1]; v += step) {
-    ticks.push(Math.round(v * 10) / 10);
+    ticks.push(Math.round(v * 100) / 100);
   }
   return ticks;
 }
@@ -282,7 +282,7 @@ export function getTickSize(range: Rng): number {
     return 0.5;
   }
   if (size > 0.75) {
-    return 0.2;
+    return 0.25;
   }
   return 0.1;
 }
