@@ -150,7 +150,7 @@ class Settings(BaseSettings):
         for key, json_path in self.default_profile_paths.items():
             print(f">>> Looping with key and path {key} {json_path}")
             resolved = _resolve_profile_path(json_path)
-            loaded_profiles = _load_profile(resolved)
+            loaded_profiles[key] = _load_profile(resolved)
         
         return loaded_profiles
 

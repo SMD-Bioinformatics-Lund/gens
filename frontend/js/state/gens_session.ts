@@ -10,6 +10,7 @@ import {
 } from "../constants";
 import { loadProfileSettings, saveProfileToBrowser } from "../util/storage";
 import { generateID } from "../util/utils";
+import { SessionProfiles } from "./session_helpers/session_layouts";
 import { SessionPosition } from "./session_helpers/session_position";
 import { Tracks } from "./session_helpers/session_tracks";
 
@@ -44,9 +45,8 @@ export class GensSession {
 
   // Loaded parameters
   private layoutProfileKey: string;
-  private profileDefaults: Record<string, ProfileSettings>;
   private profileSignature: string;
-  private fallbackProfile: ProfileSettings | null;
+  // private fallbackProfile: ProfileSettings | null;
   private trackHeights: TrackHeights;
   private colorAnnotationId: string | null = null;
   private annotationSelections: string[] = [];
@@ -57,6 +57,7 @@ export class GensSession {
   public tracks: Tracks;
   public chromTracks: Tracks;
   public pos: SessionPosition;
+  public profiles: SessionProfiles;
 
   constructor(
     render: (settings: RenderSettings) => void,
@@ -67,7 +68,7 @@ export class GensSession {
     variantSoftwareBaseURL: string | null,
     gensBaseURL: string,
     genomeBuild: number,
-    profileDefaults: Record<string, ProfileSettings>,
+    defaultProfiles: Record<string, ProfileSettings>,
     chromInfo: Record<Chromosome, ChromosomeInfo>,
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
@@ -89,16 +90,16 @@ export class GensSession {
     this.variantSoftwareBaseURL = variantSoftwareBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
-    this.profileDefaults = profileDefaults;
 
-    this.updateProfileKey();
-    const profile =
-      loadProfileSettings(this.layoutProfileKey) ??
-      this.cloneProfile(this.fallbackProfile);
+    // FIXME: Extract layout class?
+
+    // this.profileSignature = computeProfileSignature(this.samples)
+
+    this.profiles = new SessionProfiles(defaultProfiles, samples)
 
     // this.layoutProfileKey = computeProfileKey(this.samples, genomeBuild);
     // const profile = loadProfileSettings(this.layoutProfileKey);
-    this.loadProfile(profile);
+    // this.loadProfile(profile);
 
     this.tracks = new Tracks([]);
     this.chromTracks = new Tracks([]);
@@ -115,38 +116,7 @@ export class GensSession {
     );
   }
 
-  public loadProfile(profile: ProfileSettings): void {
-    console.log("Loading profile", profile);
 
-    if (!profile) {
-      console.warn("No profile found, using defaults");
-      return;
-    }
-
-    if (profile.version != TRACK_LAYOUT_VERSION) {
-      console.warn(
-        `Version mismatch. Found ${profile.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
-      );
-      profile = undefined;
-      return;
-    }
-
-    this.variantThreshold = profile.variantThreshold;
-    this.trackLayout = profile.layout;
-    this.trackHeights = profile.trackHeights;
-    this.colorAnnotationId = profile.colorAnnotationId;
-    this.coverageRange = profile.coverageRange;
-
-    // A pre-selected track might disappear if the db is updated
-    this.annotationSelections = [];
-    for (const loadedSelectionId of profile.annotationSelections) {
-      if (!this.idToAnnotSource[loadedSelectionId]) {
-        console.warn(`Selection ID ${loadedSelectionId} not found, skipping`);
-        continue;
-      }
-      this.annotationSelections.push(loadedSelectionId);
-    }
-  }
 
   public getMainSample(): Sample {
     return this.mainSample;
@@ -218,24 +188,6 @@ export class GensSession {
   private saveProfile(): void {
     const profile = this.getProfile();
     saveProfileToBrowser(this.layoutProfileKey, profile);
-  }
-
-  private updateProfileKey(): void {
-    this.profileSignature = computeProfileSignature(this.samples);
-    // this.layoutProfileKey = computeProfileSignature(this.profileSignature);
-    this.fallbackProfile = this.cloneProfile(
-      this.profileDefaults[this.profileSignature],
-    );
-  }
-
-  private cloneProfile(
-    profile?: ProfileSettings | null,
-  ): ProfileSettings | null {
-    if (!profile) {
-      return null;
-    }
-
-    return JSON.parse(JSON.stringify(profile)) as ProfileSettings;
   }
 
   public setColorAnnotation(id: string | null) {
@@ -446,16 +398,16 @@ export class GensSession {
   }
 }
 
-function computeProfileSignature(samples: Sample[]): string {
-  const types = new Set(
-    samples.map((s) => (s.sampleType ? s.sampleType : "unknown")).sort(),
-  );
+// function computeProfileSignature(samples: Sample[]): string {
+//   const types = new Set(
+//     samples.map((s) => (s.sampleType ? s.sampleType : "unknown")).sort(),
+//   );
 
-  return Array.from(types).join("+");
+//   return Array.from(types).join("+");
 
-  // const signature = Array.from(types).join("+");
-  // return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
-}
+//   // const signature = Array.from(types).join("+");
+//   // return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
+// }
 
 function computeProfileKey(signature: string, genomeBuild: number): string {
   return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
