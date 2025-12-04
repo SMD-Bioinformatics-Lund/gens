@@ -26,7 +26,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Make sure band tracks respond to browser based zooming [#618](https://github.com/SMD-Bioinformatics-Lund/gens/pull/618)
 - Go to full chromosome view when specifying only the chromosome in URL [#607](https://github.com/SMD-Bioinformatics-Lund/gens/pull/607).
 - Typo would crash all attempts to use OAuth [#623](https://github.com/SMD-Bioinformatics-Lund/gens/pull/623).
-- Don't crash when the config does not configiure a variant intepretation software [#624](https://github.com/SMD-Bioinformatics-Lund/gens/pull/624).
+- Don't crash when the config does not configure a variant intepretation software [#624](https://github.com/SMD-Bioinformatics-Lund/gens/pull/624).
 
 ## 4.3.3
 
