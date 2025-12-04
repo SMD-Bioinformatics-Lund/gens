@@ -1,3 +1,5 @@
+import { getPortableId } from "../../components/tracks_manager/utils/track_layout";
+
 export class Tracks {
   private tracks: DataTrackSettings[];
   constructor(tracks: DataTrackSettings[]) {
@@ -93,3 +95,65 @@ export class Tracks {
     setting.isExpanded = !setting.isExpanded;
   }
 }
+
+export function getArrangedTracks(
+  layout: TrackLayout,
+  origTrackSettings: DataTrackSettings[],
+): DataTrackSettings[] {
+  // First create a map layout ID -> track settings
+  const layoutIdToSettings: Record<string, DataTrackSettings[]> = {};
+  for (const trackSetting of origTrackSettings) {
+    const layoutId = getPortableId(trackSetting);
+
+    if (!layoutIdToSettings[layoutId]) {
+      layoutIdToSettings[layoutId] = [];
+    }
+
+    layoutIdToSettings[layoutId].push(trackSetting);
+  }
+
+  const orderedTracks = [];
+
+  const orderedLayoutIds = new Set(layout.order);
+  if (layout.order.length != orderedLayoutIds.size) {
+    console.warn(
+      "Non-unique elements stored in layout. Proceeding with unique elements. Original:",
+      layout.order,
+      "Reduced:",
+      orderedLayoutIds,
+    );
+  }
+
+  const seenLayoutIds = new Set<string>();
+
+  // Iterate through the IDs and grab all corresponding tracks
+  for (const layoutId of orderedLayoutIds) {
+    const tracks = layoutIdToSettings[layoutId] || [];
+
+    const tracksHidden = layout.hidden[layoutId];
+    const tracksExpanded = layout.expanded[layoutId];
+
+    const updatedTracks = tracks.map((track) => {
+      track.isHidden = tracksHidden;
+      track.isExpanded = tracksExpanded;
+      return track;
+    });
+
+    orderedTracks.push(...updatedTracks);
+    if (tracks.length > 0) {
+      seenLayoutIds.add(layoutId);
+    }
+  }
+
+  // Don't drop leftover tracks
+  for (const [layoutId, tracks] of Object.entries(layoutIdToSettings)) {
+    if (seenLayoutIds.has(layoutId)) {
+      continue;
+    }
+
+    orderedTracks.push(...tracks);
+  }
+
+  return orderedTracks;
+}
+

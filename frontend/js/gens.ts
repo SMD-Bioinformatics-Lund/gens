@@ -121,11 +121,6 @@ export async function initCanvases({
     }
   };
 
-  const trackHeights: TrackHeights = {
-    bandCollapsed: STYLE.tracks.trackHeight.m,
-    dotCollapsed: STYLE.tracks.trackHeight.m,
-    dotExpanded: STYLE.tracks.trackHeight.xl,
-  };
 
   // FIXME: Think about how to organize. Get data sources?
   const orderSamples = (samples: ApiSample[]): ApiSample[] => {
@@ -165,7 +160,6 @@ export async function initCanvases({
     sideMenu,
     mainSample,
     samples,
-    trackHeights,
     variantSoftwareBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
     genomeBuild,
@@ -298,13 +292,11 @@ function addSettingsPageSources(
     render({ reloadData: true });
   };
   const onSetAnnotationSelection = (ids: string[]) => {
-    const saveProfile = true;
-    session.setAnnotationSelections(ids, saveProfile);
+    session.setAnnotationSelections(ids);
     render({});
   };
   const onSetGeneListSelection = (ids: string[]) => {
-    const saveProfile = true;
-    session.setAnnotationSelections(ids, saveProfile);
+    session.setAnnotationSelections(ids);
     render({});
   };
   const onSetVariantThreshold = (threshold: number) => {

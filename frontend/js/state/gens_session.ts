@@ -4,15 +4,12 @@ import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import {
   COLORS,
-  COV_Y_RANGE,
-  DEFAULT_VARIANT_THRES,
   TRACK_LAYOUT_VERSION,
 } from "../constants";
-import { loadProfileSettings, saveProfileToBrowser } from "../util/storage";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
 import { SessionPosition } from "./session_helpers/session_position";
-import { Tracks } from "./session_helpers/session_tracks";
+import { getArrangedTracks, Tracks } from "./session_helpers/session_tracks";
 
 /**
  * The purpose of this class is to keep track of the web session,
@@ -39,32 +36,20 @@ export class GensSession {
   // Constants
   private variantSoftwareBaseURL: string | null;
   private gensBaseURL: string;
-  // private settings: SettingsMenu;
   private genomeBuild: number;
   private idToAnnotSource: Record<string, ApiAnnotationTrack>;
-
-  // Loaded parameters
-  private layoutProfileKey: string;
-  private profileSignature: string;
-  // private fallbackProfile: ProfileSettings | null;
-  private trackHeights: TrackHeights;
-  private colorAnnotationId: string | null = null;
-  private annotationSelections: string[] = [];
-  private coverageRange: Rng = COV_Y_RANGE;
-  private variantThreshold: number = DEFAULT_VARIANT_THRES;
-  private trackLayout: TrackLayout | null = null;
 
   public tracks: Tracks;
   public chromTracks: Tracks;
   public pos: SessionPosition;
-  public profiles: SessionProfiles;
+  public profile: SessionProfiles;
 
   constructor(
     render: (settings: RenderSettings) => void,
     sideMenu: SideMenu,
     mainSample: Sample,
     samples: Sample[],
-    trackHeights: TrackHeights,
+    // trackHeights: TrackHeights,
     variantSoftwareBaseURL: string | null,
     gensBaseURL: string,
     genomeBuild: number,
@@ -80,7 +65,7 @@ export class GensSession {
     this.highlights = {};
 
     this.samples = samples;
-    this.trackHeights = trackHeights;
+    // this.trackHeights = trackHeights;
 
     this.idToAnnotSource = {};
     for (const annotSource of allAnnotationSources) {
@@ -91,16 +76,7 @@ export class GensSession {
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
 
-    // FIXME: Extract layout class?
-
-    // this.profileSignature = computeProfileSignature(this.samples)
-
-    this.profiles = new SessionProfiles(defaultProfiles, samples)
-
-    // this.layoutProfileKey = computeProfileKey(this.samples, genomeBuild);
-    // const profile = loadProfileSettings(this.layoutProfileKey);
-    // this.loadProfile(profile);
-
+    this.profile = new SessionProfiles(defaultProfiles, samples);
     this.tracks = new Tracks([]);
     this.chromTracks = new Tracks([]);
 
@@ -115,8 +91,6 @@ export class GensSession {
       chromInfo,
     );
   }
-
-
 
   public getMainSample(): Sample {
     return this.mainSample;
@@ -134,11 +108,15 @@ export class GensSession {
     return this.gensBaseURL;
   }
 
+  public loadProfile(profile: ProfileSettings): void {
+    this.profile.loadProfile(profile);
+  }
+
   public getAnnotationSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
     if (settings.selectedOnly) {
-      return this.annotationSelections.map((id) => {
+      return this.profile.profile.annotationSelections.map((id) => {
         const track = this.idToAnnotSource[id];
         return {
           id,
@@ -173,59 +151,39 @@ export class GensSession {
   }
 
   public getProfile(): ProfileSettings {
-    return {
-      version: TRACK_LAYOUT_VERSION,
-      profileKey: this.layoutProfileKey,
-      layout: this.trackLayout,
-      colorAnnotationId: this.colorAnnotationId,
-      annotationSelections: this.annotationSelections,
-      coverageRange: this.coverageRange,
-      trackHeights: this.trackHeights,
-      variantThreshold: this.variantThreshold,
-    };
-  }
-
-  private saveProfile(): void {
-    const profile = this.getProfile();
-    saveProfileToBrowser(this.layoutProfileKey, profile);
+    return this.profile.profile;
   }
 
   public setColorAnnotation(id: string | null) {
-    this.colorAnnotationId = id;
-    this.saveProfile();
+    this.profile.profile.colorAnnotationId = id;
   }
 
   public getColorAnnotation(): string | null {
-    return this.colorAnnotationId;
+    return this.profile.profile.colorAnnotationId;
   }
 
   public getAnnotationSelections(): string[] {
-    return this.annotationSelections;
+    return this.profile.profile.annotationSelections;
   }
 
-  public setAnnotationSelections(ids: string[], saveProfile: boolean): void {
-    this.annotationSelections = ids;
-    if (saveProfile) {
-      this.saveProfile();
-    }
+  public setAnnotationSelections(ids: string[]): void {
+    this.profile.profile.annotationSelections = ids;
   }
 
   public getTrackHeights(): TrackHeights {
-    return this.trackHeights;
+    return this.profile.profile.trackHeights;
   }
 
   public setTrackHeights(heights: TrackHeights) {
-    this.trackHeights = heights;
-    this.saveProfile();
+    this.profile.profile.trackHeights = heights;
   }
 
   public getCoverageRange(): [number, number] {
-    return this.coverageRange;
+    return this.profile.profile.coverageRange;
   }
 
   public setCoverageRange(range: [number, number]) {
-    this.coverageRange = range;
-    this.saveProfile();
+    this.profile.profile.coverageRange = range;
   }
 
   public getSamples(): Sample[] {
@@ -247,7 +205,7 @@ export class GensSession {
 
   public addSample(sample: Sample) {
     this.samples.push(sample);
-    this.updateProfileKey();
+    this.profile.updateProfileKey(this.samples);
   }
 
   public removeSample(sample: Sample): void {
@@ -263,8 +221,7 @@ export class GensSession {
     }
 
     this.samples.splice(pos, 1);
-    this.updateProfileKey();
-    // this.layoutProfileKey = computeProfileKey(this.samples, this.genomeBuild);
+    this.profile.updateProfileKey(this.samples);
   }
 
   public getMarkerModeOn(): boolean {
@@ -272,12 +229,11 @@ export class GensSession {
   }
 
   public setVariantThreshold(threshold: number) {
-    this.variantThreshold = threshold;
-    this.saveProfile();
+    this.profile.profile.variantThreshold = threshold;
   }
 
   public getVariantThreshold(): number {
-    return this.variantThreshold;
+    return this.profile.profile.variantThreshold;
   }
 
   public toggleMarkerMode() {
@@ -335,17 +291,16 @@ export class GensSession {
   }
 
   public getLayoutProfileKey(): string {
-    return this.layoutProfileKey;
+    return this.profile.profile.profileKey;
   }
 
   public resetTrackLayout(): void {
-    this.trackLayout = null;
+    this.profile.profile.layout = null;
     this.tracks.setTracks([]);
-    this.saveProfile();
   }
 
   public loadTrackLayout(): void {
-    const layout = this.trackLayout;
+    const layout = this.profile.profile.layout;
 
     if (!layout) {
       // If no layout saved, save the initial one
@@ -355,7 +310,7 @@ export class GensSession {
 
     // Make sure annotation selections are reflected in track settings
     // prior to attempting reordering
-    const annotSelections = this.annotationSelections.map((id) => {
+    const annotSelections = this.profile.profile.annotationSelections.map((id) => {
       return {
         id,
         label: this.idToAnnotSource[id].name,
@@ -392,84 +347,7 @@ export class GensSession {
       expanded,
     };
 
-    this.trackLayout = layout;
-
-    this.saveProfile();
+    this.profile.profile.layout = layout;
   }
 }
 
-// function computeProfileSignature(samples: Sample[]): string {
-//   const types = new Set(
-//     samples.map((s) => (s.sampleType ? s.sampleType : "unknown")).sort(),
-//   );
-
-//   return Array.from(types).join("+");
-
-//   // const signature = Array.from(types).join("+");
-//   // return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
-// }
-
-function computeProfileKey(signature: string, genomeBuild: number): string {
-  return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
-}
-
-function getArrangedTracks(
-  layout: TrackLayout,
-  origTrackSettings: DataTrackSettings[],
-): DataTrackSettings[] {
-  // First create a map layout ID -> track settings
-  const layoutIdToSettings: Record<string, DataTrackSettings[]> = {};
-  for (const trackSetting of origTrackSettings) {
-    const layoutId = getPortableId(trackSetting);
-
-    if (!layoutIdToSettings[layoutId]) {
-      layoutIdToSettings[layoutId] = [];
-    }
-
-    layoutIdToSettings[layoutId].push(trackSetting);
-  }
-
-  const orderedTracks = [];
-
-  const orderedLayoutIds = new Set(layout.order);
-  if (layout.order.length != orderedLayoutIds.size) {
-    console.warn(
-      "Non-unique elements stored in layout. Proceeding with unique elements. Original:",
-      layout.order,
-      "Reduced:",
-      orderedLayoutIds,
-    );
-  }
-
-  const seenLayoutIds = new Set<string>();
-
-  // Iterate through the IDs and grab all corresponding tracks
-  for (const layoutId of orderedLayoutIds) {
-    const tracks = layoutIdToSettings[layoutId] || [];
-
-    const tracksHidden = layout.hidden[layoutId];
-    const tracksExpanded = layout.expanded[layoutId];
-
-    const updatedTracks = tracks.map((track) => {
-      track.isHidden = tracksHidden;
-      track.isExpanded = tracksExpanded;
-      return track;
-    });
-
-    orderedTracks.push(...updatedTracks);
-    if (tracks.length > 0) {
-      seenLayoutIds.add(layoutId);
-    }
-  }
-
-  // Don't drop leftover tracks
-  for (const [layoutId, tracks] of Object.entries(layoutIdToSettings)) {
-    if (seenLayoutIds.has(layoutId)) {
-      continue;
-    }
-
-    orderedTracks.push(...tracks);
-  }
-
-  return orderedTracks;
-}

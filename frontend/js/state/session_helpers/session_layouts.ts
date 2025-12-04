@@ -1,70 +1,39 @@
-import { COV_Y_RANGE, DEFAULT_VARIANT_THRES } from "../../constants";
+import { STYLE, TRACK_LAYOUT_VERSION } from "../../constants";
 import { loadProfileSettings } from "../../util/storage";
 
-export class SessionProfiles {
-  private profileKey: string;
-  private defaultProfiles: Record<string, ProfileSettings>;
+// FIXME: Where should these defaults be used
+const trackHeights: TrackHeights = {
+  bandCollapsed: STYLE.tracks.trackHeight.m,
+  dotCollapsed: STYLE.tracks.trackHeight.m,
+  dotExpanded: STYLE.tracks.trackHeight.xl,
+};
 
-  // Loaded parameters
-  private layoutProfileKey: string;
-  private profileSignature: string;
-  // private fallbackProfile: ProfileSettings | null;
-  private trackHeights: TrackHeights;
-  private colorAnnotationId: string | null = null;
-  private annotationSelections: string[] = [];
-  private coverageRange: Rng = COV_Y_RANGE;
-  private variantThreshold: number = DEFAULT_VARIANT_THRES;
-  private trackLayout: TrackLayout | null = null;
+// FIXME: Seems we need a dedicated "save profile" button
+export class SessionProfiles {
+  public profile: ProfileSettings;
+  public profileKey: string;
 
   constructor(
     defaultProfiles: Record<string, ProfileSettings>,
     samples: Sample[],
   ) {
     const profileKey = this.computeProfileSignature(samples);
+    this.profileKey = profileKey;
 
     let profile = null;
-    const userProfile = loadProfileSettings(this.layoutProfileKey);
+    const userProfile = loadProfileSettings(profileKey);
     if (userProfile != null) {
       console.log("User profile found");
       profile = userProfile;
-    } else if (!this.defaultProfiles[this.profileSignature]) {
+    } else if (!defaultProfiles[profileKey]) {
       console.log("Default profile used");
-      profile = this.defaultProfiles[this.profileSignature];
+      profile = defaultProfiles[profileKey];
     }
-    this.loadProfile(profile);
+    this.profile = loadProfile(profile);
   }
 
   public loadProfile(profile: ProfileSettings): void {
-    console.log("Loading profile", profile);
-
-    if (!profile) {
-      console.warn("No profile found, using defaults");
-      return;
-    }
-
-    if (profile.version != TRACK_LAYOUT_VERSION) {
-      console.warn(
-        `Version mismatch. Found ${profile.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
-      );
-      profile = undefined;
-      return;
-    }
-
-    this.variantThreshold = profile.variantThreshold;
-    this.trackLayout = profile.layout;
-    this.trackHeights = profile.trackHeights;
-    this.colorAnnotationId = profile.colorAnnotationId;
-    this.coverageRange = profile.coverageRange;
-
-    // A pre-selected track might disappear if the db is updated
-    this.annotationSelections = [];
-    for (const loadedSelectionId of profile.annotationSelections) {
-      if (!this.idToAnnotSource[loadedSelectionId]) {
-        console.warn(`Selection ID ${loadedSelectionId} not found, skipping`);
-        continue;
-      }
-      this.annotationSelections.push(loadedSelectionId);
-    }
+    this.profile = profile;
   }
 
   public updateProfileKey(samples: Sample[]): void {
@@ -81,6 +50,19 @@ export class SessionProfiles {
     // const signature = Array.from(types).join("+");
     // return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
   }
+
+  // public getProfile(): ProfileSettings {
+  //   return {
+  //     version: TRACK_LAYOUT_VERSION,
+  //     profileKey: this.layoutProfileKey,
+  //     layout: this.trackLayout,
+  //     colorAnnotationId: this.colorAnnotationId,
+  //     annotationSelections: this.annotationSelections,
+  //     coverageRange: this.coverageRange,
+  //     trackHeights: this.trackHeights,
+  //     variantThreshold: this.variantThreshold,
+  //   };
+  // }
 }
 
 function cloneProfile(
@@ -91,4 +73,23 @@ function cloneProfile(
   }
 
   return JSON.parse(JSON.stringify(profile)) as ProfileSettings;
+}
+
+function loadProfile(profile: ProfileSettings): ProfileSettings | null {
+  console.log("Loading profile", profile);
+
+  if (!profile) {
+    console.warn("No profile found, using defaults");
+    return;
+  }
+
+  if (profile.version != TRACK_LAYOUT_VERSION) {
+    console.warn(
+      `Version mismatch. Found ${profile.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
+    );
+    profile = undefined;
+    return;
+  }
+
+  return profile;
 }
