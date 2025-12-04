@@ -13,10 +13,13 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - CLI option to delete full case [#609](https://github.com/SMD-Bioinformatics-Lund/gens/pull/609)
 - Allow reading all input as either raw text or gzip-format in `generate_gens_data.py` [#605](https://github.com/SMD-Bioinformatics-Lund/gens/pull/605).
 
+### Changed
+
+- BAF line centered at 0.5
+
 ### Fixed
 
 - Skip missing genotype variants in `generate_gens_data.py` [#588](https://github.com/SMD-Bioinformatics-Lund/gens/pull/588).
-
 - Input checking when loading samples through CLI [#611](https://github.com/SMD-Bioinformatics-Lund/gens/pull/611)
 - Sample validation when accessing sample through URL [#611](https://github.com/SMD-Bioinformatics-Lund/gens/pull/611)
 - Prevent extra zoom step when drag-select zooming [#618](https://github.com/SMD-Bioinformatics-Lund/gens/pull/618)
