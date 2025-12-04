@@ -76,7 +76,7 @@
         caseId: '{{ case_id }}',
         sampleIds: {{ sample_ids | safe }},
         genomeBuild: {{ genome_build | safe }},
-        variantSoftwareBaseURL: {{ variant_software_base_url | tojson }},
+        variantSoftwareBaseURL: {{ variant_software_base_url | default(None) | string | tojson }},
         selectedVariant: '{{ selected_variant }}',
         startRegion: {
             chrom: String(chromJs),
