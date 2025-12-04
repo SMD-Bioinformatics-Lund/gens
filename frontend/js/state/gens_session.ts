@@ -222,13 +222,10 @@ export class GensSession {
 
   private updateProfileKey(): void {
     this.profileSignature = computeProfileSignature(this.samples);
-    this.layoutProfileKey = computeProfileSignature(
-      this.profileSignature,
-      this.genomeBuild
-    )
+    // this.layoutProfileKey = computeProfileSignature(this.profileSignature);
     this.fallbackProfile = this.cloneProfile(
-      this.profileDefaults[this.profileSignature]
-    )
+      this.profileDefaults[this.profileSignature],
+    );
   }
 
   private cloneProfile(
@@ -463,7 +460,6 @@ function computeProfileSignature(samples: Sample[]): string {
 function computeProfileKey(signature: string, genomeBuild: number): string {
   return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
 }
-
 
 function getArrangedTracks(
   layout: TrackLayout,
