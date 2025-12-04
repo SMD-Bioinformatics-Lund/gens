@@ -76,7 +76,11 @@ export function initializeDragSelect(
       const sortedY = sortRange([dragStart.y, pos.y]);
 
       onDragRelease(sortedX, sortedY, keyLogger.heldKeys.Shift);
-      suppressNextClick = true;
+      // The composed path is an array with different levels of HTML elements
+      // Only suppress if inside the current element
+      // Otherwise, the next click outside it will be suppressed
+      const composedPath = event.composedPath();
+      suppressNextClick = composedPath.includes(element);
     }
     if (marker) {
       marker.remove();
