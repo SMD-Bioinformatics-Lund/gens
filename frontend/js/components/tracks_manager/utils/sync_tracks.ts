@@ -153,6 +153,7 @@ async function sampleDiff(
         range: [0, 1],
         label: "B Allele Freq",
         hideLabelOnCollapse: true,
+        highlightedYs: [0.5],
       },
       isExpanded: true,
       isHidden: false,
