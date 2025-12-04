@@ -15,7 +15,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
-- BAF line centered at 0.5
+- BAF 0.5 line highlighted, and tick range changed to 0.25 to make sure one of the ticks end up at 0.5 [#619](https://github.com/SMD-Bioinformatics-Lund/gens/pull/619)
 
 ### Fixed
 

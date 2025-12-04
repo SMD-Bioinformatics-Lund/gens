@@ -8,6 +8,7 @@ Steps to setup a new work PR
 * Also push to Jakob37/GitHub (for Codex access)
 * Push latest dev version to Jakob37/GitHub as well
 * Open a draft PR on GitHub
+* Add a reference to this PR in the CHANGELOG (\[ID\]\(URL\) format)
 * Open a draft PR on Jakob37/GitHub
 * Copy in the `docs/work_pr_template.md`
 * Fill it out
