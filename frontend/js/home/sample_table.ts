@@ -77,6 +77,8 @@ export class SamplesTable extends HTMLElement {
     this.loadingPlaceholder.hidden = true;
     this.tableContainer.hidden = false;
 
+    console.log("URL:", variantSoftwareUrl);
+
     // FIXME: URL needs to be generalized when more software are introduced
     const newRows = sampleInfo.map((s) => {
       const gensCaseLink = `<a href="${getGensURL(s.case_id)}">${s.case_id}</a>`;

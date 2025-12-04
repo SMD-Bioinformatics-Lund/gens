@@ -1,4 +1,4 @@
-variant_url = "http://localhost:8000"
+#variant_url = "http://localhost:8000"
 authentication = "disabled"
 gens_api_url = "http://localhost:5000/"
 main_sample_types = ["proband", "tumor"]
