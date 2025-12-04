@@ -56,9 +56,9 @@ class Settings(BaseSettings):
 
     # For scout integration
     gens_db: MongoDbConfig
-    variant_db: MongoDbConfig
-    variant_url: HttpUrl = Field(
-        ..., description="Base URL to interpretation software."
+    variant_db: MongoDbConfig | None = None
+    variant_url: HttpUrl | None = Field(
+        default=None, description="Base URL to interpretation software."
     )
     gens_api_url: HttpUrl = Field(..., description="Gens API URL")
     variant_software_backend: str = Field(
@@ -91,7 +91,7 @@ class Settings(BaseSettings):
     def get_dict(self) -> dict[str, Any]:
         return {
             "gens_db": self.gens_db.database,
-            "variant_db": self.variant_db.database,
+            "variant_db": self.variant_db.database if self.variant_db else None,
             "scout_url": self.variant_url,
             "gens_api_url": self.gens_api_url,
             "main_sample_types": self.main_sample_types,
@@ -104,7 +104,7 @@ class Settings(BaseSettings):
     def check_oauth_opts(self) -> "Settings":
         """Check that OAUTH options are set if authentication is oauth."""
         if self.authentication == AuthMethod.OAUTH:
-            if self.oauth is not None:
+            if self.oauth is None:
                 raise ValueError(
                     "OAUTH require you to configure client_id, secret and discovery_url"
                 )
@@ -126,12 +126,13 @@ class Settings(BaseSettings):
         )
 
         # scout
-        conn_info = parse_uri(str(self.variant_db.connection))
-        self.variant_db.database = (
-            self.variant_db.database
-            if conn_info["database"] is None
-            else conn_info["database"]
-        )
+        if self.variant_db:
+            conn_info = parse_uri(str(self.variant_db.connection))
+            self.variant_db.database = (
+                self.variant_db.database
+                if conn_info["database"] is None
+                else conn_info["database"]
+            )
 
         return self
 

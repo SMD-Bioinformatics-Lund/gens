@@ -40,7 +40,7 @@ import { HelpMenu } from "./components/side_menu/help_menu";
 
 export async function samplesListInit(
   samples: SampleInfo[],
-  scoutBaseURL: string,
+  variantSoftwareBaseURL: string | null,
   gensBaseURL: string,
   genomeBuild: number,
 ) {
@@ -57,14 +57,14 @@ export async function samplesListInit(
     return new URL(subpath, gensBaseURL).href;
   };
 
-  gens_home.initialize(samples, scoutBaseURL, getGensURL);
+  gens_home.initialize(samples, variantSoftwareBaseURL, getGensURL);
 }
 
 export async function initCanvases({
   caseId,
   sampleIds,
   genomeBuild,
-  scoutBaseURL,
+  variantSoftwareBaseURL,
   gensApiURL,
   mainSampleTypes,
   startRegion,
@@ -75,7 +75,7 @@ export async function initCanvases({
   caseId: string;
   sampleIds: string[];
   genomeBuild: number;
-  scoutBaseURL: string;
+  variantSoftwareBaseURL: string | null;
   gensApiURL: string;
   mainSampleTypes: string[];
   annotationFile: string;
@@ -91,9 +91,14 @@ export async function initCanvases({
   const helpPage = document.createElement("help-page") as HelpMenu;
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
 
+  // FIXME: This will need to be adapted when more software are introduced
+  const variantSoftwareCaseUrl = variantSoftwareBaseURL
+    ? `${variantSoftwareBaseURL}/case/case_id/${caseId}`
+    : null;
+
   headerInfo.initialize(
     caseId,
-    `${scoutBaseURL}/case/case_id/${caseId}`,
+    variantSoftwareCaseUrl,
     version,
   );
 
@@ -161,7 +166,7 @@ export async function initCanvases({
     mainSample,
     samples,
     trackHeights,
-    scoutBaseURL,
+    variantSoftwareBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
     genomeBuild,
     defaultProfiles,

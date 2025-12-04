@@ -11,7 +11,7 @@ export interface InfoField {
 export function getVariantContextMenuContent(
   sampleId: string | null,
   details: ApiVariantDetails,
-  variantUrl: string,
+  variantUrl: string | null,
 ): HTMLDivElement[] {
   const sample = details.samples.find((s) => s.sample_id === sampleId);
   const info: InfoField[] = [
@@ -43,7 +43,6 @@ export function getVariantContextMenuContent(
       key: "Split read",
       value: sample.split_read,
     },
-    { key: "Variant URL", value: variantUrl, url: variantUrl },
     { key: "CADD score", value: details.cadd_score },
     {
       key: "Category",
@@ -55,6 +54,10 @@ export function getVariantContextMenuContent(
     },
     { key: "Rank score", value: details.rank_score.toString() },
   ];
+
+  if (variantUrl) {
+    info.push({ key: "Variant URL", value: variantUrl, url: variantUrl });
+  }
 
   const entries: HTMLDivElement[] = info
     .sort((a, b) => a.key.localeCompare(b.key))

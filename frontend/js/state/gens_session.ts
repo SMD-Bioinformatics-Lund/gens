@@ -36,7 +36,7 @@ export class GensSession {
   private chromViewActive: boolean;
 
   // Constants
-  private scoutBaseURL: string;
+  private variantSoftwareBaseURL: string | null;
   private gensBaseURL: string;
   // private settings: SettingsMenu;
   private genomeBuild: number;
@@ -64,7 +64,7 @@ export class GensSession {
     mainSample: Sample,
     samples: Sample[],
     trackHeights: TrackHeights,
-    scoutBaseURL: string,
+    variantSoftwareBaseURL: string | null,
     gensBaseURL: string,
     genomeBuild: number,
     profileDefaults: Record<string, ProfileSettings>,
@@ -86,7 +86,7 @@ export class GensSession {
       this.idToAnnotSource[annotSource.track_id] = annotSource;
     }
 
-    this.scoutBaseURL = scoutBaseURL;
+    this.variantSoftwareBaseURL = variantSoftwareBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
     this.profileDefaults = profileDefaults;
@@ -105,7 +105,7 @@ export class GensSession {
 
     const chromosome = startRegion ? startRegion.chrom : "1";
     const start = startRegion?.start ? startRegion.start : 1;
-    const end = startRegion?.end ? startRegion.end : chromSizes["1"];
+    const end = startRegion?.end ? startRegion.end : chromSizes[chromosome];
     this.pos = new SessionPosition(
       chromosome,
       start,
@@ -188,8 +188,10 @@ export class GensSession {
     // return this.settings.getAnnotSources(settings);
   }
 
-  public getVariantURL(variantId: string): string {
-    return `${this.scoutBaseURL}/document_id/${variantId}`;
+  public getVariantURL(variantId: string): string | null {
+    return this.variantSoftwareBaseURL
+      ? `${this.variantSoftwareBaseURL}/document_id/${variantId}`
+      : null;
   }
 
   public getChromViewActive(): boolean {

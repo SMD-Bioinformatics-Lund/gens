@@ -58,8 +58,15 @@ export class HeaderInfo extends ShadowBaseElement {
     this.versionElem = this.root.querySelector("#version");
   }
 
-  initialize(caseId: string, caseURL: string, version: string) {
+  initialize(caseId: string, caseURL: string | null, version: string) {
     this.caseIdElem.innerHTML = caseId;
+    if (caseURL) {
+      this.caseIdElem.href = caseURL;
+      this.caseIdElem.target = "_blank";
+    } else {
+      this.caseIdElem.removeAttribute("href");
+      this.caseIdElem.removeAttribute("target");
+    }
     this.caseIdElem.href = caseURL;
     this.versionElem.innerHTML = version;
   }

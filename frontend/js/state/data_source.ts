@@ -21,7 +21,7 @@ export function getRenderDataSource(
   api: API,
   getChrom: () => string,
   getXRange: () => Rng,
-  getVariantURL: (id: string) => string,
+  getVariantURL: (id: string) => string | null,
 ): RenderDataSource {
   const getChromInfo = async () => {
     return api.getChromData(getChrom());
