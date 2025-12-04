@@ -29,6 +29,8 @@ Generates per-sample ROH and UPD tracks based on ROH output from `bcftools roh` 
 
 Generates meta tables based on Copy ratio output from GATK's `CollectReadCounts+DenoiseReadCounts`.
 
+Generate meta tables giving per-chromosome UPD metrics.
+
 Should really be split into two or more smaller scripts. Bringing it over as-is from the pipeline to keep it mainly in the Gens repo.
 
 See how it is used in https://github.com/SMD-Bioinformatics-Lund/nextflow_wgs for more information (currently named `prepare_gens_v4_input.py` over there, will be harmonized with the name in this repo).
