@@ -1,8 +1,7 @@
 import {
   DEFAULT_COV_Y_RANGE,
   STYLE,
-  TRACK_HEIGHTS,
-  PROFILE_SETTINGS_VERSION as PROFILE_SETTINGS_VERSION,
+  PROFILE_SETTINGS_VERSION,
 } from "../../constants";
 import { loadProfileSettings, saveProfileToBrowser } from "../../util/storage";
 
@@ -130,6 +129,8 @@ export class SessionProfiles {
 
     this.profile = profile;
 
+    this.save();
+
     // this.profile.trackLayout = null;
   }
 
@@ -139,6 +140,8 @@ export class SessionProfiles {
 
   public setTrackLayout(layout: TrackLayout) {
     this.profile.trackLayout = layout;
+
+    this.save();
   }
 
   public getVariantThreshold(): number {
@@ -165,22 +168,7 @@ export class SessionProfiles {
 
     return Array.from(types).join("+");
 
-    // const signature = Array.from(types).join("+");
-    // return `v${TRACK_LAYOUT_VERSION}.${genomeBuild}.${signature}`;
   }
-
-  // public getProfile(): ProfileSettings {
-  //   return {
-  //     version: TRACK_LAYOUT_VERSION,
-  //     profileKey: this.layoutProfileKey,
-  //     layout: this.trackLayout,
-  //     colorAnnotationId: this.colorAnnotationId,
-  //     annotationSelections: this.annotationSelections,
-  //     coverageRange: this.coverageRange,
-  //     trackHeights: this.trackHeights,
-  //     variantThreshold: this.variantThreshold,
-  //   };
-  // }
 }
 
 function cloneProfile(
@@ -192,22 +180,3 @@ function cloneProfile(
 
   return JSON.parse(JSON.stringify(profile)) as ProfileSettings;
 }
-
-// function loadProfile(profile: ProfileSettings): ProfileSettings | null {
-//   console.log("Loading profile", profile);
-
-//   if (!profile) {
-//     console.warn("No profile found, using defaults");
-//     return;
-//   }
-
-//   if (profile.version != TRACK_LAYOUT_VERSION) {
-//     console.warn(
-//       `Version mismatch. Found ${profile.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
-//     );
-//     profile = undefined;
-//     return;
-//   }
-
-//   return profile;
-// }
