@@ -15,6 +15,7 @@ export class SessionProfiles {
   private profile: ProfileSettings;
   private profileKey: string;
   private defaultProfiles: Record<string, ProfileSettings>;
+  private baseTrackLayout: TrackLayout | null;
 
   constructor(
     defaultProfiles: Record<string, ProfileSettings>,
@@ -27,6 +28,7 @@ export class SessionProfiles {
     const userProfile = loadProfileSettings(profileKey);
 
     this.defaultProfiles = defaultProfiles;
+    this.baseTrackLayout = null;
 
     console.log("All default profiles", defaultProfiles);
 
@@ -124,7 +126,11 @@ export class SessionProfiles {
       trackHeights: defaultTrackHeights,
     };
 
-    const profile: ProfileSettings = defaultProfile || baseProfile;
+    const baseLayoutProfile: ProfileSettings = this.baseTrackLayout
+      ? { ...baseProfile, layout: this.baseTrackLayout }
+      : baseProfile;
+
+    const profile: ProfileSettings = defaultProfile || baseLayoutProfile;
     this.profile = profile;
     this.save();
   }
@@ -137,6 +143,10 @@ export class SessionProfiles {
     this.profile.layout = layout;
 
     this.save();
+  }
+
+  public setBaseTrackLayout(layout: TrackLayout) {
+    this.baseTrackLayout = layout
   }
 
   public getVariantThreshold(): number {

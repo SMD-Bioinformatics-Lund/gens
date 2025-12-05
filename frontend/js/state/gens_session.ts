@@ -261,6 +261,9 @@ export class GensSession {
 
   // How to load the "bare" layout
   public loadTrackLayout(): void {
+    this.profile.setBaseTrackLayout(
+      buildTrackLayoutFromTracks(this.tracks.getTracks()),
+    );
     const layout = this.profile.getTrackLayout();
 
     console.log("Loading the layout", layout);
@@ -272,7 +275,9 @@ export class GensSession {
     }
 
     const selectedAnnotIds = this.profile.getAnnotationSelections();
-    const existingAnnotIds = selectedAnnotIds.filter((id) => this.idToAnnotSource[id] != null);
+    const existingAnnotIds = selectedAnnotIds.filter(
+      (id) => this.idToAnnotSource[id] != null,
+    );
 
     // Make sure annotation selections are reflected in track settings
     // prior to attempting reordering
@@ -297,23 +302,27 @@ export class GensSession {
   }
 
   public saveTrackLayout(): void {
-    const order: Set<string> = new Set();
-    const hidden: Record<string, boolean> = {};
-    const expanded: Record<string, boolean> = {};
-    for (const info of this.tracks.getTracks()) {
-      const pid = getPortableId(info);
-      order.add(pid);
-      hidden[pid] = info.isHidden;
-      expanded[pid] = info.isExpanded;
-    }
-
-    const layout = {
-      version: PROFILE_SETTINGS_VERSION,
-      order: Array.from(order),
-      hidden,
-      expanded,
-    };
-
+    const layout = buildTrackLayoutFromTracks(this.tracks.getTracks());
     this.profile.setTrackLayout(layout);
   }
+}
+
+function buildTrackLayoutFromTracks(tracks: DataTrackSettings[]) {
+  const order: Set<string> = new Set();
+  const hidden: Record<string, boolean> = {};
+  const expanded: Record<string, boolean> = {};
+  for (const info of this.tracks.getTracks()) {
+    const pid = getPortableId(info);
+    order.add(pid);
+    hidden[pid] = info.isHidden;
+    expanded[pid] = info.isExpanded;
+  }
+
+  const layout = {
+    version: PROFILE_SETTINGS_VERSION,
+    order: Array.from(order),
+    hidden,
+    expanded,
+  };
+  return layout;
 }
