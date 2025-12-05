@@ -9,6 +9,7 @@ from utils.generate_gens_data import (
     parse_gvcfvaf,
 )
 
+FIXTURES = Path(__file__).parent.parent / "data" / "generate_gens_data"
 
 def test_generate_baf_bed(tmp_path: Path):
     baf_file = tmp_path / "input.baf"
@@ -141,6 +142,22 @@ def test_parse_gvcfvaf(tmp_path: Path, capsys):
     assert "1 variants skipped!" in captured.err
 
 
+def test_parse_gvcfvaf_accepts_gzipped_baf_positions(tmp_path: Path):
+
+    gvcf_file = tmp_path / "sample.vcf.gz"
+    with gzip.open(gvcf_file, "wt", encoding="utf-8") as fh:
+        fh.write((FIXTURES / "sample.g.vcf").read_text())
+
+    positions_file = tmp_path / "baf_positions.tsv.gz"
+    with gzip.open(positions_file, "wt", encoding="utf-8") as fh:
+        fh.write((FIXTURES / "baf_positions.tsv").read_text())
+
+    output = io.StringIO()
+    parse_gvcfvaf(gvcf_file, positions_file, output, depth_threshold=1)
+
+    assert output.getvalue().splitlines() == ["1\t10\t0.2", "1\t20\t0.0"]
+
+
 def test_parse_gvcfvaf_with_chr_prefix(tmp_path: Path, capsys):
 
     gvcf_file = tmp_path / "sample.vcf.gz"
@@ -191,7 +208,7 @@ def test_generate_gens_data_end_to_end(tmp_path: Path):
         fh.write("1\t10\t.\tA\tC\t.\tPASS\tEND=10\tGT:AD:DP\t0/1:8,2:10\n")
         fh.write("1\t20\t.\tG\tT\t.\tPASS\tEND=20\tGT:AD:DP\t0/0:10,0:10\n")
 
-    positions_file = tmp_path / "positions.tsv"
+    positions_file = tmp_path / "baf_positions.tsv"
     positions_file.write_text("\n".join(["1\t10", "1\t20"]))
 
     main(
@@ -217,6 +234,45 @@ def test_generate_gens_data_end_to_end(tmp_path: Path):
         "d_1\t49\t50\t0.15000000000000002",
     ]
 
+    assert baf_output.read_text().splitlines() == [
+        "o_1\t9\t10\t0.2",
+        "a_1\t9\t10\t0.2",
+        "b_1\t9\t10\t0.2",
+        "c_1\t9\t10\t0.2",
+        "d_1\t9\t10\t0.2",
+        "d_1\t19\t20\t0.0",
+    ]
+
+
+def test_generate_gens_data_supports_gzipped_baf_positions(tmp_path: Path):
+
+    outdir = tmp_path / "out"
+    coverage_file = tmp_path / "coverage.tsv"
+    coverage_file.write_text((FIXTURES / "coverage.tsv").read_text())
+
+    gvcf_file = tmp_path / "sample.g.vcf.gz"
+    with gzip.open(gvcf_file, "wt", encoding="utf-8") as fh:
+        fh.write((FIXTURES / "sample.g.vcf").read_text())
+
+    positions_file = tmp_path / "baf_positions.tsv.gz"
+    with gzip.open(positions_file, "wt", encoding="utf-8") as fh:
+        fh.write((FIXTURES / "baf_positions.tsv").read_text())
+
+    main(
+        label="sample",
+        coverage=coverage_file,
+        gvcf=gvcf_file,
+        baf_positions=positions_file,
+        out_dir=outdir,
+        bigwig=False,
+        baf_min_depth=1,
+        bgzip_tabix_output=False,
+        threads=1,
+    )
+
+    baf_output = outdir / "sample.baf.bed"
+
+    assert baf_output.exists()
     assert baf_output.read_text().splitlines() == [
         "o_1\t9\t10\t0.2",
         "a_1\t9\t10\t0.2",

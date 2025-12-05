@@ -99,7 +99,7 @@ export class ChromosomeView extends ShadowBaseElement {
         isExpanded: false,
         isHidden: false,
         yAxis: {
-          range: session.getCoverageRange(),
+          range: session.profile.getCoverageRange(),
           label: "Log2 ratio",
           hideLabelOnCollapse: true,
           highlightedYs: [0],

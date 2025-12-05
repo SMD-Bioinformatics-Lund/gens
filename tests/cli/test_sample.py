@@ -1,3 +1,4 @@
+import gzip
 import logging
 from pathlib import Path
 from types import ModuleType
@@ -14,6 +15,12 @@ from gens.models.sample import SampleInfo, SampleSex
 LOG = logging.getLogger(__name__)
 
 
+def write_sample_track(file_path: Path) -> Path:
+    with gzip.open(file_path, "wt", encoding="utf-8") as fh:
+        fh.write("0_1\t0\t1\t0.1\n")
+    return file_path
+
+
 @pytest.fixture(autouse=True)
 def ensure_indexes(db: mongomock.Database):
     coll = db.get_collection(SAMPLES_COLLECTION)
@@ -27,10 +34,8 @@ def test_load_sample_cli(
     db: mongomock.Database,
     tmp_path: Path,
 ):
-    baf_file = tmp_path / "baf"
-    baf_file.write_text("baf")
-    cov_file = tmp_path / "cov"
-    cov_file.write_text("cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
     overview_file = tmp_path / "overview"
     overview_file.write_text("{}")
     meta_file_simple = tmp_path / "meta_simple.tsv"
@@ -95,10 +100,8 @@ def test_load_sample_cli_with_string_genome_build_fails(
     tmp_path: Path,
     db: mongomock.Database,
 ):
-    baf_file = tmp_path / "baf"
-    baf_file.write_text("baf")
-    cov_file = tmp_path / "cov"
-    cov_file.write_text("cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
     overview_file = tmp_path / "overview"
     overview_file.write_text("{}")
     meta_file = tmp_path / "meta.tsv"
@@ -147,10 +150,8 @@ def test_load_sample_cli_accepts_aliases(
     alias: str,
     expected: str,
 ) -> None:
-    baf_file = tmp_path / "baf"
-    baf_file.write_text("baf")
-    cov_file = tmp_path / "cov"
-    cov_file.write_text("cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
     overview_file = tmp_path / "overview"
     overview_file.write_text("{}")
 
@@ -193,12 +194,13 @@ def test_update_sample_updates_document(
     tmp_path: Path,
     db: mongomock.Database,
 ) -> None:
+    existing_sample_file = write_sample_track(tmp_path / "existing_sample")
     sample_obj = SampleInfo(
         sample_id="sample1",
         case_id="caseA",
         genome_build=GenomeBuild(19),
-        baf_file=Path(__file__),
-        coverage_file=Path(__file__),
+        baf_file=existing_sample_file,
+        coverage_file=existing_sample_file,
         sample_type=None,
         sex=None,
         meta=[],
@@ -214,10 +216,8 @@ def test_update_sample_updates_document(
     meta_file = tmp_path / "meta.tsv"
     meta_file.write_text("type\tvalue\nA\t1\n")
 
-    baf_file = tmp_path / "baf"
-    baf_file.write_text("baf")
-    cov_file = tmp_path / "cov"
-    cov_file.write_text("cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
 
     # assert update_sample_cmd.sample.callback is not None
 
@@ -256,19 +256,20 @@ def test_update_sample_updates_document(
     assert meta[0]["data"][0]["color"] == "rgb(0,0,0)"
 
 
-def _build_sample() -> SampleInfo:
+def _build_sample(sample_file: Path) -> SampleInfo:
     return SampleInfo(
         sample_id="sample1",
         case_id="caseA",
         genome_build=GenomeBuild(38),
-        baf_file=Path(__file__),
-        coverage_file=Path(__file__),
+        baf_file=sample_file,
+        coverage_file=sample_file,
     )
 
 
-def test_update_sample_modifies_collection(db: Any) -> None:
+def test_update_sample_modifies_collection(db: Any, tmp_path: Path) -> None:
 
-    sample_obj = _build_sample()
+    sample_file = write_sample_track(tmp_path / "sample.bed")
+    sample_obj = _build_sample(sample_file)
     update_sample(db, sample_obj)
 
     coll = db.get_collection(SAMPLES_COLLECTION)

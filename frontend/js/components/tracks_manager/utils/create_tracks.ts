@@ -70,7 +70,7 @@ export function getTrack(
       dataSource.getVariantBands(
         setting.sample,
         getChromosome(),
-        session.getVariantThreshold(),
+        session.profile.getVariantThreshold(),
       );
     track = getBandTrack(
       session,

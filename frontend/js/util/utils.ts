@@ -262,7 +262,7 @@ export function generateTicks(range: Rng, step: number): number[] {
 
   const ticks = [];
   for (let v = first; v <= range[1]; v += step) {
-    ticks.push(Math.round(v * 10) / 10);
+    ticks.push(Math.round(v * 100) / 100);
   }
   return ticks;
 }
@@ -282,7 +282,7 @@ export function getTickSize(range: Rng): number {
     return 0.5;
   }
   if (size > 0.75) {
-    return 0.2;
+    return 0.25;
   }
   return 0.1;
 }
@@ -386,16 +386,16 @@ export function getSampleFromID(id: string): Sample {
   return sample;
 }
 
-export function downloadAsJSON(object: any, filename: string) {
-    const serialized = JSON.stringify(object, null, 2);
-    const blob = new Blob([serialized], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+export function downloadAsJSON(object: unknown, filename: string) {
+  const serialized = JSON.stringify(object, null, 2);
+  const blob = new Blob([serialized], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
