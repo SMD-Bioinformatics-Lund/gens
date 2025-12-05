@@ -17,6 +17,7 @@ const trackHeights: TrackHeights = {
 export class SessionProfiles {
   private profile: ProfileSettings;
   private profileKey: string;
+  private defaultProfiles: Record<string, ProfileSettings>;
 
   constructor(
     defaultProfiles: Record<string, ProfileSettings>,
@@ -28,6 +29,8 @@ export class SessionProfiles {
 
     // let profile = null;
     const userProfile = loadProfileSettings(profileKey);
+
+    this.defaultProfiles = defaultProfiles;
 
     console.log("All default profiles", defaultProfiles);
 
@@ -109,8 +112,25 @@ export class SessionProfiles {
 
   // Is this the one that should go back to the default?
   public resetTrackLayout() {
-    console.log("Reset");
-    this.profile.trackLayout = null;
+    const defaultProfile = cloneProfile(this.defaultProfiles[this.profileKey]);
+
+    const baseProfile = {
+      version: PROFILE_SETTINGS_VERSION,
+      profileKey: this.profileKey,
+      // FIXME: How to default this one?
+      trackLayout: null,
+      colorAnnotationId: null,
+      variantThreshold: 0,
+      annotationSelections: [],
+      coverageRange: DEFAULT_COV_Y_RANGE,
+      trackHeights,
+    };
+
+    const profile: ProfileSettings = defaultProfile || baseProfile;
+
+    this.profile = profile;
+
+    // this.profile.trackLayout = null;
   }
 
   public getTrackLayout(): TrackLayout {
