@@ -1,13 +1,11 @@
 import { COLORS, FONT_WEIGHT, SIZES } from "../../constants";
-import {
-  createTable,
-  TableOptions as TableData,
-  formatValue,
-  TableCell,
-} from "../../util/table";
+import { createTable, formatValue, parseTableFromMeta } from "../../util/table";
 import { removeChildren } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
+
+const WARNING_ROW_CLASS = "meta-table__warning-row";
+const WARNING_CELL_CLASS = "meta-table__warning-cell";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -62,6 +60,13 @@ template.innerHTML = String.raw`
       background: ${COLORS.extraLightGray};
       font-weight: ${FONT_WEIGHT.header};
     }
+    table.meta-table tr.${WARNING_ROW_CLASS} {
+      background: rgba(255, 0, 0, 0.15);
+    }
+    table.meta-table td.${WARNING_CELL_CLASS} {
+      background: rgba(255, 0, 0, 0.3);
+      font-weight: ${FONT_WEIGHT.header};
+    }
   </style>
   <div id="entries"></div>
 `;
@@ -70,12 +75,19 @@ export class InfoMenu extends ShadowBaseElement {
   private entries!: HTMLDivElement;
   private getSamples!: () => Sample[];
 
+  private warningHandler?: (hasWarning: boolean) => void;
+  private lastWarningState = false;
+
   constructor() {
     super(template);
   }
 
   setSources(getSamples: () => Sample[]) {
     this.getSamples = getSamples;
+  }
+
+  setWarningHandler(onWarningChange: (hasWarning: boolean) => void) {
+    this.warningHandler = onWarningChange;
   }
 
   connectedCallback(): void {
@@ -112,8 +124,8 @@ export class InfoMenu extends ShadowBaseElement {
       const metas = sample.meta;
 
       if (metas != null) {
-        const metaElements = getMetaElements(metas);
-        for (const elem of metaElements) {
+        const elements = getMetaElements(metas);
+        for (const elem of elements) {
           this.entries.appendChild(elem);
         }
       }
@@ -124,7 +136,7 @@ export class InfoMenu extends ShadowBaseElement {
 function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
   const simple_metas = metas.filter((meta) => meta.row_name_header == null);
 
-  const htmlEntries = [];
+  const htmlEntries: HTMLDivElement[] = [];
   for (const meta of simple_metas) {
     for (const entry of meta.data) {
       const htmlEntry = getEntry({
@@ -138,59 +150,38 @@ function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
 
   const table_metas = metas.filter((meta) => meta.row_name_header != null);
   for (const meta of table_metas) {
-    const tableData = parseTableData(meta);
+    const { tableData } = parseTableFromMeta(meta);
     htmlEntries.push(createTable(tableData));
   }
 
   return htmlEntries;
 }
 
-/**
- * This function takes long-format meta data and pivots it to wide-form data
- * I.e. to start with, each value lives on its own row
- * At the end, each data type has its own column, similar to how it is displayed
- *
- * @param meta
- * @returns
- */
-function parseTableData(meta: SampleMetaEntry): TableData {
-  const grid = new Map<string, Map<string, TableCell>>();
-  const colSet = new Set<string>();
+// function getSampleHasWarning(meta: SampleMetaEntry, sex: string | null): boolean {
 
-  for (const cell of meta.data) {
-    const rowName = cell.row_name;
-    if (rowName == null) {
-      continue;
-    }
-    colSet.add(cell.type);
+//   for (const row of meta.)
 
-    let rowMap = grid.get(rowName);
-    if (!rowMap) {
-      rowMap = new Map<string, TableCell>();
-      grid.set(rowName, rowMap);
-    }
+//   const rowStyles = new Array<TableRowStyle | undefined>(rowNames.length);
+//   const copyNumberColIndex = colNames.indexOf(COPY_NUMBER_COLUMN);
+//   let hasCopyNumberWarnings = false;
 
-    rowMap.set(cell.type, { value: cell.value, color: cell.color });
-  }
+//   if (copyNumberColIndex >= 0) {
+//     for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+//       const row = rows[rowIndex];
+//       const cell = row[copyNumberColIndex];
 
-  const rowNames = Array.from(grid.keys());
-  const colNames = Array.from(colSet);
+//       if (exceedsCopyNumberDeviation(rowNames[rowIndex], cell?.value, sex)) {
+//         hasCopyNumberWarnings = true;
+//         if (!rowStyles[rowIndex]) {
+//           rowStyles[rowIndex] = { cellClasses: new Array(colNames.length) };
+//         }
+//         rowStyles[rowIndex]!.className = WARNING_ROW_CLASS;
+//         rowStyles[rowIndex]!.cellClasses![copyNumberColIndex] =
+//           WARNING_CELL_CLASS;
+//       }
+//     }
+//   }
 
-  const rows: TableCell[][] = rowNames.map((rowName) => {
-    const rowMap = grid.get(rowName);
-    return colNames.map((colName) => {
-      return rowMap.get(colName) ?? { value: "", color: "" };
-    });
-  });
-
-  const tableData: TableData = {
-    columns: colNames,
-    rowNames: rowNames,
-    rowNameHeader: meta.row_name_header ?? "",
-    rows: rows,
-  };
-
-  return tableData;
-}
+// }
 
 customElements.define("info-page", InfoMenu);

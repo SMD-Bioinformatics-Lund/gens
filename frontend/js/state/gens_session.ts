@@ -1,6 +1,8 @@
 import { SideMenu } from "../components/side_menu/side_menu";
 import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
+import { getTableWarnings } from "../util/meta_warnings";
+import { parseTableFromMeta } from "../util/table";
 import { COLORS, PROFILE_SETTINGS_VERSION } from "../constants";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
@@ -88,6 +90,23 @@ export class GensSession {
 
   public getMainSample(): Sample {
     return this.mainSample;
+  }
+
+  public hasMetaWarnings(): boolean {
+    const sample = this.getMainSample();
+
+    // FIXME: Shouldn't do the parsing repeatedly. Do it once and that's it.
+    // FIXME: Should there be a sample sub module in session?
+    for (const meta of sample.meta) {
+      // const { hasCopyNumberWarnings } = parseTableData(meta, sample.sex);
+      const table = parseTableFromMeta(meta);
+      const tableWarnings = getTableWarnings(table, sample.sex)
+      console.log("Found warnigns:", tableWarnings);
+      if (tableWarnings.length > 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public setMainSample(sample: Sample) {
@@ -320,3 +339,4 @@ function buildTrackLayoutFromTracks(tracks: DataTrackSettings[]) {
   };
   return layout;
 }
+
