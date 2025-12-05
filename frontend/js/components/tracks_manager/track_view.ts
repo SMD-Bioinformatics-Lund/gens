@@ -279,14 +279,17 @@ export class TrackView extends ShadowBaseElement {
 
     // OK, here is the initial setup of tracks
 
+    console.log("Initializing tracks");
     await this.initializeTracks();
+    console.log("Initialization done, loading layout");
 
     // const { settings: dataTrackSettings, samples } =
     //   await syncDataTrackSettings([], this.session, this.dataSource, []);
 
     this.session.loadTrackLayout();
 
-    this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
+    // FIXME: This must be brought back
+    // this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
   }
 
   private async initializeTracks() {

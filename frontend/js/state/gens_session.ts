@@ -271,14 +271,18 @@ export class GensSession {
       return;
     }
 
+    const selectedAnnotIds = this.profile.getAnnotationSelections();
+    const existingAnnotIds = selectedAnnotIds.filter((id) => this.idToAnnotSource[id] != null);
+
     // Make sure annotation selections are reflected in track settings
     // prior to attempting reordering
-    const annotSelections = this.profile.getAnnotationSelections().map((id) => {
+    const annotSelections = existingAnnotIds.map((id) => {
       return {
         id,
         label: this.idToAnnotSource[id].name,
       };
     });
+
     const diff = annotationDiff(this.tracks.getTracks(), annotSelections);
     for (const track of diff.newAnnotationSettings) {
       this.tracks.addTrack(track);
