@@ -2,6 +2,7 @@ import {
   DEFAULT_COV_Y_RANGE,
   STYLE,
   PROFILE_SETTINGS_VERSION,
+  DEFAULT_VARIANT_THRES,
 } from "../../constants";
 import { loadProfileSettings, saveProfileToBrowser } from "../../util/storage";
 
@@ -34,7 +35,7 @@ export class SessionProfiles {
       profileKey,
       layout: null,
       colorAnnotationId: null,
-      variantThreshold: 0,
+      variantThreshold: DEFAULT_VARIANT_THRES,
       annotationSelections: [],
       coverageRange: DEFAULT_COV_Y_RANGE,
       trackHeights: defaultTrackHeights,
