@@ -222,7 +222,6 @@ export class TrackView extends ShadowBaseElement {
       isHidden: false,
     };
 
-    console.log("Creating position track")
     this.positionTrack = new PositionTrack(
       "position",
       "Position",
@@ -279,6 +278,8 @@ export class TrackView extends ShadowBaseElement {
       await syncDataTrackSettings([], this.session, this.dataSource, []);
 
     this.lastRenderedSamples = samples;
+
+    console.log("Assigning tracks", dataTrackSettings);
 
     this.session.tracks.setTracks(dataTrackSettings);
     this.session.loadTrackLayout();

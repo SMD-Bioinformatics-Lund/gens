@@ -262,6 +262,8 @@ export class GensSession {
   public loadTrackLayout(): void {
     const layout = this.profile.getTrackLayout();
 
+    console.log("Loading the layout", layout);
+
     if (!layout) {
       // If no layout saved, save the initial one
       this.saveTrackLayout();

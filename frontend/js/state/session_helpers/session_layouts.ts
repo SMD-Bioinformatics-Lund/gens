@@ -4,7 +4,7 @@ import {
   TRACK_HEIGHTS,
   PROFILE_SETTINGS_VERSION as PROFILE_SETTINGS_VERSION,
 } from "../../constants";
-import { loadProfileSettings } from "../../util/storage";
+import { loadProfileSettings, saveProfileToBrowser } from "../../util/storage";
 
 // FIXME: Where should these defaults be used
 const trackHeights: TrackHeights = {
@@ -59,7 +59,7 @@ export class SessionProfiles {
   }
 
   private save() {
-    console.log("FIXME SAVE IT");
+    saveProfileToBrowser(this.profileKey, this.profile);
   }
 
   public getProfile(): ProfileSettings {
@@ -72,6 +72,7 @@ export class SessionProfiles {
 
   public setTrackHeights(heights: TrackHeights) {
     this.profile.trackHeights = heights;
+    this.save();
   }
 
   public getCoverageRange(): [number, number] {
@@ -80,10 +81,12 @@ export class SessionProfiles {
 
   public setCoverageRange(range: [number, number]) {
     this.profile.coverageRange = range;
+    this.save();
   }
 
   public setColorAnnotation(id: string | null) {
     this.profile.colorAnnotationId = id;
+    this.save();
   }
 
   public getColorAnnotation(): string | null {
@@ -96,14 +99,17 @@ export class SessionProfiles {
 
   public setAnnotationSelections(ids: string[]): void {
     this.profile.annotationSelections = ids;
+    this.save();
   }
 
   public setVariantThreshold(threshold: number) {
     this.profile.variantThreshold = threshold;
+    this.save();
   }
 
   // Is this the one that should go back to the default?
   public resetTrackLayout() {
+    console.log("Reset");
     this.profile.trackLayout = null;
   }
 
