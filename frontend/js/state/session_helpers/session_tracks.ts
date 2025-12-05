@@ -12,7 +12,6 @@ export class Tracks {
   }
 
   public addTrack(track: DataTrackSettings) {
-    console.log("Adding track", track);
     this.tracks.push(track);
   }
 

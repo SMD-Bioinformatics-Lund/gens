@@ -38,8 +38,7 @@ export class SessionProfiles {
     const baseProfile = {
       version: PROFILE_SETTINGS_VERSION,
       profileKey,
-      // FIXME: How to default this one?
-      trackLayout: null,
+      layout: null,
       colorAnnotationId: null,
       variantThreshold: 0,
       annotationSelections: [],
@@ -111,13 +110,16 @@ export class SessionProfiles {
 
   // Is this the one that should go back to the default?
   public resetTrackLayout() {
+
+    console.log("Resetting the track layout");
+
     const defaultProfile = cloneProfile(this.defaultProfiles[this.profileKey]);
 
     const baseProfile = {
       version: PROFILE_SETTINGS_VERSION,
       profileKey: this.profileKey,
       // FIXME: How to default this one?
-      trackLayout: null,
+      layout: null,
       colorAnnotationId: null,
       variantThreshold: 0,
       annotationSelections: [],
@@ -135,11 +137,11 @@ export class SessionProfiles {
   }
 
   public getTrackLayout(): TrackLayout {
-    return this.profile.trackLayout;
+    return this.profile.layout;
   }
 
   public setTrackLayout(layout: TrackLayout) {
-    this.profile.trackLayout = layout;
+    this.profile.layout = layout;
 
     this.save();
   }
