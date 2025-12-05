@@ -274,6 +274,8 @@ export class TrackView extends ShadowBaseElement {
       }
     });
 
+    // OK, here is the initial setup of tracks
+
     const { settings: dataTrackSettings, samples } =
       await syncDataTrackSettings([], this.session, this.dataSource, []);
 

@@ -1,4 +1,3 @@
-import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
@@ -256,9 +255,11 @@ export class GensSession {
   // Is this the one that should go back to the default?
   public resetTrackLayout(): void {
     this.profile.resetTrackLayout();
-    this.tracks.setTracks([]);
+    this.loadTrackLayout();
+    // this.tracks.setTracks([]);
   }
 
+  // How to load the "bare" layout
   public loadTrackLayout(): void {
     const layout = this.profile.getTrackLayout();
 

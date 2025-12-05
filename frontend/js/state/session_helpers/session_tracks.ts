@@ -3,6 +3,7 @@ import { getPortableId } from "../../components/tracks_manager/utils/track_layou
 export class Tracks {
   private tracks: DataTrackSettings[];
   constructor(tracks: DataTrackSettings[]) {
+    console.log("Initial tracks", tracks);
     this.tracks = tracks;
   }
 
@@ -11,6 +12,7 @@ export class Tracks {
   }
 
   public addTrack(track: DataTrackSettings) {
+    console.log("Adding track", track);
     this.tracks.push(track);
   }
 
@@ -53,6 +55,7 @@ export class Tracks {
   }
 
   public setTracks(tracks: DataTrackSettings[]) {
+    console.error("Setting all tracks", tracks);
     this.tracks = tracks;
   }
 
