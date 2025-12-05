@@ -311,7 +311,7 @@ function buildTrackLayoutFromTracks(tracks: DataTrackSettings[]) {
   const order: Set<string> = new Set();
   const hidden: Record<string, boolean> = {};
   const expanded: Record<string, boolean> = {};
-  for (const info of this.tracks.getTracks()) {
+  for (const info of tracks) {
     const pid = getPortableId(info);
     order.add(pid);
     hidden[pid] = info.isHidden;
