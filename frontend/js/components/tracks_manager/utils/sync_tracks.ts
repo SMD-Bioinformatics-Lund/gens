@@ -108,18 +108,25 @@ async function sampleDiff(
     currentCombinedIds,
   );
 
-  const sampleSettings = [];
-  for (const combinedId of newCombinedIds) {
-    const sampleIds = getSampleIdsFromID(combinedId);
-    const sample = getSample(sampleIds.caseId, sampleIds.sampleId);
+  const sampleSettings = getSampleSettings(
+    newCombinedIds,
+    getSample,
+    getCoverageRange,
+    getSampleAnnotSources,
+  );
 
-    const sampleTracks = await getSampleTracks(
-      sample,
-      getCoverageRange,
-      getSampleAnnotSources,
-    );
-    sampleSettings.push(...sampleTracks)
-  }
+  // const sampleSettings = [];
+  // for (const combinedId of newCombinedIds) {
+  //   const sampleIds = getSampleIdsFromID(combinedId);
+  //   const sample = getSample(sampleIds.caseId, sampleIds.sampleId);
+
+  //   const sampleTracks = await getSampleTracks(
+  //     sample,
+  //     getCoverageRange,
+  //     getSampleAnnotSources,
+  //   );
+  //   sampleSettings.push(...sampleTracks)
+  // }
 
   return {
     removedIds: removedCombinedIds,
@@ -167,6 +174,30 @@ export function annotationDiff(
     newAnnotationSettings,
     removedIds,
   };
+}
+
+async function getSampleSettings(
+  combinedSampleIds: Set<string>,
+  getSample: (caseId: string, sampleId: string) => Sample,
+  getCoverageRange: () => Rng,
+  getSampleAnnotSources: (
+    caseId: string,
+    sampleId: string,
+  ) => Promise<{ id: string; name: string }[]>,
+): Promise<DataTrackSettings[]> {
+  const sampleSettings = [];
+  for (const combinedId of combinedSampleIds) {
+    const sampleIds = getSampleIdsFromID(combinedId);
+    const sample = getSample(sampleIds.caseId, sampleIds.sampleId);
+
+    const sampleTracks = await getSampleTracks(
+      sample,
+      getCoverageRange,
+      getSampleAnnotSources,
+    );
+    sampleSettings.push(...sampleTracks);
+  }
+  return sampleSettings;
 }
 
 async function getSampleTracks(
