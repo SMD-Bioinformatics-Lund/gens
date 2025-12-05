@@ -72,6 +72,10 @@ export class SessionProfiles {
     this.save();
   }
 
+  public hasDefaultProfile(): boolean {
+    return this.defaultProfiles[this.profileKey] != null;
+  }
+
   public getCoverageRange(): [number, number] {
     return this.profile.coverageRange;
   }

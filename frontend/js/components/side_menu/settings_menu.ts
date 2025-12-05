@@ -81,6 +81,15 @@ template.innerHTML = String.raw`
       padding-top: ${SIZES.l}px;
       cursor: pointer;
     }
+    .helper-text {
+      color: ${COLORS.darkGray};
+      font-size: 12px;
+    }
+    .reset-layout-details {
+      display: flex;
+      flex-direction: column;
+      gap: ${SIZES.one}px;
+    }
   </style>
   <div class="header-row">
     <div class="header">Annotation sources</div>
@@ -148,7 +157,10 @@ template.innerHTML = String.raw`
     <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
   </flex-row>
   <flex-row class="spread-row">
-    <div>Reset layout</div>
+    <div class="reset-layout-details">
+      <div>Reset layout</div>
+      <div id="reset-layout-info" class="helper-text"></div>
+    </div>
     <icon-button
       id="reset-layout"
       icon="${ICONS.reset}"
@@ -228,6 +240,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private applyDotTrackHeightsButton: HTMLButtonElement;
   private applyBandTrackHeightButton: HTMLButtonElement;
   private resetLayoutButton: IconButton;
+  private resetLayoutInfo: HTMLDivElement;
   private currentProfile: HTMLSpanElement;
 
   private session: GensSession;
@@ -356,6 +369,9 @@ export class SettingsMenu extends ShadowBaseElement {
     this.variantThresholdInput = this.root.querySelector("#variant-filter");
     this.applyMainSample = this.root.querySelector("#apply-main-sample");
     this.resetLayoutButton = this.root.querySelector("#reset-layout");
+    this.resetLayoutInfo = this.root.querySelector(
+      "#reset-layout-info"
+    ) as HTMLDivElement;
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
       "#band-collapsed-height",
@@ -371,6 +387,8 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.currentProfile = this.root.querySelector("#current-profile");
     this.currentProfile.innerHTML = this.getProfileSettings().profileKey;
+
+    this.updateResetLayoutInfo();
 
     const trackSizes = this.getTrackHeights();
 
@@ -527,6 +545,19 @@ export class SettingsMenu extends ShadowBaseElement {
       };
     });
     this.sampleSelect.setValues(allSamples);
+  }
+
+  private updateResetLayoutInfo() {
+    if (!this.resetLayoutInfo || !this.getProfileSettings) {
+      return;
+    }
+
+    const profileKey = this.getProfileSettings().profileKey;
+    const hasDefaultProfile = this.session.profile.hasDefaultProfile();
+
+    this.resetLayoutInfo.textContent = hasDefaultProfile
+      ? `Default profile available for ${profileKey}`
+      : `No default profile, resets to base layout`
   }
 
   render(settings: RenderSettings) {
