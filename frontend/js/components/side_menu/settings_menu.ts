@@ -1,4 +1,4 @@
-import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
+import { COLORS, FONT_SIZE, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
 import {
   downloadAsJSON,
   getSampleFromID as getSampleIDObjFromID,
@@ -83,7 +83,7 @@ template.innerHTML = String.raw`
     }
     .helper-text {
       color: ${COLORS.darkGray};
-      font-size: 12px;
+      font-size: ${FONT_SIZE.medium}px;
     }
     .reset-layout-details {
       display: flex;
@@ -132,44 +132,46 @@ template.innerHTML = String.raw`
   </div>
   <div id="highlights-overview"></div>
 
-  <!-- Profile settings -->
-  <div class="header-row">
-    <div class="header">Import and export profile settings</div>
-  </div>
-  <flex-row>
-    <div>Current profile: <span id="current-profile"></span></div>
-  </flex-row>
-  <flex-row class="spread-row">
-    <div>Export profile settings</div>
-    <icon-button
-      id="export-settings"
-      icon="${ICONS.download}"
-      title="Export settings"
-    ></icon-button>
-  </flex-row>
-  <flex-row class="spread-row">
-    <div>Import profile settings</div>
-    <icon-button
-      id="import-settings"
-      icon="${ICONS.upload}"
-      title="Import settings"
-    ></icon-button>
-    <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
-  </flex-row>
-  <flex-row class="spread-row">
-    <div class="reset-layout-details">
-      <div>Reset layout</div>
-      <div id="reset-layout-info" class="helper-text"></div>
-    </div>
-    <icon-button
-      id="reset-layout"
-      icon="${ICONS.reset}"
-      title="Reset layout to default"
-    ></icon-button>
-  </flex-row>
+
 
   <details id="advanced-settings">
     <summary>Toggle advanced settings</summary>
+
+      <!-- Profile settings -->
+    <div class="header-row">
+      <div class="header">Import and export profile settings</div>
+    </div>
+    <flex-row>
+      <div>Current profile: <span id="current-profile"></span></div>
+    </flex-row>
+    <flex-row class="spread-row">
+      <div>Export profile settings</div>
+      <icon-button
+        id="export-settings"
+        icon="${ICONS.download}"
+        title="Export settings"
+      ></icon-button>
+    </flex-row>
+    <flex-row class="spread-row">
+      <div>Import profile settings</div>
+      <icon-button
+        id="import-settings"
+        icon="${ICONS.upload}"
+        title="Import settings"
+      ></icon-button>
+      <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
+    </flex-row>
+    <flex-row class="spread-row">
+      <div class="reset-layout-details">
+        <div>Reset layout</div>
+        <div id="reset-layout-info" class="helper-text"></div>
+      </div>
+      <icon-button
+        id="reset-layout"
+        icon="${ICONS.reset}"
+        title="Reset layout to default"
+      ></icon-button>
+    </flex-row>
 
     <!-- Configure tracks -->
     <div class="header-row">
@@ -560,7 +562,8 @@ export class SettingsMenu extends ShadowBaseElement {
       const displayName = fileName ? ` (${fileName})` : "";
       this.resetLayoutInfo.textContent = `Default profile (${fileName}) available for ${profileKey}`;
     } else {
-      this.resetLayoutInfo.textContent = "No default profile, resets to base layout"
+      this.resetLayoutInfo.textContent =
+        "No default profile, resets to base layout";
     }
   }
 

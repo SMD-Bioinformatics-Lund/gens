@@ -9,18 +9,8 @@
       "variants|proband|",
       "sample_annot|proband|",
       "genes||",
-      "annot|6836f7dc068dced26537c983|DECIPHER.DDG2P.250216-hg38",
-      "annot|6836f7eb28cc6aa403b170a3|Mimisbrunnr.Lund-hg38",
-      "annot|6836f7de5a78b3e93ede2ebe|Disorder-Causing-OMIM-Genes-250201",
-      "annot|6836f7ef915a6824176a39fd|PanelApp.Intellectual.Disability.v9.23.250519-hg38",
-      "annot|6836f7e7bd449536ce0ab6e2|Imprinted.genes.Lund-hg38",
-      "annot|6836f7f23afccefec6f91028|Reported.CNVs.Lund-hg38",
-      "annot|6836f7f5af4cd9564b08bc6d|Unreported.CNVs.Lund-hg38",
-      "annot|6836f7d27dbbdc0130fbba4f|Controls.DAEMON.allSegments-hg38",
-      "annot|68a55db6cb78e2139d216c71|dbvar_pathogenic_variants_hg38",
-      "annot|6836f7eeba3d08413f8564fb|Overlap.map.of.polymorphic.regions.Lund.v2-hg38",
-      "annot|6836f7e91b9110883852b164|Lokal.global.kommentar.Lund-hg38",
-      "annot|6836f7e030ef179e17b62406|IlluminaRL100.dark.gene.annotations-hg38"
+      "annot|690a0f3e164f1c6344e1eda7|dbvar_pathogenic_variants_hg38",
+      "annot|690370c0a9ca482b3858ff3e|Mimisbrunnr.Lund-hg38"
     ],
     "hidden": {
       "baf|proband|": false,
@@ -28,18 +18,8 @@
       "variants|proband|": false,
       "sample_annot|proband|": true,
       "genes||": false,
-      "annot|6836f7dc068dced26537c983|DECIPHER.DDG2P.250216-hg38": false,
-      "annot|6836f7eb28cc6aa403b170a3|Mimisbrunnr.Lund-hg38": false,
-      "annot|6836f7de5a78b3e93ede2ebe|Disorder-Causing-OMIM-Genes-250201": false,
-      "annot|6836f7ef915a6824176a39fd|PanelApp.Intellectual.Disability.v9.23.250519-hg38": false,
-      "annot|6836f7e7bd449536ce0ab6e2|Imprinted.genes.Lund-hg38": false,
-      "annot|6836f7f23afccefec6f91028|Reported.CNVs.Lund-hg38": false,
-      "annot|6836f7f5af4cd9564b08bc6d|Unreported.CNVs.Lund-hg38": false,
-      "annot|6836f7d27dbbdc0130fbba4f|Controls.DAEMON.allSegments-hg38": false,
-      "annot|68a55db6cb78e2139d216c71|dbvar_pathogenic_variants_hg38": false,
-      "annot|6836f7eeba3d08413f8564fb|Overlap.map.of.polymorphic.regions.Lund.v2-hg38": false,
-      "annot|6836f7e91b9110883852b164|Lokal.global.kommentar.Lund-hg38": false,
-      "annot|6836f7e030ef179e17b62406|IlluminaRL100.dark.gene.annotations-hg38": false
+      "annot|690a0f3e164f1c6344e1eda7|dbvar_pathogenic_variants_hg38": false,
+      "annot|690370c0a9ca482b3858ff3e|Mimisbrunnr.Lund-hg38": false
     },
     "expanded": {
       "baf|proband|": true,
@@ -47,34 +27,14 @@
       "variants|proband|": false,
       "sample_annot|proband|": false,
       "genes||": true,
-      "annot|6836f7dc068dced26537c983|DECIPHER.DDG2P.250216-hg38": true,
-      "annot|6836f7eb28cc6aa403b170a3|Mimisbrunnr.Lund-hg38": true,
-      "annot|6836f7de5a78b3e93ede2ebe|Disorder-Causing-OMIM-Genes-250201": true,
-      "annot|6836f7ef915a6824176a39fd|PanelApp.Intellectual.Disability.v9.23.250519-hg38": true,
-      "annot|6836f7e7bd449536ce0ab6e2|Imprinted.genes.Lund-hg38": false,
-      "annot|6836f7f23afccefec6f91028|Reported.CNVs.Lund-hg38": true,
-      "annot|6836f7f5af4cd9564b08bc6d|Unreported.CNVs.Lund-hg38": true,
-      "annot|6836f7d27dbbdc0130fbba4f|Controls.DAEMON.allSegments-hg38": false,
-      "annot|68a55db6cb78e2139d216c71|dbvar_pathogenic_variants_hg38": true,
-      "annot|6836f7eeba3d08413f8564fb|Overlap.map.of.polymorphic.regions.Lund.v2-hg38": false,
-      "annot|6836f7e91b9110883852b164|Lokal.global.kommentar.Lund-hg38": true,
-      "annot|6836f7e030ef179e17b62406|IlluminaRL100.dark.gene.annotations-hg38": false
+      "annot|690a0f3e164f1c6344e1eda7|dbvar_pathogenic_variants_hg38": true,
+      "annot|690370c0a9ca482b3858ff3e|Mimisbrunnr.Lund-hg38": true
     }
   },
-  "colorAnnotationId": "6836f7eb28cc6aa403b170a3",
+  "colorAnnotationId": "690370c0a9ca482b3858ff3e",
   "annotationSelections": [
-    "6836f7d27dbbdc0130fbba4f",
-    "68a55db6cb78e2139d216c71",
-    "6836f7dc068dced26537c983",
-    "6836f7de5a78b3e93ede2ebe",
-    "6836f7e030ef179e17b62406",
-    "6836f7e91b9110883852b164",
-    "6836f7eb28cc6aa403b170a3",
-    "6836f7eeba3d08413f8564fb",
-    "6836f7ef915a6824176a39fd",
-    "6836f7f23afccefec6f91028",
-    "6836f7f5af4cd9564b08bc6d",
-    "6836f7e7bd449536ce0ab6e2"
+    "690a0f3e164f1c6344e1eda7",
+    "690370c0a9ca482b3858ff3e"
   ],
   "coverageRange": [
     -3,

@@ -292,7 +292,6 @@ export class TrackView extends ShadowBaseElement {
     const getCoverageRange = () => this.session.profile.getCoverageRange();
 
     const sampleKeys = new Set(samples.map((s) => getSampleKey(s)));
-
     const dataTrackSettings = await getSampleTrackSettings(
       sampleKeys,
       getSample,
@@ -300,7 +299,6 @@ export class TrackView extends ShadowBaseElement {
       getSampleAnnotSources,
     );
     this.lastRenderedSamples = samples;
-    console.log("Assigning tracks", dataTrackSettings);
     this.session.tracks.setTracks(dataTrackSettings);
   }
 

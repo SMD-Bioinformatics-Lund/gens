@@ -190,7 +190,6 @@ def _resolve_profile_path(profile_path: Path) -> Path:
     return profile_path
 
 
-# FIXME: Should this one be used?
 def _load_profile(profile_path: Path) -> dict[str, Any]:
     if not profile_path.exists():
         raise ValueError(f"Default profile file not found: {profile_path}")

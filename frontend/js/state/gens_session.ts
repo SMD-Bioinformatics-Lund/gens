@@ -60,7 +60,6 @@ export class GensSession {
     this.highlights = {};
 
     this.samples = samples;
-    // this.trackHeights = trackHeights;
 
     this.idToAnnotSource = {};
     for (const annotSource of allAnnotationSources) {
@@ -252,21 +251,16 @@ export class GensSession {
     this.render({});
   }
 
-  // Is this the one that should go back to the default?
   public resetTrackLayout(): void {
     this.profile.resetTrackLayout();
     this.loadTrackLayout();
-    // this.tracks.setTracks([]);
   }
 
-  // How to load the "bare" layout
   public loadTrackLayout(): void {
     this.profile.setBaseTrackLayout(
       buildTrackLayoutFromTracks(this.tracks.getTracks()),
     );
     const layout = this.profile.getTrackLayout();
-
-    console.log("Loading the layout", layout);
 
     if (!layout) {
       // If no layout saved, save the initial one

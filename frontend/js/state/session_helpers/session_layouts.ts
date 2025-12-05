@@ -22,16 +22,11 @@ export class SessionProfiles {
     samples: Sample[],
   ) {
     const profileKey = this.computeProfileSignature(samples);
-    console.log("Computed profile key", profileKey);
     this.profileKey = profileKey;
 
     const userProfile = loadProfileSettings(profileKey);
-
     this.defaultProfiles = defaultProfiles;
     this.baseTrackLayout = null;
-
-    console.log("All default profiles", defaultProfiles);
-
     const defaultProfile = cloneProfile(defaultProfiles[profileKey]);
 
     const baseProfile = {
