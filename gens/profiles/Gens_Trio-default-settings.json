@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "profileKey": "v2.38.proband+relative",
+  "layout": {
+    "version": 2,
+    "order": [
+      "baf|proband|",
+      "log2_cov|proband|",
+      "variants|proband|",
+      "log2_cov|relative|",
+      "variants|relative|",
+      "sample_annot|proband|",
+      "baf|relative|",
+      "genes||",
+      "annot|6836f7eb28cc6aa403b170a3|Mimisbrunnr.Lund-hg38"
+    ],
+    "hidden": {
+      "baf|proband|": false,
+      "log2_cov|proband|": false,
+      "variants|proband|": false,
+      "log2_cov|relative|": false,
+      "variants|relative|": false,
+      "sample_annot|proband|": false,
+      "baf|relative|": true,
+      "genes||": false,
+      "annot|6836f7eb28cc6aa403b170a3|Mimisbrunnr.Lund-hg38": false
+    },
+    "expanded": {
+      "baf|proband|": true,
+      "log2_cov|proband|": true,
+      "variants|proband|": true,
+      "log2_cov|relative|": false,
+      "variants|relative|": false,
+      "sample_annot|proband|": false,
+      "baf|relative|": true,
+      "genes||": true,
+      "annot|6836f7eb28cc6aa403b170a3|Mimisbrunnr.Lund-hg38": true
+    }
+  },
+  "colorAnnotationId": "6836f7eb28cc6aa403b170a3",
+  "annotationSelections": [
+    "6836f7eb28cc6aa403b170a3"
+  ],
+  "coverageRange": [
+    -3,
+    3
+  ],
+  "trackHeights": {
+    "bandCollapsed": 45,
+    "dotCollapsed": 45,
+    "dotExpanded": 200
+  },
+  "variantThreshold": 14
+}

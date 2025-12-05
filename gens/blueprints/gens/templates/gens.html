@@ -86,7 +86,8 @@
         gensApiURL: '{{ gens_api_url }}',
         mainSampleTypes: {{ main_sample_types | tojson | safe }},
         version: '{{ version }}',
-        allSamples: {{ all_samples | tojson | safe }}
+        allSamples: {{ all_samples | tojson | safe }},
+        defaultProfiles: {{ default_profiles | tojson | safe }}
     })
     // draw statis content
     const visualizationContainer = document.getElementById('visualization-container');

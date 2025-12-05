@@ -70,6 +70,7 @@ export async function initCanvases({
   startRegion,
   version,
   allSamples,
+  defaultProfiles,
 }: {
   caseId: string;
   sampleIds: string[];
@@ -81,6 +82,7 @@ export async function initCanvases({
   startRegion: { chrom: Chromosome; start?: number; end?: number } | null;
   version: string;
   allSamples: Sample[];
+  defaultProfiles: Record<string, ProfileSettings>;
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
   const sideMenu = document.getElementById("side-menu") as SideMenu;
@@ -119,11 +121,6 @@ export async function initCanvases({
     }
   };
 
-  const trackHeights: TrackHeights = {
-    bandCollapsed: STYLE.tracks.trackHeight.m,
-    dotCollapsed: STYLE.tracks.trackHeight.m,
-    dotExpanded: STYLE.tracks.trackHeight.xl,
-  };
 
   // FIXME: Think about how to organize. Get data sources?
   const orderSamples = (samples: ApiSample[]): ApiSample[] => {
@@ -163,10 +160,10 @@ export async function initCanvases({
     sideMenu,
     mainSample,
     samples,
-    trackHeights,
     variantSoftwareBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
     genomeBuild,
+    defaultProfiles,
     api.getChromInfo(),
     api.getChromSizes(),
     startRegion,
@@ -283,11 +280,11 @@ function addSettingsPageSources(
     render({ reloadData: true, samplesUpdated: true });
   };
   const setTrackHeights = (trackHeights: TrackHeights) => {
-    session.setTrackHeights(trackHeights);
+    session.profile.setTrackHeights(trackHeights);
     render({ reloadData: true });
   };
   const onColorByChange = async (annotId: string | null) => {
-    session.setColorAnnotation(annotId);
+    session.profile.setColorAnnotation(annotId);
     render({ colorByChange: true });
   };
   const onApplyDefaultCovRange = (rng: Rng) => {
@@ -295,17 +292,15 @@ function addSettingsPageSources(
     render({ reloadData: true });
   };
   const onSetAnnotationSelection = (ids: string[]) => {
-    const saveProfile = true;
-    session.setAnnotationSelections(ids, saveProfile);
+    session.profile.setAnnotationSelections(ids);
     render({});
   };
   const onSetGeneListSelection = (ids: string[]) => {
-    const saveProfile = true;
-    session.setAnnotationSelections(ids, saveProfile);
+    session.profile.setAnnotationSelections(ids);
     render({});
   };
   const onSetVariantThreshold = (threshold: number) => {
-    session.setVariantThreshold(threshold);
+    session.profile.setVariantThreshold(threshold);
     render({ reloadData: true });
   };
   const onToggleTrackHidden = (trackId: string) => {
@@ -322,7 +317,7 @@ function addSettingsPageSources(
   };
 
   const getProfile = () => {
-    return session.getProfile();
+    return session.profile.getProfile();
   };
 
   const applyProfile = async (profile: ProfileSettings) => {
@@ -334,6 +329,11 @@ function addSettingsPageSources(
       saveLayoutChange: true,
       colorByChange: true,
     });
+  };
+
+  const resetLayout = () => {
+    session.resetTrackLayout();
+    render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
   };
 
   settingsPage.setSources(
@@ -355,5 +355,6 @@ function addSettingsPageSources(
     onAssignMainSample,
     getProfile,
     applyProfile,
+    resetLayout,
   );
 }

@@ -22,9 +22,12 @@ import { OverviewTrack } from "../tracks/overview_track";
 import { IdeogramTrack } from "../tracks/ideogram_track";
 import { keyLogger } from "../util/keylogger";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
-import { removeOne, setDiff } from "../../util/utils";
+import { getSampleKey, removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
-import { syncDataTrackSettings } from "./utils/sync_tracks";
+import {
+  getSampleTrackSettings,
+  syncDataTrackSettings,
+} from "./utils/sync_tracks";
 import { getTrack as getTrack } from "./utils/create_tracks";
 import { getOpenTrackContextMenu } from "./utils/track_menues";
 import { SessionPosition } from "../../state/session_helpers/session_position";
@@ -174,7 +177,7 @@ export class TrackView extends ShadowBaseElement {
     );
 
     const yAxisCov = {
-      range: session.getCoverageRange(),
+      range: session.profile.getCoverageRange(),
       label: `Log2 Ratio (${session.getMainSample().sampleId})`,
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
@@ -183,7 +186,7 @@ export class TrackView extends ShadowBaseElement {
       "overview_cov",
       "Overview (cov)",
       () => dataSources.getOverviewCovData(session.getMainSample()),
-      session.getCoverageRange(),
+      session.profile.getCoverageRange(),
       chromSizes,
       chromClick,
       session,
@@ -274,15 +277,29 @@ export class TrackView extends ShadowBaseElement {
       }
     });
 
-    const { settings: dataTrackSettings, samples } =
-      await syncDataTrackSettings([], this.session, this.dataSource, []);
+    await this.initializeTracks();
 
-    this.lastRenderedSamples = samples;
-
-    this.session.tracks.setTracks(dataTrackSettings);
     this.session.loadTrackLayout();
-
     this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
+  }
+
+  private async initializeTracks() {
+    const samples = this.session.getSamples();
+    const getSample = (caseId: string, sampleId: string) =>
+      this.session.getSample(caseId, sampleId);
+    const getSampleAnnotSources = (caseId, sampleId) =>
+      this.dataSource.getSampleAnnotSources(caseId, sampleId);
+    const getCoverageRange = () => this.session.profile.getCoverageRange();
+
+    const sampleKeys = new Set(samples.map((s) => getSampleKey(s)));
+    const dataTrackSettings = await getSampleTrackSettings(
+      sampleKeys,
+      getSample,
+      getCoverageRange,
+      getSampleAnnotSources,
+    );
+    this.lastRenderedSamples = samples;
+    this.session.tracks.setTracks(dataTrackSettings);
   }
 
   private getXScale(inverted: boolean = false): Scale {
@@ -450,7 +467,7 @@ export class TrackView extends ShadowBaseElement {
       this.tracksContainer.removeChild(match.container);
     }
 
-    const trackHeights = this.session.getTrackHeights();
+    const trackHeights = this.session.profile.getTrackHeights();
     for (const track of this.dataTracks) {
       // Assigning track heights
       // FIXME: Consider approaches here. Might be that the track heights
@@ -476,12 +493,12 @@ async function getAnnotColorBands(
   session: GensSession,
   dataSource: RenderDataSource,
 ) {
-  const colorAnnot = session.getColorAnnotation();
+  const colorAnnot = session.profile.getColorAnnotation();
 
   let colorBands: RenderBand[] = [];
   if (colorAnnot != null) {
     colorBands = await dataSource.getAnnotationBands(
-      session.getColorAnnotation(),
+      session.profile.getColorAnnotation(),
       session.pos.getChromosome(),
     );
   }

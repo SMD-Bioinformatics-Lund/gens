@@ -159,4 +159,5 @@ def display_samples(case_id: str):
         version=version,
         gens_api_url=settings.gens_api_url,
         main_sample_types=settings.main_sample_types,
+        default_profiles=settings.default_profiles,
     )

@@ -1,4 +1,4 @@
-import { COLORS, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
+import { COLORS, FONT_SIZE, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
 import {
   downloadAsJSON,
   getSampleFromID as getSampleIDObjFromID,
@@ -81,6 +81,15 @@ template.innerHTML = String.raw`
       padding-top: ${SIZES.l}px;
       cursor: pointer;
     }
+    .helper-text {
+      color: ${COLORS.darkGray};
+      font-size: ${FONT_SIZE.medium}px;
+    }
+    .reset-layout-details {
+      display: flex;
+      flex-direction: column;
+      gap: ${SIZES.one}px;
+    }
   </style>
   <div class="header-row">
     <div class="header">Annotation sources</div>
@@ -123,10 +132,12 @@ template.innerHTML = String.raw`
   </div>
   <div id="highlights-overview"></div>
 
+
+
   <details id="advanced-settings">
     <summary>Toggle advanced settings</summary>
 
-    <!-- Profile settings -->
+      <!-- Profile settings -->
     <div class="header-row">
       <div class="header">Import and export profile settings</div>
     </div>
@@ -150,7 +161,17 @@ template.innerHTML = String.raw`
       ></icon-button>
       <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
     </flex-row>
-
+    <flex-row class="spread-row">
+      <div class="reset-layout-details">
+        <div>Reset layout</div>
+        <div id="reset-layout-info" class="helper-text"></div>
+      </div>
+      <icon-button
+        id="reset-layout"
+        icon="${ICONS.reset}"
+        title="Reset layout to default"
+      ></icon-button>
+    </flex-row>
 
     <!-- Configure tracks -->
     <div class="header-row">
@@ -220,6 +241,8 @@ export class SettingsMenu extends ShadowBaseElement {
   private applyMainSample: HTMLButtonElement;
   private applyDotTrackHeightsButton: HTMLButtonElement;
   private applyBandTrackHeightButton: HTMLButtonElement;
+  private resetLayoutButton: IconButton;
+  private resetLayoutInfo: HTMLDivElement;
   private currentProfile: HTMLSpanElement;
 
   private session: GensSession;
@@ -247,6 +270,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private onApplyMainSample: (sample: Sample) => void;
   private getProfileSettings: () => ProfileSettings;
   private applyProfileSettings: (layout: ProfileSettings) => void;
+  private onResetLayout: () => void;
 
   public isInitialized: boolean = false;
 
@@ -273,6 +297,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onApplyMainSample: (sample: Sample) => void,
     getProfileSettings: () => ProfileSettings,
     applyProfileSettings: (layout: ProfileSettings) => void,
+    onResetLayout: () => void,
   ) {
     this.session = session;
     // this.onChange = onChange;
@@ -291,10 +316,10 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onAddSample = onAddSample;
     this.onRemoveSample = onRemoveSample;
 
-    this.getTrackHeights = () => session.getTrackHeights();
+    this.getTrackHeights = () => session.profile.getTrackHeights();
     this.setTrackHeights = setTrackInfo;
     this.onColorByChange = onColorByChange;
-    this.getColorAnnotation = () => session.getColorAnnotation();
+    this.getColorAnnotation = () => session.profile.getColorAnnotation();
 
     this.onApplyDefaultCovRange = onApplyDefaultCovRange;
 
@@ -306,6 +331,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onApplyMainSample = onApplyMainSample;
     this.getProfileSettings = getProfileSettings;
     this.applyProfileSettings = applyProfileSettings;
+    this.onResetLayout = onResetLayout;
   }
 
   connectedCallback() {
@@ -344,6 +370,10 @@ export class SettingsMenu extends ShadowBaseElement {
     );
     this.variantThresholdInput = this.root.querySelector("#variant-filter");
     this.applyMainSample = this.root.querySelector("#apply-main-sample");
+    this.resetLayoutButton = this.root.querySelector("#reset-layout");
+    this.resetLayoutInfo = this.root.querySelector(
+      "#reset-layout-info",
+    ) as HTMLDivElement;
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
       "#band-collapsed-height",
@@ -360,16 +390,18 @@ export class SettingsMenu extends ShadowBaseElement {
     this.currentProfile = this.root.querySelector("#current-profile");
     this.currentProfile.innerHTML = this.getProfileSettings().profileKey;
 
+    this.updateResetLayoutInfo();
+
     const trackSizes = this.getTrackHeights();
 
-    const coverageRange = this.session.getCoverageRange();
+    const coverageRange = this.session.profile.getCoverageRange();
 
     this.bandTrackCollapsedHeightElem.value = `${trackSizes.bandCollapsed}`;
     this.dotTrackCollapsedHeightElem.value = `${trackSizes.dotCollapsed}`;
     this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
     this.coverageYStartElem.value = `${coverageRange[0]}`;
     this.coverageYEndElem.value = `${coverageRange[1]}`;
-    this.variantThresholdInput.value = `${this.session.getVariantThreshold()}`;
+    this.variantThresholdInput.value = `${this.session.profile.getVariantThreshold()}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
@@ -388,6 +420,10 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.importProfileSettingsButton, "click", () => {
       this.importProfileSettingsInput.click();
+    });
+
+    this.addElementListener(this.resetLayoutButton, "click", () => {
+      this.onResetLayout();
     });
 
     this.addElementListener(
@@ -445,10 +481,10 @@ export class SettingsMenu extends ShadowBaseElement {
     ];
 
     this.addElementListener(this.coverageYStartElem, "change", () => {
-      this.session.setCoverageRange(getCovRange());
+      this.session.profile.setCoverageRange(getCovRange());
     });
     this.addElementListener(this.coverageYEndElem, "change", () => {
-      this.session.setCoverageRange(getCovRange());
+      this.session.profile.setCoverageRange(getCovRange());
     });
 
     this.addElementListener(this.applyDefaultCovYRangeButton, "click", () => {
@@ -485,7 +521,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
   initialize() {
     this.isInitialized = true;
-    const prevSelectedAnnots = this.session.getAnnotationSelections();
+    const prevSelectedAnnots = this.session.profile.getAnnotationSelections();
     this.annotSelect.setValues(
       getAnnotationChoices(this.allAnnotationSources, prevSelectedAnnots),
     );
@@ -513,6 +549,24 @@ export class SettingsMenu extends ShadowBaseElement {
     this.sampleSelect.setValues(allSamples);
   }
 
+  private updateResetLayoutInfo() {
+    if (!this.resetLayoutInfo || !this.getProfileSettings) {
+      return;
+    }
+
+    const profileKey = this.getProfileSettings().profileKey;
+    const defaultProfile = this.session.profile.getDefaultProfile();
+
+    if (defaultProfile) {
+      const { fileName } = defaultProfile;
+      const displayName = fileName ? ` (${fileName})` : "";
+      this.resetLayoutInfo.textContent = `Default profile (${fileName}) available for ${profileKey}`;
+    } else {
+      this.resetLayoutInfo.textContent =
+        "No default profile, resets to base layout";
+    }
+  }
+
   render(settings: RenderSettings) {
     if (this.tracksOverview == null) {
       return;
@@ -523,7 +577,7 @@ export class SettingsMenu extends ShadowBaseElement {
     }
 
     if (this.annotSelect) {
-      const selectAnnots = this.session.getAnnotationSelections();
+      const selectAnnots = this.session.profile.getAnnotationSelections();
       this.annotSelect.setValues(
         getAnnotationChoices(this.allAnnotationSources, selectAnnots),
       );
@@ -567,7 +621,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addSampleButton.disabled = this.sampleSelect.getValue() == null;
 
     const { bandCollapsed, dotCollapsed, dotExpanded } = this.getTrackHeights();
-    const [covStart, covEnd] = this.session.getCoverageRange();
+    const [covStart, covEnd] = this.session.profile.getCoverageRange();
     this.bandTrackCollapsedHeightElem.value = `${bandCollapsed}`;
     this.dotTrackCollapsedHeightElem.value = `${dotCollapsed}`;
     this.dotTrackExpandedHeightElem.value = `${dotExpanded}`;
@@ -597,7 +651,7 @@ export class SettingsMenu extends ShadowBaseElement {
       return;
     }
     const layout = this.getProfileSettings();
-    const layoutKey = this.session.getLayoutProfileKey();
+    const layoutKey = this.session.profile.getLayoutProfileKey();
     const cleanLayoutKey = layoutKey.replace(/[^a-z0-9._-]/gi, "_");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `profile-settings-${cleanLayoutKey}-${timestamp}.json`;

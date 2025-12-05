@@ -67,7 +67,6 @@ export class HeaderInfo extends ShadowBaseElement {
       this.caseIdElem.removeAttribute("href");
       this.caseIdElem.removeAttribute("target");
     }
-    this.caseIdElem.href = caseURL;
     this.versionElem.innerHTML = version;
   }
 }
