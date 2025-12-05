@@ -41,7 +41,7 @@ export async function syncDataTrackSettings(
     lastRenderedSamples,
     (caseId: string, sampleId: string) => session.getSample(caseId, sampleId),
     (caseId, sampleId) => dataSources.getSampleAnnotSources(caseId, sampleId),
-    () => session.getCoverageRange(),
+    () => session.profile.getCoverageRange(),
   );
   const removedSampleTrackIds = [];
   for (const combinedSampleId of removedSamples) {

@@ -280,11 +280,11 @@ function addSettingsPageSources(
     render({ reloadData: true, samplesUpdated: true });
   };
   const setTrackHeights = (trackHeights: TrackHeights) => {
-    session.setTrackHeights(trackHeights);
+    session.profile.setTrackHeights(trackHeights);
     render({ reloadData: true });
   };
   const onColorByChange = async (annotId: string | null) => {
-    session.setColorAnnotation(annotId);
+    session.profile.setColorAnnotation(annotId);
     render({ colorByChange: true });
   };
   const onApplyDefaultCovRange = (rng: Rng) => {
@@ -292,15 +292,15 @@ function addSettingsPageSources(
     render({ reloadData: true });
   };
   const onSetAnnotationSelection = (ids: string[]) => {
-    session.setAnnotationSelections(ids);
+    session.profile.setAnnotationSelections(ids);
     render({});
   };
   const onSetGeneListSelection = (ids: string[]) => {
-    session.setAnnotationSelections(ids);
+    session.profile.setAnnotationSelections(ids);
     render({});
   };
   const onSetVariantThreshold = (threshold: number) => {
-    session.setVariantThreshold(threshold);
+    session.profile.setVariantThreshold(threshold);
     render({ reloadData: true });
   };
   const onToggleTrackHidden = (trackId: string) => {
@@ -317,7 +317,7 @@ function addSettingsPageSources(
   };
 
   const getProfile = () => {
-    return session.getProfile();
+    return session.profile.getProfile();
   };
 
   const applyProfile = async (profile: ProfileSettings) => {

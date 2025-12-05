@@ -174,7 +174,7 @@ export class TrackView extends ShadowBaseElement {
     );
 
     const yAxisCov = {
-      range: session.getCoverageRange(),
+      range: session.profile.getCoverageRange(),
       label: `Log2 Ratio (${session.getMainSample().sampleId})`,
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
@@ -183,7 +183,7 @@ export class TrackView extends ShadowBaseElement {
       "overview_cov",
       "Overview (cov)",
       () => dataSources.getOverviewCovData(session.getMainSample()),
-      session.getCoverageRange(),
+      session.profile.getCoverageRange(),
       chromSizes,
       chromClick,
       session,
@@ -450,7 +450,7 @@ export class TrackView extends ShadowBaseElement {
       this.tracksContainer.removeChild(match.container);
     }
 
-    const trackHeights = this.session.getTrackHeights();
+    const trackHeights = this.session.profile.getTrackHeights();
     for (const track of this.dataTracks) {
       // Assigning track heights
       // FIXME: Consider approaches here. Might be that the track heights
@@ -476,12 +476,12 @@ async function getAnnotColorBands(
   session: GensSession,
   dataSource: RenderDataSource,
 ) {
-  const colorAnnot = session.getColorAnnotation();
+  const colorAnnot = session.profile.getColorAnnotation();
 
   let colorBands: RenderBand[] = [];
   if (colorAnnot != null) {
     colorBands = await dataSource.getAnnotationBands(
-      session.getColorAnnotation(),
+      session.profile.getColorAnnotation(),
       session.pos.getChromosome(),
     );
   }

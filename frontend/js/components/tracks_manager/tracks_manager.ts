@@ -73,7 +73,7 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   setCovYRange(covHeights: Rng) {
-    this.session.setCoverageRange(covHeights);
+    this.session.profile.setCoverageRange(covHeights);
     this.chromosomeView.setCovYRange(covHeights);
     this.trackView.setCovYRange(covHeights);
   }

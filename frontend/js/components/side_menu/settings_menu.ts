@@ -150,7 +150,7 @@ template.innerHTML = String.raw`
       ></icon-button>
       <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
     </flex-row>
-    <flex-row class="spread_row">
+    <flex-row class="spread-row">
       <div>Reset layout</div>
       <icon-button
         id="reset-layout"
@@ -302,10 +302,10 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onAddSample = onAddSample;
     this.onRemoveSample = onRemoveSample;
 
-    this.getTrackHeights = () => session.getTrackHeights();
+    this.getTrackHeights = () => session.profile.getTrackHeights();
     this.setTrackHeights = setTrackInfo;
     this.onColorByChange = onColorByChange;
-    this.getColorAnnotation = () => session.getColorAnnotation();
+    this.getColorAnnotation = () => session.profile.getColorAnnotation();
 
     this.onApplyDefaultCovRange = onApplyDefaultCovRange;
 
@@ -375,14 +375,14 @@ export class SettingsMenu extends ShadowBaseElement {
 
     const trackSizes = this.getTrackHeights();
 
-    const coverageRange = this.session.getCoverageRange();
+    const coverageRange = this.session.profile.getCoverageRange();
 
     this.bandTrackCollapsedHeightElem.value = `${trackSizes.bandCollapsed}`;
     this.dotTrackCollapsedHeightElem.value = `${trackSizes.dotCollapsed}`;
     this.dotTrackExpandedHeightElem.value = `${trackSizes.dotExpanded}`;
     this.coverageYStartElem.value = `${coverageRange[0]}`;
     this.coverageYEndElem.value = `${coverageRange[1]}`;
-    this.variantThresholdInput.value = `${this.session.getVariantThreshold()}`;
+    this.variantThresholdInput.value = `${this.session.profile.getVariantThreshold()}`;
 
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
@@ -462,10 +462,10 @@ export class SettingsMenu extends ShadowBaseElement {
     ];
 
     this.addElementListener(this.coverageYStartElem, "change", () => {
-      this.session.setCoverageRange(getCovRange());
+      this.session.profile.setCoverageRange(getCovRange());
     });
     this.addElementListener(this.coverageYEndElem, "change", () => {
-      this.session.setCoverageRange(getCovRange());
+      this.session.profile.setCoverageRange(getCovRange());
     });
 
     this.addElementListener(this.applyDefaultCovYRangeButton, "click", () => {
@@ -502,7 +502,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
   initialize() {
     this.isInitialized = true;
-    const prevSelectedAnnots = this.session.getAnnotationSelections();
+    const prevSelectedAnnots = this.session.profile.getAnnotationSelections();
     this.annotSelect.setValues(
       getAnnotationChoices(this.allAnnotationSources, prevSelectedAnnots),
     );
@@ -540,7 +540,7 @@ export class SettingsMenu extends ShadowBaseElement {
     }
 
     if (this.annotSelect) {
-      const selectAnnots = this.session.getAnnotationSelections();
+      const selectAnnots = this.session.profile.getAnnotationSelections();
       this.annotSelect.setValues(
         getAnnotationChoices(this.allAnnotationSources, selectAnnots),
       );
@@ -584,7 +584,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addSampleButton.disabled = this.sampleSelect.getValue() == null;
 
     const { bandCollapsed, dotCollapsed, dotExpanded } = this.getTrackHeights();
-    const [covStart, covEnd] = this.session.getCoverageRange();
+    const [covStart, covEnd] = this.session.profile.getCoverageRange();
     this.bandTrackCollapsedHeightElem.value = `${bandCollapsed}`;
     this.dotTrackCollapsedHeightElem.value = `${dotCollapsed}`;
     this.dotTrackExpandedHeightElem.value = `${dotExpanded}`;
@@ -614,7 +614,7 @@ export class SettingsMenu extends ShadowBaseElement {
       return;
     }
     const layout = this.getProfileSettings();
-    const layoutKey = this.session.getLayoutProfileKey();
+    const layoutKey = this.session.profile.getLayoutProfileKey();
     const cleanLayoutKey = layoutKey.replace(/[^a-z0-9._-]/gi, "_");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `profile-settings-${cleanLayoutKey}-${timestamp}.json`;

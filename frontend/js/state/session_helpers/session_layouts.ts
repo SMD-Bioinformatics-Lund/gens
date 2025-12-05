@@ -1,4 +1,4 @@
-import { STYLE, TRACK_LAYOUT_VERSION } from "../../constants";
+import { DEFAULT_COV_Y_RANGE, STYLE, TRACK_HEIGHTS, PROFILE_SETTINGS_VERSION as PROFILE_SETTINGS_VERSION } from "../../constants";
 import { loadProfileSettings } from "../../util/storage";
 
 // FIXME: Where should these defaults be used
@@ -10,8 +10,8 @@ const trackHeights: TrackHeights = {
 
 // FIXME: Seems we need a dedicated "save profile" button
 export class SessionProfiles {
-  public profile: ProfileSettings;
-  public profileKey: string;
+  private profile: ProfileSettings;
+  private profileKey: string;
 
   constructor(
     defaultProfiles: Record<string, ProfileSettings>,
@@ -28,8 +28,86 @@ export class SessionProfiles {
     } else if (!defaultProfiles[profileKey]) {
       console.log("Default profile used");
       profile = defaultProfiles[profileKey];
+    } else {
+      const profile: ProfileSettings = {
+        version: PROFILE_SETTINGS_VERSION,
+        profileKey: "unknown",
+        // FIXME: How to default this one?
+        trackLayout: null,
+        colorAnnotationId: null,
+        variantThreshold: 0,
+        annotationSelections: [],
+        coverageRange: DEFAULT_COV_Y_RANGE,
+        trackHeights
+      }
     }
-    this.profile = loadProfile(profile);
+    this.profile = profile;
+    // this.profile = loadProfile(profile);
+  }
+
+  private save() {
+    console.log("FIXME SAVE IT");
+  }
+
+  public getProfile(): ProfileSettings {
+    return this.profile;
+  }
+
+  public getTrackHeights(): TrackHeights {
+    return this.profile.trackHeights;
+  }
+
+  public setTrackHeights(heights: TrackHeights) {
+    this.profile.trackHeights = heights;
+  }
+
+  public getCoverageRange(): [number, number] {
+    return this.profile.coverageRange;
+  }
+
+  public setCoverageRange(range: [number, number]) {
+    this.profile.coverageRange = range;
+  }
+
+  public setColorAnnotation(id: string | null) {
+    this.profile.colorAnnotationId = id;
+  }
+
+  public getColorAnnotation(): string | null {
+    return this.profile.colorAnnotationId;
+  }
+
+  public getAnnotationSelections(): string[] {
+    return this.profile.annotationSelections;
+  }
+
+  public setAnnotationSelections(ids: string[]): void {
+    this.profile.annotationSelections = ids;
+  }
+
+  public setVariantThreshold(threshold: number) {
+    this.profile.variantThreshold = threshold;
+  }
+
+  // Is this the one that should go back to the default?
+  public resetTrackLayout() {
+    this.profile.trackLayout = null;
+  }
+
+  public getTrackLayout(): TrackLayout {
+    return this.profile.trackLayout;
+  }
+
+  public setTrackLayout(layout: TrackLayout) {
+    this.profile.trackLayout = layout;
+  }
+
+  public getVariantThreshold(): number {
+    return this.profile.variantThreshold;
+  }
+
+  public getLayoutProfileKey(): string {
+    return this.profile.profileKey;
   }
 
   public loadProfile(profile: ProfileSettings): void {
@@ -75,21 +153,21 @@ function cloneProfile(
   return JSON.parse(JSON.stringify(profile)) as ProfileSettings;
 }
 
-function loadProfile(profile: ProfileSettings): ProfileSettings | null {
-  console.log("Loading profile", profile);
+// function loadProfile(profile: ProfileSettings): ProfileSettings | null {
+//   console.log("Loading profile", profile);
 
-  if (!profile) {
-    console.warn("No profile found, using defaults");
-    return;
-  }
+//   if (!profile) {
+//     console.warn("No profile found, using defaults");
+//     return;
+//   }
 
-  if (profile.version != TRACK_LAYOUT_VERSION) {
-    console.warn(
-      `Version mismatch. Found ${profile.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
-    );
-    profile = undefined;
-    return;
-  }
+//   if (profile.version != TRACK_LAYOUT_VERSION) {
+//     console.warn(
+//       `Version mismatch. Found ${profile.version}, Gens is currently on ${TRACK_LAYOUT_VERSION}. Dropping the saved layout`,
+//     );
+//     profile = undefined;
+//     return;
+//   }
 
-  return profile;
-}
+//   return profile;
+// }

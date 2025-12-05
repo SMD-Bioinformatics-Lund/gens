@@ -4,7 +4,7 @@ import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import {
   COLORS,
-  TRACK_LAYOUT_VERSION,
+  PROFILE_SETTINGS_VERSION,
 } from "../constants";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
@@ -49,7 +49,6 @@ export class GensSession {
     sideMenu: SideMenu,
     mainSample: Sample,
     samples: Sample[],
-    // trackHeights: TrackHeights,
     variantSoftwareBaseURL: string | null,
     gensBaseURL: string,
     genomeBuild: number,
@@ -116,7 +115,7 @@ export class GensSession {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
     if (settings.selectedOnly) {
-      return this.profile.profile.annotationSelections.map((id) => {
+      return this.profile.getAnnotationSelections().map((id) => {
         const track = this.idToAnnotSource[id];
         return {
           id,
@@ -150,41 +149,11 @@ export class GensSession {
     this.chromViewActive = !this.chromViewActive;
   }
 
-  public getProfile(): ProfileSettings {
-    return this.profile.profile;
-  }
 
-  public setColorAnnotation(id: string | null) {
-    this.profile.profile.colorAnnotationId = id;
-  }
 
-  public getColorAnnotation(): string | null {
-    return this.profile.profile.colorAnnotationId;
-  }
 
-  public getAnnotationSelections(): string[] {
-    return this.profile.profile.annotationSelections;
-  }
 
-  public setAnnotationSelections(ids: string[]): void {
-    this.profile.profile.annotationSelections = ids;
-  }
 
-  public getTrackHeights(): TrackHeights {
-    return this.profile.profile.trackHeights;
-  }
-
-  public setTrackHeights(heights: TrackHeights) {
-    this.profile.profile.trackHeights = heights;
-  }
-
-  public getCoverageRange(): [number, number] {
-    return this.profile.profile.coverageRange;
-  }
-
-  public setCoverageRange(range: [number, number]) {
-    this.profile.profile.coverageRange = range;
-  }
 
   public getSamples(): Sample[] {
     return this.samples;
@@ -228,13 +197,7 @@ export class GensSession {
     return this.markerModeOn;
   }
 
-  public setVariantThreshold(threshold: number) {
-    this.profile.profile.variantThreshold = threshold;
-  }
 
-  public getVariantThreshold(): number {
-    return this.profile.profile.variantThreshold;
-  }
 
   public toggleMarkerMode() {
     this.markerModeOn = !this.markerModeOn;
@@ -290,17 +253,14 @@ export class GensSession {
     this.render({});
   }
 
-  public getLayoutProfileKey(): string {
-    return this.profile.profile.profileKey;
-  }
-
+  // Is this the one that should go back to the default?
   public resetTrackLayout(): void {
-    this.profile.profile.layout = null;
+    this.profile.resetTrackLayout();
     this.tracks.setTracks([]);
   }
 
   public loadTrackLayout(): void {
-    const layout = this.profile.profile.layout;
+    const layout = this.profile.getTrackLayout();
 
     if (!layout) {
       // If no layout saved, save the initial one
@@ -310,7 +270,7 @@ export class GensSession {
 
     // Make sure annotation selections are reflected in track settings
     // prior to attempting reordering
-    const annotSelections = this.profile.profile.annotationSelections.map((id) => {
+    const annotSelections = this.profile.getAnnotationSelections().map((id) => {
       return {
         id,
         label: this.idToAnnotSource[id].name,
@@ -341,13 +301,13 @@ export class GensSession {
     }
 
     const layout = {
-      version: TRACK_LAYOUT_VERSION,
+      version: PROFILE_SETTINGS_VERSION,
       order: Array.from(order),
       hidden,
       expanded,
     };
 
-    this.profile.profile.layout = layout;
+    this.profile.setTrackLayout(layout);
   }
 }
 
