@@ -41,7 +41,7 @@ import { parseSex } from "./util/meta_warnings";
 
 export async function samplesListInit(
   samples: SampleInfo[],
-  scoutBaseURL: string,
+  variantSoftwareBaseURL: string | null,
   gensBaseURL: string,
   genomeBuild: number,
 ) {
@@ -58,30 +58,32 @@ export async function samplesListInit(
     return new URL(subpath, gensBaseURL).href;
   };
 
-  gens_home.initialize(samples, scoutBaseURL, getGensURL);
+  gens_home.initialize(samples, variantSoftwareBaseURL, getGensURL);
 }
 
 export async function initCanvases({
   caseId,
   sampleIds,
   genomeBuild,
-  scoutBaseURL,
+  variantSoftwareBaseURL,
   gensApiURL,
   mainSampleTypes,
   startRegion,
   version,
   allSamples,
+  defaultProfiles,
 }: {
   caseId: string;
   sampleIds: string[];
   genomeBuild: number;
-  scoutBaseURL: string;
+  variantSoftwareBaseURL: string | null;
   gensApiURL: string;
   mainSampleTypes: string[];
   annotationFile: string;
   startRegion: { chrom: Chromosome; start?: number; end?: number } | null;
   version: string;
   allSamples: Sample[];
+  defaultProfiles: Record<string, ProfileSettings>;
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
   const sideMenu = document.getElementById("side-menu") as SideMenu;
@@ -90,9 +92,14 @@ export async function initCanvases({
   const helpPage = document.createElement("help-page") as HelpMenu;
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
 
+  // FIXME: This will need to be adapted when more software are introduced
+  const variantSoftwareCaseUrl = variantSoftwareBaseURL
+    ? `${variantSoftwareBaseURL}/case/case_id/${caseId}`
+    : null;
+
   headerInfo.initialize(
     caseId,
-    `${scoutBaseURL}/case/case_id/${caseId}`,
+    variantSoftwareCaseUrl,
     version,
   );
 
@@ -115,11 +122,6 @@ export async function initCanvases({
     }
   };
 
-  const trackHeights: TrackHeights = {
-    bandCollapsed: STYLE.tracks.trackHeight.m,
-    dotCollapsed: STYLE.tracks.trackHeight.m,
-    dotExpanded: STYLE.tracks.trackHeight.xl,
-  };
 
   // FIXME: Think about how to organize. Get data sources?
   const orderSamples = (samples: ApiSample[]): ApiSample[] => {
@@ -162,10 +164,10 @@ export async function initCanvases({
     sideMenu,
     mainSample,
     samples,
-    trackHeights,
-    scoutBaseURL,
+    variantSoftwareBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
     genomeBuild,
+    defaultProfiles,
     api.getChromInfo(),
     api.getChromSizes(),
     startRegion,
@@ -320,11 +322,11 @@ function addSettingsPageSources(
     render({ reloadData: true, samplesUpdated: true });
   };
   const setTrackHeights = (trackHeights: TrackHeights) => {
-    session.setTrackHeights(trackHeights);
+    session.profile.setTrackHeights(trackHeights);
     render({ reloadData: true });
   };
   const onColorByChange = async (annotId: string | null) => {
-    session.setColorAnnotation(annotId);
+    session.profile.setColorAnnotation(annotId);
     render({ colorByChange: true });
   };
   const onApplyDefaultCovRange = (rng: Rng) => {
@@ -332,17 +334,15 @@ function addSettingsPageSources(
     render({ reloadData: true });
   };
   const onSetAnnotationSelection = (ids: string[]) => {
-    const saveProfile = true;
-    session.setAnnotationSelections(ids, saveProfile);
+    session.profile.setAnnotationSelections(ids);
     render({});
   };
   const onSetGeneListSelection = (ids: string[]) => {
-    const saveProfile = true;
-    session.setAnnotationSelections(ids, saveProfile);
+    session.profile.setAnnotationSelections(ids);
     render({});
   };
   const onSetVariantThreshold = (threshold: number) => {
-    session.setVariantThreshold(threshold);
+    session.profile.setVariantThreshold(threshold);
     render({ reloadData: true });
   };
   const onToggleTrackHidden = (trackId: string) => {
@@ -359,7 +359,7 @@ function addSettingsPageSources(
   };
 
   const getProfile = () => {
-    return session.getProfile();
+    return session.profile.getProfile();
   };
 
   const applyProfile = async (profile: ProfileSettings) => {
@@ -371,6 +371,11 @@ function addSettingsPageSources(
       saveLayoutChange: true,
       colorByChange: true,
     });
+  };
+
+  const resetLayout = () => {
+    session.resetTrackLayout();
+    render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
   };
 
   settingsPage.setSources(
@@ -392,5 +397,6 @@ function addSettingsPageSources(
     onAssignMainSample,
     getProfile,
     applyProfile,
+    resetLayout,
   );
 }

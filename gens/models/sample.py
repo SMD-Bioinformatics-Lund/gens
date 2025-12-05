@@ -1,7 +1,9 @@
 """Models related to sample information."""
 
 from enum import StrEnum
+import gzip
 from pathlib import Path
+import re
 
 from pydantic import Field, computed_field, field_serializer, field_validator
 from pydantic.types import FilePath
@@ -19,6 +21,8 @@ def _get_tabix_path(path: Path, check: bool = False) -> Path:
     if check and not idx_path.is_file():
         raise FileNotFoundError("Index file: {idx_path} was not found.")
     return idx_path
+
+SAMPLE_RECORD_PATTERN = re.compile(r"^[A-Za-z0-9]+_(?:[1-9]|1[0-9]|2[0-2]|X|Y)$")
 
 
 class ScatterDataType(StrEnum):
@@ -85,6 +89,41 @@ class SampleInfo(RWModel, CreatedAtModel):
     sample_type: str | None = None
     sex: SampleSex | None = None
     meta: list[MetaEntry] = Field(default_factory=list)
+
+    @classmethod
+    def _validate_sample_file(cls, path: Path) -> Path:
+        if not path.is_file():
+            raise ValueError(f"Sample file not found: {path}")
+        
+        try:
+            with gzip.open(path, "rt", encoding="utf-8") as handle:
+                first_line = handle.readline().strip()
+        except OSError as err:
+            raise ValueError(f"Could not read sample file {path}: {err}") from err
+        
+        if not first_line:
+            raise ValueError(f"Sample file is empty")
+        
+        columns = first_line.split("\t")
+        if len(columns) < 4:
+            raise ValueError(f"Sample file should contain four column, found: {len(columns)}. First line: {first_line}")
+        
+        if not SAMPLE_RECORD_PATTERN.match(columns[0]):
+            raise ValueError("First column should combine zoom and chromosome: 0_1, a_X, d_22")
+
+        try:
+            int(columns[1])
+            int(columns[2])
+            float(columns[3])
+        except ValueError:
+            raise ValueError(f"Start, end and value columns must be numeric. Found row: {first_line}")
+
+        return path
+
+    @field_validator("baf_file", "coverage_file")
+    @classmethod
+    def validate_sample_files(cls, path: Path) -> Path:
+        return cls._validate_sample_file(path)
 
     @computed_field()  # type: ignore
     @property

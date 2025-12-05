@@ -76,7 +76,7 @@
         caseId: '{{ case_id }}',
         sampleIds: {{ sample_ids | safe }},
         genomeBuild: {{ genome_build | safe }},
-        scoutBaseURL: '{{ scout_base_url | safe }}',
+        variantSoftwareBaseURL: {{ variant_software_base_url | default(None) | string | tojson }},
         selectedVariant: '{{ selected_variant }}',
         startRegion: {
             chrom: String(chromJs),
@@ -86,7 +86,8 @@
         gensApiURL: '{{ gens_api_url }}',
         mainSampleTypes: {{ main_sample_types | tojson | safe }},
         version: '{{ version }}',
-        allSamples: {{ all_samples | tojson | safe }}
+        allSamples: {{ all_samples | tojson | safe }},
+        defaultProfiles: {{ default_profiles | tojson | safe }}
     })
     // draw statis content
     const visualizationContainer = document.getElementById('visualization-container');

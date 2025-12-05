@@ -50,8 +50,7 @@ from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotati
 
 log_level = getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+    level=logging.INFO, format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
 )
 LOG = logging.getLogger(__name__)
 
@@ -167,7 +166,11 @@ def sample(
 @click.option("--sample-id", required=True, help="Sample ID")
 @click.option("--case-id", required=True, help="Case ID")
 @click.option(
-    "--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build"
+    "-b",
+    "--genome-build",
+    type=ChoiceType(GenomeBuild),
+    required=True,
+    help="Genome build",
 )
 @click.option("--file", required=True, type=click.Path(exists=True, path_type=Path))
 @click.option("--name", required=True, help="Name of the annotation track")
