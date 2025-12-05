@@ -108,7 +108,7 @@ async function sampleDiff(
     currentCombinedIds,
   );
 
-  const sampleSettings = getSampleSettings(
+  const sampleSettings = await getSampleTrackSettings(
     newCombinedIds,
     getSample,
     getCoverageRange,
@@ -176,7 +176,7 @@ export function annotationDiff(
   };
 }
 
-async function getSampleSettings(
+export async function getSampleTrackSettings(
   combinedSampleIds: Set<string>,
   getSample: (caseId: string, sampleId: string) => Sample,
   getCoverageRange: () => Rng,

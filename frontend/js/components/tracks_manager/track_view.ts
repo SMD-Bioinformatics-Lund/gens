@@ -22,9 +22,12 @@ import { OverviewTrack } from "../tracks/overview_track";
 import { IdeogramTrack } from "../tracks/ideogram_track";
 import { keyLogger } from "../util/keylogger";
 import { renderHighlights } from "../tracks/base_tracks/interactive_tools";
-import { removeOne, setDiff } from "../../util/utils";
+import { getSampleKey, removeOne, setDiff } from "../../util/utils";
 import { PositionTrack } from "../tracks/position_track";
-import { syncDataTrackSettings } from "./utils/sync_tracks";
+import {
+  getSampleTrackSettings,
+  syncDataTrackSettings,
+} from "./utils/sync_tracks";
 import { getTrack as getTrack } from "./utils/create_tracks";
 import { getOpenTrackContextMenu } from "./utils/track_menues";
 import { SessionPosition } from "../../state/session_helpers/session_position";
@@ -276,17 +279,35 @@ export class TrackView extends ShadowBaseElement {
 
     // OK, here is the initial setup of tracks
 
-    const { settings: dataTrackSettings, samples } =
-      await syncDataTrackSettings([], this.session, this.dataSource, []);
+    await this.initializeTracks();
 
-    this.lastRenderedSamples = samples;
+    // const { settings: dataTrackSettings, samples } =
+    //   await syncDataTrackSettings([], this.session, this.dataSource, []);
 
-    console.log("Assigning tracks", dataTrackSettings);
-
-    this.session.tracks.setTracks(dataTrackSettings);
     this.session.loadTrackLayout();
 
     this.colorBands = await getAnnotColorBands(this.session, this.dataSource);
+  }
+
+  private async initializeTracks() {
+    const samples = this.session.getSamples();
+    const getSample = (caseId: string, sampleId: string) =>
+      this.session.getSample(caseId, sampleId);
+    const getSampleAnnotSources = (caseId, sampleId) =>
+      this.dataSource.getSampleAnnotSources(caseId, sampleId);
+    const getCoverageRange = () => this.session.profile.getCoverageRange();
+
+    const sampleKeys = new Set(samples.map((s) => getSampleKey(s)));
+
+    const dataTrackSettings = await getSampleTrackSettings(
+      sampleKeys,
+      getSample,
+      getCoverageRange,
+      getSampleAnnotSources,
+    );
+    this.lastRenderedSamples = samples;
+    console.log("Assigning tracks", dataTrackSettings);
+    this.session.tracks.setTracks(dataTrackSettings);
   }
 
   private getXScale(inverted: boolean = false): Scale {
