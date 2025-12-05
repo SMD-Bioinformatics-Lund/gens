@@ -78,6 +78,10 @@ export class SessionProfiles {
     return this.defaultProfiles[this.profileKey] != null;
   }
 
+  public getDefaultProfile(): ProfileSettings | null {
+    return cloneProfile(this.defaultProfiles[this.profileKey]);
+  }
+
   public getCoverageRange(): [number, number] {
     return this.profile.coverageRange;
   }

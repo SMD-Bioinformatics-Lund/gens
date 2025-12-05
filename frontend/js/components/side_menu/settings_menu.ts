@@ -370,7 +370,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.applyMainSample = this.root.querySelector("#apply-main-sample");
     this.resetLayoutButton = this.root.querySelector("#reset-layout");
     this.resetLayoutInfo = this.root.querySelector(
-      "#reset-layout-info"
+      "#reset-layout-info",
     ) as HTMLDivElement;
 
     this.bandTrackCollapsedHeightElem = this.root.querySelector(
@@ -553,11 +553,15 @@ export class SettingsMenu extends ShadowBaseElement {
     }
 
     const profileKey = this.getProfileSettings().profileKey;
-    const hasDefaultProfile = this.session.profile.hasDefaultProfile();
+    const defaultProfile = this.session.profile.getDefaultProfile();
 
-    this.resetLayoutInfo.textContent = hasDefaultProfile
-      ? `Default profile available for ${profileKey}`
-      : `No default profile, resets to base layout`
+    if (defaultProfile) {
+      const { fileName } = defaultProfile;
+      const displayName = fileName ? ` (${fileName})` : "";
+      this.resetLayoutInfo.textContent = `Default profile (${fileName}) available for ${profileKey}`;
+    } else {
+      this.resetLayoutInfo.textContent = "No default profile, resets to base layout"
+    }
   }
 
   render(settings: RenderSettings) {

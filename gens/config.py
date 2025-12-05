@@ -149,7 +149,12 @@ class Settings(BaseSettings):
         loaded_profiles = {}
         for key, json_path in self.default_profile_paths.items():
             resolved = _resolve_profile_path(json_path)
-            loaded_profiles[key] = _load_profile(resolved)
+            loaded_profile = _load_profile(resolved)
+
+            if isinstance(loaded_profile, dict):
+                loaded_profile["fileName"] = resolved.name
+                
+            loaded_profiles[key] = loaded_profile
         
         return loaded_profiles
 
