@@ -115,19 +115,6 @@ async function sampleDiff(
     getSampleAnnotSources,
   );
 
-  // const sampleSettings = [];
-  // for (const combinedId of newCombinedIds) {
-  //   const sampleIds = getSampleIdsFromID(combinedId);
-  //   const sample = getSample(sampleIds.caseId, sampleIds.sampleId);
-
-  //   const sampleTracks = await getSampleTracks(
-  //     sample,
-  //     getCoverageRange,
-  //     getSampleAnnotSources,
-  //   );
-  //   sampleSettings.push(...sampleTracks)
-  // }
-
   return {
     removedIds: removedCombinedIds,
     sampleSettings,
@@ -137,7 +124,6 @@ async function sampleDiff(
 export function annotationDiff(
   origTrackSettings: DataTrackSettings[],
   annotationSources: { id: string; label: string }[],
-  // getLabel: (id: string) => string,
 ): { newAnnotationSettings: DataTrackSettings[]; removedIds: Set<string> } {
   const origAnnotTrackSettings = origTrackSettings.filter(
     (track) => track.trackType == "annotation",
@@ -168,7 +154,6 @@ export function annotationDiff(
       isHidden: false,
     };
     return newSetting;
-    // returnSettings.push(newSetting);
   });
   return {
     newAnnotationSettings,

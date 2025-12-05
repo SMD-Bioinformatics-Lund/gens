@@ -5,14 +5,12 @@ import {
 } from "../../constants";
 import { loadProfileSettings, saveProfileToBrowser } from "../../util/storage";
 
-// FIXME: Where should these defaults be used
-const trackHeights: TrackHeights = {
+const defaultTrackHeights: TrackHeights = {
   bandCollapsed: STYLE.tracks.trackHeight.m,
   dotCollapsed: STYLE.tracks.trackHeight.m,
   dotExpanded: STYLE.tracks.trackHeight.xl,
 };
 
-// FIXME: Seems we need a dedicated "save profile" button
 export class SessionProfiles {
   private profile: ProfileSettings;
   private profileKey: string;
@@ -26,7 +24,6 @@ export class SessionProfiles {
     console.log("Computed profile key", profileKey);
     this.profileKey = profileKey;
 
-    // let profile = null;
     const userProfile = loadProfileSettings(profileKey);
 
     this.defaultProfiles = defaultProfiles;
@@ -43,7 +40,7 @@ export class SessionProfiles {
       variantThreshold: 0,
       annotationSelections: [],
       coverageRange: DEFAULT_COV_Y_RANGE,
-      trackHeights,
+      trackHeights: defaultTrackHeights,
     };
 
     const profile: ProfileSettings =
@@ -56,7 +53,6 @@ export class SessionProfiles {
 
     profile.profileKey = profileKey;
     this.profile = profile;
-    // this.profile = loadProfile(profile);
   }
 
   private save() {
@@ -111,29 +107,22 @@ export class SessionProfiles {
   // Is this the one that should go back to the default?
   public resetTrackLayout() {
 
-    console.log("Resetting the track layout");
-
     const defaultProfile = cloneProfile(this.defaultProfiles[this.profileKey]);
 
     const baseProfile = {
       version: PROFILE_SETTINGS_VERSION,
       profileKey: this.profileKey,
-      // FIXME: How to default this one?
       layout: null,
       colorAnnotationId: null,
       variantThreshold: 0,
       annotationSelections: [],
       coverageRange: DEFAULT_COV_Y_RANGE,
-      trackHeights,
+      trackHeights: defaultTrackHeights,
     };
 
     const profile: ProfileSettings = defaultProfile || baseProfile;
-
     this.profile = profile;
-
     this.save();
-
-    // this.profile.trackLayout = null;
   }
 
   public getTrackLayout(): TrackLayout {
