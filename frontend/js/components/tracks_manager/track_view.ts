@@ -222,6 +222,7 @@ export class TrackView extends ShadowBaseElement {
       isHidden: false,
     };
 
+    console.log("Creating position track")
     this.positionTrack = new PositionTrack(
       "position",
       "Position",

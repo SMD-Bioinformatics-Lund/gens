@@ -2,10 +2,7 @@ import { TrackHeights } from "../components/side_menu/settings_menu";
 import { SideMenu } from "../components/side_menu/side_menu";
 import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
-import {
-  COLORS,
-  PROFILE_SETTINGS_VERSION,
-} from "../constants";
+import { COLORS, PROFILE_SETTINGS_VERSION } from "../constants";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
 import { SessionPosition } from "./session_helpers/session_position";
@@ -114,8 +111,19 @@ export class GensSession {
   public getAnnotationSources(settings: {
     selectedOnly: boolean;
   }): { id: string; label: string }[] {
+    const selectedAnnots = this.profile.getAnnotationSelections();
+    const presentAnnots = selectedAnnots.filter(
+      (annotId) => this.idToAnnotSource[annotId] != null,
+    );
+
+    if (selectedAnnots.length != presentAnnots.length) {
+      console.warn(
+        `Not all annotations were present. Selected: ${selectedAnnots.length} present: ${presentAnnots.length}`,
+      );
+    }
+
     if (settings.selectedOnly) {
-      return this.profile.getAnnotationSelections().map((id) => {
+      return presentAnnots.map((id) => {
         const track = this.idToAnnotSource[id];
         return {
           id,
@@ -148,12 +156,6 @@ export class GensSession {
   public toggleChromViewActive() {
     this.chromViewActive = !this.chromViewActive;
   }
-
-
-
-
-
-
 
   public getSamples(): Sample[] {
     return this.samples;
@@ -196,8 +198,6 @@ export class GensSession {
   public getMarkerModeOn(): boolean {
     return this.markerModeOn;
   }
-
-
 
   public toggleMarkerMode() {
     this.markerModeOn = !this.markerModeOn;
@@ -310,4 +310,3 @@ export class GensSession {
     this.profile.setTrackLayout(layout);
   }
 }
-

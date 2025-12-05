@@ -1,4 +1,9 @@
-import { DEFAULT_COV_Y_RANGE, STYLE, TRACK_HEIGHTS, PROFILE_SETTINGS_VERSION as PROFILE_SETTINGS_VERSION } from "../../constants";
+import {
+  DEFAULT_COV_Y_RANGE,
+  STYLE,
+  TRACK_HEIGHTS,
+  PROFILE_SETTINGS_VERSION as PROFILE_SETTINGS_VERSION,
+} from "../../constants";
 import { loadProfileSettings } from "../../util/storage";
 
 // FIXME: Where should these defaults be used
@@ -18,29 +23,37 @@ export class SessionProfiles {
     samples: Sample[],
   ) {
     const profileKey = this.computeProfileSignature(samples);
+    console.log("Computed profile key", profileKey);
     this.profileKey = profileKey;
 
-    let profile = null;
+    // let profile = null;
     const userProfile = loadProfileSettings(profileKey);
-    if (userProfile != null) {
-      console.log("User profile found");
-      profile = userProfile;
-    } else if (!defaultProfiles[profileKey]) {
-      console.log("Default profile used");
-      profile = defaultProfiles[profileKey];
-    } else {
-      const profile: ProfileSettings = {
-        version: PROFILE_SETTINGS_VERSION,
-        profileKey: "unknown",
-        // FIXME: How to default this one?
-        trackLayout: null,
-        colorAnnotationId: null,
-        variantThreshold: 0,
-        annotationSelections: [],
-        coverageRange: DEFAULT_COV_Y_RANGE,
-        trackHeights
-      }
-    }
+
+    console.log("All default profiles", defaultProfiles);
+
+    const defaultProfile = cloneProfile(defaultProfiles[profileKey]);
+
+    const baseProfile = {
+      version: PROFILE_SETTINGS_VERSION,
+      profileKey,
+      // FIXME: How to default this one?
+      trackLayout: null,
+      colorAnnotationId: null,
+      variantThreshold: 0,
+      annotationSelections: [],
+      coverageRange: DEFAULT_COV_Y_RANGE,
+      trackHeights,
+    };
+
+    const profile: ProfileSettings =
+      userProfile || defaultProfile || baseProfile;
+
+    console.log("User profile", userProfile);
+    console.log("Default profile", defaultProfile);
+    console.log("Base profile", baseProfile);
+    console.log("Used profile", profile);
+
+    profile.profileKey = profileKey;
     this.profile = profile;
     // this.profile = loadProfile(profile);
   }
@@ -116,6 +129,7 @@ export class SessionProfiles {
 
   public updateProfileKey(samples: Sample[]): void {
     this.profileKey = this.computeProfileSignature(samples);
+    this.profile.profileKey = this.profileKey;
   }
 
   private computeProfileSignature(samples: Sample[]): string {
