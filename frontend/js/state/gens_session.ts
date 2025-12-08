@@ -40,7 +40,7 @@ export class GensSession {
   private mainSample: Sample;
   private samples: Sample[];
   private chromViewActive: boolean;
-  private warningThresholds: MetaWarningThreshold[];
+  private warningThresholds: WarningThreshold[];
 
   // Constants
   private variantSoftwareBaseURL: string | null;
@@ -66,8 +66,11 @@ export class GensSession {
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
     allAnnotationSources: ApiAnnotationTrack[],
-    warningThresholds: MetaWarningThreshold[],
+    warningThresholds: WarningThreshold[],
   ) {
+
+    console.log("Incoming thresholds", warningThresholds);
+
     this.render = render;
     this.sideMenu = sideMenu;
     this.mainSample = mainSample;
@@ -125,32 +128,7 @@ export class GensSession {
       return [];
     }
 
-    // const thresholds: MetaWarningThreshold[] = [
-    //   {
-    //     column: COPY_NUMBER_COLUMN,
-    //     direction: "both",
-    //     size: MAX_COPY_NUMBER_DEVIATION,
-    //     type: "chromosome",
-    //     message: "Exceeds copy number deviation"
-    //   },
-    //   {
-    //     column: MISMATCH_FATHER,
-    //     direction: "above",
-    //     size: MAX_MISMATCH,
-    //     type: "regular",
-    //     message: "Exceeds max mismatch"
-    //   },
-    //   {
-    //     column: MISMATCH_MOTHER,
-    //     direction: "above",
-    //     size: MAX_MISMATCH,
-    //     type: "regular",
-    //     message: "Exceeds max mismatch"
-    //   },
-    // ];
-
     const thresholds = this.warningThresholds;
-
     const warningCoords = [];
 
     for (const val of meta.data) {
@@ -161,7 +139,7 @@ export class GensSession {
       const matchedThreshold = thresholds.find((thres) => thres.column == val.type)
 
       if (matchedThreshold) {
-        console.log("Matched for threshold", matchedThreshold)
+        // console.log("Matched for threshold", matchedThreshold)
         // FIXME: Use string for hover info?
         const warning = getMetaWarnings(
           matchedThreshold,

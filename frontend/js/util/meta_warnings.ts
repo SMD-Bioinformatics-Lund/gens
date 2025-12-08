@@ -29,7 +29,7 @@ export const META_WARNING_CELL_CLASS = "meta-table__warning-cell";
 // FIXME: The filters should be configured from config
 // I.e. name, size, directions
 export function getMetaWarnings(
-  threshold: MetaWarningThreshold,
+  threshold: WarningThreshold,
   rowName: string,
   value: string,
   sex: string | null,
@@ -39,9 +39,13 @@ export function getMetaWarnings(
     return null;
   }
 
-  // FIXME: Look over this
+  // console.log("Hitting get meta warnings with threshold", threshold);
+
   let exceeds;
-  if (threshold.type == "chromosome") {
+  if (threshold.kind == "estimated_chromosome_count_deviate") {
+
+    console.log("Finding the chromosome path");
+
     const chromosome = parseChromosome(rowName);
     if (!chromosome) {
       return null;
@@ -49,15 +53,17 @@ export function getMetaWarnings(
     exceeds = exceedsCopyNumberDeviation(
       chromosome,
       parsedFloat,
-      threshold.size,
+      threshold.max_deviation,
       sex,
     );
-  } else if (threshold.direction == "above") {
+  } else if (threshold.kind == "threshold_above") {
     exceeds = parsedFloat > threshold.size;
-  } else if (threshold.direction == "below") {
+  } else if (threshold.kind == "threshold_below") {
     exceeds = parsedFloat < threshold.size;
-  } else if (threshold.direction == "both") {
-    exceeds = parsedFloat < threshold.size || parsedFloat > threshold.size;
+  } else if (threshold.kind == "threshold_deviate") {
+    exceeds =
+      parsedFloat < threshold.size - threshold.max_deviation ||
+      parsedFloat > threshold.size + threshold.max_deviation;
   }
 
   if (exceeds) {
@@ -92,6 +98,9 @@ function exceedsCopyNumberDeviation(
   maxDeviation: number,
   sex?: string,
 ): boolean {
+
+  console.log("Checking chromosome diff");
+
   const normalizedRow = normalizeChromosomeLabel(chromosome);
   const isMale = isMaleSex(sex);
   const targetValue =

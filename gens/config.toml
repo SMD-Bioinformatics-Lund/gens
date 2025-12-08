@@ -19,22 +19,19 @@ connection = "mongodb://mongodb:27017/scout"
 
 [[warning_thresholds]]
 column = "Estimated chromosomal copy numbers"
-type = "chromosome"
-kind = "both"
-size = 0.1
-message = "Exceeds copy number deviation"
+kind = "estimated_chromosome_count_deviate"
+max_deviation = 0.1
+message = "Exceeds max copy number deviation"
 
 [[warning_thresholds]]
 column = "Mismatch father"
-type = "regular"
-direction = "above"
+kind = "threshold_above"
 size = 200
-message = "Exceeds max mismatch"
+message = "Exceeds max mismatch count"
 
 [[warning_thresholds]]
 column = "Mismatch mother"
-type = "regular"
-kind = "above"
+kind = "threshold_above"
 size = 200
-message = "Exceeds max mismatch"
+message = "Exceeds max mismatch count"
 

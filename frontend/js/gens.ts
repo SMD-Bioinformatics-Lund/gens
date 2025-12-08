@@ -85,7 +85,7 @@ export async function initCanvases({
   version: string;
   allSamples: Sample[];
   defaultProfiles: Record<string, ProfileSettings>;
-  warningThresholds: MetaWarningThreshold[];
+  warningThresholds: WarningThreshold[];
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
   const sideMenu = document.getElementById("side-menu") as SideMenu;

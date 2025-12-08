@@ -52,14 +52,14 @@ class MongoDbConfig(BaseSettings):
     database: str | None = None
 
 
-class MetaWarningThreshold(BaseModel):
+class WarningThreshold(BaseModel):
     """Configuration for meta warning thresholds."""
 
     column: str
-    type: Literal["chromosome", "regular"] = "regular"
-    direction: Literal["above", "below", "both"]
-    size: float
-    message: str
+    kind: Literal["estimated_chromosome_count_deviate", "threshold_above", "threshold_below", "threshold_deviate"] = "threshold_above"
+    size: float | None = None
+    max_deviation: float | None = None
+    message: str = ""
 
 
 class Settings(BaseSettings):
@@ -99,7 +99,7 @@ class Settings(BaseSettings):
         description="Mapping between profile types and default profile definitions. Values are paths to JSON files relative to the config file.",
     )
 
-    warning_thresholds: list[MetaWarningThreshold] = Field(
+    warning_thresholds: list[WarningThreshold] = Field(
         default_factory=lambda: [],
         description="Rules for highlighting meta table warnings.",
     )

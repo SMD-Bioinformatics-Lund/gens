@@ -759,18 +759,22 @@ type CellWarning = {
   colName: string;
   position: number;
   warning: string | null;
-}
+};
 
 type Sex = "M" | "F";
 
 type ThresholdDirection = "above" | "below" | "both";
 
-type ThresholdType = "chromosome" | "regular";
+type ThresholdKind =
+  | "estimated_chromosome_count_deviate"
+  | "threshold_above"
+  | "threshold_below"
+  | "threshold_deviate";
 
-type MetaWarningThreshold = {
+type WarningThreshold = {
   column: string;
-  type: ThresholdType;
-  direction: ThresholdDirection;
-  size: number;
+  kind: ThresholdKind;
+  size?: number;
+  max_deviation?: number;
   message: string;
-}
+};
