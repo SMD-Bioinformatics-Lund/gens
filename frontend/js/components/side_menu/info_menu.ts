@@ -107,25 +107,20 @@ export class InfoMenu extends ShadowBaseElement {
       header.textContent = sample.sampleId;
       this.entries.appendChild(header);
 
-      // FIXME: Use constant
-      // FIXME: Refactor so that the simple values are processed jointly (?)
-      // FIXME: Use a css class here instead
-      const padRight = "5px";
+      const padRight = `${SIZES.m}px`;
 
-      const div = getEntry({ key: "Case ID", value: sample.caseId });
-      div.style.paddingRight = padRight;
-      this.entries.appendChild(div);
+      const simpleDivs = [];
+      const tables = [];
+
+      simpleDivs.push(getEntry({ key: "Case ID", value: sample.caseId }))
+
       if (sample.sampleType) {
-        const div = getEntry({ key: "Sample type", value: sample.sampleType });
-        div.style.paddingRight = padRight;
-        this.entries.appendChild(div);
+        simpleDivs.push(getEntry({ key: "Sample type", value: sample.sampleType }));
       }
       // Optional fields
       const sex = sample.sex;
       if (sex != null) {
-        const div = getEntry({ key: "Sex", value: sex });
-        div.style.paddingRight = padRight;
-        this.entries.appendChild(div);
+        simpleDivs.push(getEntry({ key: "Sex", value: sex }));
       }
       const metas = sample.meta;
 
@@ -135,18 +130,27 @@ export class InfoMenu extends ShadowBaseElement {
           if (meta.row_name_header == null) {
             const divs = getSimpleElement(meta);
             for (const div of divs) {
-              div.style.paddingRight = padRight;
-              this.entries.appendChild(div);
+              simpleDivs.push(div)
             }
             continue;
           }
 
-          // Complex entry
+          // Table entry
           const errors = this.getErrors(meta.id);
 
           const { tableData } = parseTableFromMeta(meta, errors);
-          this.entries.appendChild(createTable(tableData));
+          const htmlTable = createTable(tableData);
+          tables.push(htmlTable)
         }
+      }
+
+      for (const div of simpleDivs) {
+        div.style.paddingRight = `${SIZES.m}px`;
+        this.entries.appendChild(div);
+      }
+
+      for (const table of tables) {
+        this.entries.appendChild(table)
       }
     }
   }
