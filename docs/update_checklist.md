@@ -339,6 +339,15 @@ Export, reset and import of profile
 
 # Test on Gens dev
 
+Steps to prepare a container to run:
+
+```
+# Otherwise you'll build with outdated files
+$ npm run buildcp
+$ docker build -f Dockerfile -t clinicalgenomicslund/gens:<VERSION> .
+$ docker push clinicalgenomicslund/gens
+```
+
 ## CLI
 
 - [ ] Try loading all the annotation tracks and make sure it completes without errors.
@@ -370,11 +379,6 @@ General sanity check and testing things that cannot be tested in a test setup.
 
 - [ ] The sample list looks correct
 - [ ] Does the case link to Scout work? (On PGM1)
-- [ ] Opening a trio for the the single-chromosome view, all tracks are shown (check the side menu under advanced settings to see all tracks)
-  - [ ] Three cov tracks
-  - [ ] Three BAF tracks
-  - [ ] Variants for proband
-  - [ ] Sample annotations for proband
-  - [ ] Gene track
-- [ ] Variant context menu
-  - [ ] Clicking variant links back to Scout
+- [ ] Opening a trio for the the single-chromosome view, all tracks are shown (check the side menu under advanced settings to see all tracks). 
+Expected tracks: Three cov tracks, three BAF tracks, variants for proband, sample annotations for proband, gene track
+- [ ] Clicking variant links back to Scout
