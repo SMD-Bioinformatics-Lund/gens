@@ -85,7 +85,7 @@ def sample(
     sex: SampleSex | None,
     baf: Path | None,
     coverage: Path | None,
-    meta_file: Path,
+    meta_file: Path | None,
     force: bool,
 ) -> None:
     """Update sample information for a sample."""

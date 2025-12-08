@@ -125,8 +125,8 @@ def test_delete_sample_metadata_cli_removes_all_entries(
         sample_id="sample1",
         case_id="caseA",
         genome_build=GenomeBuild(19),
-        meta_ids=(),
-        file_names=(),
+        meta_id=None,
+        file_name=None,
         force=True,
     )
 
@@ -165,8 +165,8 @@ def test_delete_sample_metadata_cli_filters_by_id(
         sample_id="sample1",
         case_id="caseA",
         genome_build=GenomeBuild(19),
-        meta_ids=("meta1",),
-        file_names=(),
+        meta_id="meta1",
+        file_name=None,
         force=True,
     )
 
@@ -322,7 +322,8 @@ def test_update_sample_updates_document(
         sex=SampleSex("M"),
         baf=baf_file,
         coverage=cov_file,
-        meta_files=(meta_file,),
+        meta_file=meta_file,
+        force=True,
     )
 
     coll = db.get_collection(SAMPLES_COLLECTION)
