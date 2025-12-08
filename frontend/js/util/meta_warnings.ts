@@ -71,12 +71,18 @@ function exceedsCopyNumberDeviation(
   sex?: string,
 ): boolean {
 
-  console.log("Checking chromosome diff");
+  const normalizedChrom = normalizeChromosomeLabel(chromosome);
 
-  const normalizedRow = normalizeChromosomeLabel(chromosome);
+  const isSexChromosome = ["X", "Y"].includes(normalizedChrom);
+
+  // If no sex, don't perform testing for X/Y chromosomes
+  if (!sex && isSexChromosome) {
+    return false;
+  }
+
   const isMale = isMaleSex(sex);
   const targetValue =
-    isMale && (normalizedRow === "X" || normalizedRow === "Y") ? 1 : 2;
+    isMale && (normalizedChrom === "X" || normalizedChrom === "Y") ? 1 : 2;
   return Math.abs(value - targetValue) > maxDeviation;
 }
 
