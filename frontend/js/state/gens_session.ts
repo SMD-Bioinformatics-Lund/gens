@@ -40,6 +40,7 @@ export class GensSession {
   private mainSample: Sample;
   private samples: Sample[];
   private chromViewActive: boolean;
+  private metaWarningThresholds: MetaWarningThreshold[];
 
   // Constants
   private variantSoftwareBaseURL: string | null;
@@ -65,6 +66,7 @@ export class GensSession {
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
     allAnnotationSources: ApiAnnotationTrack[],
+    metaWarningThresholds: MetaWarningThreshold[],
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
@@ -81,6 +83,7 @@ export class GensSession {
     this.variantSoftwareBaseURL = variantSoftwareBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
+    this.metaWarningThresholds = metaWarningThresholds;
 
     this.profile = new SessionProfiles(defaultProfiles, samples);
     this.tracks = new Tracks([]);
@@ -115,9 +118,6 @@ export class GensSession {
     return null;
   }
 
-  // FIXME: Thresholding action here
-  // Start with something hardcoded
-  // How is it currently done?
   public getMetaWarnings(metaId: string): { row: string; col: string }[] {
     const { meta, sample } = this.getMeta(metaId);
 
@@ -125,29 +125,31 @@ export class GensSession {
       return [];
     }
 
-    const thresholds: MetaWarningThreshold[] = [
-      {
-        column: COPY_NUMBER_COLUMN,
-        direction: "both",
-        size: MAX_COPY_NUMBER_DEVIATION,
-        type: "chromosome",
-        message: "Exceeds copy number deviation"
-      },
-      {
-        column: MISMATCH_FATHER,
-        direction: "above",
-        size: MAX_MISMATCH,
-        type: "regular",
-        message: "Exceeds max mismatch"
-      },
-      {
-        column: MISMATCH_MOTHER,
-        direction: "above",
-        size: MAX_MISMATCH,
-        type: "regular",
-        message: "Exceeds max mismatch"
-      },
-    ];
+    // const thresholds: MetaWarningThreshold[] = [
+    //   {
+    //     column: COPY_NUMBER_COLUMN,
+    //     direction: "both",
+    //     size: MAX_COPY_NUMBER_DEVIATION,
+    //     type: "chromosome",
+    //     message: "Exceeds copy number deviation"
+    //   },
+    //   {
+    //     column: MISMATCH_FATHER,
+    //     direction: "above",
+    //     size: MAX_MISMATCH,
+    //     type: "regular",
+    //     message: "Exceeds max mismatch"
+    //   },
+    //   {
+    //     column: MISMATCH_MOTHER,
+    //     direction: "above",
+    //     size: MAX_MISMATCH,
+    //     type: "regular",
+    //     message: "Exceeds max mismatch"
+    //   },
+    // ];
+
+    const thresholds = this.metaWarningThresholds;
 
     const warningCoords = [];
 

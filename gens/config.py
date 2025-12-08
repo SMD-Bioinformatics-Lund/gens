@@ -4,9 +4,9 @@ import json
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Tuple, Type
+from typing import Any, Literal, Tuple, Type
 
-from pydantic import Field, HttpUrl, MongoDsn, model_validator
+from pydantic import BaseModel, Field, HttpUrl, MongoDsn, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -52,6 +52,16 @@ class MongoDbConfig(BaseSettings):
     database: str | None = None
 
 
+class MetaWarningThreshold(BaseModel):
+    """Configuration for meta warning thresholds."""
+
+    column: str
+    type: Literal["chromosome", "regular"] = "regular"
+    direction: Literal["above", "below", "both"]
+    size: float
+    message: str
+
+
 class Settings(BaseSettings):
     """Gens settings."""
 
@@ -89,6 +99,34 @@ class Settings(BaseSettings):
         description="Mapping between profile types and default profile definitions. Values are paths to JSON files relative to the config file.",
     )
 
+    # FIXME: Obviously move further out
+    meta_warning_thresholds: list[MetaWarningThreshold] = Field(
+        default_factory=lambda: [
+            MetaWarningThreshold(
+                column="Estimated chromosomal copy numbers",
+                direction="both",
+                size=0.1,
+                type="chromosome",
+                message="Exceeds copy number deviation",
+            ),
+            MetaWarningThreshold(
+                column="Mismatch father",
+                direction="above",
+                size=200,
+                type="regular",
+                message="Exceeds max mismatch",
+            ),
+            MetaWarningThreshold(
+                column="Mismatch mother",
+                direction="above",
+                size=200,
+                type="regular",
+                message="Exceeds max mismatch",
+            ),
+        ],
+        description="Rules for highlighting meta table warnings.",
+    )
+
     def get_dict(self) -> dict[str, Any]:
         return {
             "gens_db": self.gens_db.database,
@@ -99,6 +137,9 @@ class Settings(BaseSettings):
             "authentication": self.authentication.value,
             "oauth": self.oauth,
             "default_profiles": self.default_profiles,
+            "meta_warning_thresholds": [
+                threshold.model_dump() for threshold in self.meta_warning_thresholds
+            ]
         }
 
     @model_validator(mode="after")
