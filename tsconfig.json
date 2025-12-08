@@ -3,8 +3,8 @@
     "target": "es2016",
     "module": "commonjs",
     // Set to true during dev work, false in production
-    "sourceMap": true,
     // "sourceMap": true,
+    "sourceMap": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": false,
