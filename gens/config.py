@@ -99,31 +99,8 @@ class Settings(BaseSettings):
         description="Mapping between profile types and default profile definitions. Values are paths to JSON files relative to the config file.",
     )
 
-    # FIXME: Obviously move further out
-    meta_warning_thresholds: list[MetaWarningThreshold] = Field(
-        default_factory=lambda: [
-            MetaWarningThreshold(
-                column="Estimated chromosomal copy numbers",
-                direction="both",
-                size=0.1,
-                type="chromosome",
-                message="Exceeds copy number deviation",
-            ),
-            MetaWarningThreshold(
-                column="Mismatch father",
-                direction="above",
-                size=200,
-                type="regular",
-                message="Exceeds max mismatch",
-            ),
-            MetaWarningThreshold(
-                column="Mismatch mother",
-                direction="above",
-                size=200,
-                type="regular",
-                message="Exceeds max mismatch",
-            ),
-        ],
+    warning_thresholds: list[MetaWarningThreshold] = Field(
+        default_factory=lambda: [],
         description="Rules for highlighting meta table warnings.",
     )
 
@@ -137,9 +114,9 @@ class Settings(BaseSettings):
             "authentication": self.authentication.value,
             "oauth": self.oauth,
             "default_profiles": self.default_profiles,
-            "meta_warning_thresholds": [
-                threshold.model_dump() for threshold in self.meta_warning_thresholds
-            ]
+            "warning_thresholds": [
+                threshold.model_dump() for threshold in self.warning_thresholds
+            ],
         }
 
     @model_validator(mode="after")
@@ -194,11 +171,10 @@ class Settings(BaseSettings):
 
             if isinstance(loaded_profile, dict):
                 loaded_profile["fileName"] = resolved.name
-                
-            loaded_profiles[key] = loaded_profile
-        
-        return loaded_profiles
 
+            loaded_profiles[key] = loaded_profile
+
+        return loaded_profiles
 
     @classmethod
     def settings_customise_sources(
@@ -222,24 +198,27 @@ class Settings(BaseSettings):
 def _resolve_profile_path(profile_path: Path) -> Path:
     if profile_path.is_absolute():
         return profile_path
-    
+
     for config_dir in CONFIG_DIRS:
         candidate = config_dir.joinpath(profile_path)
         if candidate.exists():
             return candidate
-    
+
     return profile_path
 
 
 def _load_profile(profile_path: Path) -> dict[str, Any]:
     if not profile_path.exists():
         raise ValueError(f"Default profile file not found: {profile_path}")
-    
+
     with profile_path.open("r", encoding="utf-8") as profile_file:
-        try: 
+        try:
             return json.load(profile_file)
         except json.JSONDecodeError as error:
-            raise ValueError(f"Default profile file {profile_path} contains invalid JSON") from error
+            raise ValueError(
+                f"Default profile file {profile_path} contains invalid JSON"
+            ) from error
+
 
 UI_COLORS = {
     "variants": {"del": "#C84630", "dup": "#4C6D94"},

@@ -72,7 +72,7 @@ export async function initCanvases({
   version,
   allSamples,
   defaultProfiles,
-  metaWarningThresholds,
+  warningThresholds: warningThresholds,
 }: {
   caseId: string;
   sampleIds: string[];
@@ -85,7 +85,7 @@ export async function initCanvases({
   version: string;
   allSamples: Sample[];
   defaultProfiles: Record<string, ProfileSettings>;
-  metaWarningThresholds: MetaWarningThreshold[];
+  warningThresholds: MetaWarningThreshold[];
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
   const sideMenu = document.getElementById("side-menu") as SideMenu;
@@ -174,6 +174,7 @@ export async function initCanvases({
     api.getChromSizes(),
     startRegion,
     allAnnotSources,
+    warningThresholds,
   );
 
   const renderDataSource = getRenderDataSource(

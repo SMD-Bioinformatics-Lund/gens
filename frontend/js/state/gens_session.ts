@@ -40,7 +40,7 @@ export class GensSession {
   private mainSample: Sample;
   private samples: Sample[];
   private chromViewActive: boolean;
-  private metaWarningThresholds: MetaWarningThreshold[];
+  private warningThresholds: MetaWarningThreshold[];
 
   // Constants
   private variantSoftwareBaseURL: string | null;
@@ -66,7 +66,7 @@ export class GensSession {
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
     allAnnotationSources: ApiAnnotationTrack[],
-    metaWarningThresholds: MetaWarningThreshold[],
+    warningThresholds: MetaWarningThreshold[],
   ) {
     this.render = render;
     this.sideMenu = sideMenu;
@@ -83,7 +83,7 @@ export class GensSession {
     this.variantSoftwareBaseURL = variantSoftwareBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
-    this.metaWarningThresholds = metaWarningThresholds;
+    this.warningThresholds = warningThresholds;
 
     this.profile = new SessionProfiles(defaultProfiles, samples);
     this.tracks = new Tracks([]);
@@ -149,7 +149,7 @@ export class GensSession {
     //   },
     // ];
 
-    const thresholds = this.metaWarningThresholds;
+    const thresholds = this.warningThresholds;
 
     const warningCoords = [];
 

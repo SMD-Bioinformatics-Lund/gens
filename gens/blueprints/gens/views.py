@@ -160,7 +160,7 @@ def display_samples(case_id: str):
         gens_api_url=settings.gens_api_url,
         main_sample_types=settings.main_sample_types,
         default_profiles=settings.default_profiles,
-        meta_warning_thresholds=[
-            threshold.model_dump() for threshold in settings.meta_warning_thresholds
+        warning_thresholds=[
+            threshold.model_dump() for threshold in settings.warning_thresholds
         ]
     )
