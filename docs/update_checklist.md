@@ -22,7 +22,7 @@ $ cd gens_test
 
 - [ ] Link in the /dump data folder
 
-A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/data/bnf/dev/jakob/data/gens_test_data`.
+A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/trannel/dev/jakob/data/gens_test_data`.
 
 Furthermore, current annotation tracks for testing can be copied from `/access/annotation_tracks`. Copy these into the folder `annotation_tracks` folder in the `dump` folder. Note - some of these contain sensitive data. Test loading all as a final step when running on Gens dev.
 
@@ -161,15 +161,21 @@ gens load sample \
     --meta /dump/hg002.chr_meta.tsv
 ```
 
-- [ ] Load the sample annotation track.
+- [ ] Load the sample annotation tracks.
 
 ```
 gens load sample-annotation \
     --sample-id hg002 \
     --case-id hg002 \
     --genome-build 38 \
-    --file /dump/hg002.upd_roh.bed \
-    --name "UPD and ROH"
+    --file /dump/hg002.upd.bed \
+    --name "UPD"
+gens load sample-annotation \
+    --sample-id hg002 \
+    --case-id hg002 \
+    --genome-build 38 \
+    --file /dump/hg002.roh.bed \
+    --name "ROH"
 ```
 
 - [ ] Load the father (hg003)
@@ -182,7 +188,7 @@ gens load sample \
   --baf /dump/hg003.baf.bed.gz \
   --coverage /dump/hg003.cov.bed.gz \
   --overview-json /dump/hg003.overview.json.gz \
-  --sample-type father \
+  --sample-type relative \
   --sex M
 ```
 
@@ -196,7 +202,7 @@ gens load sample \
   --baf /dump/hg004.baf.bed.gz \
   --coverage /dump/hg004.cov.bed.gz \
   --overview-json /dump/hg004.overview.json.gz \
-  --sample-type mother \
+  --sample-type relative \
   --sex F
 ```
 
@@ -218,18 +224,20 @@ Perform the tests with an open web console. Log messages are OK. Errors are usua
 
 ## Track page
 
-Opening hg002. Do all tracks show up in the initial view?
+- [ ] Opening hg002. Do all tracks show up in the initial view?
 
-- [ ] Chromosome ideogram
-- [ ] Position track
-- [ ] B allele frequency track
-- [ ] Log2 ratio track
-- [ ] Overview track
-- [ ] Transcript track
-- [ ] Annotation track (after selecting one)
-- [ ] Sample annotation track
+- Chromosome ideogram
+- Position track
+- B allele frequency track
+- Log2 ratio track
+- Overview track
+- Transcript track
+- Annotation track (after selecting one)
+- Sample annotation track
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/single.PNG" width=400 alt="Single sample single chromosome view">
+
+- [ ] Open the dev console (F12). It should be free from errors, warnings and unexpected console logs.
 
 Opening a trio case. Are the additional tracks there:
 
@@ -282,6 +290,7 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Meta page contains key-value information on proband (%ROH)
 - [ ] Meta page contains chromosome table
 - [ ] Drag the edge to expand and show the full table.
+- [ ] Warnings are preset for the chromosome column and indicated by a red badge in the top row.
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/update_checklist/meta_side_page.PNG" width=400 alt="Meta">
 
@@ -294,7 +303,7 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Adding / removing samples
   - [ ] In the settings menu, try removing a sample. The corresponding tracks should be removed.
   - [ ] In the settings menu, try adding a sample. The corresponding tracks should be added at the bottom of the tracks.
-- [ ] Try changing the variant threshold to 6. More bands should appear in chromosome 1.
+- [ ] Try changing the variant threshold to 0. More bands should appear in chromosome 1 (both dels and dups).
 - [ ] Try updating the default Y-axis range (`Default cov y-range` under `Toggle advanced settings`) and click apply. All coverage tracks should change Y-axis.
 - [ ] Persistent settings
   - [ ] Try adjusting track height
@@ -305,7 +314,12 @@ Is content correctly displayed in the context menus for the different band track
   - [ ] Change the variant threshold
   - [ ] Refresh the page. These settings should persist.
 - [ ] Update the "Main sample" and press refresh updates the overview chart label and data
-- [ ] Download the settings. Do changes in your settings and try uploading the JSON again. They should be restored to the previous settings.
+
+Export, reset and import of profile
+
+- [ ] Export the current profile. It should download a JSON with the profile configurations.
+- [ ] Reset the layout. It should change to the original (either no profile or a default profile).
+- [ ] Upload the exported profile. It should reset back to the previous state.
 
 ## Multiple-chromosomes page
 
@@ -314,6 +328,7 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Updates to coverage Y max / min are reflected
 - [ ] Updates to the main sample updates the label and the data
 - [ ] Zooming is *not* reflected in the chromosome view
+- [ ] Browser zooming changes y-axis of tracks but does not distort the x-distribution of the data
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/chromosome_view.PNG" width=400 alt="Multiple chromosomes view">
 
@@ -323,6 +338,15 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Check the web console. Any lingering console logs to remove?
 
 # Test on Gens dev
+
+Steps to prepare a container to run:
+
+```
+# Otherwise you'll build with outdated files
+$ npm run buildcp
+$ docker build -f Dockerfile -t clinicalgenomicslund/gens:<VERSION> .
+$ docker push clinicalgenomicslund/gens
+```
 
 ## CLI
 
@@ -355,11 +379,6 @@ General sanity check and testing things that cannot be tested in a test setup.
 
 - [ ] The sample list looks correct
 - [ ] Does the case link to Scout work? (On PGM1)
-- [ ] Opening a trio for the the single-chromosome view, all tracks are shown (check the side menu under advanced settings to see all tracks)
-  - [ ] Three cov tracks
-  - [ ] Three BAF tracks
-  - [ ] Variants for proband
-  - [ ] Sample annotations for proband
-  - [ ] Gene track
-- [ ] Variant context menu
-  - [ ] Clicking variant links back to Scout
+- [ ] Opening a trio for the the single-chromosome view, all tracks are shown (check the side menu under advanced settings to see all tracks). 
+Expected tracks: Three cov tracks, three BAF tracks, variants for proband, sample annotations for proband, gene track
+- [ ] Clicking variant links back to Scout

@@ -22,10 +22,10 @@ export class GensHome extends HTMLElement {
 
   initialize(
     samples: SampleInfo[],
-    scoutURL: string,
+    variantSoftwareUrl: string | null,
     getGensURL: (caseId: string, sampleIds: string[]) => string,
   ) {
-    this.tableElem.initialize(samples, scoutURL, getGensURL);
+    this.tableElem.initialize(samples, variantSoftwareUrl, getGensURL);
   }
 }
 

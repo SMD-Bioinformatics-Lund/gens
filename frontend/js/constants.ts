@@ -78,7 +78,7 @@ export const TRACK_IDS = {
   annot: "annot",
 };
 
-export const TRACK_LAYOUT_VERSION = 2;
+export const PROFILE_SETTINGS_VERSION = 2;
 
 export const COLORS = {
   white: "#FFFFFF",
@@ -275,3 +275,6 @@ export const bandTrackTypes: TrackType[] = [
   "variant",
 ];
 export const dotTrackTypes: TrackType[] = ["dot-baf", "dot-cov"];
+
+export const BAF_Y_RANGE: [number, number] = [0, 1];
+export const DEFAULT_COV_Y_RANGE: [number, number] = [-3, 3];

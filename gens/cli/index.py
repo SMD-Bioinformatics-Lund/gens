@@ -10,8 +10,7 @@ from gens.db.index import INDEXES, create_indexes, update_indexes
 
 log_level = getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+    level=logging.INFO, format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
 )
 LOG = logging.getLogger(__name__)
 

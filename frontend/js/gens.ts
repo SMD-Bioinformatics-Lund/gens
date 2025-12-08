@@ -37,10 +37,11 @@ import { SampleInfo } from "./home/sample_table";
 import { setupShortcuts } from "./shortcuts";
 import { getMainSample } from "./util/utils";
 import { HelpMenu } from "./components/side_menu/help_menu";
+import { parseSex } from "./util/meta_warnings";
 
 export async function samplesListInit(
   samples: SampleInfo[],
-  scoutBaseURL: string,
+  variantSoftwareBaseURL: string | null,
   gensBaseURL: string,
   genomeBuild: number,
 ) {
@@ -57,30 +58,34 @@ export async function samplesListInit(
     return new URL(subpath, gensBaseURL).href;
   };
 
-  gens_home.initialize(samples, scoutBaseURL, getGensURL);
+  gens_home.initialize(samples, variantSoftwareBaseURL, getGensURL);
 }
 
 export async function initCanvases({
   caseId,
   sampleIds,
   genomeBuild,
-  scoutBaseURL,
+  variantSoftwareBaseURL,
   gensApiURL,
   mainSampleTypes,
   startRegion,
   version,
   allSamples,
+  defaultProfiles,
+  warningThresholds: warningThresholds,
 }: {
   caseId: string;
   sampleIds: string[];
   genomeBuild: number;
-  scoutBaseURL: string;
+  variantSoftwareBaseURL: string | null;
   gensApiURL: string;
   mainSampleTypes: string[];
   annotationFile: string;
   startRegion: { chrom: Chromosome; start?: number; end?: number } | null;
   version: string;
   allSamples: Sample[];
+  defaultProfiles: Record<string, ProfileSettings>;
+  warningThresholds: WarningThreshold[];
 }) {
   const gensTracks = document.getElementById("gens-tracks") as TracksManager;
   const sideMenu = document.getElementById("side-menu") as SideMenu;
@@ -89,9 +94,14 @@ export async function initCanvases({
   const helpPage = document.createElement("help-page") as HelpMenu;
   const headerInfo = document.getElementById("header-info") as HeaderInfo;
 
+  // FIXME: This will need to be adapted when more software are introduced
+  const variantSoftwareCaseUrl = variantSoftwareBaseURL
+    ? `${variantSoftwareBaseURL}/case/case_id/${caseId}`
+    : null;
+
   headerInfo.initialize(
     caseId,
-    `${scoutBaseURL}/case/case_id/${caseId}`,
+    variantSoftwareCaseUrl,
     version,
   );
 
@@ -114,11 +124,6 @@ export async function initCanvases({
     }
   };
 
-  const trackHeights: TrackHeights = {
-    bandCollapsed: STYLE.tracks.trackHeight.m,
-    dotCollapsed: STYLE.tracks.trackHeight.m,
-    dotExpanded: STYLE.tracks.trackHeight.xl,
-  };
 
   // FIXME: Think about how to organize. Get data sources?
   const orderSamples = (samples: ApiSample[]): ApiSample[] => {
@@ -138,18 +143,21 @@ export async function initCanvases({
   const unorderedSamples = await Promise.all(
     sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
   );
-  const samples = orderSamples(unorderedSamples).map((sample) => {
+  const caseSamples = orderSamples(unorderedSamples).map((sample) => {
+
+    const parsedSex = parseSex(sample.sex);
+
     const result: Sample = {
       caseId: sample.case_id,
       sampleId: sample.sample_id,
       sampleType: sample.sample_type,
-      sex: sample.sex,
+      sex: parsedSex,
       meta: sample.meta,
     };
     return result;
   });
 
-  const mainSample = getMainSample(samples);
+  const mainSample = getMainSample(caseSamples);
 
   const allAnnotSources = await api.getAnnotationSources();
 
@@ -157,15 +165,17 @@ export async function initCanvases({
     render,
     sideMenu,
     mainSample,
-    samples,
-    trackHeights,
-    scoutBaseURL,
+    caseSamples,
+    allSamples,
+    variantSoftwareBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
     genomeBuild,
+    defaultProfiles,
     api.getChromInfo(),
     api.getChromSizes(),
     startRegion,
     allAnnotSources,
+    warningThresholds,
   );
 
   const renderDataSource = getRenderDataSource(
@@ -191,43 +201,27 @@ export async function initCanvases({
     gensTracks,
   );
 
-  infoPage.setSources(() => session.getSamples());
+  infoPage.setSources(
+    () => session.getSamples(),
+    (metaId: string) => session.getMetaWarnings(metaId),
+  );
 
-  inputControls.initialize(
+  const getSearchResults = (query: string) => {
+    const annotIds = session
+      .getAnnotationSources({ selectedOnly: true })
+      .map((annot) => annot.id);
+    return api.getSearchResult(query, annotIds);
+  };
+
+  initializeInputControls(
     session,
-    async (range) => {
-      session.pos.setViewRange(range);
-      render({ reloadData: true, positionOnly: true });
-    },
-    () => {
-      sideMenu.showContent("Settings", [settingsPage], STYLE.menu.width);
-
-      if (!settingsPage.isInitialized) {
-        settingsPage.initialize();
-        render({});
-      }
-    },
-    () => {
-      sideMenu.showContent("Sample info", [infoPage], STYLE.menu.width);
-      infoPage.render();
-    },
-    () => {
-      sideMenu.showContent("Help", [helpPage], STYLE.menu.width);
-      helpPage.render();
-    },
-    () => {
-      session.toggleChromViewActive();
-      render({});
-    },
-    (query: string) => {
-      const annotIds = session
-        .getAnnotationSources({ selectedOnly: true })
-        .map((annot) => annot.id);
-      return api.getSearchResult(query, annotIds);
-    },
-    (settings: RenderSettings) => {
-      render(settings);
-    },
+    inputControls,
+    sideMenu,
+    render,
+    settingsPage,
+    infoPage,
+    helpPage,
+    getSearchResults,
   );
 
   await gensTracks.initializeTrackView(
@@ -239,6 +233,59 @@ export async function initCanvases({
   );
 
   render({ reloadData: true, resized: true });
+}
+
+function initializeInputControls(
+  session: GensSession,
+  inputControls: InputControls,
+  sideMenu: SideMenu,
+  render: (settings: RenderSettings) => void,
+  settingsPage: SettingsMenu,
+  infoPage: InfoMenu,
+  helpPage: HelpMenu,
+  getSearchResults: (query: string) => Promise<ApiSearchResult>,
+) {
+
+  const showBadge = session.hasMetaWarnings();
+
+  const onPositionChange = async (range) => {
+    session.pos.setViewRange(range);
+    render({ reloadData: true, positionOnly: true });
+  };
+  const onOpenSettings = () => {
+    sideMenu.showContent("Settings", [settingsPage], STYLE.menu.width);
+    if (!settingsPage.isInitialized) {
+      settingsPage.initialize();
+      render({});
+    }
+  };
+  const onOpenInfo = () => {
+    sideMenu.showContent("Sample info", [infoPage], STYLE.menu.width);
+    infoPage.render();
+  };
+  const onOpenHelp = () => {
+    sideMenu.showContent("Help", [helpPage], STYLE.menu.width);
+    helpPage.render();
+  };
+  const onToggleChromView = () => {
+    session.toggleChromViewActive();
+    render({});
+  };
+  const onChange = (settings: RenderSettings) => {
+    render(settings);
+  };
+
+  inputControls.initialize(
+    session,
+    onPositionChange,
+    onOpenSettings,
+    onOpenInfo,
+    onOpenHelp,
+    onToggleChromView,
+    getSearchResults,
+    onChange,
+    showBadge,
+  );
 }
 
 function addSettingsPageSources(
@@ -278,11 +325,11 @@ function addSettingsPageSources(
     render({ reloadData: true, samplesUpdated: true });
   };
   const setTrackHeights = (trackHeights: TrackHeights) => {
-    session.setTrackHeights(trackHeights);
+    session.profile.setTrackHeights(trackHeights);
     render({ reloadData: true });
   };
   const onColorByChange = async (annotId: string | null) => {
-    session.setColorAnnotation(annotId);
+    session.profile.setColorAnnotation(annotId);
     render({ colorByChange: true });
   };
   const onApplyDefaultCovRange = (rng: Rng) => {
@@ -290,17 +337,15 @@ function addSettingsPageSources(
     render({ reloadData: true });
   };
   const onSetAnnotationSelection = (ids: string[]) => {
-    const saveProfile = true;
-    session.setAnnotationSelections(ids, saveProfile);
+    session.profile.setAnnotationSelections(ids);
     render({});
   };
   const onSetGeneListSelection = (ids: string[]) => {
-    const saveProfile = true;
-    session.setAnnotationSelections(ids, saveProfile);
+    session.profile.setAnnotationSelections(ids);
     render({});
   };
   const onSetVariantThreshold = (threshold: number) => {
-    session.setVariantThreshold(threshold);
+    session.profile.setVariantThreshold(threshold);
     render({ reloadData: true });
   };
   const onToggleTrackHidden = (trackId: string) => {
@@ -317,7 +362,7 @@ function addSettingsPageSources(
   };
 
   const getProfile = () => {
-    return session.getProfile();
+    return session.profile.getProfile();
   };
 
   const applyProfile = async (profile: ProfileSettings) => {
@@ -329,6 +374,11 @@ function addSettingsPageSources(
       saveLayoutChange: true,
       colorByChange: true,
     });
+  };
+
+  const resetLayout = () => {
+    session.resetTrackLayout();
+    render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
   };
 
   settingsPage.setSources(
@@ -350,5 +400,6 @@ function addSettingsPageSources(
     onAssignMainSample,
     getProfile,
     applyProfile,
+    resetLayout,
   );
 }

@@ -246,3 +246,14 @@ def delete_sample(
             "genome_build": genome_build,
         }
     )
+
+
+def get_sample_ids_for_case_and_build(
+    samples_c: Collection[dict[str, Any]],
+    case_id: str,
+    genome_build: GenomeBuild,
+) -> list[str]:
+    return [
+        sample["sample_id"]
+        for sample in samples_c.find({"case_id": case_id, "genome_build": genome_build})
+    ]

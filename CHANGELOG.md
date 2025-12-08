@@ -7,13 +7,37 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## TBD
 
-- Skip missing genotype variants in `generate_gens_data.py` [#588](https://github.com/SMD-Bioinformatics-Lund/gens/pull/588)
+### Added
+
+- Shorthand `-b` flag for `--genome-build` [#606](https://github.com/SMD-Bioinformatics-Lund/gens/pull/606).
+- CLI option to delete full case [#609](https://github.com/SMD-Bioinformatics-Lund/gens/pull/609)
+- Allow reading all input as either raw text or gzip-format in `generate_gens_data.py` [#605](https://github.com/SMD-Bioinformatics-Lund/gens/pull/605).
+- Add util scripts for normalization of coverage without panel of normal, and for creating additional sample tracks (ROH, UPD) and meta data (coverage, UPD) [#625](https://github.com/SMD-Bioinformatics-Lund/gens/pull/625).
+- Add support for default track profiles, that are loaded if nothing else is loaded and which a user can reset the track layout / settings to [#608](https://github.com/SMD-Bioinformatics-Lund/gens/pull/608).
+- Custom warning thresholds for meta data [#591](https://github.com/SMD-Bioinformatics-Lund/gens/pull/591).
+- CLI commands for removing sample meta data [#591](https://github.com/SMD-Bioinformatics-Lund/gens/pull/591).
+
+### Changed
+
+- BAF 0.5 line highlighted, and tick range changed to 0.25 to make sure one of the ticks end up at 0.5 [#619](https://github.com/SMD-Bioinformatics-Lund/gens/pull/619).
+- When updating meta data for a sample where the file name already exists, overwrite the existing meta data (after prompting user) [#591](https://github.com/SMD-Bioinformatics-Lund/gens/pull/591).
+
+### Fixed
+
+- Skip missing genotype variants in `generate_gens_data.py` [#588](https://github.com/SMD-Bioinformatics-Lund/gens/pull/588).
+- Input checking when loading samples through CLI [#611](https://github.com/SMD-Bioinformatics-Lund/gens/pull/611)
+- Sample validation when accessing sample through URL [#611](https://github.com/SMD-Bioinformatics-Lund/gens/pull/611)
+- Prevent extra zoom step when drag-select zooming [#618](https://github.com/SMD-Bioinformatics-Lund/gens/pull/618)
+- Make sure band tracks respond to browser based zooming [#618](https://github.com/SMD-Bioinformatics-Lund/gens/pull/618)
+- Go to full chromosome view when specifying only the chromosome in URL [#607](https://github.com/SMD-Bioinformatics-Lund/gens/pull/607).
+- Typo would crash all attempts to use OAuth [#623](https://github.com/SMD-Bioinformatics-Lund/gens/pull/623).
+- Make variant intepretation software URL and connections fully optional [#624](https://github.com/SMD-Bioinformatics-Lund/gens/pull/624).
 
 ## 4.3.3
 
 ### Fixed
 
-- Fix issue "Color tracks by" bands did not update when a new chromosome was selected [#584](https://github.com/SMD-Bioinformatics-Lund/gens/pull/584)
+- Fix issue "Color tracks by" bands did not update when a new chromosome was selected [#584](https://github.com/SMD-Bioinformatics-Lund/gens/pull/584).
 - Fix issue where the dockerfile for `generate_gens_data.py` could not be run in Nextflow pipeline due to missing `ps` command [#585](https://github.com/SMD-Bioinformatics-Lund/gens/pull/585).
 
 ## 4.3.2

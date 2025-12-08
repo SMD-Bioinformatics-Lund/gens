@@ -71,14 +71,12 @@ export class BandTrack extends DataTrack {
 
   override draw(renderData: BandTrackData) {
     const { bands } = renderData;
+    // First, sync to get the window size right
+    this.syncDimensions();
+
     const xRange = this.getXRange();
     const ntsPerPx = this.getNtsPerPixel(xRange);
     const showDetails = ntsPerPx < STYLE.tracks.zoomLevel.showDetails;
-
-    const xScale = getLinearScale(xRange, [
-      LEFT_PX_EDGE,
-      this.dimensions.width,
-    ]);
 
     const bandsInView = bands
       .filter((band) => {
@@ -95,10 +93,16 @@ export class BandTrack extends DataTrack {
       this.getIsExpanded() && showDetails ? STYLE.tracks.textLaneSize : 0;
 
     this.setExpandedTrackHeight(numberLanes, showDetails);
+    // Now we need to re-sync to get the expanded y-size correct
     this.syncDimensions();
 
     // Needs to be done after setting the height / syncing dimensions
     super.drawStart();
+
+    const xScale = getLinearScale(xRange, [
+      LEFT_PX_EDGE,
+      this.dimensions.width,
+    ]);
 
     const bandTopBottomPad =
       this.currentHeight > STYLE.bandTrack.dynamicPadThreshold

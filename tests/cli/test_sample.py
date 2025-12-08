@@ -1,3 +1,4 @@
+import gzip
 import logging
 from pathlib import Path
 from types import ModuleType
@@ -9,9 +10,15 @@ import pytest
 from gens.crud.samples import update_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleInfo, SampleSex
+from gens.models.sample import MetaEntry, MetaValue, SampleInfo, SampleSex
 
 LOG = logging.getLogger(__name__)
+
+
+def write_sample_track(file_path: Path) -> Path:
+    with gzip.open(file_path, "wt", encoding="utf-8") as fh:
+        fh.write("0_1\t0\t1\t0.1\n")
+    return file_path
 
 
 @pytest.fixture(autouse=True)
@@ -27,10 +34,8 @@ def test_load_sample_cli(
     db: mongomock.Database,
     tmp_path: Path,
 ):
-    baf_file = tmp_path / "baf"
-    baf_file.write_text("baf")
-    cov_file = tmp_path / "cov"
-    cov_file.write_text("cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
     overview_file = tmp_path / "overview"
     overview_file.write_text("{}")
     meta_file_simple = tmp_path / "meta_simple.tsv"
@@ -90,15 +95,94 @@ def test_load_sample_cli(
     }
 
 
+def test_delete_sample_metadata_cli_removes_all_entries(
+    cli_delete: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+) -> None:
+    sample_file = write_sample_track(tmp_path / "sample.gz")
+    sample_obj = SampleInfo(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        baf_file=sample_file,
+        coverage_file=sample_file,
+        overview_file=None,
+        sample_type=None,
+        sex=None,
+        meta=[
+            MetaEntry(
+                id="meta1", file_name="meta.tsv", data=[MetaValue(type="a", value="1")]
+            ),
+            MetaEntry(
+                id="meta2", file_name="other.tsv", data=[MetaValue(type="b", value="2")]
+            ),
+        ],
+    )
+    update_sample(db, sample_obj)
+
+    cli_delete.sample_meta.callback(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        meta_id=None,
+        file_name=None,
+        force=True,
+    )
+
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one({"sample_id": "sample1"})
+    assert doc is not None
+    assert doc["meta"] == []
+
+
+def test_delete_sample_metadata_cli_filters_by_id(
+    cli_delete: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+) -> None:
+    sample_file = write_sample_track(tmp_path / "sample.gz")
+    sample_obj = SampleInfo(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        baf_file=sample_file,
+        coverage_file=sample_file,
+        overview_file=None,
+        sample_type=None,
+        sex=None,
+        meta=[
+            MetaEntry(
+                id="meta1", file_name="meta.tsv", data=[MetaValue(type="a", value="1")]
+            ),
+            MetaEntry(
+                id="meta2", file_name="other.tsv", data=[MetaValue(type="b", value="2")]
+            ),
+        ],
+    )
+    update_sample(db, sample_obj)
+
+    cli_delete.sample_meta.callback(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        meta_id="meta1",
+        file_name=None,
+        force=True,
+    )
+
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one({"sample_id": "sample1"})
+    assert doc is not None
+    assert len(doc["meta"]) == 1
+    assert doc["meta"][0]["id"] == "meta2"
+
+
 def test_load_sample_cli_with_string_genome_build_fails(
     cli_load: ModuleType,
     tmp_path: Path,
     db: mongomock.Database,
 ):
-    baf_file = tmp_path / "baf"
-    baf_file.write_text("baf")
-    cov_file = tmp_path / "cov"
-    cov_file.write_text("cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
     overview_file = tmp_path / "overview"
     overview_file.write_text("{}")
     meta_file = tmp_path / "meta.tsv"
@@ -147,10 +231,8 @@ def test_load_sample_cli_accepts_aliases(
     alias: str,
     expected: str,
 ) -> None:
-    baf_file = tmp_path / "baf"
-    baf_file.write_text("baf")
-    cov_file = tmp_path / "cov"
-    cov_file.write_text("cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
     overview_file = tmp_path / "overview"
     overview_file.write_text("{}")
 
@@ -193,15 +275,28 @@ def test_update_sample_updates_document(
     tmp_path: Path,
     db: mongomock.Database,
 ) -> None:
+    existing_sample_file = write_sample_track(tmp_path / "existing_sample")
+    existing_meta = MetaEntry(
+        id="existing-id",
+        file_name="meta.tsv",
+        row_name_header=None,
+        data=[MetaValue(type="old", value="x")],
+    )
+    other_meta = MetaEntry(
+        id="other-id",
+        file_name="other.tsv",
+        row_name_header=None,
+        data=[MetaValue(type="B", value="2")],
+    )
     sample_obj = SampleInfo(
         sample_id="sample1",
         case_id="caseA",
         genome_build=GenomeBuild(19),
-        baf_file=Path(__file__),
-        coverage_file=Path(__file__),
+        baf_file=existing_sample_file,
+        coverage_file=existing_sample_file,
         sample_type=None,
         sex=None,
-        meta=[],
+        meta=[existing_meta, other_meta],
     )
 
     monkeypatch.setattr(
@@ -214,10 +309,8 @@ def test_update_sample_updates_document(
     meta_file = tmp_path / "meta.tsv"
     meta_file.write_text("type\tvalue\nA\t1\n")
 
-    baf_file = tmp_path / "baf"
-    baf_file.write_text("baf")
-    cov_file = tmp_path / "cov"
-    cov_file.write_text("cov")
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
 
     # assert update_sample_cmd.sample.callback is not None
 
@@ -229,7 +322,8 @@ def test_update_sample_updates_document(
         sex=SampleSex("M"),
         baf=baf_file,
         coverage=cov_file,
-        meta_files=(meta_file,),
+        meta_file=meta_file,
+        force=True,
     )
 
     coll = db.get_collection(SAMPLES_COLLECTION)
@@ -246,29 +340,38 @@ def test_update_sample_updates_document(
 
     meta = doc.get("meta")
     assert meta is not None
-    assert len(meta) == 1
+    assert len(meta) == 2
 
-    assert meta[0]["file_name"] == "meta.tsv"
-    assert len(meta[0]["data"]) == 1
-    assert meta[0]["data"][0]["type"] == "A"
-    assert meta[0]["data"][0]["value"] == "1"
-    assert meta[0]["data"][0]["row_name"] is None
-    assert meta[0]["data"][0]["color"] == "rgb(0,0,0)"
+    meta_by_file_name = {entry["file_name"]: entry for entry in meta}
+    assert set(meta_by_file_name) == {"meta.tsv", "other.tsv"}
+
+    updated_meta = meta_by_file_name["meta.tsv"]
+    assert len(updated_meta["data"]) == 1
+    assert updated_meta["data"][0]["type"] == "A"
+    assert updated_meta["data"][0]["value"] == "1"
+    assert updated_meta["data"][0]["row_name"] is None
+    assert updated_meta["data"][0]["color"] == "rgb(0,0,0)"
+
+    preserved_meta = meta_by_file_name["other.tsv"]
+    assert len(preserved_meta["data"]) == 1
+    assert preserved_meta["data"][0]["type"] == "B"
+    assert preserved_meta["data"][0]["value"] == "2"
 
 
-def _build_sample() -> SampleInfo:
+def _build_sample(sample_file: Path) -> SampleInfo:
     return SampleInfo(
         sample_id="sample1",
         case_id="caseA",
         genome_build=GenomeBuild(38),
-        baf_file=Path(__file__),
-        coverage_file=Path(__file__),
+        baf_file=sample_file,
+        coverage_file=sample_file,
     )
 
 
-def test_update_sample_modifies_collection(db: Any) -> None:
+def test_update_sample_modifies_collection(db: Any, tmp_path: Path) -> None:
 
-    sample_obj = _build_sample()
+    sample_file = write_sample_track(tmp_path / "sample.bed")
+    sample_obj = _build_sample(sample_file)
     update_sample(db, sample_obj)
 
     coll = db.get_collection(SAMPLES_COLLECTION)

@@ -1,11 +1,12 @@
 """Gens default configuration."""
 
+import json
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Tuple, Type
+from typing import Any, Literal, Tuple, Type
 
-from pydantic import Field, HttpUrl, MongoDsn, model_validator
+from pydantic import BaseModel, Field, HttpUrl, MongoDsn, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -23,6 +24,9 @@ if custom_config is not None:
     user_cnf = Path(custom_config)
     if user_cnf.exists():
         config_file.append(user_cnf)
+
+CONFIG_PATHS = [path.resolve() for path in config_file if path.exists()]
+CONFIG_DIRS = [path.parent for path in CONFIG_PATHS]
 
 
 class AuthMethod(Enum):
@@ -48,14 +52,29 @@ class MongoDbConfig(BaseSettings):
     database: str | None = None
 
 
+class WarningThreshold(BaseModel):
+    """Configuration for meta warning thresholds."""
+
+    column: str
+    kind: Literal[
+        "estimated_chromosome_count_deviate",
+        "threshold_above",
+        "threshold_below",
+        "threshold_deviate",
+    ] = "threshold_above"
+    size: float | None = None
+    max_deviation: float | None = None
+    message: str = ""
+
+
 class Settings(BaseSettings):
     """Gens settings."""
 
     # For scout integration
     gens_db: MongoDbConfig
-    variant_db: MongoDbConfig
-    variant_url: HttpUrl = Field(
-        ..., description="Base URL to interpretation software."
+    variant_db: MongoDbConfig | None = None
+    variant_url: HttpUrl | None = Field(
+        default=None, description="Base URL to interpretation software."
     )
     gens_api_url: HttpUrl = Field(..., description="Gens API URL")
     variant_software_backend: str = Field(
@@ -80,22 +99,36 @@ class Settings(BaseSettings):
         env_nested_delimiter="__",
     )
 
+    default_profile_paths: dict[str, Path] = Field(
+        default_factory=dict,
+        description="Mapping between profile types and default profile definitions. Values are paths to JSON files relative to the config file.",
+    )
+
+    warning_thresholds: list[WarningThreshold] = Field(
+        default_factory=lambda: [],
+        description="Rules for highlighting meta table warnings.",
+    )
+
     def get_dict(self) -> dict[str, Any]:
         return {
             "gens_db": self.gens_db.database,
-            "variant_db": self.variant_db.database,
+            "variant_db": self.variant_db.database if self.variant_db else None,
             "scout_url": self.variant_url,
             "gens_api_url": self.gens_api_url,
             "main_sample_types": self.main_sample_types,
             "authentication": self.authentication.value,
             "oauth": self.oauth,
+            "default_profiles": self.default_profiles,
+            "warning_thresholds": [
+                threshold.model_dump() for threshold in self.warning_thresholds
+            ],
         }
 
     @model_validator(mode="after")
     def check_oauth_opts(self) -> "Settings":
         """Check that OAUTH options are set if authentication is oauth."""
         if self.authentication == AuthMethod.OAUTH:
-            if self.oauth is not None:
+            if self.oauth is None:
                 raise ValueError(
                     "OAUTH require you to configure client_id, secret and discovery_url"
                 )
@@ -117,14 +150,36 @@ class Settings(BaseSettings):
         )
 
         # scout
-        conn_info = parse_uri(str(self.variant_db.connection))
-        self.variant_db.database = (
-            self.variant_db.database
-            if conn_info["database"] is None
-            else conn_info["database"]
-        )
+        if self.variant_db:
+            conn_info = parse_uri(str(self.variant_db.connection))
+            self.variant_db.database = (
+                self.variant_db.database
+                if conn_info["database"] is None
+                else conn_info["database"]
+            )
 
         return self
+
+    @property
+    def default_profiles(self) -> dict[str, Any] | list | None:
+        """
+        Loaded JSON from default_profile_paths
+        """
+
+        if self.default_profile_paths is None:
+            return None
+
+        loaded_profiles = {}
+        for key, json_path in self.default_profile_paths.items():
+            resolved = _resolve_profile_path(json_path)
+            loaded_profile = _load_profile(resolved)
+
+            if isinstance(loaded_profile, dict):
+                loaded_profile["fileName"] = resolved.name
+
+            loaded_profiles[key] = loaded_profile
+
+        return loaded_profiles
 
     @classmethod
     def settings_customise_sources(
@@ -143,6 +198,31 @@ class Settings(BaseSettings):
             file_secret_settings,
             toml_settings,
         )
+
+
+def _resolve_profile_path(profile_path: Path) -> Path:
+    if profile_path.is_absolute():
+        return profile_path
+
+    for config_dir in CONFIG_DIRS:
+        candidate = config_dir.joinpath(profile_path)
+        if candidate.exists():
+            return candidate
+
+    return profile_path
+
+
+def _load_profile(profile_path: Path) -> dict[str, Any]:
+    if not profile_path.exists():
+        raise ValueError(f"Default profile file not found: {profile_path}")
+
+    with profile_path.open("r", encoding="utf-8") as profile_file:
+        try:
+            return json.load(profile_file)
+        except json.JSONDecodeError as error:
+            raise ValueError(
+                f"Default profile file {profile_path} contains invalid JSON"
+            ) from error
 
 
 UI_COLORS = {

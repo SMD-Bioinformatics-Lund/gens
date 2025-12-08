@@ -17,7 +17,12 @@ from gens.crud.sample_annotations import (
     delete_sample_annotations_for_track,
     get_sample_annotation_track,
 )
-from gens.crud.samples import delete_sample
+from gens.crud.samples import (
+    delete_sample,
+    get_sample,
+    get_sample_ids_for_case_and_build,
+    update_sample,
+)
 from gens.db.collections import (
     ANNOTATION_TRACKS_COLLECTION,
     ANNOTATIONS_COLLECTION,
@@ -28,11 +33,11 @@ from gens.db.collections import (
 from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
 from gens.models.genomic import GenomeBuild
+from gens.models.sample import MetaEntry
 
 log_level = getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+    level=logging.INFO, format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
 )
 LOG = logging.getLogger(__name__)
 
@@ -45,7 +50,7 @@ def delete() -> None:
 
 
 @delete.command()
-@click.option("-i", "--sample-id", type=str, required=True, help="Sample id")
+@click.option("-i", "--sample-id", type=str, help="Sample id")
 @click.option(
     "-b",
     "--genome-build",
@@ -70,13 +75,104 @@ def sample(sample_id: str, genome_build: int, case_id: str) -> None:
     # if collection is not indexed, create index
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
-    delete_sample(
-        db=db,
+
+    samples_c = db.get_collection(SAMPLES_COLLECTION)
+    samples_to_delete = (
+        [sample_id]
+        if sample_id is not None
+        else get_sample_ids_for_case_and_build(
+            samples_c=samples_c,
+            case_id=case_id,
+            genome_build=GenomeBuild(genome_build),
+        )
+    )
+
+    if not samples_to_delete:
+        raise click.ClickException(
+            f"No samples found for case_id '{case_id}' and genome build '{genome_build}'"
+        )
+
+    if sample_id is None:
+        click.echo("The following samples will be removed:")
+        for sample in samples_to_delete:
+            click.echo(f" - {sample}")
+        if not click.confirm("Proceed with deletion?", default=False):
+            click.echo("Aborted.")
+            return
+
+    for sample_to_delete_id in samples_to_delete:
+        delete_sample(
+            db=db,
+            sample_id=sample_to_delete_id,
+            case_id=case_id,
+            genome_build=GenomeBuild(genome_build),
+        )
+    click.secho(
+        f"Finished removing {len(samples_to_delete)} samples from database ✔",
+        fg="green",
+    )
+
+
+@delete.command("sample-meta")
+@click.option("--sample-id", required=True, help="Sample ID")
+@click.option("--case-id", required=True, help="Case ID")
+@click.option(
+    "--genome-build", "-b", type=ChoiceType(GenomeBuild), required=True, help="Genome build"
+)
+@click.option("--meta-id", help="Remove only metadata entries matching the given ID")
+@click.option(
+    "--file-name",
+    help="Remove only metadata entries originating from the given file name",
+)
+@click.option("--force", is_flag=True, help="Remove without asking for confirmation")
+def sample_meta(
+    sample_id: str,
+    case_id: str,
+    genome_build: GenomeBuild,
+    meta_id: str | None,
+    file_name: str | None,
+    force: bool,
+) -> None:
+    """Remove metadata entries from a sample"""
+
+    db = db_setup([SAMPLES_COLLECTION])
+    sample = get_sample(
+        db[SAMPLES_COLLECTION],
         sample_id=sample_id,
         case_id=case_id,
-        genome_build=GenomeBuild(genome_build),
+        genome_build=genome_build,
     )
-    click.secho("Finished removing a sample from database ✔", fg="green")
+    if not sample.meta:
+        raise click.ClickException("No metadata found for the given sample")
+
+    filters_provided = bool(meta_id or file_name)
+
+    def should_remove(meta_entry: MetaEntry) -> bool:
+        if not filters_provided:
+            return True
+        return meta_entry.id == meta_id or meta_entry.file_name == file_name
+
+    to_remove = [meta for meta in sample.meta if should_remove(meta)]
+    if not to_remove:
+        raise click.ClickException("No metadata entries matched the provided filters")
+
+    remaining_meta = [meta for meta in sample.meta if meta not in to_remove]
+
+    if not force:
+        click.echo("The following metadata entries will be removed")
+        for meta in to_remove:
+            click.echo(f" - {meta.file_name} (id: {meta.id})")
+        if not click.confirm("Proceed with deletion?", default=False):
+            click.echo("Aborted")
+            return
+
+    sample.meta = remaining_meta
+    update_sample(db, sample)
+
+    click.secho(
+        f"Removed {len(to_remove)} metadata entr{'y' if len(to_remove) == 1 else 'ies'} from sample ✔",
+        fg="green",
+    )
 
 
 @delete.command("sample-annotation")
@@ -114,7 +210,11 @@ def sample_annotation(
 
 @delete.command("annotation")
 @click.option(
-    "--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build"
+    "-b",
+    "--genome-build",
+    type=ChoiceType(GenomeBuild),
+    required=True,
+    help="Genome build",
 )
 @click.option("--name", required=True, help="Name of the annotation track")
 def annotation(genome_build: GenomeBuild, name: str) -> None:

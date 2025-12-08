@@ -3,12 +3,14 @@
 import logging
 from typing import Any, Generator
 
+from fastapi import HTTPException
 from flask import Flask
 from pydantic import MongoDsn
 from pymongo import MongoClient
 from pymongo.database import Database
 
 from gens.adapters.base import InterpretationAdapter
+from gens.adapters.null import NullInterpretationAdapter
 from gens.adapters.scout import ScoutMongoAdapter
 from gens.config import settings
 
@@ -43,9 +45,14 @@ def get_gens_db() -> Generator[Database[Any], None, None]:
 def get_variant_software_adapter() -> Generator[InterpretationAdapter, None, None]:
     """Return the configured interpretation adapter."""
 
+    if not settings.variant_db:
+        yield NullInterpretationAdapter()
+        return
+
     if settings.variant_software_backend != "scout_mongo":
-        raise ValueError(
-            f"Unsupported variant software backend: {settings.variant_software_backend}"
+        raise HTTPException(
+            status_code=503,
+            detail=f"Unsupported variant software backend: {settings.variant_software_backend}",
         )
 
     client: MongoClient[Any] = MongoClient(str(settings.variant_db.connection))
