@@ -190,6 +190,25 @@ def test_parse_gvcfvaf_with_chr_prefix(tmp_path: Path, capsys):
     assert "1 variants skipped!" in captured.err
 
 
+def test_parse_gvcfvaf_skips_missing_genotype(tmp_path: Path, capsys):
+    gvcf_file = tmp_path / "sample.vcf.gz"
+    with gzip.open(gvcf_file, "wt") as fh:
+        fh.write("##header\n")
+        fh.write(
+            "1\t10\t.\tA\tC\t.\tPASS\tEND=10\tGT:AD:DP\t./.:8,2:10\n"
+        )
+
+    gnomad_file = tmp_path / "gnomad.tsv"
+    gnomad_file.write_text("1\t10")
+
+    output = io.StringIO()
+    parse_gvcfvaf(gvcf_file, gnomad_file, output, depth_threshold=1)
+    captured = capsys.readouterr()
+
+    assert output.getvalue().splitlines() == []
+    assert "1 variants skipped!" in captured.err
+
+
 def test_generate_gens_data_end_to_end(tmp_path: Path):
 
     outdir = tmp_path / "out"
