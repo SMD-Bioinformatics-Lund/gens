@@ -2,6 +2,7 @@ import { SideMenu } from "../components/side_menu/side_menu";
 import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS, PROFILE_SETTINGS_VERSION } from "../constants";
+import { getMetaWarnings } from "../util/meta_warnings";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
 import { SessionPosition } from "./session_helpers/session_position";
@@ -28,6 +29,7 @@ export class GensSession {
   private mainSample: Sample;
   private samples: Sample[];
   private chromViewActive: boolean;
+  private warningThresholds: WarningThreshold[];
 
   // Constants
   private variantSoftwareBaseURL: string | null;
@@ -53,7 +55,9 @@ export class GensSession {
     chromSizes: Record<Chromosome, number>,
     startRegion: { chrom: Chromosome; start?: number; end?: number } | null,
     allAnnotationSources: ApiAnnotationTrack[],
+    warningThresholds: WarningThreshold[],
   ) {
+
     this.render = render;
     this.sideMenu = sideMenu;
     this.mainSample = mainSample;
@@ -69,6 +73,7 @@ export class GensSession {
     this.variantSoftwareBaseURL = variantSoftwareBaseURL;
     this.gensBaseURL = gensBaseURL;
     this.genomeBuild = genomeBuild;
+    this.warningThresholds = warningThresholds;
 
     this.profile = new SessionProfiles(defaultProfiles, samples);
     this.tracks = new Tracks([]);
@@ -88,6 +93,72 @@ export class GensSession {
 
   public getMainSample(): Sample {
     return this.mainSample;
+  }
+
+  public getMeta(
+    metaId: string,
+  ): { meta: SampleMetaEntry; sample: Sample } | null {
+    for (const sample of this.samples) {
+      for (const meta of sample.meta) {
+        if (meta.id === metaId) {
+          return { meta, sample };
+        }
+      }
+    }
+    return null;
+  }
+
+  public getMetaWarnings(metaId: string): { row: string; col: string }[] {
+    const { meta, sample } = this.getMeta(metaId);
+
+    if (meta == null) {
+      return [];
+    }
+
+    const thresholds = this.warningThresholds;
+    const warningCoords = [];
+
+    for (const val of meta.data) {
+      if (!val.row_name) {
+        continue;
+      }
+
+      const matchedThreshold = thresholds.find((thres) => thres.column == val.type)
+
+      if (matchedThreshold) {
+        // FIXME: Use string for hover info?
+        const warning = getMetaWarnings(
+          matchedThreshold,
+          val.row_name,
+          val.value,
+          sample.sex,
+        );
+  
+        if (warning) {
+          const coord = {
+            row: val.row_name,
+            col: val.type,
+          };
+          warningCoords.push(coord);
+        }
+
+      }
+    }
+
+    return warningCoords;
+  }
+
+  public hasMetaWarnings(): boolean {
+    for (const sample of this.samples) {
+      for (const meta of sample.meta) {
+        const warnings = this.getMetaWarnings(meta.id);
+        if (warnings.length > 0) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   public setMainSample(sample: Sample) {

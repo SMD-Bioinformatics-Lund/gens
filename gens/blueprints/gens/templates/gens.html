@@ -87,7 +87,8 @@
         mainSampleTypes: {{ main_sample_types | tojson | safe }},
         version: '{{ version }}',
         allSamples: {{ all_samples | tojson | safe }},
-        defaultProfiles: {{ default_profiles | tojson | safe }}
+        defaultProfiles: {{ default_profiles | tojson | safe }},
+        warningThresholds: {{ warning_thresholds | tojson | safe }}
     })
     // draw statis content
     const visualizationContainer = document.getElementById('visualization-container');

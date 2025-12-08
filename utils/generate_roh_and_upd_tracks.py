@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
-from collections import defaultdict
 import gzip
+import logging
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, TextIO
-import logging
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 LOG = logging.getLogger(__name__)
@@ -86,7 +86,10 @@ def main(
         print("\t".join(["Chromosome", "type", "value", "color"]), file=out_fh)
         for chrom_cov in avg_cov_entries:
             label = "Estimated chromosomal copy numbers"
-            print(f"{chrom_cov.chrom}\t{label}\t{chrom_cov.cov}\t{chrom_cov.color}", file=out_fh)
+            print(
+                f"{chrom_cov.chrom}\t{label}\t{chrom_cov.cov}\t{chrom_cov.color}",
+                file=out_fh,
+            )
 
         upd_labels = [
             # "Chromosome",
@@ -123,7 +126,17 @@ class RohEntry:
         return self.end - self.start
 
     def get_bed_fields(self, color: str) -> List[str]:
-        return [self.chrom, str(self.start), str(self.end), "ROH", ".", ".", ".", ".", color]
+        return [
+            self.chrom,
+            str(self.start),
+            str(self.end),
+            "ROH",
+            ".",
+            ".",
+            ".",
+            ".",
+            color,
+        ]
 
 
 class UPDEntry:
@@ -208,13 +221,19 @@ def parse_upd_sites(upd_sites: Path) -> Dict[str, Dict[str, str]]:
         chrom_types: Dict[str, int] = sum_chrom_type[chrom]
 
         paternal_origin = chrom_types.get("UPD_PATERNAL_ORIGIN") or 0
-        paternal_origin_perc = round(100 * paternal_origin / chrom_tot, 1) if chrom_tot > 0 else 0
+        paternal_origin_perc = (
+            round(100 * paternal_origin / chrom_tot, 1) if chrom_tot > 0 else 0
+        )
         maternal_origin = chrom_types.get("UPD_MATERNAL_ORIGIN") or 0
-        maternal_origin_perc = round(100 * maternal_origin / chrom_tot, 1) if chrom_tot > 0 else 0
+        maternal_origin_perc = (
+            round(100 * maternal_origin / chrom_tot, 1) if chrom_tot > 0 else 0
+        )
         anti = chrom_types.get("ANTI_UPD") or 0
         anti_perc = round(100 * anti / chrom_tot, 1) if chrom_tot > 0 else 0
         non_informative = paternal_origin + maternal_origin + anti
-        non_informative_perc = round(100 * non_informative / chrom_tot, 1) if chrom_tot > 0 else 0
+        non_informative_perc = (
+            round(100 * non_informative / chrom_tot, 1) if chrom_tot > 0 else 0
+        )
 
         chrom_info: Dict[str, str] = {
             "Total SNPs": str(chrom_tot),
@@ -252,7 +271,12 @@ def parse_cov(cov: Path, cov_diff_thres: float, sex: str) -> List[ChromCovEntry]
                 continue
             cov_entry = CovEntry(line)
             if cov_sums.get(cov_entry.chrom) is None:
-                cov_sums[cov_entry.chrom] = {"nval": 0, "acc": 0, "sum_cov": 0, "sum_length": 0}
+                cov_sums[cov_entry.chrom] = {
+                    "nval": 0,
+                    "acc": 0,
+                    "sum_cov": 0,
+                    "sum_length": 0,
+                }
 
             cov_sums[cov_entry.chrom]["nval"] += 1
             cov_sums[cov_entry.chrom]["acc"] += cov_entry.cn
@@ -315,13 +339,17 @@ def open_file(path: Path, read_or_write: str) -> TextIO:
         elif read_or_write == "w":
             return gzip.open(path, "wt")
         else:
-            raise ValueError(f"Unknown read_or_write value: {read_or_write}, expected r or w")
+            raise ValueError(
+                f"Unknown read_or_write value: {read_or_write}, expected r or w"
+            )
     else:
         if read_or_write == "r":
             return path.open("r")
         elif read_or_write == "w":
             return path.open("w")
-        raise ValueError(f"Unknown read_or_write value: {read_or_write}, expected r or w")
+        raise ValueError(
+            f"Unknown read_or_write value: {read_or_write}, expected r or w"
+        )
 
 
 def parse_arguments():
@@ -330,7 +358,10 @@ def parse_arguments():
     parser.add_argument("-v", "--version", action="version", version=VERSION)
 
     parser.add_argument(
-        "--roh", required=True, type=Path, help="ROH output as provided by the bcftools command roh"
+        "--roh",
+        required=True,
+        type=Path,
+        help="ROH output as provided by the bcftools command roh",
     )
     parser.add_argument(
         "--upd_regions",
@@ -382,22 +413,37 @@ def parse_arguments():
         type=float,
         help="Chromosome coverage values differing more than this are colored in red in output data",
     )
-    parser.add_argument("--color_roh", default="rgb(255,186,60)", help="Color for ROH in track")
     parser.add_argument(
-        "--color_upd_maternal", default="rgb(255,75,75)", help="Color for maternal UPD in track"
+        "--color_roh", default="rgb(255,186,60)", help="Color for ROH in track"
     )
     parser.add_argument(
-        "--color_upd_paternal", default="rgb(75,75,255)", help="Color for paternal UPD in track"
+        "--color_upd_maternal",
+        default="rgb(255,75,75)",
+        help="Color for maternal UPD in track",
+    )
+    parser.add_argument(
+        "--color_upd_paternal",
+        default="rgb(75,75,255)",
+        help="Color for paternal UPD in track",
     )
 
     parser.add_argument(
-        "--out_gens_track_roh", required=True, type=Path, help="Bed ranges with ROH information"
+        "--out_gens_track_roh",
+        required=True,
+        type=Path,
+        help="Bed ranges with ROH information",
     )
     parser.add_argument(
-        "--out_gens_track_upd", required=True, type=Path, help="Bed ranges with UPD information"
+        "--out_gens_track_upd",
+        required=True,
+        type=Path,
+        help="Bed ranges with UPD information",
     )
     parser.add_argument(
-        "--out_meta", required=True, type=Path, help="Output global meta info (i.e. ROH%)"
+        "--out_meta",
+        required=True,
+        type=Path,
+        help="Output global meta info (i.e. ROH%)",
     )
     parser.add_argument(
         "--out_chrom_meta",

@@ -16,3 +16,22 @@ connection = "mongodb://mongodb:27017/scout"
 [default_profile_paths]
 "proband" = "profiles/Gens_Singel-default-settings.json"
 "proband+relative" = "profiles/Gens_Trio-default-settings.json"
+
+[[warning_thresholds]]
+column = "Estimated chromosomal copy numbers"
+kind = "estimated_chromosome_count_deviate"
+max_deviation = 0.1
+message = "Exceeds max copy number deviation"
+
+[[warning_thresholds]]
+column = "Mismatch father"
+kind = "threshold_above"
+size = 200
+message = "Exceeds max mismatch count"
+
+[[warning_thresholds]]
+column = "Mismatch mother"
+kind = "threshold_above"
+size = 200
+message = "Exceeds max mismatch count"
+

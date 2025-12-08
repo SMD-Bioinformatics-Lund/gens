@@ -10,7 +10,7 @@ import pytest
 from gens.crud.samples import update_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleInfo, SampleSex
+from gens.models.sample import MetaEntry, MetaValue, SampleInfo, SampleSex
 
 LOG = logging.getLogger(__name__)
 
@@ -93,6 +93,87 @@ def test_load_sample_cli(
         "row_name": "chr1",
         "color": "rgb(0,0,0)",
     }
+
+
+def test_delete_sample_metadata_cli_removes_all_entries(
+    cli_delete: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+) -> None:
+    sample_file = write_sample_track(tmp_path / "sample.gz")
+    sample_obj = SampleInfo(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        baf_file=sample_file,
+        coverage_file=sample_file,
+        overview_file=None,
+        sample_type=None,
+        sex=None,
+        meta=[
+            MetaEntry(
+                id="meta1", file_name="meta.tsv", data=[MetaValue(type="a", value="1")]
+            ),
+            MetaEntry(
+                id="meta2", file_name="other.tsv", data=[MetaValue(type="b", value="2")]
+            ),
+        ],
+    )
+    update_sample(db, sample_obj)
+
+    cli_delete.sample_meta.callback(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        meta_id=None,
+        file_name=None,
+        force=True,
+    )
+
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one({"sample_id": "sample1"})
+    assert doc is not None
+    assert doc["meta"] == []
+
+
+def test_delete_sample_metadata_cli_filters_by_id(
+    cli_delete: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+) -> None:
+    sample_file = write_sample_track(tmp_path / "sample.gz")
+    sample_obj = SampleInfo(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        baf_file=sample_file,
+        coverage_file=sample_file,
+        overview_file=None,
+        sample_type=None,
+        sex=None,
+        meta=[
+            MetaEntry(
+                id="meta1", file_name="meta.tsv", data=[MetaValue(type="a", value="1")]
+            ),
+            MetaEntry(
+                id="meta2", file_name="other.tsv", data=[MetaValue(type="b", value="2")]
+            ),
+        ],
+    )
+    update_sample(db, sample_obj)
+
+    cli_delete.sample_meta.callback(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        meta_id="meta1",
+        file_name=None,
+        force=True,
+    )
+
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one({"sample_id": "sample1"})
+    assert doc is not None
+    assert len(doc["meta"]) == 1
+    assert doc["meta"][0]["id"] == "meta2"
 
 
 def test_load_sample_cli_with_string_genome_build_fails(
@@ -195,6 +276,18 @@ def test_update_sample_updates_document(
     db: mongomock.Database,
 ) -> None:
     existing_sample_file = write_sample_track(tmp_path / "existing_sample")
+    existing_meta = MetaEntry(
+        id="existing-id",
+        file_name="meta.tsv",
+        row_name_header=None,
+        data=[MetaValue(type="old", value="x")],
+    )
+    other_meta = MetaEntry(
+        id="other-id",
+        file_name="other.tsv",
+        row_name_header=None,
+        data=[MetaValue(type="B", value="2")],
+    )
     sample_obj = SampleInfo(
         sample_id="sample1",
         case_id="caseA",
@@ -203,7 +296,7 @@ def test_update_sample_updates_document(
         coverage_file=existing_sample_file,
         sample_type=None,
         sex=None,
-        meta=[],
+        meta=[existing_meta, other_meta],
     )
 
     monkeypatch.setattr(
@@ -229,7 +322,8 @@ def test_update_sample_updates_document(
         sex=SampleSex("M"),
         baf=baf_file,
         coverage=cov_file,
-        meta_files=(meta_file,),
+        meta_file=meta_file,
+        force=True,
     )
 
     coll = db.get_collection(SAMPLES_COLLECTION)
@@ -246,14 +340,22 @@ def test_update_sample_updates_document(
 
     meta = doc.get("meta")
     assert meta is not None
-    assert len(meta) == 1
+    assert len(meta) == 2
 
-    assert meta[0]["file_name"] == "meta.tsv"
-    assert len(meta[0]["data"]) == 1
-    assert meta[0]["data"][0]["type"] == "A"
-    assert meta[0]["data"][0]["value"] == "1"
-    assert meta[0]["data"][0]["row_name"] is None
-    assert meta[0]["data"][0]["color"] == "rgb(0,0,0)"
+    meta_by_file_name = {entry["file_name"]: entry for entry in meta}
+    assert set(meta_by_file_name) == {"meta.tsv", "other.tsv"}
+
+    updated_meta = meta_by_file_name["meta.tsv"]
+    assert len(updated_meta["data"]) == 1
+    assert updated_meta["data"][0]["type"] == "A"
+    assert updated_meta["data"][0]["value"] == "1"
+    assert updated_meta["data"][0]["row_name"] is None
+    assert updated_meta["data"][0]["color"] == "rgb(0,0,0)"
+
+    preserved_meta = meta_by_file_name["other.tsv"]
+    assert len(preserved_meta["data"]) == 1
+    assert preserved_meta["data"][0]["type"] == "B"
+    assert preserved_meta["data"][0]["value"] == "2"
 
 
 def _build_sample(sample_file: Path) -> SampleInfo:

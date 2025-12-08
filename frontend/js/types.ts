@@ -681,7 +681,7 @@ interface Sample {
   caseId: string;
   sampleId: string;
   sampleType?: string;
-  sex?: string;
+  sex?: Sex;
   meta?: SampleMetaEntry[];
 }
 
@@ -735,4 +735,41 @@ type TrackLayout = {
   order: string[];
   hidden: Record<string, boolean>;
   expanded: Record<string, boolean>;
+};
+
+interface TableCell {
+  value: string;
+  class?: string;
+}
+
+interface TableData {
+  columns: string[];
+  rows: TableCell[][];
+  rowNames: string[];
+  rowNameHeader?: string;
+  rowStyles?: (string | undefined)[];
+}
+
+type CellWarning = {
+  colName: string;
+  position: number;
+  warning: string | null;
+};
+
+type Sex = "M" | "F";
+
+type ThresholdDirection = "above" | "below" | "both";
+
+type ThresholdKind =
+  | "estimated_chromosome_count_deviate"
+  | "threshold_above"
+  | "threshold_below"
+  | "threshold_deviate";
+
+type WarningThreshold = {
+  column: string;
+  kind: ThresholdKind;
+  size?: number;
+  max_deviation?: number;
+  message: string;
 };

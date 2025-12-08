@@ -1,10 +1,9 @@
 import { COLORS, FONT_WEIGHT, SIZES } from "../../constants";
 import {
-  createTable,
-  TableOptions as TableData,
-  formatValue,
-  TableCell,
-} from "../../util/table";
+  META_WARNING_CELL_CLASS,
+  META_WARNING_ROW_CLASS,
+} from "../../util/meta_warnings";
+import { createTable, formatValue, parseTableFromMeta } from "../../util/table";
 import { removeChildren } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
@@ -62,6 +61,13 @@ template.innerHTML = String.raw`
       background: ${COLORS.extraLightGray};
       font-weight: ${FONT_WEIGHT.header};
     }
+    table.meta-table tr.${META_WARNING_ROW_CLASS} {
+      background: rgba(255, 0, 0, 0.15);
+    }
+    table.meta-table td.${META_WARNING_CELL_CLASS} {
+      background: rgba(255, 0, 0, 0.3);
+      font-weight: ${FONT_WEIGHT.header};
+    }
   </style>
   <div id="entries"></div>
 `;
@@ -69,13 +75,18 @@ template.innerHTML = String.raw`
 export class InfoMenu extends ShadowBaseElement {
   private entries!: HTMLDivElement;
   private getSamples!: () => Sample[];
+  private getErrors!: (metaId: string) => { row: string; col: string }[];
 
   constructor() {
     super(template);
   }
 
-  setSources(getSamples: () => Sample[]) {
+  setSources(
+    getSamples: () => Sample[],
+    getErrors: (metaId: string) => { row: string; col: string }[],
+  ) {
     this.getSamples = getSamples;
+    this.getErrors = getErrors;
   }
 
   connectedCallback(): void {
@@ -96,101 +107,68 @@ export class InfoMenu extends ShadowBaseElement {
       header.textContent = sample.sampleId;
       this.entries.appendChild(header);
 
-      this.entries.appendChild(
-        getEntry({ key: "Case ID", value: sample.caseId }),
-      );
+      const padRight = `${SIZES.m}px`;
+
+      const simpleDivs = [];
+      const tables = [];
+
+      simpleDivs.push(getEntry({ key: "Case ID", value: sample.caseId }))
+
       if (sample.sampleType) {
-        this.entries.appendChild(
-          getEntry({ key: "Sample type", value: sample.sampleType }),
-        );
+        simpleDivs.push(getEntry({ key: "Sample type", value: sample.sampleType }));
       }
       // Optional fields
       const sex = sample.sex;
       if (sex != null) {
-        this.entries.appendChild(getEntry({ key: "Sex", value: sex }));
+        simpleDivs.push(getEntry({ key: "Sex", value: sex }));
       }
       const metas = sample.meta;
 
       if (metas != null) {
-        const metaElements = getMetaElements(metas);
-        for (const elem of metaElements) {
-          this.entries.appendChild(elem);
+        for (const meta of metas) {
+          // Simple entry
+          if (meta.row_name_header == null) {
+            const divs = getSimpleElement(meta);
+            for (const div of divs) {
+              simpleDivs.push(div)
+            }
+            continue;
+          }
+
+          // Table entry
+          const errors = this.getErrors(meta.id);
+
+          const { tableData } = parseTableFromMeta(meta, errors);
+          const htmlTable = createTable(tableData);
+          tables.push(htmlTable)
         }
+      }
+
+      for (const div of simpleDivs) {
+        div.style.paddingRight = `${SIZES.m}px`;
+        this.entries.appendChild(div);
+      }
+
+      for (const table of tables) {
+        this.entries.appendChild(table)
       }
     }
   }
 }
 
-function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
-  const simple_metas = metas.filter((meta) => meta.row_name_header == null);
-
-  const htmlEntries = [];
-  for (const meta of simple_metas) {
-    for (const entry of meta.data) {
-      const htmlEntry = getEntry({
-        key: entry.type,
-        value: formatValue(entry.value),
-        color: entry.color,
-      });
-      htmlEntries.push(htmlEntry);
-    }
+function getSimpleElement(meta: SampleMetaEntry): HTMLDivElement[] {
+  const htmlEntries: HTMLDivElement[] = [];
+  for (const entry of meta.data) {
+    const htmlEntry = getEntry({
+      key: entry.type,
+      value: formatValue(entry.value),
+      color: entry.color,
+    });
+    htmlEntries.push(htmlEntry);
   }
-
-  const table_metas = metas.filter((meta) => meta.row_name_header != null);
-  for (const meta of table_metas) {
-    const tableData = parseTableData(meta);
-    htmlEntries.push(createTable(tableData));
-  }
-
   return htmlEntries;
 }
 
-/**
- * This function takes long-format meta data and pivots it to wide-form data
- * I.e. to start with, each value lives on its own row
- * At the end, each data type has its own column, similar to how it is displayed
- *
- * @param meta
- * @returns
- */
-function parseTableData(meta: SampleMetaEntry): TableData {
-  const grid = new Map<string, Map<string, TableCell>>();
-  const colSet = new Set<string>();
 
-  for (const cell of meta.data) {
-    const rowName = cell.row_name;
-    if (rowName == null) {
-      continue;
-    }
-    colSet.add(cell.type);
-
-    let rowMap = grid.get(rowName);
-    if (!rowMap) {
-      rowMap = new Map<string, TableCell>();
-      grid.set(rowName, rowMap);
-    }
-
-    rowMap.set(cell.type, { value: cell.value, color: cell.color });
-  }
-
-  const rowNames = Array.from(grid.keys());
-  const colNames = Array.from(colSet);
-
-  const rows: TableCell[][] = rowNames.map((rowName) => {
-    const rowMap = grid.get(rowName);
-    return colNames.map((colName) => {
-      return rowMap.get(colName) ?? { value: "", color: "" };
-    });
-  });
-
-  const tableData: TableData = {
-    columns: colNames,
-    rowNames: rowNames,
-    rowNameHeader: meta.row_name_header ?? "",
-    rows: rows,
-  };
-
-  return tableData;
-}
 
 customElements.define("info-page", InfoMenu);

@@ -14,10 +14,13 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Allow reading all input as either raw text or gzip-format in `generate_gens_data.py` [#605](https://github.com/SMD-Bioinformatics-Lund/gens/pull/605).
 - Add util scripts for normalization of coverage without panel of normal, and for creating additional sample tracks (ROH, UPD) and meta data (coverage, UPD) [#625](https://github.com/SMD-Bioinformatics-Lund/gens/pull/625).
 - Add support for default track profiles, that are loaded if nothing else is loaded and which a user can reset the track layout / settings to [#608](https://github.com/SMD-Bioinformatics-Lund/gens/pull/608).
+- Custom warning thresholds for meta data [#591](https://github.com/SMD-Bioinformatics-Lund/gens/pull/591).
+- CLI commands for removing sample meta data [#591](https://github.com/SMD-Bioinformatics-Lund/gens/pull/591).
 
 ### Changed
 
-- BAF 0.5 line highlighted, and tick range changed to 0.25 to make sure one of the ticks end up at 0.5 [#619](https://github.com/SMD-Bioinformatics-Lund/gens/pull/619)
+- BAF 0.5 line highlighted, and tick range changed to 0.25 to make sure one of the ticks end up at 0.5 [#619](https://github.com/SMD-Bioinformatics-Lund/gens/pull/619).
+- When updating meta data for a sample where the file name already exists, overwrite the existing meta data (after prompting user) [#591](https://github.com/SMD-Bioinformatics-Lund/gens/pull/591).
 
 ### Fixed
 

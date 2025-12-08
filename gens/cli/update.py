@@ -17,8 +17,7 @@ from gens.models.sample import SampleSex
 
 log_level = getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+    level=logging.INFO, format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
 )
 LOG = logging.getLogger(__name__)
 
@@ -69,10 +68,14 @@ def update() -> None:
 )
 @click.option(
     "--meta",
-    "meta_files",
+    "meta_file",
     type=click.Path(exists=True, path_type=Path),
-    multiple=True,
     help="TSV file with sample metadata",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Overwrite existing meta without asking for confirmation",
 )
 def sample(
     sample_id: str,
@@ -82,7 +85,8 @@ def sample(
     sex: SampleSex | None,
     baf: Path | None,
     coverage: Path | None,
-    meta_files: tuple[Path, ...],
+    meta_file: Path | None,
+    force: bool,
 ) -> None:
     """Update sample information for a sample."""
 
@@ -106,9 +110,25 @@ def sample(
     if baf is not None:
         sample_obj.baf_file = baf
 
-    if meta_files:
-        meta_results = [parse_meta_file(p) for p in meta_files]
-        sample_obj.meta.extend(meta_results)
+    if meta_file:
+        meta_results = parse_meta_file(meta_file)
+
+        existing_file_names = [meta.file_name for meta in sample_obj.meta]
+
+        if meta_results.file_name in existing_file_names:
+            click.echo(f"Meta data {meta_results.file_name} already exists on sample")
+            if not force:
+                if not click.confirm("Proceed with update?", default=False):
+                    click.echo("Aborted")
+                    return
+
+        # Overwrite existing meta with the same name
+        sample_obj.meta = [
+            meta_entry
+            for meta_entry in sample_obj.meta
+            if meta_entry.file_name != meta_results.file_name
+        ]
+        sample_obj.meta.append(meta_results)
 
     update_sample(db, sample_obj)
     click.secho("Finished updating sample ✔", fg="green")
