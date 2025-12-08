@@ -1,4 +1,3 @@
-
 export function formatValue(value: string): string {
   const num = parseFloat(value);
   return Number.isNaN(num) ? value : num.toFixed(2);
@@ -71,11 +70,16 @@ function createRow(
  * At the end, each data type has its own column, similar to how it is displayed
  *
  * @param meta
- * @returns
+ * @returns Table
  */
-export function parseTableFromMeta(meta: SampleMetaEntry): Table {
+export function parseTableFromMeta(
+  meta: SampleMetaEntry,
+  errors: Coord[],
+): Table {
   const grid = new Map<string, Map<string, TableCell>>();
   const colSet = new Set<string>();
+
+  const errorRows = errors.map((coord) => coord.y);
 
   for (const cell of meta.data) {
     const rowName = cell.row_name;
@@ -90,16 +94,19 @@ export function parseTableFromMeta(meta: SampleMetaEntry): Table {
       grid.set(rowName, rowMap);
     }
 
-    rowMap.set(cell.type, { value: cell.value, color: cell.color });
+    rowMap.set(cell.type, { value: cell.value });
   }
 
   const rowNames = Array.from(grid.keys());
   const colNames = Array.from(colSet);
 
-  const rows: TableCell[][] = rowNames.map((rowName) => {
+  const rows: TableCell[][] = rowNames.map((rowName, rowIndex) => {
     const rowMap = grid.get(rowName);
-    return colNames.map((colName) => {
-      return rowMap.get(colName) ?? { value: "", color: "" };
+
+    return colNames.map((colName, colIndex) => {
+      const color = errorRows.includes(rowIndex) ? "red" : "";
+
+      return rowMap.get(colName) ?? { value: "", color };
     });
   });
 
@@ -162,4 +169,3 @@ export class Table {
     );
   }
 }
-

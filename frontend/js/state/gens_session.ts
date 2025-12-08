@@ -103,6 +103,9 @@ export class GensSession {
     return null;
   }
 
+  // FIXME: Thresholding action here
+  // Start with something hardcoded
+  // How is it currently done?
   public getMetaWarnings(metaId: string): { x: number; y: number }[] {
     const meta = this.getMeta(metaId);
 
@@ -116,17 +119,15 @@ export class GensSession {
   public hasMetaWarnings(): boolean {
     const sample = this.getMainSample();
 
-    // FIXME: Shouldn't do the parsing repeatedly. Do it once and that's it.
-    // FIXME: Should there be a sample sub module in session?
-    for (const meta of sample.meta) {
-      // const { hasCopyNumberWarnings } = parseTableData(meta, sample.sex);
-      const table = parseTableFromMeta(meta);
-      const tableWarnings = getTableWarnings(table, sample.sex);
-      console.log("Found found warnings:", tableWarnings);
-      if (tableWarnings.length > 0) {
-        return true;
+    for (const sample of this.samples) {
+      for (const meta of sample.meta) {
+        const warnings = this.getMetaWarnings(meta.id);
+        if (warnings.length > 0) {
+          return true;
+        }
       }
     }
+
     return false;
   }
 
