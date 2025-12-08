@@ -329,7 +329,6 @@ Export, reset and import of profile
 - [ ] Updates to the main sample updates the label and the data
 - [ ] Zooming is *not* reflected in the chromosome view
 - [ ] Browser zooming changes y-axis of tracks but does not distort the x-distribution of the data
-- [ ] Updated track heighs are reflected also in this view.
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/chromosome_view.PNG" width=400 alt="Multiple chromosomes view">
 
