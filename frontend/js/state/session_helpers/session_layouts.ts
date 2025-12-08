@@ -117,7 +117,7 @@ export class SessionProfiles {
       profileKey: this.profileKey,
       layout: null,
       colorAnnotationId: null,
-      variantThreshold: 0,
+      variantThreshold: DEFAULT_VARIANT_THRES,
       annotationSelections: [],
       coverageRange: DEFAULT_COV_Y_RANGE,
       trackHeights: defaultTrackHeights,
