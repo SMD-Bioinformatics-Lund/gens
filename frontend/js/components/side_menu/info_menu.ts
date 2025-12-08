@@ -115,28 +115,35 @@ export class InfoMenu extends ShadowBaseElement {
       header.textContent = sample.sampleId;
       this.entries.appendChild(header);
 
-      this.entries.appendChild(
-        getEntry({ key: "Case ID", value: sample.caseId }),
-      );
+      // FIXME: Use constant
+      // FIXME: Refactor so that the simple values are processed jointly (?)
+      // FIXME: Use a css class here instead
+      const padRight = "5px";
+
+      const div = getEntry({ key: "Case ID", value: sample.caseId });
+      div.style.paddingRight = padRight;
+      this.entries.appendChild(div);
       if (sample.sampleType) {
-        this.entries.appendChild(
-          getEntry({ key: "Sample type", value: sample.sampleType }),
-        );
+        const div = getEntry({ key: "Sample type", value: sample.sampleType });
+        div.style.paddingRight = padRight;
+        this.entries.appendChild(div);
       }
       // Optional fields
       const sex = sample.sex;
       if (sex != null) {
-        this.entries.appendChild(getEntry({ key: "Sex", value: sex }));
+        const div = getEntry({ key: "Sex", value: sex });
+        div.style.paddingRight = padRight;
+        this.entries.appendChild(div);
       }
       const metas = sample.meta;
 
       if (metas != null) {
         for (const meta of metas) {
-
           // Simple entry
           if (meta.row_name_header == null) {
             const divs = getSimpleElement(meta);
             for (const div of divs) {
+              div.style.paddingRight = padRight;
               this.entries.appendChild(div);
             }
             continue;
