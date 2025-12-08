@@ -74,6 +74,7 @@ template.innerHTML = String.raw`
 export class InfoMenu extends ShadowBaseElement {
   private entries!: HTMLDivElement;
   private getSamples!: () => Sample[];
+  private getErrors!: (metaId: string) => Coord[];
 
   private warningHandler?: (hasWarning: boolean) => void;
   private lastWarningState = false;
@@ -82,8 +83,12 @@ export class InfoMenu extends ShadowBaseElement {
     super(template);
   }
 
-  setSources(getSamples: () => Sample[]) {
+  setSources(
+    getSamples: () => Sample[],
+    getErrors: (metaId: string) => Coord[],
+  ) {
     this.getSamples = getSamples;
+    this.getErrors = getErrors;
   }
 
   setWarningHandler(onWarningChange: (hasWarning: boolean) => void) {
@@ -96,6 +101,8 @@ export class InfoMenu extends ShadowBaseElement {
   }
 
   render() {
+    console.log("Rendering info menu");
+
     if (!this.isConnected) {
       return;
     }
@@ -124,10 +131,14 @@ export class InfoMenu extends ShadowBaseElement {
       const metas = sample.meta;
 
       if (metas != null) {
-        const elements = getMetaElements(metas);
-        for (const elem of elements) {
-          this.entries.appendChild(elem);
+        for (const meta of metas) {
+          const errors = this.getErrors(meta.id);
+          console.log("Render meta", errors);
         }
+        // const elements = getMetaElements(metas);
+        // for (const elem of elements) {
+        //   this.entries.appendChild(elem);
+        // }
       }
     }
   }

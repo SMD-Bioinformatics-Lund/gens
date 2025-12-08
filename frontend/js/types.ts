@@ -155,6 +155,11 @@ interface SampleMetaValue {
   color: string;
 }
 
+interface Coord {
+  x: number;
+  y: number;
+}
+
 interface SampleMetaEntry {
   id: string;
   file_name: string;

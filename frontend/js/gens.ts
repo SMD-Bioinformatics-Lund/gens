@@ -197,7 +197,10 @@ export async function initCanvases({
     gensTracks,
   );
 
-  infoPage.setSources(() => session.getSamples());
+  infoPage.setSources(
+    () => session.getSamples(),
+    (metaId: string) => session.getMetaWarnings(metaId),
+  );
 
   // infoPage.setWarningHandler((hasWarning) => {
   //   inputControls.setInfoWarning(hasWarning);

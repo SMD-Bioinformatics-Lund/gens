@@ -92,6 +92,27 @@ export class GensSession {
     return this.mainSample;
   }
 
+  public getMeta(metaId: string): SampleMetaEntry | null {
+    for (const sample of this.samples) {
+      for (const meta of sample.meta) {
+        if (meta.id === metaId) {
+          return meta;
+        }
+      }
+    }
+    return null;
+  }
+
+  public getMetaWarnings(metaId: string): { x: number; y: number }[] {
+    const meta = this.getMeta(metaId);
+
+    if (meta == null) {
+      return [];
+    }
+
+    return [{ x: 0, y: 0 }];
+  }
+
   public hasMetaWarnings(): boolean {
     const sample = this.getMainSample();
 
@@ -100,8 +121,8 @@ export class GensSession {
     for (const meta of sample.meta) {
       // const { hasCopyNumberWarnings } = parseTableData(meta, sample.sex);
       const table = parseTableFromMeta(meta);
-      const tableWarnings = getTableWarnings(table, sample.sex)
-      console.log("Found warnigns:", tableWarnings);
+      const tableWarnings = getTableWarnings(table, sample.sex);
+      console.log("Found found warnings:", tableWarnings);
       if (tableWarnings.length > 0) {
         return true;
       }
@@ -339,4 +360,3 @@ function buildTrackLayoutFromTracks(tracks: DataTrackSettings[]) {
   };
   return layout;
 }
-
