@@ -28,6 +28,7 @@ export class GensSession {
   private highlights: Record<string, RangeHighlight>;
   private mainSample: Sample;
   private samples: Sample[];
+  private allSamples: Sample[];
   private chromViewActive: boolean;
   private warningThresholds: WarningThreshold[];
 
@@ -47,6 +48,7 @@ export class GensSession {
     sideMenu: SideMenu,
     mainSample: Sample,
     samples: Sample[],
+    allSamples: Sample[],
     variantSoftwareBaseURL: string | null,
     gensBaseURL: string,
     genomeBuild: number,
@@ -64,6 +66,7 @@ export class GensSession {
     this.highlights = {};
 
     this.samples = samples;
+    this.allSamples = allSamples;
 
     this.idToAnnotSource = {};
     for (const annotSource of allAnnotationSources) {
@@ -231,7 +234,7 @@ export class GensSession {
   }
 
   public getSample(caseId: string, sampleId: string): Sample | null {
-    const matchedSamples = this.samples.filter(
+    const matchedSamples = this.allSamples.filter(
       (sample) => sample.caseId == caseId && sample.sampleId == sampleId,
     );
     if (matchedSamples.length == 1) {

@@ -143,7 +143,7 @@ export async function initCanvases({
   const unorderedSamples = await Promise.all(
     sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
   );
-  const samples = orderSamples(unorderedSamples).map((sample) => {
+  const caseSamples = orderSamples(unorderedSamples).map((sample) => {
 
     const parsedSex = parseSex(sample.sex);
 
@@ -157,7 +157,7 @@ export async function initCanvases({
     return result;
   });
 
-  const mainSample = getMainSample(samples);
+  const mainSample = getMainSample(caseSamples);
 
   const allAnnotSources = await api.getAnnotationSources();
 
@@ -165,7 +165,8 @@ export async function initCanvases({
     render,
     sideMenu,
     mainSample,
-    samples,
+    caseSamples,
+    allSamples,
     variantSoftwareBaseURL,
     gensApiURL.replace(/\/$/, "") + "/app/",
     genomeBuild,

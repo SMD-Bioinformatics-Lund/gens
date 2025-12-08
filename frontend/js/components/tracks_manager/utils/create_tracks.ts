@@ -203,7 +203,6 @@ export function getBandTrack(
     return getBandTrackData(getRenderBands);
   }
   const openContextMenu = (id) => {
-    console.warn("Attempting to open context menu for ID", id);
     let contextMenuFn: (id: string) => void;
     if (setting.trackType == "annotation") {
       contextMenuFn = getAnnotOpenContextMenu(session, (id: string) =>

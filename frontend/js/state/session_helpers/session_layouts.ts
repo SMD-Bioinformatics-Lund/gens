@@ -44,7 +44,12 @@ export class SessionProfiles {
     const profile: ProfileSettings =
       userProfile || defaultProfile || baseProfile;
 
-    console.log("Used profile", profile);
+    const profileType = userProfile
+      ? "user"
+      : defaultProfile
+        ? "default"
+        : "none";
+    console.log(`Used profile (type: ${profileType})`, profile);
 
     profile.profileKey = profileKey;
     this.profile = profile;
@@ -107,9 +112,7 @@ export class SessionProfiles {
     this.save();
   }
 
-  // Is this the one that should go back to the default?
   public resetTrackLayout() {
-
     const defaultProfile = cloneProfile(this.defaultProfiles[this.profileKey]);
 
     const baseProfile = {
@@ -128,6 +131,10 @@ export class SessionProfiles {
       : baseProfile;
 
     const profile: ProfileSettings = defaultProfile || baseLayoutProfile;
+
+    const profileType = defaultProfile ? "default" : "none";
+    console.log(`Used profile (type: ${profileType})`, profile);
+
     this.profile = profile;
     this.save();
   }
@@ -143,7 +150,7 @@ export class SessionProfiles {
   }
 
   public setBaseTrackLayout(layout: TrackLayout) {
-    this.baseTrackLayout = layout
+    this.baseTrackLayout = layout;
   }
 
   public getVariantThreshold(): number {
@@ -169,7 +176,6 @@ export class SessionProfiles {
     );
 
     return Array.from(types).join("+");
-
   }
 }
 

@@ -22,7 +22,7 @@ $ cd gens_test
 
 - [ ] Link in the /dump data folder
 
-A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/data/bnf/dev/jakob/data/gens_test_data`.
+A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/trannel/dev/jakob/data/gens_test_data`.
 
 Furthermore, current annotation tracks for testing can be copied from `/access/annotation_tracks`. Copy these into the folder `annotation_tracks` folder in the `dump` folder. Note - some of these contain sensitive data. Test loading all as a final step when running on Gens dev.
 
@@ -188,7 +188,7 @@ gens load sample \
   --baf /dump/hg003.baf.bed.gz \
   --coverage /dump/hg003.cov.bed.gz \
   --overview-json /dump/hg003.overview.json.gz \
-  --sample-type father \
+  --sample-type relative \
   --sex M
 ```
 
@@ -202,7 +202,7 @@ gens load sample \
   --baf /dump/hg004.baf.bed.gz \
   --coverage /dump/hg004.cov.bed.gz \
   --overview-json /dump/hg004.overview.json.gz \
-  --sample-type mother \
+  --sample-type relative \
   --sex F
 ```
 
@@ -290,6 +290,7 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Meta page contains key-value information on proband (%ROH)
 - [ ] Meta page contains chromosome table
 - [ ] Drag the edge to expand and show the full table.
+- [ ] Warnings are preset for the chromosome column and indicated by a red badge in the top row.
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/update_checklist/meta_side_page.PNG" width=400 alt="Meta">
 
@@ -302,7 +303,7 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Adding / removing samples
   - [ ] In the settings menu, try removing a sample. The corresponding tracks should be removed.
   - [ ] In the settings menu, try adding a sample. The corresponding tracks should be added at the bottom of the tracks.
-- [ ] Try changing the variant threshold to 6. More bands should appear in chromosome 1.
+- [ ] Try changing the variant threshold to 0. More bands should appear in chromosome 1 (both dels and dups).
 - [ ] Try updating the default Y-axis range (`Default cov y-range` under `Toggle advanced settings`) and click apply. All coverage tracks should change Y-axis.
 - [ ] Persistent settings
   - [ ] Try adjusting track height
@@ -313,7 +314,12 @@ Is content correctly displayed in the context menus for the different band track
   - [ ] Change the variant threshold
   - [ ] Refresh the page. These settings should persist.
 - [ ] Update the "Main sample" and press refresh updates the overview chart label and data
-- [ ] Download the settings. Do changes in your settings and try uploading the JSON again. They should be restored to the previous settings.
+
+Export, reset and import of profile
+
+- [ ] Export the current profile. It should download a JSON with the profile configurations.
+- [ ] Reset the layout. It should change to the original (either no profile or a default profile).
+- [ ] Upload the exported profile. It should reset back to the previous state.
 
 ## Multiple-chromosomes page
 
@@ -322,6 +328,8 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Updates to coverage Y max / min are reflected
 - [ ] Updates to the main sample updates the label and the data
 - [ ] Zooming is *not* reflected in the chromosome view
+- [ ] Browser zooming changes y-axis of tracks but does not distort the x-distribution of the data
+- [ ] Updated track heighs are reflected also in this view.
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/chromosome_view.PNG" width=400 alt="Multiple chromosomes view">
 
