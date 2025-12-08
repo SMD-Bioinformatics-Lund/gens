@@ -132,41 +132,69 @@ export class InfoMenu extends ShadowBaseElement {
 
       if (metas != null) {
         for (const meta of metas) {
+
+          // Simple entry
+          if (meta.row_name_header == null) {
+            const divs = getSimpleElement(meta);
+            for (const div of divs) {
+              this.entries.appendChild(div);
+            }
+            continue;
+          }
+
+          // Complex entry
           const errors = this.getErrors(meta.id);
-          console.log("Render meta", errors);
+
+          const { tableData } = parseTableFromMeta(meta);
+          this.entries.appendChild(createTable(tableData));
+          // htmlEntries.push(createTable(tableData));
+
+          // const elements = getMetaElements(metas);
+          // for (const elem of elements) {
+          //   this.entries.appendChild(elem);
+          // }
         }
-        // const elements = getMetaElements(metas);
-        // for (const elem of elements) {
-        //   this.entries.appendChild(elem);
-        // }
       }
     }
   }
 }
 
-function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
-  const simple_metas = metas.filter((meta) => meta.row_name_header == null);
-
+function getSimpleElement(meta: SampleMetaEntry): HTMLDivElement[] {
   const htmlEntries: HTMLDivElement[] = [];
-  for (const meta of simple_metas) {
-    for (const entry of meta.data) {
-      const htmlEntry = getEntry({
-        key: entry.type,
-        value: formatValue(entry.value),
-        color: entry.color,
-      });
-      htmlEntries.push(htmlEntry);
-    }
+  for (const entry of meta.data) {
+    const htmlEntry = getEntry({
+      key: entry.type,
+      value: formatValue(entry.value),
+      color: entry.color,
+    });
+    htmlEntries.push(htmlEntry);
   }
-
-  const table_metas = metas.filter((meta) => meta.row_name_header != null);
-  for (const meta of table_metas) {
-    const { tableData } = parseTableFromMeta(meta);
-    htmlEntries.push(createTable(tableData));
-  }
-
   return htmlEntries;
 }
+
+// function getMetaElements(metas: SampleMetaEntry[]): HTMLDivElement[] {
+//   const simple_metas = metas.filter((meta) => meta.row_name_header == null);
+
+//   const htmlEntries: HTMLDivElement[] = [];
+//   for (const meta of simple_metas) {
+//     for (const entry of meta.data) {
+//       const htmlEntry = getEntry({
+//         key: entry.type,
+//         value: formatValue(entry.value),
+//         color: entry.color,
+//       });
+//       htmlEntries.push(htmlEntry);
+//     }
+//   }
+
+//   const table_metas = metas.filter((meta) => meta.row_name_header != null);
+//   for (const meta of table_metas) {
+//     const { tableData } = parseTableFromMeta(meta);
+//     htmlEntries.push(createTable(tableData));
+//   }
+
+//   return htmlEntries;
+// }
 
 // function getSampleHasWarning(meta: SampleMetaEntry, sex: string | null): boolean {
 
