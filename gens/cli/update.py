@@ -108,6 +108,13 @@ def sample(
 
     if meta_files:
         meta_results = [parse_meta_file(p) for p in meta_files]
+        meta_file_names = [meta_entry.file_name for meta_entry in meta_results]
+        # Overwrite existing meta with the same name
+        sample_obj.meta = [
+            meta_entry
+            for meta_entry in sample_obj.meta
+            if meta_entry.file_name not in meta_file_names
+        ]
         sample_obj.meta.extend(meta_results)
 
     update_sample(db, sample_obj)

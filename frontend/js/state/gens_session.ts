@@ -143,7 +143,6 @@ export class GensSession {
   }
 
   public hasMetaWarnings(): boolean {
-    const sample = this.getMainSample();
 
     for (const sample of this.samples) {
       for (const meta of sample.meta) {

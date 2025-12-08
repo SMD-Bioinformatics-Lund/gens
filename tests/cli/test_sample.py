@@ -10,7 +10,7 @@ import pytest
 from gens.crud.samples import update_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleInfo, SampleSex
+from gens.models.sample import MetaEntry, MetaValue, SampleInfo, SampleSex
 
 LOG = logging.getLogger(__name__)
 
@@ -195,6 +195,18 @@ def test_update_sample_updates_document(
     db: mongomock.Database,
 ) -> None:
     existing_sample_file = write_sample_track(tmp_path / "existing_sample")
+    existing_meta = MetaEntry(
+        id="existing-id",
+        file_name="meta.tsv",
+        row_name_header=None,
+        data=[MetaValue(type="old", value="x")]
+    )
+    other_meta = MetaEntry(
+        id="other-id",
+        file_name="other.tsv",
+        row_name_header=None,
+        data=[MetaValue(type="B", value="2")]
+    )
     sample_obj = SampleInfo(
         sample_id="sample1",
         case_id="caseA",
@@ -203,7 +215,7 @@ def test_update_sample_updates_document(
         coverage_file=existing_sample_file,
         sample_type=None,
         sex=None,
-        meta=[],
+        meta=[existing_meta, other_meta],
     )
 
     monkeypatch.setattr(
@@ -246,14 +258,22 @@ def test_update_sample_updates_document(
 
     meta = doc.get("meta")
     assert meta is not None
-    assert len(meta) == 1
+    assert len(meta) == 2
 
-    assert meta[0]["file_name"] == "meta.tsv"
-    assert len(meta[0]["data"]) == 1
-    assert meta[0]["data"][0]["type"] == "A"
-    assert meta[0]["data"][0]["value"] == "1"
-    assert meta[0]["data"][0]["row_name"] is None
-    assert meta[0]["data"][0]["color"] == "rgb(0,0,0)"
+    meta_by_file_name = {entry["file_name"]: entry for entry in meta}
+    assert set(meta_by_file_name) == {"meta.tsv", "other.tsv"}
+
+    updated_meta = meta_by_file_name["meta.tsv"]
+    assert len(updated_meta["data"]) == 1
+    assert updated_meta["data"][0]["type"] == "A"
+    assert updated_meta["data"][0]["value"] == "1"
+    assert updated_meta["data"][0]["row_name"] is None
+    assert updated_meta["data"][0]["color"] == "rgb(0,0,0)"
+
+    preserved_meta = meta_by_file_name["other.tsv"]
+    assert len(preserved_meta["data"]) == 1
+    assert preserved_meta["data"][0]["type"] == "B"
+    assert preserved_meta["data"][0]["value"] == "2"
 
 
 def _build_sample(sample_file: Path) -> SampleInfo:
