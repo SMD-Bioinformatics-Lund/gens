@@ -1,9 +1,8 @@
 import { SideMenu } from "../components/side_menu/side_menu";
 import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
-import { getTableWarnings } from "../util/meta_warnings";
-import { parseTableFromMeta } from "../util/table";
 import { COLORS, PROFILE_SETTINGS_VERSION } from "../constants";
+import { getCellWarning } from "../util/meta_warnings";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
 import { SessionPosition } from "./session_helpers/session_position";
@@ -92,11 +91,13 @@ export class GensSession {
     return this.mainSample;
   }
 
-  public getMeta(metaId: string): SampleMetaEntry | null {
+  public getMeta(
+    metaId: string,
+  ): { meta: SampleMetaEntry; sample: Sample } | null {
     for (const sample of this.samples) {
       for (const meta of sample.meta) {
         if (meta.id === metaId) {
-          return meta;
+          return { meta, sample };
         }
       }
     }
@@ -106,14 +107,39 @@ export class GensSession {
   // FIXME: Thresholding action here
   // Start with something hardcoded
   // How is it currently done?
-  public getMetaWarnings(metaId: string): { x: number; y: number }[] {
-    const meta = this.getMeta(metaId);
+  public getMetaWarnings(metaId: string): { row: string; col: string }[] {
+    const { meta, sample } = this.getMeta(metaId);
 
     if (meta == null) {
       return [];
     }
 
-    return [{ x: 0, y: 0 }];
+    const warningCoords = [];
+
+    for (const val of meta.data) {
+
+      if (!val.row_name) {
+        continue;
+      }
+
+      // FIXME: Use string for hover info?
+      const warning = getCellWarning(
+        val.type,
+        val.row_name,
+        val.value,
+        sample.sex,
+      );
+
+      if (warning) {
+        const coord = {
+          row: val.row_name,
+          col: val.type
+        }
+        warningCoords.push(coord);
+      }
+    }
+
+    return warningCoords;
   }
 
   public hasMetaWarnings(): boolean {

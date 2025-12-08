@@ -1,5 +1,8 @@
 import { COLORS, FONT_WEIGHT, SIZES } from "../../constants";
-import { META_WARNING_CELL_CLASS, META_WARNING_ROW_CLASS } from "../../util/meta_warnings";
+import {
+  META_WARNING_CELL_CLASS,
+  META_WARNING_ROW_CLASS,
+} from "../../util/meta_warnings";
 import { createTable, formatValue, parseTableFromMeta } from "../../util/table";
 import { removeChildren } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
@@ -72,10 +75,7 @@ template.innerHTML = String.raw`
 export class InfoMenu extends ShadowBaseElement {
   private entries!: HTMLDivElement;
   private getSamples!: () => Sample[];
-  private getErrors!: (metaId: string) => Coord[];
-
-  private warningHandler?: (hasWarning: boolean) => void;
-  private lastWarningState = false;
+  private getErrors!: (metaId: string) => { row: string; col: string }[];
 
   constructor() {
     super(template);
@@ -83,14 +83,10 @@ export class InfoMenu extends ShadowBaseElement {
 
   setSources(
     getSamples: () => Sample[],
-    getErrors: (metaId: string) => Coord[],
+    getErrors: (metaId: string) => { row: string; col: string }[],
   ) {
     this.getSamples = getSamples;
     this.getErrors = getErrors;
-  }
-
-  setWarningHandler(onWarningChange: (hasWarning: boolean) => void) {
-    this.warningHandler = onWarningChange;
   }
 
   connectedCallback(): void {
@@ -169,31 +165,6 @@ function getSimpleElement(meta: SampleMetaEntry): HTMLDivElement[] {
   return htmlEntries;
 }
 
-// function getSampleHasWarning(meta: SampleMetaEntry, sex: string | null): boolean {
 
-//   for (const row of meta.)
-
-//   const rowStyles = new Array<TableRowStyle | undefined>(rowNames.length);
-//   const copyNumberColIndex = colNames.indexOf(COPY_NUMBER_COLUMN);
-//   let hasCopyNumberWarnings = false;
-
-//   if (copyNumberColIndex >= 0) {
-//     for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-//       const row = rows[rowIndex];
-//       const cell = row[copyNumberColIndex];
-
-//       if (exceedsCopyNumberDeviation(rowNames[rowIndex], cell?.value, sex)) {
-//         hasCopyNumberWarnings = true;
-//         if (!rowStyles[rowIndex]) {
-//           rowStyles[rowIndex] = { cellClasses: new Array(colNames.length) };
-//         }
-//         rowStyles[rowIndex]!.className = WARNING_ROW_CLASS;
-//         rowStyles[rowIndex]!.cellClasses![copyNumberColIndex] =
-//           WARNING_CELL_CLASS;
-//       }
-//     }
-//   }
-
-// }
 
 customElements.define("info-page", InfoMenu);

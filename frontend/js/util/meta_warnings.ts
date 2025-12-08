@@ -22,7 +22,7 @@ export function getTableWarnings(table: Table, sex: Sex): CellWarning[] {
     const column = table.getColumn(colName);
     column.forEach((value, rowI) => {
       const rowName = table.tableData.rowNames[rowI];
-      const warningMsg = getWarnings(colName, rowName, value.value, sex);
+      const warningMsg = getCellWarning(colName, rowName, value.value, sex);
       if (warningMsg != null) {
         const warning: CellWarning = {
           colName,
@@ -37,7 +37,7 @@ export function getTableWarnings(table: Table, sex: Sex): CellWarning[] {
   return warnings;
 }
 
-function getWarnings(
+export function getCellWarning(
   cellType: string,
   rowName: string,
   value: string,
@@ -63,12 +63,6 @@ function getWarnings(
   if (cellType == MISMATCH_FATHER || cellType == MISMATCH_MOTHER) {
 
     // FIXME: Count (perc%) format, clean up before merge
-
-    const match = value.match(/\(([\d.]+)%\)/);
-
-    if (!match) {
-      return null;
-    }
 
     const parsedFloat = parseFloat(value);
     if (isNaN(parsedFloat)) {

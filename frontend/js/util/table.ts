@@ -72,7 +72,7 @@ function createRow(
  */
 export function parseTableFromMeta(
   meta: SampleMetaEntry,
-  warnings: Coord[],
+  warnings: { row: string; col: string }[],
 ): Table {
   const grid = new Map<string, Map<string, TableCell>>();
   const colSet = new Set<string>();
@@ -104,7 +104,7 @@ export function parseTableFromMeta(
 
       if (cell) {
         const cellWarning = warnings.find(
-          (coord) => coord.x == colIndex && coord.y == rowIndex,
+          (coord) => coord.row == rowName && coord.col == colName,
         );
         if (cellWarning) {
           cell.class = META_WARNING_CELL_CLASS
@@ -116,11 +116,11 @@ export function parseTableFromMeta(
     });
   });
 
-  const warningRows = warnings.map((coord) => coord.y);
+  const warningRows = warnings.map((coord) => coord.row);
   const rowStyles = [];
-  for (let rowIndex = 0; rowIndex < rowNames.length; rowIndex++) {
+  for (const rowName of rowNames) {
     let rowStyle = undefined;
-    if (warningRows.includes(rowIndex)) {
+    if (warningRows.includes(rowName)) {
       rowStyle = META_WARNING_ROW_CLASS;
     }
     rowStyles.push(rowStyle)

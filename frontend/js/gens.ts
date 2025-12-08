@@ -202,10 +202,6 @@ export async function initCanvases({
     (metaId: string) => session.getMetaWarnings(metaId),
   );
 
-  // infoPage.setWarningHandler((hasWarning) => {
-  //   inputControls.setInfoWarning(hasWarning);
-  // })
-
   const getSearchResults = (query: string) => {
     const annotIds = session
       .getAnnotationSources({ selectedOnly: true })
