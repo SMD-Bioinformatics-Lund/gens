@@ -161,15 +161,21 @@ gens load sample \
     --meta /dump/hg002.chr_meta.tsv
 ```
 
-- [ ] Load the sample annotation track.
+- [ ] Load the sample annotation tracks.
 
 ```
 gens load sample-annotation \
     --sample-id hg002 \
     --case-id hg002 \
     --genome-build 38 \
-    --file /dump/hg002.upd_roh.bed \
-    --name "UPD and ROH"
+    --file /dump/hg002.upd.bed \
+    --name "UPD"
+gens load sample-annotation \
+    --sample-id hg002 \
+    --case-id hg002 \
+    --genome-build 38 \
+    --file /dump/hg002.roh.bed \
+    --name "ROH"
 ```
 
 - [ ] Load the father (hg003)
@@ -218,18 +224,20 @@ Perform the tests with an open web console. Log messages are OK. Errors are usua
 
 ## Track page
 
-Opening hg002. Do all tracks show up in the initial view?
+- [ ] Opening hg002. Do all tracks show up in the initial view?
 
-- [ ] Chromosome ideogram
-- [ ] Position track
-- [ ] B allele frequency track
-- [ ] Log2 ratio track
-- [ ] Overview track
-- [ ] Transcript track
-- [ ] Annotation track (after selecting one)
-- [ ] Sample annotation track
+- Chromosome ideogram
+- Position track
+- B allele frequency track
+- Log2 ratio track
+- Overview track
+- Transcript track
+- Annotation track (after selecting one)
+- Sample annotation track
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/single.PNG" width=400 alt="Single sample single chromosome view">
+
+- [ ] Open the dev console (F12). It should be free from errors, warnings and unexpected console logs.
 
 Opening a trio case. Are the additional tracks there:
 

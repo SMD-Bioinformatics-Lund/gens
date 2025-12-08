@@ -16,8 +16,6 @@ export function getMetaWarnings(
   let exceeds;
   if (threshold.kind == "estimated_chromosome_count_deviate") {
 
-    console.log("Finding the chromosome path");
-
     const chromosome = parseChromosome(rowName);
     if (!chromosome) {
       return null;

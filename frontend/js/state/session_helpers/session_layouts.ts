@@ -44,9 +44,6 @@ export class SessionProfiles {
     const profile: ProfileSettings =
       userProfile || defaultProfile || baseProfile;
 
-    console.log("User profile", userProfile);
-    console.log("Default profile", defaultProfile);
-    console.log("Base profile", baseProfile);
     console.log("Used profile", profile);
 
     profile.profileKey = profileKey;
