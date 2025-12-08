@@ -762,3 +762,15 @@ type CellWarning = {
 }
 
 type Sex = "M" | "F";
+
+type ThresholdDirection = "above" | "below" | "both";
+
+type ThresholdType = "chromosome" | "regular";
+
+type MetaWarningThreshold = {
+  column: string;
+  type: ThresholdType;
+  direction: ThresholdDirection;
+  size: number;
+  message: string;
+}

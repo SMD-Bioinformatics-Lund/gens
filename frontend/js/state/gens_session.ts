@@ -2,11 +2,22 @@ import { SideMenu } from "../components/side_menu/side_menu";
 import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS, PROFILE_SETTINGS_VERSION } from "../constants";
-import { getCellWarning } from "../util/meta_warnings";
+import { getMetaWarnings as getMetaWarnings } from "../util/meta_warnings";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
 import { SessionPosition } from "./session_helpers/session_position";
 import { getArrangedTracks, Tracks } from "./session_helpers/session_tracks";
+
+// FIXME: Hard-coded. We need some basic customizable system for this.
+// Maybe the admin can configure the thresholds through CLI?
+const COPY_NUMBER_COLUMN = "Estimated chromosomal copy numbers";
+const MAX_COPY_NUMBER_DEVIATION = 0.1;
+
+// FIXME: These needs to be split so mismatch and % are their own columns
+const MISMATCH_FATHER = "Mismatch father";
+const MISMATCH_MOTHER = "Mismatch mother";
+const MAX_MISMATCH = 200;
+const MAX_COUNT_DEVIATION = 5;
 
 /**
  * The purpose of this class is to keep track of the web session,
@@ -114,28 +125,57 @@ export class GensSession {
       return [];
     }
 
+    const thresholds: MetaWarningThreshold[] = [
+      {
+        column: COPY_NUMBER_COLUMN,
+        direction: "both",
+        size: MAX_COPY_NUMBER_DEVIATION,
+        type: "chromosome",
+        message: "Exceeds copy number deviation"
+      },
+      {
+        column: MISMATCH_FATHER,
+        direction: "above",
+        size: MAX_MISMATCH,
+        type: "regular",
+        message: "Exceeds max mismatch"
+      },
+      {
+        column: MISMATCH_MOTHER,
+        direction: "above",
+        size: MAX_MISMATCH,
+        type: "regular",
+        message: "Exceeds max mismatch"
+      },
+    ];
+
     const warningCoords = [];
 
     for (const val of meta.data) {
-
       if (!val.row_name) {
         continue;
       }
 
-      // FIXME: Use string for hover info?
-      const warning = getCellWarning(
-        val.type,
-        val.row_name,
-        val.value,
-        sample.sex,
-      );
+      const matchedThreshold = thresholds.find((thres) => thres.column == val.type)
 
-      if (warning) {
-        const coord = {
-          row: val.row_name,
-          col: val.type
+      if (matchedThreshold) {
+        console.log("Matched for threshold", matchedThreshold)
+        // FIXME: Use string for hover info?
+        const warning = getMetaWarnings(
+          matchedThreshold,
+          val.row_name,
+          val.value,
+          sample.sex,
+        );
+  
+        if (warning) {
+          const coord = {
+            row: val.row_name,
+            col: val.type,
+          };
+          warningCoords.push(coord);
         }
-        warningCoords.push(coord);
+
       }
     }
 
@@ -143,7 +183,6 @@ export class GensSession {
   }
 
   public hasMetaWarnings(): boolean {
-
     for (const sample of this.samples) {
       for (const meta of sample.meta) {
         const warnings = this.getMetaWarnings(meta.id);
