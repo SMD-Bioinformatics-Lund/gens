@@ -95,6 +95,87 @@ def test_load_sample_cli(
     }
 
 
+def test_delete_sample_metadata_cli_removes_all_entries(
+    cli_delete: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+) -> None:
+    sample_file = write_sample_track(tmp_path / "sample.gz")
+    sample_obj = SampleInfo(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        baf_file=sample_file,
+        coverage_file=sample_file,
+        overview_file=None,
+        sample_type=None,
+        sex=None,
+        meta=[
+            MetaEntry(
+                id="meta1", file_name="meta.tsv", data=[MetaValue(type="a", value="1")]
+            ),
+            MetaEntry(
+                id="meta2", file_name="other.tsv", data=[MetaValue(type="b", value="2")]
+            ),
+        ],
+    )
+    update_sample(db, sample_obj)
+
+    cli_delete.sample_meta.callback(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        meta_ids=(),
+        file_names=(),
+        force=True,
+    )
+
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one({"sample_id": "sample1"})
+    assert doc is not None
+    assert doc["meta"] == []
+
+
+def test_delete_sample_metadata_cli_filters_by_id(
+    cli_delete: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+) -> None:
+    sample_file = write_sample_track(tmp_path / "sample.gz")
+    sample_obj = SampleInfo(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        baf_file=sample_file,
+        coverage_file=sample_file,
+        overview_file=None,
+        sample_type=None,
+        sex=None,
+        meta=[
+            MetaEntry(
+                id="meta1", file_name="meta.tsv", data=[MetaValue(type="a", value="1")]
+            ),
+            MetaEntry(
+                id="meta2", file_name="other.tsv", data=[MetaValue(type="b", value="2")]
+            ),
+        ],
+    )
+    update_sample(db, sample_obj)
+
+    cli_delete.sample_meta.callback(
+        sample_id="sample1",
+        case_id="caseA",
+        genome_build=GenomeBuild(19),
+        meta_ids=("meta1",),
+        file_names=(),
+        force=True,
+    )
+
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one({"sample_id": "sample1"})
+    assert doc is not None
+    assert len(doc["meta"]) == 1
+    assert doc["meta"][0]["id"] == "meta2"
+
+
 def test_load_sample_cli_with_string_genome_build_fails(
     cli_load: ModuleType,
     tmp_path: Path,
@@ -199,13 +280,13 @@ def test_update_sample_updates_document(
         id="existing-id",
         file_name="meta.tsv",
         row_name_header=None,
-        data=[MetaValue(type="old", value="x")]
+        data=[MetaValue(type="old", value="x")],
     )
     other_meta = MetaEntry(
         id="other-id",
         file_name="other.tsv",
         row_name_header=None,
-        data=[MetaValue(type="B", value="2")]
+        data=[MetaValue(type="B", value="2")],
     )
     sample_obj = SampleInfo(
         sample_id="sample1",
