@@ -1,8 +1,8 @@
 """Functions for rendering Gens"""
 
-from http import HTTPStatus
 import logging
 from datetime import date
+from http import HTTPStatus
 from pathlib import Path
 from typing import Iterable
 
@@ -29,18 +29,18 @@ gens_bp = Blueprint(
     static_url_path="/gens/static",
 )
 
+
 def _validate_sample_files(samples: Iterable[SampleInfo]) -> None:
     for sample in samples:
         for file_path in (sample.baf_file, sample.coverage_file):
             if file_path is None or not Path(file_path).is_file():
                 raise FileNotFoundError(file_path)
 
+
 def _render_sample_error(message: str):
     return (
         render_template(
-            "sample_error.html",
-            headline="Sample unavailable",
-            message=message
+            "sample_error.html", headline="Sample unavailable", message=message
         ),
         HTTPStatus.NOT_FOUND,
     )
@@ -83,14 +83,18 @@ def display_samples(case_id: str):
         try:
             case_samples = get_samples_for_case(samples_collection, case_id)
             if not case_samples:
-                raise SampleNotFoundError(f"No sample found for case_id: {case_id}", case_id)
+                raise SampleNotFoundError(
+                    f"No sample found for case_id: {case_id}", case_id
+                )
         except SampleNotFoundError:
             LOG.exception("No samples found for case %s", case_id)
             return _render_sample_error("Not able to find the sample")
-        
+
         except FileNotFoundError:
             LOG.exception("Missing coverage or baf files for case %s", case_id)
-            return _render_sample_error("Was not able to find the cov/baf data for the sample")
+            return _render_sample_error(
+                "Was not able to find the cov/baf data for the sample"
+            )
 
         sample_ids = [sample.sample_id for sample in case_samples]
 
@@ -104,7 +108,7 @@ def display_samples(case_id: str):
                     db.get_collection(SAMPLES_COLLECTION),
                     sample_id=sample_id,
                     case_id=case_id,
-                    genome_build=genome_build
+                    genome_build=genome_build,
                 )
                 for sample_id in sample_ids
             ]
@@ -113,11 +117,20 @@ def display_samples(case_id: str):
             LOG.exception("Requested sample not found for case %s", case_id)
             return _render_sample_error("Not able to find the sample")
         except FileNotFoundError:
-            LOG.exception("Requested sample missing coverage or baf files for case %s", case_id)
-            return _render_sample_error("Was not able to find the cov/baf data for the sample")
+            LOG.exception(
+                "Requested sample missing coverage or baf files for case %s", case_id
+            )
+            return _render_sample_error(
+                "Was not able to find the cov/baf data for the sample"
+            )
         except ValueError:
-            LOG.exception("Requested sample points to files containing empty or invalid data for case %s", case_id)
-            return _render_sample_error("The requested sample points to files containing empty or invalid data")
+            LOG.exception(
+                "Requested sample points to files containing empty or invalid data for case %s",
+                case_id,
+            )
+            return _render_sample_error(
+                "The requested sample points to files containing empty or invalid data"
+            )
 
     # which variant to highlight as focused
     selected_variant = request.args.get("variant")
@@ -162,5 +175,5 @@ def display_samples(case_id: str):
         default_profiles=settings.default_profiles,
         warning_thresholds=[
             threshold.model_dump() for threshold in settings.warning_thresholds
-        ]
+        ],
     )

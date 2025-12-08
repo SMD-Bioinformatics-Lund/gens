@@ -2,22 +2,11 @@ import { SideMenu } from "../components/side_menu/side_menu";
 import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS, PROFILE_SETTINGS_VERSION } from "../constants";
-import { getMetaWarnings as getMetaWarnings } from "../util/meta_warnings";
+import { getMetaWarnings } from "../util/meta_warnings";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
 import { SessionPosition } from "./session_helpers/session_position";
 import { getArrangedTracks, Tracks } from "./session_helpers/session_tracks";
-
-// FIXME: Hard-coded. We need some basic customizable system for this.
-// Maybe the admin can configure the thresholds through CLI?
-const COPY_NUMBER_COLUMN = "Estimated chromosomal copy numbers";
-const MAX_COPY_NUMBER_DEVIATION = 0.1;
-
-// FIXME: These needs to be split so mismatch and % are their own columns
-const MISMATCH_FATHER = "Mismatch father";
-const MISMATCH_MOTHER = "Mismatch mother";
-const MAX_MISMATCH = 200;
-const MAX_COUNT_DEVIATION = 5;
 
 /**
  * The purpose of this class is to keep track of the web session,
@@ -68,8 +57,6 @@ export class GensSession {
     allAnnotationSources: ApiAnnotationTrack[],
     warningThresholds: WarningThreshold[],
   ) {
-
-    console.log("Incoming thresholds", warningThresholds);
 
     this.render = render;
     this.sideMenu = sideMenu;
@@ -139,7 +126,6 @@ export class GensSession {
       const matchedThreshold = thresholds.find((thres) => thres.column == val.type)
 
       if (matchedThreshold) {
-        // console.log("Matched for threshold", matchedThreshold)
         // FIXME: Use string for hover info?
         const warning = getMetaWarnings(
           matchedThreshold,

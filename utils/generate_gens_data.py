@@ -79,11 +79,15 @@ def main(
     baf_output = out_dir / f"{label}.baf.bed"
 
     if not baf_positions.exists() or not baf_positions.is_file():
-        print(f"BAF-positions file {str(baf_positions)} does not exist or is not a valid file. Exiting.")
+        print(
+            f"BAF-positions file {str(baf_positions)} does not exist or is not a valid file. Exiting."
+        )
         sys.exit(1)
 
     if not coverage.exists() or not coverage.is_file():
-        print(f"Coverage file {str(coverage)} does not exist or is not a valid file. Exiting.")
+        print(
+            f"Coverage file {str(coverage)} does not exist or is not a valid file. Exiting."
+        )
         sys.exit(1)
 
     if not gvcf.exists() or not gvcf.is_file():
@@ -125,7 +129,7 @@ def main(
         if not (bgzip_present and tabix_present):
             print(
                 f"Cannot bgzip and tabix output as commands are not present in path. bgzip present: {bgzip_present}, tabix present: {tabix_present}",
-                file=sys.stderr
+                file=sys.stderr,
             )
             sys.exit(1)
 
@@ -232,9 +236,7 @@ def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
 
     d_only_bed = str(bed_file) + ".d_only"
 
-    with read_file(bed_file) as bed_in_fh, open(
-        d_only_bed, "w"
-    ) as tmp_cov_bed:
+    with read_file(bed_file) as bed_in_fh, open(d_only_bed, "w") as tmp_cov_bed:
         for line in bed_in_fh:
             line = line.rstrip()
 
@@ -247,7 +249,10 @@ def gens_bed_to_bigwig(bed_file: Path, sizes_path: Path, bw_file: Path) -> None:
             print(f"{chrom}\t{start}\t{end_str}\t{val}", file=tmp_cov_bed)
 
     if not shutil.which("bedGraphToBigWig"):
-        print("Did not find bedGraphToBigWig in PATH, required to generate BigWig files", file=sys.stderr)
+        print(
+            "Did not find bedGraphToBigWig in PATH, required to generate BigWig files",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     subprocess.run(

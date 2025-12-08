@@ -1,33 +1,8 @@
 import { CHROMOSOMES } from "../constants";
-import { Table } from "./table";
 
 export const META_WARNING_ROW_CLASS = "meta-table__warning-row";
 export const META_WARNING_CELL_CLASS = "meta-table__warning-cell";
 
-// export function getTableWarnings(table: Table, sex: Sex): CellWarning[] {
-//   const warnings = [];
-//   const colNames = table.getColumnNames();
-//   colNames.forEach((colName, colI) => {
-//     const column = table.getColumn(colName);
-//     column.forEach((value, rowI) => {
-//       const rowName = table.tableData.rowNames[rowI];
-//       const warningMsg = getMetaWarnings(colName, rowName, value.value, sex);
-//       if (warningMsg != null) {
-//         const warning: CellWarning = {
-//           colName,
-//           position: rowI,
-//           warning: warningMsg,
-//         };
-//         warnings.push(warning);
-//       }
-//     });
-//     // const colWarnings = getColumnWarnings(colName, column);
-//   });
-//   return warnings;
-// }
-
-// FIXME: The filters should be configured from config
-// I.e. name, size, directions
 export function getMetaWarnings(
   threshold: WarningThreshold,
   rowName: string,
@@ -38,9 +13,6 @@ export function getMetaWarnings(
   if (isNaN(parsedFloat)) {
     return null;
   }
-
-  // console.log("Hitting get meta warnings with threshold", threshold);
-
   let exceeds;
   if (threshold.kind == "estimated_chromosome_count_deviate") {
 

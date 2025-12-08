@@ -56,7 +56,12 @@ class WarningThreshold(BaseModel):
     """Configuration for meta warning thresholds."""
 
     column: str
-    kind: Literal["estimated_chromosome_count_deviate", "threshold_above", "threshold_below", "threshold_deviate"] = "threshold_above"
+    kind: Literal[
+        "estimated_chromosome_count_deviate",
+        "threshold_above",
+        "threshold_below",
+        "threshold_deviate",
+    ] = "threshold_above"
     size: float | None = None
     max_deviation: float | None = None
     message: str = ""

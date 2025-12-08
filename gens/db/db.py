@@ -52,7 +52,7 @@ def get_variant_software_adapter() -> Generator[InterpretationAdapter, None, Non
     if settings.variant_software_backend != "scout_mongo":
         raise HTTPException(
             status_code=503,
-            detail=f"Unsupported variant software backend: {settings.variant_software_backend}"
+            detail=f"Unsupported variant software backend: {settings.variant_software_backend}",
         )
 
     client: MongoClient[Any] = MongoClient(str(settings.variant_db.connection))

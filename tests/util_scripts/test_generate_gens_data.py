@@ -11,6 +11,7 @@ from utils.generate_gens_data import (
 
 FIXTURES = Path(__file__).parent.parent / "data" / "generate_gens_data"
 
+
 def test_generate_baf_bed(tmp_path: Path):
     baf_file = tmp_path / "input.baf"
     baf_file.write_text(
