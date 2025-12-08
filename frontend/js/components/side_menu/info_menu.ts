@@ -1,11 +1,9 @@
 import { COLORS, FONT_WEIGHT, SIZES } from "../../constants";
+import { META_WARNING_CELL_CLASS, META_WARNING_ROW_CLASS } from "../../util/meta_warnings";
 import { createTable, formatValue, parseTableFromMeta } from "../../util/table";
 import { removeChildren } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
-
-const WARNING_ROW_CLASS = "meta-table__warning-row";
-const WARNING_CELL_CLASS = "meta-table__warning-cell";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
@@ -60,10 +58,10 @@ template.innerHTML = String.raw`
       background: ${COLORS.extraLightGray};
       font-weight: ${FONT_WEIGHT.header};
     }
-    table.meta-table tr.${WARNING_ROW_CLASS} {
+    table.meta-table tr.${META_WARNING_ROW_CLASS} {
       background: rgba(255, 0, 0, 0.15);
     }
-    table.meta-table td.${WARNING_CELL_CLASS} {
+    table.meta-table td.${META_WARNING_CELL_CLASS} {
       background: rgba(255, 0, 0, 0.3);
       font-weight: ${FONT_WEIGHT.header};
     }
@@ -101,8 +99,6 @@ export class InfoMenu extends ShadowBaseElement {
   }
 
   render() {
-    console.log("Rendering info menu");
-
     if (!this.isConnected) {
       return;
     }

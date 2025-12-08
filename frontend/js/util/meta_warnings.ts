@@ -11,6 +11,9 @@ const MISMATCH_FATHER = "Mismatch father";
 const MISMATCH_MOTHER = "Mismatch mother";
 const MAX_PERC_MISMATCH_DEVIATION = 0.1;
 
+export const META_WARNING_ROW_CLASS = "meta-table__warning-row";
+export const META_WARNING_CELL_CLASS = "meta-table__warning-cell";
+
 
 export function getTableWarnings(table: Table, sex: Sex): CellWarning[] {
   const warnings = [];

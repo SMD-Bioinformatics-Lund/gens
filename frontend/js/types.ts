@@ -744,12 +744,7 @@ type TrackLayout = {
 
 interface TableCell {
   value: string;
-  color?: string;
-}
-
-interface TableRowStyle {
-  className?: string;
-  cellClasses?: (string | undefined)[];
+  class?: string;
 }
 
 interface TableData {
@@ -757,7 +752,7 @@ interface TableData {
   rows: TableCell[][];
   rowNames: string[];
   rowNameHeader?: string;
-  rowStyles?: (TableRowStyle | undefined)[];
+  rowStyles?: (string | undefined)[];
 }
 
 type CellWarning = {

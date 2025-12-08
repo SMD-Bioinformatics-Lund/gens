@@ -1,3 +1,5 @@
+import { META_WARNING_CELL_CLASS, META_WARNING_ROW_CLASS } from "./meta_warnings";
+
 export function formatValue(value: string): string {
   const num = parseFloat(value);
   return Number.isNaN(num) ? value : num.toFixed(2);
@@ -40,27 +42,23 @@ export function createTable(options: TableData): HTMLDivElement {
 function createRow(
   rowName: string,
   row: TableCell[],
-  rowStyle?: TableRowStyle,
+  rowStyle: string | null,
 ): HTMLTableRowElement {
   const rowElem = document.createElement("tr");
-  if (rowStyle?.className) {
-    rowElem.classList.add(rowStyle.className);
+  if (rowStyle) {
+    rowElem.classList.add(rowStyle);
   }
   const nameTd = document.createElement("td");
   nameTd.textContent = rowName;
   rowElem.appendChild(nameTd);
-  row.forEach((cell, index) => {
+  for (const cell of row) {
     const td = document.createElement("td");
     td.textContent = cell.value;
-    if (cell.color) {
-      td.style.color = cell.color;
-    }
-    const cellClass = rowStyle?.cellClasses?.[index];
-    if (cellClass) {
-      td.classList.add(cellClass);
+    if (cell.class) {
+      td.classList.add(cell.class);
     }
     rowElem.appendChild(td);
-  });
+  };
   return rowElem;
 }
 
@@ -74,12 +72,10 @@ function createRow(
  */
 export function parseTableFromMeta(
   meta: SampleMetaEntry,
-  errors: Coord[],
+  warnings: Coord[],
 ): Table {
   const grid = new Map<string, Map<string, TableCell>>();
   const colSet = new Set<string>();
-
-  const errorRows = errors.map((coord) => coord.y);
 
   for (const cell of meta.data) {
     const rowName = cell.row_name;
@@ -104,41 +100,38 @@ export function parseTableFromMeta(
     const rowMap = grid.get(rowName);
 
     return colNames.map((colName, colIndex) => {
-      const color = errorRows.includes(rowIndex) ? "red" : "";
+      const cell = rowMap.get(colName);
 
-      return rowMap.get(colName) ?? { value: "", color };
+      if (cell) {
+        const cellWarning = warnings.find(
+          (coord) => coord.x == colIndex && coord.y == rowIndex,
+        );
+        if (cellWarning) {
+          cell.class = META_WARNING_CELL_CLASS
+        }
+        return cell;
+      } else {
+        return { value: "", color: "" };
+      }
     });
   });
 
-  // const rowStyles = new Array<TableRowStyle | undefined>(rowNames.length);
-  // const copyNumberColIndex = colNames.indexOf(COPY_NUMBER_COLUMN);
-  // let hasCopyNumberWarnings = false;
-
-  // if (copyNumberColIndex >= 0) {
-  //   for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-  //     const row = rows[rowIndex];
-  //     const cell = row[copyNumberColIndex];
-
-  //     if (exceedsCopyNumberDeviation(rowNames[rowIndex], cell?.value, sex)) {
-  //       hasCopyNumberWarnings = true;
-  //       if (!rowStyles[rowIndex]) {
-  //         rowStyles[rowIndex] = { cellClasses: new Array(colNames.length) };
-  //       }
-  //       rowStyles[rowIndex]!.className = WARNING_ROW_CLASS;
-  //       rowStyles[rowIndex]!.cellClasses![copyNumberColIndex] =
-  //         WARNING_CELL_CLASS;
-  //     }
-  //   }
-  // }
-
-  // const hasRowStyles = rowStyles.some((style) => style != null);
+  const warningRows = warnings.map((coord) => coord.y);
+  const rowStyles = [];
+  for (let rowIndex = 0; rowIndex < rowNames.length; rowIndex++) {
+    let rowStyle = undefined;
+    if (warningRows.includes(rowIndex)) {
+      rowStyle = META_WARNING_ROW_CLASS;
+    }
+    rowStyles.push(rowStyle)
+  }
 
   const tableData: TableData = {
     columns: colNames,
     rowNames: rowNames,
     rowNameHeader: meta.row_name_header ?? "",
     rows: rows,
-    // rowStyles: hasRowStyles ? rowStyles : undefined,
+    rowStyles: rowStyles,
   };
 
   return new Table(tableData);
