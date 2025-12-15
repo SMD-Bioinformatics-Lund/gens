@@ -35,3 +35,7 @@ kind = "threshold_above"
 size = 200
 message = "Exceeds max mismatch count"
 
+# Example LDAP authentication configuration
+# [ldap]
+# server = "ldap://ldap.example.com"
+# bind_user_template = "uid={username},ou=People,dc=example,dc=com

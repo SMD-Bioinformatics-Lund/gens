@@ -52,7 +52,7 @@ connection = "mongodb://mongodb:27017/scout"
 Configuration options. Note that double underscores (`__`) are used to denote sub-categories, such as **gens_db** and **oauth**, when using environment variables. For example, the envionment variable name for configuring Gens mongodb connection is `GENS_DB__CONNECTION` (`<SUB-CATEGORY>__<VARIABLE>`).
 
 - **scout_url**, base url to Scout.
-- **authentication**, authentication method "oauth", "simple", "disabled"
+- **authentication**, authentication method "oauth", "ldap", "simple", "disabled"
 - **default_annotation_track**, when opening a fresh browser, this track will be preselected. Selected annotation tracks are now stored in the browser session, so if the user changes tracks that choice will persist.
 - **main_sample_types**, sample types handled as the "main" sample for multi-sample cases. I.e. the sample displayed in the overview plot and multi-chromosome view.
 - **default_profiles**, mapping from profile type to default profile JSON. Profile types are calculated by the unique and sorted `sample_type` values joined by `+`. Values are paths to JSON files relative to the config file.
@@ -67,3 +67,7 @@ Configuration options. Note that double underscores (`__`) are used to denote su
 - **connection**, mongodb conneciton string
 - **database**, optional database name. Can also be in connection string
 
+**ldap**
+
+- **server**, LDAP server URL such as `ldap://ldap.example.com`
+- **bind_user_template**, template used to bind directly to the LDAP server. Include `{username}` where the supplied username or email should be inserted, e.g. `uid={username},ou=People,dc=example,dc=com`
