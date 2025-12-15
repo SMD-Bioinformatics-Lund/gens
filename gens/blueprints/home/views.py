@@ -96,5 +96,6 @@ def landing() -> str:
 
     return render_template(
         "landing.html",
+        authentication=settings.authentication,
         version=version,
     )

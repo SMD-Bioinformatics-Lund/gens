@@ -7,6 +7,10 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## TBD
 
+### Added
+
+- Optional LDAP support for login [#638](https://github.com/SMD-Bioinformatics-Lund/gens/pull/638).
+
 ### Changed
 
 - Option for user to clear cache from settings side menu [#637](https://github.com/SMD-Bioinformatics-Lund/gens/pull/637).
