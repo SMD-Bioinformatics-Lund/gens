@@ -624,7 +624,7 @@ async function getOverviewData(
 
   overviewData.forEach((element) => {
     if (element.region == "MT") {
-      console.warn("Displaying MT coverage is not yet supported");
+      console.warn("Displaying MT coverage is not yet supported (see https://github.com/SMD-Bioinformatics-Lund/gens/issues/284)");
       return;
     }
     if (dataPerChrom[element.region] === undefined) {
