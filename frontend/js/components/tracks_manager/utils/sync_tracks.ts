@@ -25,6 +25,8 @@ export async function syncDataTrackSettings(
   dataSources: RenderDataSource,
   lastRenderedSamples: Sample[],
 ): Promise<{ settings: DataTrackSettings[]; samples: Sample[] }> {
+  console.error("Running with origTrackSettings", origTrackSettings);
+
   const annotSources = session.getAnnotationSources({
     selectedOnly: true,
   });
@@ -67,22 +69,30 @@ export async function syncDataTrackSettings(
   returnTrackSettings.push(...sampleSettings);
   returnTrackSettings.push(...newAnnotationSettings);
 
+  // FIXME: OK, adding it here on first load? But should be rearranged then or?
   if (!returnTrackSettings.find((track) => track.trackId == "genes")) {
-    const geneTrackSettings: DataTrackSettings = {
-      trackId: TRACK_IDS.genes,
-      trackLabel: "Genes",
-      trackType: "gene",
-      height: {
-        collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand,
-      },
-      showLabelWhenCollapsed: true,
-      isExpanded: true,
-      isHidden: false,
-    };
+    console.log("Triggering adding the gene track");
+    const geneTrackSettings = getGeneTrackSettings();
+
     returnTrackSettings.push(geneTrackSettings);
   }
 
   return { settings: returnTrackSettings, samples: [...samples] };
+}
+
+export function getGeneTrackSettings() {
+  const geneTrackSettings: DataTrackSettings = {
+    trackId: TRACK_IDS.genes,
+    trackLabel: "Genes",
+    trackType: "gene",
+    height: {
+      collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand,
+    },
+    showLabelWhenCollapsed: true,
+    isExpanded: true,
+    isHidden: false,
+  };
+  return geneTrackSettings;
 }
 
 async function sampleDiff(

@@ -35,6 +35,11 @@ export class Tracks {
     return matches[0];
   }
 
+  public hasTrack(trackId: string): boolean {
+    const matches = this.tracks.filter((setting) => setting.trackId == trackId);
+    return matches.length > 0;
+  }
+
   public updateSetting(trackId: string, newSetting: DataTrackSettings) {
     const trackIndex = this.tracks.findIndex(
       (track) => track.trackId === trackId,
