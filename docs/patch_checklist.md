@@ -10,6 +10,12 @@ For minor and major version updates, refer to the full [update_checklist](https:
     - [ ] Relevant CLI-, utility and backend changes are covered by unit tests.
     - [ ] Update `docs/update_checklist.md`.
 
+Code style
+
+- [ ] Run `black .`
+- [ ] Run `isort .`
+- [ ] Run `npm run prettier:fix`
+
 In the Gens repo, update the version in:
 
 - [ ] `package.json`
