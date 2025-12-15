@@ -1,7 +1,10 @@
 import { SideMenu } from "../components/side_menu/side_menu";
-import { annotationDiff } from "../components/tracks_manager/utils/sync_tracks";
+import {
+  annotationDiff,
+  getGeneTrackSettings,
+} from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
-import { COLORS, PROFILE_SETTINGS_VERSION } from "../constants";
+import { COLORS, PROFILE_SETTINGS_VERSION, TRACK_IDS } from "../constants";
 import { getMetaWarnings } from "../util/meta_warnings";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
@@ -59,7 +62,9 @@ export class GensSession {
     allAnnotationSources: ApiAnnotationTrack[],
     warningThresholds: WarningThreshold[],
   ) {
-
+    // FIXME: Could this one be removed? Seems strange to have the render as a dependency for the session
+    // Should be replaced by callbacks minimally, and ideally reworked such that none of the render calling
+    // is dealt with from session itself
     this.render = render;
     this.sideMenu = sideMenu;
     this.mainSample = mainSample;
@@ -126,7 +131,9 @@ export class GensSession {
         continue;
       }
 
-      const matchedThreshold = thresholds.find((thres) => thres.column == val.type)
+      const matchedThreshold = thresholds.find(
+        (thres) => thres.column == val.type,
+      );
 
       if (matchedThreshold) {
         // FIXME: Use string for hover info?
@@ -136,7 +143,7 @@ export class GensSession {
           val.value,
           sample.sex,
         );
-  
+
         if (warning) {
           const coord = {
             row: val.row_name,
@@ -144,7 +151,6 @@ export class GensSession {
           };
           warningCoords.push(coord);
         }
-
       }
     }
 
@@ -362,6 +368,11 @@ export class GensSession {
     }
     for (const removedId of diff.removedIds) {
       this.tracks.removeTrack(removedId);
+    }
+
+    const hasGenesTrack = this.tracks.hasTrack(TRACK_IDS.genes);
+    if (!hasGenesTrack) {
+      this.tracks.addTrack(getGeneTrackSettings());
     }
 
     const arrangedTracks = getArrangedTracks(layout, this.tracks.getTracks());
