@@ -1,4 +1,11 @@
-import { COLORS, FONT_SIZE, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
+import {
+  COLORS,
+  FONT_SIZE,
+  FONT_WEIGHT,
+  ICONS,
+  NO_SAMPLE_TYPE_DEFAULT,
+  SIZES,
+} from "../../constants";
 import {
   downloadAsJSON,
   getSampleFromID as getSampleIDObjFromID,
@@ -731,7 +738,7 @@ function getMainSampleChoices(
     const id = getSampleKey(sample);
     const choice = {
       value: id,
-      label: `${sample.sampleId} (${sample.sampleType || "no-sample-type"}, case: ${sample.caseId})`,
+      label: `${sample.sampleId} (${sample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${sample.caseId})`,
       selected: prevSelected == id,
     };
     choices.push(choice);
