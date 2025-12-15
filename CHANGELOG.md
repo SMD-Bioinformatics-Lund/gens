@@ -11,6 +11,11 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 - Optional LDAP support for login []().
 
+### Changed
+
+- Option for user to clear cache from settings side menu [#637](https://github.com/SMD-Bioinformatics-Lund/gens/pull/637).
+- Moved reset layout to base/default button out from advanced settings [#637](https://github.com/SMD-Bioinformatics-Lund/gens/pull/637).
+
 ### Fixed
 
 - Skip parsing MT-coverage as it is not yet supported and can crash downstream parts of Gens [#633](https://github.com/SMD-Bioinformatics-Lund/gens/pull/633).

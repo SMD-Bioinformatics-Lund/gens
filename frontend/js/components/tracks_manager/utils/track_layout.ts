@@ -1,4 +1,4 @@
-import { TRACK_IDS } from "../../../constants";
+import { NO_SAMPLE_TYPE_DEFAULT, TRACK_IDS } from "../../../constants";
 
 export function getPortableId(settings: DataTrackSettings): string {
   const trackId = settings.trackId;
@@ -6,7 +6,7 @@ export function getPortableId(settings: DataTrackSettings): string {
   let trackType = null;
   let specifier = null;
   if (settings.sample != null) {
-    const sampleType = settings.sample.sampleType || "unknown";
+    const sampleType = settings.sample.sampleType || NO_SAMPLE_TYPE_DEFAULT;
 
     if (settings.trackType == "dot-cov") {
       trackType = TRACK_IDS.cov;

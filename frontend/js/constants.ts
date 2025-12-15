@@ -63,11 +63,18 @@ export const ICONS = {
   zoomout: "fa-search-minus",
 };
 
+export const NO_SAMPLE_TYPE_DEFAULT = "no-sample-type";
+
 export const TRANSPARENCY = {
   s: "CC",
   m: "44",
   l: "22",
 };
+
+export const IDB_CACHE = {
+  dbName: "gens-cache",
+  transcriptsStore: "transcripts",
+}
 
 export const TRACK_IDS = {
   cov: "log2_cov",
