@@ -1,4 +1,4 @@
-import { CHROMOSOMES } from "../constants";
+import { CHROMOSOMES, IDB_CACHE } from "../constants";
 import { get } from "../util/fetch";
 import { idbGet, idbSet } from "../util/indexeddb";
 import { getSampleKey, zip } from "../util/utils";
@@ -8,8 +8,7 @@ const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 // FIXME: This will need to be made configurable eventually
 const DEFAULT_VARIANT_TYPES = ["del", "dup", "tdup"];
 const ZOOM_WINDOW_MULTIPLIER = 5;
-const IDB_CACHE_KEY = "gens-cache";
-const IDB_TRANSCRIPTS_KEY = "transcripts";
+// 
 
 export class API {
   genomeBuild: number;
@@ -397,8 +396,8 @@ export class API {
     const promise = (async () => {
       const serverTs = await this.getTranscriptUpdateTimestamp();
       const cached = await idbGet<IDBTranscripts>(
-        IDB_CACHE_KEY,
-        IDB_TRANSCRIPTS_KEY,
+        IDB_CACHE.dbName,
+        IDB_CACHE.transcriptsStore,
         cacheKey,
       );
       if (cached != null && Array.isArray(cached.transcripts)) {
@@ -420,7 +419,7 @@ export class API {
         query,
       )) as ApiSimplifiedTranscript[];
 
-      await idbSet(IDB_CACHE_KEY, IDB_TRANSCRIPTS_KEY, cacheKey, {
+      await idbSet(IDB_CACHE.dbName, IDB_CACHE.transcriptsStore, cacheKey, {
         transcripts,
         serverTimestamp: serverTs,
         cachedAt: new Date().toISOString(),

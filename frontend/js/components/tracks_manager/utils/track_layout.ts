@@ -6,7 +6,7 @@ export function getPortableId(settings: DataTrackSettings): string {
   let trackType = null;
   let specifier = null;
   if (settings.sample != null) {
-    const sampleType = settings.sample.sampleType || "unknown";
+    const sampleType = settings.sample.sampleType || "no-sample-type";
 
     if (settings.trackType == "dot-cov") {
       trackType = TRACK_IDS.cov;

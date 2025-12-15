@@ -172,7 +172,7 @@ export class SessionProfiles {
 
   private computeProfileSignature(samples: Sample[]): string {
     const types = new Set(
-      samples.map((s) => (s.sampleType ? s.sampleType : "unknown")).sort(),
+      samples.map((s) => (s.sampleType ? s.sampleType : "no-sample-type")).sort(),
     );
 
     return Array.from(types).join("+");
