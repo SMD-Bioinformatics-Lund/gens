@@ -10,7 +10,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
 
 - Skip parsing MT-coverage as it is not yet supported and can crash downstream parts of Gens [#633](https://github.com/SMD-Bioinformatics-Lund/gens/pull/633).
-- Gene track no longer ends up on bottom despite loading a profile with its position defined []().
+- Gene track no longer ends up on bottom despite loading a profile with its position defined [#634](https://github.com/SMD-Bioinformatics-Lund/gens/pull/634).
 
 ## 4.4.0
 
