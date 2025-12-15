@@ -96,10 +96,10 @@ export function parseTableFromMeta(
   const rowNames = Array.from(grid.keys());
   const colNames = Array.from(colSet);
 
-  const rows: TableCell[][] = rowNames.map((rowName, rowIndex) => {
+  const rows: TableCell[][] = rowNames.map((rowName) => {
     const rowMap = grid.get(rowName);
 
-    return colNames.map((colName, colIndex) => {
+    return colNames.map((colName) => {
       const cell = rowMap.get(colName);
 
       if (cell) {
