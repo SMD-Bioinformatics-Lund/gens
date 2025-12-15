@@ -134,7 +134,7 @@ template.innerHTML = String.raw`
   <div id="highlights-overview"></div>
 
   <div class="header-row">
-    <div class="header" title="Track order and other settings are linked to the unique combination of sample types, i.e. 'tumor+normal' or 'proband+relative'">
+    <div class="header">
       User profile
     </div>
   </div>
@@ -150,7 +150,7 @@ template.innerHTML = String.raw`
     <icon-button
       id="reset-layout"
       icon="${ICONS.reset}"
-      title="If specified, it can reset to an admin-defined layout. If not specified, it removes all customizations."
+      title="If default profile is present, reset to an admin-defined layout. If not specified, go back to the original settings."
     ></icon-button>
   </flex-row>
 
@@ -179,7 +179,6 @@ template.innerHTML = String.raw`
       ></icon-button>
       <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
     </flex-row>
-    </flex-row>
 
     <flex-row class="spread-row">
       <div class="reset-layout-details">
@@ -198,14 +197,14 @@ template.innerHTML = String.raw`
       <div class="header">Configure tracks</div>
     </div>
     <flex-row class="spread-row">
-      <div title="Height of the collapsed band track. When expanded, it takes as much space as needed to display all bands.">Band track height</div>
+      <div>Band track height</div>
       <flex-row class="height-inputs">
         <input title="Collapsed height" id="band-collapsed-height" class="height-input" type="number" step="5">
         <icon-button id="apply-band-track-height" icon="${ICONS.refresh}" title="Apply band track height"></icon-button>
       </flex-row>
     </flex-row>
     <flex-row class="spread-row">
-      <div title="Heights of the collapsed and expanded dot tracks">Dot track heights</div>
+      <div>Dot track heights</div>
       <flex-row class="height-inputs">
         <input title="Collapsed height" id="dot-collapsed-height" class="height-input" type="number" step="5">
         <input title="Expanded height" id="dot-expanded-height" class="height-input" type="number" step="5">
@@ -213,7 +212,7 @@ template.innerHTML = String.raw`
       </flex-row>
     </flex-row>
     <flex-row class="spread-row">
-      <div class="Log2-fold Y-axis range for coverage tracks">Coverage y-range</div>
+      <div>Coverage y-range</div>
       <flex-row class="height-inputs">
         <input id="coverage-y-start" class="height-input" type="number" step="0.1">
         <input id="coverage-y-end" class="height-input" type="number" step="0.1">
@@ -221,7 +220,7 @@ template.innerHTML = String.raw`
       </flex-row>
     </flex-row>
     <flex-row class="spread-row">
-      <div class="If using together with Scout, filter what variants are displayed.">Variant rank score threshold</div>
+      <div>Variant rank score threshold</div>
       <flex-row>
         <input id="variant-filter" type="number" step="1" class="height-input">
         <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
@@ -230,7 +229,7 @@ template.innerHTML = String.raw`
 
     <!-- Tracks overview -->
     <div class="header-row">
-      <div class="header" title="Move, hide/unhide and collapse/expand tracks">Tracks overview</div>
+      <div class="header">Tracks overview</div>
     </div>
     <div id="tracks-overview"></div>
   </details>

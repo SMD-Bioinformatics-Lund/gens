@@ -8,7 +8,7 @@ const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 // FIXME: This will need to be made configurable eventually
 const DEFAULT_VARIANT_TYPES = ["del", "dup", "tdup"];
 const ZOOM_WINDOW_MULTIPLIER = 5;
-// 
+//
 
 export class API {
   genomeBuild: number;
@@ -24,7 +24,9 @@ export class API {
 
   getChromSizes(): Record<Chromosome, number> {
     if (this.allChromData == null) {
-      throw Error("API.initialize must be called and awaited before accessing the chromosome sizes");
+      throw Error(
+        "API.initialize must be called and awaited before accessing the chromosome sizes",
+      );
     }
 
     const allChromSizes = {} as Record<Chromosome, number>;
@@ -62,17 +64,18 @@ export class API {
       annotation_track_ids: annotationTrackIds.join(","),
     };
 
-    const details = get(new URL(`search/result`, this.apiURI).href, params).then(
-      (result) => {
-        if (result === null) {
-          return null;
-        }
-        if (result["chromosome"] != null) {
-          return result;
-        }
+    const details = get(
+      new URL(`search/result`, this.apiURI).href,
+      params,
+    ).then((result) => {
+      if (result === null) {
         return null;
-      },
-    );
+      }
+      if (result["chromosome"] != null) {
+        return result;
+      }
+      return null;
+    });
     return details;
   }
 
@@ -213,7 +216,7 @@ export class API {
     xRange: Rng,
   ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/coverage";
-    const sampleKey = getSampleKey({caseId, sampleId});
+    const sampleKey = getSampleKey({ caseId, sampleId });
 
     if (this.covSampleChrZoomCache[sampleKey] == null) {
       this.covSampleChrZoomCache[sampleKey] = {};
@@ -301,8 +304,7 @@ export class API {
     xRange: Rng,
   ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/baf";
-    const sampleKey = getSampleKey({caseId, sampleId});
-
+    const sampleKey = getSampleKey({ caseId, sampleId });
 
     if (this.bafSampleZoomChrCache[sampleKey] == null) {
       this.bafSampleZoomChrCache[sampleKey] = {};
@@ -443,8 +445,7 @@ export class API {
     chrom: string,
     rank_score_threshold: number,
   ): Promise<ApiSimplifiedVariant[]> {
-
-    const sampleKey = getSampleKey({caseId, sampleId});
+    const sampleKey = getSampleKey({ caseId, sampleId });
 
     // Invalidate cache if changing the rank score threshold
     if (this.cachedThreshold != rank_score_threshold) {
@@ -499,8 +500,7 @@ export class API {
     caseId: string,
     sampleId: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
-
-    const sampleKey = getSampleKey({caseId, sampleId});
+    const sampleKey = getSampleKey({ caseId, sampleId });
 
     if (this.overviewSampleCovCache[sampleKey] == null) {
       this.overviewSampleCovCache[sampleKey] = getOverviewData(
@@ -522,8 +522,7 @@ export class API {
     caseId: string,
     sampleId: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
-
-    const sampleKey = getSampleKey({caseId, sampleId})
+    const sampleKey = getSampleKey({ caseId, sampleId });
 
     if (this.overviewBafCache[sampleKey] == null) {
       this.overviewBafCache[sampleKey] = getOverviewData(
@@ -623,7 +622,9 @@ async function getOverviewData(
 
   overviewData.forEach((element) => {
     if (element.region == "MT") {
-      console.warn("Displaying MT coverage is not yet supported (see https://github.com/SMD-Bioinformatics-Lund/gens/issues/284)");
+      console.warn(
+        "Displaying MT coverage is not yet supported (see https://github.com/SMD-Bioinformatics-Lund/gens/issues/284)",
+      );
       return;
     }
     if (dataPerChrom[element.region] === undefined) {

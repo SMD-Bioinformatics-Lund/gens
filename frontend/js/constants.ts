@@ -63,6 +63,8 @@ export const ICONS = {
   zoomout: "fa-search-minus",
 };
 
+export const NO_SAMPLE_TYPE_DEFAULT = "no-sample-type";
+
 export const TRANSPARENCY = {
   s: "CC",
   m: "44",
