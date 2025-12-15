@@ -623,6 +623,10 @@ async function getOverviewData(
   const dataPerChrom: Record<string, ApiCoverageDot[]> = {};
 
   overviewData.forEach((element) => {
+    if (element.region == "MT") {
+      console.warn("Displaying MT coverage is not yet supported");
+      return;
+    }
     if (dataPerChrom[element.region] === undefined) {
       dataPerChrom[element.region] = [];
     }
