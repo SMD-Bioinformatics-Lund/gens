@@ -119,10 +119,6 @@ def login() -> Response:
         return redirect(url_for("home.landing"))
 
 
-    # if request.form.get("email"):  # Log in against Scout database
-    #     user_mail = request.form.get("email")
-    #     LOG.info("Validating user %s against Scout database", user_mail)
-
     db: Database[Any] = current_app.config["GENS_DB"]
     user_col = db.get_collection(USER_COLLECTION)
     user_obj = get_user(user_col, user_mail)  # type: ignore
