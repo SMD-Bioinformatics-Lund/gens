@@ -99,11 +99,7 @@ export async function initCanvases({
     ? `${variantSoftwareBaseURL}/case/case_id/${caseId}`
     : null;
 
-  headerInfo.initialize(
-    caseId,
-    variantSoftwareCaseUrl,
-    version,
-  );
+  headerInfo.initialize(caseId, variantSoftwareCaseUrl, version);
 
   const inputControls = document.getElementById(
     "input-controls",
@@ -124,7 +120,6 @@ export async function initCanvases({
     }
   };
 
-
   // FIXME: Think about how to organize. Get data sources?
   const orderSamples = (samples: ApiSample[]): ApiSample[] => {
     const mainSample = samples.find((s) =>
@@ -144,7 +139,6 @@ export async function initCanvases({
     sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
   );
   const caseSamples = orderSamples(unorderedSamples).map((sample) => {
-
     const parsedSex = parseSex(sample.sex);
 
     const result: Sample = {
@@ -245,7 +239,6 @@ function initializeInputControls(
   helpPage: HelpMenu,
   getSearchResults: (query: string) => Promise<ApiSearchResult>,
 ) {
-
   const showBadge = session.hasMetaWarnings();
 
   const onPositionChange = async (range) => {

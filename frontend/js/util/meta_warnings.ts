@@ -15,7 +15,6 @@ export function getMetaWarnings(
   }
   let exceeds;
   if (threshold.kind == "estimated_chromosome_count_deviate") {
-
     const chromosome = parseChromosome(rowName);
     if (!chromosome) {
       return null;
@@ -37,13 +36,12 @@ export function getMetaWarnings(
   }
 
   if (exceeds) {
-
     let threshold_message = threshold.message;
     if (threshold.size) {
-      threshold_message += ` (${threshold.size})`
+      threshold_message += ` (${threshold.size})`;
     }
     if (threshold.max_deviation) {
-      threshold_message += ` (${threshold.max_deviation})`
+      threshold_message += ` (${threshold.max_deviation})`;
     }
 
     return threshold_message;
@@ -77,7 +75,6 @@ function exceedsCopyNumberDeviation(
   maxDeviation: number,
   sex?: string,
 ): boolean {
-
   const normalizedChrom = normalizeChromosomeLabel(chromosome);
 
   const isSexChromosome = ["X", "Y"].includes(normalizedChrom);

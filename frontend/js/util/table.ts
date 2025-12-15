@@ -1,4 +1,7 @@
-import { META_WARNING_CELL_CLASS, META_WARNING_ROW_CLASS } from "./meta_warnings";
+import {
+  META_WARNING_CELL_CLASS,
+  META_WARNING_ROW_CLASS,
+} from "./meta_warnings";
 
 export function formatValue(value: string): string {
   const num = parseFloat(value);
@@ -58,7 +61,7 @@ function createRow(
       td.classList.add(cell.class);
     }
     rowElem.appendChild(td);
-  };
+  }
   return rowElem;
 }
 
@@ -107,7 +110,7 @@ export function parseTableFromMeta(
           (coord) => coord.row == rowName && coord.col == colName,
         );
         if (cellWarning) {
-          cell.class = META_WARNING_CELL_CLASS
+          cell.class = META_WARNING_CELL_CLASS;
         }
         return cell;
       } else {
@@ -123,7 +126,7 @@ export function parseTableFromMeta(
     if (warningRows.includes(rowName)) {
       rowStyle = META_WARNING_ROW_CLASS;
     }
-    rowStyles.push(rowStyle)
+    rowStyles.push(rowStyle);
   }
 
   const tableData: TableData = {

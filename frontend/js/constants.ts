@@ -74,7 +74,7 @@ export const TRANSPARENCY = {
 export const IDB_CACHE = {
   dbName: "gens-cache",
   transcriptsStore: "transcripts",
-}
+};
 
 export const TRACK_IDS = {
   cov: "log2_cov",
