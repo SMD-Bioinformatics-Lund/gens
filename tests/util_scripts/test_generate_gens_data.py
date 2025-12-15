@@ -194,9 +194,7 @@ def test_parse_gvcfvaf_skips_missing_genotype(tmp_path: Path, capsys):
     gvcf_file = tmp_path / "sample.vcf.gz"
     with gzip.open(gvcf_file, "wt") as fh:
         fh.write("##header\n")
-        fh.write(
-            "1\t10\t.\tA\tC\t.\tPASS\tEND=10\tGT:AD:DP\t./.:8,2:10\n"
-        )
+        fh.write("1\t10\t.\tA\tC\t.\tPASS\tEND=10\tGT:AD:DP\t./.:8,2:10\n")
 
     gnomad_file = tmp_path / "gnomad.tsv"
     gnomad_file.write_text("1\t10")

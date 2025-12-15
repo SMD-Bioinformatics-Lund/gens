@@ -54,7 +54,7 @@ class LdapConfig(BaseSettings):
         description=(
             "Template user to build the bind DN"
             "The placeholder '{username}' will be replaced with the provided username."
-        )
+        ),
     )
 
 

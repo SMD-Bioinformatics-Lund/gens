@@ -117,7 +117,11 @@ def sample(sample_id: str, genome_build: int, case_id: str) -> None:
 @click.option("--sample-id", required=True, help="Sample ID")
 @click.option("--case-id", required=True, help="Case ID")
 @click.option(
-    "--genome-build", "-b", type=ChoiceType(GenomeBuild), required=True, help="Genome build"
+    "--genome-build",
+    "-b",
+    type=ChoiceType(GenomeBuild),
+    required=True,
+    help="Genome build",
 )
 @click.option("--meta-id", help="Remove only metadata entries matching the given ID")
 @click.option(

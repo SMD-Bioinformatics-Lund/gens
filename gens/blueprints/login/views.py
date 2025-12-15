@@ -22,7 +22,9 @@ from ..home.views import public_endpoint
 LOG = logging.getLogger(__name__)
 
 
-def authenticate_with_ldap(username: str, password: str, ldap_config: LdapConfig | None = None) -> bool:
+def authenticate_with_ldap(
+    username: str, password: str, ldap_config: LdapConfig | None = None
+) -> bool:
     """Authenticate a user using LDAP direct bind"""
 
     configuration = ldap_config or settings.ldap
@@ -35,7 +37,7 @@ def authenticate_with_ldap(username: str, password: str, ldap_config: LdapConfig
     except KeyError as error:
         LOG.error("Failed to format LDAP bind DN: missing %s", error)
         return False
-    
+
     server = Server(str(configuration.server))
 
     try:
@@ -47,6 +49,7 @@ def authenticate_with_ldap(username: str, password: str, ldap_config: LdapConfig
         LOG.warning("LDAP authentication failed for %s", username)
         LOG.debug("LDAP exception: %s", error)
     return False
+
 
 @login_manager.user_loader
 def load_user(user_id: str) -> LoginUser | None:
@@ -100,24 +103,23 @@ def login() -> Response:
         if not user_mail:
             flash("Please enter an email", "warning")
             return redirect(url_for("home.landing"))
-        
+
         if settings.authentication == AuthMethod.LDAP:
             password = request.form.get("password")
             if not password:
                 flash("Please enter both email and password", "warning")
                 return redirect(url_for("home.landing"))
-            
+
             if not authenticate_with_ldap(user_mail, password):
                 flash("Incorrect username or password", "warning")
                 return redirect(url_for("home.landing"))
-        
+
     else:
         return redirect(url_for("home.landing"))
 
     if user_mail is None:
         flash("Unable to log in with the provided credentials", "warning")
         return redirect(url_for("home.landing"))
-
 
     db: Database[Any] = current_app.config["GENS_DB"]
     user_col = db.get_collection(USER_COLLECTION)
