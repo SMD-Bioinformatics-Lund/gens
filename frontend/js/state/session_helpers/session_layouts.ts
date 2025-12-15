@@ -60,7 +60,6 @@ export class SessionProfiles {
   }
 
   public getProfile(): ProfileSettings {
-    console.warn("Getting profile");
     return this.profile;
   }
 
@@ -141,7 +140,6 @@ export class SessionProfiles {
   }
 
   public getTrackLayout(): TrackLayout {
-    console.error("Getting track layout");
     return this.profile.layout;
   }
 

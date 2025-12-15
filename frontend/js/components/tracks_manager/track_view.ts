@@ -299,7 +299,6 @@ export class TrackView extends ShadowBaseElement {
       getSampleAnnotSources,
     );
     this.lastRenderedSamples = samples;
-    console.log("Assigning track settings", dataTrackSettings);
     this.session.tracks.setTracks(dataTrackSettings);
   }
 

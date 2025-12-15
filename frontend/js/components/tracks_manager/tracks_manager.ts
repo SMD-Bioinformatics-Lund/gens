@@ -79,7 +79,6 @@ export class TracksManager extends ShadowBaseElement {
   }
 
   render(settings: RenderSettings) {
-    console.error("Make sure the gene is part of the initial value here");
     const chromViewActive = this.session.getChromViewActive();
     this.chromosomeView.hidden = !chromViewActive;
     this.trackView.hidden = chromViewActive;
