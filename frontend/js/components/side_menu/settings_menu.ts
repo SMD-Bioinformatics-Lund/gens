@@ -559,7 +559,6 @@ export class SettingsMenu extends ShadowBaseElement {
 
     if (defaultProfile) {
       const { fileName } = defaultProfile;
-      const displayName = fileName ? ` (${fileName})` : "";
       this.resetLayoutInfo.textContent = `Default profile (${fileName}) available for ${profileKey}`;
     } else {
       this.resetLayoutInfo.textContent =

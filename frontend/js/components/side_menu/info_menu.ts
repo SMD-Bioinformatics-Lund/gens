@@ -107,8 +107,6 @@ export class InfoMenu extends ShadowBaseElement {
       header.textContent = sample.sampleId;
       this.entries.appendChild(header);
 
-      const padRight = `${SIZES.m}px`;
-
       const simpleDivs = [];
       const tables = [];
 

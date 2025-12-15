@@ -40,10 +40,10 @@ export function getMetaWarnings(
 
     let threshold_message = threshold.message;
     if (threshold.size) {
-      threshold_message + ` (${threshold.size})`
+      threshold_message += ` (${threshold.size})`
     }
     if (threshold.max_deviation) {
-      threshold_message + ` (${threshold.max_deviation})`
+      threshold_message += ` (${threshold.max_deviation})`
     }
 
     return threshold_message;
