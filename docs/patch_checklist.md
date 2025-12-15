@@ -15,6 +15,11 @@ In the Gens repo, update the version in:
 - [ ] `package.json`
 - [ ] `__version__.py`
 
+Production settings are assigned in:
+
+- [ ] `tsconfig.json` (sourceMap: false)
+- [ ] `webpack.config.cjs` (mode: production)
+
 Post merge:
 
 - [ ] Tag
