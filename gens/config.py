@@ -33,7 +33,7 @@ class AuthMethod(Enum):
     """Valid authentication options"""
 
     OAUTH = "oauth"
-    LDAP = "LDAP"
+    LDAP = "ldap"
     SIMPLE = "simple"
     DISABLED = "disabled"
 
@@ -143,8 +143,8 @@ class Settings(BaseSettings):
         }
 
     @model_validator(mode="after")
-    def check_oauth_opts(self) -> "Settings":
-        """Check that OAUTH options are set if authentication is oauth."""
+    def check_auth_opts(self) -> "Settings":
+        """Check that OAUTH or LDAP options are set if authentication is assigned."""
         if self.authentication == AuthMethod.OAUTH and self.oauth is None:
             raise ValueError(
                 "OAUTH require you to configure client_id, secret and discovery_url"

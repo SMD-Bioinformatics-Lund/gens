@@ -16,7 +16,6 @@ services:
       - mongodb
     environment:
       - FLASK_DEBUG=1
-      - AUTHENTICATION=disabled
     ports:
       - 8080:5000
     volumes:
