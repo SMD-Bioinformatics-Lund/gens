@@ -2,6 +2,7 @@
 
 For minor and major version updates, refer to the full [update_checklist](https://github.com/SMD-Bioinformatics-Lund/gens/blob/master/docs/update_checklist.md).
 
+- [ ] The full diff has been read through.
 - [ ] The changes have been manually tested.
 - [ ] All GitHub CI tests are passing.
 - [ ] The changes have been run through a colleague or minimally through an LLM such as Codex.
