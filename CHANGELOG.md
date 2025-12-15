@@ -9,7 +9,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
-- Skip parsing MT-coverage as it is not yet supported and can crash downstream parts of Gens []().
+- Skip parsing MT-coverage as it is not yet supported and can crash downstream parts of Gens [#633](https://github.com/SMD-Bioinformatics-Lund/gens/pull/633).
 
 ## 4.4.0
 
