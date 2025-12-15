@@ -3,19 +3,18 @@ import { get } from "../util/fetch";
 import { idbGet, idbSet } from "../util/indexeddb";
 import { getSampleKey, zip } from "../util/utils";
 
+// Data for these are loaded up front for the full chromosome
+// Remaining zoom levels (up to "d") are loaded dynamically and
+// only for the points currently in view
 const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 
 // FIXME: This will need to be made configurable eventually
 const DEFAULT_VARIANT_TYPES = ["del", "dup", "tdup"];
-const ZOOM_WINDOW_MULTIPLIER = 5;
-//
+const ZOOM_WINDOW_CACHE_MULTIPLIER = 5;
 
 export class API {
   genomeBuild: number;
   apiURI: string;
-  // Data for these are loaded up front for the full chromosome
-  // Remaining zoom levels (up to "d") are loaded dynamically and
-  // only for the points currently in view
 
   private allChromData: Record<Chromosome, ChromosomeInfo> = {} as Record<
     Chromosome,
@@ -265,7 +264,7 @@ export class API {
 
       const extended = expandRange(
         xRange,
-        ZOOM_WINDOW_MULTIPLIER,
+        ZOOM_WINDOW_CACHE_MULTIPLIER,
         this.getChromSizes()[chrom],
       );
 
@@ -349,7 +348,7 @@ export class API {
 
       const extended = expandRange(
         xRange,
-        ZOOM_WINDOW_MULTIPLIER,
+        ZOOM_WINDOW_CACHE_MULTIPLIER,
         this.getChromSizes()[chrom],
       );
 
