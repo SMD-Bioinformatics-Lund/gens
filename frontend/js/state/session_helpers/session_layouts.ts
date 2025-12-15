@@ -3,6 +3,7 @@ import {
   STYLE,
   PROFILE_SETTINGS_VERSION,
   DEFAULT_VARIANT_THRES,
+  NO_SAMPLE_TYPE_DEFAULT,
 } from "../../constants";
 import { loadProfileSettings, saveProfileToBrowser } from "../../util/storage";
 
@@ -172,7 +173,9 @@ export class SessionProfiles {
 
   private computeProfileSignature(samples: Sample[]): string {
     const types = new Set(
-      samples.map((s) => (s.sampleType ? s.sampleType : "unknown")).sort(),
+      samples
+        .map((s) => (s.sampleType ? s.sampleType : NO_SAMPLE_TYPE_DEFAULT))
+        .sort(),
     );
 
     return Array.from(types).join("+");

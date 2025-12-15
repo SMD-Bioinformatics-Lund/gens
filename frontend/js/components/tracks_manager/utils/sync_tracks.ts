@@ -68,21 +68,26 @@ export async function syncDataTrackSettings(
   returnTrackSettings.push(...newAnnotationSettings);
 
   if (!returnTrackSettings.find((track) => track.trackId == "genes")) {
-    const geneTrackSettings: DataTrackSettings = {
-      trackId: TRACK_IDS.genes,
-      trackLabel: "Genes",
-      trackType: "gene",
-      height: {
-        collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand,
-      },
-      showLabelWhenCollapsed: true,
-      isExpanded: true,
-      isHidden: false,
-    };
+    const geneTrackSettings = getGeneTrackSettings();
     returnTrackSettings.push(geneTrackSettings);
   }
 
   return { settings: returnTrackSettings, samples: [...samples] };
+}
+
+export function getGeneTrackSettings() {
+  const geneTrackSettings: DataTrackSettings = {
+    trackId: TRACK_IDS.genes,
+    trackLabel: "Genes",
+    trackType: "gene",
+    height: {
+      collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand,
+    },
+    showLabelWhenCollapsed: true,
+    isExpanded: true,
+    isHidden: false,
+  };
+  return geneTrackSettings;
 }
 
 async function sampleDiff(

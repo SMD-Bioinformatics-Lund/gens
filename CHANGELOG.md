@@ -5,6 +5,23 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## 4.4.1
+
+### Added
+
+- Optional LDAP support for login [#638](https://github.com/SMD-Bioinformatics-Lund/gens/pull/638).
+
+### Changed
+
+- Option for user to clear cache from settings side menu [#637](https://github.com/SMD-Bioinformatics-Lund/gens/pull/637).
+- Moved reset layout to base/default button out from advanced settings [#637](https://github.com/SMD-Bioinformatics-Lund/gens/pull/637).
+- Removed option to setup login only using Scout email ("simple") [#638](https://github.com/SMD-Bioinformatics-Lund/gens/pull/638).
+
+### Fixed
+
+- Skip parsing MT-coverage as it is not yet supported and can crash downstream parts of Gens [#633](https://github.com/SMD-Bioinformatics-Lund/gens/pull/633).
+- Gene track no longer ends up on bottom despite loading a profile with its position defined [#634](https://github.com/SMD-Bioinformatics-Lund/gens/pull/634).
+
 ## 4.4.0
 
 ### Added

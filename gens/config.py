@@ -6,7 +6,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Literal, Tuple, Type
 
-from pydantic import BaseModel, Field, HttpUrl, MongoDsn, model_validator
+from pydantic import AnyUrl, BaseModel, Field, HttpUrl, MongoDsn, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -33,7 +33,7 @@ class AuthMethod(Enum):
     """Valid authentication options"""
 
     OAUTH = "oauth"
-    SIMPLE = "simple"
+    LDAP = "ldap"
     DISABLED = "disabled"
 
 
@@ -43,6 +43,19 @@ class OauthConfig(BaseSettings):
     client_id: str
     secret: str
     discovery_url: HttpUrl
+
+
+class LdapConfig(BaseSettings):
+    """Configuration for LDAP direct bind authentication"""
+
+    server: AnyUrl = Field(..., description="LDAP server URL, e.g. ldap://ldap")
+    bind_user_template: str = Field(
+        default="{username}",
+        description=(
+            "Template user to build the bind DN"
+            "The placeholder '{username}' will be replaced with the provided username."
+        ),
+    )
 
 
 class MongoDbConfig(BaseSettings):
@@ -93,6 +106,9 @@ class Settings(BaseSettings):
     # Oauth options
     oauth: OauthConfig | None = None
 
+    # LDAP options
+    ldap: LdapConfig | None = None
+
     model_config = SettingsConfigDict(
         env_file_encoding="utf-8",
         toml_file=config_file,
@@ -118,6 +134,7 @@ class Settings(BaseSettings):
             "main_sample_types": self.main_sample_types,
             "authentication": self.authentication.value,
             "oauth": self.oauth,
+            "ldap": self.ldap,
             "default_profiles": self.default_profiles,
             "warning_thresholds": [
                 threshold.model_dump() for threshold in self.warning_thresholds
@@ -125,13 +142,16 @@ class Settings(BaseSettings):
         }
 
     @model_validator(mode="after")
-    def check_oauth_opts(self) -> "Settings":
-        """Check that OAUTH options are set if authentication is oauth."""
-        if self.authentication == AuthMethod.OAUTH:
-            if self.oauth is None:
-                raise ValueError(
-                    "OAUTH require you to configure client_id, secret and discovery_url"
-                )
+    def check_auth_opts(self) -> "Settings":
+        """Check that OAUTH or LDAP options are set if authentication is assigned."""
+        if self.authentication == AuthMethod.OAUTH and self.oauth is None:
+            raise ValueError(
+                "OAUTH require you to configure client_id, secret and discovery_url"
+            )
+        if self.authentication == AuthMethod.LDAP and self.ldap is None:
+            raise ValueError(
+                "LDAP authentication requires you to configure server and bind_user_template"
+            )
         return self
 
     @model_validator(mode="after")

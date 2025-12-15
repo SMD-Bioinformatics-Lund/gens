@@ -157,7 +157,7 @@ export class ChromosomeView extends ShadowBaseElement {
             this.render({});
           },
           getColorBandsPlaceholder,
-          () => [1, session.pos.getChromSize("1")]
+          () => [1, session.pos.getChromSize("1")],
         );
       } else if (trackSetting.trackType == "sample-annotation") {
         track = getBandTrack(
@@ -180,7 +180,7 @@ export class ChromosomeView extends ShadowBaseElement {
             this.session.chromTracks.setExpandedHeight(trackId, expandedHeight);
           },
           getColorBandsPlaceholder,
-          () => [1, session.pos.getChromSize("1")]
+          () => [1, session.pos.getChromSize("1")],
         );
       } else {
         console.warn(

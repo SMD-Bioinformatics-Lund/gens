@@ -107,15 +107,15 @@ export class InfoMenu extends ShadowBaseElement {
       header.textContent = sample.sampleId;
       this.entries.appendChild(header);
 
-      const padRight = `${SIZES.m}px`;
-
       const simpleDivs = [];
       const tables = [];
 
-      simpleDivs.push(getEntry({ key: "Case ID", value: sample.caseId }))
+      simpleDivs.push(getEntry({ key: "Case ID", value: sample.caseId }));
 
       if (sample.sampleType) {
-        simpleDivs.push(getEntry({ key: "Sample type", value: sample.sampleType }));
+        simpleDivs.push(
+          getEntry({ key: "Sample type", value: sample.sampleType }),
+        );
       }
       // Optional fields
       const sex = sample.sex;
@@ -130,7 +130,7 @@ export class InfoMenu extends ShadowBaseElement {
           if (meta.row_name_header == null) {
             const divs = getSimpleElement(meta);
             for (const div of divs) {
-              simpleDivs.push(div)
+              simpleDivs.push(div);
             }
             continue;
           }
@@ -140,7 +140,7 @@ export class InfoMenu extends ShadowBaseElement {
 
           const { tableData } = parseTableFromMeta(meta, errors);
           const htmlTable = createTable(tableData);
-          tables.push(htmlTable)
+          tables.push(htmlTable);
         }
       }
 
@@ -150,7 +150,7 @@ export class InfoMenu extends ShadowBaseElement {
       }
 
       for (const table of tables) {
-        this.entries.appendChild(table)
+        this.entries.appendChild(table);
       }
     }
   }
@@ -168,7 +168,5 @@ function getSimpleElement(meta: SampleMetaEntry): HTMLDivElement[] {
   }
   return htmlEntries;
 }
-
-
 
 customElements.define("info-page", InfoMenu);

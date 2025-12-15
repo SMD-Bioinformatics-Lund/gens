@@ -1,4 +1,11 @@
-import { COLORS, FONT_SIZE, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
+import {
+  COLORS,
+  FONT_SIZE,
+  FONT_WEIGHT,
+  ICONS,
+  NO_SAMPLE_TYPE_DEFAULT,
+  SIZES,
+} from "../../constants";
 import {
   downloadAsJSON,
   getSampleFromID as getSampleIDObjFromID,
@@ -13,6 +20,7 @@ import { SampleRow } from "./sample_row";
 import { HighlightRow } from "./highlight_row";
 import { IconButton } from "../util/icon_button";
 import { GensSession } from "../../state/gens_session";
+import { clearCachedData } from "../../util/storage";
 
 export interface TrackHeights {
   bandCollapsed: number;
@@ -114,7 +122,7 @@ template.innerHTML = String.raw`
     <div class="header">Samples</div>
     <flex-row id="samples-header-row">
       <choice-select id="sample-select"></choice-select>
-      <icon-button id="add-sample" icon="${ICONS.plus}"></icon-button>
+      <icon-button id="add-sample" icon="${ICONS.plus}" title="Add sample from other case"></icon-button>
     </flex-row>
   </flex-row>
   <div id="samples-overview"></div>
@@ -123,16 +131,35 @@ template.innerHTML = String.raw`
     <div class="header">Main sample</div>
   </flex-row>
   <flex-row class="spread-row">
-    <choice-select id="main-sample-select"></choice-select>
+    <choice-select id="main-sample-select" title="Select what sample to show in overview plot and chromosome view"></choice-select>
     <icon-button id="apply-main-sample" icon="${ICONS.refresh}" title="Apply main sample selection"></icon-button>
   </flex-row>
 
   <div class="header-row">
-    <div class="header">Highlights</div>
+    <div class="header" title="Highlights made in marker mode (toggled by clicking the pen or M) are shown here">Highlights</div>
   </div>
   <div id="highlights-overview"></div>
 
-
+  <div class="header-row">
+    <div class="header">
+      User profile
+    </div>
+  </div>
+  <flex-row class="spread-row">
+    <div>Current profile key</div>
+    <div id="current-profile"></div>
+  </flex-row>
+  <flex-row class="spread-row">
+    <div class="reset-layout-details">
+      <div>Reset profile</div>
+      <div id="reset-layout-info" class="helper-text"></div>
+    </div>
+    <icon-button
+      id="reset-layout"
+      icon="${ICONS.reset}"
+      title="If default profile is present, reset to an admin-defined layout. If not specified, go back to the original settings."
+    ></icon-button>
+  </flex-row>
 
   <details id="advanced-settings">
     <summary>Toggle advanced settings</summary>
@@ -141,15 +168,13 @@ template.innerHTML = String.raw`
     <div class="header-row">
       <div class="header">Import and export profile settings</div>
     </div>
-    <flex-row>
-      <div>Current profile: <span id="current-profile"></span></div>
-    </flex-row>
+
     <flex-row class="spread-row">
       <div>Export profile settings</div>
       <icon-button
         id="export-settings"
         icon="${ICONS.download}"
-        title="Export settings"
+        title="Export JSON with profile settings"
       ></icon-button>
     </flex-row>
     <flex-row class="spread-row">
@@ -157,19 +182,20 @@ template.innerHTML = String.raw`
       <icon-button
         id="import-settings"
         icon="${ICONS.upload}"
-        title="Import settings"
+        title="Import JSON with profile settings"
       ></icon-button>
       <input type="file" id="import-settings-input" accept="application/json,.json,.txt" hidden />
     </flex-row>
+
     <flex-row class="spread-row">
       <div class="reset-layout-details">
-        <div>Reset layout</div>
-        <div id="reset-layout-info" class="helper-text"></div>
+        <div>Clear cached data</div>
+        <div class="helper-text">Removes saved profiles and transcript cache, then reloads.</div>
       </div>
       <icon-button
-        id="reset-layout"
-        icon="${ICONS.reset}"
-        title="Reset layout to default"
+        id="clear-cached-data"
+        icon="${ICONS.trash}"
+        title="Clear cached data and reload"
       ></icon-button>
     </flex-row>
 
@@ -193,7 +219,7 @@ template.innerHTML = String.raw`
       </flex-row>
     </flex-row>
     <flex-row class="spread-row">
-      <div>Default cov y-range</div>
+      <div>Coverage y-range</div>
       <flex-row class="height-inputs">
         <input id="coverage-y-start" class="height-input" type="number" step="0.1">
         <input id="coverage-y-end" class="height-input" type="number" step="0.1">
@@ -201,7 +227,7 @@ template.innerHTML = String.raw`
       </flex-row>
     </flex-row>
     <flex-row class="spread-row">
-      <div>Variant filter threshold</div>
+      <div>Variant rank score threshold</div>
       <flex-row>
         <input id="variant-filter" type="number" step="1" class="height-input">
         <icon-button id="apply-variant-filter" icon="${ICONS.refresh}" title="Apply variant filter"></icon-button>
@@ -242,6 +268,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private applyDotTrackHeightsButton: HTMLButtonElement;
   private applyBandTrackHeightButton: HTMLButtonElement;
   private resetLayoutButton: IconButton;
+  private clearCachedDataButton: IconButton;
   private resetLayoutInfo: HTMLDivElement;
   private currentProfile: HTMLSpanElement;
 
@@ -371,6 +398,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.variantThresholdInput = this.root.querySelector("#variant-filter");
     this.applyMainSample = this.root.querySelector("#apply-main-sample");
     this.resetLayoutButton = this.root.querySelector("#reset-layout");
+    this.clearCachedDataButton = this.root.querySelector("#clear-cached-data");
     this.resetLayoutInfo = this.root.querySelector(
       "#reset-layout-info",
     ) as HTMLDivElement;
@@ -424,6 +452,16 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.resetLayoutButton, "click", () => {
       this.onResetLayout();
+    });
+
+    this.addElementListener(this.clearCachedDataButton, "click", async () => {
+      try {
+        await clearCachedData();
+      } catch (error) {
+        console.error("Failed to clear cached data", error);
+      } finally {
+        window.location.reload();
+      }
     });
 
     this.addElementListener(
@@ -559,7 +597,6 @@ export class SettingsMenu extends ShadowBaseElement {
 
     if (defaultProfile) {
       const { fileName } = defaultProfile;
-      const displayName = fileName ? ` (${fileName})` : "";
       this.resetLayoutInfo.textContent = `Default profile (${fileName}) available for ${profileKey}`;
     } else {
       this.resetLayoutInfo.textContent =
@@ -701,7 +738,7 @@ function getMainSampleChoices(
     const id = getSampleKey(sample);
     const choice = {
       value: id,
-      label: `${sample.sampleId} (${sample.sampleType}, case: ${sample.caseId})`,
+      label: `${sample.sampleId} (${sample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${sample.caseId})`,
       selected: prevSelected == id,
     };
     choices.push(choice);

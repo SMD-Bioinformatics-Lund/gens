@@ -5,11 +5,13 @@ from typing import Any
 
 from flask import Blueprint, current_app, flash, redirect, request, session, url_for
 from flask_login import login_user, logout_user
+from ldap3 import Connection, Server
+from ldap3.core.exceptions import LDAPException
 from pymongo.database import Database
 from werkzeug.wrappers.response import Response
 
 from gens.auth import LoginUser, login_manager, oauth_client
-from gens.config import AuthMethod, settings
+from gens.config import AuthMethod, LdapConfig, settings
 from gens.crud.user import get_user
 from gens.db.collections import USER_COLLECTION
 
@@ -18,6 +20,35 @@ from ..home.views import public_endpoint
 # from . import controllers
 
 LOG = logging.getLogger(__name__)
+
+
+def authenticate_with_ldap(
+    username: str, password: str, ldap_config: LdapConfig | None = None
+) -> bool:
+    """Authenticate a user using LDAP direct bind"""
+
+    configuration = ldap_config or settings.ldap
+    if configuration is None:
+        LOG.warning("LDAP authentication requested but no LDAP config is present")
+        return False
+
+    try:
+        bind_dn = configuration.bind_user_template.format(username=username)
+    except KeyError as error:
+        LOG.error("Failed to format LDAP bind DN: missing %s", error)
+        return False
+
+    server = Server(str(configuration.server))
+
+    try:
+        with Connection(
+            server, user=bind_dn, password=password, auto_bind=True
+        ) as connection:
+            return connection.bound
+    except LDAPException as error:
+        LOG.warning("LDAP authentication failed for %s", username)
+        LOG.debug("LDAP exception: %s", error)
+    return False
 
 
 @login_manager.user_loader
@@ -53,6 +84,7 @@ def login() -> Response:
     if "next" in request.args:
         session["next_url"] = request.args["next"]
 
+    user_mail: str | None = None
     if settings.authentication == AuthMethod.OAUTH:
         if session.get("email"):
             user_mail = session["email"]
@@ -66,10 +98,28 @@ def login() -> Response:
             except Exception as error:
                 LOG.error("An error occurred while trying use OAUTH - %s", error)
                 flash("An error has occurred while logging user in using Google OAuth")
-
-    if request.form.get("email"):  # Log in against Scout database
+    elif request.method == "POST":
         user_mail = request.form.get("email")
-        LOG.info("Validating user %s against Scout database", user_mail)
+        if not user_mail:
+            flash("Please enter an email", "warning")
+            return redirect(url_for("home.landing"))
+
+        if settings.authentication == AuthMethod.LDAP:
+            password = request.form.get("password")
+            if not password:
+                flash("Please enter both email and password", "warning")
+                return redirect(url_for("home.landing"))
+
+            if not authenticate_with_ldap(user_mail, password):
+                flash("Incorrect username or password", "warning")
+                return redirect(url_for("home.landing"))
+
+    else:
+        return redirect(url_for("home.landing"))
+
+    if user_mail is None:
+        flash("Unable to log in with the provided credentials", "warning")
+        return redirect(url_for("home.landing"))
 
     db: Database[Any] = current_app.config["GENS_DB"]
     user_col = db.get_collection(USER_COLLECTION)

@@ -65,3 +65,16 @@ export async function idbDelete(
     req.onerror = () => reject(req.error);
   });
 }
+
+export async function idbDeleteDatabase(dbName: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.deleteDatabase(dbName);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+    request.onblocked = () => {
+      console.warn(`Deletion of database ${dbName} was blocked`);
+      resolve();
+    };
+  });
+}

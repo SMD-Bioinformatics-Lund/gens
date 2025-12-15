@@ -30,6 +30,7 @@ dependencies = [
   "Flask",
   "flask_login",
   "authlib",
+  "ldap3",
   "pymongo",
   "pysam",
   "fastapi",

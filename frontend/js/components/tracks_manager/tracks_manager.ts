@@ -6,7 +6,6 @@ import { DataTrack } from "../tracks/base_tracks/data_track";
 import { TrackView } from "./track_view";
 import { ChromosomeView } from "./chromosome_view";
 
-
 const template = document.createElement("template");
 template.innerHTML = String.raw`
   <style>

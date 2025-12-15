@@ -2,6 +2,7 @@
 
 For minor and major version updates, refer to the full [update_checklist](https://github.com/SMD-Bioinformatics-Lund/gens/blob/master/docs/update_checklist.md).
 
+- [ ] The full diff has been read through.
 - [ ] The changes have been manually tested.
 - [ ] All GitHub CI tests are passing.
 - [ ] The changes have been run through a colleague or minimally through an LLM such as Codex.
@@ -9,10 +10,21 @@ For minor and major version updates, refer to the full [update_checklist](https:
     - [ ] Relevant CLI-, utility and backend changes are covered by unit tests.
     - [ ] Update `docs/update_checklist.md`.
 
+Code style
+
+- [ ] Run `black .`
+- [ ] Run `isort .`
+- [ ] Run `npm run prettier:fix`
+
 In the Gens repo, update the version in:
 
 - [ ] `package.json`
 - [ ] `__version__.py`
+
+Production settings are assigned in:
+
+- [ ] `tsconfig.json` (sourceMap: false)
+- [ ] `webpack.config.cjs` (mode: production)
 
 Post merge:
 

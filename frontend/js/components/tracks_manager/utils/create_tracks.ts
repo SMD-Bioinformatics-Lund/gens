@@ -181,15 +181,14 @@ export function getBandTrack(
   getColorBands: () => RenderBand[],
   getXRange: () => Rng,
 ): BandTrack {
-
   const getSettings = () => setting;
   const mySetIsExpanded = (isExpanded: boolean) => {
     setIsExpanded(setting.trackId, isExpanded);
-  }
+  };
   const mySetExpandedHeight = (expandedHeight: number) => {
     setExpandedHeight(setting.trackId, expandedHeight);
     // updateDataTrackSettings(setting.trackId, updatedSetting);
-  }
+  };
   const getRenderData = () => {
     async function getBandTrackData(
       getAnnotation: () => Promise<RenderBand[]>,
@@ -201,7 +200,7 @@ export function getBandTrack(
     }
 
     return getBandTrackData(getRenderBands);
-  }
+  };
   const openContextMenu = (id) => {
     let contextMenuFn: (id: string) => void;
     if (setting.trackType == "annotation") {
@@ -226,7 +225,7 @@ export function getBandTrack(
       throw new Error(`Track type not supported: ${setting.trackType}`);
     }
     contextMenuFn(id);
-  }
+  };
 
   const rawTrack = new BandTrack(
     setting.trackId,

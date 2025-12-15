@@ -31,10 +31,24 @@
   </p>
   {% if current_user and current_user.is_authenticated %}
     <a class="btn" href="{{ url_for('home.home') }}">Welcome to GENS {{ current_user.name }}!</a>
-  {% elif config.GOOGLE %}
+  {% elif authentication.value == 'oauth' %}
         <a class="btn" href="{{ url_for('login.login') }}" role="button">
           Login with Google
         </a>
+  {% elif authentication.value == 'ldap' %}
+    <form method="POST" action="{{ url_for('login.login') }}">
+      <ul>
+        <li>
+          <input type="text" placeholder="email" class="form-control" name="email">
+        </li>
+        <li>
+          <input type="password" placeholder="password" class="form-control" name="password">
+        </li>
+        <li>
+          <button type="submit" class="btn">Login</button>
+        </li>
+      </ul>
+    </form>
   {% else %}
     <form method="POST" action="{{ url_for('login.login') }}">
     <ul>
