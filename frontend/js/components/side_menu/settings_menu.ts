@@ -449,7 +449,7 @@ export class SettingsMenu extends ShadowBaseElement {
 
     this.addElementListener(this.clearCachedDataButton, "click", async () => {
       try {
-        clearCachedData();
+        await clearCachedData();
       } catch (error) {
         console.error("Failed to clear cached data", error);
       } finally {
