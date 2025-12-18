@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## TBD
+
+### Added
+
+- Support for additional per-bin numerical data.
+
 ## 4.4.1
 
 ### Added
