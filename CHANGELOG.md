@@ -9,6 +9,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- Region issue [#650](https://github.com/SMD-Bioinformatics-Lund/gens/issues/650)
+
 ## 4.4.1
 
 ### Added
