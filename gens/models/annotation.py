@@ -253,11 +253,11 @@ class VariantRecord(RWModel):
     gene_lists: list[Any] = []
     manual_rank: int | None = Field(None, description="choices=[0, 1, 2, 3, 4, 5]")
     dismiss_variant: list[Any] = []
-    acmg_classification: str | None = Field(
-        None, description="Manual ACMG classification of variant, choices=ACMG_TERMS"
+    acmg_classification: str | int | None = Field(
+        None, description="Manual ACMG classification of variant"
     )
     ccv_classification: str | None = Field(
-        None, description="Manual CCV classification of variant, choices=CCV_TERMS"
+        None, description="Manual CCV classification of variant"
     )
 
     model_config = ConfigDict(

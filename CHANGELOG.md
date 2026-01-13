@@ -9,6 +9,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- Allow ACMG classification in string format.
+
 ## 4.4.1
 
 ### Added
