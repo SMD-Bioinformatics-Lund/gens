@@ -34,7 +34,7 @@ class ScientificArticle(RWModel):
 
     title: str
     pmid: str
-    authors: list[str] = []
+    authors: list[str] = Field(default_factory=list)
 
 
 class ReferenceUrl(RWModel):
@@ -93,11 +93,11 @@ class AnnotationRecord(GenomePosition, RWModel):
     genome_build: GenomeBuild
     chrom: Chromosome
     color: Color = Color("#808080")  # defaults to grey
-    comments: list[Comment] = []
-    references: list[ReferenceUrl | ScientificArticle] = []
+    comments: list[Comment] = Field(default_factory=list)
+    references: list[ReferenceUrl | ScientificArticle] = Field(default_factory=list)
     metadata: list[
         GenericMetadata | UrlMetadata | DatetimeMetadata | DnaStrandMetadata
-    ] = Field(default=[], description="Optional generic metadata.")
+    ] = Field(default_factory=list, description="Optional generic metadata.")
 
     @field_serializer("color")
     def serialize_color(
@@ -113,7 +113,7 @@ class AnnotationTrack(RWModel, CreatedAtModel, ModifiedAtModel):
     name: str
     description: str
     maintainer: str | None = None
-    metadata: list[dict[str, Any]] = []  # TODO add data type to dict?
+    metadata: list[dict[str, Any]] = Field(default_factory=list)
     genome_build: GenomeBuild
 
 
@@ -225,34 +225,34 @@ class VariantRecord(RWModel):
     length: int
     reference: str
     alternative: str
-    rank_score: float
-    variant_rank: int
-    rank_score_results: list[dict[str, str | int]]
+    rank_score: float = 0
+    variant_rank: int = 0
+    rank_score_results: list[dict[str, str | int]] = Field(default_factory=list)
     institute: str = Field(..., description="institute id")
     sanger_ordered: bool = False
     validation: str | None = Field(
         None,
         description="Sanger validation result, choices=('True positive', 'False positive')",
     )
-    quality: float
-    filters: list[str]
-    samples: list[dict[str, Any]] = Field([], description="Contain <gt_calls> objects")
-    genetic_models: list[str] = Field([], description="List of genetic models enum")
+    quality: float = 0
+    filters: list[str] = Field(default_factory=list)
+    samples: list[dict[str, Any]] = Field(default_factory=list, description="Contain <gt_calls> objects")
+    genetic_models: list[str] = Field(default_factory=list, description="List of genetic models enum")
     compounds: list[dict[str, Any]] = Field(
-        [], description="sorted list of <compound> ordering=combined_score"
+        default_factory=list, description="sorted list of <compound> ordering=combined_score"
     )
-    genes: list[dict[str, Any]] = Field([], description="List of gene objects.")
+    genes: list[dict[str, Any]] = Field(default_factory=list, description="List of gene objects.")
     dbsnp_id: str | None = None
     # Gene ids:
-    hgnc_ids: list[int] = []
-    hgnc_symbols: list[str] = []
+    hgnc_ids: list[int] = Field(default_factory=list)
+    hgnc_symbols: list[str] = Field(default_factory=list)
     panels: list[str] = Field(
-        [], description="list of panel names that the variant overlaps"
+        default_factory=list, description="list of panel names that the variant overlaps"
     )
     # Database options:
-    gene_lists: list[Any] = []
+    gene_lists: list[Any] = Field(default_factory=list)
     manual_rank: int | None = Field(None, description="choices=[0, 1, 2, 3, 4, 5]")
-    dismiss_variant: list[Any] = []
+    dismiss_variant: list[Any] = Field(default_factory=list)
     acmg_classification: str | int | None = Field(
         None, description="Manual ACMG classification of variant"
     )
