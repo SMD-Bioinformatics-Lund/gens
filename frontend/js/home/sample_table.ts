@@ -17,10 +17,11 @@ tableTemplate.innerHTML = String.raw`
 
   .linkout-icon {
     font-size: 12px;
-    vertical-align: text-bottom;
+    vertical-align: text-middle;
   }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <div id="loading-placeholder">Loading ...</div>
 <div id="table-container" hidden>
   <table id="table-content">

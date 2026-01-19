@@ -45,7 +45,7 @@ export const ICONS = {
   hide: "fa-eye-slash",
   info: "fa-table-cells",
   left: "fa-arrow-left",
-  linkout: "fa-up-right-from-square",
+  linkout: "fa-arrow-up-right-from-square",
   marker: "fa-marker",
   minus: "fa-minus",
   play: "fa-play",
