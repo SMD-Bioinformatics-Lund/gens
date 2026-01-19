@@ -149,6 +149,33 @@ def delete_sample_annotations_for_track(
     return False
 
 
+def delete_sample_annotation_tracks_for_sample(
+    genome_build: GenomeBuild, db: Database[Any], sample_id: str, case_id: str
+) -> int:
+    """Delete all annotation tracks (and their records) for a sample"""
+    query = {
+        "genome_build": genome_build,
+        "sample_id": sample_id,
+        "case_id": case_id,
+    }
+    tracks = list(
+        db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION).find(
+            query, {"_id": True}
+        )
+    )
+    if not tracks:
+        return 0
+    
+    track_ids = [track["_id"] for track in tracks]
+    db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).delete_many(
+        {"track_id": {"$in": track_ids}}
+    )
+    resp = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION).delete_many(
+        {"_id": {"$in": track_ids}}
+    )
+    return resp.deleted_count
+
+
 def create_sample_annotations_for_track(
     annotations: list[SampleAnnotationRecord], db: Database[Any]
 ) -> list[PydanticObjectId]:

@@ -10,6 +10,7 @@ from pymongo.collection import Collection
 from pymongo.database import Database
 from pymongo.errors import DuplicateKeyError
 
+from gens.crud.sample_annotations import delete_sample_annotation_tracks_for_sample
 from gens.db.collections import SAMPLES_COLLECTION
 from gens.exceptions import NonUniqueIndexError, SampleNotFoundError
 from gens.models.genomic import GenomeBuild
@@ -238,6 +239,16 @@ def delete_sample(
     if result is None:
         msg = f'No sample found with case_id: "{case_id}", sample_id: "{sample_id}", genome_build: "{genome_build}"'
         raise SampleNotFoundError(msg, sample_id)
+
+    removed_tracks = delete_sample_annotation_tracks_for_sample(
+        genome_build=genome_build, db=db, sample_id=sample_id, case_id=case_id
+    )
+    if removed_tracks:
+        LOG.info(
+            "Removed %s sample annotation track(s) for sample %s",
+            removed_tracks,
+            sample_id
+        )
 
     samples_c.delete_one(
         {
