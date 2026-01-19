@@ -1,4 +1,5 @@
 import { DataTable } from "simple-datatables";
+import { ICONS } from "../constants";
 
 export interface SampleInfo {
   case_id: string;
@@ -12,6 +13,11 @@ tableTemplate.innerHTML = String.raw`
 <style>
   .wide-cell {
     min-width: 100px;
+  }
+
+  .linkout-icon {
+    font-size: 12px;
+    vertical-align: text-bottom;
   }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" />
@@ -77,13 +83,14 @@ export class SamplesTable extends HTMLElement {
     this.loadingPlaceholder.hidden = true;
     this.tableContainer.hidden = false;
 
-    console.log("URL:", variantSoftwareUrl);
-
-    // FIXME: URL needs to be generalized when more software are introduced
     const newRows = sampleInfo.map((s) => {
       const gensCaseLink = `<a href="${getGensURL(s.case_id)}">${s.case_id}</a>`;
       const variantSoftwareCaseLink = variantSoftwareUrl
-        ? `(<a href="${variantSoftwareUrl}/case/case_id/${s.case_id}" target="_blank" rel="noopener noreferrer">Scout</a>)`
+        ? `(<a href="${variantSoftwareUrl}/case/case_id/${s.case_id}"
+               target="_blank"
+               rel="noopener noreferrer"
+               title="Open in external software"
+            ><i class="linkout-icon fa-solid ${ICONS.linkout}"></i></a>)`
         : "";
 
       return [
