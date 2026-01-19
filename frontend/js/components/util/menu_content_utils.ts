@@ -52,8 +52,11 @@ export function getVariantContextMenuContent(
       key: "Cytoband",
       value: `${details.cytoband_start} - ${details.cytoband_end}`,
     },
-    { key: "Rank score", value: details.rank_score.toString() },
   ];
+
+  if (details.rank_score != null) {
+    info.push({ key: "Rank score", value: details.rank_score.toString() });
+  }
 
   if (variantUrl) {
     info.push({ key: "Variant URL", value: variantUrl, url: variantUrl });

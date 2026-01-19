@@ -108,6 +108,7 @@ template.innerHTML = String.raw`
       min-width: 0;
       overflow-y: auto;
       padding-right: ${SIZES.xxs}px;
+      padding-bottom: ${SIZES.m}px;
     }
     #header-row {
       display: flex;

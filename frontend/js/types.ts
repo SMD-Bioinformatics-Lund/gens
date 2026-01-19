@@ -196,7 +196,7 @@ interface ApiVariantDetails {
   phylop_conservation: string[];
   start: number;
   quality: number;
-  rank_score: number;
+  rank_score: number | null;
   rank_score_results: { category: string; score: number }[];
   reference: string;
   sample?: ApiScoutSample;
