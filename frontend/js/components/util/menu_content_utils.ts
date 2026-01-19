@@ -54,7 +54,7 @@ export function getVariantContextMenuContent(
     },
   ];
 
-  if (details.rank_score) {
+  if (details.rank_score != null) {
     info.push({ key: "Rank score", value: details.rank_score.toString() });
   }
 
