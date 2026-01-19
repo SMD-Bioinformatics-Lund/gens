@@ -36,7 +36,7 @@ RUN apt-get update &&                                                     \
     python3-wheel &&                                                      \
     pip install --no-cache-dir --upgrade pip &&                           \
     pip install --no-cache-dir hatch &&                                   \
-    hatch build -t wheel -o /usr/src/app/wheels
+    hatch build -t wheel /usr/src/app/wheels
 
 #########
 # FINAL #
