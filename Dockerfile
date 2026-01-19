@@ -1,28 +1,3 @@
-##################
-# BUILDER PYTHON #
-##################
-
-FROM python:3.12 AS python-builder
-
-# Set build variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-WORKDIR /usr/src/app
-
-COPY gens gens/
-COPY README.md LICENSE pyproject.toml ./
-
-RUN apt-get update &&                                                     \
-    apt-get upgrade -y &&                                                 \
-    apt-get install -y --no-install-recommends python3-pip                \
-    python3-wheel &&                                                      \
-    pip install --no-cache-dir --upgrade pip &&                           \
-    pip install --no-cache-dir hatch &&                                   \
-    hatch build -t wheel /usr/src/app/wheels
-    #pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels  --requirement requirements.txt  \
-
-
 ################
 # BUILDER NODE #
 ################
@@ -32,6 +7,36 @@ WORKDIR /usr/src/app
 COPY package.json package-lock.json webpack.config.cjs gulpfile.js tsconfig.json ./
 COPY frontend frontend
 RUN npm install && npm run build
+
+##################
+# BUILDER PYTHON #
+##################
+
+FROM python:3.12 AS python-builder
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /usr/src/app
+
+COPY gens gens/
+COPY README.md LICENSE pyproject.toml ./
+
+# Copy compiled web assets INTO the python package before building the wheel
+COPY --from=node-builder /usr/src/app/build/css/error.min.css gens/static/css/
+COPY --from=node-builder /usr/src/app/build/css/home.min.css \
+                         /usr/src/app/build/css/landing.min.css \
+                         /usr/src/app/build/css/about.min.css \
+                         gens/blueprints/home/static/
+COPY --from=node-builder /usr/src/app/build/*/gens.min.* gens/blueprints/gens/static/
+
+RUN apt-get update &&                                                     \
+    apt-get upgrade -y &&                                                 \
+    apt-get install -y --no-install-recommends python3-pip                \
+    python3-wheel &&                                                      \
+    pip install --no-cache-dir --upgrade pip &&                           \
+    pip install --no-cache-dir hatch &&                                   \
+    hatch build -t wheel -o /usr/src/app/wheels
 
 #########
 # FINAL #
@@ -61,11 +66,6 @@ RUN apt-get update &&                              \
     pip install --no-cache-dir gunicorn &&         \
     rm -rf /var/lib/apt/lists/* &&                 \
     rm -rf /wheels
-
-# copy compiled web assetes
-COPY --from=node-builder /usr/src/app/build/css/error.min.css gens/static/css/
-COPY --from=node-builder /usr/src/app/build/css/home.min.css /usr/src/app/build/css/landing.min.css /usr/src/app/build/css/about.min.css gens/blueprints/home/static/
-COPY --from=node-builder /usr/src/app/build/*/gens.min.* gens/blueprints/gens/static/
 
 # make mountpoints and change ownership of app
 RUN mkdir -p /access /fs1/results /fs1/results_dev && \
