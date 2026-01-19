@@ -165,7 +165,7 @@ def delete_sample_annotation_tracks_for_sample(
     )
     if not tracks:
         return 0
-    
+
     track_ids = [track["_id"] for track in tracks]
     db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION).delete_many(
         {"track_id": {"$in": track_ids}}

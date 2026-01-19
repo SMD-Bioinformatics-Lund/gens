@@ -236,18 +236,26 @@ class VariantRecord(RWModel):
     )
     quality: float = 0
     filters: list[str] = Field(default_factory=list)
-    samples: list[dict[str, Any]] = Field(default_factory=list, description="Contain <gt_calls> objects")
-    genetic_models: list[str] = Field(default_factory=list, description="List of genetic models enum")
-    compounds: list[dict[str, Any]] = Field(
-        default_factory=list, description="sorted list of <compound> ordering=combined_score"
+    samples: list[dict[str, Any]] = Field(
+        default_factory=list, description="Contain <gt_calls> objects"
     )
-    genes: list[dict[str, Any]] = Field(default_factory=list, description="List of gene objects.")
+    genetic_models: list[str] = Field(
+        default_factory=list, description="List of genetic models enum"
+    )
+    compounds: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="sorted list of <compound> ordering=combined_score",
+    )
+    genes: list[dict[str, Any]] = Field(
+        default_factory=list, description="List of gene objects."
+    )
     dbsnp_id: str | None = None
     # Gene ids:
     hgnc_ids: list[int] = Field(default_factory=list)
     hgnc_symbols: list[str] = Field(default_factory=list)
     panels: list[str] = Field(
-        default_factory=list, description="list of panel names that the variant overlaps"
+        default_factory=list,
+        description="list of panel names that the variant overlaps",
     )
     # Database options:
     gene_lists: list[Any] = Field(default_factory=list)

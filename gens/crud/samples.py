@@ -247,7 +247,7 @@ def delete_sample(
         LOG.info(
             "Removed %s sample annotation track(s) for sample %s",
             removed_tracks,
-            sample_id
+            sample_id,
         )
 
     samples_c.delete_one(
