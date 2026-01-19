@@ -55,7 +55,9 @@ def home() -> str:
         "home.html",
         samples=parsed_samples,
         total_samples=len(samples_per_case),
-        variant_software_base_url=settings.variant_url,
+        variant_software_base_url=(
+            str(settings.variant_url) if settings.variant_url is not None else None
+        ),
         gens_api_url=str(settings.gens_api_url),
         main_sample_types=settings.main_sample_types,
         genome_build=genome_build.value,
