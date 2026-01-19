@@ -9,7 +9,12 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
-- Allow ACMG classification in string format.
+- Allow ACMG classification in string format, and make Pydantic variant checks more lenient [#651](https://github.com/SMD-Bioinformatics-Lund/gens/issues/651).
+- Remove sample annotations when removing a sample [#630](https://github.com/SMD-Bioinformatics-Lund/gens/issues/630).
+- Add padding to right-hand settings menu such that advanced settings toggle won't end up beneath the horizontal scroll bar [#640](https://github.com/SMD-Bioinformatics-Lund/gens/issues/640).
+- Variant software linkout on samples page only displays when an URL is supplied [#648](https://github.com/SMD-Bioinformatics-Lund/gens/issues/648).
+- Fix docker container such that the Gens JS files are correctly included [#659](https://github.com/SMD-Bioinformatics-Lund/gens/issues/659).
+
 
 ## 4.4.1
 
