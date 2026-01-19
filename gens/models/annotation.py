@@ -225,8 +225,8 @@ class VariantRecord(RWModel):
     length: int
     reference: str
     alternative: str
-    rank_score: float = 0
-    variant_rank: int = 0
+    rank_score: float | None = None
+    variant_rank: int | None = None
     rank_score_results: list[dict[str, str | int]] = Field(default_factory=list)
     institute: str = Field(..., description="institute id")
     sanger_ordered: bool = False
