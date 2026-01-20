@@ -15,7 +15,6 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Variant software linkout on samples page only displays when an URL is supplied [#648](https://github.com/SMD-Bioinformatics-Lund/gens/issues/648).
 - Fix docker container such that the Gens JS files are correctly included [#659](https://github.com/SMD-Bioinformatics-Lund/gens/issues/659).
 
-
 ## 4.4.1
 
 ### Added
