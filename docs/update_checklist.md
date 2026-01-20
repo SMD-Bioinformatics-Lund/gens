@@ -361,7 +361,7 @@ gens load annotations --file /access/annotation_tracks/ --genome-build 38
 On host (check the versions)
 
 ```
-curl --output ./Homo_sapiens.GRCh38.115.gtf.gz https://ftp.ensembl.org/pub/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh38.115.gtf.gz
+curl --output ./Homo_sapiens.GRCh38.115.gtf.gz https://ftp.ensembl.org/pub/release-115/gtf/homo_sapiens/Homo_sapiens.GRCh38.115.gtf.gz
 curl --output ./MANE.GRCh38.v1.4.summary.txt.gz https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
 docker cp Homo_sapiens.GRCh38.115.gtf.gz <container ID>:/tmp
 docker cp MANE.GRCh38.v1.4.summary.txt.gz <container ID>:/tmp
