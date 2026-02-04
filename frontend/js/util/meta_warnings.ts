@@ -113,6 +113,10 @@ function isMaleSex(sex?: string): boolean {
   return normalized === "male" || normalized === "m";
 }
 
+/**
+ * Conditionally don't warn
+ * For instance if sex chromosomes are expected to behave differently
+ */
 function shouldIgnoreWarning(
   threshold: WarningThreshold,
   rowName: string,
@@ -124,7 +128,7 @@ function shouldIgnoreWarning(
   }
 
   return ignoreRules.some((rule) =>
-    matchesIgnoreRule(rule, rowName, threshold.column, sex),
+    matchesIgnoreRule(rule, rowName, sex),
   );
 }
 
@@ -140,14 +144,9 @@ function normalizeIgnoreRules(
 function matchesIgnoreRule(
   rule: WarningIgnore,
   rowName: string,
-  column: string,
   sex: Sex | null,
 ): boolean {
   if (rule.sex && rule.sex !== sex) {
-    return false;
-  }
-
-  if (rule.column && rule.column !== column) {
     return false;
   }
 

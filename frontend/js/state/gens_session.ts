@@ -136,7 +136,6 @@ export class GensSession {
       );
 
       if (matchedThreshold) {
-        // FIXME: Use string for hover info?
         const warning = getMetaWarnings(
           matchedThreshold,
           val.row_name,
