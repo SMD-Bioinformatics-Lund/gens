@@ -104,7 +104,7 @@ def test_delete_sample_metadata_cli_removes_all_entries(
     sample_obj = SampleInfo(
         sample_id="sample1",
         case_id="caseA",
-        genome_build=GenomeBuild(19),
+        genome_build=GenomeBuild(37),
         baf_file=sample_file,
         coverage_file=sample_file,
         overview_file=None,
@@ -124,7 +124,7 @@ def test_delete_sample_metadata_cli_removes_all_entries(
     cli_delete.sample_meta.callback(
         sample_id="sample1",
         case_id="caseA",
-        genome_build=GenomeBuild(19),
+        genome_build=GenomeBuild(37),
         meta_id=None,
         file_name=None,
         force=True,
@@ -144,7 +144,7 @@ def test_delete_sample_metadata_cli_filters_by_id(
     sample_obj = SampleInfo(
         sample_id="sample1",
         case_id="caseA",
-        genome_build=GenomeBuild(19),
+        genome_build=GenomeBuild(37),
         baf_file=sample_file,
         coverage_file=sample_file,
         overview_file=None,
@@ -164,7 +164,7 @@ def test_delete_sample_metadata_cli_filters_by_id(
     cli_delete.sample_meta.callback(
         sample_id="sample1",
         case_id="caseA",
-        genome_build=GenomeBuild(19),
+        genome_build=GenomeBuild(37),
         meta_id="meta1",
         file_name=None,
         force=True,
@@ -261,10 +261,10 @@ def test_delete_sample_cli_removes_document(
 ) -> None:
     coll = db.get_collection(SAMPLES_COLLECTION)
     coll.insert_one(
-        {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(19)}
+        {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(37)}
     )
 
-    cli_delete.sample.callback(sample_id="sample1", genome_build=19, case_id="caseA")
+    cli_delete.sample.callback(sample_id="sample1", genome_build=37, case_id="caseA")
 
     assert coll.find_one({"sample_id": "sample1"}) is None
 
@@ -291,7 +291,7 @@ def test_update_sample_updates_document(
     sample_obj = SampleInfo(
         sample_id="sample1",
         case_id="caseA",
-        genome_build=GenomeBuild(19),
+        genome_build=GenomeBuild(37),
         baf_file=existing_sample_file,
         coverage_file=existing_sample_file,
         sample_type=None,
@@ -317,7 +317,7 @@ def test_update_sample_updates_document(
     cli_update.sample.callback(
         sample_id="sample1",
         case_id="caseA",
-        genome_build=GenomeBuild(19),
+        genome_build=GenomeBuild(37),
         sample_type="tumor",
         sex=SampleSex("M"),
         baf=baf_file,
@@ -328,7 +328,7 @@ def test_update_sample_updates_document(
 
     coll = db.get_collection(SAMPLES_COLLECTION)
     doc = coll.find_one(
-        {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(19)}
+        {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(37)}
     )
     assert doc is not None
     assert doc["sample_type"] == "tumor"
