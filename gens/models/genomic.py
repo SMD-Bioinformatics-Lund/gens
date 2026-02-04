@@ -27,6 +27,7 @@ class GenomeBuild(IntEnum):
     """Valid genome builds."""
 
     HG19 = 19
+    HG37 = 37
     HG38 = 38
 
 

@@ -11,6 +11,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+- Allow hg37 as build version.
+
 ### Fixed
 
 - Remove config display from about page. [#680](https://github.com/SMD-Bioinformatics-Lund/gens/pull/680)
