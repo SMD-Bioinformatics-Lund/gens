@@ -13,6 +13,9 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- Remove config display from about page. [#680](https://github.com/SMD-Bioinformatics-Lund/gens/pull/680)
+- Configurable ignore condition for meta thresholds. [#680](https://github.com/SMD-Bioinformatics-Lund/gens/pull/680)
+
 ## 4.4.2
 
 ### Fixed

@@ -71,16 +71,9 @@ def about() -> str:
     with current_app.app_context():
         db: Database[Any] = current_app.config["GENS_DB"]
         timestamps = get_data_update_timestamp(db)
-        print("Printing config")
-        print(current_app.config)
-        config = settings.get_dict()
-        config["ENV"] = current_app.config.get("ENV")
-        ui_colors = current_app.config.get("UI_COLORS")
     return render_template(
         "about.html",
-        config=config,
         timestamps=timestamps,
-        ui_colors=ui_colors,
         version=version,
     )
 

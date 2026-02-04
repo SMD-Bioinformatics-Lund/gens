@@ -72,7 +72,7 @@ export async function initCanvases({
   version,
   allSamples,
   defaultProfiles,
-  warningThresholds: warningThresholds,
+  warningThresholds,
 }: {
   caseId: string;
   sampleIds: string[];

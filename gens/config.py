@@ -65,10 +65,20 @@ class MongoDbConfig(BaseSettings):
     database: str | None = None
 
 
+class WarningIgnore(BaseModel):
+    """Conditions for ignoring meta warning thresholds."""
+
+    sex: Literal["M", "F"] | None = None
+    column: str | None = None
+    chromosome: str | None = None
+    row: str | None = None
+
+
 class WarningThreshold(BaseModel):
     """Configuration for meta warning thresholds."""
 
     column: str
+    ignore_when: WarningIgnore | list[WarningIgnore] | None = None
     kind: Literal[
         "estimated_chromosome_count_deviate",
         "threshold_above",
