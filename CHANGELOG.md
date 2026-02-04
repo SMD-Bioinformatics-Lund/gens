@@ -13,6 +13,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- Remove config display from about page.
+
 ## 4.4.2
 
 ### Fixed
