@@ -105,7 +105,6 @@ def get_assembly_info(
 ) -> Any:
     """Get assembly info from ensembl."""
     base_rest_url = {
-        "19": "grch37.rest.ensembl.org",
         "37": "grch37.rest.ensembl.org",
         "38": "rest.ensembl.org",
     }
