@@ -7,12 +7,17 @@ export function getMetaWarnings(
   threshold: WarningThreshold,
   rowName: string,
   value: string,
-  sex: string | null,
+  sex: Sex | null,
 ): string | null {
   const parsedFloat = parseFloat(value);
   if (isNaN(parsedFloat)) {
     return null;
   }
+
+  if (shouldIgnoreWarning(threshold, rowName, sex)) {
+    return null;
+  }
+
   let exceeds;
   if (threshold.kind == "estimated_chromosome_count_deviate") {
     const chromosome = parseChromosome(rowName);
@@ -106,4 +111,57 @@ function isMaleSex(sex?: string): boolean {
   }
   const normalized = sex.trim().toLowerCase();
   return normalized === "male" || normalized === "m";
+}
+
+function shouldIgnoreWarning(
+  threshold: WarningThreshold,
+  rowName: string,
+  sex: Sex | null,
+): boolean {
+  const ignoreRules = normalizeIgnoreRules(threshold.ignore_when);
+  if (ignoreRules.length === 0) {
+    return false;
+  }
+
+  return ignoreRules.some((rule) =>
+    matchesIgnoreRule(rule, rowName, threshold.column, sex),
+  );
+}
+
+function normalizeIgnoreRules(
+  ignoreWhen?: WarningIgnore | WarningIgnore[],
+): WarningIgnore[] {
+  if (!ignoreWhen) {
+    return [];
+  }
+  return Array.isArray(ignoreWhen) ? ignoreWhen : [ignoreWhen];
+}
+
+function matchesIgnoreRule(
+  rule: WarningIgnore,
+  rowName: string,
+  column: string,
+  sex: Sex | null,
+): boolean {
+  if (rule.sex && rule.sex !== sex) {
+    return false;
+  }
+
+  if (rule.column && rule.column !== column) {
+    return false;
+  }
+
+  if (rule.row && rule.row !== rowName) {
+    return false;
+  }
+
+  if (rule.chromosome) {
+    const normalizedChromosome = normalizeChromosomeLabel(rule.chromosome);
+    const normalizedRow = normalizeChromosomeLabel(rowName);
+    if (!normalizedChromosome || normalizedChromosome !== normalizedRow) {
+      return false;
+    }
+  }
+
+  return true;
 }

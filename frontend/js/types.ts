@@ -772,4 +772,12 @@ type WarningThreshold = {
   size?: number;
   max_deviation?: number;
   message: string;
+  ignore_when?: WarningIgnore | WarningIgnore[];
+};
+
+type WarningIgnore = {
+  sex?: Sex;
+  column?: string;
+  chromosome?: string;
+  row?: string;
 };
