@@ -88,7 +88,6 @@ class WarningThreshold(BaseModel):
     size: float | None = None
     max_deviation: float | None = None
     message: str = ""
-    
 
 
 class Settings(BaseSettings):
