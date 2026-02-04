@@ -11,10 +11,13 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+- Use 37 as build version instead of 19. [#682](https://github.com/SMD-Bioinformatics-Lund/gens/pull/682)
+
 ### Fixed
 
 - Remove config display from about page. [#680](https://github.com/SMD-Bioinformatics-Lund/gens/pull/680)
 - Configurable ignore condition for meta thresholds. [#680](https://github.com/SMD-Bioinformatics-Lund/gens/pull/680)
+- Retrieve sample build per-sample, allowing a mixture of different builds. [#682](https://github.com/SMD-Bioinformatics-Lund/gens/pull/682)
 
 ## 4.4.2
 
