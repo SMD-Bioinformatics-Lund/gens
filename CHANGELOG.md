@@ -18,6 +18,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Remove config display from about page. [#680](https://github.com/SMD-Bioinformatics-Lund/gens/pull/680)
 - Configurable ignore condition for meta thresholds. [#680](https://github.com/SMD-Bioinformatics-Lund/gens/pull/680)
 - Retrieve sample build per-sample, allowing a mixture of different builds. [#682](https://github.com/SMD-Bioinformatics-Lund/gens/pull/682)
+- Fixed chromosome range syntax. [#683](https://github.com/SMD-Bioinformatics-Lund/gens/pull/683)
 
 ## 4.4.2
 
