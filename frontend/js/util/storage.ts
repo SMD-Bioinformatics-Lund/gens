@@ -21,6 +21,7 @@ export function loadProfileSettings(
   }
 
   if (expectedVersion != null && stored.version !== expectedVersion) {
+    console.warn(`Expected version ${expectedVersion} and found ${stored.version}. Removing previous entry.`)
     localStorage.removeItem(storageKey);
     return null;
   }
