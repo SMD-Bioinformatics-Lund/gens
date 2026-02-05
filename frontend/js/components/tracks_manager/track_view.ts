@@ -362,7 +362,7 @@ export class TrackView extends ShadowBaseElement {
     this.overviewTracks.forEach((track) => track.render(renderSettings));
 
     const [startChrSeg, endChrSeg] = this.sessionPos.getChrSegments();
-    this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
+    this.positionLabel.innerHTML = `${this.sessionPos.getChromosome()}${startChrSeg}${endChrSeg}`;
   }
 
   syncTrackOrder() {
