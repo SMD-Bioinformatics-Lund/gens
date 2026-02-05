@@ -190,6 +190,13 @@ def get_data_update_timestamp(
     """Get when a annotation track was last updated."""
     LOG.debug("Reading timestamp for %s", track_type)
     updates_coll = gens_db.get_collection(UPDATES_COLLECTION)
+    existing_annotation_names = {
+        entry["name"]
+        for entry in gens_db.get_collection(ANNOTATION_TRACKS_COLLECTION).find(
+            {}, {"name": 1}
+        )
+        if entry.get("name")
+    }
     if track_type == "all":
         query = updates_coll.find()
     else:
@@ -199,6 +206,12 @@ def get_data_update_timestamp(
     results: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for key, entries in groupby(query, key=lambda x: x["track"]):
         for entry in entries:
+            if (
+                key == ANNOTATIONS_COLLECTION
+                and entry.get("name")
+                and entry["name"] not in existing_annotation_names
+            ):
+                continue
             results[key].append(
                 {
                     "tack": entry["track"],
@@ -206,4 +219,4 @@ def get_data_update_timestamp(
                     "timestamp": entry["timestamp"].isoformat(),
                 }
             )
-    return results
+    return {key: value for key, value in results.items() if value}
