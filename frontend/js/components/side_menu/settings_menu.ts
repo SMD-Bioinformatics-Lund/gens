@@ -286,8 +286,8 @@ export class SettingsMenu extends ShadowBaseElement {
   private onRemoveSample: (sample: Sample) => void;
   private getTrackHeights: () => TrackHeights;
   private setTrackHeights: (sizes: TrackHeights) => void;
-  private onColorByChange: (annotId: string | null) => void;
-  private getColorAnnotation: () => string | null;
+  private onColorByChange: (annotIds: string[]) => void;
+  private getColorAnnotations: () => string[];
   private onApplyDefaultCovRange: (rng: Rng) => void;
   private onSetAnnotationSelection: (ids: string[]) => void;
   private onSetGeneListSelection: (ids: string[]) => void;
@@ -314,7 +314,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onAddSample: (sample: Sample) => Promise<void>,
     onRemoveSample: (sample: Sample) => void,
     setTrackInfo: (trackHeights: TrackHeights) => void,
-    onColorByChange: (annotId: string | null) => void,
+    onColorByChange: (annotIds: []) => void,
     onApplyDefaultCovRange: (rng: Rng) => void,
     onSetAnnotationSelection: (ids: string[]) => void,
     onSetGeneListSelection: (ids: string[]) => void,
@@ -346,7 +346,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.getTrackHeights = () => session.profile.getTrackHeights();
     this.setTrackHeights = setTrackInfo;
     this.onColorByChange = onColorByChange;
-    this.getColorAnnotation = () => session.profile.getColorAnnotation();
+    this.getColorAnnotations = () => session.profile.getColorAnnotations();
 
     this.onApplyDefaultCovRange = onApplyDefaultCovRange;
 
@@ -497,9 +497,10 @@ export class SettingsMenu extends ShadowBaseElement {
     });
 
     this.addElementListener(this.colorBySelect, "change", () => {
-      const val = this.colorBySelect.getValue();
-      const id = val && val.value != "" ? val.value : null;
-      this.onColorByChange(id);
+      const ids = this.colorBySelect
+        .getValues()
+        .map((obj) => obj.value as string);
+      this.onColorByChange(ids);
     });
 
     this.addElementListener(this.geneListSelect, "change", () => {
@@ -566,10 +567,10 @@ export class SettingsMenu extends ShadowBaseElement {
 
     const allAnnotChoices = getAnnotationChoices(this.allAnnotationSources, []);
     const colorChoices = [
-      { label: "None", value: "", selected: this.getColorAnnotation() == null },
+      { label: "None", value: "", selected: this.getColorAnnotations() == null },
       ...allAnnotChoices.map((c) => ({
         ...c,
-        selected: c.value === this.getColorAnnotation(),
+        selected: c.value === this.getColorAnnotations(),
       })),
     ];
     this.colorBySelect.setValues(colorChoices);
@@ -665,7 +666,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.coverageYStartElem.value = `${covStart}`;
     this.coverageYEndElem.value = `${covEnd}`;
     if (this.colorBySelect) {
-      const selectedAnnotation = this.getColorAnnotation();
+      const selectedAnnotation = this.getColorAnnotations();
       const selectedId = selectedAnnotation != null ? selectedAnnotation : "";
       const choices = this.allAnnotationSources.map((source) => {
         return {

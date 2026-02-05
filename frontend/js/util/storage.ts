@@ -12,10 +12,20 @@ export function saveProfileToBrowser(
 
 export function loadProfileSettings(
   profileKey: string,
+  expectedVersion?: number,
 ): ProfileSettings | null {
-  return loadFromBrowserSession(
-    `${USER_PROFILE_PREFIX}${profileKey}`,
-  ) as ProfileSettings | null;
+  const storageKey = `${USER_PROFILE_PREFIX}${profileKey}`;
+  const stored = loadFromBrowserSession(storageKey) as ProfileSettings | null;
+  if (!stored) {
+    return null;
+  }
+
+  if (expectedVersion != null && stored.version !== expectedVersion) {
+    localStorage.removeItem(storageKey);
+    return null;
+  }
+
+  return stored;
 }
 
 export async function clearCachedData(): Promise<void> {

@@ -26,7 +26,10 @@ export class SessionProfiles {
     const profileKey = this.computeProfileSignature(samples);
     this.profileKey = profileKey;
 
-    const userProfile = loadProfileSettings(profileKey);
+    const userProfile = loadProfileSettings(
+      profileKey,
+      PROFILE_SETTINGS_VERSION,
+    );
     this.defaultProfiles = defaultProfiles;
     this.baseTrackLayout = null;
     const defaultProfile = cloneProfile(defaultProfiles[profileKey]);
@@ -35,7 +38,7 @@ export class SessionProfiles {
       version: PROFILE_SETTINGS_VERSION,
       profileKey,
       layout: null,
-      colorAnnotationId: null,
+      colorAnnotationIds: [],
       variantThreshold: DEFAULT_VARIANT_THRES,
       annotationSelections: [],
       coverageRange: DEFAULT_COV_Y_RANGE,
@@ -90,13 +93,13 @@ export class SessionProfiles {
     this.save();
   }
 
-  public setColorAnnotation(id: string | null) {
-    this.profile.colorAnnotationId = id;
+  public setColorAnnotations(ids: []) {
+    this.profile.colorAnnotationIds = ids;
     this.save();
   }
 
-  public getColorAnnotation(): string | null {
-    return this.profile.colorAnnotationId;
+  public getColorAnnotations(): string[] {
+    return this.profile.colorAnnotationIds;
   }
 
   public getAnnotationSelections(): string[] {
@@ -120,7 +123,7 @@ export class SessionProfiles {
       version: PROFILE_SETTINGS_VERSION,
       profileKey: this.profileKey,
       layout: null,
-      colorAnnotationId: null,
+      colorAnnotationIds: [],
       variantThreshold: DEFAULT_VARIANT_THRES,
       annotationSelections: [],
       coverageRange: DEFAULT_COV_Y_RANGE,
