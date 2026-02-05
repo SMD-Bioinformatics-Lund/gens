@@ -10,6 +10,7 @@ from gens.db.collections import SAMPLES_COLLECTION
 
 from .collections import (
     ANNOTATIONS_COLLECTION,
+    ANNOTATION_TRACKS_COLLECTION,
     CHROMSIZES_COLLECTION,
     SAMPLE_ANNOTATION_TRACKS_COLLECTION,
     SAMPLE_ANNOTATIONS_COLLECTION,
@@ -43,6 +44,13 @@ INDEXES = {
         IndexModel(
             [("name", TEXT), ("description", TEXT), ("comments.comment", TEXT)],
             name="text_annotation_name_description_comment",
+            background=True,
+        ),
+    ],
+    ANNOTATION_TRACKS_COLLECTION: [
+        IndexModel(
+            [("genome_build", ASCENDING), ("name", ASCENDING)],
+            name="genome_build_name",
             background=True,
         ),
     ],
