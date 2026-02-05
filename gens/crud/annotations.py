@@ -219,4 +219,4 @@ def get_data_update_timestamp(
                     "timestamp": entry["timestamp"].isoformat(),
                 }
             )
-    return {key: value for key, value in results.items() if value}
+    return results
