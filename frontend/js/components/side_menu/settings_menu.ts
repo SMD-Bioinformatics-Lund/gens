@@ -116,7 +116,7 @@ template.innerHTML = String.raw`
     <div class="header">Color tracks by</div>
   </div>
   <div>
-    <choice-select id="color-by-select"></choice-select>
+    <choice-select id="color-by-select" multiple></choice-select>
   </div>
   <flex-row class="header-row">
     <div class="header">Samples</div>
@@ -314,7 +314,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onAddSample: (sample: Sample) => Promise<void>,
     onRemoveSample: (sample: Sample) => void,
     setTrackInfo: (trackHeights: TrackHeights) => void,
-    onColorByChange: (annotIds: []) => void,
+    onColorByChange: (annotIds: string[]) => void,
     onApplyDefaultCovRange: (rng: Rng) => void,
     onSetAnnotationSelection: (ids: string[]) => void,
     onSetGeneListSelection: (ids: string[]) => void,
@@ -567,7 +567,6 @@ export class SettingsMenu extends ShadowBaseElement {
 
     const allAnnotChoices = getAnnotationChoices(this.allAnnotationSources, []);
     const colorChoices = [
-      { label: "None", value: "", selected: this.getColorAnnotations() == null },
       ...allAnnotChoices.map((c) => ({
         ...c,
         selected: c.value === this.getColorAnnotations(),
@@ -666,20 +665,12 @@ export class SettingsMenu extends ShadowBaseElement {
     this.coverageYStartElem.value = `${covStart}`;
     this.coverageYEndElem.value = `${covEnd}`;
     if (this.colorBySelect) {
-      const selectedAnnotation = this.getColorAnnotations();
-      const selectedId = selectedAnnotation != null ? selectedAnnotation : "";
-      const choices = this.allAnnotationSources.map((source) => {
-        return {
-          value: source.track_id,
-          label: source.name,
-          selected: source.track_id === selectedId,
-        };
-      });
-      choices.unshift({
-        label: "None",
-        value: "",
-        selected: selectedId === "",
-      });
+      const selectedIds = new Set(this.getColorAnnotations());
+      const choices = this.allAnnotationSources.map((source) => ({
+        value: source.track_id,
+        label: source.name,
+        selected: selectedIds.has(source.track_id),
+      }));
       this.colorBySelect.setValues(choices);
     }
   }

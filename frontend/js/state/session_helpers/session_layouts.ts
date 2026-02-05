@@ -93,7 +93,7 @@ export class SessionProfiles {
     this.save();
   }
 
-  public setColorAnnotations(ids: []) {
+  public setColorAnnotations(ids: string[]) {
     this.profile.colorAnnotationIds = ids;
     this.save();
   }
