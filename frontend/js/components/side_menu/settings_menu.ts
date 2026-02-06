@@ -8,7 +8,7 @@ import {
 } from "../../constants";
 import {
   downloadAsJSON,
-  getSampleFromID as getSampleIDObjFromID,
+  getSampleIdentifierFromID as getSampleIDObjFromID,
   getSampleKey,
   removeChildren,
 } from "../../util/utils";
@@ -438,6 +438,7 @@ export class SettingsMenu extends ShadowBaseElement {
       const sample = this.session.getSample(
         sampleIdObj.caseId,
         sampleIdObj.sampleId,
+        sampleIdObj.genomeBuild,
       );
       this.onAddSample(sample);
     });

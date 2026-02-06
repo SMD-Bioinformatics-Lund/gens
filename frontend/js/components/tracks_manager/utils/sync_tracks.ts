@@ -1,7 +1,7 @@
 import { TRACK_IDS, USED_TRACK_HEIGHTS } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import {
-  getSampleFromID as getSampleIdsFromID,
+  getSampleIdentifierFromID as getSampleIdsFromID,
   getSampleKey,
   removeOne,
   setDiff,
@@ -39,8 +39,8 @@ export async function syncDataTrackSettings(
   const { removedIds: removedSamples, sampleSettings } = await sampleDiff(
     samples,
     lastRenderedSamples,
-    (caseId: string, sampleId: string) => session.getSample(caseId, sampleId),
-    (caseId, sampleId) => dataSources.getSampleAnnotSources(caseId, sampleId),
+    (caseId: string, sampleId: string, genomeBuild: string) => session.getSample(caseId, sampleId, genomeBuild),
+    (caseId, sampleId, genomeBuild) => dataSources.getSampleAnnotSources(caseId, sampleId, genomeBuild),
     () => session.profile.getCoverageRange(),
   );
   const removedSampleTrackIds = [];
@@ -93,10 +93,11 @@ export function getGeneTrackSettings() {
 async function sampleDiff(
   samples: Sample[],
   lastRenderedSamples: Sample[],
-  getSample: (caseId: string, sampleId: string) => Sample,
+  getSample: (caseId: string, sampleId: string, genomeBuild: string) => Sample,
   getSampleAnnotSources: (
     caseId: string,
     sampleId: string,
+    genomeBuild: string,
   ) => Promise<{ id: string; name: string }[]>,
   getCoverageRange: () => Rng,
 ): Promise<{
@@ -168,17 +169,18 @@ export function annotationDiff(
 
 export async function getSampleTrackSettings(
   combinedSampleIds: Set<string>,
-  getSample: (caseId: string, sampleId: string) => Sample,
+  getSample: (caseId: string, sampleId: string, genomeBuild: string) => Sample,
   getCoverageRange: () => Rng,
   getSampleAnnotSources: (
     caseId: string,
     sampleId: string,
+    genomeBuild: string,
   ) => Promise<{ id: string; name: string }[]>,
 ): Promise<DataTrackSettings[]> {
   const sampleSettings = [];
   for (const combinedId of combinedSampleIds) {
     const sampleIds = getSampleIdsFromID(combinedId);
-    const sample = getSample(sampleIds.caseId, sampleIds.sampleId);
+    const sample = getSample(sampleIds.caseId, sampleIds.sampleId, sampleIds.genomeBuild);
 
     const sampleTracks = await getSampleTracks(
       sample,
@@ -196,6 +198,7 @@ async function getSampleTracks(
   getSampleAnnotSources: (
     caseId: string,
     sampleId: string,
+    genomeBuild: string,
   ) => Promise<{ id: string; name: string }[]>,
 ): Promise<DataTrackSettings[]> {
   // FIXME: Some logic here to distinguish if single or multiple samples opened
@@ -257,6 +260,7 @@ async function getSampleTracks(
   const sampleSources = await getSampleAnnotSources(
     sample.caseId,
     sample.sampleId,
+    sample.genomeBuild
   );
 
   const sampleAnnots = [];

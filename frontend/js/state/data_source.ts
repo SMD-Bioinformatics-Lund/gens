@@ -45,6 +45,7 @@ export function getRenderDataSource(
     const covRaw = await api.getCov(
       sample.caseId,
       sample.sampleId,
+      sample.genomeBuild,
       chrom,
       zoom,
       xRange,
@@ -62,6 +63,7 @@ export function getRenderDataSource(
     const bafRaw = await api.getBaf(
       sample.caseId,
       sample.sampleId,
+      sample.genomeBuild,
       chrom,
       zoom,
       xRange,

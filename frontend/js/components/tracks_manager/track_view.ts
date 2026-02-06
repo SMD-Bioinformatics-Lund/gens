@@ -285,10 +285,10 @@ export class TrackView extends ShadowBaseElement {
 
   private async initializeTracks() {
     const samples = this.session.getSamples();
-    const getSample = (caseId: string, sampleId: string) =>
-      this.session.getSample(caseId, sampleId);
-    const getSampleAnnotSources = (caseId, sampleId) =>
-      this.dataSource.getSampleAnnotSources(caseId, sampleId);
+    const getSample = (caseId: string, sampleId: string, genomeBuild: string) =>
+      this.session.getSample(caseId, sampleId, genomeBuild);
+    const getSampleAnnotSources = (caseId, sampleId, genomeBuild) =>
+      this.dataSource.getSampleAnnotSources(caseId, sampleId, genomeBuild);
     const getCoverageRange = () => this.session.profile.getCoverageRange();
 
     const sampleKeys = new Set(samples.map((s) => getSampleKey(s)));

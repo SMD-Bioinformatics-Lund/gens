@@ -148,6 +148,7 @@ export async function initCanvases({
       caseId: sample.case_id,
       sampleId: sample.sample_id,
       sampleType: sample.sample_type,
+      genomeBuild: sample.genome_build.toString(),
       sex: parsedSex,
       meta: sample.meta,
     };

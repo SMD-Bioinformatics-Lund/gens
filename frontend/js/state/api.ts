@@ -1,3 +1,4 @@
+import { spawn } from "child_process";
 import { CHROMOSOMES, IDB_CACHE } from "../constants";
 import { get } from "../util/fetch";
 import { idbGet, idbSet } from "../util/indexeddb";
@@ -210,12 +211,13 @@ export class API {
   getCov(
     caseId: string,
     sampleId: string,
+    genomeBuild: string,
     chrom: string,
     zoom: string,
     xRange: Rng,
   ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/coverage";
-    const sampleKey = getSampleKey({ caseId, sampleId });
+    const sampleKey = getSampleKey({ caseId, sampleId, genomeBuild });
 
     if (this.covSampleChrZoomCache[sampleKey] == null) {
       this.covSampleChrZoomCache[sampleKey] = {};
@@ -298,12 +300,13 @@ export class API {
   getBaf(
     caseId: string,
     sampleId: string,
+    genomeBuild: string,
     chrom: string,
     zoom: string,
     xRange: Rng,
   ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/baf";
-    const sampleKey = getSampleKey({ caseId, sampleId });
+    const sampleKey = getSampleKey({ caseId, sampleId, genomeBuild });
 
     if (this.bafSampleZoomChrCache[sampleKey] == null) {
       this.bafSampleZoomChrCache[sampleKey] = {};
@@ -439,12 +442,11 @@ export class API {
     Record<string, Promise<ApiSimplifiedVariant[]>>
   > = {};
   getVariants(
-    caseId: string,
-    sampleId: string,
+    sampleIdf: SampleIdentifier,
     chrom: string,
     rank_score_threshold: number,
   ): Promise<ApiSimplifiedVariant[]> {
-    const sampleKey = getSampleKey({ caseId, sampleId });
+    const sampleKey = getSampleKey(sampleIdf);
 
     // Invalidate cache if changing the rank score threshold
     if (this.cachedThreshold != rank_score_threshold) {
@@ -460,8 +462,9 @@ export class API {
       this.variantsSampleChromCache[sampleKey][chrom] !== undefined;
     if (!isCached) {
       const query = {
-        sample_id: sampleId,
-        case_id: caseId,
+        sample_id: sampleIdf.sampleId,
+        case_id: sampleIdf.caseId,
+        genome_build: sampleIdf.genomeBuild,
         chromosome: chrom,
         category: "sv",
         start: 1,
@@ -498,8 +501,9 @@ export class API {
   getOverviewCovData(
     caseId: string,
     sampleId: string,
+    genomeBuild: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
-    const sampleKey = getSampleKey({ caseId, sampleId });
+    const sampleKey = getSampleKey({ caseId, sampleId, genomeBuild });
 
     if (this.overviewSampleCovCache[sampleKey] == null) {
       this.overviewSampleCovCache[sampleKey] = getOverviewData(
@@ -520,8 +524,9 @@ export class API {
   getOverviewBafData(
     caseId: string,
     sampleId: string,
+    genomeBuild: string,
   ): Promise<Record<string, ApiCoverageDot[]>> {
-    const sampleKey = getSampleKey({ caseId, sampleId });
+    const sampleKey = getSampleKey({ caseId, sampleId, genomeBuild });
 
     if (this.overviewBafCache[sampleKey] == null) {
       this.overviewBafCache[sampleKey] = getOverviewData(

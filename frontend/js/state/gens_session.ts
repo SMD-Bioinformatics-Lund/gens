@@ -238,9 +238,12 @@ export class GensSession {
     return this.samples;
   }
 
-  public getSample(caseId: string, sampleId: string): Sample | null {
+  public getSample(sampleIdf: SampleIdentifier): Sample | null {
     const matchedSamples = this.allSamples.filter(
-      (sample) => sample.caseId == caseId && sample.sampleId == sampleId,
+      (sample) =>
+        sample.caseId == sampleIdf.caseId &&
+        sample.sampleId == sampleIdf.sampleId &&
+        sample.genomeBuild == sampleIdf.genomeBuild,
     );
     if (matchedSamples.length == 1) {
       return matchedSamples[0];

@@ -368,6 +368,7 @@ interface RenderDataSource {
   getSampleAnnotSources: (
     caseId: string,
     sampleId: string,
+    genomeBuild: string,
   ) => Promise<{ id: string; name: string }[]>;
   getSampleAnnotationBands: (
     trackId: string,
@@ -677,9 +678,16 @@ interface ApiSample {
   meta: SampleMetaEntry[];
 }
 
+interface SampleIdentifier {
+  caseId: string;
+  sampleId: string;
+  genomeBuild: number;
+}
+
 interface Sample {
   caseId: string;
   sampleId: string;
+  genomeBuild: number;
   sampleType?: string;
   sex?: Sex;
   meta?: SampleMetaEntry[];

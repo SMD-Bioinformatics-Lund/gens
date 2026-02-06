@@ -84,6 +84,7 @@ export class ChromosomeView extends ShadowBaseElement {
     const sampleAnnots = await dataSource.getSampleAnnotSources(
       settingSample.caseId,
       settingSample.sampleId,
+      settingSample.genomeBuild,
     );
 
     for (const chrom of CHROMOSOMES) {
