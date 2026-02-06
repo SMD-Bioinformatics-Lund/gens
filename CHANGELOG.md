@@ -5,6 +5,29 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## TBD
+
+### Added
+
+- Track highlight is a multiselect, meaning that multiple annotation sources can be used for track highlights. [#686](https://github.com/SMD-Bioinformatics-Lund/gens/pull/686)
+
+### Changed
+
+- Use 37 as build version instead of 19. [#682](https://github.com/SMD-Bioinformatics-Lund/gens/pull/682)
+- Simplified overview chart labels (no sample name there, BAF instead of B-allele freq). [#685](https://github.com/SMD-Bioinformatics-Lund/gens/pull/685)
+- Overview chart labels display for all chromosomes 1-22, X, Y, not only those present in the data. [#685](https://github.com/SMD-Bioinformatics-Lund/gens/pull/685)
+
+### Fixed
+
+- Remove config display from about page. [#680](https://github.com/SMD-Bioinformatics-Lund/gens/pull/680)
+- Configurable ignore condition for meta thresholds. [#680](https://github.com/SMD-Bioinformatics-Lund/gens/pull/680)
+- Retrieve sample build per-sample, allowing a mixture of different builds. [#682](https://github.com/SMD-Bioinformatics-Lund/gens/pull/682)
+- Fixed chromosome range syntax. [#683](https://github.com/SMD-Bioinformatics-Lund/gens/pull/683)
+- Don't list annotation tracks on about page that have been removed from the annotations collection. [#684](https://github.com/SMD-Bioinformatics-Lund/gens/pull/684)
+- Prevent crash when deleting an annotation track by adding a simple index to it. [#684](https://github.com/SMD-Bioinformatics-Lund/gens/pull/684)
+- Profile should now reset when profile version is updated. [#686](https://github.com/SMD-Bioinformatics-Lund/gens/pull/686)
+- Clear user error message when attempting to opening a sample from a build for which chromosomes haven't been loaded. [#690](https://github.com/SMD-Bioinformatics-Lund/gens/pull/690)
+
 ## 4.4.2
 
 ### Fixed

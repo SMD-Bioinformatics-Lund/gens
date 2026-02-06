@@ -43,11 +43,14 @@ export async function samplesListInit(
   samples: SampleInfo[],
   variantSoftwareBaseURL: string | null,
   gensBaseURL: string,
-  genomeBuild: number,
 ) {
   const gens_home = document.querySelector("#gens-home") as GensHome;
 
-  const getGensURL = (caseId: string, sampleIds?: string[]) => {
+  const getGensURL = (
+    caseId: string,
+    genomeBuild: number,
+    sampleIds?: string[],
+  ) => {
     let subpath;
     if (sampleIds != null) {
       subpath = `app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
@@ -72,7 +75,7 @@ export async function initCanvases({
   version,
   allSamples,
   defaultProfiles,
-  warningThresholds: warningThresholds,
+  warningThresholds,
 }: {
   caseId: string;
   sampleIds: string[];
@@ -321,8 +324,8 @@ function addSettingsPageSources(
     session.profile.setTrackHeights(trackHeights);
     render({ reloadData: true });
   };
-  const onColorByChange = async (annotId: string | null) => {
-    session.profile.setColorAnnotation(annotId);
+  const onColorByChange = async (annotIds: string[]) => {
+    session.profile.setColorAnnotations(annotIds);
     render({ colorByChange: true });
   };
   const onApplyDefaultCovRange = (rng: Rng) => {

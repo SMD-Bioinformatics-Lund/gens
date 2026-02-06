@@ -724,7 +724,7 @@ type ProfileSettings = {
   profileKey: string;
   fileName?: string;
   layout: TrackLayout | null;
-  colorAnnotationId: string | null;
+  colorAnnotationIds: string[];
   variantThreshold: number;
   annotationSelections: string[];
   coverageRange: Rng;
@@ -772,4 +772,12 @@ type WarningThreshold = {
   size?: number;
   max_deviation?: number;
   message: string;
+  ignore_when?: WarningIgnore | WarningIgnore[];
+};
+
+type WarningIgnore = {
+  sex?: Sex;
+  column?: string;
+  chromosome?: string;
+  row?: string;
 };

@@ -607,28 +607,31 @@ async function getOverviewData(
   };
 
   const dataType = covOrBaf == "cov" ? "coverage" : "baf";
-  const overviewData: {
+
+  type OverviewData = {
     region: string;
     position: number[];
     value: number[];
     zoom: string | null;
-  }[] = await get(
+  };
+
+  const overviewData: OverviewData[] = await get(
     new URL(`samples/sample/${dataType}/overview`, apiURI).href,
     query,
   );
 
-  const dataPerChrom: Record<string, ApiCoverageDot[]> = {};
+  const chromToDataObject: Record<string, OverviewData> = {};
+  overviewData.forEach((chromData) => {
+    chromToDataObject[chromData.region] = chromData;
+  })
 
-  overviewData.forEach((element) => {
-    if (element.region == "MT") {
-      console.warn(
-        "Displaying MT coverage is not yet supported (see https://github.com/SMD-Bioinformatics-Lund/gens/issues/284)",
-      );
-      return;
+  const chromDatapoints: Record<string, ApiCoverageDot[]> = {};
+  for (const chrom of CHROMOSOMES) {
+    if (chromToDataObject[chrom] == null) {
+      chromDatapoints[chrom] = [];
+      continue;
     }
-    if (dataPerChrom[element.region] === undefined) {
-      dataPerChrom[element.region] = [];
-    }
+    const element = chromToDataObject[chrom];
     const points: ApiCoverageDot[] = zip(element.position, element.value).map(
       (xy) => {
         return {
@@ -637,8 +640,8 @@ async function getOverviewData(
         };
       },
     );
-    dataPerChrom[element.region] = points;
-  });
+    chromDatapoints[element.region] = points;
+  }
 
-  return dataPerChrom;
+  return chromDatapoints;
 }

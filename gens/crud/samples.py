@@ -99,13 +99,13 @@ def get_samples(
 # When doing this checking on many samples, it takes some time
 def get_samples_per_case(
     samples_c: Collection[dict[str, Any]], skip: int = 0, limit: int | None = None
-) -> Dict[str, List[dict[str, Any]]]:
+) -> Dict[tuple[str, int], List[dict[str, Any]]]:
 
     cursor = samples_c.find().sort("created_at", DESCENDING).skip(skip)
     if limit is not None:
         cursor.limit(limit)
 
-    case_to_samples: dict[str, list[dict[str, Any]]] = {}
+    case_to_samples: dict[tuple[str, int], list[dict[str, Any]]] = {}
     for sample in cursor:
         # try:
         #     sample_data = SampleInfo.model_validate(sample)
@@ -114,8 +114,10 @@ def get_samples_per_case(
         #     continue
 
         case_id = sample["case_id"]
-        if not case_to_samples.get(case_id):
-            case_to_samples[case_id] = []
+        genome_build = sample["genome_build"]
+        case_key = (case_id, genome_build)
+        if not case_to_samples.get(case_key):
+            case_to_samples[case_key] = []
 
         # baf_file_exists = Path(sample.get("baf_file", "")).is_file()
         # cov_file_exists = Path(sample.get("coverage_file", "")).is_file()
@@ -131,7 +133,7 @@ def get_samples_per_case(
             "created_at": sample["created_at"].astimezone(timezone.utc).isoformat(),
         }
 
-        case_to_samples[case_id].append(sample_obj)
+        case_to_samples[case_key].append(sample_obj)
 
     return case_to_samples
 

@@ -178,7 +178,7 @@ export class TrackView extends ShadowBaseElement {
 
     const yAxisCov = {
       range: session.profile.getCoverageRange(),
-      label: `Log2 Ratio (${session.getMainSample().sampleId})`,
+      label: `Log2 Ratio`,
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
     };
@@ -195,7 +195,7 @@ export class TrackView extends ShadowBaseElement {
 
     const yAxisBaf = {
       range: BAF_Y_RANGE,
-      label: `B Allele Freq (${session.getMainSample().sampleId})`,
+      label: `BAF`,
       hideLabelOnCollapse: false,
       hideTicksOnCollapse: false,
       highlightedYs: [0.5],
@@ -362,7 +362,7 @@ export class TrackView extends ShadowBaseElement {
     this.overviewTracks.forEach((track) => track.render(renderSettings));
 
     const [startChrSeg, endChrSeg] = this.sessionPos.getChrSegments();
-    this.positionLabel.innerHTML = `${startChrSeg} - ${endChrSeg}`;
+    this.positionLabel.innerHTML = `${this.sessionPos.getChromosome()}${startChrSeg}${endChrSeg}`;
   }
 
   syncTrackOrder() {
@@ -493,14 +493,14 @@ async function getAnnotColorBands(
   session: GensSession,
   dataSource: RenderDataSource,
 ) {
-  const colorAnnot = session.profile.getColorAnnotation();
-
   let colorBands: RenderBand[] = [];
-  if (colorAnnot != null) {
-    colorBands = await dataSource.getAnnotationBands(
-      session.profile.getColorAnnotation(),
+  for (const annotId of session.profile.getColorAnnotations()) {
+    const annotBands = await dataSource.getAnnotationBands(
+      annotId,
       session.pos.getChromosome(),
     );
+    colorBands.push(...annotBands);
+
   }
   return colorBands;
 }
