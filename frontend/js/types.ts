@@ -724,7 +724,7 @@ type ProfileSettings = {
   profileKey: string;
   fileName?: string;
   layout: TrackLayout | null;
-  colorAnnotationId: string | null;
+  colorAnnotationIds: string[];
   variantThreshold: number;
   annotationSelections: string[];
   coverageRange: Rng;

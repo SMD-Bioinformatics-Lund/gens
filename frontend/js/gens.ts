@@ -324,8 +324,8 @@ function addSettingsPageSources(
     session.profile.setTrackHeights(trackHeights);
     render({ reloadData: true });
   };
-  const onColorByChange = async (annotId: string | null) => {
-    session.profile.setColorAnnotation(annotId);
+  const onColorByChange = async (annotIds: string[]) => {
+    session.profile.setColorAnnotations(annotIds);
     render({ colorByChange: true });
   };
   const onApplyDefaultCovRange = (rng: Rng) => {
