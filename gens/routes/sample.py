@@ -45,7 +45,10 @@ async def get_sample_route(
     sample_id: str, case_id: str, genome_build: GenomeBuild, db: GensDb
 ) -> SampleInfo:
     sample_info: SampleInfo = samples.get_sample(
-        db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id
+        db[SAMPLES_COLLECTION],
+        sample_id=sample_id,
+        case_id=case_id,
+        genome_build=genome_build,
     )
     return sample_info
 
@@ -59,6 +62,7 @@ async def get_genome_coverage(
     case_id: str,
     data_type: ScatterDataType,
     chromosome: Chromosome,
+    genome_build: GenomeBuild,
     db: GensDb,
     start: int = 1,
     end: int | None = None,
@@ -72,6 +76,7 @@ async def get_genome_coverage(
         collection=db.get_collection(SAMPLES_COLLECTION),
         sample_id=sample_id,
         case_id=case_id,
+        genome_build=genome_build,
         region=region,
         data_type=data_type,
         zoom_level=zoom_level,
@@ -83,12 +88,16 @@ async def get_cov_overview(
     sample_id: str,
     case_id: str,
     data_type: ScatterDataType,
+    genome_build: GenomeBuild,
     db: GensDb,
 ):
     """Get aggregated overview coverage information."""
 
     sample_info: SampleInfo = samples.get_sample(
-        db[SAMPLES_COLLECTION], sample_id=sample_id, case_id=case_id
+        db[SAMPLES_COLLECTION],
+        sample_id=sample_id,
+        case_id=case_id,
+        genome_build=genome_build,
     )
 
     if (

@@ -39,8 +39,8 @@ export async function syncDataTrackSettings(
   const { removedIds: removedSamples, sampleSettings } = await sampleDiff(
     samples,
     lastRenderedSamples,
-    (caseId: string, sampleId: string, genomeBuild: string) => session.getSample(caseId, sampleId, genomeBuild),
-    (caseId, sampleId, genomeBuild) => dataSources.getSampleAnnotSources(caseId, sampleId, genomeBuild),
+    (id: SampleIdentifier) => session.getSample(id),
+    (id: SampleIdentifier) => dataSources.getSampleAnnotSources(id),
     () => session.profile.getCoverageRange(),
   );
   const removedSampleTrackIds = [];
@@ -50,7 +50,8 @@ export async function syncDataTrackSettings(
       if (
         track.sample &&
         track.sample.caseId == targetSample.caseId &&
-        track.sample.sampleId == targetSample.sampleId
+        track.sample.sampleId == targetSample.sampleId &&
+        track.sample.genomeBuild == targetSample.genomeBuild
       ) {
         removedSampleTrackIds.push(track.trackId);
       }
@@ -93,11 +94,9 @@ export function getGeneTrackSettings() {
 async function sampleDiff(
   samples: Sample[],
   lastRenderedSamples: Sample[],
-  getSample: (caseId: string, sampleId: string, genomeBuild: string) => Sample,
+  getSample: (id: SampleIdentifier) => Sample,
   getSampleAnnotSources: (
-    caseId: string,
-    sampleId: string,
-    genomeBuild: string,
+    id: SampleIdentifier,
   ) => Promise<{ id: string; name: string }[]>,
   getCoverageRange: () => Rng,
 ): Promise<{
@@ -169,18 +168,16 @@ export function annotationDiff(
 
 export async function getSampleTrackSettings(
   combinedSampleIds: Set<string>,
-  getSample: (caseId: string, sampleId: string, genomeBuild: string) => Sample,
+  getSample: (id: SampleIdentifier) => Sample,
   getCoverageRange: () => Rng,
   getSampleAnnotSources: (
-    caseId: string,
-    sampleId: string,
-    genomeBuild: string,
+    id: SampleIdentifier,
   ) => Promise<{ id: string; name: string }[]>,
 ): Promise<DataTrackSettings[]> {
   const sampleSettings = [];
   for (const combinedId of combinedSampleIds) {
     const sampleIds = getSampleIdsFromID(combinedId);
-    const sample = getSample(sampleIds.caseId, sampleIds.sampleId, sampleIds.genomeBuild);
+    const sample = getSample(sampleIds);
 
     const sampleTracks = await getSampleTracks(
       sample,
@@ -193,21 +190,19 @@ export async function getSampleTrackSettings(
 }
 
 async function getSampleTracks(
-  sample: Sample,
+  sampleIdentifier: Sample,
   getCoverageRange: () => Rng,
   getSampleAnnotSources: (
-    caseId: string,
-    sampleId: string,
-    genomeBuild: string,
+    id: SampleIdentifier,
   ) => Promise<{ id: string; name: string }[]>,
 ): Promise<DataTrackSettings[]> {
   // FIXME: Some logic here to distinguish if single or multiple samples opened
   // FIXME: Loading defaulting
   const cov: DataTrackSettings = {
-    trackId: `${sample.sampleId}_${TRACK_IDS.cov}`,
-    trackLabel: `${sample.sampleId} cov`,
+    trackId: `${sampleIdentifier.sampleId}_${TRACK_IDS.cov}`,
+    trackLabel: `${sampleIdentifier.sampleId} cov`,
     trackType: "dot-cov",
-    sample,
+    sample: sampleIdentifier,
     height: {
       collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedDot,
       expandedHeight: USED_TRACK_HEIGHTS.trackView.expandedDot,
@@ -224,10 +219,10 @@ async function getSampleTracks(
   };
 
   const baf: DataTrackSettings = {
-    trackId: `${sample.sampleId}_${TRACK_IDS.baf}`,
-    trackLabel: `${sample.sampleId} baf`,
+    trackId: `${sampleIdentifier.sampleId}_${TRACK_IDS.baf}`,
+    trackLabel: `${sampleIdentifier.sampleId} baf`,
     trackType: "dot-baf",
-    sample,
+    sample: sampleIdentifier,
     height: {
       collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedDot,
       expandedHeight: USED_TRACK_HEIGHTS.trackView.expandedDot,
@@ -244,10 +239,10 @@ async function getSampleTracks(
   };
 
   const variants: DataTrackSettings = {
-    trackId: `${sample.sampleId}_${TRACK_IDS.variants}`,
-    trackLabel: `${sample.sampleId} Variants`,
+    trackId: `${sampleIdentifier.sampleId}_${TRACK_IDS.variants}`,
+    trackLabel: `${sampleIdentifier.sampleId} Variants`,
     trackType: "variant",
-    sample,
+    sample: sampleIdentifier,
     height: {
       collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand,
     },
@@ -257,11 +252,7 @@ async function getSampleTracks(
     isHidden: false,
   };
 
-  const sampleSources = await getSampleAnnotSources(
-    sample.caseId,
-    sample.sampleId,
-    sample.genomeBuild
-  );
+  const sampleSources = await getSampleAnnotSources(sampleIdentifier);
 
   const sampleAnnots = [];
   for (const source of sampleSources) {
@@ -269,7 +260,7 @@ async function getSampleTracks(
       trackId: source.id,
       trackLabel: source.name,
       trackType: "sample-annotation",
-      sample,
+      sample: sampleIdentifier,
       height: { collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand },
       showLabelWhenCollapsed: true,
       yAxis: null,

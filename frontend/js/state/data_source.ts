@@ -36,38 +36,24 @@ export function getRenderDataSource(
   };
 
   const getCovData = async (
-    sample: Sample,
+    id: SampleIdentifier,
     chrom: string,
     xRange: Rng,
   ): Promise<RenderDot[]> => {
     const zoom = calculateZoom(xRange);
 
-    const covRaw = await api.getCov(
-      sample.caseId,
-      sample.sampleId,
-      sample.genomeBuild,
-      chrom,
-      zoom,
-      xRange,
-    );
+    const covRaw = await api.getCov(id, chrom, zoom, xRange);
     return parseCoverageDot(covRaw, STYLE.colors.darkGray);
   };
 
   const getBafData = async (
-    sample: Sample,
+    id: SampleIdentifier,
     chrom: string,
   ): Promise<RenderDot[]> => {
     const xRange = getXRange();
     const zoom = calculateZoom(xRange);
 
-    const bafRaw = await api.getBaf(
-      sample.caseId,
-      sample.sampleId,
-      sample.genomeBuild,
-      chrom,
-      zoom,
-      xRange,
-    );
+    const bafRaw = await api.getBaf(id, chrom, zoom, xRange);
     return parseCoverageDot(bafRaw, STYLE.colors.darkGray);
   };
 
@@ -92,26 +78,18 @@ export function getRenderDataSource(
   };
 
   const getVariantBands = async (
-    sample: Sample,
+    id: SampleIdentifier,
     chrom: string,
     variantThres: number,
   ): Promise<RenderBand[]> => {
-    const variantsRaw = await api.getVariants(
-      sample.caseId,
-      sample.sampleId,
-      chrom,
-      variantThres,
-    );
+    const variantsRaw = await api.getVariants(id, chrom, variantThres);
     return parseVariants(variantsRaw);
   };
 
   const getOverviewCovData = async (
-    sample: Sample,
+    id: SampleIdentifier,
   ): Promise<Record<string, RenderDot[]>> => {
-    const overviewCovRaw = await api.getOverviewCovData(
-      sample.caseId,
-      sample.sampleId,
-    );
+    const overviewCovRaw = await api.getOverviewCovData(id);
     const overviewCovRender = transformMap(overviewCovRaw, (cov) =>
       parseCoverageDot(cov, STYLE.colors.darkGray),
     );
@@ -121,10 +99,7 @@ export function getRenderDataSource(
   const getOverviewBafData = async (
     sample: Sample,
   ): Promise<Record<string, RenderDot[]>> => {
-    const overviewBafRaw = await api.getOverviewBafData(
-      sample.caseId,
-      sample.sampleId,
-    );
+    const overviewBafRaw = await api.getOverviewBafData(sample);
     const overviewBafRender = transformMap(overviewBafRaw, (cov) =>
       parseCoverageDot(cov, STYLE.colors.darkGray),
     );
@@ -146,10 +121,9 @@ export function getRenderDataSource(
   };
 
   const getSampleAnnotSources = async (
-    caseId: string,
-    sampleId: string,
+    id: SampleIdentifier,
   ): Promise<{ id: string; name: string }[]> => {
-    const results = await api.getSampleAnnotationSources(caseId, sampleId);
+    const results = await api.getSampleAnnotationSources(id);
     return results.map((r) => {
       return {
         id: r.track_id,

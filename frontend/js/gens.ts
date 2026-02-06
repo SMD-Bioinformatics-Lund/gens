@@ -139,7 +139,9 @@ export async function initCanvases({
   };
 
   const unorderedSamples = await Promise.all(
-    sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
+    sampleIds.map((sampleId) =>
+      api.getSample({ caseId, sampleId, genomeBuild }),
+    ),
   );
   const caseSamples = orderSamples(unorderedSamples).map((sample) => {
     const parsedSex = parseSex(sample.sex);
@@ -148,7 +150,7 @@ export async function initCanvases({
       caseId: sample.case_id,
       sampleId: sample.sample_id,
       sampleType: sample.sample_type,
-      genomeBuild: sample.genome_build.toString(),
+      genomeBuild: sample.genome_build,
       sex: parsedSex,
       meta: sample.meta,
     };

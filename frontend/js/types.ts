@@ -366,9 +366,7 @@ interface RenderDataSource {
   getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>;
 
   getSampleAnnotSources: (
-    caseId: string,
-    sampleId: string,
-    genomeBuild: string,
+    id: SampleIdentifier,
   ) => Promise<{ id: string; name: string }[]>;
   getSampleAnnotationBands: (
     trackId: string,
@@ -379,12 +377,12 @@ interface RenderDataSource {
   ) => Promise<ApiSampleAnnotationDetails>;
 
   getCovData: (
-    sample: Sample,
+    id: SampleIdentifier,
     chrom: string,
     xRange: Rng,
   ) => Promise<RenderDot[]>;
   getBafData: (
-    sample: Sample,
+    id: SampleIdentifier,
     chrom: string,
     xRange: Rng,
   ) => Promise<RenderDot[]>;
@@ -395,14 +393,14 @@ interface RenderDataSource {
   getGeneListBands: (listId: string, chrom: string) => Promise<RenderBand[]>;
 
   getVariantBands: (
-    sample: Sample,
+    sample: SampleIdentifier,
     chrom: string,
     rankScoreThres: number,
   ) => Promise<RenderBand[]>;
   getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>;
 
-  getOverviewCovData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
-  getOverviewBafData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
+  getOverviewCovData: (sample: SampleIdentifier) => Promise<Record<string, RenderDot[]>>;
+  getOverviewBafData: (sample: SampleIdentifier) => Promise<Record<string, RenderDot[]>>;
 
   getVariantURL: (doc_id: string) => string;
 }

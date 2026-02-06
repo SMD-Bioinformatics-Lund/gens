@@ -254,20 +254,21 @@ export class GensSession {
     }
   }
 
-  public addSample(sample: Sample) {
-    this.samples.push(sample);
+  public addSample(id: SampleIdentifier) {
+    this.samples.push(id);
     this.profile.updateProfileKey(this.samples);
   }
 
-  public removeSample(sample: Sample): void {
+  public removeSample(id: SampleIdentifier): void {
     const pos = this.samples.findIndex(
       (currSample) =>
-        currSample.caseId === sample.caseId &&
-        currSample.sampleId === sample.sampleId,
+        currSample.caseId === id.caseId &&
+        currSample.sampleId === id.sampleId &&
+        currSample.genomeBuild === id.genomeBuild,
     );
 
     if (pos === -1) {
-      console.warn("Sample not found:", sample);
+      console.warn("Sample not found:", id);
       return;
     }
 
