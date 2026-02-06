@@ -138,9 +138,13 @@ def display_samples(case_id: str):
     if parsed_region.end is None:
         chrom_info = get_chromosome_info(db, parsed_region.chromosome, genome_build)
         if chrom_info is None:
-            raise ValueError(
+            LOG.exception(
                 f"Chromosome {parsed_region.chromosome} is not found in the database"
             )
+            return _render_sample_error(
+                f"Chromosome data could not be found for chromosome: \"{parsed_region.chromosome}\". Has chromosomes been loaded for this build? (Build: {genome_build})"
+            )
+
         parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})
 
     samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
