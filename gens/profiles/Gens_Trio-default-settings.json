@@ -2,7 +2,6 @@
   "version": 2,
   "profileKey": "v2.38.proband+relative",
   "layout": {
-    "version": 2,
     "order": [
       "baf|proband|",
       "log2_cov|proband|",
@@ -37,7 +36,7 @@
       "annot|6836f7eb28cc6aa403b170a3|Mimisbrunnr.Lund-hg38": true
     }
   },
-  "colorAnnotationId": "6836f7eb28cc6aa403b170a3",
+  "colorAnnotationIds": ["6836f7eb28cc6aa403b170a3"],
   "annotationSelections": [
     "6836f7eb28cc6aa403b170a3"
   ],
