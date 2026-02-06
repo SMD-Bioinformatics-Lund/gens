@@ -569,7 +569,11 @@ export class SettingsMenu extends ShadowBaseElement {
       { label: "None", value: "", selected: this.getColorAnnotation() == null },
       ...allAnnotChoices.map((c) => ({
         ...c,
+<<<<<<< Updated upstream
         selected: c.value === this.getColorAnnotation(),
+=======
+        selected: this.getColorAnnotations().includes(c.value),
+>>>>>>> Stashed changes
       })),
     ];
     this.colorBySelect.setValues(colorChoices);
