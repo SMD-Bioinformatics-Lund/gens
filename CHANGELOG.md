@@ -27,6 +27,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Prevent crash when deleting an annotation track by adding a simple index to it. [#684](https://github.com/SMD-Bioinformatics-Lund/gens/pull/684)
 - Profile should now reset when profile version is updated. [#686](https://github.com/SMD-Bioinformatics-Lund/gens/pull/686)
 - Clear user error message when attempting to opening a sample from a build for which chromosomes haven't been loaded. [#690](https://github.com/SMD-Bioinformatics-Lund/gens/pull/690)
+- Fix such that the same case ID can be reused across different builds.
 
 ## 4.4.2
 
