@@ -1,3 +1,4 @@
+import { spawn } from "child_process";
 import { CHROMOSOMES, IDB_CACHE } from "../constants";
 import { get } from "../util/fetch";
 import { idbGet, idbSet } from "../util/indexeddb";
@@ -126,13 +127,12 @@ export class API {
   }
 
   getSampleAnnotationSources(
-    caseId: string,
-    sampleId: string,
+    id: SampleIdentifier,
   ): Promise<ApiSampleAnnotationTrack[]> {
     const query = {
-      case_id: caseId,
-      sample_id: sampleId,
-      genome_build: this.genomeBuild,
+      case_id: id.caseId,
+      sample_id: id.sampleId,
+      genome_build: id.genomeBuild,
     };
     const sources = get(
       new URL("sample-tracks/annotations", this.apiURI).href,
@@ -208,14 +208,13 @@ export class API {
     Record<string, { range: Rng; promise: Promise<ApiCoverageDot[]> }>
   > = {};
   getCov(
-    caseId: string,
-    sampleId: string,
+    id: SampleIdentifier,
     chrom: string,
     zoom: string,
     xRange: Rng,
   ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/coverage";
-    const sampleKey = getSampleKey({ caseId, sampleId });
+    const sampleKey = getSampleKey(id);
 
     if (this.covSampleChrZoomCache[sampleKey] == null) {
       this.covSampleChrZoomCache[sampleKey] = {};
@@ -234,14 +233,15 @@ export class API {
 
       if (!zoomIsCached) {
         this.covSampleChrZoomCache[sampleKey][chrom][zoom] = getCovData(
-          this.apiURI,
-          endpoint,
-          sampleId,
-          caseId,
-          chrom,
-          zoom,
-          [1, this.getChromSizes()[chrom]],
-        );
+        this.apiURI,
+        endpoint,
+        id.sampleId,
+        id.caseId,
+        id.genomeBuild,
+        chrom,
+        zoom,
+        [1, this.getChromSizes()[chrom]],
+      );
       }
       return this.covSampleChrZoomCache[sampleKey][chrom][zoom];
     } else {
@@ -271,8 +271,9 @@ export class API {
       const promise = getCovData(
         this.apiURI,
         endpoint,
-        sampleId,
-        caseId,
+        id.sampleId,
+        id.caseId,
+        id.genomeBuild,
         chrom,
         zoom,
         extended,
@@ -296,14 +297,13 @@ export class API {
     Record<string, { range: Rng; promise: Promise<ApiCoverageDot[]> }>
   > = {};
   getBaf(
-    caseId: string,
-    sampleId: string,
+    id: SampleIdentifier,
     chrom: string,
     zoom: string,
     xRange: Rng,
   ): Promise<ApiCoverageDot[]> {
     const endpoint = "samples/sample/baf";
-    const sampleKey = getSampleKey({ caseId, sampleId });
+    const sampleKey = getSampleKey(id);
 
     if (this.bafSampleZoomChrCache[sampleKey] == null) {
       this.bafSampleZoomChrCache[sampleKey] = {};
@@ -321,14 +321,15 @@ export class API {
 
       if (!zoomIsCached) {
         this.bafSampleZoomChrCache[sampleKey][chrom][zoom] = getCovData(
-          this.apiURI,
-          endpoint,
-          sampleId,
-          caseId,
-          chrom,
-          zoom,
-          [1, this.getChromSizes()[chrom]],
-        );
+        this.apiURI,
+        endpoint,
+        id.sampleId,
+        id.caseId,
+        id.genomeBuild,
+        chrom,
+        zoom,
+        [1, this.getChromSizes()[chrom]],
+      );
       }
       return this.bafSampleZoomChrCache[sampleKey][chrom][zoom];
     } else {
@@ -355,8 +356,9 @@ export class API {
       const promise = getCovData(
         this.apiURI,
         endpoint,
-        sampleId,
-        caseId,
+        id.sampleId,
+        id.caseId,
+        id.genomeBuild,
         chrom,
         zoom,
         extended,
@@ -439,12 +441,11 @@ export class API {
     Record<string, Promise<ApiSimplifiedVariant[]>>
   > = {};
   getVariants(
-    caseId: string,
-    sampleId: string,
+    sampleIdf: SampleIdentifier,
     chrom: string,
     rank_score_threshold: number,
   ): Promise<ApiSimplifiedVariant[]> {
-    const sampleKey = getSampleKey({ caseId, sampleId });
+    const sampleKey = getSampleKey(sampleIdf);
 
     // Invalidate cache if changing the rank score threshold
     if (this.cachedThreshold != rank_score_threshold) {
@@ -460,8 +461,9 @@ export class API {
       this.variantsSampleChromCache[sampleKey][chrom] !== undefined;
     if (!isCached) {
       const query = {
-        sample_id: sampleId,
-        case_id: caseId,
+        sample_id: sampleIdf.sampleId,
+        case_id: sampleIdf.caseId,
+        genome_build: sampleIdf.genomeBuild,
         chromosome: chrom,
         category: "sv",
         start: 1,
@@ -496,15 +498,15 @@ export class API {
     Promise<Record<string, ApiCoverageDot[]>>
   > = {};
   getOverviewCovData(
-    caseId: string,
-    sampleId: string,
+    id: SampleIdentifier,
   ): Promise<Record<string, ApiCoverageDot[]>> {
-    const sampleKey = getSampleKey({ caseId, sampleId });
+    const sampleKey = getSampleKey(id);
 
     if (this.overviewSampleCovCache[sampleKey] == null) {
       this.overviewSampleCovCache[sampleKey] = getOverviewData(
-        sampleId,
-        caseId,
+        id.sampleId,
+        id.caseId,
+        id.genomeBuild,
         "cov",
         this.apiURI,
       );
@@ -518,15 +520,15 @@ export class API {
     Promise<Record<string, ApiCoverageDot[]>>
   > = {};
   getOverviewBafData(
-    caseId: string,
-    sampleId: string,
+    id: SampleIdentifier,
   ): Promise<Record<string, ApiCoverageDot[]>> {
-    const sampleKey = getSampleKey({ caseId, sampleId });
+    const sampleKey = getSampleKey(id);
 
     if (this.overviewBafCache[sampleKey] == null) {
       this.overviewBafCache[sampleKey] = getOverviewData(
-        sampleId,
-        caseId,
+        id.sampleId,
+        id.caseId,
+        id.genomeBuild,
         "baf",
         this.apiURI,
       );
@@ -534,11 +536,11 @@ export class API {
     return this.overviewBafCache[sampleKey];
   }
 
-  getSample(caseId: string, sampleId: string): Promise<ApiSample> {
+  getSample(id: SampleIdentifier): Promise<ApiSample> {
     const query = {
-      sample_id: sampleId,
-      case_id: caseId,
-      genome_build: this.genomeBuild,
+      sample_id: id.sampleId,
+      case_id: id.caseId,
+      genome_build: id.genomeBuild,
     };
     return get(
       new URL("samples/sample", this.apiURI).href,
@@ -564,6 +566,7 @@ async function getCovData(
   endpoint: string,
   sampleId: string,
   caseId: string,
+  genomeBuild: number,
   chrom: string,
   zoom: string,
   range: Rng,
@@ -571,6 +574,7 @@ async function getCovData(
   const query = {
     sample_id: sampleId,
     case_id: caseId,
+    genome_build: genomeBuild,
     chromosome: chrom,
     zoom_level: zoom,
     start: range[0],
@@ -597,12 +601,14 @@ async function getCovData(
 async function getOverviewData(
   sampleId: string,
   caseId: string,
+  genomeBuild: number,
   covOrBaf: "cov" | "baf",
   apiURI: string,
 ): Promise<Record<string, ApiCoverageDot[]>> {
   const query = {
     sample_id: sampleId,
     case_id: caseId,
+    genome_build: genomeBuild,
     cov_or_baf: covOrBaf,
   };
 

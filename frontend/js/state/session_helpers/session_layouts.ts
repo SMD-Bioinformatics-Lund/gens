@@ -26,13 +26,37 @@ export class SessionProfiles {
     const profileKey = this.computeProfileSignature(samples);
     this.profileKey = profileKey;
 
-    const userProfile = loadProfileSettings(
+    let userProfile = loadProfileSettings(
       profileKey,
       PROFILE_SETTINGS_VERSION,
     );
+    if (
+      userProfile != null &&
+      userProfile.version != null &&
+      userProfile.version !== PROFILE_SETTINGS_VERSION
+    ) {
+      console.error(
+        `Gens profile version mismatch for key "${profileKey}". ` +
+          `Found v${userProfile.version}, expected v${PROFILE_SETTINGS_VERSION}. ` +
+          "Falling back to no profile. Ask your admin to update this profile.",
+      );
+      userProfile = null;
+    }
     this.defaultProfiles = defaultProfiles;
     this.baseTrackLayout = null;
-    const defaultProfile = cloneProfile(defaultProfiles[profileKey]);
+    let defaultProfile = cloneProfile(defaultProfiles[profileKey]);
+
+    if (
+      defaultProfile.version != null &&
+      defaultProfile.version !== PROFILE_SETTINGS_VERSION
+    ) {
+      console.error(
+        `Gens profile version mismatch for key "${profileKey}". ` +
+          `Found v${defaultProfile.version}, expected v${PROFILE_SETTINGS_VERSION}. ` +
+          "Falling back to no profile. Ask your admin to update this profile.",
+      );
+      defaultProfile = null;
+    }
 
     const baseProfile = {
       version: PROFILE_SETTINGS_VERSION,
