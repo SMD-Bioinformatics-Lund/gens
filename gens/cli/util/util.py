@@ -1,5 +1,6 @@
 """Utility functions and classes for click commands."""
 
+from pathlib import Path
 import click
 from pymongo.database import Database
 
@@ -44,3 +45,16 @@ def db_setup(collections: list[str]) -> Database:
             create_index(db, coll)
 
     return db
+
+
+def resolve_existing_path(
+    path: Path, base_dir: Path, label: str, allow_directory: bool = False
+) -> Path:
+    resolved = path if path.is_absolute() else (base_dir / path)
+    resolved = resolved.resolve()
+
+    if not resolved.exists():
+        raise click.UsageError(f'{label} "{resolved}" does not exist')
+    if not allow_directory and not resolved.is_file():
+        raise click.UsageError(f'{label} "{resolved}" must be a file')
+    return resolved
