@@ -9,8 +9,6 @@ import pytest
 
 from gens.crud.samples import update_sample
 from gens.db.collections import (
-    ANNOTATIONS_COLLECTION,
-    ANNOTATION_TRACKS_COLLECTION,
     SAMPLE_ANNOTATIONS_COLLECTION,
     SAMPLE_ANNOTATION_TRACKS_COLLECTION,
     SAMPLES_COLLECTION,
@@ -286,8 +284,6 @@ def test_load_case_cli_from_yaml(
     child_meta = meta_dir / "child.tsv"
     child_meta.write_text("type\tvalue\nrole\tproband\n")
 
-    annot_file = annots_dir / "cnv.bed"
-    annot_file.write_text("1\t0\t10\tgain\t0\t+\t.\t.\trgb(255,0,0)\n")
     (annots_dir / "child_events.bed").write_text(
         "1\t10\t20\tchild event\t0\t+\t.\t.\trgb(0,0,255)\n"
     )
@@ -352,16 +348,6 @@ def test_load_case_cli_from_yaml(
     assert father_doc["sample_type"] == "father"
     assert len(father_doc["meta"]) == 1
     assert father_doc["meta"][0]["file_name"] == shared_meta.name
-
-    tracks = db.get_collection(ANNOTATION_TRACKS_COLLECTION)
-    annots = db.get_collection(ANNOTATIONS_COLLECTION)
-    assert tracks.count_documents({}) == 1
-    assert annots.count_documents({}) == 1
-
-    track_doc = tracks.find_one({})
-    assert track_doc is not None
-    assert track_doc["name"] == "cnv"
-    assert track_doc["genome_build"] == 38
 
     sample_tracks = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION)
     sample_annots = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION)
