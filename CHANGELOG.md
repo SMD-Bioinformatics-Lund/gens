@@ -10,6 +10,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Added
 
 - Track highlight is a multiselect, meaning that multiple annotation sources can be used for track highlights. [#686](https://github.com/SMD-Bioinformatics-Lund/gens/pull/686)
+- Load a full case from a yaml file.
 
 ### Changed
 
