@@ -5,6 +5,22 @@ services:
     volumes:
       - ./volumes/mongodb/data:/data/db
       - ./dump:/dump
+  openldap:
+    image: osixia/openldap:1.5.0
+    networks:
+      - gens-net
+    environment:
+      - LDAP_ORGANISATION=GENS Dev
+      - LDAP_DOMAIN=example.org
+      - LDAP_ADMIN_PASSWORD=admin
+      - LDAP_TLS=false
+    volumes:
+      - ./utils/dev/ldap/50-dev-users.ldif:/container/service/slapd/assets/config/bootstrap/ldif/50-dev-users.ldif:ro
+    ports:
+      - 1389:1389
+    # Seeded test account:
+    #   username: dev.user@example.org
+    #   password: devpassword
   gens:
     build:
       context: .
@@ -14,8 +30,16 @@ services:
       - gens-net
     depends_on:
       - mongodb
+      - openldap
     environment:
       - FLASK_DEBUG=1
+      # Toggle LDAP login mode in dev:
+      # GENS_AUTHENTICATION=ldap docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+      # This account must also exist in the configured auth user collection:
+      # gens users create --email dev.user@example.org --name "Dev User" --role user
+      - AUTHENTICATION=${GENS_AUTHENTICATION:-simple}
+      - LDAP__SERVER=${GENS_LDAP_SERVER:-ldap://openldap:1389}
+      - LDAP__BIND_USER_TEMPLATE=uid={username},ou=People,dc=example,dc=org
     ports:
       - 8080:5000
     volumes:

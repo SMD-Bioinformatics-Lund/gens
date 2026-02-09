@@ -1,0 +1,11 @@
+dn: ou=People,dc=example,dc=org
+objectClass: organizationalUnit
+ou: People
+
+dn: uid=dev.user@example.org,ou=People,dc=example,dc=org
+objectClass: inetOrgPerson
+cn: Dev User
+sn: User
+uid: dev.user@example.org
+mail: dev.user@example.org
+userPassword: devpassword
