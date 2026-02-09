@@ -7,14 +7,11 @@ from pathlib import Path
 from typing import TextIO
 
 import click
-import yaml
 from flask import json
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from gens.cli.util.annotations import parse_raw_records, upsert_annotation_track
-from gens.cli.util.load_case import CaseLoadConfig, load_case_config
+from gens.cli.util.load_case import load_case_config
 from gens.cli.util.load_helpers import load_annotations_data, load_sample_annotation_data, load_sample_data
-from gens.cli.util.util import ChoiceType, db_setup, normalize_sample_type, resolve_existing_path
+from gens.cli.util.util import ChoiceType, db_setup, resolve_existing_path
 from gens.config import settings
 from gens.crud.annotations import (
     register_data_update,

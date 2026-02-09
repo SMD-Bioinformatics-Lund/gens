@@ -42,8 +42,6 @@ def test_load_sample_cli(
 ):
     baf_file = write_sample_track(tmp_path / "baf.gz")
     cov_file = write_sample_track(tmp_path / "cov.gz")
-    overview_file = tmp_path / "overview"
-    overview_file.write_text("{}")
     meta_file_simple = tmp_path / "meta_simple.tsv"
     meta_file_simple.write_text("type\tvalue\nA\t1\n")
     meta_file_complex = tmp_path / "meta_complex.tsv"
@@ -61,7 +59,6 @@ def test_load_sample_cli(
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
-        overview_json=overview_file,
         meta_files=[meta_file_simple, meta_file_complex],
         sample_type="proband",
         sex="M",
@@ -76,7 +73,6 @@ def test_load_sample_cli(
     assert doc["genome_build"] == 38
     assert Path(doc["baf_file"]) == baf_file
     assert Path(doc["coverage_file"]) == cov_file
-    assert Path(doc["overview_file"]) == overview_file
     assert doc["sample_type"] == "proband"
     assert len(doc["meta"]) == 2
 
@@ -113,7 +109,6 @@ def test_delete_sample_metadata_cli_removes_all_entries(
         genome_build=GenomeBuild(37),
         baf_file=sample_file,
         coverage_file=sample_file,
-        overview_file=None,
         sample_type=None,
         sex=None,
         meta=[
@@ -153,7 +148,6 @@ def test_delete_sample_metadata_cli_filters_by_id(
         genome_build=GenomeBuild(37),
         baf_file=sample_file,
         coverage_file=sample_file,
-        overview_file=None,
         sample_type=None,
         sex=None,
         meta=[
@@ -189,8 +183,6 @@ def test_load_sample_cli_with_string_genome_build_fails(
 ):
     baf_file = write_sample_track(tmp_path / "baf.gz")
     cov_file = write_sample_track(tmp_path / "cov.gz")
-    overview_file = tmp_path / "overview"
-    overview_file.write_text("{}")
     meta_file = tmp_path / "meta.tsv"
     meta_file.write_text("type\tvalue\nA\t1\n")
 
@@ -202,7 +194,6 @@ def test_load_sample_cli_with_string_genome_build_fails(
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
-        overview_json=overview_file,
         meta_files=[meta_file],
         sample_type="proband",
         sex="M",
@@ -220,7 +211,6 @@ def test_load_sample_cli_with_string_genome_build_fails(
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
-        overview_json=overview_file,
         meta_files=[meta_file],
         sample_type="proband",
         sex="M",
@@ -239,8 +229,6 @@ def test_load_sample_cli_accepts_aliases(
 ) -> None:
     baf_file = write_sample_track(tmp_path / "baf.gz")
     cov_file = write_sample_track(tmp_path / "cov.gz")
-    overview_file = tmp_path / "overview"
-    overview_file.write_text("{}")
 
     cli_load.sample.callback(
         sample_id=f"sample-{alias}",
@@ -248,7 +236,6 @@ def test_load_sample_cli_accepts_aliases(
         baf=baf_file,
         coverage=cov_file,
         case_id=f"case-{alias}",
-        overview_json=overview_file,
         meta_files=[],
         sample_type=alias,
         sex=None,
@@ -316,7 +303,6 @@ def test_load_case_cli_from_yaml(
             "  - sample_id: child\n"
             "    baf: tracks/child.baf.gz\n"
             "    coverage: tracks/child.cov.gz\n"
-            "    overview_json: overview/deprecated-and-ignored.json\n"
             "    sample_type: proband\n"
             "    sex: M\n"
             "    meta_files:\n"
@@ -334,8 +320,6 @@ def test_load_case_cli_from_yaml(
             "    coverage: tracks/father.cov.gz\n"
             "    sample_type: father\n"
             "    sex: M\n"
-            "annotations:\n"
-            "  - file: annotations/cnv.bed\n"
         )
     )
 
@@ -350,7 +334,6 @@ def test_load_case_cli_from_yaml(
     assert child_doc["sample_type"] == "proband"
     assert Path(child_doc["baf_file"]) == child_baf
     assert Path(child_doc["coverage_file"]) == child_cov
-    assert child_doc["overview_file"] is None
     assert {meta["file_name"] for meta in child_doc["meta"]} == {
         shared_meta.name,
         child_meta.name,

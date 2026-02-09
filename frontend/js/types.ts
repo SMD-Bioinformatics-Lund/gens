@@ -673,7 +673,6 @@ interface ApiSample {
   coverage_index: string;
   created_at: string;
   genome_build: number;
-  overview_file: string;
   sample_id: string;
   sample_type?: string;
   sex?: string;

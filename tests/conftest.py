@@ -9,6 +9,7 @@ from typing import Callable
 
 import mongomock
 import pytest
+from pymongo import MongoClient
 
 
 @pytest.fixture()
@@ -130,25 +131,48 @@ def db() -> mongomock.Database:
     return client.get_database("test")
 
 
+@pytest.fixture(autouse=True)
+def fail_fast_real_mongo(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail fast if a test accidentally uses a real MongoDB connection."""
+
+    def _mongo_client_fail_fast(*args, **kwargs):
+        kwargs.setdefault("serverSelectionTimeoutMS", 100)
+        kwargs.setdefault("connectTimeoutMS", 100)
+        kwargs.setdefault("socketTimeoutMS", 100)
+        return MongoClient(*args, **kwargs)
+
+    monkeypatch.setattr("gens.db.db.MongoClient", _mongo_client_fail_fast)
+
+
 @pytest.fixture()
 def patch_cli(
     monkeypatch: pytest.MonkeyPatch, db: mongomock.Database
 ) -> Callable[[str | types.ModuleType], None]:
+    def _get_db_connection(*_args, **_kwargs):
+        return db
+
+    def _db_setup(*_args, **_kwargs):
+        return db
+
+    def _patch_target(target: str | types.ModuleType) -> None:
+        if isinstance(target, str):
+            monkeypatch.setattr(
+                f"{target}.get_db_connection", _get_db_connection, raising=False
+            )
+            monkeypatch.setattr(f"{target}.db_setup", _db_setup, raising=False)
+        else:
+            monkeypatch.setattr(
+                target, "get_db_connection", _get_db_connection, raising=False
+            )
+            monkeypatch.setattr(target, "db_setup", _db_setup, raising=False)
 
     # Patch out cli indexing commands
     def _patch(module: str | types.ModuleType) -> None:
-        if isinstance(module, str):
-            monkeypatch.setattr(
-                f"{module}.get_db_connection", lambda *a, **kw: db, raising=False
-            )
-            monkeypatch.setattr(
-                f"{module}.db_setup", lambda *a, **kw: db, raising=False
-            )
-        else:
-            monkeypatch.setattr(
-                module, "get_db_connection", lambda *a, **kw: db, raising=False
-            )
-            monkeypatch.setattr(module, "db_setup", lambda *a, **kw: db, raising=False)
+        _patch_target(module)
+        # Keep helper boundaries patched too, because CLI commands delegate DB work there.
+        _patch_target("gens.cli.util.load_helpers")
+        _patch_target("gens.cli.util.util")
+        _patch_target("gens.db.db")
 
     return _patch
 
