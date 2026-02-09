@@ -9,10 +9,14 @@ from typing import TextIO
 import click
 from flask import json
 
+from gens.cli.util import db as cli_db
 from gens.cli.util.load_case import load_case_config
-from gens.cli.util.load_helpers import load_annotations_data, load_sample_annotation_data, load_sample_data
-from gens.cli.util.util import ChoiceType, db_setup, resolve_existing_path
-from gens.config import settings
+from gens.cli.util.load_helpers import (
+    load_annotations_data,
+    load_sample_annotation_data,
+    load_sample_data,
+)
+from gens.cli.util.util import ChoiceType, resolve_existing_path
 from gens.crud.annotations import (
     register_data_update,
 )
@@ -22,10 +26,7 @@ from gens.db.collections import (
     CHROMSIZES_COLLECTION,
     TRANSCRIPTS_COLLECTION,
 )
-from gens.db.db import get_db_connection
-from gens.db.index import create_index, get_indexes
 from gens.load.chromosomes import build_chromosomes_obj, get_assembly_info
-from gens.load.meta import parse_meta_file
 from gens.load.transcripts import build_transcripts
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleSex
@@ -290,15 +291,7 @@ def annotations(
 )
 def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     """Load transcripts into the database."""
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    # if collection is not indexed, create index
-    if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) == 0:
-        create_index(db, TRANSCRIPTS_COLLECTION)
+    db = cli_db.get_cli_db([TRANSCRIPTS_COLLECTION])
     LOG.info("Building transcript object")
     with open_text_or_gzip(file) as file_fh, open_text_or_gzip(mane) as mane_fh:
         transcripts_obj = build_transcripts(file_fh, mane_fh, genome_build)
@@ -335,7 +328,7 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
 def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> None:
     """Load chromosome size information into the database."""
 
-    db = db_setup([CHROMSIZES_COLLECTION])
+    db = cli_db.get_cli_db([CHROMSIZES_COLLECTION])
 
     # Get chromosome info from ensemble
     # If file is given, use sizes from file else download chromsizes from ebi

@@ -127,7 +127,7 @@ def meta_norow_file_path(data_path: Path) -> Path:
 
 @pytest.fixture()
 def db() -> mongomock.Database:
-    client = mongomock.MongoClient()
+    client: mongomock.MongoClient = mongomock.MongoClient()
     return client.get_database("test")
 
 
@@ -148,31 +148,14 @@ def fail_fast_real_mongo(monkeypatch: pytest.MonkeyPatch) -> None:
 def patch_cli(
     monkeypatch: pytest.MonkeyPatch, db: mongomock.Database
 ) -> Callable[[str | types.ModuleType], None]:
-    def _get_db_connection(*_args, **_kwargs):
+    def _get_cli_db(*_args, **_kwargs):
         return db
 
-    def _db_setup(*_args, **_kwargs):
-        return db
+    monkeypatch.setattr("gens.cli.util.db.get_cli_db", _get_cli_db)
 
-    def _patch_target(target: str | types.ModuleType) -> None:
-        if isinstance(target, str):
-            monkeypatch.setattr(
-                f"{target}.get_db_connection", _get_db_connection, raising=False
-            )
-            monkeypatch.setattr(f"{target}.db_setup", _db_setup, raising=False)
-        else:
-            monkeypatch.setattr(
-                target, "get_db_connection", _get_db_connection, raising=False
-            )
-            monkeypatch.setattr(target, "db_setup", _db_setup, raising=False)
-
-    # Patch out cli indexing commands
-    def _patch(module: str | types.ModuleType) -> None:
-        _patch_target(module)
-        # Keep helper boundaries patched too, because CLI commands delegate DB work there.
-        _patch_target("gens.cli.util.load_helpers")
-        _patch_target("gens.cli.util.util")
-        _patch_target("gens.db.db")
+    def _patch(_module: str | types.ModuleType) -> None:
+        """Compatibility no-op for fixtures that call patch_cli(module)."""
+        return None
 
     return _patch
 

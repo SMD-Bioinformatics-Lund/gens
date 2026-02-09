@@ -1,22 +1,38 @@
+"""Helpers for CLI load commands."""
+
 from logging import Logger
 from pathlib import Path
 
 import click
+
+from gens.cli.util import db as cli_db
 from gens.cli.util.annotations import parse_raw_records, upsert_annotation_track
-from gens.cli.util.util import db_setup, normalize_sample_type
-from gens.crud.annotations import create_annotations_for_track, delete_annotation_track, delete_annotations_for_track, register_data_update, update_annotation_track
-from gens.crud.sample_annotations import create_sample_annotation_track, create_sample_annotations_for_track, delete_sample_annotations_for_track, get_sample_annotation_track
+from gens.cli.util.util import normalize_sample_type
+from gens.crud.annotations import (
+    create_annotations_for_track,
+    delete_annotation_track,
+    delete_annotations_for_track,
+    register_data_update,
+    update_annotation_track,
+)
+from gens.crud.sample_annotations import (
+    create_sample_annotation_track,
+    create_sample_annotations_for_track,
+    delete_sample_annotations_for_track,
+    get_sample_annotation_track,
+)
 from gens.crud.samples import create_sample
-from gens.db.collections import ANNOTATIONS_COLLECTION, SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION, SAMPLES_COLLECTION
-from gens.db.db import get_db_connection
-from gens.db.index import create_index, get_indexes
+from gens.db.collections import (
+    ANNOTATIONS_COLLECTION,
+    SAMPLE_ANNOTATIONS_COLLECTION,
+    SAMPLE_ANNOTATION_TRACKS_COLLECTION,
+    SAMPLES_COLLECTION,
+)
 from gens.load.annotations import fmt_bed_to_annotation, parse_bed_file
 from gens.load.meta import parse_meta_file
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleInfo, SampleSex
 from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrack
-from gens.config import settings
-
 
 
 def load_sample_data(
@@ -29,14 +45,7 @@ def load_sample_data(
     sample_type: str | None,
     sex: SampleSex | None,
 ) -> None:
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
-        create_index(db, SAMPLES_COLLECTION)
+    db = cli_db.get_cli_db([SAMPLES_COLLECTION])
 
     sample_obj = SampleInfo.model_validate(
         {
@@ -47,7 +56,7 @@ def load_sample_data(
             "coverage_file": coverage,
             "sample_type": normalize_sample_type(sample_type) if sample_type else None,
             "sex": sex,
-            "meta": [parse_meta_file(p) for p in meta_files],
+            "meta": [parse_meta_file(path) for path in meta_files],
         }
     )
     create_sample(db, sample_obj)
@@ -60,7 +69,9 @@ def load_sample_annotation_data(
     file: Path,
     name: str,
 ) -> None:
-    db = db_setup([SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION])
+    db = cli_db.get_cli_db(
+        [SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION]
+    )
 
     track_in_db = get_sample_annotation_track(
         genome_build=genome_build,
@@ -100,9 +111,13 @@ def load_sample_annotation_data(
 
 
 def load_annotations_data(
-    logger: Logger, file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_errors: bool
+    logger: Logger,
+    file: Path,
+    genome_build: GenomeBuild,
+    is_tsv: bool,
+    ignore_errors: bool,
 ) -> None:
-    db = db_setup([ANNOTATIONS_COLLECTION])
+    db = cli_db.get_cli_db([ANNOTATIONS_COLLECTION])
 
     files = file.glob("*") if file.is_dir() else [file]
 
@@ -128,12 +143,14 @@ def load_annotations_data(
                 f"An error occured when creating loading annotation: {err}",
                 fg="red",
             )
-            raise click.Abort()
+            raise click.Abort() from err
 
         if len(parse_recs_res.file_meta) > 0:
             logger.debug("Updating existing annotation track with metadata from file.")
             update_annotation_track(
-                track_id=track_result.track_id, metadata=parse_recs_res.file_meta, db=db
+                track_id=track_result.track_id,
+                metadata=parse_recs_res.file_meta,
+                db=db,
             )
 
         if len(parse_recs_res.records) == 0:
@@ -150,4 +167,3 @@ def load_annotations_data(
         logger.info("Load annotations in the database")
         create_annotations_for_track(parse_recs_res.records, db)
         register_data_update(db, ANNOTATIONS_COLLECTION, annot_file.stem)
-

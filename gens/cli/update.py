@@ -6,7 +6,8 @@ from pathlib import Path
 
 import click
 
-from gens.cli.util.util import ChoiceType, db_setup, normalize_sample_type
+from gens.cli.util import db as cli_db
+from gens.cli.util.util import ChoiceType, normalize_sample_type
 from gens.crud.samples import get_sample, update_sample
 from gens.db.collections import (
     SAMPLES_COLLECTION,
@@ -90,7 +91,7 @@ def sample(
 ) -> None:
     """Update sample information for a sample."""
 
-    db = db_setup([SAMPLES_COLLECTION])
+    db = cli_db.get_cli_db([SAMPLES_COLLECTION])
 
     sample_obj = get_sample(
         db[SAMPLES_COLLECTION],
