@@ -22,7 +22,7 @@ $ cd gens_test
 
 - [ ] Link in the /dump data folder
 
-A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/trannel/dev/jakob/data/gens_test_data`.
+A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/trannel/dev/resources/gens_test_data`.
 
 Furthermore, current annotation tracks for testing can be copied from `/access/annotation_tracks`. Copy these into the folder `annotation_tracks` folder in the `dump` folder. Note - some of these contain sensitive data. Test loading all as a final step when running on Gens dev.
 
@@ -204,6 +204,14 @@ gens load sample \
   --overview-json /dump/hg004.overview.json.gz \
   --sample-type relative \
   --sex F
+```
+
+- [ ] Load an additional trio case from YAML (in addition to the manual loading above)
+
+This validates the case-loader workflow with a complete config file.
+
+```
+gens load case /dump/trio.yaml
 ```
 
 # Testing the GUI

@@ -100,10 +100,4 @@ async def get_cov_overview(
         genome_build=genome_build,
     )
 
-    if (
-        sample_info.overview_file is not None
-        and Path(sample_info.overview_file).is_file()
-    ):
-        return get_overview_data(sample_info.overview_file, data_type)
-
     return get_overview_from_tabix(sample_info, data_type)

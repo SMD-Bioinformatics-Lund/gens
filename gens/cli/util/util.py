@@ -1,12 +1,9 @@
 """Utility functions and classes for click commands."""
 
 import click
-from pymongo.database import Database
+from pathlib import Path
 
-from gens.config import settings
 from gens.constants import SAMPLE_TYPE_ALIASES
-from gens.db.db import get_db_connection
-from gens.db.index import create_index, get_indexes
 
 
 def normalize_sample_type(sample_type: str) -> str:
@@ -28,19 +25,14 @@ class ChoiceType(click.Choice):
         value = super().convert(value, param, ctx)
         return next(v for v in self.enum if str(v) == value)
 
+def resolve_existing_path(
+    path: Path, base_dir: Path, label: str, allow_directory: bool = False
+) -> Path:
+    resolved = path if path.is_absolute() else (base_dir / path)
+    resolved = resolved.resolve()
 
-def db_setup(collections: list[str]) -> Database:
-    gens_db_name = settings.gens_db.database
-
-    if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
-
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-
-    for coll in collections:
-        if len(get_indexes(db, coll)) == 0:
-            create_index(db, coll)
-
-    return db
+    if not resolved.exists():
+        raise click.UsageError(f'{label} "{resolved}" does not exist')
+    if not allow_directory and not resolved.is_file():
+        raise click.UsageError(f'{label} "{resolved}" must be a file')
+    return resolved

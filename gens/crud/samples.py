@@ -160,7 +160,6 @@ def get_samples_per_case(
             "sample_type": sample.get("sample_type"),
             "sex": sample.get("sex"),
             "genome_build": sample["genome_build"],
-            "has_overview_file": sample["overview_file"] is not None,
             "files_present": bool(sample["baf_file"] and sample["coverage_file"]),
             "created_at": sample["created_at"].astimezone(timezone.utc).isoformat(),
         }
@@ -179,9 +178,6 @@ def get_samples_for_case(
 
     samples: list[SampleInfo] = []
     for result in cursor:
-        overview_file = result.get("overview_file")
-        if overview_file == "None":
-            overview_file = None
 
         sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
 
@@ -193,8 +189,6 @@ def get_samples_for_case(
             index_path = file_path.with_suffix(file_path.suffix + ".tbi")
             if not index_path.is_file():
                 raise FileNotFoundError(f"{index_path} was not found")
-        if overview_file is not None and not Path(overview_file).is_file():
-            raise FileNotFoundError(f"{overview_file} was not found")
 
         sample = SampleInfo(
             sample_id=result["sample_id"],
@@ -202,7 +196,6 @@ def get_samples_for_case(
             genome_build=GenomeBuild(int(result["genome_build"])),
             baf_file=baf_file,
             coverage_file=coverage_file,
-            overview_file=Path(overview_file) if overview_file is not None else None,
             sample_type=result.get("sample_type"),
             sex=result.get("sex"),
             meta=sample_meta,
@@ -234,10 +227,6 @@ def get_sample(
             f'No sample with id: "{sample_id}" in database', sample_id
         )
 
-    overview_file = result.get("overview_file")
-    if overview_file == "None":
-        overview_file = None
-
     sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
 
     return SampleInfo(
@@ -246,7 +235,6 @@ def get_sample(
         genome_build=GenomeBuild(int(result["genome_build"])),
         baf_file=result["baf_file"],
         coverage_file=result["coverage_file"],
-        overview_file=overview_file,
         sample_type=result.get("sample_type"),
         sex=result.get("sex"),
         meta=sample_meta,

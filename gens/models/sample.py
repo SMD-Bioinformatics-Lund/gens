@@ -86,7 +86,6 @@ class SampleInfo(RWModel, CreatedAtModel):
     genome_build: GenomeBuild
     baf_file: FilePath
     coverage_file: FilePath
-    overview_file: FilePath | None = None
     sample_type: str | None = None
     sex: SampleSex | None = None
     meta: list[MetaEntry] = Field(default_factory=list)
@@ -146,7 +145,7 @@ class SampleInfo(RWModel, CreatedAtModel):
 
         return _get_tabix_path(self.coverage_file, check=True)
 
-    @field_serializer("baf_file", "coverage_file", "overview_file")
+    @field_serializer("baf_file", "coverage_file")
     def serialize_path(self, path: Path) -> str:
         """Serialize a Path object as string"""
 

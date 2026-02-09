@@ -9,6 +9,7 @@ from typing import Callable
 
 import mongomock
 import pytest
+from pymongo import MongoClient
 
 
 @pytest.fixture()
@@ -126,29 +127,35 @@ def meta_norow_file_path(data_path: Path) -> Path:
 
 @pytest.fixture()
 def db() -> mongomock.Database:
-    client = mongomock.MongoClient()
+    client: mongomock.MongoClient = mongomock.MongoClient()
     return client.get_database("test")
+
+
+@pytest.fixture(autouse=True)
+def fail_fast_real_mongo(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail fast if a test accidentally uses a real MongoDB connection."""
+
+    def _mongo_client_fail_fast(*args, **kwargs):
+        kwargs.setdefault("serverSelectionTimeoutMS", 100)
+        kwargs.setdefault("connectTimeoutMS", 100)
+        kwargs.setdefault("socketTimeoutMS", 100)
+        return MongoClient(*args, **kwargs)
+
+    monkeypatch.setattr("gens.db.db.MongoClient", _mongo_client_fail_fast)
 
 
 @pytest.fixture()
 def patch_cli(
     monkeypatch: pytest.MonkeyPatch, db: mongomock.Database
 ) -> Callable[[str | types.ModuleType], None]:
+    def _get_cli_db(*_args, **_kwargs):
+        return db
 
-    # Patch out cli indexing commands
-    def _patch(module: str | types.ModuleType) -> None:
-        if isinstance(module, str):
-            monkeypatch.setattr(
-                f"{module}.get_db_connection", lambda *a, **kw: db, raising=False
-            )
-            monkeypatch.setattr(
-                f"{module}.db_setup", lambda *a, **kw: db, raising=False
-            )
-        else:
-            monkeypatch.setattr(
-                module, "get_db_connection", lambda *a, **kw: db, raising=False
-            )
-            monkeypatch.setattr(module, "db_setup", lambda *a, **kw: db, raising=False)
+    monkeypatch.setattr("gens.cli.util.db.get_cli_db", _get_cli_db)
+
+    def _patch(_module: str | types.ModuleType) -> None:
+        """Compatibility no-op for fixtures that call patch_cli(module)."""
+        return None
 
     return _patch
 
