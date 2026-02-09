@@ -1,4 +1,3 @@
-import { spawn } from "child_process";
 import { CHROMOSOMES, IDB_CACHE } from "../constants";
 import { get } from "../util/fetch";
 import { idbGet, idbSet } from "../util/indexeddb";

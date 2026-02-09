@@ -27,7 +27,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Prevent crash when deleting an annotation track by adding a simple index to it. [#684](https://github.com/SMD-Bioinformatics-Lund/gens/pull/684)
 - Profile should now reset when profile version is updated. [#686](https://github.com/SMD-Bioinformatics-Lund/gens/pull/686)
 - Clear user error message when attempting to opening a sample from a build for which chromosomes haven't been loaded. [#690](https://github.com/SMD-Bioinformatics-Lund/gens/pull/690)
-- Fix such that the same case ID can be reused across different builds.
+- Fix such that the same case ID can be reused across different builds. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
 
 ## 4.4.2
 
@@ -38,6 +38,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Add padding to right-hand settings menu such that advanced settings toggle won't end up beneath the horizontal scroll bar [#640](https://github.com/SMD-Bioinformatics-Lund/gens/issues/640).
 - Variant software linkout on samples page only displays when an URL is supplied [#648](https://github.com/SMD-Bioinformatics-Lund/gens/issues/648).
 - Fix docker container such that the Gens JS files are correctly included [#659](https://github.com/SMD-Bioinformatics-Lund/gens/issues/659).
+- Fix issue with user profile version updates - it should now discard the existing user profile if a new version number is found. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
 
 ## 4.4.1
 

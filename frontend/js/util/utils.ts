@@ -373,8 +373,8 @@ export function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
   return diff;
 }
 
-export function getSampleKey(sample: SampleIdentifier): string {
-  return `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.genomeBuild}`;
+export function getSampleKey(id: SampleIdentifier): string {
+  return `${id.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${id.sampleId}${COMBINED_SAMPLE_ID_DIVIDER}${id.genomeBuild}`;
 }
 
 export function getSampleIdentifierFromID(id: string): SampleIdentifier {

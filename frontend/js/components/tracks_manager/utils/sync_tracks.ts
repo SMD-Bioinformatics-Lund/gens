@@ -1,7 +1,7 @@
 import { TRACK_IDS, USED_TRACK_HEIGHTS } from "../../../constants";
 import { GensSession } from "../../../state/gens_session";
 import {
-  getSampleIdentifierFromID as getSampleIdsFromID,
+  getSampleIdentifierFromID,
   getSampleKey,
   removeOne,
   setDiff,
@@ -45,7 +45,7 @@ export async function syncDataTrackSettings(
   );
   const removedSampleTrackIds = [];
   for (const combinedSampleId of removedSamples) {
-    const targetSample = getSampleIdsFromID(combinedSampleId);
+    const targetSample = getSampleIdentifierFromID(combinedSampleId);
     for (const track of origTrackSettings) {
       if (
         track.sample &&
@@ -176,7 +176,7 @@ export async function getSampleTrackSettings(
 ): Promise<DataTrackSettings[]> {
   const sampleSettings = [];
   for (const combinedId of combinedSampleIds) {
-    const sampleIds = getSampleIdsFromID(combinedId);
+    const sampleIds = getSampleIdentifierFromID(combinedId);
     const sample = getSample(sampleIds);
 
     const sampleTracks = await getSampleTracks(

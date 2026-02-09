@@ -393,14 +393,14 @@ interface RenderDataSource {
   getGeneListBands: (listId: string, chrom: string) => Promise<RenderBand[]>;
 
   getVariantBands: (
-    sample: SampleIdentifier,
+    id: SampleIdentifier,
     chrom: string,
     rankScoreThres: number,
   ) => Promise<RenderBand[]>;
   getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>;
 
-  getOverviewCovData: (sample: SampleIdentifier) => Promise<Record<string, RenderDot[]>>;
-  getOverviewBafData: (sample: SampleIdentifier) => Promise<Record<string, RenderDot[]>>;
+  getOverviewCovData: (id: SampleIdentifier) => Promise<Record<string, RenderDot[]>>;
+  getOverviewBafData: (id: SampleIdentifier) => Promise<Record<string, RenderDot[]>>;
 
   getVariantURL: (doc_id: string) => string;
 }
