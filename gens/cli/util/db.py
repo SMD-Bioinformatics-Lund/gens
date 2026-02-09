@@ -4,7 +4,7 @@ from typing import Any
 
 from pymongo.database import Database
 
-from gens.config import settings
+from gens.config import AuthUserDb, settings
 from gens.db.db import get_db_connection
 from gens.db.index import create_index, get_indexes
 
@@ -25,3 +25,23 @@ def get_cli_db(collections: list[str] | None = None) -> Database[Any]:
                 create_index(db, collection_name)
 
     return db
+
+
+def get_cli_user_db(user_db: AuthUserDb | str | None = None) -> Database[Any]:
+    """Get database configured for authentication user lookups."""
+    selected_user_db = user_db or settings.auth_user_db
+    if isinstance(selected_user_db, str):
+        selected_user_db = AuthUserDb(selected_user_db)
+
+    db_config = settings.gens_db
+    if selected_user_db == AuthUserDb.VARIANT:
+        if settings.variant_db is None:
+            raise ValueError(
+                "No variant database is configured. Set variant_db before using auth user db 'variant'."
+            )
+        db_config = settings.variant_db
+
+    if db_config.database is None:
+        raise ValueError("No database name provided in settings.")
+
+    return get_db_connection(db_config.connection, db_name=db_config.database)

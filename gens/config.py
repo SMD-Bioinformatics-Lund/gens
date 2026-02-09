@@ -37,6 +37,13 @@ class AuthMethod(Enum):
     DISABLED = "disabled"
 
 
+class AuthUserDb(Enum):
+    """Valid user databases for authentication."""
+
+    GENS = "gens"
+    VARIANT = "variant"
+
+
 class OauthConfig(BaseSettings):
     """Valid authentication options"""
 
@@ -109,9 +116,21 @@ class Settings(BaseSettings):
         default_factory=lambda: ["proband", "tumor"],
         description="Sample types treated as main samples",
     )
+    secret_key: str = Field(
+        default="pass",
+        description="Flask secret key used for sessions.",
+    )
 
     # Authentication options
     authentication: AuthMethod = AuthMethod.DISABLED
+    auth_user_db: AuthUserDb = Field(
+        default=AuthUserDb.GENS,
+        description="Database to use for authentication user lookups.",
+    )
+    auth_user_collection: str = Field(
+        default="user",
+        description="Collection name used for authentication user lookups.",
+    )
 
     # Oauth options
     oauth: OauthConfig | None = None
@@ -142,7 +161,10 @@ class Settings(BaseSettings):
             "scout_url": self.variant_url,
             "gens_api_url": self.gens_api_url,
             "main_sample_types": self.main_sample_types,
+            "secret_key": self.secret_key,
             "authentication": self.authentication.value,
+            "auth_user_db": self.auth_user_db.value,
+            "auth_user_collection": self.auth_user_collection,
             "oauth": self.oauth,
             "ldap": self.ldap,
             "default_profiles": self.default_profiles,
@@ -161,6 +183,10 @@ class Settings(BaseSettings):
         if self.authentication == AuthMethod.LDAP and self.ldap is None:
             raise ValueError(
                 "LDAP authentication requires you to configure server and bind_user_template"
+            )
+        if self.auth_user_db == AuthUserDb.VARIANT and self.variant_db is None:
+            raise ValueError(
+                "auth_user_db='variant' requires variant_db to be configured"
             )
         return self
 

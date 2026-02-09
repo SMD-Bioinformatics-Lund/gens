@@ -63,7 +63,9 @@ def create_app() -> FastAPI:
         init_database_connection(flask_app)
     # connect to mongo client
     flask_app.config["DEBUG"] = True
-    flask_app.config["SECRET_KEY"] = "pass"
+    flask_app.config["SECRET_KEY"] = settings.secret_key
+    if settings.secret_key == "pass":
+        LOG.warning("Using default SECRET_KEY value. Configure secret_key in production.")
 
     # prepare app context
     initialize_extensions(flask_app)
