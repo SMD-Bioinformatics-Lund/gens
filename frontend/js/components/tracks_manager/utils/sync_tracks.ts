@@ -196,10 +196,9 @@ async function getSampleTracks(
     id: SampleIdentifier,
   ) => Promise<{ id: string; name: string }[]>,
 ): Promise<DataTrackSettings[]> {
-  // FIXME: Some logic here to distinguish if single or multiple samples opened
-  // FIXME: Loading defaulting
+  const sampleKey = getSampleKey(sampleIdentifier);
   const cov: DataTrackSettings = {
-    trackId: `${sampleIdentifier.sampleId}_${TRACK_IDS.cov}`,
+    trackId: `${sampleKey}_${TRACK_IDS.cov}`,
     trackLabel: `${sampleIdentifier.sampleId} cov`,
     trackType: "dot-cov",
     sample: sampleIdentifier,
@@ -219,7 +218,7 @@ async function getSampleTracks(
   };
 
   const baf: DataTrackSettings = {
-    trackId: `${sampleIdentifier.sampleId}_${TRACK_IDS.baf}`,
+    trackId: `${sampleKey}_${TRACK_IDS.baf}`,
     trackLabel: `${sampleIdentifier.sampleId} baf`,
     trackType: "dot-baf",
     sample: sampleIdentifier,
@@ -239,7 +238,7 @@ async function getSampleTracks(
   };
 
   const variants: DataTrackSettings = {
-    trackId: `${sampleIdentifier.sampleId}_${TRACK_IDS.variants}`,
+    trackId: `${sampleKey}_${TRACK_IDS.variants}`,
     trackLabel: `${sampleIdentifier.sampleId} Variants`,
     trackType: "variant",
     sample: sampleIdentifier,

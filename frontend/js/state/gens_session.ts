@@ -195,7 +195,7 @@ export class GensSession {
 
     if (selectedAnnots.length != presentAnnots.length) {
       console.warn(
-        `Not all annotations were present. Selected: ${selectedAnnots.length} present: ${presentAnnots.length}`,
+        `Not all annotations specified in the profile was present in the database. Selected: ${selectedAnnots.length} (${selectedAnnots}) present: ${presentAnnots.length} (${presentAnnots})`,
       );
     }
 
