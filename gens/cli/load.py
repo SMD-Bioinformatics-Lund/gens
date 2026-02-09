@@ -124,14 +124,7 @@ def sample(
 
 
 @load.command("case")
-@click.option(
-    "-f",
-    "--file",
-    "config_file",
-    required=True,
-    type=click.Path(exists=True, path_type=Path),
-    help="YAML file that defines a full case load",
-)
+@click.argument("config_file", type=click.Path(exists=True, path_type=Path))
 def case(config_file: Path) -> None:
     """Load a full case from YAML including samples, metadata and annotation tracks."""
     case_config = load_case_config(config_file)
