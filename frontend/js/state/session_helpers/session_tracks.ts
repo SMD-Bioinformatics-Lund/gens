@@ -22,6 +22,7 @@ export class Tracks {
   }
 
   public get(trackId: string): DataTrackSettings {
+
     const matches = this.tracks.filter((setting) => setting.trackId == trackId);
     if (matches.length == 0) {
       throw Error(`No matches found for ID: ${trackId}`);
@@ -48,6 +49,7 @@ export class Tracks {
 
   public setIsExpanded(trackId: string, isExpanded: boolean) {
     const setting = this.get(trackId);
+    console.log("Set is expanded for track ID", trackId, isExpanded);
     setting.isExpanded = isExpanded;
   }
 
@@ -148,6 +150,8 @@ export function getArrangedTracks(
       seenLayoutIds.add(layoutId);
     }
   }
+
+  console.log("Ordered tracks", orderedTracks);
 
   // Don't drop leftover tracks
   for (const [layoutId, tracks] of Object.entries(layoutIdToSettings)) {

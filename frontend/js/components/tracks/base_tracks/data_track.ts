@@ -97,9 +97,11 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   protected syncHeight() {
+
     this.currentHeight = this.getSettings().isExpanded
       ? this.getSettings().height.expandedHeight
       : this.getSettings().height.collapsedHeight;
+    console.log("Syncing height for", this.id, this.currentHeight);
   }
 
   protected initializeExpander(eventKey: string, onExpand: () => void) {
@@ -203,6 +205,7 @@ export abstract class DataTrack extends CanvasTrack {
   }
 
   async render(renderSettings: RenderSettings) {
+
     const isHidden = this.updateHidden();
     if (isHidden) {
       return;
@@ -250,10 +253,16 @@ export abstract class DataTrack extends CanvasTrack {
     const xScale = this.getXScale();
 
     const settings = this.getSettings();
+
+    console.log("Draw start with settings", settings, "for ID", this.id);
+
     if (this.lastRenderedExpanded != settings.isExpanded) {
       this.lastRenderedExpanded = settings.isExpanded;
 
+      console.log("Outside this.onExpand for", this.id);
+      
       if (this.onExpand) {
+        console.log("Inside this.onExpand for", this.id);
         this.syncHeight();
         this.onExpand();
       }

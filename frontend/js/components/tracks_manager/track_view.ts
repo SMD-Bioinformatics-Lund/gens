@@ -312,6 +312,9 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(renderSettings: RenderSettings) {
+
+    console.log("Rendering");
+
     if (renderSettings.tracksReorderedOnly) {
       this.syncTrackOrder();
       return;
@@ -339,6 +342,8 @@ export class TrackView extends ShadowBaseElement {
     );
 
     const existingTracks = this.session.tracks.getTracks();
+
+    console.log("Existing tracks", existingTracks);
 
     syncDataTrackSettings(
       existingTracks,
@@ -418,6 +423,7 @@ export class TrackView extends ShadowBaseElement {
       const track = this.dataTracks.find(
         (track) => track.track.id == settings.targetTrackId,
       );
+      console.log("Single track render for", track);
       track.track.render(settings);
       return;
     }
@@ -437,6 +443,9 @@ export class TrackView extends ShadowBaseElement {
 
     for (const settingId of addedIds) {
       const setIsExpanded = (trackId: string, isExpanded: boolean) => {
+
+        console.log("Toggling expanded", trackId, isExpanded);
+
         this.session.tracks.setIsExpanded(trackId, isExpanded);
         this.requestRender({ saveLayoutChange: true, targetTrackId: trackId });
       };
