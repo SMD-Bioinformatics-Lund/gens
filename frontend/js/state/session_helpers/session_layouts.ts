@@ -42,22 +42,9 @@ export class SessionProfiles {
       );
       userProfile = null;
     }
-    this.defaultProfiles = defaultProfiles;
+    this.defaultProfiles = getVersionCompatibleDefaultProfiles(defaultProfiles);
     this.baseTrackLayout = null;
-    let defaultProfile = cloneProfile(defaultProfiles[profileKey]);
-
-    if (
-      defaultProfile &&
-      defaultProfile.version != null &&
-      defaultProfile.version !== PROFILE_SETTINGS_VERSION
-    ) {
-      console.error(
-        `Gens profile version mismatch for key "${profileKey}". ` +
-          `Found v${defaultProfile.version}, expected v${PROFILE_SETTINGS_VERSION}. ` +
-          "Falling back to no profile. Ask your admin to update this profile.",
-      );
-      defaultProfile = null;
-    }
+    const defaultProfile = cloneProfile(this.defaultProfiles[profileKey]);
 
     const baseProfile = {
       version: PROFILE_SETTINGS_VERSION,
@@ -218,4 +205,27 @@ function cloneProfile(
   }
 
   return JSON.parse(JSON.stringify(profile)) as ProfileSettings;
+}
+
+function getVersionCompatibleDefaultProfiles(
+  defaultProfiles: Record<string, ProfileSettings>,
+): Record<string, ProfileSettings> {
+  const compatibleProfiles: Record<string, ProfileSettings> = {};
+
+  for (const [profileKey, profile] of Object.entries(defaultProfiles)) {
+    if (
+      profile.version != null &&
+      profile.version !== PROFILE_SETTINGS_VERSION
+    ) {
+      console.error(
+        `Gens profile version mismatch for key "${profileKey}". ` +
+          `Found v${profile.version}, expected v${PROFILE_SETTINGS_VERSION}. ` +
+          "Ignoring default profile. Ask your admin to update this profile.",
+      );
+      continue;
+    }
+    compatibleProfiles[profileKey] = profile;
+  }
+
+  return compatibleProfiles;
 }
