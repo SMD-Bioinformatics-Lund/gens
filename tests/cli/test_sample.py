@@ -4,6 +4,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+import click
 import mongomock
 import pytest
 
@@ -15,6 +16,7 @@ from gens.db.collections import (
 )
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import MetaEntry, MetaValue, SampleInfo, SampleSex
+from gens.models.sample_annotation import SampleAnnotationTrack
 
 LOG = logging.getLogger(__name__)
 
@@ -258,6 +260,96 @@ def test_delete_sample_cli_removes_document(
     cli_delete.sample.callback(sample_id="sample1", genome_build=37, case_id="caseA")
 
     assert coll.find_one({"sample_id": "sample1"}) is None
+
+
+def test_delete_case_cli_removes_case_samples_and_sample_annotations(
+    cli_delete: ModuleType,
+    db: mongomock.Database,
+) -> None:
+    samples = db.get_collection(SAMPLES_COLLECTION)
+    samples.insert_many(
+        [
+            {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(38)},
+            {"sample_id": "sample2", "case_id": "caseA", "genome_build": GenomeBuild(38)},
+            {"sample_id": "sample3", "case_id": "caseA", "genome_build": GenomeBuild(37)},
+            {"sample_id": "sample4", "case_id": "caseB", "genome_build": GenomeBuild(38)},
+        ]
+    )
+
+    sample_tracks = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION)
+    sample_annots = db.get_collection(SAMPLE_ANNOTATIONS_COLLECTION)
+
+    deleted_track = SampleAnnotationTrack(
+        sample_id="sample1",
+        case_id="caseA",
+        name="track-del",
+        description="",
+        genome_build=GenomeBuild(38),
+    )
+    kept_track = SampleAnnotationTrack(
+        sample_id="sample4",
+        case_id="caseB",
+        name="track-keep",
+        description="",
+        genome_build=GenomeBuild(38),
+    )
+
+    deleted_track_id = sample_tracks.insert_one(deleted_track.model_dump()).inserted_id
+    kept_track_id = sample_tracks.insert_one(kept_track.model_dump()).inserted_id
+    sample_annots.insert_many(
+        [
+            {
+                "track_id": deleted_track_id,
+                "sample_id": "sample1",
+                "case_id": "caseA",
+                "chrom": "1",
+                "start": 1,
+                "end": 10,
+                "name": "rec",
+                "color": [0, 0, 0],
+            },
+            {
+                "track_id": kept_track_id,
+                "sample_id": "sample4",
+                "case_id": "caseB",
+                "chrom": "1",
+                "start": 1,
+                "end": 10,
+                "name": "rec",
+                "color": [0, 0, 0],
+            },
+        ]
+    )
+
+    cli_delete.case.callback(case_id="caseA", genome_build=GenomeBuild(38), force=True)
+
+    assert samples.count_documents({"case_id": "caseA", "genome_build": GenomeBuild(38)}) == 0
+    assert samples.count_documents({"case_id": "caseA", "genome_build": GenomeBuild(37)}) == 1
+    assert samples.count_documents({"case_id": "caseB", "genome_build": GenomeBuild(38)}) == 1
+
+    assert sample_tracks.count_documents({"case_id": "caseA", "genome_build": GenomeBuild(38)}) == 0
+    assert sample_tracks.count_documents({"case_id": "caseB", "genome_build": GenomeBuild(38)}) == 1
+    assert sample_annots.count_documents({"track_id": deleted_track_id}) == 0
+    assert sample_annots.count_documents({"track_id": kept_track_id}) == 1
+
+
+def test_delete_case_cli_raises_on_missing_case(
+    cli_delete: ModuleType,
+    db: mongomock.Database,
+) -> None:
+    db.get_collection(SAMPLES_COLLECTION).insert_one(
+        {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(38)}
+    )
+
+    with pytest.raises(
+        click.ClickException,
+        match="No samples found for case_id 'missing' and genome build '38'",
+    ):
+        cli_delete.case.callback(
+            case_id="missing",
+            genome_build=GenomeBuild(38),
+            force=True,
+        )
 
 
 def test_load_case_cli_from_yaml(

@@ -129,6 +129,8 @@ def case(config_file: Path) -> None:
     """Load a full case from YAML including samples, metadata and annotation tracks."""
     case_config = load_case_config(config_file)
     base_dir = config_file.parent
+    total_meta_file_refs = 0
+    total_sample_annotations = 0
 
     shared_meta_files = [
         resolve_existing_path(path, base_dir, "Meta file")
@@ -150,6 +152,7 @@ def case(config_file: Path) -> None:
                 sample_config.sample_id,
             )
 
+        sample_meta_file_paths = [*shared_meta_files, *sample_meta_files]
         load_sample_data(
             sample_id=sample_config.sample_id,
             genome_build=case_config.genome_build,
@@ -162,28 +165,47 @@ def case(config_file: Path) -> None:
                 f'Coverage file for "{sample_config.sample_id}"',
             ),
             case_id=case_config.case_id,
-            meta_files=[*shared_meta_files, *sample_meta_files],
+            meta_files=sample_meta_file_paths,
             sample_type=sample_config.sample_type,
             sex=sample_config.sex,
         )
+        total_meta_file_refs += len(sample_meta_file_paths)
+        click.secho(
+            (
+                f'Loaded sample "{sample_config.sample_id}" '
+                f'with {len(sample_meta_file_paths)} meta file(s)'
+            ),
+            fg="cyan",
+        )
 
         for sample_annot in sample_config.sample_annotations:
+            resolved_sample_annot_file = resolve_existing_path(
+                sample_annot.file,
+                base_dir,
+                f'Sample annotation file for "{sample_config.sample_id}"',
+            )
             load_sample_annotation_data(
                 sample_id=sample_config.sample_id,
                 case_id=case_config.case_id,
                 genome_build=case_config.genome_build,
-                file=resolve_existing_path(
-                    sample_annot.file,
-                    base_dir,
-                    f'Sample annotation file for "{sample_config.sample_id}"',
-                ),
+                file=resolved_sample_annot_file,
                 name=sample_annot.name,
+            )
+            total_sample_annotations += 1
+            click.secho(
+                (
+                    f'Loaded sample annotation "{sample_annot.name}" '
+                    f'for sample "{sample_config.sample_id}"'
+                ),
+                fg="cyan",
             )
 
     click.secho(
         (
             f'Finished loading case "{case_config.case_id}" '
-            f'with {len(case_config.samples)} sample(s)'
+            f'with {len(case_config.samples)} sample(s), '
+            f'{total_meta_file_refs} meta file reference(s), and '
+            f'{total_sample_annotations} sample annotation track(s)'
         ),
         fg="green",
     )

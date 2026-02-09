@@ -5,6 +5,7 @@ from os import getenv
 
 import click
 
+from gens.cli.util.delete_helpers import delete_case_samples
 from gens.cli.util.util import ChoiceType, db_setup
 from gens.config import settings
 from gens.crud.annotations import (
@@ -76,39 +77,64 @@ def sample(sample_id: str, genome_build: int, case_id: str) -> None:
     if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
         create_index(db, SAMPLES_COLLECTION)
 
-    samples_c = db.get_collection(SAMPLES_COLLECTION)
-    samples_to_delete = (
-        [sample_id]
-        if sample_id is not None
-        else get_sample_ids_for_case_and_build(
-            samples_c=samples_c,
+    if sample_id is None:
+        samples_removed = delete_case_samples(
+            db=db,
             case_id=case_id,
             genome_build=GenomeBuild(genome_build),
+            force=False,
         )
+        if samples_removed == 0:
+            return
+        click.secho(
+            f"Finished removing {samples_removed} samples from database ✔",
+            fg="green",
+        )
+        return
+
+    delete_sample(
+        db=db,
+        sample_id=sample_id,
+        case_id=case_id,
+        genome_build=GenomeBuild(genome_build),
+    )
+    click.secho(
+        "Finished removing 1 sample from database ✔",
+        fg="green",
     )
 
-    if not samples_to_delete:
-        raise click.ClickException(
-            f"No samples found for case_id '{case_id}' and genome build '{genome_build}'"
-        )
 
-    if sample_id is None:
-        click.echo("The following samples will be removed:")
-        for sample in samples_to_delete:
-            click.echo(f" - {sample}")
-        if not click.confirm("Proceed with deletion?", default=False):
-            click.echo("Aborted.")
-            return
-
-    for sample_to_delete_id in samples_to_delete:
-        delete_sample(
-            db=db,
-            sample_id=sample_to_delete_id,
-            case_id=case_id,
-            genome_build=GenomeBuild(genome_build),
-        )
+@delete.command("case")
+@click.option(
+    "-b",
+    "--genome-build",
+    type=ChoiceType(GenomeBuild),
+    required=True,
+    help="Genome build",
+)
+@click.option(
+    "-n",
+    "--case-id",
+    required=True,
+    help="Id of case",
+)
+@click.option("--force", is_flag=True, help="Remove without asking for confirmation")
+def case(genome_build: GenomeBuild, case_id: str, force: bool) -> None:
+    """Remove all samples for a case/genome-build from Gens database."""
+    db = db_setup([SAMPLES_COLLECTION])
+    samples_removed = delete_case_samples(
+        db=db,
+        case_id=case_id,
+        genome_build=genome_build,
+        force=force,
+    )
+    if samples_removed == 0:
+        return
     click.secho(
-        f"Finished removing {len(samples_to_delete)} samples from database ✔",
+        (
+            f'Finished removing case "{case_id}" '
+            f'with {samples_removed} sample(s) from database ✔'
+        ),
         fg="green",
     )
 

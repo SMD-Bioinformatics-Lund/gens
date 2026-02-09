@@ -40,8 +40,6 @@ def home() -> str:
             "case_id": case_id,
             "sample_ids": [s["sample_id"] for s in samples],
             "genome_build": genome_build,
-            "has_overview_file": len([s for s in samples if not s["has_overview_file"]])
-            == 0,
             "files_present": len([s for s in samples if not s["files_present"]]) == 0,
             "created_at": samples[0]["created_at"],
         }
