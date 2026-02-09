@@ -53,7 +53,7 @@ export function getTrack(
     );
   } else if (setting.trackType == "sample-annotation") {
     const getSampleAnnotBands = () =>
-      dataSource.getSampleAnnotationBands(setting.trackId, getChromosome());
+      dataSource.getSampleAnnotationBands(setting.sourceId, getChromosome());
     track = getBandTrack(
       session,
       dataSource,
