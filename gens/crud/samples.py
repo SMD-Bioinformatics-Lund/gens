@@ -24,7 +24,13 @@ INDEX_FIELDS: set[str] = {"baf_index", "coverage_index"}
 
 def update_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
     """Update an existing sample in the database."""
-    result = db.get_collection(SAMPLES_COLLECTION).update_one(
+    samples_c = db.get_collection(SAMPLES_COLLECTION)
+    _validate_case_genome_build_consistency(
+        samples_c=samples_c,
+        case_id=sample_obj.case_id,
+        genome_build=sample_obj.genome_build,
+    )
+    result = samples_c.update_one(
         {
             "sample_id": sample_obj.sample_id,
             "case_id": sample_obj.case_id,
@@ -56,10 +62,14 @@ def update_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
 def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
     """Store a new sample in the database."""
     LOG.info(f"Store sample {sample_obj.sample_id} in database")
+    samples_c = db.get_collection(SAMPLES_COLLECTION)
+    _validate_case_genome_build_consistency(
+        samples_c=samples_c,
+        case_id=sample_obj.case_id,
+        genome_build=sample_obj.genome_build,
+    )
     try:
-        db.get_collection(SAMPLES_COLLECTION).insert_one(
-            sample_obj.model_dump(exclude=INDEX_FIELDS)
-        )
+        samples_c.insert_one(sample_obj.model_dump(exclude=INDEX_FIELDS))
     except DuplicateKeyError:
         LOG.error(
             (
@@ -70,6 +80,28 @@ def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
             sample_obj.case_id,
             sample_obj.genome_build,
         )
+
+
+def _validate_case_genome_build_consistency(
+    samples_c: Collection[dict[str, Any]],
+    case_id: str,
+    genome_build: GenomeBuild,
+) -> None:
+    """Reject mixed-build cases at write time.
+
+    A case is expected to belong to a single genome build. Allowing both 37/38
+    under one case leads to ambiguous viewer behavior and ID collisions.
+    """
+    mismatch = samples_c.find_one(
+        {"case_id": case_id, "genome_build": {"$ne": genome_build}}
+    )
+    if mismatch is not None:
+        existing_build = mismatch.get("genome_build")
+        msg = (
+            f'Case "{case_id}" already has samples for genome build "{existing_build}". '
+            f'Cannot add/update sample with genome build "{genome_build}".'
+        )
+        raise ValueError(msg)
 
 
 def get_samples(
