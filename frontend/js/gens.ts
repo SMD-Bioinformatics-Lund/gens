@@ -139,7 +139,9 @@ export async function initCanvases({
   };
 
   const unorderedSamples = await Promise.all(
-    sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
+    sampleIds.map((sampleId) =>
+      api.getSample({ caseId, sampleId, genomeBuild }),
+    ),
   );
   const caseSamples = orderSamples(unorderedSamples).map((sample) => {
     const parsedSex = parseSex(sample.sex);
@@ -148,6 +150,7 @@ export async function initCanvases({
       caseId: sample.case_id,
       sampleId: sample.sample_id,
       sampleType: sample.sample_type,
+      genomeBuild: sample.genome_build,
       sex: parsedSex,
       meta: sample.meta,
     };
@@ -297,13 +300,17 @@ function addSettingsPageSources(
     render({ tracksReorderedOnly: true, saveLayoutChange: true });
   };
   const getAllSamples = () => {
+    const currentBuild = session.getMainSample().genomeBuild;
     const samples = session.getSamples();
     const currSampleIds = samples.map(
       (sample) => `${sample.caseId}_${sample.sampleId}`,
     );
-    const filtered = allSamples.filter(
-      (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
-    );
+    const filtered = allSamples.filter((s) => {
+      const sampleKey = `${s.caseId}_${s.sampleId}`;
+      return (
+        s.genomeBuild === currentBuild && !currSampleIds.includes(sampleKey)
+      );
+    });
     return filtered;
   };
   const gotoHighlight = (region: Region) => {

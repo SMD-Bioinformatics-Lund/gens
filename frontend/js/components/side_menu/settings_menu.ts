@@ -8,7 +8,7 @@ import {
 } from "../../constants";
 import {
   downloadAsJSON,
-  getSampleFromID as getSampleIDObjFromID,
+  getSampleIdentifierFromID,
   getSampleKey,
   removeChildren,
 } from "../../util/utils";
@@ -434,11 +434,8 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
 
-      const sampleIdObj = getSampleIDObjFromID(caseId_sampleId);
-      const sample = this.session.getSample(
-        sampleIdObj.caseId,
-        sampleIdObj.sampleId,
-      );
+      const sampleIdObj = getSampleIdentifierFromID(caseId_sampleId);
+      const sample = this.session.getSample(sampleIdObj);
       this.onAddSample(sample);
     });
 

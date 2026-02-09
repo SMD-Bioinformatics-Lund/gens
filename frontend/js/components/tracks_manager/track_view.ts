@@ -92,6 +92,12 @@ export class TrackView extends ShadowBaseElement {
   private session: GensSession;
   private sessionPos: SessionPosition;
   private dataSource: RenderDataSource;
+  // Prevent older request overwriting newer ones
+  // If an older request is slow and coming in after a newer request
+  // it is dropped
+  // This resolved an issue with expand/collapse hide/unhide of newly added
+  // tracks apparently not being rendered in the tracks
+  private trackSettingsSyncRequestId = 0;
 
   private lastRenderedSamples: Sample[] = [];
 
@@ -285,10 +291,9 @@ export class TrackView extends ShadowBaseElement {
 
   private async initializeTracks() {
     const samples = this.session.getSamples();
-    const getSample = (caseId: string, sampleId: string) =>
-      this.session.getSample(caseId, sampleId);
-    const getSampleAnnotSources = (caseId, sampleId) =>
-      this.dataSource.getSampleAnnotSources(caseId, sampleId);
+    const getSample = (id: SampleIdentifier) => this.session.getSample(id);
+    const getSampleAnnotSources = (id: SampleIdentifier) =>
+      this.dataSource.getSampleAnnotSources(id);
     const getCoverageRange = () => this.session.profile.getCoverageRange();
 
     const sampleKeys = new Set(samples.map((s) => getSampleKey(s)));
@@ -340,6 +345,7 @@ export class TrackView extends ShadowBaseElement {
     );
 
     const existingTracks = this.session.tracks.getTracks();
+    const syncRequestId = ++this.trackSettingsSyncRequestId;
 
     syncDataTrackSettings(
       existingTracks,
@@ -347,6 +353,12 @@ export class TrackView extends ShadowBaseElement {
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
+      // Ignore stale async sync results so old defaults cannot overwrite
+      // newer user actions (e.g. expand/collapse toggles).
+      if (syncRequestId !== this.trackSettingsSyncRequestId) {
+        return;
+      }
+
       this.session.tracks.setTracks(dataTrackSettings);
       this.lastRenderedSamples = samples;
 
@@ -493,14 +505,13 @@ async function getAnnotColorBands(
   session: GensSession,
   dataSource: RenderDataSource,
 ) {
-  let colorBands: RenderBand[] = [];
+  const colorBands: RenderBand[] = [];
   for (const annotId of session.profile.getColorAnnotations()) {
     const annotBands = await dataSource.getAnnotationBands(
       annotId,
       session.pos.getChromosome(),
     );
     colorBands.push(...annotBands);
-
   }
   return colorBands;
 }

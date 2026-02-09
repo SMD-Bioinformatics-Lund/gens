@@ -195,7 +195,7 @@ export class GensSession {
 
     if (selectedAnnots.length != presentAnnots.length) {
       console.warn(
-        `Not all annotations were present. Selected: ${selectedAnnots.length} present: ${presentAnnots.length}`,
+        `Not all annotations specified in the profile was present in the database. Selected: ${selectedAnnots.length} (${selectedAnnots}) present: ${presentAnnots.length} (${presentAnnots})`,
       );
     }
 
@@ -238,9 +238,12 @@ export class GensSession {
     return this.samples;
   }
 
-  public getSample(caseId: string, sampleId: string): Sample | null {
+  public getSample(sampleIdf: SampleIdentifier): Sample | null {
     const matchedSamples = this.allSamples.filter(
-      (sample) => sample.caseId == caseId && sample.sampleId == sampleId,
+      (sample) =>
+        sample.caseId == sampleIdf.caseId &&
+        sample.sampleId == sampleIdf.sampleId &&
+        sample.genomeBuild == sampleIdf.genomeBuild,
     );
     if (matchedSamples.length == 1) {
       return matchedSamples[0];
@@ -251,20 +254,21 @@ export class GensSession {
     }
   }
 
-  public addSample(sample: Sample) {
-    this.samples.push(sample);
+  public addSample(id: SampleIdentifier) {
+    this.samples.push(id);
     this.profile.updateProfileKey(this.samples);
   }
 
-  public removeSample(sample: Sample): void {
+  public removeSample(id: SampleIdentifier): void {
     const pos = this.samples.findIndex(
       (currSample) =>
-        currSample.caseId === sample.caseId &&
-        currSample.sampleId === sample.sampleId,
+        currSample.caseId === id.caseId &&
+        currSample.sampleId === id.sampleId &&
+        currSample.genomeBuild === id.genomeBuild,
     );
 
     if (pos === -1) {
-      console.warn("Sample not found:", sample);
+      console.warn("Sample not found:", id);
       return;
     }
 

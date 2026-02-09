@@ -81,10 +81,7 @@ export class ChromosomeView extends ShadowBaseElement {
     }
 
     const settingSample = this.session.getSamples()[0];
-    const sampleAnnots = await dataSource.getSampleAnnotSources(
-      settingSample.caseId,
-      settingSample.sampleId,
-    );
+    const sampleAnnots = await dataSource.getSampleAnnotSources(settingSample);
 
     for (const chrom of CHROMOSOMES) {
       const dataTrackSetting: DataTrackSettings = {

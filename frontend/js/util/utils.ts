@@ -373,15 +373,21 @@ export function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
   return diff;
 }
 
-export function getSampleKey(sample: Sample): string {
-  return `${sample.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${sample.sampleId}`;
+export function getSampleKey(id: SampleIdentifier): string {
+  return `${id.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${id.sampleId}${COMBINED_SAMPLE_ID_DIVIDER}${id.genomeBuild}`;
 }
 
-export function getSampleFromID(id: string): Sample {
+export function getSampleIdentifierFromID(id: string): SampleIdentifier {
   const fields = id.split(COMBINED_SAMPLE_ID_DIVIDER);
+  if (fields.length !== 3) {
+    throw new Error(
+      `"Expected three identifiers for the sample, found ${fields} in ${COMBINED_SAMPLE_ID_DIVIDER}`,
+    );
+  }
   const sample = {
     caseId: fields[0],
     sampleId: fields[1],
+    genomeBuild: Number.parseInt(fields[2]),
   };
   return sample;
 }

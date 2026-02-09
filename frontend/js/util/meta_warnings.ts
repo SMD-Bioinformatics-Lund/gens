@@ -127,9 +127,7 @@ function shouldIgnoreWarning(
     return false;
   }
 
-  return ignoreRules.some((rule) =>
-    matchesIgnoreRule(rule, rowName, sex),
-  );
+  return ignoreRules.some((rule) => matchesIgnoreRule(rule, rowName, sex));
 }
 
 function normalizeIgnoreRules(

@@ -12,7 +12,7 @@ from pymongo.collection import Collection
 from pysam import TabixFile
 
 from gens.crud.samples import get_sample
-from gens.models.genomic import Chromosome, GenomicRegion
+from gens.models.genomic import Chromosome, GenomeBuild, GenomicRegion
 from gens.models.sample import GenomeCoverage, SampleInfo, ScatterDataType, ZoomLevel
 
 BAF_SUFFIX = ".baf.bed.gz"
@@ -76,13 +76,14 @@ def get_scatter_data(
     collection: Collection[dict[str, Any]],
     sample_id: str,
     case_id: str,
+    genome_build: GenomeBuild,
     region: GenomicRegion,
     data_type: ScatterDataType,
     zoom_level: Literal["o", "a", "b", "c", "d"],
 ) -> GenomeCoverage:  # type: ignore
     """Development entrypoint for getting the coverage of a region."""
     # TODO respond with 404 error if file is not found
-    sample_obj = get_sample(collection, sample_id, case_id)
+    sample_obj = get_sample(collection, sample_id, case_id, genome_build)
 
     if data_type == ScatterDataType.COV:
         tabix_file = TabixFile(str(sample_obj.coverage_file))
