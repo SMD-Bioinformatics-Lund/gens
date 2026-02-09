@@ -47,6 +47,7 @@ export class SessionProfiles {
     let defaultProfile = cloneProfile(defaultProfiles[profileKey]);
 
     if (
+      defaultProfile &&
       defaultProfile.version != null &&
       defaultProfile.version !== PROFILE_SETTINGS_VERSION
     ) {

@@ -14,8 +14,8 @@ connection = "mongodb://mongodb:27017/gens"
 # connection = "mongodb://localhost:27017/gens"
 
 [default_profile_paths]
-"proband" = "profiles/Gens_Singel-default-settings.json"
-"proband+relative" = "profiles/Gens_Trio-default-settings.json"
+"proband" = "example_profiles/Gens_Singel-default-settings.json"
+"proband+relative" = "example_profiles/Gens_Trio-default-settings.json"
 
 [[warning_thresholds]]
 column = "Estimated chromosomal copy numbers"
