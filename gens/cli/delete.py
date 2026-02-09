@@ -133,7 +133,7 @@ def case(genome_build: GenomeBuild, case_id: str, force: bool) -> None:
     click.secho(
         (
             f'Finished removing case "{case_id}" '
-            f'with {samples_removed} sample(s) from database ✔'
+            f"with {samples_removed} sample(s) from database ✔"
         ),
         fg="green",
     )

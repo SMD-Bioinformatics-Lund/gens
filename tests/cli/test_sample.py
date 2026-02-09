@@ -385,8 +385,6 @@ def test_load_case_cli_from_yaml(
         (
             "case_id: case_trio\n"
             "genome_build: 38\n"
-            "meta_files:\n"
-            "  - meta/shared.tsv\n"
             "samples:\n"
             "  - sample_id: child\n"
             "    baf: tracks/child.baf.gz\n"
@@ -394,6 +392,7 @@ def test_load_case_cli_from_yaml(
             "    sample_type: proband\n"
             "    sex: M\n"
             "    meta_files:\n"
+            "      - meta/shared.tsv\n"
             "      - meta/child.tsv\n"
             "    sample_annotations:\n"
             "      - file: annotations/child_events.bed\n"
@@ -403,11 +402,15 @@ def test_load_case_cli_from_yaml(
             "    coverage: tracks/mother.cov.gz\n"
             "    sample_type: mother\n"
             "    sex: F\n"
+            "    meta_files:\n"
+            "      - meta/shared.tsv\n"
             "  - sample_id: father\n"
             "    baf: tracks/father.baf.gz\n"
             "    coverage: tracks/father.cov.gz\n"
             "    sample_type: father\n"
             "    sex: M\n"
+            "    meta_files:\n"
+            "      - meta/shared.tsv\n"
         )
     )
 
@@ -451,6 +454,66 @@ def test_load_case_cli_from_yaml(
     assert sample_track_doc["sample_id"] == "child"
     assert sample_track_doc["case_id"] == "case_trio"
     assert sample_track_doc["name"] == "child-events"
+
+
+def test_load_case_cli_rejects_top_level_meta_files(
+    cli_load: ModuleType,
+    tmp_path: Path,
+) -> None:
+    tracks_dir = tmp_path / "tracks"
+    tracks_dir.mkdir()
+    meta_dir = tmp_path / "meta"
+    meta_dir.mkdir()
+    write_sample_track(tracks_dir / "child.baf.gz")
+    write_sample_track(tracks_dir / "child.cov.gz")
+    (meta_dir / "shared.tsv").write_text("type\tvalue\ncohort\ttrio\n")
+
+    config_path = tmp_path / "case.yml"
+    config_path.write_text(
+        (
+            "case_id: case_trio\n"
+            "genome_build: 38\n"
+            "meta_files:\n"
+            "  - meta/shared.tsv\n"
+            "samples:\n"
+            "  - sample_id: child\n"
+            "    baf: tracks/child.baf.gz\n"
+            "    coverage: tracks/child.cov.gz\n"
+        )
+    )
+
+    with pytest.raises(click.UsageError, match="meta_files"):
+        cli_load.case.callback(config_file=config_path)
+
+
+def test_load_case_cli_rejects_top_level_annotations(
+    cli_load: ModuleType,
+    tmp_path: Path,
+) -> None:
+    tracks_dir = tmp_path / "tracks"
+    tracks_dir.mkdir()
+    annots_dir = tmp_path / "annotations"
+    annots_dir.mkdir()
+    write_sample_track(tracks_dir / "child.baf.gz")
+    write_sample_track(tracks_dir / "child.cov.gz")
+    (annots_dir / "cnv.bed").write_text("1\t0\t10\tgain\t0\t+\t.\t.\trgb(255,0,0)\n")
+
+    config_path = tmp_path / "case.yml"
+    config_path.write_text(
+        (
+            "case_id: case_trio\n"
+            "genome_build: 38\n"
+            "samples:\n"
+            "  - sample_id: child\n"
+            "    baf: tracks/child.baf.gz\n"
+            "    coverage: tracks/child.cov.gz\n"
+            "annotations:\n"
+            "  - file: annotations/cnv.bed\n"
+        )
+    )
+
+    with pytest.raises(click.UsageError, match="annotations"):
+        cli_load.case.callback(config_file=config_path)
 
 
 def test_update_sample_updates_document(

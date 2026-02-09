@@ -126,19 +126,14 @@ def sample(
 @load.command("case")
 @click.argument("config_file", type=click.Path(exists=True, path_type=Path))
 def case(config_file: Path) -> None:
-    """Load a full case from YAML including samples, metadata and annotation tracks."""
+    """Load a full case from YAML including samples, sample metadata and sample annotations."""
     case_config = load_case_config(config_file)
     base_dir = config_file.parent
     total_meta_file_refs = 0
     total_sample_annotations = 0
 
-    shared_meta_files = [
-        resolve_existing_path(path, base_dir, "Meta file")
-        for path in case_config.meta_files
-    ]
-
     for sample_config in case_config.samples:
-        sample_meta_files = [
+        sample_meta_file_paths = [
             resolve_existing_path(
                 path,
                 base_dir,
@@ -146,13 +141,7 @@ def case(config_file: Path) -> None:
             )
             for path in sample_config.meta_files
         ]
-        if sample_config.overview_json is not None:
-            LOG.warning(
-                'Ignoring deprecated "overview_json" for sample "%s"',
-                sample_config.sample_id,
-            )
 
-        sample_meta_file_paths = [*shared_meta_files, *sample_meta_files]
         load_sample_data(
             sample_id=sample_config.sample_id,
             genome_build=case_config.genome_build,

@@ -10,13 +10,14 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Added
 
 - Track highlight is a multiselect, meaning that multiple annotation sources can be used for track highlights. [#686](https://github.com/SMD-Bioinformatics-Lund/gens/pull/686)
-- Load a full case from a yaml file.
+- Load a full case from a yaml file. [#692](https://github.com/SMD-Bioinformatics-Lund/gens/pull/692)
 
 ### Changed
 
 - Use 37 as build version instead of 19. [#682](https://github.com/SMD-Bioinformatics-Lund/gens/pull/682)
 - Simplified overview chart labels (no sample name there, BAF instead of B-allele freq). [#685](https://github.com/SMD-Bioinformatics-Lund/gens/pull/685)
 - Overview chart labels display for all chromosomes 1-22, X, Y, not only those present in the data. [#685](https://github.com/SMD-Bioinformatics-Lund/gens/pull/685)
+- Remove support from using overview JSONs. The overview is now retrieved from the "o" level in the tabix files. [#692](https://github.com/SMD-Bioinformatics-Lund/gens/pull/692)
 
 ### Fixed
 

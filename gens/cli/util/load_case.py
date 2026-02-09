@@ -1,5 +1,5 @@
-
 from pathlib import Path
+
 import click
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 import yaml
@@ -21,26 +21,16 @@ class CaseSampleConfig(YamlConfigModel):
     sample_id: str
     baf: Path
     coverage: Path
-    # Deprecated: accepted for backwards compatibility, ignored during load.
-    overview_json: Path | None = None
     sample_type: str | None = None
     sex: SampleSex | None = None
     meta_files: list[Path] = Field(default_factory=list)
     sample_annotations: list[CaseSampleAnnotationConfig] = Field(default_factory=list)
 
 
-class CaseAnnotationConfig(YamlConfigModel):
-    file: Path
-    tsv: bool = False
-    ignore_errors: bool = False
-
-
 class CaseLoadConfig(YamlConfigModel):
     case_id: str
     genome_build: GenomeBuild
     samples: list[CaseSampleConfig]
-    meta_files: list[Path] = Field(default_factory=list)
-    annotations: list[CaseAnnotationConfig] = Field(default_factory=list)
 
 
 def load_case_config(config_file: Path) -> CaseLoadConfig:
