@@ -63,3 +63,59 @@ Make sure the application is running by loading http://localhost:5000/ in your w
 <img src="../img/gens_hello_world.PNG" width="800">
 
 Finally you need to populate the databases with chromosome sizes and gene/transcript data (see more under section [Load data](./load_gens_data.md))
+
+## Dev auth providers (LDAP/OAuth)
+
+The development compose file includes seeded LDAP and OAuth providers.
+
+### Start in LDAP mode
+
+```bash
+GENS_AUTHENTICATION=ldap docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+Create (or ensure) the login user in Gens auth user DB:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
+  gens users create --email dev.user@example.org --name "Dev User" --role user --force
+```
+
+Login at `http://localhost:8080/` with:
+
+- email: `dev.user@example.org`
+- password: `devpassword`
+
+### Start in OAuth mode (Keycloak)
+
+```bash
+GENS_AUTHENTICATION=oauth docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+Create (or ensure) the login user in Gens auth user DB:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
+  gens users create --email dev.user@example.org --name "Dev User" --role user --force
+```
+
+Open:
+
+- Gens: `http://localhost:8080/`
+- Keycloak admin: `http://localhost:8090/` (admin/admin)
+
+Seeded OAuth user credentials:
+
+- username: `dev.user`
+- password: `devpassword`
+- email: `dev.user@example.org`
+
+### Troubleshooting
+
+- If auth mode changes are ignored, recreate containers:
+  `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --force-recreate`
+- If OAuth login fails before redirect, check Gens logs:
+  `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs gens`
+- If Keycloak seems uninitialized, check:
+  `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs keycloak`
+- If login succeeds at provider but fails in Gens, the user is likely missing from Gens auth user DB; re-run the `gens users create ...` command above.

@@ -21,6 +21,28 @@ services:
     # Seeded test account:
     #   username: dev.user@example.org
     #   password: devpassword
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    networks:
+      - gens-net
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HTTP_ENABLED=true
+      - KC_HOSTNAME=oidc.localtest.me
+      - KC_HOSTNAME_STRICT=false
+      - KC_PROXY_HEADERS=xforwarded
+    command:
+      - start-dev
+      - --import-realm
+    volumes:
+      - ./utils/dev/oidc/keycloak-realm-gens-dev.json:/opt/keycloak/data/import/keycloak-realm-gens-dev.json:ro
+    ports:
+      - 8090:8080
+    # Seeded OAuth account:
+    #   username: dev.user
+    #   email: dev.user@example.org
+    #   password: devpassword
   gens:
     build:
       context: .
@@ -31,6 +53,7 @@ services:
     depends_on:
       - mongodb
       - openldap
+      - keycloak
     environment:
       - FLASK_DEBUG=1
       # Toggle LDAP login mode in dev:
@@ -40,6 +63,13 @@ services:
       - AUTHENTICATION=${GENS_AUTHENTICATION:-simple}
       - LDAP__SERVER=${GENS_LDAP_SERVER:-ldap://openldap:1389}
       - LDAP__BIND_USER_TEMPLATE=uid={username},ou=People,dc=example,dc=org
+      # Toggle OAuth login mode in dev:
+      # GENS_AUTHENTICATION=oauth docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+      - OAUTH__CLIENT_ID=${GENS_OAUTH_CLIENT_ID:-gens-dev}
+      - OAUTH__SECRET=${GENS_OAUTH_SECRET:-gens-dev-secret}
+      - OAUTH__DISCOVERY_URL=${GENS_OAUTH_DISCOVERY_URL:-http://oidc.localtest.me:8090/realms/gens-dev/.well-known/openid-configuration}
+    extra_hosts:
+      - "oidc.localtest.me:host-gateway"
     ports:
       - 8080:5000
     volumes:
