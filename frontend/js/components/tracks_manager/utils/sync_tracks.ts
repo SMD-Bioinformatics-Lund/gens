@@ -256,10 +256,11 @@ async function getSampleTracks(
   const sampleAnnots = [];
   for (const source of sampleSources) {
     const sampleAnnot: DataTrackSettings = {
-      trackId: source.id,
+      trackId: `${sampleKey}_${source.id}`,
       trackLabel: source.name,
       trackType: "sample-annotation",
       sample: sampleIdentifier,
+      sourceId: source.id,
       height: { collapsedHeight: USED_TRACK_HEIGHTS.trackView.collapsedBand },
       showLabelWhenCollapsed: true,
       yAxis: null,
