@@ -300,13 +300,17 @@ function addSettingsPageSources(
     render({ tracksReorderedOnly: true, saveLayoutChange: true });
   };
   const getAllSamples = () => {
+    const currentBuild = session.getMainSample().genomeBuild;
     const samples = session.getSamples();
     const currSampleIds = samples.map(
       (sample) => `${sample.caseId}_${sample.sampleId}`,
     );
-    const filtered = allSamples.filter(
-      (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
-    );
+    const filtered = allSamples.filter((s) => {
+      const sampleKey = `${s.caseId}_${s.sampleId}`;
+      return (
+        s.genomeBuild === currentBuild && !currSampleIds.includes(sampleKey)
+      );
+    });
     return filtered;
   };
   const gotoHighlight = (region: Region) => {

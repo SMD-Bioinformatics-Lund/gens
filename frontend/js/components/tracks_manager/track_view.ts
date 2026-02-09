@@ -92,6 +92,7 @@ export class TrackView extends ShadowBaseElement {
   private session: GensSession;
   private sessionPos: SessionPosition;
   private dataSource: RenderDataSource;
+  private trackSettingsSyncRequestId = 0;
 
   private lastRenderedSamples: Sample[] = [];
 
@@ -345,12 +346,20 @@ export class TrackView extends ShadowBaseElement {
 
     console.log("Existing tracks", existingTracks);
 
+    const syncRequestId = ++this.trackSettingsSyncRequestId;
+
     syncDataTrackSettings(
       existingTracks,
       this.session,
       this.dataSource,
       this.lastRenderedSamples,
     ).then(({ settings: dataTrackSettings, samples }) => {
+      // Ignore stale async sync results so old defaults cannot overwrite
+      // newer user actions (e.g. expand/collapse toggles).
+      if (syncRequestId !== this.trackSettingsSyncRequestId) {
+        return;
+      }
+
       this.session.tracks.setTracks(dataTrackSettings);
       this.lastRenderedSamples = samples;
 
