@@ -1,6 +1,6 @@
 import pytest
 
-from gens.config import AuthUserDb, Settings
+from gens.config import AuthMethod, AuthUserDb, Settings
 
 
 def get_base_settings_kwargs() -> dict:
@@ -30,3 +30,14 @@ def test_auth_user_db_variant_is_valid_when_variant_db_is_configured() -> None:
     settings = Settings(**kwargs)
 
     assert settings.auth_user_db == AuthUserDb.VARIANT
+
+
+def test_authentication_simple_is_valid() -> None:
+    kwargs = {
+        **get_base_settings_kwargs(),
+        "authentication": AuthMethod.SIMPLE,
+    }
+
+    settings = Settings(**kwargs)
+
+    assert settings.authentication == AuthMethod.SIMPLE

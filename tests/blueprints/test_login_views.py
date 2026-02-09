@@ -90,3 +90,16 @@ def test_login_allows_internal_next_redirect(app: Flask) -> None:
 
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/about")
+
+
+def test_simple_auth_mode_allows_email_only_login(
+    app: Flask, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    insert_user(app.config["GENS_DB"], "simple@example.com")
+    monkeypatch.setattr(login_views.settings, "authentication", AuthMethod.SIMPLE)
+    client = app.test_client()
+
+    response = client.post("/login", data={"email": "simple@example.com"})
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/home")

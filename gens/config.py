@@ -34,6 +34,7 @@ class AuthMethod(Enum):
 
     OAUTH = "oauth"
     LDAP = "ldap"
+    SIMPLE = "simple"
     DISABLED = "disabled"
 
 
