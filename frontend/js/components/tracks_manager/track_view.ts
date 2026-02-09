@@ -92,6 +92,11 @@ export class TrackView extends ShadowBaseElement {
   private session: GensSession;
   private sessionPos: SessionPosition;
   private dataSource: RenderDataSource;
+  // Prevent older request overwriting newer ones
+  // If an older request is slow and coming in after a newer request
+  // it is dropped
+  // This resolved an issue with expand/collapse hide/unhide of newly added
+  // tracks apparently not being rendered in the tracks
   private trackSettingsSyncRequestId = 0;
 
   private lastRenderedSamples: Sample[] = [];
@@ -313,9 +318,6 @@ export class TrackView extends ShadowBaseElement {
   }
 
   public render(renderSettings: RenderSettings) {
-
-    console.log("Rendering");
-
     if (renderSettings.tracksReorderedOnly) {
       this.syncTrackOrder();
       return;
@@ -343,9 +345,6 @@ export class TrackView extends ShadowBaseElement {
     );
 
     const existingTracks = this.session.tracks.getTracks();
-
-    console.log("Existing tracks", existingTracks);
-
     const syncRequestId = ++this.trackSettingsSyncRequestId;
 
     syncDataTrackSettings(
@@ -432,7 +431,6 @@ export class TrackView extends ShadowBaseElement {
       const track = this.dataTracks.find(
         (track) => track.track.id == settings.targetTrackId,
       );
-      console.log("Single track render for", track);
       track.track.render(settings);
       return;
     }
@@ -452,9 +450,6 @@ export class TrackView extends ShadowBaseElement {
 
     for (const settingId of addedIds) {
       const setIsExpanded = (trackId: string, isExpanded: boolean) => {
-
-        console.log("Toggling expanded", trackId, isExpanded);
-
         this.session.tracks.setIsExpanded(trackId, isExpanded);
         this.requestRender({ saveLayoutChange: true, targetTrackId: trackId });
       };

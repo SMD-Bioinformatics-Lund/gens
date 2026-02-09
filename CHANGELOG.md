@@ -28,6 +28,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Profile should now reset when profile version is updated. [#686](https://github.com/SMD-Bioinformatics-Lund/gens/pull/686)
 - Clear user error message when attempting to opening a sample from a build for which chromosomes haven't been loaded. [#690](https://github.com/SMD-Bioinformatics-Lund/gens/pull/690)
 - Fix such that the same case ID can be reused across different builds. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
+- Fix latent race condition when adding new samples, which could yield tracks that did not respond to expanding. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
+- Fix such that only samples from the relevant build are displayed in the "add samples" dropdown. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
 
 ## 4.4.2
 
