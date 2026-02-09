@@ -53,9 +53,9 @@ export async function samplesListInit(
   ) => {
     let subpath;
     if (sampleIds != null) {
-      subpath = `app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
+      subpath = `/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
     } else {
-      subpath = `app/viewer/${caseId}?genome_build=${genomeBuild}`;
+      subpath = `/viewer/${caseId}?genome_build=${genomeBuild}`;
     }
 
     return new URL(subpath, gensBaseURL).href;
@@ -168,7 +168,7 @@ export async function initCanvases({
     caseSamples,
     allSamples,
     variantSoftwareBaseURL,
-    gensApiURL.replace(/\/$/, "") + "/app/",
+    new URL("/", gensApiURL).href,
     genomeBuild,
     defaultProfiles,
     api.getChromInfo(),

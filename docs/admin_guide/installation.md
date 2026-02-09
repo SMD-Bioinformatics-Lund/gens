@@ -58,7 +58,7 @@ Start the application using an uvicorn service.
 uvicorn gens.app:create_app --factory --reload --host 0.0.0.0 --port 5000
 ```
 
-Make sure the application is running by loading http://localhost:5000/ in your web browser. If that works, head to http://localhost:5000/app to open the app itself or http://localhost:5000/docs to explore the API.
+Make sure the application is running by loading http://localhost:5000/ in your web browser. The web app is served at `/` and the API docs are available at http://localhost:5000/api/docs.
 
 <img src="../img/gens_hello_world.PNG" width="800">
 

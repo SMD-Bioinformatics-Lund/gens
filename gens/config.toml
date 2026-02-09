@@ -3,7 +3,7 @@ authentication = "simple"
 secret_key = "pass"
 auth_user_db = "gens"
 # auth_user_collection = "user"
-gens_api_url = "http://localhost:5000/"
+gens_api_url = "http://localhost:5000/api/"
 main_sample_types = ["proband", "tumor"]
 
 [gens_db]

@@ -60,7 +60,7 @@ def _get_docs_login_redirect(request: Request) -> str:
     if request.url.query:
         next_url = f"{next_url}?{request.url.query}"
     encoded_next_url = quote(next_url, safe="/?=&")
-    return f"/app/landing?next={encoded_next_url}"
+    return f"/landing?next={encoded_next_url}"
 
 
 def _is_docs_request_authorized(flask_app: Flask, request: Request) -> bool:
@@ -143,7 +143,7 @@ def create_app() -> FastAPI:
             login_url = url_for("home.landing", next=next_url)
             return redirect(login_url)
 
-    @fastapi_app.get("/openapi.json", include_in_schema=False)
+    @fastapi_app.get("/api/openapi.json", include_in_schema=False)
     async def openapi_json(request: Request):
         if not _is_docs_request_authorized(flask_app, request):
             return JSONResponse(
@@ -151,42 +151,47 @@ def create_app() -> FastAPI:
             )
         return JSONResponse(fastapi_app.openapi())
 
-    @fastapi_app.get("/docs", include_in_schema=False)
+    @fastapi_app.get("/api", include_in_schema=False)
+    async def api_root_redirect():
+        return RedirectResponse(url="/api/")
+
+    @fastapi_app.get("/api/docs", include_in_schema=False)
     async def swagger_ui(request: Request):
         if not _is_docs_request_authorized(flask_app, request):
             return RedirectResponse(url=_get_docs_login_redirect(request))
         return get_swagger_ui_html(
-            openapi_url="/openapi.json",
+            openapi_url="/api/openapi.json",
             title=f"{fastapi_app.title} - Swagger UI",
-            oauth2_redirect_url="/docs/oauth2-redirect",
+            oauth2_redirect_url="/api/docs/oauth2-redirect",
         )
 
-    @fastapi_app.get("/docs/oauth2-redirect", include_in_schema=False)
+    @fastapi_app.get("/api/docs/oauth2-redirect", include_in_schema=False)
     async def swagger_ui_oauth2_redirect(request: Request):
         if not _is_docs_request_authorized(flask_app, request):
             return RedirectResponse(url=_get_docs_login_redirect(request))
         return get_swagger_ui_oauth2_redirect_html()
 
-    @fastapi_app.get("/redoc", include_in_schema=False)
+    @fastapi_app.get("/api/redoc", include_in_schema=False)
     async def redoc(request: Request):
         if not _is_docs_request_authorized(flask_app, request):
             return RedirectResponse(url=_get_docs_login_redirect(request))
         return get_redoc_html(
-            openapi_url="/openapi.json",
+            openapi_url="/api/openapi.json",
             title=f"{fastapi_app.title} - ReDoc",
         )
 
     # mount flask app to FastAPI app
-    fastapi_app.mount("/app", WsgiToAsgi(flask_app))
+    fastapi_app.mount("/", WsgiToAsgi(flask_app))
     return fastapi_app
 
 
 def add_api_routers(app: FastAPI):
-    app.include_router(base.router)
-    app.include_router(sample.router)
-    app.include_router(annotations.router)
-    app.include_router(sample_annotations.router)
-    app.include_router(gene_lists.router)
+    api_prefix = "/api"
+    app.include_router(base.router, prefix=api_prefix)
+    app.include_router(sample.router, prefix=api_prefix)
+    app.include_router(annotations.router, prefix=api_prefix)
+    app.include_router(sample_annotations.router, prefix=api_prefix)
+    app.include_router(gene_lists.router, prefix=api_prefix)
 
 
 def initialize_extensions(app: Flask) -> None:

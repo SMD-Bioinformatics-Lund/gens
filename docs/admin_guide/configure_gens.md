@@ -36,7 +36,7 @@ variant_url = "http://localhost:8000/scout"
 authentication = "oauth"
 secret_key = "change-this-in-production"
 auth_user_db = "gens"
-gens_api_url = "http://localhost:8080/gens"
+gens_api_url = "http://localhost:8080/gens/api"
 main_sample_types = ["proband", "tumor"]
 
 [gens_db]
