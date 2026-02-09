@@ -399,8 +399,12 @@ interface RenderDataSource {
   ) => Promise<RenderBand[]>;
   getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>;
 
-  getOverviewCovData: (id: SampleIdentifier) => Promise<Record<string, RenderDot[]>>;
-  getOverviewBafData: (id: SampleIdentifier) => Promise<Record<string, RenderDot[]>>;
+  getOverviewCovData: (
+    id: SampleIdentifier,
+  ) => Promise<Record<string, RenderDot[]>>;
+  getOverviewBafData: (
+    id: SampleIdentifier,
+  ) => Promise<Record<string, RenderDot[]>>;
 
   getVariantURL: (doc_id: string) => string;
 }

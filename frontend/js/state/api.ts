@@ -232,15 +232,15 @@ export class API {
 
       if (!zoomIsCached) {
         this.covSampleChrZoomCache[sampleKey][chrom][zoom] = getCovData(
-        this.apiURI,
-        endpoint,
-        id.sampleId,
-        id.caseId,
-        id.genomeBuild,
-        chrom,
-        zoom,
-        [1, this.getChromSizes()[chrom]],
-      );
+          this.apiURI,
+          endpoint,
+          id.sampleId,
+          id.caseId,
+          id.genomeBuild,
+          chrom,
+          zoom,
+          [1, this.getChromSizes()[chrom]],
+        );
       }
       return this.covSampleChrZoomCache[sampleKey][chrom][zoom];
     } else {
@@ -320,15 +320,15 @@ export class API {
 
       if (!zoomIsCached) {
         this.bafSampleZoomChrCache[sampleKey][chrom][zoom] = getCovData(
-        this.apiURI,
-        endpoint,
-        id.sampleId,
-        id.caseId,
-        id.genomeBuild,
-        chrom,
-        zoom,
-        [1, this.getChromSizes()[chrom]],
-      );
+          this.apiURI,
+          endpoint,
+          id.sampleId,
+          id.caseId,
+          id.genomeBuild,
+          chrom,
+          zoom,
+          [1, this.getChromSizes()[chrom]],
+        );
       }
       return this.bafSampleZoomChrCache[sampleKey][chrom][zoom];
     } else {
@@ -628,7 +628,7 @@ async function getOverviewData(
   const chromToDataObject: Record<string, OverviewData> = {};
   overviewData.forEach((chromData) => {
     chromToDataObject[chromData.region] = chromData;
-  })
+  });
 
   const chromDatapoints: Record<string, ApiCoverageDot[]> = {};
   for (const chrom of CHROMOSOMES) {

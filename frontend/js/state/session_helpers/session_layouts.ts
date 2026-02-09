@@ -26,10 +26,7 @@ export class SessionProfiles {
     const profileKey = this.computeProfileSignature(samples);
     this.profileKey = profileKey;
 
-    let userProfile = loadProfileSettings(
-      profileKey,
-      PROFILE_SETTINGS_VERSION,
-    );
+    let userProfile = loadProfileSettings(profileKey, PROFILE_SETTINGS_VERSION);
     if (
       userProfile != null &&
       userProfile.version != null &&

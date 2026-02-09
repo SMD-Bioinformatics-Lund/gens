@@ -22,7 +22,6 @@ export class Tracks {
   }
 
   public get(trackId: string): DataTrackSettings {
-
     const matches = this.tracks.filter((setting) => setting.trackId == trackId);
     if (matches.length == 0) {
       throw Error(`No matches found for ID: ${trackId}`);

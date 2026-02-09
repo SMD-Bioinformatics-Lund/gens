@@ -505,14 +505,13 @@ async function getAnnotColorBands(
   session: GensSession,
   dataSource: RenderDataSource,
 ) {
-  let colorBands: RenderBand[] = [];
+  const colorBands: RenderBand[] = [];
   for (const annotId of session.profile.getColorAnnotations()) {
     const annotBands = await dataSource.getAnnotationBands(
       annotId,
       session.pos.getChromosome(),
     );
     colorBands.push(...annotBands);
-
   }
   return colorBands;
 }
