@@ -1,5 +1,5 @@
 #variant_url = "http://localhost:8000"
-authentication = "simple"
+authentication = "ldap"
 secret_key = "pass"
 auth_user_db = "gens"
 # auth_user_collection = "user"
@@ -40,6 +40,6 @@ message = "Exceeds max mismatch count"
 ignore_when = { sex = "M", chromosome = "X" }
 
 # Example LDAP authentication configuration
-# [ldap]
-# server = "ldap://ldap.example.com"
-# bind_user_template = "uid={username},ou=People,dc=example,dc=com"
+[ldap]
+server = "ldap://ldap.example.com"
+bind_user_template = "uid={username},ou=People,dc=example,dc=com"

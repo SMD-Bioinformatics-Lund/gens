@@ -63,7 +63,7 @@ services:
       # This account must also exist in the configured auth user collection:
       # gens users create --email dev.user@example.org --name "Dev User" --role user
       - AUTHENTICATION=${GENS_AUTHENTICATION:-simple}
-      - LDAP__SERVER=${GENS_LDAP_SERVER:-ldap://openldap:1389}
+      - LDAP__SERVER=${GENS_LDAP_SERVER:-ldap://openldap:389}
       - LDAP__BIND_USER_TEMPLATE=uid={username},ou=People,dc=example,dc=org
       # Toggle OAuth login mode in dev:
       # GENS_AUTHENTICATION=oauth docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
