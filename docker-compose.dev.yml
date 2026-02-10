@@ -7,6 +7,8 @@ services:
       - ./dump:/dump
   openldap:
     image: osixia/openldap:1.5.0
+    command:
+      - --copy-service
     networks:
       - gens-net
     environment:
@@ -15,9 +17,9 @@ services:
       - LDAP_ADMIN_PASSWORD=admin
       - LDAP_TLS=false
     volumes:
-      - ./utils/dev/ldap/50-dev-users.ldif:/container/service/slapd/assets/config/bootstrap/ldif/50-dev-users.ldif:ro
+      - ./utils/dev/ldap:/container/service/slapd/assets/config/bootstrap/ldif/custom
     ports:
-      - 1389:1389
+      - 1389:389
     # Seeded test account:
     #   username: dev.user@example.org
     #   password: devpassword
