@@ -16,9 +16,9 @@ from fastapi.openapi.docs import (
 )
 from fastapi.responses import JSONResponse, RedirectResponse
 from flask import Flask, redirect, request, url_for
-from itsdangerous import BadSignature
 from flask_compress import Compress  # type: ignore
 from flask_login import current_user  # type: ignore
+from itsdangerous import BadSignature
 from werkzeug.wrappers.response import Response
 
 from gens.blueprints.gens.views import gens_bp

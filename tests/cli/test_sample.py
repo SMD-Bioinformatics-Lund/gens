@@ -10,8 +10,8 @@ import pytest
 
 from gens.crud.samples import update_sample
 from gens.db.collections import (
-    SAMPLE_ANNOTATIONS_COLLECTION,
     SAMPLE_ANNOTATION_TRACKS_COLLECTION,
+    SAMPLE_ANNOTATIONS_COLLECTION,
     SAMPLES_COLLECTION,
 )
 from gens.models.genomic import GenomeBuild
@@ -269,10 +269,26 @@ def test_delete_case_cli_removes_case_samples_and_sample_annotations(
     samples = db.get_collection(SAMPLES_COLLECTION)
     samples.insert_many(
         [
-            {"sample_id": "sample1", "case_id": "caseA", "genome_build": GenomeBuild(38)},
-            {"sample_id": "sample2", "case_id": "caseA", "genome_build": GenomeBuild(38)},
-            {"sample_id": "sample3", "case_id": "caseA", "genome_build": GenomeBuild(37)},
-            {"sample_id": "sample4", "case_id": "caseB", "genome_build": GenomeBuild(38)},
+            {
+                "sample_id": "sample1",
+                "case_id": "caseA",
+                "genome_build": GenomeBuild(38),
+            },
+            {
+                "sample_id": "sample2",
+                "case_id": "caseA",
+                "genome_build": GenomeBuild(38),
+            },
+            {
+                "sample_id": "sample3",
+                "case_id": "caseA",
+                "genome_build": GenomeBuild(37),
+            },
+            {
+                "sample_id": "sample4",
+                "case_id": "caseB",
+                "genome_build": GenomeBuild(38),
+            },
         ]
     )
 
@@ -323,12 +339,31 @@ def test_delete_case_cli_removes_case_samples_and_sample_annotations(
 
     cli_delete.case.callback(case_id="caseA", genome_build=GenomeBuild(38), force=True)
 
-    assert samples.count_documents({"case_id": "caseA", "genome_build": GenomeBuild(38)}) == 0
-    assert samples.count_documents({"case_id": "caseA", "genome_build": GenomeBuild(37)}) == 1
-    assert samples.count_documents({"case_id": "caseB", "genome_build": GenomeBuild(38)}) == 1
+    assert (
+        samples.count_documents({"case_id": "caseA", "genome_build": GenomeBuild(38)})
+        == 0
+    )
+    assert (
+        samples.count_documents({"case_id": "caseA", "genome_build": GenomeBuild(37)})
+        == 1
+    )
+    assert (
+        samples.count_documents({"case_id": "caseB", "genome_build": GenomeBuild(38)})
+        == 1
+    )
 
-    assert sample_tracks.count_documents({"case_id": "caseA", "genome_build": GenomeBuild(38)}) == 0
-    assert sample_tracks.count_documents({"case_id": "caseB", "genome_build": GenomeBuild(38)}) == 1
+    assert (
+        sample_tracks.count_documents(
+            {"case_id": "caseA", "genome_build": GenomeBuild(38)}
+        )
+        == 0
+    )
+    assert (
+        sample_tracks.count_documents(
+            {"case_id": "caseB", "genome_build": GenomeBuild(38)}
+        )
+        == 1
+    )
     assert sample_annots.count_documents({"track_id": deleted_track_id}) == 0
     assert sample_annots.count_documents({"track_id": kept_track_id}) == 1
 

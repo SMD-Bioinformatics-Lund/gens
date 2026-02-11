@@ -230,8 +230,12 @@ def authorized() -> Response:
 
     oauth_google = oauth_client.google
     if oauth_google is None:
-        LOG.error("OAuth callback requested, but oauth_client.google is not configured.")
-        flash("OAuth callback failed because OAuth client is not configured.", "warning")
+        LOG.error(
+            "OAuth callback requested, but oauth_client.google is not configured."
+        )
+        flash(
+            "OAuth callback failed because OAuth client is not configured.", "warning"
+        )
         return redirect(url_for("home.landing"))
 
     try:

@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import click
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
 import yaml
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import SampleSex
@@ -41,7 +41,9 @@ def load_case_config(config_file: Path) -> CaseLoadConfig:
         with open(config_file, encoding="utf-8") as config_fh:
             raw_config = yaml.safe_load(config_fh)
     except yaml.YAMLError as err:
-        raise click.UsageError(f"Failed to parse YAML file {config_file}: {err}") from err
+        raise click.UsageError(
+            f"Failed to parse YAML file {config_file}: {err}"
+        ) from err
 
     if not isinstance(raw_config, dict):
         raise click.UsageError("Case YAML must contain a top-level mapping")

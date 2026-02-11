@@ -24,8 +24,8 @@ from gens.crud.sample_annotations import (
 from gens.crud.samples import create_sample
 from gens.db.collections import (
     ANNOTATIONS_COLLECTION,
-    SAMPLE_ANNOTATIONS_COLLECTION,
     SAMPLE_ANNOTATION_TRACKS_COLLECTION,
+    SAMPLE_ANNOTATIONS_COLLECTION,
     SAMPLES_COLLECTION,
 )
 from gens.load.annotations import fmt_bed_to_annotation, parse_bed_file

@@ -1,8 +1,9 @@
 """Authentication and login related functions."""
 
 from urllib.parse import quote
-from fastapi import Request
+
 from authlib.integrations.flask_client import OAuth
+from fastapi import Request
 from flask_login import LoginManager  # type: ignore
 from flask_login import UserMixin
 
@@ -34,5 +35,3 @@ class LoginUser(UserMixin):
     def is_admin(self) -> bool:
         """Check if the user is admin."""
         return "admin" in self.roles
-
-
