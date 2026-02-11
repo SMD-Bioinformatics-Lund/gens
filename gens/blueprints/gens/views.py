@@ -142,7 +142,7 @@ def display_samples(case_id: str):
                 f"Chromosome {parsed_region.chromosome} is not found in the database"
             )
             return _render_sample_error(
-                f"Chromosome data could not be found for chromosome: \"{parsed_region.chromosome}\". Has chromosomes been loaded for this build? (Build: {genome_build})"
+                f'Chromosome data could not be found for chromosome: "{parsed_region.chromosome}". Has chromosomes been loaded for this build? (Build: {genome_build})'
             )
 
         parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})

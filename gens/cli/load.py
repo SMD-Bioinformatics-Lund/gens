@@ -20,7 +20,6 @@ from gens.cli.util.util import ChoiceType, resolve_existing_path
 from gens.crud.annotations import (
     register_data_update,
 )
-
 from gens.crud.transcripts import create_transcripts
 from gens.db.collections import (
     CHROMSIZES_COLLECTION,
@@ -163,7 +162,7 @@ def case(config_file: Path) -> None:
         click.secho(
             (
                 f'Loaded sample "{sample_config.sample_id}" '
-                f'with {len(sample_meta_file_paths)} meta file(s)'
+                f"with {len(sample_meta_file_paths)} meta file(s)"
             ),
             fg="cyan",
         )
@@ -193,9 +192,9 @@ def case(config_file: Path) -> None:
     click.secho(
         (
             f'Finished loading case "{case_config.case_id}" '
-            f'with {len(case_config.samples)} sample(s), '
-            f'{total_meta_file_refs} meta file reference(s), and '
-            f'{total_sample_annotations} sample annotation track(s)'
+            f"with {len(case_config.samples)} sample(s), "
+            f"{total_meta_file_refs} meta file reference(s), and "
+            f"{total_sample_annotations} sample annotation track(s)"
         ),
         fg="green",
     )

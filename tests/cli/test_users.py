@@ -52,7 +52,9 @@ def test_create_user_cli_force_updates_existing_user(
         force=True,
     )
 
-    user_doc = db.get_collection(USER_COLLECTION).find_one({"email": "user@example.com"})
+    user_doc = db.get_collection(USER_COLLECTION).find_one(
+        {"email": "user@example.com"}
+    )
     assert user_doc is not None
     assert user_doc["name"] == "Updated Name"
     assert user_doc["roles"] == ["user"]

@@ -1,7 +1,8 @@
 """Utility functions and classes for click commands."""
 
-import click
 from pathlib import Path
+
+import click
 
 from gens.constants import SAMPLE_TYPE_ALIASES
 
@@ -24,6 +25,7 @@ class ChoiceType(click.Choice):
 
         value = super().convert(value, param, ctx)
         return next(v for v in self.enum if str(v) == value)
+
 
 def resolve_existing_path(
     path: Path, base_dir: Path, label: str, allow_directory: bool = False
