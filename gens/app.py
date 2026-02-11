@@ -18,16 +18,20 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from flask import Flask, redirect, request, url_for
 from flask_compress import Compress  # type: ignore
 from flask_login import current_user  # type: ignore
-from itsdangerous import BadSignature
 from werkzeug.wrappers.response import Response
 
 from gens.blueprints.gens.views import gens_bp
 from gens.blueprints.home.views import home_bp
-from gens.blueprints.login.views import load_user, login_bp
+from gens.blueprints.login.views import login_bp
 from gens.db.db import init_database_connection
 from gens.exceptions import SampleNotFoundError
 
-from .auth import login_manager, oauth_client
+from .auth import (
+    get_docs_login_redirect,
+    is_docs_request_authorized,
+    login_manager,
+    oauth_client,
+)
 from .config import AuthMethod, settings
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
 from .routes import annotations, base, gene_lists, sample, sample_annotations
@@ -55,48 +59,6 @@ LOG = logging.getLogger(__name__)
 compress = Compress()
 
 
-def _get_docs_login_redirect(request: Request) -> str:
-    """Get login redirect URL for unauthorized docs access."""
-    next_url = request.url.path
-    if request.url.query:
-        next_url = f"{next_url}?{request.url.query}"
-    encoded_next_url = quote(next_url, safe="/?=&")
-    return f"/landing?next={encoded_next_url}"
-
-
-def _is_docs_request_authorized(flask_app: Flask, request: Request) -> bool:
-    """Check whether docs request should be allowed."""
-    if settings.authentication == AuthMethod.DISABLED:
-        return True
-
-    session_cookie_name = flask_app.config.get("SESSION_COOKIE_NAME", "session")
-    session_cookie = request.cookies.get(session_cookie_name)
-    if session_cookie is None:
-        return False
-
-    serializer_factory = getattr(
-        flask_app.session_interface, "get_signing_serializer", None
-    )
-    if serializer_factory is None:
-        return False
-
-    serializer = serializer_factory(flask_app)
-    if serializer is None:
-        return False
-
-    try:
-        session_data = serializer.loads(session_cookie)
-    except BadSignature:
-        return False
-
-    user_id = session_data.get("_user_id")
-    if not user_id:
-        return False
-
-    with flask_app.app_context():
-        return load_user(str(user_id)) is not None
-
-
 def create_app() -> FastAPI:
     """Create and setup Gens application."""
     # application = connexion.FlaskApp(__name__, specification_dir="openapi/")
@@ -120,7 +82,9 @@ def create_app() -> FastAPI:
     flask_app.config["DEBUG"] = True
     flask_app.config["SECRET_KEY"] = settings.secret_key
     if settings.secret_key == "pass":
-        LOG.warning("Using default SECRET_KEY value. Configure secret_key in production.")
+        LOG.warning(
+            "Using default SECRET_KEY value. Configure secret_key in production."
+        )
 
     # prepare app context
     initialize_extensions(flask_app)
@@ -131,11 +95,11 @@ def create_app() -> FastAPI:
     register_blueprints(flask_app)
 
     async def require_api_auth(request: Request) -> None:
-        """Require a valid logged-in session for API routes."""
+        """Require a valid logged-in session for API routes"""
 
         if settings.authentication == AuthMethod.DISABLED:
             return
-        if not _is_docs_request_authorized(flask_app, request):
+        if not is_docs_request_authorized(flask_app, request):
             raise HTTPException(status_code=401, detail="Authentication required")
 
     add_api_routers(fastapi_app, dependencies=[Depends(require_api_auth)])
@@ -159,9 +123,10 @@ def create_app() -> FastAPI:
             login_url = url_for("home.landing", next=next_url)
             return redirect(login_url)
 
+    # Require the user to be authenticated before accessing the FastAPI access points
     @fastapi_app.get("/api/openapi.json", include_in_schema=False)
     async def openapi_json(request: Request):
-        if not _is_docs_request_authorized(flask_app, request):
+        if not is_docs_request_authorized(flask_app, request):
             return JSONResponse(
                 status_code=401, content={"detail": "Authentication required"}
             )
@@ -169,8 +134,8 @@ def create_app() -> FastAPI:
 
     @fastapi_app.get("/api/docs", include_in_schema=False)
     async def swagger_ui(request: Request):
-        if not _is_docs_request_authorized(flask_app, request):
-            return RedirectResponse(url=_get_docs_login_redirect(request))
+        if not is_docs_request_authorized(flask_app, request):
+            return RedirectResponse(url=get_docs_login_redirect(request))
         return get_swagger_ui_html(
             openapi_url="/api/openapi.json",
             title=f"{fastapi_app.title} - Swagger UI",
@@ -179,14 +144,14 @@ def create_app() -> FastAPI:
 
     @fastapi_app.get("/api/docs/oauth2-redirect", include_in_schema=False)
     async def swagger_ui_oauth2_redirect(request: Request):
-        if not _is_docs_request_authorized(flask_app, request):
-            return RedirectResponse(url=_get_docs_login_redirect(request))
+        if not is_docs_request_authorized(flask_app, request):
+            return RedirectResponse(url=get_docs_login_redirect(request))
         return get_swagger_ui_oauth2_redirect_html()
 
     @fastapi_app.get("/api/redoc", include_in_schema=False)
     async def redoc(request: Request):
-        if not _is_docs_request_authorized(flask_app, request):
-            return RedirectResponse(url=_get_docs_login_redirect(request))
+        if not is_docs_request_authorized(flask_app, request):
+            return RedirectResponse(url=get_docs_login_redirect(request))
         return get_redoc_html(
             openapi_url="/api/openapi.json",
             title=f"{fastapi_app.title} - ReDoc",
@@ -197,15 +162,11 @@ def create_app() -> FastAPI:
     return fastapi_app
 
 
-def add_api_routers(
-    app: FastAPI, dependencies: list[Any] | None = None
-) -> None:
+def add_api_routers(app: FastAPI, dependencies: list[Any] | None = None) -> None:
     api_prefix = "/api"
     app.include_router(base.router, prefix=api_prefix, dependencies=dependencies)
     app.include_router(sample.router, prefix=api_prefix, dependencies=dependencies)
-    app.include_router(
-        annotations.router, prefix=api_prefix, dependencies=dependencies
-    )
+    app.include_router(annotations.router, prefix=api_prefix, dependencies=dependencies)
     app.include_router(
         sample_annotations.router, prefix=api_prefix, dependencies=dependencies
     )
