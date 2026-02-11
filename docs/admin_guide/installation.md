@@ -107,7 +107,7 @@ Open:
 Seeded OAuth user credentials:
 
 - username: `dev.user`
-- password: `devpassword`
+- password: `devpass`
 - email: `dev.user@example.org`
 
 To use Scout as the login user database instead of Gens, configure `auth_user_db = "variant"` (or `GENS_AUTH_USER_DB=variant`) and make sure that user exists in Scout's `user` collection.

@@ -56,7 +56,7 @@ services:
     # Seeded OAuth account:
     #   username: dev.user
     #   email: dev.user@example.org
-    #   password: devpassword
+    #   password: devpass
   gens:
     build:
       context: .
