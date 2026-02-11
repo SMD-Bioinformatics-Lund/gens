@@ -74,7 +74,13 @@ def _is_docs_request_authorized(flask_app: Flask, request: Request) -> bool:
     if session_cookie is None:
         return False
 
-    serializer = flask_app.session_interface.get_signing_serializer(flask_app)
+    serializer_factory = getattr(
+        flask_app.session_interface, "get_signing_serializer", None
+    )
+    if serializer_factory is None:
+        return False
+
+    serializer = serializer_factory(flask_app)
     if serializer is None:
         return False
 
