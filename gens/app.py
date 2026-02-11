@@ -125,7 +125,10 @@ def create_app() -> FastAPI:
     # Require the user to be authenticated before accessing the FastAPI access points
     @fastapi_app.get("/api/openapi.json", include_in_schema=False)
     async def openapi_json(request: Request):
-        if not is_docs_request_authorized(flask_app, request):
+        if (
+            settings.authentication != AuthMethod.DISABLED
+            and not is_docs_request_authorized(flask_app, request)
+        ):
             return JSONResponse(
                 status_code=401, content={"detail": "Authentication required"}
             )
@@ -133,7 +136,10 @@ def create_app() -> FastAPI:
 
     @fastapi_app.get("/api/docs", include_in_schema=False)
     async def swagger_ui(request: Request):
-        if not is_docs_request_authorized(flask_app, request):
+        if (
+            settings.authentication != AuthMethod.DISABLED
+            and not is_docs_request_authorized(flask_app, request)
+        ):
             return RedirectResponse(url=get_docs_login_redirect(request))
         return get_swagger_ui_html(
             openapi_url="/api/openapi.json",
@@ -143,13 +149,19 @@ def create_app() -> FastAPI:
 
     @fastapi_app.get("/api/docs/oauth2-redirect", include_in_schema=False)
     async def swagger_ui_oauth2_redirect(request: Request):
-        if not is_docs_request_authorized(flask_app, request):
+        if (
+            settings.authentication != AuthMethod.DISABLED
+            and not is_docs_request_authorized(flask_app, request)
+        ):
             return RedirectResponse(url=get_docs_login_redirect(request))
         return get_swagger_ui_oauth2_redirect_html()
 
     @fastapi_app.get("/api/redoc", include_in_schema=False)
     async def redoc(request: Request):
-        if not is_docs_request_authorized(flask_app, request):
+        if (
+            settings.authentication != AuthMethod.DISABLED
+            and not is_docs_request_authorized(flask_app, request)
+        ):
             return RedirectResponse(url=get_docs_login_redirect(request))
         return get_redoc_html(
             openapi_url="/api/openapi.json",
@@ -199,7 +211,7 @@ def get_docs_login_redirect(request: Request) -> str:
     next_url = request.url.path
     if request.url.query:
         next_url = f"{next_url}?{request.url.query}"
-    encoded_next_url = quote(next_url, safe="/?=&")
+    encoded_next_url = quote(next_url, safe="/")
     return f"/landing?next={encoded_next_url}"
 
 
