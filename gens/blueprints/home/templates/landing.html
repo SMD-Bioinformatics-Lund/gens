@@ -29,6 +29,15 @@
     The way we generate the data it is suitable for visualizing CNVs of sizes down to a couple of Kbp.
     For smaller things, use Scout/IGV.
   </p>
+  {% with flash_messages = get_flashed_messages(with_categories=true) %}
+    {% if flash_messages %}
+      <div class="flash-container" role="status" aria-live="polite">
+        {% for category, message in flash_messages %}
+          <div class="flash-message flash-category-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
   {% if current_user and current_user.is_authenticated %}
     <a class="btn" href="{{ url_for('home.home') }}">Welcome to GENS {{ current_user.name }}!</a>
   {% elif authentication.value == 'oauth' %}

@@ -45,6 +45,28 @@ $selected-color: color.adjust(navbar.$menubar-bg-color, $lightness: 30%);
     width: 600px;
   }
 
+  .flash-container {
+    width: min(600px, 90vw);
+    margin-top: 12px;
+  }
+
+  .flash-message {
+    background-color: #fdecec;
+    border: 1px solid #e59a9a;
+    color: #7a1111;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    font-size: 1em;
+    line-height: 1.4;
+  }
+
+  .flash-category-success {
+    background-color: #ecf9f0;
+    border: 1px solid #8bd9a4;
+    color: #0a6030;
+  }
+
   input {
     font-family: defaults.$default-font;
     font-size: 1.5em;

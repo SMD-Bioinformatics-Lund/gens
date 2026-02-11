@@ -81,7 +81,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
   gens users create --email dev.user@example.org --name "Dev User" --force
 ```
 
-Login at `http://localhost:8080/` with:
+Login at `http://localhost:5000/` with:
 
 - email: `dev.user@example.org`
 - password: `devpassword`
@@ -101,8 +101,8 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
 
 Open:
 
-- Gens: `http://localhost:8080/`
-- Keycloak admin: `http://localhost:8090/` (admin/admin)
+- Gens: `http://localhost:5000/`
+- Keycloak admin: `http://localhost:5002/` (admin/admin)
 
 Seeded OAuth user credentials:
 

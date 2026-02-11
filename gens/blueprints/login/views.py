@@ -146,6 +146,7 @@ def login() -> Response:
             except Exception as error:
                 LOG.error("An error occurred while trying use OAUTH - %s", error)
                 flash("An error has occurred while logging user in using Google OAuth")
+                return redirect(url_for("home.landing"))
     elif request.method == "POST":
         user_mail = request.form.get("email")
         if not user_mail:
@@ -163,7 +164,10 @@ def login() -> Response:
                 return redirect(url_for("home.landing"))
 
             if not authenticate_with_ldap(user_mail, password):
-                flash("Incorrect username or password", "warning")
+                flash(
+                    "Could not authenticate user with LDAP. Verify email and password.",
+                    "warning",
+                )
                 return redirect(url_for("home.landing"))
 
     else:
@@ -173,12 +177,27 @@ def login() -> Response:
         flash("Unable to log in with the provided credentials", "warning")
         return redirect(url_for("home.landing"))
 
-    login_user_obj = get_login_user(user_mail)
-    if login_user_obj is None:
-        flash("User not found in configured user database", "warning")
+    user_db = get_user_database()
+    if user_db is None:
+        flash(
+            (
+                f"Could not authenticate user because auth_user_db="
+                f"'{settings.auth_user_db.value}' is not available."
+            ),
+            "warning",
+        )
         return redirect(url_for("home.landing"))
 
-    return perform_login(login_user_obj)
+    user_col = user_db.get_collection(settings.auth_user_collection or USER_COLLECTION)
+    user_obj = get_user(user_col, user_mail)
+    if user_obj is None:
+        flash(
+            f"User '{user_mail}' does not exist in the configured user database.",
+            "warning",
+        )
+        return redirect(url_for("home.landing"))
+
+    return perform_login(LoginUser(user_obj))
 
 
 @login_bp.route("/authorized")
