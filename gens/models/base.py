@@ -61,3 +61,4 @@ class User(CreatedAtModel, ModifiedAtModel):
 
     name: str
     email: EmailStr
+    roles: list[str]

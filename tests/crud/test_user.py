@@ -7,7 +7,9 @@ from gens.models.base import User
 
 def test_get_user_matches_email_case_insensitive(db: mongomock.Database) -> None:
     user_collection = db.get_collection(USER_COLLECTION)
-    user_collection.insert_one({"name": "Case User", "email": "Case.User@Example.com"})
+    user_collection.insert_one(
+        {"name": "Case User", "email": "Case.User@Example.com", "roles": ["user"]}
+    )
 
     user_obj = get_user(user_collection, "case.user@example.com")
 
@@ -17,7 +19,7 @@ def test_get_user_matches_email_case_insensitive(db: mongomock.Database) -> None
 
 def test_get_user_returns_none_for_invalid_document(db: mongomock.Database) -> None:
     user_collection = db.get_collection(USER_COLLECTION)
-    user_collection.insert_one({"email": "broken@example.com"})
+    user_collection.insert_one({"name": "Broken", "email": "broken@example.com"})
 
     assert get_user(user_collection, "broken@example.com") is None
 
@@ -26,8 +28,8 @@ def test_get_users_skips_invalid_documents(db: mongomock.Database) -> None:
     user_collection = db.get_collection(USER_COLLECTION)
     user_collection.insert_many(
         [
-            {"name": "Valid", "email": "valid@example.com"},
-            {"email": "broken@example.com"},
+            {"name": "Valid", "email": "valid@example.com", "roles": ["user"]},
+            {"name": "Broken", "email": "broken@example.com"},
         ]
     )
 
@@ -39,7 +41,7 @@ def test_get_users_skips_invalid_documents(db: mongomock.Database) -> None:
 
 def test_create_user_normalizes_email_to_lowercase(db: mongomock.Database) -> None:
     user_collection = db.get_collection(USER_COLLECTION)
-    user_obj = User(name="Test User", email="Mixed.Case@Example.com")
+    user_obj = User(name="Test User", email="Mixed.Case@Example.com", roles=["user"])
 
     create_user(user_collection, user_obj)
 

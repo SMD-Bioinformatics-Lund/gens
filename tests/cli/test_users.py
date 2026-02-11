@@ -21,13 +21,14 @@ def test_create_user_cli_stores_normalized_email(
     user_doc = db.get_collection(USER_COLLECTION).find_one({"name": "Mixed Case"})
     assert user_doc is not None
     assert user_doc["email"] == "mixed.case@example.com"
+    assert user_doc["roles"] == ["user"]
 
 
 def test_create_user_cli_requires_force_for_existing_user(
     cli_users: ModuleType, db: mongomock.Database
 ) -> None:
     db.get_collection(USER_COLLECTION).insert_one(
-        {"name": "First", "email": "user@example.com"}
+        {"name": "First", "email": "user@example.com", "roles": ["user"]}
     )
 
     with pytest.raises(click.ClickException, match="already exists"):
@@ -42,7 +43,7 @@ def test_create_user_cli_force_updates_existing_user(
     cli_users: ModuleType, db: mongomock.Database
 ) -> None:
     db.get_collection(USER_COLLECTION).insert_one(
-        {"name": "First", "email": "user@example.com"}
+        {"name": "First", "email": "user@example.com", "roles": ["user"]}
     )
 
     cli_users.create_user_cmd.callback(
@@ -54,13 +55,14 @@ def test_create_user_cli_force_updates_existing_user(
     user_doc = db.get_collection(USER_COLLECTION).find_one({"email": "user@example.com"})
     assert user_doc is not None
     assert user_doc["name"] == "Updated Name"
+    assert user_doc["roles"] == ["user"]
 
 
 def test_delete_user_cli_removes_user(
     cli_users: ModuleType, db: mongomock.Database
 ) -> None:
     db.get_collection(USER_COLLECTION).insert_one(
-        {"name": "Delete Me", "email": "delete.me@example.com"}
+        {"name": "Delete Me", "email": "delete.me@example.com", "roles": ["user"]}
     )
 
     cli_users.delete_user_cmd.callback(
@@ -85,8 +87,8 @@ def test_list_users_cli_prints_rows(
     users_collection = db.get_collection(USER_COLLECTION)
     users_collection.insert_many(
         [
-            {"name": "Alpha", "email": "alpha@example.com"},
-            {"name": "Beta", "email": "beta@example.com"},
+            {"name": "Alpha", "email": "alpha@example.com", "roles": ["user"]},
+            {"name": "Beta", "email": "beta@example.com", "roles": ["admin", "user"]},
         ]
     )
 

@@ -152,7 +152,6 @@ def patch_cli(
         return db
 
     monkeypatch.setattr("gens.cli.util.db.get_cli_db", _get_cli_db)
-    monkeypatch.setattr("gens.cli.util.db.get_cli_user_db", _get_cli_db)
 
     def _patch(_module: str | types.ModuleType) -> None:
         """Compatibility no-op for fixtures that call patch_cli(module)."""
