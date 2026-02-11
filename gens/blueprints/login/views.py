@@ -18,8 +18,6 @@ from gens.db.collections import USER_COLLECTION
 
 from ..home.views import public_endpoint
 
-# from . import controllers
-
 LOG = logging.getLogger(__name__)
 
 

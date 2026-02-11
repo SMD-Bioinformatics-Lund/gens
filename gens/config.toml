@@ -37,6 +37,6 @@ message = "Exceeds max mismatch count"
 ignore_when = { sex = "M", chromosome = "X" }
 
 # Example LDAP authentication configuration
-# [ldap]
-# server = "ldap://ldap.example.com"
-# bind_user_template = "uid={username},ou=People,dc=example,dc=com"
+[ldap]
+server = "ldap://ldap.example.com"
+bind_user_template = "uid={username},ou=People,dc=example,dc=com"

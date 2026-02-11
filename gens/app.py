@@ -4,12 +4,21 @@ Whole genome visualization of BAF and log2 ratio
 
 import logging
 from logging.config import dictConfig
+from typing import Any
+from urllib.parse import quote
 
 from asgiref.wsgi import WsgiToAsgi
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.openapi.docs import (
+    get_redoc_html,
+    get_swagger_ui_html,
+    get_swagger_ui_oauth2_redirect_html,
+)
+from fastapi.responses import JSONResponse, RedirectResponse
 from flask import Flask, redirect, request, url_for
 from flask_compress import Compress  # type: ignore
 from flask_login import current_user  # type: ignore
+from itsdangerous import BadSignature
 from werkzeug.wrappers.response import Response
 
 from gens.blueprints.gens.views import gens_bp
@@ -18,7 +27,10 @@ from gens.blueprints.login.views import login_bp
 from gens.db.db import init_database_connection
 from gens.exceptions import SampleNotFoundError
 
-from .auth import login_manager, oauth_client
+from .auth import (
+    login_manager,
+    oauth_client,
+)
 from .config import AuthMethod, settings
 from .errors import generic_abort_error, generic_exception_error, sample_not_found
 from .routes import annotations, base, gene_lists, sample, sample_annotations
@@ -53,11 +65,10 @@ def create_app() -> FastAPI:
     # setup fastapi app
     fastapi_app = FastAPI(
         title="Gens",
-        docs_url="/api/docs",
-        redoc_url="/api/redoc",
-        openapi_url="/api/openapi.json",
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None,
     )
-    add_api_routers(fastapi_app)
 
     # create and configure flask frontend
     flask_app: Flask = Flask(__name__)  # type: ignore
@@ -68,7 +79,11 @@ def create_app() -> FastAPI:
         init_database_connection(flask_app)
     # connect to mongo client
     flask_app.config["DEBUG"] = True
-    flask_app.config["SECRET_KEY"] = "pass"
+    flask_app.config["SECRET_KEY"] = settings.secret_key
+    if settings.secret_key == "pass":
+        LOG.warning(
+            "Using default SECRET_KEY value. Configure secret_key in production."
+        )
 
     # prepare app context
     initialize_extensions(flask_app)
@@ -77,6 +92,16 @@ def create_app() -> FastAPI:
 
     # register bluprints and errors
     register_blueprints(flask_app)
+
+    async def require_api_auth(request: Request) -> None:
+        """Require a valid logged-in session for API routes"""
+
+        if settings.authentication == AuthMethod.DISABLED:
+            return
+        if not is_docs_request_authorized(flask_app, request):
+            raise HTTPException(status_code=401, detail="Authentication required")
+
+    add_api_routers(fastapi_app, dependencies=[Depends(require_api_auth)])
 
     @flask_app.before_request
     def check_user() -> Flask | None | Response:  # type: ignore
@@ -97,18 +122,108 @@ def create_app() -> FastAPI:
             login_url = url_for("home.landing", next=next_url)
             return redirect(login_url)
 
+    # Require the user to be authenticated before accessing the FastAPI access points
+    @fastapi_app.get("/api/openapi.json", include_in_schema=False)
+    async def openapi_json(request: Request):
+        if (
+            settings.authentication != AuthMethod.DISABLED
+            and not is_docs_request_authorized(flask_app, request)
+        ):
+            return JSONResponse(
+                status_code=401, content={"detail": "Authentication required"}
+            )
+        return JSONResponse(fastapi_app.openapi())
+
+    @fastapi_app.get("/api/docs", include_in_schema=False)
+    async def swagger_ui(request: Request):
+        if (
+            settings.authentication != AuthMethod.DISABLED
+            and not is_docs_request_authorized(flask_app, request)
+        ):
+            return RedirectResponse(url=get_docs_login_redirect(request))
+        return get_swagger_ui_html(
+            openapi_url="/api/openapi.json",
+            title=f"{fastapi_app.title} - Swagger UI",
+            oauth2_redirect_url="/api/docs/oauth2-redirect",
+        )
+
+    @fastapi_app.get("/api/docs/oauth2-redirect", include_in_schema=False)
+    async def swagger_ui_oauth2_redirect(request: Request):
+        if (
+            settings.authentication != AuthMethod.DISABLED
+            and not is_docs_request_authorized(flask_app, request)
+        ):
+            return RedirectResponse(url=get_docs_login_redirect(request))
+        return get_swagger_ui_oauth2_redirect_html()
+
+    @fastapi_app.get("/api/redoc", include_in_schema=False)
+    async def redoc(request: Request):
+        if (
+            settings.authentication != AuthMethod.DISABLED
+            and not is_docs_request_authorized(flask_app, request)
+        ):
+            return RedirectResponse(url=get_docs_login_redirect(request))
+        return get_redoc_html(
+            openapi_url="/api/openapi.json",
+            title=f"{fastapi_app.title} - ReDoc",
+        )
+
     # mount flask app to FastAPI app
     fastapi_app.mount("/", WsgiToAsgi(flask_app))
     return fastapi_app
 
 
-def add_api_routers(app: FastAPI) -> None:
+def is_docs_request_authorized(flask_app: Flask, request: Request) -> bool:
+    """Check whether docs request should be allowed"""
+    # Import lazily to avoid circular imports during app/test startup.
+    from gens.blueprints.login.views import load_user
+
+    session_cookie_name = flask_app.config.get("SESSION_COOKIE_NAME", "session")
+    session_cookie = request.cookies.get(session_cookie_name)
+    if session_cookie is None:
+        return False
+
+    serializer_factory = getattr(
+        flask_app.session_interface, "get_signing_serializer", None
+    )
+    if serializer_factory is None:
+        return False
+
+    serializer = serializer_factory(flask_app)
+    if serializer is None:
+        return False
+
+    try:
+        session_data = serializer.loads(session_cookie)
+    except BadSignature:
+        return False
+
+    user_id = session_data.get("_user_id")
+    if not user_id:
+        return False
+
+    with flask_app.app_context():
+        return load_user(str(user_id)) is not None
+
+
+def get_docs_login_redirect(request: Request) -> str:
+    """Get login redirect URL for unauthorized docs access"""
+    next_url = request.url.path
+    if request.url.query:
+        next_url = f"{next_url}?{request.url.query}"
+    encoded_next_url = quote(next_url, safe="/")
+    return f"/landing?next={encoded_next_url}"
+
+
+def add_api_routers(app: FastAPI, dependencies: list[Any] | None = None) -> None:
     api_prefix = "/api"
-    app.include_router(base.router, prefix=api_prefix)
-    app.include_router(sample.router, prefix=api_prefix)
-    app.include_router(annotations.router, prefix=api_prefix)
-    app.include_router(sample_annotations.router, prefix=api_prefix)
-    app.include_router(gene_lists.router, prefix=api_prefix)
+    app.include_router(base.router, prefix=api_prefix, dependencies=dependencies)
+    app.include_router(sample.router, prefix=api_prefix, dependencies=dependencies)
+    app.include_router(annotations.router, prefix=api_prefix, dependencies=dependencies)
+    app.include_router(
+        sample_annotations.router, prefix=api_prefix, dependencies=dependencies
+    )
+    app.include_router(gene_lists.router, prefix=api_prefix, dependencies=dependencies)
 
 
 def initialize_extensions(app: Flask) -> None:

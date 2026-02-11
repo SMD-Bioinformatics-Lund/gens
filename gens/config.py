@@ -117,6 +117,10 @@ class Settings(BaseSettings):
         default_factory=lambda: ["proband", "tumor"],
         description="Sample types treated as main samples",
     )
+    secret_key: str = Field(
+        default="pass",
+        description="Flask secret key used for sessions.",
+    )
 
     # Authentication options
     authentication: AuthMethod = AuthMethod.DISABLED
@@ -158,6 +162,7 @@ class Settings(BaseSettings):
             "scout_url": self.variant_url,
             "gens_api_url": self.gens_api_url,
             "main_sample_types": self.main_sample_types,
+            "secret_key": self.secret_key,
             "authentication": self.authentication.value,
             "auth_user_db": self.auth_user_db.value,
             "auth_user_collection": self.auth_user_collection,
