@@ -21,7 +21,6 @@ from flask_login import current_user  # type: ignore
 from itsdangerous import BadSignature
 from werkzeug.wrappers.response import Response
 
-from gens.__version__ import VERSION as version
 from gens.blueprints.gens.views import gens_bp
 from gens.blueprints.home.views import home_bp
 from gens.blueprints.login.views import load_user, login_bp
@@ -99,11 +98,10 @@ def create_app() -> FastAPI:
     # setup fastapi app
     fastapi_app = FastAPI(
         title="Gens",
-        docs_url="/api/docs",
-        redoc_url="/api/redoc",
-        openapi_url="/api/openapi.json",
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None,
     )
-    add_api_routers(fastapi_app)
 
     # create and configure flask frontend
     flask_app: Flask = Flask(__name__)  # type: ignore
@@ -163,20 +161,6 @@ def create_app() -> FastAPI:
             )
         return JSONResponse(fastapi_app.openapi())
 
-    @fastapi_app.get("/api", include_in_schema=False)
-    async def api_root_without_trailing_slash():
-        return {
-            "message": "Welcome to Gens API",
-            "version": version,
-        }
-
-    @fastapi_app.get("/api/")
-    async def api_root():
-        return {
-            "message": "Welcome to Gens API",
-            "version": version,
-        }
-
     @fastapi_app.get("/api/docs", include_in_schema=False)
     async def swagger_ui(request: Request):
         if not _is_docs_request_authorized(flask_app, request):
@@ -207,13 +191,19 @@ def create_app() -> FastAPI:
     return fastapi_app
 
 
-def add_api_routers(app: FastAPI) -> None:
+def add_api_routers(
+    app: FastAPI, dependencies: list[Any] | None = None
+) -> None:
     api_prefix = "/api"
-    app.include_router(base.router, prefix=api_prefix)
-    app.include_router(sample.router, prefix=api_prefix)
-    app.include_router(annotations.router, prefix=api_prefix)
-    app.include_router(sample_annotations.router, prefix=api_prefix)
-    app.include_router(gene_lists.router, prefix=api_prefix)
+    app.include_router(base.router, prefix=api_prefix, dependencies=dependencies)
+    app.include_router(sample.router, prefix=api_prefix, dependencies=dependencies)
+    app.include_router(
+        annotations.router, prefix=api_prefix, dependencies=dependencies
+    )
+    app.include_router(
+        sample_annotations.router, prefix=api_prefix, dependencies=dependencies
+    )
+    app.include_router(gene_lists.router, prefix=api_prefix, dependencies=dependencies)
 
 
 def initialize_extensions(app: Flask) -> None:

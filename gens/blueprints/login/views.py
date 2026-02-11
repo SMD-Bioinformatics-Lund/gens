@@ -222,7 +222,7 @@ def login() -> Response:
         )
         return redirect(url_for("home.landing"))
 
-    return perform_login(login_user_obj)
+    return perform_login(LoginUser(user_obj))
 
 
 @login_bp.route("/authorized")
