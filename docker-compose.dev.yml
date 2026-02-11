@@ -52,7 +52,7 @@ services:
     volumes:
       - ./utils/dev/oidc/keycloak-realm-gens-dev.json:/opt/keycloak/data/import/keycloak-realm-gens-dev.json:ro
     ports:
-      - 8090:8080
+      - 5002:8080
     # Seeded OAuth account:
     #   username: dev.user
     #   email: dev.user@example.org
