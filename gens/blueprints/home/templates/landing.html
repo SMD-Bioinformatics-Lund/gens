@@ -36,20 +36,14 @@
           Login with Google
         </a>
   {% elif authentication.value == 'ldap' %}
-    <form method="POST" action="{{ url_for('login.login') }}">
-      <ul>
-        <li>
-          <input type="text" placeholder="email" class="form-control" name="email">
-        </li>
-        <li>
-          <input type="password" placeholder="password" class="form-control" name="password">
-        </li>
-        <li>
-          <button type="submit" class="btn">Login</button>
-        </li>
-      </ul>
+    <form method="POST" action="{{ url_for('login.login') }}" class="ldap-login-form">
+      <div class="ldap-login-fields">
+        <input type="text" placeholder="email" class="form-control" name="email">
+        <input type="password" placeholder="password" class="form-control" name="password">
+        <button type="submit" class="btn">Login</button>
+      </div>
     </form>
-  {% else %}
+  {% elif authentication.value == 'simple' %}
     <form method="POST" action="{{ url_for('login.login') }}">
     <ul>
       <li>
@@ -60,8 +54,9 @@
      </li>
     </ul>
     </form>
+  {% else %}
+    <a class="btn" href="{{ url_for('home.home') }}">Open Gens</a>
   {% endif %}
   </div>
 </div>
 {% endblock content %}
-

@@ -1,0 +1,16 @@
+# Seed development LDAP user for Gens login tests
+# Login email in app: dev.user@example.org
+# LDAP bind DN: uid=dev.user@example.org,ou=People,dc=example,dc=org
+
+dn: ou=People,dc=example,dc=org
+objectClass: organizationalUnit
+ou: People
+
+dn: uid=dev.user@example.org,ou=People,dc=example,dc=org
+objectClass: inetOrgPerson
+cn: Dev User
+sn: User
+givenName: Dev
+uid: dev.user@example.org
+mail: dev.user@example.org
+userPassword: devpassword

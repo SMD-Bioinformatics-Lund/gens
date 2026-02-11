@@ -2,6 +2,7 @@
 
 import logging
 from typing import Any
+from urllib.parse import urlsplit
 
 from flask import Blueprint, current_app, flash, redirect, request, session, url_for
 from flask_login import login_user, logout_user
@@ -11,7 +12,7 @@ from pymongo.database import Database
 from werkzeug.wrappers.response import Response
 
 from gens.auth import LoginUser, login_manager, oauth_client
-from gens.config import AuthMethod, LdapConfig, settings
+from gens.config import AuthMethod, AuthUserDb, LdapConfig, settings
 from gens.crud.user import get_user
 from gens.db.collections import USER_COLLECTION
 
@@ -20,6 +21,55 @@ from ..home.views import public_endpoint
 # from . import controllers
 
 LOG = logging.getLogger(__name__)
+
+
+def normalize_email(email: str) -> str:
+    """Normalize email/user id values used for login lookups."""
+
+    return email.strip().lower()
+
+
+def is_safe_next_url(next_url: str | None) -> bool:
+    """Return True for local URLs that are safe to redirect to."""
+
+    if not next_url:
+        return False
+    parsed_url = urlsplit(next_url)
+    return (
+        parsed_url.scheme == "" and parsed_url.netloc == "" and next_url.startswith("/")
+    )
+
+
+def get_user_database() -> Database[Any] | None:
+    """Return the configured user database for authentication lookups."""
+
+    database_key = "GENS_DB"
+    if settings.auth_user_db == AuthUserDb.VARIANT:
+        database_key = "VARIANT_DB"
+
+    user_db = current_app.config.get(database_key)
+    if user_db is None:
+        LOG.error(
+            "Configured user database '%s' is not available in app config (%s)",
+            settings.auth_user_db.value,
+            database_key,
+        )
+        return None
+    return user_db
+
+
+def get_login_user(email: str) -> LoginUser | None:
+    """Get a login user from the configured authentication user collection."""
+
+    user_db = get_user_database()
+    if user_db is None:
+        return None
+
+    user_col = user_db.get_collection(settings.auth_user_collection or USER_COLLECTION)
+    user_obj = get_user(user_col, normalize_email(email))
+    if user_obj is None:
+        return None
+    return LoginUser(user_obj)
 
 
 def authenticate_with_ldap(
@@ -54,13 +104,7 @@ def authenticate_with_ldap(
 @login_manager.user_loader
 def load_user(user_id: str) -> LoginUser | None:
     """Returns the currently active user as an object."""
-    # get database instance
-    db: Database[Any] = current_app.config["GENS_DB"]
-    user_col = db.get_collection(USER_COLLECTION)
-    user_obj = get_user(user_col, user_id)
-    if user_obj is not None:
-        return LoginUser(user_obj)
-    return None
+    return get_login_user(user_id)
 
 
 login_bp = Blueprint(
@@ -82,13 +126,17 @@ def login() -> Response:
     """Login a user using the auth method specified in the configuration."""
 
     if "next" in request.args:
-        session["next_url"] = request.args["next"]
+        next_url = request.args.get("next")
+        if is_safe_next_url(next_url):
+            session["next_url"] = next_url
+        elif next_url:
+            LOG.warning("Rejected unsafe login redirect URL: %s", next_url)
 
     user_mail: str | None = None
     if settings.authentication == AuthMethod.OAUTH:
-        if session.get("email"):
-            user_mail = session["email"]
-            session.pop("email", None)
+        oauth_email = session.pop("email", None)
+        if oauth_email:
+            user_mail = normalize_email(str(oauth_email))
         else:
 
             LOG.info("Google Login!")
@@ -100,6 +148,10 @@ def login() -> Response:
                 flash("An error has occurred while logging user in using Google OAuth")
     elif request.method == "POST":
         user_mail = request.form.get("email")
+        if not user_mail:
+            flash("Please enter an email", "warning")
+            return redirect(url_for("home.landing"))
+        user_mail = normalize_email(user_mail)
         if not user_mail:
             flash("Please enter an email", "warning")
             return redirect(url_for("home.landing"))
@@ -121,14 +173,12 @@ def login() -> Response:
         flash("Unable to log in with the provided credentials", "warning")
         return redirect(url_for("home.landing"))
 
-    db: Database[Any] = current_app.config["GENS_DB"]
-    user_col = db.get_collection(USER_COLLECTION)
-    user_obj = get_user(user_col, user_mail)  # type: ignore
-    if user_obj is None:
-        flash("User not found in Scout database", "warning")
+    login_user_obj = get_login_user(user_mail)
+    if login_user_obj is None:
+        flash("User not found in configured user database", "warning")
         return redirect(url_for("home.landing"))
 
-    return perform_login(LoginUser(user_obj))
+    return perform_login(login_user_obj)
 
 
 @login_bp.route("/authorized")
@@ -142,7 +192,11 @@ def authorized() -> Response:
 
     token = oauth_google.authorize_access_token()
     google_user = oauth_google.parse_id_token(token, None)
-    session["email"] = google_user.get("email").lower()
+    email = google_user.get("email") if google_user else None
+    if not email:
+        flash("Google login did not provide an email address", "warning")
+        return redirect(url_for("home.landing"))
+    session["email"] = normalize_email(str(email))
     session["name"] = google_user.get("name")
     session["locale"] = google_user.get("locale")
 
@@ -169,6 +223,7 @@ def perform_login(user_dict: LoginUser) -> Response:
     if login_user(user_dict, remember=True):
         flash(f"You logged in as: {user_dict.name}", "success")
         next_url = session.pop("next_url", None)
-        return redirect(request.args.get("next") or next_url or url_for("home.home"))
+        redirect_url = next_url if is_safe_next_url(next_url) else url_for("home.home")
+        return redirect(redirect_url)
     flash("Sorry, you were not logged in", "warning")
     return redirect(url_for("home.landing"))

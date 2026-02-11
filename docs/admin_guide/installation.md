@@ -63,3 +63,51 @@ Make sure the application is running by loading http://localhost:5000/ in your w
 <img src="../img/gens_hello_world.PNG" width="800">
 
 Finally you need to populate the databases with chromosome sizes and gene/transcript data (see more under section [Load data](./load_gens_data.md))
+
+## Dev auth providers (LDAP/OAuth)
+
+The development compose file includes seeded LDAP and OAuth providers.
+
+### Start in LDAP mode
+
+```bash
+GENS_AUTHENTICATION=ldap docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+Create (or ensure) the login user in Gens auth user DB:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
+  gens users create --email dev.user@example.org --name "Dev User" --force
+```
+
+Login at `http://localhost:8080/app` with:
+
+- email: `dev.user@example.org`
+- password: `devpassword`
+
+### Start in OAuth mode (Keycloak)
+
+```bash
+GENS_AUTHENTICATION=oauth docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+Create (or ensure) the login user in Gens auth user DB:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
+  gens users create --email dev.user@example.org --name "Dev User" --force
+```
+
+Open:
+
+- Gens: `http://localhost:8080/app`
+- Keycloak admin: `http://localhost:8090/` (admin/admin)
+
+Seeded OAuth user credentials:
+
+- username: `dev.user`
+- password: `devpassword`
+- email: `dev.user@example.org`
+
+To use Scout as the login user database instead of Gens, configure `auth_user_db = "variant"` (or `GENS_AUTH_USER_DB=variant`) and make sure that user exists in Scout's `user` collection.
