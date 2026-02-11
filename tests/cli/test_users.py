@@ -15,10 +15,7 @@ def test_create_user_cli_stores_normalized_email(
     cli_users.create_user_cmd.callback(
         email="Mixed.Case@Example.com",
         name="Mixed Case",
-        roles=(),
         force=False,
-        user_db=None,
-        collection_name=None,
     )
 
     user_doc = db.get_collection(USER_COLLECTION).find_one({"name": "Mixed Case"})
@@ -38,10 +35,7 @@ def test_create_user_cli_requires_force_for_existing_user(
         cli_users.create_user_cmd.callback(
             email="user@example.com",
             name="Second",
-            roles=("admin",),
             force=False,
-            user_db=None,
-            collection_name=None,
         )
 
 
@@ -55,16 +49,13 @@ def test_create_user_cli_force_updates_existing_user(
     cli_users.create_user_cmd.callback(
         email="user@example.com",
         name="Updated Name",
-        roles=("admin", "admin", "user"),
         force=True,
-        user_db=None,
-        collection_name=None,
     )
 
     user_doc = db.get_collection(USER_COLLECTION).find_one({"email": "user@example.com"})
     assert user_doc is not None
     assert user_doc["name"] == "Updated Name"
-    assert user_doc["roles"] == ["admin", "user"]
+    assert user_doc["roles"] == ["user"]
 
 
 def test_delete_user_cli_removes_user(
@@ -77,8 +68,6 @@ def test_delete_user_cli_removes_user(
     cli_users.delete_user_cmd.callback(
         email="delete.me@example.com",
         force=True,
-        user_db=None,
-        collection_name=None,
     )
 
     assert db.get_collection(USER_COLLECTION).count_documents({}) == 0
@@ -89,8 +78,6 @@ def test_delete_user_cli_raises_for_missing_user(cli_users: ModuleType) -> None:
         cli_users.delete_user_cmd.callback(
             email="missing@example.com",
             force=True,
-            user_db=None,
-            collection_name=None,
         )
 
 
@@ -105,9 +92,9 @@ def test_list_users_cli_prints_rows(
         ]
     )
 
-    cli_users.list_users.callback(user_db=None, collection_name=None)
+    cli_users.list_users.callback()
 
     output = capsys.readouterr().out
-    assert "email\tname\troles" in output
-    assert "alpha@example.com\tAlpha\tuser" in output
-    assert "beta@example.com\tBeta\tadmin,user" in output
+    assert "email\tname" in output
+    assert "alpha@example.com\tAlpha" in output
+    assert "beta@example.com\tBeta" in output

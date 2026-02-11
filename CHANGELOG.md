@@ -20,8 +20,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Overview chart labels display for all chromosomes 1-22, X, Y, not only those present in the data. [#685](https://github.com/SMD-Bioinformatics-Lund/gens/pull/685)
 - Remove support from using overview JSONs. The overview is now retrieved from the "o" level in the tabix files. [#692](https://github.com/SMD-Bioinformatics-Lund/gens/pull/692)
 - Refactor db usage in backend to use a single access point, to simplify both CLI code and unit tests. [#692](https://github.com/SMD-Bioinformatics-Lund/gens/pull/692)
-- Refactor user management from API to CLI. [#693](https://github.com/SMD-Bioinformatics-Lund/gens/pull/693)
 - Allow using Scout's user database for login. [#693](https://github.com/SMD-Bioinformatics-Lund/gens/pull/693)
+- Move user management from API to CLI. [#697](https://github.com/SMD-Bioinformatics-Lund/gens/pull/697)
 
 ### Fixed
 
