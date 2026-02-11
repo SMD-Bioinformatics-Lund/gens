@@ -45,11 +45,7 @@
       "credentials": [
         {
           "type": "password",
-<<<<<<< HEAD
-          "value": "devpassword",
-=======
           "value": "devpass",
->>>>>>> dev
           "temporary": false
         }
       ]
