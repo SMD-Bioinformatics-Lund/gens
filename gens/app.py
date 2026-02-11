@@ -51,7 +51,12 @@ def create_app() -> FastAPI:
     # application = connexion.FlaskApp(__name__, specification_dir="openapi/")
     # application.add_api("openapi.yaml")
     # setup fastapi app
-    fastapi_app = FastAPI(title="Gens")
+    fastapi_app = FastAPI(
+        title="Gens",
+        docs_url="/api/docs",
+        redoc_url="/api/redoc",
+        openapi_url="/api/openapi.json",
+    )
     add_api_routers(fastapi_app)
 
     # create and configure flask frontend
@@ -93,16 +98,17 @@ def create_app() -> FastAPI:
             return redirect(login_url)
 
     # mount flask app to FastAPI app
-    fastapi_app.mount("/app", WsgiToAsgi(flask_app))
+    fastapi_app.mount("/", WsgiToAsgi(flask_app))
     return fastapi_app
 
 
-def add_api_routers(app: FastAPI):
-    app.include_router(base.router)
-    app.include_router(sample.router)
-    app.include_router(annotations.router)
-    app.include_router(sample_annotations.router)
-    app.include_router(gene_lists.router)
+def add_api_routers(app: FastAPI) -> None:
+    api_prefix = "/api"
+    app.include_router(base.router, prefix=api_prefix)
+    app.include_router(sample.router, prefix=api_prefix)
+    app.include_router(annotations.router, prefix=api_prefix)
+    app.include_router(sample_annotations.router, prefix=api_prefix)
+    app.include_router(gene_lists.router, prefix=api_prefix)
 
 
 def initialize_extensions(app: Flask) -> None:

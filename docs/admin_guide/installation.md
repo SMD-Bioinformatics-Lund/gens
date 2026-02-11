@@ -58,8 +58,56 @@ Start the application using an uvicorn service.
 uvicorn gens.app:create_app --factory --reload --host 0.0.0.0 --port 5000
 ```
 
-Make sure the application is running by loading http://localhost:5000/ in your web browser. If that works, head to http://localhost:5000/app to open the app itself or http://localhost:5000/docs to explore the API.
+Make sure the application is running by loading http://localhost:5000/ in your web browser. The web app is served at `/` and the API docs are available at http://localhost:5000/api/docs.
 
 <img src="../img/gens_hello_world.PNG" width="800">
 
 Finally you need to populate the databases with chromosome sizes and gene/transcript data (see more under section [Load data](./load_gens_data.md))
+
+## Dev auth providers (LDAP/OAuth)
+
+The development compose file includes seeded LDAP and OAuth providers.
+
+### Start in LDAP mode
+
+```bash
+GENS_AUTHENTICATION=ldap docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+Create (or ensure) the login user in Gens auth user DB:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
+  gens users create --email dev.user@example.org --name "Dev User" --force
+```
+
+Login at `http://localhost:5000/` with:
+
+- email: `dev.user@example.org`
+- password: `devpassword`
+
+### Start in OAuth mode (Keycloak)
+
+```bash
+GENS_AUTHENTICATION=oauth docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+Create (or ensure) the login user in Gens auth user DB:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
+  gens users create --email dev.user@example.org --name "Dev User" --force
+```
+
+Open:
+
+- Gens: `http://localhost:5000/`
+- Keycloak admin: `http://localhost:5002/` (admin/admin)
+
+Seeded OAuth user credentials:
+
+- username: `dev.user`
+- password: `devpass`
+- email: `dev.user@example.org`
+
+To use Scout as the login user database instead of Gens, configure `auth_user_db = "variant"` (or `GENS_AUTH_USER_DB=variant`) and make sure that user exists in Scout's `user` collection.
