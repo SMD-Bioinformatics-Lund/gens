@@ -75,7 +75,7 @@ services:
       - LDAP__BIND_USER_TEMPLATE=uid={username},ou=People,dc=example,dc=org
       - OAUTH__CLIENT_ID=${GENS_OAUTH_CLIENT_ID:-gens-dev}
       - OAUTH__SECRET=${GENS_OAUTH_SECRET:-gens-dev-secret}
-      - OAUTH__DISCOVERY_URL=${GENS_OAUTH_DISCOVERY_URL:-http://oidc.localtest.me:8090/realms/gens-dev/.well-known/openid-configuration}
+      - OAUTH__DISCOVERY_URL=${GENS_OAUTH_DISCOVERY_URL:-http://oidc.localtest.me:5002/realms/gens-dev/.well-known/openid-configuration}
     extra_hosts:
       - "oidc.localtest.me:host-gateway"
     ports:

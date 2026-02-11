@@ -138,14 +138,39 @@ def login() -> Response:
         if oauth_email:
             user_mail = normalize_email(str(oauth_email))
         else:
+            oauth_google = oauth_client.google
+            if oauth_google is None:
+                discovery_url = (
+                    str(settings.oauth.discovery_url) if settings.oauth else "missing"
+                )
+                LOG.error(
+                    "OAuth login requested, but oauth_client.google is not configured. "
+                    "Check OAuth settings (discovery_url=%s).",
+                    discovery_url,
+                )
+                flash(
+                    "OAuth login is not configured correctly. Check server OAuth settings.",
+                    "warning",
+                )
+                return redirect(url_for("home.landing"))
 
-            LOG.info("Google Login!")
+            LOG.info("Initiating OAuth login")
             redirect_uri = url_for(".authorized", _external=True)
             try:
-                return oauth_client.google.authorize_redirect(redirect_uri)  # type: ignore
+                return oauth_google.authorize_redirect(  # type: ignore
+                    redirect_uri,
+                    prompt="login",
+                )
             except Exception as error:
-                LOG.error("An error occurred while trying use OAUTH - %s", error)
-                flash("An error has occurred while logging user in using Google OAuth")
+                discovery_url = (
+                    str(settings.oauth.discovery_url) if settings.oauth else "missing"
+                )
+                LOG.exception(
+                    "Failed to initiate OAuth login redirect (redirect_uri=%s, discovery_url=%s)",
+                    redirect_uri,
+                    discovery_url,
+                )
+                flash(f"Could not start OAuth login: {error}", "warning")
                 return redirect(url_for("home.landing"))
     elif request.method == "POST":
         user_mail = request.form.get("email")
@@ -207,10 +232,18 @@ def authorized() -> Response:
 
     oauth_google = oauth_client.google
     if oauth_google is None:
-        raise ValueError("Google attribute not present on oauth object")
+        LOG.error("OAuth callback requested, but oauth_client.google is not configured.")
+        flash("OAuth callback failed because OAuth client is not configured.", "warning")
+        return redirect(url_for("home.landing"))
 
-    token = oauth_google.authorize_access_token()
-    google_user = oauth_google.parse_id_token(token, None)
+    try:
+        token = oauth_google.authorize_access_token()
+        google_user = oauth_google.parse_id_token(token, None)
+    except Exception as error:
+        LOG.exception("OAuth callback processing failed")
+        flash(f"OAuth callback failed: {error}", "warning")
+        return redirect(url_for("home.landing"))
+
     email = google_user.get("email") if google_user else None
     if not email:
         flash("Google login did not provide an email address", "warning")
