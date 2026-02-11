@@ -70,15 +70,9 @@ services:
       - keycloak
     environment:
       - FLASK_DEBUG=1
-      # Toggle LDAP login mode in dev:
-      # GENS_AUTHENTICATION=ldap docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
-      # This account must also exist in the configured auth user collection:
-      # gens users create --email dev.user@example.org --name "Dev User" --role user
       - AUTHENTICATION=${GENS_AUTHENTICATION:-simple}
       - LDAP__SERVER=${GENS_LDAP_SERVER:-ldap://ldap:389}
       - LDAP__BIND_USER_TEMPLATE=uid={username},ou=People,dc=example,dc=org
-      # Toggle OAuth login mode in dev:
-      # GENS_AUTHENTICATION=oauth docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
       - OAUTH__CLIENT_ID=${GENS_OAUTH_CLIENT_ID:-gens-dev}
       - OAUTH__SECRET=${GENS_OAUTH_SECRET:-gens-dev-secret}
       - OAUTH__DISCOVERY_URL=${GENS_OAUTH_DISCOVERY_URL:-http://oidc.localtest.me:8090/realms/gens-dev/.well-known/openid-configuration}
