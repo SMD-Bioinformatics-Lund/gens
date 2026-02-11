@@ -152,6 +152,7 @@ def patch_cli(
         return db
 
     monkeypatch.setattr("gens.cli.util.db.get_cli_db", _get_cli_db)
+    monkeypatch.setattr("gens.cli.util.db.get_cli_user_db", _get_cli_db)
 
     def _patch(_module: str | types.ModuleType) -> None:
         """Compatibility no-op for fixtures that call patch_cli(module)."""
@@ -184,5 +185,12 @@ def cli_update(patch_cli) -> types.ModuleType:
 @pytest.fixture
 def cli_index(patch_cli) -> types.ModuleType:
     module = importlib.import_module("gens.cli.index")
+    patch_cli(module)
+    return module
+
+
+@pytest.fixture
+def cli_users(patch_cli) -> types.ModuleType:
+    module = importlib.import_module("gens.cli.users")
     patch_cli(module)
     return module

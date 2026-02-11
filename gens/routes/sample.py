@@ -1,14 +1,12 @@
 """Routes for getting coverage information."""
 
-from http import HTTPStatus
-from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter
 
 from gens.crud import samples
 from gens.db.collections import SAMPLES_COLLECTION
-from gens.io import get_overview_data, get_overview_from_tabix, get_scatter_data
+from gens.io import get_overview_from_tabix, get_scatter_data
 from gens.models.genomic import Chromosome, GenomeBuild, GenomicRegion
 from gens.models.sample import (
     GenomeCoverage,
@@ -20,12 +18,6 @@ from gens.models.sample import (
 from .utils import ApiTags, GensDb
 
 router = APIRouter(prefix="/samples")
-
-
-@router.post("/sample", tags=[ApiTags.SAMPLE], status_code=HTTPStatus.CREATED)
-async def create_sample(sample: SampleInfo, db: GensDb):
-    """Create a new sample in the database."""
-    samples.create_sample(db, sample)
 
 
 @router.get("/", tags=[ApiTags.SAMPLE])
