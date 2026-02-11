@@ -99,10 +99,12 @@ def create_app() -> FastAPI:
     # setup fastapi app
     fastapi_app = FastAPI(
         title="Gens",
-        docs_url=None,
-        redoc_url=None,
-        openapi_url=None,
+        docs_url="/api/docs",
+        redoc_url="/api/redoc",
+        openapi_url="/api/openapi.json",
     )
+    add_api_routers(fastapi_app)
+
     # create and configure flask frontend
     flask_app: Flask = Flask(__name__)  # type: ignore
     flask_app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
@@ -205,17 +207,13 @@ def create_app() -> FastAPI:
     return fastapi_app
 
 
-def add_api_routers(
-    app: FastAPI, dependencies: list[Any] | None = None
-) -> None:
+def add_api_routers(app: FastAPI) -> None:
     api_prefix = "/api"
-    app.include_router(base.router, prefix=api_prefix, dependencies=dependencies)
-    app.include_router(sample.router, prefix=api_prefix, dependencies=dependencies)
-    app.include_router(annotations.router, prefix=api_prefix, dependencies=dependencies)
-    app.include_router(
-        sample_annotations.router, prefix=api_prefix, dependencies=dependencies
-    )
-    app.include_router(gene_lists.router, prefix=api_prefix, dependencies=dependencies)
+    app.include_router(base.router, prefix=api_prefix)
+    app.include_router(sample.router, prefix=api_prefix)
+    app.include_router(annotations.router, prefix=api_prefix)
+    app.include_router(sample_annotations.router, prefix=api_prefix)
+    app.include_router(gene_lists.router, prefix=api_prefix)
 
 
 def initialize_extensions(app: Flask) -> None:

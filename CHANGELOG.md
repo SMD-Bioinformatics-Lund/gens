@@ -11,6 +11,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 - Track highlight is a multiselect, meaning that multiple annotation sources can be used for track highlights. [#686](https://github.com/SMD-Bioinformatics-Lund/gens/pull/686)
 - Load a full case from a yaml file. [#692](https://github.com/SMD-Bioinformatics-Lund/gens/pull/692)
+- Dev setup in with local containers for testing LDAP and OAuth (keycloak). LDAP can be run together with a minimal interface (LDAP admin). Keycloak provides an interface to work with OAuth based login. [#698](https://github.com/SMD-Bioinformatics-Lund/gens/pull/698)
+- Add support for using a user db+collection from the variant software. This would allow for instance a user running a Scout setup to check that users exists in that db rather than in the Gens db, omitting the need to keep the same users in both. [#698](https://github.com/SMD-Bioinformatics-Lund/gens/pull/698)
 - Session cookie used for authentication of each API request. [#693](https://github.com/SMD-Bioinformatics-Lund/gens/pull/693)
 
 ### Changed
@@ -22,6 +24,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Refactor db usage in backend to use a single access point, to simplify both CLI code and unit tests. [#692](https://github.com/SMD-Bioinformatics-Lund/gens/pull/692)
 - Allow using Scout's user database for login. [#693](https://github.com/SMD-Bioinformatics-Lund/gens/pull/693)
 - Move user management from API to CLI. [#697](https://github.com/SMD-Bioinformatics-Lund/gens/pull/697)
+- Move the `/app` endpoint to `/` and the API endpoint to `/api`. [#698](https://github.com/SMD-Bioinformatics-Lund/gens/pull/698)
 
 ### Fixed
 

@@ -34,8 +34,8 @@ services:
 ```
 variant_url = "http://localhost:8000/scout"
 authentication = "oauth"
-secret_key = "change-this-in-production"
 auth_user_db = "gens"
+# auth_user_collection = "user"
 gens_api_url = "http://localhost:8080/gens/api"
 main_sample_types = ["proband", "tumor"]
 
@@ -55,9 +55,9 @@ Configuration options. Note that double underscores (`__`) are used to denote su
 
 - **scout_url**, base url to Scout.
 - **authentication**, authentication method "oauth", "ldap", "simple", "disabled"
-- **secret_key**, Flask session secret. Set a unique value in production.
 - **auth_user_db**, database used for login user lookups: "gens" (default) or "variant" (Scout db via `variant_db` config)
 - **auth_user_collection**, collection used for login user lookups (default: "user")
+- **gens_api_url**, base URL for the Gens API (for example `http://localhost:5000/api/`)
 - **default_annotation_track**, when opening a fresh browser, this track will be preselected. Selected annotation tracks are now stored in the browser session, so if the user changes tracks that choice will persist.
 - **main_sample_types**, sample types handled as the "main" sample for multi-sample cases. I.e. the sample displayed in the overview plot and multi-chromosome view.
 - **default_profiles**, mapping from profile type to default profile JSON. Profile types are calculated by the unique and sorted `sample_type` values joined by `+`. Values are paths to JSON files relative to the config file.
@@ -81,14 +81,14 @@ Configuration options. Note that double underscores (`__`) are used to denote su
 
 ## User management CLI
 
-Use the CLI to manage users instead of relying only on API endpoints:
+Use the CLI to manage users in the Gens user collection:
 
 ```bash
-# List users in configured auth user db/collection
+# List users
 gens users list
 
 # Create user
-gens users create --email user@example.com --name "Example User" --role user
+gens users create --email user@example.com --name "Example User"
 
 # Show one user
 gens users show --email user@example.com
@@ -96,5 +96,3 @@ gens users show --email user@example.com
 # Delete user
 gens users delete --email user@example.com --force
 ```
-
-You can target a specific database source with `--user-db gens|variant` and override collection with `--collection`.

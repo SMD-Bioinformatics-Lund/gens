@@ -39,12 +39,23 @@ import { getMainSample } from "./util/utils";
 import { HelpMenu } from "./components/side_menu/help_menu";
 import { parseSex } from "./util/meta_warnings";
 
+function getAppBaseURL(gensApiURL: string): string {
+  const apiURL = new URL(gensApiURL);
+  const normalizedPath = apiURL.pathname.replace(/\/+$/, "");
+  const appPath = normalizedPath.endsWith("/api")
+    ? normalizedPath.slice(0, -4)
+    : normalizedPath;
+  const finalPath = appPath === "" ? "/" : `${appPath.replace(/\/+$/, "")}/`;
+  return new URL(finalPath, apiURL.origin).href;
+}
+
 export async function samplesListInit(
   samples: SampleInfo[],
   variantSoftwareBaseURL: string | null,
   gensBaseURL: string,
 ) {
   const gens_home = document.querySelector("#gens-home") as GensHome;
+  const appBaseURL = getAppBaseURL(gensBaseURL);
 
   const getGensURL = (
     caseId: string,
@@ -53,12 +64,12 @@ export async function samplesListInit(
   ) => {
     let subpath;
     if (sampleIds != null) {
-      subpath = `/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
+      subpath = `viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
     } else {
-      subpath = `/viewer/${caseId}?genome_build=${genomeBuild}`;
+      subpath = `viewer/${caseId}?genome_build=${genomeBuild}`;
     }
 
-    return new URL(subpath, gensBaseURL).href;
+    return new URL(subpath, appBaseURL).href;
   };
 
   gens_home.initialize(samples, variantSoftwareBaseURL, getGensURL);
@@ -168,7 +179,7 @@ export async function initCanvases({
     caseSamples,
     allSamples,
     variantSoftwareBaseURL,
-    new URL("/", gensApiURL).href,
+    getAppBaseURL(gensApiURL),
     genomeBuild,
     defaultProfiles,
     api.getChromInfo(),

@@ -1,8 +1,5 @@
 #variant_url = "http://localhost:8000"
-authentication = "oauth"
-secret_key = "pass"
-auth_user_db = "gens"
-# auth_user_collection = "user"
+authentication = "disabled"
 gens_api_url = "http://localhost:5000/api/"
 main_sample_types = ["proband", "tumor"]
 

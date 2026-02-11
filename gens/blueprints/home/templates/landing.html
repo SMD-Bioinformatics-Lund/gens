@@ -29,6 +29,15 @@
     The way we generate the data it is suitable for visualizing CNVs of sizes down to a couple of Kbp.
     For smaller things, use Scout/IGV.
   </p>
+  {% with flash_messages = get_flashed_messages(with_categories=true) %}
+    {% if flash_messages %}
+      <div class="flash-container" role="status" aria-live="polite">
+        {% for category, message in flash_messages %}
+          <div class="flash-message flash-category-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
   {% if current_user and current_user.is_authenticated %}
     <a class="btn" href="{{ url_for('home.home') }}">Welcome to GENS {{ current_user.name }}!</a>
   {% elif authentication.value == 'oauth' %}
@@ -36,23 +45,19 @@
           Login with Google
         </a>
   {% elif authentication.value == 'ldap' %}
-    <form method="POST" action="{{ url_for('login.login') }}" class="ldap-login-form">
-      <div class="ldap-login-fields">
+    <form method="POST" action="{{ url_for('login.login') }}" class="email-login-form">
+      <div class="email-login-fields">
         <input type="text" placeholder="email" class="form-control" name="email">
         <input type="password" placeholder="password" class="form-control" name="password">
         <button type="submit" class="btn">Login</button>
       </div>
     </form>
   {% elif authentication.value == 'simple' %}
-    <form method="POST" action="{{ url_for('login.login') }}">
-    <ul>
-      <li>
-       <input type="text" placeholder="email" class="form-control" name="email">
-     </li>
-     <li>
-       <button type="submit" class="btn">Login</button>
-     </li>
-    </ul>
+    <form method="POST" action="{{ url_for('login.login') }}" class="email-login-form">
+      <div class="email-login-fields">
+        <input type="text" placeholder="email" class="form-control" name="email">
+        <button type="submit" class="btn">Login</button>
+      </div>
     </form>
   {% else %}
     <a class="btn" href="{{ url_for('home.home') }}">Open Gens</a>

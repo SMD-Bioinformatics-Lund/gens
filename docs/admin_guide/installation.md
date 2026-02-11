@@ -78,10 +78,10 @@ Create (or ensure) the login user in Gens auth user DB:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
-  gens users create --email dev.user@example.org --name "Dev User" --role user --force
+  gens users create --email dev.user@example.org --name "Dev User" --force
 ```
 
-Login at `http://localhost:8080/` with:
+Login at `http://localhost:5000/` with:
 
 - email: `dev.user@example.org`
 - password: `devpassword`
@@ -96,16 +96,18 @@ Create (or ensure) the login user in Gens auth user DB:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
-  gens users create --email dev.user@example.org --name "Dev User" --role user --force
+  gens users create --email dev.user@example.org --name "Dev User" --force
 ```
 
 Open:
 
-- Gens: `http://localhost:8080/`
-- Keycloak admin: `http://localhost:8090/` (admin/admin)
+- Gens: `http://localhost:5000/`
+- Keycloak admin: `http://localhost:5002/` (admin/admin)
 
 Seeded OAuth user credentials:
 
 - username: `dev.user`
-- password: `devpassword`
+- password: `devpass`
 - email: `dev.user@example.org`
+
+To use Scout as the login user database instead of Gens, configure `auth_user_db = "variant"` (or `GENS_AUTH_USER_DB=variant`) and make sure that user exists in Scout's `user` collection.
