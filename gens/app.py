@@ -4,10 +4,11 @@ Whole genome visualization of BAF and log2 ratio
 
 import logging
 from logging.config import dictConfig
+from typing import Any
 from urllib.parse import quote
 
 from asgiref.wsgi import WsgiToAsgi
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.openapi.docs import (
     get_redoc_html,
     get_swagger_ui_html,
@@ -20,6 +21,7 @@ from flask_login import current_user  # type: ignore
 from itsdangerous import BadSignature
 from werkzeug.wrappers.response import Response
 
+from gens.__version__ import VERSION as version
 from gens.blueprints.gens.views import gens_bp
 from gens.blueprints.home.views import home_bp
 from gens.blueprints.login.views import load_user, login_bp
@@ -101,8 +103,6 @@ def create_app() -> FastAPI:
         redoc_url=None,
         openapi_url=None,
     )
-    add_api_routers(fastapi_app)
-
     # create and configure flask frontend
     flask_app: Flask = Flask(__name__)  # type: ignore
     flask_app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
@@ -123,6 +123,16 @@ def create_app() -> FastAPI:
 
     # register bluprints and errors
     register_blueprints(flask_app)
+
+    async def require_api_auth(request: Request) -> None:
+        """Require a valid logged-in session for API routes."""
+
+        if settings.authentication == AuthMethod.DISABLED:
+            return
+        if not _is_docs_request_authorized(flask_app, request):
+            raise HTTPException(status_code=401, detail="Authentication required")
+
+    add_api_routers(fastapi_app, dependencies=[Depends(require_api_auth)])
 
     @flask_app.before_request
     def check_user() -> Flask | None | Response:  # type: ignore
@@ -152,8 +162,18 @@ def create_app() -> FastAPI:
         return JSONResponse(fastapi_app.openapi())
 
     @fastapi_app.get("/api", include_in_schema=False)
-    async def api_root_redirect():
-        return RedirectResponse(url="/api/")
+    async def api_root_without_trailing_slash():
+        return {
+            "message": "Welcome to Gens API",
+            "version": version,
+        }
+
+    @fastapi_app.get("/api/")
+    async def api_root():
+        return {
+            "message": "Welcome to Gens API",
+            "version": version,
+        }
 
     @fastapi_app.get("/api/docs", include_in_schema=False)
     async def swagger_ui(request: Request):
@@ -185,13 +205,17 @@ def create_app() -> FastAPI:
     return fastapi_app
 
 
-def add_api_routers(app: FastAPI):
+def add_api_routers(
+    app: FastAPI, dependencies: list[Any] | None = None
+) -> None:
     api_prefix = "/api"
-    app.include_router(base.router, prefix=api_prefix)
-    app.include_router(sample.router, prefix=api_prefix)
-    app.include_router(annotations.router, prefix=api_prefix)
-    app.include_router(sample_annotations.router, prefix=api_prefix)
-    app.include_router(gene_lists.router, prefix=api_prefix)
+    app.include_router(base.router, prefix=api_prefix, dependencies=dependencies)
+    app.include_router(sample.router, prefix=api_prefix, dependencies=dependencies)
+    app.include_router(annotations.router, prefix=api_prefix, dependencies=dependencies)
+    app.include_router(
+        sample_annotations.router, prefix=api_prefix, dependencies=dependencies
+    )
+    app.include_router(gene_lists.router, prefix=api_prefix, dependencies=dependencies)
 
 
 def initialize_extensions(app: Flask) -> None:

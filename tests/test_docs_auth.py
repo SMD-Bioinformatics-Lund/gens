@@ -47,14 +47,42 @@ def test_docs_is_open_when_auth_is_disabled(monkeypatch: pytest.MonkeyPatch) -> 
     assert "swagger-ui" in response.text
 
 
-def test_api_root_redirects_to_slash_variant(
+def test_api_root_no_slash_returns_welcome_message(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("gens.app.settings.authentication", AuthMethod.SIMPLE)
+    app = create_app()
+    client = TestClient(app)
+
+    response = client.get("/api")
+
+    assert response.status_code == 200
+    assert response.json()["message"] == "Welcome to Gens API"
+    assert "version" in response.json()
+
+
+def test_api_root_with_trailing_slash_returns_welcome_message(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("gens.app.settings.authentication", AuthMethod.SIMPLE)
+    app = create_app()
+    client = TestClient(app)
+
+    response = client.get("/api/")
+
+    assert response.status_code == 200
+    assert response.json()["message"] == "Welcome to Gens API"
+    assert "version" in response.json()
+
+
+def test_api_root_is_open_when_auth_is_disabled(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr("gens.app.settings.authentication", AuthMethod.DISABLED)
     app = create_app()
     client = TestClient(app)
 
-    response = client.get("/api", follow_redirects=False)
+    response = client.get("/api/")
 
-    assert response.status_code in (302, 307)
-    assert response.headers["location"] == "/api/"
+    assert response.status_code == 200
+    assert response.json()["message"] == "Welcome to Gens API"

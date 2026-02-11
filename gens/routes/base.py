@@ -7,7 +7,6 @@ from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
 
-from gens.__version__ import VERSION as version
 from gens.crud.search import search_annotations_and_transcripts, text_search_suggestion
 from gens.models.genomic import GenomeBuild, GenomicRegion
 from gens.models.search import SearchSuggestions
@@ -17,15 +16,6 @@ from .utils import ApiTags, GensDb
 SearchQueryParam = Annotated[str, Query(alias="q")]
 
 router = APIRouter()
-
-
-@router.get("/")
-async def read_root():
-    """Root welcome message."""
-    return {
-        "message": "Welcome to Gens API",
-        "version": version,
-    }
 
 
 @router.get("/search/result", tags=[ApiTags.SEARCH])

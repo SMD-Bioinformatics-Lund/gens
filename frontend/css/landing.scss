@@ -49,6 +49,31 @@ $selected-color: color.adjust(navbar.$menubar-bg-color, $lightness: 30%);
     font-family: defaults.$default-font;
     font-size: 1.5em;
   }
+
+  .ldap-login-form {
+    float: none;
+    margin-top: 10px;
+    padding-bottom: 50px;
+  }
+
+  .ldap-login-fields {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ldap-login-fields input,
+  .ldap-login-fields .btn {
+    width: 320px;
+    box-sizing: border-box;
+    padding: 8px 10px;
+  }
+
+  .ldap-login-fields .btn {
+    width: auto;
+    min-width: 96px;
+  }
 }
 
 .btn {
