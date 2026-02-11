@@ -186,3 +186,10 @@ def cli_index(patch_cli) -> types.ModuleType:
     module = importlib.import_module("gens.cli.index")
     patch_cli(module)
     return module
+
+
+@pytest.fixture
+def cli_users(patch_cli) -> types.ModuleType:
+    module = importlib.import_module("gens.cli.users")
+    patch_cli(module)
+    return module
