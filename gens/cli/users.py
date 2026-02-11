@@ -14,19 +14,19 @@ from gens.models.base import User
 
 
 def get_user_collection() -> Collection[Any]:
-    """Get the Gens user collection used by CLI user commands."""
+    """Get the Gens user collection used by CLI user commands"""
     db = cli_db.get_cli_db()
     return db.get_collection(USER_COLLECTION)
 
 
 @click.group()
 def users() -> None:
-    """Manage users in the Gens user collection."""
+    """Manage users in the Gens user collection"""
 
 
 @users.command("list")
 def list_users() -> None:
-    """List users."""
+    """List users"""
     collection = get_user_collection()
     users_data = sorted(get_users(collection), key=lambda user: str(user.email))
     if not users_data:
@@ -41,7 +41,7 @@ def list_users() -> None:
 @users.command("show")
 @click.option("--email", required=True, help="User email")
 def show_user(email: str) -> None:
-    """Show one user by email."""
+    """Show one user by email"""
     collection = get_user_collection()
     user_obj = get_user(collection, email)
     if user_obj is None:
@@ -56,7 +56,7 @@ def show_user(email: str) -> None:
 @click.option("--name", required=True, help="Display name")
 @click.option("--force", is_flag=True, help="Replace existing user if already present")
 def create_user_cmd(email: str, name: str, force: bool) -> None:
-    """Create a user."""
+    """Create a user"""
     collection = get_user_collection()
     existing_user = get_user(collection, email)
     if existing_user is not None and not force:
