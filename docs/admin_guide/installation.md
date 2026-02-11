@@ -58,7 +58,7 @@ Start the application using an uvicorn service.
 uvicorn gens.app:create_app --factory --reload --host 0.0.0.0 --port 5000
 ```
 
-Make sure the application is running by loading http://localhost:5000/ in your web browser. If that works, head to http://localhost:5000/app to open the app itself or http://localhost:5000/docs to explore the API.
+Make sure the application is running by loading http://localhost:5000/ in your web browser. The web app is served at `/` and the API docs are available at http://localhost:5000/api/docs.
 
 <img src="../img/gens_hello_world.PNG" width="800">
 
@@ -81,7 +81,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
   gens users create --email dev.user@example.org --name "Dev User" --force
 ```
 
-Login at `http://localhost:8080/app` with:
+Login at `http://localhost:8080/` with:
 
 - email: `dev.user@example.org`
 - password: `devpassword`
@@ -101,7 +101,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
 
 Open:
 
-- Gens: `http://localhost:8080/app`
+- Gens: `http://localhost:8080/`
 - Keycloak admin: `http://localhost:8090/` (admin/admin)
 
 Seeded OAuth user credentials:

@@ -36,7 +36,7 @@ variant_url = "http://localhost:8000/scout"
 authentication = "oauth"
 auth_user_db = "gens"
 # auth_user_collection = "user"
-gens_api_url = "http://localhost:8080/gens"
+gens_api_url = "http://localhost:8080/gens/api"
 main_sample_types = ["proband", "tumor"]
 
 [gens_db]
@@ -57,6 +57,7 @@ Configuration options. Note that double underscores (`__`) are used to denote su
 - **authentication**, authentication method "oauth", "ldap", "simple", "disabled"
 - **auth_user_db**, database used for login user lookups: "gens" (default) or "variant" (Scout db via `variant_db` config)
 - **auth_user_collection**, collection used for login user lookups (default: "user")
+- **gens_api_url**, base URL for the Gens API (for example `http://localhost:5000/api/`)
 - **default_annotation_track**, when opening a fresh browser, this track will be preselected. Selected annotation tracks are now stored in the browser session, so if the user changes tracks that choice will persist.
 - **main_sample_types**, sample types handled as the "main" sample for multi-sample cases. I.e. the sample displayed in the overview plot and multi-chromosome view.
 - **default_profiles**, mapping from profile type to default profile JSON. Profile types are calculated by the unique and sorted `sample_type` values joined by `+`. Values are paths to JSON files relative to the config file.
