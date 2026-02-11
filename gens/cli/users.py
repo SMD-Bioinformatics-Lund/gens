@@ -67,7 +67,6 @@ def create_user_cmd(email: str, name: str, force: bool) -> None:
     user_obj = User(
         name=name.strip(),
         email=email.strip().lower(),
-        roles=["user"],
     )
 
     if existing_user is not None:
