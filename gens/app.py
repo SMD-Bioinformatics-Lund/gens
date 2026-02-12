@@ -4,6 +4,7 @@ Whole genome visualization of BAF and log2 ratio
 
 import logging
 from logging.config import dictConfig
+from datetime import timedelta
 from typing import Any
 from urllib.parse import quote
 
@@ -193,8 +194,21 @@ def is_docs_request_authorized(flask_app: Flask, request: Request) -> bool:
     if serializer is None:
         return False
 
+    session_lifetime = flask_app.config.get("PERMANENT_SESSION_LIFETIME")
+    max_age: int | None = None
     try:
-        session_data = serializer.loads(session_cookie)
+        if isinstance(session_lifetime, timedelta):
+            max_age = int(session_lifetime.total_seconds())
+        elif session_lifetime is not None:
+            max_age = int(session_lifetime)
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+    try:
+        if max_age is None:
+            session_data = serializer.loads(session_cookie)
+        else:
+            session_data = serializer.loads(session_cookie, max_age=max_age)
     except BadSignature:
         return False
 
