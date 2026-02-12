@@ -332,7 +332,12 @@ export class TrackView extends ShadowBaseElement {
       renderSettings.colorByChange
     ) {
       this.updateColorBands().then(() => {
-        this.requestRender({});
+        // Preserve reload intent in follow-up render. Otherwise this async pass can
+        // cancel an in-flight chromosome-change render and keep stale track data.
+        this.requestRender({
+          reloadData: Boolean(renderSettings.reloadData),
+          positionOnly: renderSettings.positionOnly,
+        });
       });
     }
 
