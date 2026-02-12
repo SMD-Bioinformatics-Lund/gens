@@ -125,6 +125,7 @@ def login() -> Response:
 
     if "next" in request.args:
         next_url = request.args.get("next")
+        # Make sure that redirects are sane before passing on the user
         if is_safe_next_url(next_url):
             session["next_url"] = next_url
         elif next_url:
