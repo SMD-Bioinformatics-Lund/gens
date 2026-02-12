@@ -1,9 +1,6 @@
 """Authentication and login related functions."""
 
-from urllib.parse import quote
-
 from authlib.integrations.flask_client import OAuth
-from fastapi import Request
 from flask_login import LoginManager  # type: ignore
 from flask_login import UserMixin
 
