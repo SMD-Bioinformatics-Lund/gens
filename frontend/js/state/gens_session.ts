@@ -84,6 +84,7 @@ export class GensSession {
     this.warningThresholds = warningThresholds;
 
     this.profile = new SessionProfiles(defaultProfiles, samples);
+    this.sanitizeProfileColorAnnotationIds();
     this.tracks = new Tracks([]);
     this.chromTracks = new Tracks([]);
 
@@ -183,6 +184,22 @@ export class GensSession {
 
   public loadProfile(profile: ProfileSettings): void {
     this.profile.loadProfile(profile);
+    this.sanitizeProfileColorAnnotationIds();
+  }
+
+  /**
+   * The profile may contain annotations that aren't present in the current database
+   * This trims away those IDs
+   */
+  private sanitizeProfileColorAnnotationIds(): void {
+    const availableAnnotationIds = new Set(Object.keys(this.idToAnnotSource));
+
+    const colorAnnotationIds = this.profile
+      .getColorAnnotations()
+      .filter((id) => availableAnnotationIds.has(id));
+    if (colorAnnotationIds.length !== this.profile.getColorAnnotations().length) {
+      this.profile.setColorAnnotations(colorAnnotationIds);
+    }
   }
 
   public getAnnotationSources(settings: {

@@ -27,14 +27,10 @@ export class SessionProfiles {
     this.profileKey = profileKey;
 
     let userProfile = loadProfileSettings(profileKey, PROFILE_SETTINGS_VERSION);
-    if (
-      userProfile != null &&
-      userProfile.version != null &&
-      userProfile.version !== PROFILE_SETTINGS_VERSION
-    ) {
+    if (userProfile != null && userProfile.version !== PROFILE_SETTINGS_VERSION) {
       console.error(
         `Gens profile version mismatch for key "${profileKey}". ` +
-          `Found v${userProfile.version}, expected v${PROFILE_SETTINGS_VERSION}. ` +
+          `Found v${userProfile.version ?? "missing"}, expected v${PROFILE_SETTINGS_VERSION}. ` +
           "Falling back to no profile. Ask your admin to update this profile.",
       );
       userProfile = null;
@@ -210,13 +206,10 @@ function getVersionCompatibleDefaultProfiles(
   const compatibleProfiles: Record<string, ProfileSettings> = {};
 
   for (const [profileKey, profile] of Object.entries(defaultProfiles)) {
-    if (
-      profile.version != null &&
-      profile.version !== PROFILE_SETTINGS_VERSION
-    ) {
+    if (profile.version !== PROFILE_SETTINGS_VERSION) {
       console.error(
         `Gens profile version mismatch for key "${profileKey}". ` +
-          `Found v${profile.version}, expected v${PROFILE_SETTINGS_VERSION}. ` +
+          `Found v${profile.version ?? "missing"}, expected v${PROFILE_SETTINGS_VERSION}. ` +
           "Ignoring default profile. Ask your admin to update this profile.",
       );
       continue;

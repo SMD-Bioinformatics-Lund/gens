@@ -296,7 +296,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private onToggleTrackExpanded: (trackId: string) => void;
   private onApplyMainSample: (sample: Sample) => void;
   private getProfileSettings: () => ProfileSettings;
-  private applyProfileSettings: (layout: ProfileSettings) => void;
+  private applyProfileSettings: (layout: ProfileSettings) => Promise<void>;
   private onResetLayout: () => void;
 
   public isInitialized: boolean = false;
@@ -323,7 +323,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onToggleTrackExpanded: (trackId: string) => void,
     onApplyMainSample: (sample: Sample) => void,
     getProfileSettings: () => ProfileSettings,
-    applyProfileSettings: (layout: ProfileSettings) => void,
+    applyProfileSettings: (layout: ProfileSettings) => Promise<void>,
     onResetLayout: () => void,
   ) {
     this.session = session;
@@ -694,7 +694,7 @@ export class SettingsMenu extends ShadowBaseElement {
       if (!profileSettings) {
         throw new Error("Invalid track layout file");
       }
-      this.applyProfileSettings(profileSettings);
+      await this.applyProfileSettings(profileSettings);
     } catch (error) {
       console.error("Failed to import track layout", error);
       window.alert(
