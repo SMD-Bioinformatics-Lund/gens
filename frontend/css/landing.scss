@@ -42,18 +42,18 @@ $selected-color: color.adjust(navbar.$menubar-bg-color, $lightness: 30%);
   }
 
   p {
-    width: 600px;
+    width: defaults.$content-max-width;
   }
 
   .flash-container {
-    width: min(600px, 90vw);
+    width: min(defaults.$content-max-width, 90vw);
     margin-top: 12px;
   }
 
   .flash-message {
-    background-color: #fdecec;
-    border: 1px solid #e59a9a;
-    color: #7a1111;
+    background-color: defaults.$alert-error-bg;
+    border: 1px solid defaults.$alert-error-border;
+    color: defaults.$alert-error-text;
     border-radius: 6px;
     margin-bottom: 8px;
     padding: 10px 12px;
@@ -62,9 +62,9 @@ $selected-color: color.adjust(navbar.$menubar-bg-color, $lightness: 30%);
   }
 
   .flash-category-success {
-    background-color: #ecf9f0;
-    border: 1px solid #8bd9a4;
-    color: #0a6030;
+    background-color: defaults.$alert-success-bg;
+    border: 1px solid defaults.$alert-success-border;
+    color: defaults.$alert-success-text;
   }
 
   input {
@@ -104,9 +104,7 @@ $selected-color: color.adjust(navbar.$menubar-bg-color, $lightness: 30%);
   border-radius: 3px;
   color: navbar.$menubar-font-color;
   background-color: navbar.$menubar-bg-color;
-  box-shadow:
-    0 2px 4px 0 rgba(0, 0, 0, 0.2),
-    0 3px 10px 0 rgba(0, 0, 0, 0.19);
+  @include defaults.elevation-shadow;
 }
 
 .mainlogo {
