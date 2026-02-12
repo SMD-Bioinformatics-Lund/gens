@@ -25,7 +25,7 @@ INDEX_FIELDS: set[str] = {"baf_index", "coverage_index"}
 def update_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
     """Update an existing sample in the database."""
     samples_c = db.get_collection(SAMPLES_COLLECTION)
-    _validate_case_genome_build_consistency(
+    validate_case_genome_build_consistency(
         samples_c=samples_c,
         case_id=sample_obj.case_id,
         genome_build=sample_obj.genome_build,
@@ -63,7 +63,7 @@ def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
     """Store a new sample in the database."""
     LOG.info(f"Store sample {sample_obj.sample_id} in database")
     samples_c = db.get_collection(SAMPLES_COLLECTION)
-    _validate_case_genome_build_consistency(
+    validate_case_genome_build_consistency(
         samples_c=samples_c,
         case_id=sample_obj.case_id,
         genome_build=sample_obj.genome_build,
@@ -82,7 +82,7 @@ def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
         )
 
 
-def _validate_case_genome_build_consistency(
+def validate_case_genome_build_consistency(
     samples_c: Collection[dict[str, Any]],
     case_id: str,
     genome_build: GenomeBuild,
