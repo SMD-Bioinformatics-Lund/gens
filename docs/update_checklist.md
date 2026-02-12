@@ -429,7 +429,10 @@ docker cp Homo_sapiens.GRCh38.115.gtf.gz <container ID>:/tmp
 docker cp MANE.GRCh38.v1.4.summary.txt.gz <container ID>:/tmp
 ```
 
-In container (this can take 5+ minutes)
+In container (this can take 5+ minutes).
+
+Note: This can lead to high memory usage. Run it from a normal terminal and monitor the memory pressure using htop.
+If issues persist here, consider batching inserts.
 
 ```
 gens load transcripts --file /tmp/Homo_sapiens.GRCh38.115.gtf.gz --mane /tmp/MANE.GRCh38.v1.4.summary.txt.gz -b 38
