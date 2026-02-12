@@ -159,7 +159,6 @@ gens load sample \
     --genome-build 38 \
     --baf /dump/hg002.baf.bed.gz \
     --coverage /dump/hg002.cov.bed.gz \
-    --overview-json /dump/hg002.overview.json.gz \
     --sample-type proband \
     --sex M \
     --meta /dump/hg002.meta.tsv \
@@ -192,7 +191,6 @@ gens load sample \
   --genome-build 38 \
   --baf /dump/hg003.baf.bed.gz \
   --coverage /dump/hg003.cov.bed.gz \
-  --overview-json /dump/hg003.overview.json.gz \
   --sample-type relative \
   --sex M
 ```
@@ -206,7 +204,6 @@ gens load sample \
   --genome-build 38 \
   --baf /dump/hg004.baf.bed.gz \
   --coverage /dump/hg004.cov.bed.gz \
-  --overview-json /dump/hg004.overview.json.gz \
   --sample-type relative \
   --sex F
 ```

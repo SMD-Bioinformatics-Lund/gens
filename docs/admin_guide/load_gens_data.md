@@ -47,7 +47,6 @@ gens load sample \
     --genome-build 38 \
     --baf /path/to/baf.bed.gz \
     --coverage /path/to/coverage.bed.gz \
-    --overview-json /path/to/overview.json.gz \
     --sample-type proband \
     --sex M
 ```
