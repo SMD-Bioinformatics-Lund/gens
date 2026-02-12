@@ -459,10 +459,12 @@ export class API {
     const isCached =
       this.variantsSampleChromCache[sampleKey][chrom] !== undefined;
     if (!isCached) {
+      // Note: No genome build here, as this (currently) is grabbing
+      // variants from the Scout db
+      // FIXME: Should be getting the variants through the adapter?
       const query = {
         sample_id: sampleIdf.sampleId,
         case_id: sampleIdf.caseId,
-        genome_build: sampleIdf.genomeBuild,
         chromosome: chrom,
         category: "sv",
         start: 1,

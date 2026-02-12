@@ -15,7 +15,7 @@
       "baf|proband|": false,
       "log2_cov|proband|": false,
       "variants|proband|": false,
-      "sample_annot|proband|": true,
+      "sample_annot|proband|": false,
       "genes||": false,
       "annot|690a0f3e164f1c6344e1eda7|dbvar_pathogenic_variants_hg38": false,
       "annot|690370c0a9ca482b3858ff3e|Mimisbrunnr.Lund-hg38": false
