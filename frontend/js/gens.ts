@@ -39,6 +39,9 @@ import { getMainSample } from "./util/utils";
 import { HelpMenu } from "./components/side_menu/help_menu";
 import { parseSex } from "./util/meta_warnings";
 
+/**
+ * Needed when app is mounted at a reverse-proxy subpath (i.e. https://domain/gens vs https://gens)
+ */
 function getAppBaseURL(gensApiURL: string): string {
   const apiURL = new URL(gensApiURL);
   const normalizedPath = apiURL.pathname.replace(/\/+$/, "");
