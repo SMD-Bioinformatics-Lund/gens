@@ -1,5 +1,9 @@
 # Gens update
 
+- [ ] Code has been manually reviewed.
+- [ ] Code has been reviewed by a colleague or codex.
+- [ ] CI checks pass.
+
 ## Prepare the testing PR
 
 In the Gens repo, update the version in:
