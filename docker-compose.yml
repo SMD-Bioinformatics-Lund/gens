@@ -6,6 +6,8 @@ services:
       - gens-net
   gens:
     build: .
+    environment:
+      - AUTHENTICATION=${GENS_AUTHENTICATION:-simple}
     volumes:
       - ./volumes/gens/data:/home/app/data
       - ./volumes/gens/wgs:/home/app/access/wgs

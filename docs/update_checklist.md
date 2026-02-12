@@ -277,16 +277,18 @@ gens users create --email test.user@example.com --name "Test User"
 ## About page
 
 - [ ] Information about the last db update is shown
-- [ ] Configuration settings are shown
 
 ## Track page
 
 - [ ] Opening hg002. Do all tracks show up in the initial view?
 
+Expected tracks:
+
 - Chromosome ideogram
 - Position track
 - B allele frequency track
 - Log2 ratio track
+- Variant track
 - Overview track
 - Transcript track
 - Annotation track (after selecting one)
