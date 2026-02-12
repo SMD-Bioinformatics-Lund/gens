@@ -66,9 +66,11 @@ Finally you need to populate the databases with chromosome sizes and gene/transc
 
 ## Dev auth providers (LDAP/OAuth)
 
-The development compose file includes seeded LDAP and OAuth providers.
+The development compose file includes testing-only LDAP and OAuth providers.
 
 ### Start in LDAP mode
+
+The authentication mode can be assigned directly in the config, or by setting the environment variable `GENS_AUTHENTICATION` (`ldap`, `oauth`, `simple`).
 
 ```bash
 GENS_AUTHENTICATION=ldap docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
@@ -84,7 +86,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec gens \
 Login at `http://localhost:5000/` with:
 
 - email: `dev.user@example.org`
-- password: `devpassword`
+- password: `devpass`
 
 ### Start in OAuth mode (Keycloak)
 
@@ -109,5 +111,7 @@ Seeded OAuth user credentials:
 - username: `dev.user`
 - password: `devpass`
 - email: `dev.user@example.org`
+
+## Use Scout's database for user validation
 
 To use Scout as the login user database instead of Gens, configure `auth_user_db = "variant"` (or `GENS_AUTH_USER_DB=variant`) and make sure that user exists in Scout's `user` collection.

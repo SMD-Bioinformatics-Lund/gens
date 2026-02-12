@@ -13,4 +13,4 @@ sn: User
 givenName: Dev
 uid: dev.user@example.org
 mail: dev.user@example.org
-userPassword: devpassword
+userPassword: devpass

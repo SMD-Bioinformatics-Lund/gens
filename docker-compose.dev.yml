@@ -22,7 +22,7 @@ services:
       - 1389:389
     # Seeded test account:
     #   username: dev.user@example.org
-    #   password: devpassword
+    #   password: devpass
   ldapadmin:
     image: osixia/phpldapadmin:0.9.0
     container_name: phpldapadmin
