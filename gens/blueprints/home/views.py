@@ -46,9 +46,6 @@ def home() -> str:
         for ((case_id, genome_build), samples) in samples_per_case.items()
     ]
 
-    with current_app.app_context():
-        genome_build = GenomeBuild(int(request.args.get("genome_build", "38")))
-
     return render_template(
         "home.html",
         samples=parsed_samples,
@@ -58,7 +55,6 @@ def home() -> str:
         ),
         gens_api_url=str(settings.gens_api_url),
         main_sample_types=settings.main_sample_types,
-        genome_build=genome_build.value,
         version=version,
     )
 
