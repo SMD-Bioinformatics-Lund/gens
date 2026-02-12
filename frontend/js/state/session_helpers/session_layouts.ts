@@ -200,6 +200,11 @@ function cloneProfile(
   return JSON.parse(JSON.stringify(profile)) as ProfileSettings;
 }
 
+/**
+ * Defined default profiles may not have been updated to the latest profile
+ * version (as defined by the constant PROFILE_SETTINGS_VERSION).
+ * These should not be used and give clear errors.
+ */
 function getVersionCompatibleDefaultProfiles(
   defaultProfiles: Record<string, ProfileSettings>,
 ): Record<string, ProfileSettings> {
