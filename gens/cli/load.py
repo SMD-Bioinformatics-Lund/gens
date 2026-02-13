@@ -9,44 +9,26 @@ from typing import TextIO
 import click
 from flask import json
 
-from gens.cli.util.annotations import parse_raw_records, upsert_annotation_track
-from gens.cli.util.util import ChoiceType, db_setup, normalize_sample_type
-from gens.config import settings
+from gens.cli.util import db as cli_db
+from gens.cli.util.load_case import load_case_config
+from gens.cli.util.load_helpers import (
+    load_annotations_data,
+    load_sample_annotation_data,
+    load_sample_data,
+)
+from gens.cli.util.util import ChoiceType, resolve_existing_path
 from gens.crud.annotations import (
-    create_annotations_for_track,
-    delete_annotation_track,
-    delete_annotations_for_track,
     register_data_update,
-    update_annotation_track,
 )
-from gens.crud.sample_annotations import (
-    create_sample_annotation_track,
-    create_sample_annotations_for_track,
-    delete_sample_annotations_for_track,
-    get_sample_annotation_track,
-)
-from gens.crud.samples import create_sample
 from gens.crud.transcripts import create_transcripts
 from gens.db.collections import (
-    ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
-    SAMPLE_ANNOTATION_TRACKS_COLLECTION,
-    SAMPLE_ANNOTATIONS_COLLECTION,
-    SAMPLES_COLLECTION,
     TRANSCRIPTS_COLLECTION,
 )
-from gens.db.db import get_db_connection
-from gens.db.index import create_index, get_indexes
-from gens.load.annotations import (
-    fmt_bed_to_annotation,
-    parse_bed_file,
-)
 from gens.load.chromosomes import build_chromosomes_obj, get_assembly_info
-from gens.load.meta import parse_meta_file
 from gens.load.transcripts import build_transcripts
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleInfo, SampleSex
-from gens.models.sample_annotation import SampleAnnotationRecord, SampleAnnotationTrack
+from gens.models.sample import SampleSex
 
 log_level = getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
@@ -95,13 +77,12 @@ def load() -> None:
     "-n",
     "--case-id",
     required=True,
-    help="Id of case",
+    help="ID of case",
 )
 @click.option(
-    "-j",
-    "--overview-json",
-    type=click.Path(exists=True),
-    help="Json file that contains preprocessed overview coverage",
+    "--display-case-id",
+    required=False,
+    help="Display ID of case. If specified, both this and the case ID are shown.",
 )
 @click.option(
     "--meta",
@@ -129,37 +110,108 @@ def sample(
     baf: Path,
     coverage: Path,
     case_id: str,
-    overview_json: Path,
     meta_files: tuple[Path, ...],
     sample_type: str | None,
     sex: SampleSex | None,
+    display_case_id: str | None = None,
 ) -> None:
     """Load a sample into Gens database."""
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    # if collection is not indexed, create index
-    if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
-        create_index(db, SAMPLES_COLLECTION)
-    # load samples
-    sample_obj = SampleInfo.model_validate(
-        {
-            "sample_id": sample_id,
-            "case_id": case_id,
-            "genome_build": genome_build,
-            "baf_file": baf,
-            "coverage_file": coverage,
-            "overview_file": overview_json,
-            "sample_type": normalize_sample_type(sample_type) if sample_type else None,
-            "sex": sex,
-            "meta": [parse_meta_file(p) for p in meta_files],
-        }
+    was_added = load_sample_data(
+        sample_id=sample_id,
+        genome_build=genome_build,
+        baf=baf,
+        coverage=coverage,
+        case_id=case_id,
+        display_case_id=display_case_id,
+        meta_files=list(meta_files),
+        sample_type=sample_type,
+        sex=sex,
     )
-    create_sample(db, sample_obj)
-    click.secho("Finished adding a new sample to database ✔", fg="green")
+    if was_added:
+        click.secho("Finished adding a new sample to database ✔", fg="green")
+    else:
+        click.secho(
+            "Failed to add sample ✘",
+            fg="red",
+        )
+
+
+@load.command("case")
+@click.argument("config_file", type=click.Path(exists=True, path_type=Path))
+def case(config_file: Path) -> None:
+    """Load a full case from YAML including samples, sample metadata and sample annotations."""
+    case_config = load_case_config(config_file)
+    base_dir = config_file.parent
+    total_meta_file_refs = 0
+    total_sample_annotations = 0
+
+    for sample_config in case_config.samples:
+        sample_meta_file_paths = [
+            resolve_existing_path(
+                path,
+                base_dir,
+                f'Meta file for sample "{sample_config.sample_id}"',
+            )
+            for path in sample_config.meta_files
+        ]
+
+        load_sample_data(
+            sample_id=sample_config.sample_id,
+            genome_build=case_config.genome_build,
+            baf=resolve_existing_path(
+                sample_config.baf, base_dir, f'BAF file for "{sample_config.sample_id}"'
+            ),
+            coverage=resolve_existing_path(
+                sample_config.coverage,
+                base_dir,
+                f'Coverage file for "{sample_config.sample_id}"',
+            ),
+            case_id=case_config.case_id,
+            display_case_id=case_config.display_case_id,
+            meta_files=sample_meta_file_paths,
+            sample_type=sample_config.sample_type,
+            sex=sample_config.sex,
+        )
+        total_meta_file_refs += len(sample_meta_file_paths)
+        click.secho(
+            (
+                f'Loaded sample "{sample_config.sample_id}" '
+                f"with {len(sample_meta_file_paths)} meta file(s)"
+            ),
+            fg="cyan",
+        )
+
+        for sample_annot in sample_config.sample_annotations:
+            resolved_sample_annot_file = resolve_existing_path(
+                sample_annot.file,
+                base_dir,
+                f'Sample annotation file for "{sample_config.sample_id}"',
+            )
+            load_sample_annotation_data(
+                sample_id=sample_config.sample_id,
+                case_id=case_config.case_id,
+                genome_build=case_config.genome_build,
+                file=resolved_sample_annot_file,
+                name=sample_annot.name,
+            )
+            total_sample_annotations += 1
+            click.secho(
+                (
+                    f'Loaded sample annotation "{sample_annot.name}" '
+                    f'for sample "{sample_config.sample_id}"'
+                ),
+                fg="cyan",
+            )
+
+    click.secho(
+        (
+            f'Finished loading case "{case_config.case_id}" '
+            f"with {len(case_config.samples)} sample(s), "
+            f"{total_meta_file_refs} meta file reference(s), and "
+            f"{total_sample_annotations} sample annotation track(s)"
+        ),
+        fg="green",
+    )
 
 
 @load.command("sample-annotation")
@@ -182,44 +234,13 @@ def sample_annotation(
     name: str,
 ) -> None:
     """Load a sample annotation into Gens database."""
-
-    db = db_setup([SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION])
-
-    track_in_db = get_sample_annotation_track(
-        genome_build=genome_build,
-        db=db,
+    load_sample_annotation_data(
         sample_id=sample_id,
         case_id=case_id,
+        genome_build=genome_build,
+        file=file,
         name=name,
     )
-    if track_in_db is None:
-        track = SampleAnnotationTrack(
-            sample_id=sample_id,
-            case_id=case_id,
-            name=name,
-            description="",
-            genome_build=genome_build,
-        )
-        track_id = create_sample_annotation_track(track, db)
-    else:
-        track_id = track_in_db.track_id
-
-    bed_records = parse_bed_file(file)
-    annotations = [
-        SampleAnnotationRecord.model_validate(
-            {
-                **fmt_bed_to_annotation(rec, track_id, genome_build).model_dump(),
-                "sample_id": sample_id,
-                "case_id": case_id,
-            }
-        )
-        for rec in bed_records
-    ]
-
-    if track_in_db is not None:
-        delete_sample_annotations_for_track(track_id, db)
-
-    create_sample_annotations_for_track(annotations, db)
     click.secho("Finished loading sample annotations ✔", fg="green")
 
 
@@ -257,57 +278,7 @@ def annotations(
     file: Path, genome_build: GenomeBuild, is_tsv: bool, ignore_errors: bool
 ) -> None:
     """Load annotations from file into the database."""
-
-    db = db_setup([ANNOTATIONS_COLLECTION])
-
-    files = file.glob("*") if file.is_dir() else [file]
-
-    for annot_file in files:
-        if annot_file.suffix not in [".bed", ".aed", ".tsv"]:
-            continue
-        LOG.info("Processing %s", annot_file)
-
-        track_result = upsert_annotation_track(db, annot_file, genome_build)
-
-        file_format = annot_file.suffix[1:]
-
-        try:
-            parse_recs_res = parse_raw_records(
-                file_format,
-                is_tsv,
-                annot_file,
-                ignore_errors,
-                track_result,
-                genome_build,
-            )
-        except ValueError as err:
-            click.secho(
-                f"An error occured when creating loading annotation: {err}",
-                fg="red",
-            )
-            raise click.Abort()
-
-        if len(parse_recs_res.file_meta) > 0:
-            LOG.debug("Updating existing annotation track with metadata from file.")
-            update_annotation_track(
-                track_id=track_result.track_id, metadata=parse_recs_res.file_meta, db=db
-            )
-
-        if len(parse_recs_res.records) == 0:
-            delete_annotation_track(track_result.track_id, db)  # cleanup
-            raise ValueError(
-                "Something went wrong parsing the annotations file, no valid annotations found."
-            )
-
-        if track_result.track_in_db is not None:
-            LOG.info("Removing old entries from the database")
-            if not delete_annotations_for_track(track_result.track_id, db):
-                LOG.info("No annotations were removed from the database")
-
-        LOG.info("Load annotations in the database")
-        create_annotations_for_track(parse_recs_res.records, db)
-        register_data_update(db, ANNOTATIONS_COLLECTION, annot_file.stem)
-
+    load_annotations_data(LOG, file, genome_build, is_tsv, ignore_errors)
     click.secho("Finished loading annotations ✔", fg="green")
 
 
@@ -333,15 +304,7 @@ def annotations(
 )
 def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
     """Load transcripts into the database."""
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    # if collection is not indexed, create index
-    if len(get_indexes(db, TRANSCRIPTS_COLLECTION)) == 0:
-        create_index(db, TRANSCRIPTS_COLLECTION)
+    db = cli_db.get_cli_db([TRANSCRIPTS_COLLECTION])
     LOG.info("Building transcript object")
     with open_text_or_gzip(file) as file_fh, open_text_or_gzip(mane) as mane_fh:
         transcripts_obj = build_transcripts(file_fh, mane_fh, genome_build)
@@ -378,7 +341,7 @@ def transcripts(file: str, mane: str, genome_build: GenomeBuild) -> None:
 def chromosomes(genome_build: GenomeBuild, file: Path | None, timeout: int) -> None:
     """Load chromosome size information into the database."""
 
-    db = db_setup([CHROMSIZES_COLLECTION])
+    db = cli_db.get_cli_db([CHROMSIZES_COLLECTION])
 
     # Get chromosome info from ensemble
     # If file is given, use sizes from file else download chromsizes from ebi

@@ -9,6 +9,7 @@ from pymongo.database import Database
 from gens.db.collections import SAMPLES_COLLECTION
 
 from .collections import (
+    ANNOTATION_TRACKS_COLLECTION,
     ANNOTATIONS_COLLECTION,
     CHROMSIZES_COLLECTION,
     SAMPLE_ANNOTATION_TRACKS_COLLECTION,
@@ -43,6 +44,13 @@ INDEXES = {
         IndexModel(
             [("name", TEXT), ("description", TEXT), ("comments.comment", TEXT)],
             name="text_annotation_name_description_comment",
+            background=True,
+        ),
+    ],
+    ANNOTATION_TRACKS_COLLECTION: [
+        IndexModel(
+            [("genome_build", ASCENDING), ("name", ASCENDING)],
+            name="genome_build_name",
             background=True,
         ),
     ],

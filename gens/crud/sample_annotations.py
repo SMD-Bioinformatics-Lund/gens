@@ -80,11 +80,13 @@ def delete_sample_annotation_track(
 
 
 def get_sample_annotation_tracks(
-    genome_build: GenomeBuild | None, db: Database[Any], sample_id: str, case_id: str
+    genome_build: GenomeBuild, db: Database[Any], sample_id: str, case_id: str
 ) -> list[SampleAnnotationTrackInDb]:
-    query: dict[str, Any] = {"sample_id": sample_id, "case_id": case_id}
-    if genome_build is not None:
-        query["genome_build"] = genome_build
+    query: dict[str, Any] = {
+        "sample_id": sample_id,
+        "case_id": case_id,
+        "genome_build": genome_build,
+    }
 
     cursor = (
         db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION)

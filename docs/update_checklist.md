@@ -1,5 +1,9 @@
 # Gens update
 
+- [ ] Code has been manually reviewed.
+- [ ] Code has been reviewed by a colleague or codex.
+- [ ] CI checks pass.
+
 ## Prepare the testing PR
 
 In the Gens repo, update the version in:
@@ -22,7 +26,7 @@ $ cd gens_test
 
 - [ ] Link in the /dump data folder
 
-A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/trannel/dev/jakob/data/gens_test_data`.
+A "dump" folder with required files to setup a full trio, with references to Scout variants is available here: `/trannel/dev/resources/gens_test_data`.
 
 Furthermore, current annotation tracks for testing can be copied from `/access/annotation_tracks`. Copy these into the folder `annotation_tracks` folder in the `dump` folder. Note - some of these contain sensitive data. Test loading all as a final step when running on Gens dev.
 
@@ -116,6 +120,7 @@ $ gens index
 
 ```
 $ gens load chromosomes --genome-build 38
+$ gens load chromosomes --genome-build 37
 ```
 
 - [ ] Try loading annotation tracks. This should load successfully. Warnings fine, crashes are not.
@@ -154,7 +159,6 @@ gens load sample \
     --genome-build 38 \
     --baf /dump/hg002.baf.bed.gz \
     --coverage /dump/hg002.cov.bed.gz \
-    --overview-json /dump/hg002.overview.json.gz \
     --sample-type proband \
     --sex M \
     --meta /dump/hg002.meta.tsv \
@@ -187,7 +191,6 @@ gens load sample \
   --genome-build 38 \
   --baf /dump/hg003.baf.bed.gz \
   --coverage /dump/hg003.cov.bed.gz \
-  --overview-json /dump/hg003.overview.json.gz \
   --sample-type relative \
   --sex M
 ```
@@ -201,18 +204,72 @@ gens load sample \
   --genome-build 38 \
   --baf /dump/hg004.baf.bed.gz \
   --coverage /dump/hg004.cov.bed.gz \
-  --overview-json /dump/hg004.overview.json.gz \
   --sample-type relative \
   --sex F
+```
+
+- [ ] Load an additional trio case from YAML (in addition to the manual loading above)
+
+This validates the case-loader workflow with a complete config file.
+
+```
+gens load case /dump/trio.yaml
+```
+
+- [ ] Load the same sample ID for two different genome builds.
+
+Use the same `sample_id` in two different cases, one for each build. This validates that build-specific routing and sample selection works when sample IDs overlap.
+
+```
+# Example hg38 record
+gens load sample \
+    --sample-id hg002 \
+    --case-id hg002_hg38 \
+    --genome-build 38 \
+    --baf /dump/hg002.baf.bed.gz \
+    --coverage /dump/hg002.cov.bed.gz \
+    --sample-type proband \
+    --sex M
+
+# Example hg37 record
+gens load sample \
+    --sample-id hg002 \
+    --case-id hg002_hg37 \
+    --genome-build 37 \
+    --baf /dump/hg002.baf.bed.gz \
+    --coverage /dump/hg002.cov.bed.gz \
+    --sample-type proband \
+    --sex M
 ```
 
 # Testing the GUI
 
 Perform the tests with an open web console. Log messages are OK. Errors are usually not.
 
+## Authentication
+
+- [ ] Run with authentication disabled (`authentication = "disabled"`). Check that the app is reachable and data loads as expected. Check that you can access `/api` and `/api/docs`.
+- [ ] Run with simple authentication (`GENS_AUTHENTICATION=simple`) and create a test user:
+
+```
+GENS_AUTHENTICATION=simple docker compose -p gens_test up -d --force-recreate
+```
+
+```
+gens users create --email test.user@example.com --name "Test User"
+```
+
+- [ ] As logged out user, verify protected endpoints are blocked:
+  - [ ] `/api/docs` redirects to login
+  - [ ] `/api/openapi.json` returns unauthorized
+  - [ ] `/api/samples/` returns unauthorized
+- [ ] Log in as the created test user and verify the same endpoints are accessible.
+- [ ] Log out and verify access is blocked again.
+
 ## Sample page
 
 - [ ] Are expected samples present?
+- [ ] If both hg37 and hg38 records were loaded for the same `sample_id`, verify both entries are shown and each case/sample link opens the correct build-specific view.
 - [ ] Is the version number displayed to the top left updated?
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/gens/refs/heads/dev/docs/img/samples.PNG" width="400px">
@@ -220,16 +277,18 @@ Perform the tests with an open web console. Log messages are OK. Errors are usua
 ## About page
 
 - [ ] Information about the last db update is shown
-- [ ] Configuration settings are shown
 
 ## Track page
 
 - [ ] Opening hg002. Do all tracks show up in the initial view?
 
+Expected tracks:
+
 - Chromosome ideogram
 - Position track
 - B allele frequency track
 - Log2 ratio track
+- Variant track
 - Overview track
 - Transcript track
 - Annotation track (after selecting one)
@@ -291,6 +350,10 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Meta page contains chromosome table
 - [ ] Drag the edge to expand and show the full table.
 - [ ] Warnings are preset for the chromosome column and indicated by a red badge in the top row.
+- [ ] Test warning threshold ignore rules (`ignore_when`):
+  - [ ] Open a male sample and verify that chromosome X rows matching the configured ignore rule do not show warning badges.
+  - [ ] Temporarily remove/comment the `ignore_when` rule in `config.toml`, restart, and verify the warning appears.
+  - [ ] Restore `ignore_when` and verify the warning is suppressed again.
 
 <img src="https://raw.githubusercontent.com/SMD-Bioinformatics-Lund/Documentation-resources/refs/heads/master/gens/update_checklist/meta_side_page.PNG" width=400 alt="Meta">
 
@@ -307,8 +370,9 @@ Is content correctly displayed in the context menus for the different band track
 - [ ] Try updating the default Y-axis range (`Default cov y-range` under `Toggle advanced settings`) and click apply. All coverage tracks should change Y-axis.
 - [ ] Persistent settings
   - [ ] Try adjusting track height
-  - [ ] Assign mimisbrunnr as "Color tracks by"
-  - [ ] Switch to a different chromosome and ensure that the coloring from the correct chromosome is used
+  - [ ] Assign at least two annotation tracks as "Color tracks by" (multi-select)
+  - [ ] Verify highlighted regions are combined from both selected sources
+  - [ ] Switch to a different chromosome and ensure highlighting comes from the selected sources for that chromosome
   - [ ] Add another annotation track and place it at the top
   - [ ] Expand / collapse annotation tracks and the gene track
   - [ ] Change the variant threshold
@@ -342,15 +406,13 @@ Export, reset and import of profile
 Steps to prepare a container to run:
 
 ```
-# Otherwise you'll build with outdated files
-$ npm run buildcp
 $ docker build -f Dockerfile -t clinicalgenomicslund/gens:<VERSION> .
 $ docker push clinicalgenomicslund/gens
 ```
 
 ## CLI
 
-- [ ] Try loading all the annotation tracks and make sure it completes without errors.
+- [ ] (If relevant) Try loading all the annotation tracks and make sure it completes without errors.
 
 ```
 gens load annotations --file /access/annotation_tracks/ --genome-build 38
@@ -367,7 +429,10 @@ docker cp Homo_sapiens.GRCh38.115.gtf.gz <container ID>:/tmp
 docker cp MANE.GRCh38.v1.4.summary.txt.gz <container ID>:/tmp
 ```
 
-In container (this can take 5+ minutes)
+In container (this can take 5+ minutes).
+
+Note: This can lead to high memory usage. Run it from a normal terminal and monitor the memory pressure using htop.
+If issues persist here, consider batching inserts.
 
 ```
 gens load transcripts --file /tmp/Homo_sapiens.GRCh38.115.gtf.gz --mane /tmp/MANE.GRCh38.v1.4.summary.txt.gz -b 38

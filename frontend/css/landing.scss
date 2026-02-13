@@ -42,12 +42,59 @@ $selected-color: color.adjust(navbar.$menubar-bg-color, $lightness: 30%);
   }
 
   p {
-    width: 600px;
+    width: defaults.$content-max-width;
+  }
+
+  .flash-container {
+    width: min(defaults.$content-max-width, 90vw);
+    margin-top: 12px;
+  }
+
+  .flash-message {
+    background-color: defaults.$alert-error-bg;
+    border: 1px solid defaults.$alert-error-border;
+    color: defaults.$alert-error-text;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    font-size: 1em;
+    line-height: 1.4;
+  }
+
+  .flash-category-success {
+    background-color: defaults.$alert-success-bg;
+    border: 1px solid defaults.$alert-success-border;
+    color: defaults.$alert-success-text;
   }
 
   input {
     font-family: defaults.$default-font;
     font-size: 1.5em;
+  }
+
+  .email-login-form {
+    float: none;
+    margin-top: 10px;
+    padding-bottom: 50px;
+  }
+
+  .email-login-fields {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .email-login-fields input,
+  .email-login-fields .btn {
+    width: 320px;
+    box-sizing: border-box;
+    padding: 8px 10px;
+  }
+
+  .email-login-fields .btn {
+    width: auto;
+    min-width: 96px;
   }
 }
 
@@ -57,9 +104,7 @@ $selected-color: color.adjust(navbar.$menubar-bg-color, $lightness: 30%);
   border-radius: 3px;
   color: navbar.$menubar-font-color;
   background-color: navbar.$menubar-bg-color;
-  box-shadow:
-    0 2px 4px 0 rgba(0, 0, 0, 0.2),
-    0 3px 10px 0 rgba(0, 0, 0, 0.19);
+  @include defaults.elevation-shadow;
 }
 
 .mainlogo {

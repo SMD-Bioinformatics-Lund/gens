@@ -23,7 +23,11 @@ export class GensHome extends HTMLElement {
   initialize(
     samples: SampleInfo[],
     variantSoftwareUrl: string | null,
-    getGensURL: (caseId: string, sampleIds: string[]) => string,
+    getGensURL: (
+      caseId: string,
+      genomeBuild: number,
+      sampleIds?: string[],
+    ) => string,
   ) {
     this.tableElem.initialize(samples, variantSoftwareUrl, getGensURL);
   }

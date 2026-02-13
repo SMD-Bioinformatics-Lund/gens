@@ -366,8 +366,7 @@ interface RenderDataSource {
   getAnnotationDetails: (bandId: string) => Promise<ApiAnnotationDetails>;
 
   getSampleAnnotSources: (
-    caseId: string,
-    sampleId: string,
+    id: SampleIdentifier,
   ) => Promise<{ id: string; name: string }[]>;
   getSampleAnnotationBands: (
     trackId: string,
@@ -378,12 +377,12 @@ interface RenderDataSource {
   ) => Promise<ApiSampleAnnotationDetails>;
 
   getCovData: (
-    sample: Sample,
+    id: SampleIdentifier,
     chrom: string,
     xRange: Rng,
   ) => Promise<RenderDot[]>;
   getBafData: (
-    sample: Sample,
+    id: SampleIdentifier,
     chrom: string,
     xRange: Rng,
   ) => Promise<RenderDot[]>;
@@ -394,14 +393,18 @@ interface RenderDataSource {
   getGeneListBands: (listId: string, chrom: string) => Promise<RenderBand[]>;
 
   getVariantBands: (
-    sample: Sample,
+    id: SampleIdentifier,
     chrom: string,
     rankScoreThres: number,
   ) => Promise<RenderBand[]>;
   getVariantDetails: (variantId: string) => Promise<ApiVariantDetails>;
 
-  getOverviewCovData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
-  getOverviewBafData: (sample: Sample) => Promise<Record<string, RenderDot[]>>;
+  getOverviewCovData: (
+    id: SampleIdentifier,
+  ) => Promise<Record<string, RenderDot[]>>;
+  getOverviewBafData: (
+    id: SampleIdentifier,
+  ) => Promise<Record<string, RenderDot[]>>;
 
   getVariantURL: (doc_id: string) => string;
 }
@@ -666,20 +669,28 @@ interface ApiSample {
   baf_file: string;
   baf_index: string;
   case_id: string;
+  display_case_id?: string;
   coverage_file: string;
   coverage_index: string;
   created_at: string;
   genome_build: number;
-  overview_file: string;
   sample_id: string;
   sample_type?: string;
   sex?: string;
   meta: SampleMetaEntry[];
 }
 
-interface Sample {
+interface SampleIdentifier {
   caseId: string;
   sampleId: string;
+  genomeBuild: number;
+}
+
+interface Sample {
+  caseId: string;
+  displayCaseId?: string;
+  sampleId: string;
+  genomeBuild: number;
   sampleType?: string;
   sex?: Sex;
   meta?: SampleMetaEntry[];
@@ -724,7 +735,7 @@ type ProfileSettings = {
   profileKey: string;
   fileName?: string;
   layout: TrackLayout | null;
-  colorAnnotationId: string | null;
+  colorAnnotationIds: string[];
   variantThreshold: number;
   annotationSelections: string[];
   coverageRange: Rng;
@@ -772,4 +783,12 @@ type WarningThreshold = {
   size?: number;
   max_deviation?: number;
   message: string;
+  ignore_when?: WarningIgnore | WarningIgnore[];
+};
+
+type WarningIgnore = {
+  sex?: Sex;
+  column?: string;
+  chromosome?: string;
+  row?: string;
 };

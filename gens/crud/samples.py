@@ -24,7 +24,13 @@ INDEX_FIELDS: set[str] = {"baf_index", "coverage_index"}
 
 def update_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
     """Update an existing sample in the database."""
-    result = db.get_collection(SAMPLES_COLLECTION).update_one(
+    samples_c = db.get_collection(SAMPLES_COLLECTION)
+    validate_case_genome_build_consistency(
+        samples_c=samples_c,
+        case_id=sample_obj.case_id,
+        genome_build=sample_obj.genome_build,
+    )
+    result = samples_c.update_one(
         {
             "sample_id": sample_obj.sample_id,
             "case_id": sample_obj.case_id,
@@ -53,13 +59,21 @@ def update_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
         )
 
 
-def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
-    """Store a new sample in the database."""
+def create_sample(db: Database[Any], sample_obj: SampleInfo) -> bool:
+    """Store a new sample in the database.
+
+    Return True when inserted, False when a duplicate key prevented insertion.
+    """
     LOG.info(f"Store sample {sample_obj.sample_id} in database")
+    samples_c = db.get_collection(SAMPLES_COLLECTION)
+    validate_case_genome_build_consistency(
+        samples_c=samples_c,
+        case_id=sample_obj.case_id,
+        genome_build=sample_obj.genome_build,
+    )
     try:
-        db.get_collection(SAMPLES_COLLECTION).insert_one(
-            sample_obj.model_dump(exclude=INDEX_FIELDS)
-        )
+        samples_c.insert_one(sample_obj.model_dump(exclude=INDEX_FIELDS))
+        return True
     except DuplicateKeyError:
         LOG.error(
             (
@@ -70,6 +84,29 @@ def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
             sample_obj.case_id,
             sample_obj.genome_build,
         )
+        return False
+
+
+def validate_case_genome_build_consistency(
+    samples_c: Collection[dict[str, Any]],
+    case_id: str,
+    genome_build: GenomeBuild,
+) -> None:
+    """Reject mixed-build cases at write time.
+
+    A case is expected to belong to a single genome build. Allowing both 37/38
+    under one case leads to ambiguous viewer behavior and ID collisions.
+    """
+    mismatch = samples_c.find_one(
+        {"case_id": case_id, "genome_build": {"$ne": genome_build}}
+    )
+    if mismatch is not None:
+        existing_build = mismatch.get("genome_build")
+        msg = (
+            f'Case "{case_id}" already has samples for genome build "{existing_build}". '
+            f'Cannot add/update sample with genome build "{genome_build}".'
+        )
+        raise ValueError(msg)
 
 
 def get_samples(
@@ -99,13 +136,13 @@ def get_samples(
 # When doing this checking on many samples, it takes some time
 def get_samples_per_case(
     samples_c: Collection[dict[str, Any]], skip: int = 0, limit: int | None = None
-) -> Dict[str, List[dict[str, Any]]]:
+) -> Dict[tuple[str, int], List[dict[str, Any]]]:
 
     cursor = samples_c.find().sort("created_at", DESCENDING).skip(skip)
     if limit is not None:
         cursor.limit(limit)
 
-    case_to_samples: dict[str, list[dict[str, Any]]] = {}
+    case_to_samples: dict[tuple[str, int], list[dict[str, Any]]] = {}
     for sample in cursor:
         # try:
         #     sample_data = SampleInfo.model_validate(sample)
@@ -114,24 +151,26 @@ def get_samples_per_case(
         #     continue
 
         case_id = sample["case_id"]
-        if not case_to_samples.get(case_id):
-            case_to_samples[case_id] = []
+        genome_build = sample["genome_build"]
+        case_key = (case_id, genome_build)
+        if not case_to_samples.get(case_key):
+            case_to_samples[case_key] = []
 
         # baf_file_exists = Path(sample.get("baf_file", "")).is_file()
         # cov_file_exists = Path(sample.get("coverage_file", "")).is_file()
 
         sample_obj = {
             "case_id": sample["case_id"],
+            "display_case_id": sample.get("display_case_id"),
             "sample_id": sample["sample_id"],
             "sample_type": sample.get("sample_type"),
             "sex": sample.get("sex"),
             "genome_build": sample["genome_build"],
-            "has_overview_file": sample["overview_file"] is not None,
             "files_present": bool(sample["baf_file"] and sample["coverage_file"]),
             "created_at": sample["created_at"].astimezone(timezone.utc).isoformat(),
         }
 
-        case_to_samples[case_id].append(sample_obj)
+        case_to_samples[case_key].append(sample_obj)
 
     return case_to_samples
 
@@ -145,9 +184,6 @@ def get_samples_for_case(
 
     samples: list[SampleInfo] = []
     for result in cursor:
-        overview_file = result.get("overview_file")
-        if overview_file == "None":
-            overview_file = None
 
         sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
 
@@ -159,16 +195,14 @@ def get_samples_for_case(
             index_path = file_path.with_suffix(file_path.suffix + ".tbi")
             if not index_path.is_file():
                 raise FileNotFoundError(f"{index_path} was not found")
-        if overview_file is not None and not Path(overview_file).is_file():
-            raise FileNotFoundError(f"{overview_file} was not found")
 
         sample = SampleInfo(
             sample_id=result["sample_id"],
             case_id=result["case_id"],
+            display_case_id=result.get("display_case_id"),
             genome_build=GenomeBuild(int(result["genome_build"])),
             baf_file=baf_file,
             coverage_file=coverage_file,
-            overview_file=Path(overview_file) if overview_file is not None else None,
             sample_type=result.get("sample_type"),
             sex=result.get("sex"),
             meta=sample_meta,
@@ -200,19 +234,15 @@ def get_sample(
             f'No sample with id: "{sample_id}" in database', sample_id
         )
 
-    overview_file = result.get("overview_file")
-    if overview_file == "None":
-        overview_file = None
-
     sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
 
     return SampleInfo(
         sample_id=result["sample_id"],
         case_id=result["case_id"],
+        display_case_id=result.get("display_case_id"),
         genome_build=GenomeBuild(int(result["genome_build"])),
         baf_file=result["baf_file"],
         coverage_file=result["coverage_file"],
-        overview_file=overview_file,
         sample_type=result.get("sample_type"),
         sex=result.get("sex"),
         meta=sample_meta,

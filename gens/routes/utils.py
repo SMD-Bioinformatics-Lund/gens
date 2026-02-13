@@ -20,7 +20,6 @@ class ApiTags(StrEnum):
     TRANSC = "transcript"
     AUTH = "authentication"
     SEARCH = "search"
-    USER = "user"
     VAR = "variant"
     SAMPLE_ANNOT = "sample-annotation"
     GENE_LIST = "gene-list"

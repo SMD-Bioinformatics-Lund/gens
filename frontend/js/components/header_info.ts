@@ -1,4 +1,5 @@
 import { COLORS, FONT_SIZE, FONT_WEIGHT, SIZES } from "../constants";
+import { formatCaseLabel } from "../util/utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 
 const template = document.createElement("template");
@@ -58,8 +59,13 @@ export class HeaderInfo extends ShadowBaseElement {
     this.versionElem = this.root.querySelector("#version");
   }
 
-  initialize(caseId: string, caseURL: string | null, version: string) {
-    this.caseIdElem.innerHTML = caseId;
+  initialize(
+    caseId: string,
+    displayCaseId: string | null | undefined,
+    caseURL: string | null,
+    version: string,
+  ) {
+    this.caseIdElem.textContent = formatCaseLabel(caseId, displayCaseId);
     if (caseURL) {
       this.caseIdElem.href = caseURL;
       this.caseIdElem.target = "_blank";
@@ -67,7 +73,7 @@ export class HeaderInfo extends ShadowBaseElement {
       this.caseIdElem.removeAttribute("href");
       this.caseIdElem.removeAttribute("target");
     }
-    this.versionElem.innerHTML = version;
+    this.versionElem.textContent = version;
   }
 }
 

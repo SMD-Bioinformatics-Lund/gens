@@ -5,8 +5,9 @@ from os import getenv
 
 import click
 
-from gens.cli.util.util import ChoiceType, db_setup
-from gens.config import settings
+from gens.cli.util import db as cli_db
+from gens.cli.util.delete_helpers import delete_case_samples
+from gens.cli.util.util import ChoiceType
 from gens.crud.annotations import (
     delete_annotation_track,
     delete_annotations_for_track,
@@ -20,7 +21,6 @@ from gens.crud.sample_annotations import (
 from gens.crud.samples import (
     delete_sample,
     get_sample,
-    get_sample_ids_for_case_and_build,
     update_sample,
 )
 from gens.db.collections import (
@@ -30,8 +30,6 @@ from gens.db.collections import (
     SAMPLE_ANNOTATIONS_COLLECTION,
     SAMPLES_COLLECTION,
 )
-from gens.db.db import get_db_connection
-from gens.db.index import create_index, get_indexes
 from gens.models.genomic import GenomeBuild
 from gens.models.sample import MetaEntry
 
@@ -66,49 +64,66 @@ def delete() -> None:
 )
 def sample(sample_id: str, genome_build: int, case_id: str) -> None:
     """Remove a sample from Gens database."""
-    gens_db_name = settings.gens_db.database
-    if gens_db_name is None:
-        raise ValueError(
-            "No Gens database name provided in settings (settings.gens_db.database)"
-        )
-    db = get_db_connection(settings.gens_db.connection, db_name=gens_db_name)
-    # if collection is not indexed, create index
-    if len(get_indexes(db, SAMPLES_COLLECTION)) == 0:
-        create_index(db, SAMPLES_COLLECTION)
-
-    samples_c = db.get_collection(SAMPLES_COLLECTION)
-    samples_to_delete = (
-        [sample_id]
-        if sample_id is not None
-        else get_sample_ids_for_case_and_build(
-            samples_c=samples_c,
-            case_id=case_id,
-            genome_build=GenomeBuild(genome_build),
-        )
-    )
-
-    if not samples_to_delete:
-        raise click.ClickException(
-            f"No samples found for case_id '{case_id}' and genome build '{genome_build}'"
-        )
+    db = cli_db.get_cli_db([SAMPLES_COLLECTION])
 
     if sample_id is None:
-        click.echo("The following samples will be removed:")
-        for sample in samples_to_delete:
-            click.echo(f" - {sample}")
-        if not click.confirm("Proceed with deletion?", default=False):
-            click.echo("Aborted.")
-            return
-
-    for sample_to_delete_id in samples_to_delete:
-        delete_sample(
+        samples_removed = delete_case_samples(
             db=db,
-            sample_id=sample_to_delete_id,
             case_id=case_id,
             genome_build=GenomeBuild(genome_build),
+            force=False,
         )
+        if samples_removed == 0:
+            return
+        click.secho(
+            f"Finished removing {samples_removed} samples from database ✔",
+            fg="green",
+        )
+        return
+
+    delete_sample(
+        db=db,
+        sample_id=sample_id,
+        case_id=case_id,
+        genome_build=GenomeBuild(genome_build),
+    )
     click.secho(
-        f"Finished removing {len(samples_to_delete)} samples from database ✔",
+        "Finished removing 1 sample from database ✔",
+        fg="green",
+    )
+
+
+@delete.command("case")
+@click.option(
+    "-b",
+    "--genome-build",
+    type=ChoiceType(GenomeBuild),
+    required=True,
+    help="Genome build",
+)
+@click.option(
+    "-n",
+    "--case-id",
+    required=True,
+    help="Id of case",
+)
+@click.option("--force", is_flag=True, help="Remove without asking for confirmation")
+def case(genome_build: GenomeBuild, case_id: str, force: bool) -> None:
+    """Remove all samples for a case/genome-build from Gens database."""
+    db = cli_db.get_cli_db([SAMPLES_COLLECTION])
+    samples_removed = delete_case_samples(
+        db=db,
+        case_id=case_id,
+        genome_build=genome_build,
+        force=force,
+    )
+    if samples_removed == 0:
+        return
+    click.secho(
+        (
+            f'Finished removing case "{case_id}" '
+            f"with {samples_removed} sample(s) from database ✔"
+        ),
         fg="green",
     )
 
@@ -139,7 +154,7 @@ def sample_meta(
 ) -> None:
     """Remove metadata entries from a sample"""
 
-    db = db_setup([SAMPLES_COLLECTION])
+    db = cli_db.get_cli_db([SAMPLES_COLLECTION])
     sample = get_sample(
         db[SAMPLES_COLLECTION],
         sample_id=sample_id,
@@ -194,7 +209,9 @@ def sample_annotation(
 ) -> None:
     """Remove a sample annotation track from Gens database."""
 
-    db = db_setup([SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION])
+    db = cli_db.get_cli_db(
+        [SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION]
+    )
 
     track = get_sample_annotation_track(
         genome_build=genome_build,
@@ -224,7 +241,7 @@ def sample_annotation(
 def annotation(genome_build: GenomeBuild, name: str) -> None:
     """Remove an annotation track from Gens database."""
 
-    db = db_setup([ANNOTATION_TRACKS_COLLECTION, ANNOTATIONS_COLLECTION])
+    db = cli_db.get_cli_db([ANNOTATION_TRACKS_COLLECTION, ANNOTATIONS_COLLECTION])
 
     track = get_annotation_track(genome_build=genome_build, db=db, name=name)
 

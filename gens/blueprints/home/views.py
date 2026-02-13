@@ -3,7 +3,7 @@
 import logging
 from typing import Any
 
-from flask import Blueprint, current_app, render_template, request
+from flask import Blueprint, current_app, redirect, render_template, request
 from pymongo.database import Database
 
 from gens.__version__ import VERSION as version
@@ -38,18 +38,14 @@ def home() -> str:
     parsed_samples = [
         {
             "case_id": case_id,
+            "display_case_id": samples[0].get("display_case_id"),
             "sample_ids": [s["sample_id"] for s in samples],
-            "genome_build": samples[0]["genome_build"],
-            "has_overview_file": len([s for s in samples if not s["has_overview_file"]])
-            == 0,
+            "genome_build": genome_build,
             "files_present": len([s for s in samples if not s["files_present"]]) == 0,
             "created_at": samples[0]["created_at"],
         }
-        for (case_id, samples) in samples_per_case.items()
+        for ((case_id, genome_build), samples) in samples_per_case.items()
     ]
-
-    with current_app.app_context():
-        genome_build = GenomeBuild(int(request.args.get("genome_build", "38")))
 
     return render_template(
         "home.html",
@@ -60,7 +56,6 @@ def home() -> str:
         ),
         gens_api_url=str(settings.gens_api_url),
         main_sample_types=settings.main_sample_types,
-        genome_build=genome_build.value,
         version=version,
     )
 
@@ -71,16 +66,9 @@ def about() -> str:
     with current_app.app_context():
         db: Database[Any] = current_app.config["GENS_DB"]
         timestamps = get_data_update_timestamp(db)
-        print("Printing config")
-        print(current_app.config)
-        config = settings.get_dict()
-        config["ENV"] = current_app.config.get("ENV")
-        ui_colors = current_app.config.get("UI_COLORS")
     return render_template(
         "about.html",
-        config=config,
         timestamps=timestamps,
-        ui_colors=ui_colors,
         version=version,
     )
 

@@ -1,4 +1,10 @@
-import { CHROMOSOMES, COLORS, SIZES, TRACK_HEIGHTS } from "../../constants";
+import {
+  CHROMOSOMES,
+  COLORS,
+  NO_SAMPLE_TYPE_DEFAULT,
+  SIZES,
+  TRACK_HEIGHTS,
+} from "../../constants";
 import { GensSession } from "../../state/gens_session";
 import { div } from "../../util/utils";
 import { DataTrack } from "../tracks/base_tracks/data_track";
@@ -81,10 +87,7 @@ export class ChromosomeView extends ShadowBaseElement {
     }
 
     const settingSample = this.session.getSamples()[0];
-    const sampleAnnots = await dataSource.getSampleAnnotSources(
-      settingSample.caseId,
-      settingSample.sampleId,
-    );
+    const sampleAnnots = await dataSource.getSampleAnnotSources(settingSample);
 
     for (const chrom of CHROMOSOMES) {
       const dataTrackSetting: DataTrackSettings = {
@@ -204,7 +207,7 @@ export class ChromosomeView extends ShadowBaseElement {
 
   public render(settings: RenderSettings) {
     const mainSample = this.session.getMainSample();
-    this.sampleLabel.innerHTML = `${mainSample.sampleId} (${mainSample.sampleType}, case: ${mainSample.caseId})`;
+    this.sampleLabel.innerHTML = `${mainSample.sampleId} (${mainSample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${mainSample.caseId})`;
 
     for (const track of this.tracks) {
       track.track.render(settings);

@@ -23,7 +23,7 @@ router = APIRouter(prefix="/sample-tracks")
 async def get_sample_annotation_tracks_route(
     sample_id: str,
     case_id: str,
-    genome_build: GenomeBuild | None,
+    genome_build: GenomeBuild,
     db: GensDb,
 ) -> list[SampleAnnotationTrackInDb]:
     """Get sample specific annotation tracks"""

@@ -39,23 +39,40 @@ import { getMainSample } from "./util/utils";
 import { HelpMenu } from "./components/side_menu/help_menu";
 import { parseSex } from "./util/meta_warnings";
 
+/**
+ * Needed when app is mounted at a reverse-proxy subpath (i.e. https://domain/gens vs https://gens)
+ */
+function getAppBaseURL(gensApiURL: string): string {
+  const apiURL = new URL(gensApiURL);
+  const normalizedPath = apiURL.pathname.replace(/\/+$/, "");
+  const appPath = normalizedPath.endsWith("/api")
+    ? normalizedPath.slice(0, -4)
+    : normalizedPath;
+  const finalPath = appPath === "" ? "/" : `${appPath.replace(/\/+$/, "")}/`;
+  return new URL(finalPath, apiURL.origin).href;
+}
+
 export async function samplesListInit(
   samples: SampleInfo[],
   variantSoftwareBaseURL: string | null,
   gensBaseURL: string,
-  genomeBuild: number,
 ) {
   const gens_home = document.querySelector("#gens-home") as GensHome;
+  const appBaseURL = getAppBaseURL(gensBaseURL);
 
-  const getGensURL = (caseId: string, sampleIds?: string[]) => {
+  const getGensURL = (
+    caseId: string,
+    genomeBuild: number,
+    sampleIds?: string[],
+  ) => {
     let subpath;
     if (sampleIds != null) {
-      subpath = `app/viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
+      subpath = `viewer/${caseId}?sample_ids=${sampleIds.join(",")}&genome_build=${genomeBuild}`;
     } else {
-      subpath = `app/viewer/${caseId}?genome_build=${genomeBuild}`;
+      subpath = `viewer/${caseId}?genome_build=${genomeBuild}`;
     }
 
-    return new URL(subpath, gensBaseURL).href;
+    return new URL(subpath, appBaseURL).href;
   };
 
   gens_home.initialize(samples, variantSoftwareBaseURL, getGensURL);
@@ -63,6 +80,7 @@ export async function samplesListInit(
 
 export async function initCanvases({
   caseId,
+  displayCaseId,
   sampleIds,
   genomeBuild,
   variantSoftwareBaseURL,
@@ -72,9 +90,10 @@ export async function initCanvases({
   version,
   allSamples,
   defaultProfiles,
-  warningThresholds: warningThresholds,
+  warningThresholds,
 }: {
   caseId: string;
+  displayCaseId?: string | null;
   sampleIds: string[];
   genomeBuild: number;
   variantSoftwareBaseURL: string | null;
@@ -99,7 +118,7 @@ export async function initCanvases({
     ? `${variantSoftwareBaseURL}/case/case_id/${caseId}`
     : null;
 
-  headerInfo.initialize(caseId, variantSoftwareCaseUrl, version);
+  headerInfo.initialize(caseId, displayCaseId, variantSoftwareCaseUrl, version);
 
   const inputControls = document.getElementById(
     "input-controls",
@@ -136,15 +155,19 @@ export async function initCanvases({
   };
 
   const unorderedSamples = await Promise.all(
-    sampleIds.map((sampleId) => api.getSample(caseId, sampleId)),
+    sampleIds.map((sampleId) =>
+      api.getSample({ caseId, sampleId, genomeBuild }),
+    ),
   );
   const caseSamples = orderSamples(unorderedSamples).map((sample) => {
     const parsedSex = parseSex(sample.sex);
 
     const result: Sample = {
       caseId: sample.case_id,
+      displayCaseId: sample.display_case_id,
       sampleId: sample.sample_id,
       sampleType: sample.sample_type,
+      genomeBuild: sample.genome_build,
       sex: parsedSex,
       meta: sample.meta,
     };
@@ -162,7 +185,7 @@ export async function initCanvases({
     caseSamples,
     allSamples,
     variantSoftwareBaseURL,
-    gensApiURL.replace(/\/$/, "") + "/app/",
+    getAppBaseURL(gensApiURL),
     genomeBuild,
     defaultProfiles,
     api.getChromInfo(),
@@ -294,13 +317,17 @@ function addSettingsPageSources(
     render({ tracksReorderedOnly: true, saveLayoutChange: true });
   };
   const getAllSamples = () => {
+    const currentBuild = session.getMainSample().genomeBuild;
     const samples = session.getSamples();
     const currSampleIds = samples.map(
       (sample) => `${sample.caseId}_${sample.sampleId}`,
     );
-    const filtered = allSamples.filter(
-      (s) => !currSampleIds.includes(`${s.caseId}_${s.sampleId}`),
-    );
+    const filtered = allSamples.filter((s) => {
+      const sampleKey = `${s.caseId}_${s.sampleId}`;
+      return (
+        s.genomeBuild === currentBuild && !currSampleIds.includes(sampleKey)
+      );
+    });
     return filtered;
   };
   const gotoHighlight = (region: Region) => {
@@ -321,8 +348,8 @@ function addSettingsPageSources(
     session.profile.setTrackHeights(trackHeights);
     render({ reloadData: true });
   };
-  const onColorByChange = async (annotId: string | null) => {
-    session.profile.setColorAnnotation(annotId);
+  const onColorByChange = async (annotIds: string[]) => {
+    session.profile.setColorAnnotations(annotIds);
     render({ colorByChange: true });
   };
   const onApplyDefaultCovRange = (rng: Rng) => {
@@ -371,7 +398,12 @@ function addSettingsPageSources(
 
   const resetLayout = () => {
     session.resetTrackLayout();
-    render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
+    render({
+      reloadData: true,
+      tracksReordered: true,
+      saveLayoutChange: true,
+      colorByChange: true,
+    });
   };
 
   settingsPage.setSources(

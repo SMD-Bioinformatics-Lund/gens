@@ -1,8 +1,10 @@
 import { DataTable } from "simple-datatables";
 import { ICONS } from "../constants";
+import { formatCaseLabel } from "../util/utils";
 
 export interface SampleInfo {
   case_id: string;
+  display_case_id?: string;
   sample_ids: string[];
   genome_build: number;
   created_at: string;
@@ -73,7 +75,11 @@ export class SamplesTable extends HTMLElement {
   initialize(
     sampleInfo: SampleInfo[],
     variantSoftwareUrl: string | null,
-    getGensURL: (caseId: string, sampleIds?: string[]) => string,
+    getGensURL: (
+      caseId: string,
+      genomeBuild: number,
+      sampleIds?: string[],
+    ) => string,
   ) {
     if (!this.isConnected) {
       throw Error(
@@ -85,7 +91,8 @@ export class SamplesTable extends HTMLElement {
     this.tableContainer.hidden = false;
 
     const newRows = sampleInfo.map((s) => {
-      const gensCaseLink = `<a href="${getGensURL(s.case_id)}">${s.case_id}</a>`;
+      const formattedCaseId = formatCaseLabel(s.case_id, s.display_case_id);
+      const gensCaseLink = `<a href="${getGensURL(s.case_id, s.genome_build)}">${formattedCaseId}</a>`;
       const variantSoftwareCaseLink = variantSoftwareUrl
         ? `(<a href="${variantSoftwareUrl}/case/case_id/${s.case_id}"
                target="_blank"
@@ -97,7 +104,10 @@ export class SamplesTable extends HTMLElement {
       return [
         `${gensCaseLink} ${variantSoftwareCaseLink}`,
         s.sample_ids
-          .map((id) => `<a href="${getGensURL(s.case_id, [id])}">${id}</a>`)
+          .map(
+            (id) =>
+              `<a href="${getGensURL(s.case_id, s.genome_build, [id])}">${id}</a>`,
+          )
           .join(", "),
         s.genome_build.toString(),
         prettyDate(s.created_at),
