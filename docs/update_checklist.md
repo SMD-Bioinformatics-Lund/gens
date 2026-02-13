@@ -412,7 +412,7 @@ $ docker push clinicalgenomicslund/gens
 
 ## CLI
 
-- [ ] Try loading all the annotation tracks and make sure it completes without errors.
+- [ ] (If relevant) Try loading all the annotation tracks and make sure it completes without errors.
 
 ```
 gens load annotations --file /access/annotation_tracks/ --genome-build 38

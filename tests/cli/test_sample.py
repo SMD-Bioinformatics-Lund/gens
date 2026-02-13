@@ -59,6 +59,7 @@ def test_load_sample_cli(
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
+        display_case_id="case1-display",
         meta_files=[meta_file_simple, meta_file_complex],
         sample_type="proband",
         sex="M",
@@ -70,6 +71,7 @@ def test_load_sample_cli(
     assert doc is not None
     assert doc["sample_id"] == "sample1"
     assert doc["case_id"] == "case1"
+    assert doc["display_case_id"] == "case1-display"
     assert doc["genome_build"] == 38
     assert Path(doc["baf_file"]) == baf_file
     assert Path(doc["coverage_file"]) == cov_file
@@ -217,6 +219,32 @@ def test_load_sample_cli_with_string_genome_build_fails(
     )
 
     assert sample_coll.count_documents({}) == 1
+
+
+def test_load_sample_cli_without_display_case_id(
+    cli_load: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+) -> None:
+    baf_file = write_sample_track(tmp_path / "baf_no_display.gz")
+    cov_file = write_sample_track(tmp_path / "cov_no_display.gz")
+
+    cli_load.sample.callback(
+        sample_id="sample-no-display",
+        genome_build=38,
+        baf=baf_file,
+        coverage=cov_file,
+        case_id="case-no-display",
+        meta_files=[],
+        sample_type="proband",
+        sex="M",
+    )
+
+    doc = db.get_collection(SAMPLES_COLLECTION).find_one(
+        {"sample_id": "sample-no-display", "case_id": "case-no-display"}
+    )
+    assert doc is not None
+    assert doc.get("display_case_id") is None
 
 
 @pytest.mark.parametrize("alias,expected", [("T", "tumor"), ("N", "normal")])
@@ -419,6 +447,7 @@ def test_load_case_cli_from_yaml(
     config_path.write_text(
         (
             "case_id: case_trio\n"
+            "display_case_id: case_trio_display\n"
             "genome_build: 38\n"
             "samples:\n"
             "  - sample_id: child\n"
@@ -456,6 +485,7 @@ def test_load_case_cli_from_yaml(
 
     child_doc = coll.find_one({"sample_id": "child", "case_id": "case_trio"})
     assert child_doc is not None
+    assert child_doc["display_case_id"] == "case_trio_display"
     assert child_doc["sex"] == "M"
     assert child_doc["sample_type"] == "proband"
     assert Path(child_doc["baf_file"]) == child_baf
@@ -467,6 +497,7 @@ def test_load_case_cli_from_yaml(
 
     mother_doc = coll.find_one({"sample_id": "mother", "case_id": "case_trio"})
     assert mother_doc is not None
+    assert mother_doc["display_case_id"] == "case_trio_display"
     assert mother_doc["sex"] == "F"
     assert mother_doc["sample_type"] == "mother"
     assert len(mother_doc["meta"]) == 1
@@ -474,6 +505,7 @@ def test_load_case_cli_from_yaml(
 
     father_doc = coll.find_one({"sample_id": "father", "case_id": "case_trio"})
     assert father_doc is not None
+    assert father_doc["display_case_id"] == "case_trio_display"
     assert father_doc["sex"] == "M"
     assert father_doc["sample_type"] == "father"
     assert len(father_doc["meta"]) == 1
@@ -489,6 +521,37 @@ def test_load_case_cli_from_yaml(
     assert sample_track_doc["sample_id"] == "child"
     assert sample_track_doc["case_id"] == "case_trio"
     assert sample_track_doc["name"] == "child-events"
+
+
+def test_load_case_cli_from_yaml_without_display_case_id(
+    cli_load: ModuleType,
+    db: mongomock.Database,
+    tmp_path: Path,
+) -> None:
+    tracks_dir = tmp_path / "tracks_no_display"
+    tracks_dir.mkdir()
+    write_sample_track(tracks_dir / "child.baf.gz")
+    write_sample_track(tracks_dir / "child.cov.gz")
+
+    config_path = tmp_path / "case_no_display.yml"
+    config_path.write_text(
+        (
+            "case_id: case_no_display\n"
+            "genome_build: 38\n"
+            "samples:\n"
+            "  - sample_id: child\n"
+            "    baf: tracks_no_display/child.baf.gz\n"
+            "    coverage: tracks_no_display/child.cov.gz\n"
+        )
+    )
+
+    cli_load.case.callback(config_file=config_path)
+
+    child_doc = db.get_collection(SAMPLES_COLLECTION).find_one(
+        {"sample_id": "child", "case_id": "case_no_display"}
+    )
+    assert child_doc is not None
+    assert child_doc.get("display_case_id") is None
 
 
 def test_load_case_cli_rejects_top_level_meta_files(
