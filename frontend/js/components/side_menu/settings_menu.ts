@@ -731,7 +731,7 @@ function getMainSampleChoices(
     const id = getSampleKey(sample);
     const choice = {
       value: id,
-      label: `${sample.sampleId} (${sample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${formatCaseLabel(sample.caseId, sample.displayCaseId)})`,
+      label: `${sample.sampleId} (${sample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${sample.caseId})`,
       selected: prevSelected == id,
     };
     choices.push(choice);
