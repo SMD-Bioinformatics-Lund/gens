@@ -80,8 +80,14 @@ def authenticate_with_ldap(
         LOG.warning("LDAP authentication requested but no LDAP config is present")
         return False
 
+    username_local_part = username.split("@", 1)[0]
     try:
-        bind_dn = configuration.bind_user_template.format(username=username)
+        bind_dn = configuration.bind_user_template.format(
+            username=username,
+            email=username,
+            localpart=username_local_part,
+            uid=username_local_part,
+        )
     except KeyError as error:
         LOG.error("Failed to format LDAP bind DN: missing %s", error)
         return False

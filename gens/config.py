@@ -60,8 +60,9 @@ class LdapConfig(BaseSettings):
     bind_user_template: str = Field(
         default="{username}",
         description=(
-            "Template user to build the bind DN"
-            "The placeholder '{username}' will be replaced with the provided username."
+            "Template used to build the bind DN. "
+            "Available placeholders are '{username}' and '{email}' (full login value), "
+            "plus '{uid}' and '{localpart}' (substring before '@')."
         ),
     )
 
