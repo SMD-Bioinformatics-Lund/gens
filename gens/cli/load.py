@@ -124,7 +124,7 @@ def sample(
         click.secho("Finished adding a new sample to database ✔", fg="green")
     else:
         click.secho(
-            "Failed to add sample",
+            "Failed to add sample ✘",
             fg="red",
         )
 
