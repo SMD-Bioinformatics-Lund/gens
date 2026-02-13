@@ -77,6 +77,7 @@ def display_samples(case_id: str):
     db: Database = current_app.config["GENS_DB"]
 
     sample_id_list = request.args.get("sample_ids")
+    display_case_id: str | None = None
     if not sample_id_list:
 
         samples_collection = db.get_collection(SAMPLES_COLLECTION)
@@ -97,6 +98,7 @@ def display_samples(case_id: str):
             )
 
         sample_ids = [sample.sample_id for sample in case_samples]
+        display_case_id = case_samples[0].display_case_id if case_samples else None
 
         if request.args.get("genome_build") is None:
             genome_build = GenomeBuild(case_samples[0].genome_build)
@@ -112,6 +114,8 @@ def display_samples(case_id: str):
                 )
                 for sample_id in sample_ids
             ]
+            if requested_samples:
+                display_case_id = requested_samples[0].display_case_id
             _validate_sample_files(requested_samples)
         except SampleNotFoundError:
             LOG.exception("Requested sample not found for case %s", case_id)
@@ -149,7 +153,7 @@ def display_samples(case_id: str):
 
     samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
 
-    all_samples: list[dict[str, str]] = []
+    all_samples: list[dict[str, str | int | None]] = []
     for samples_per_case_dict in samples_per_case.values():
         for sample in samples_per_case_dict:
             sample_info = {
@@ -170,6 +174,7 @@ def display_samples(case_id: str):
         start=parsed_region.start,
         end=parsed_region.end,
         case_id=case_id,
+        display_case_id=display_case_id,
         sample_ids=sample_ids,
         all_samples=list(all_samples),
         genome_build=genome_build.value,

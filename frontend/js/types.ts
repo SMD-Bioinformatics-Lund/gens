@@ -669,6 +669,7 @@ interface ApiSample {
   baf_file: string;
   baf_index: string;
   case_id: string;
+  display_case_id?: string;
   coverage_file: string;
   coverage_index: string;
   created_at: string;
@@ -687,6 +688,7 @@ interface SampleIdentifier {
 
 interface Sample {
   caseId: string;
+  displayCaseId?: string;
   sampleId: string;
   genomeBuild: number;
   sampleType?: string;

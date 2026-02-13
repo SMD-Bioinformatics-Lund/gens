@@ -1,4 +1,5 @@
-import { ICONS } from "../../constants";
+import { COLORS, ICONS } from "../../constants";
+import { formatCaseLabel } from "../../util/utils";
 import { IconButton } from "../util/icon_button";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
@@ -8,10 +9,29 @@ template.innerHTML = String.raw`
     #main-row {
       justify-content: space-between;
       width: 100%;
+      align-items: center;
+    }
+    #labels {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      gap: 2px;
+    }
+    #sample-label {
+      font-weight: 600;
+      word-break: break-word;
+    }
+    #case-label {
+      color: ${COLORS.darkGray};
+      font-size: 12px;
+      word-break: break-word;
     }
   </style>
   <flex-row id="main-row">
-    <div id="label"></div>
+    <div id="labels">
+      <div id="sample-label"></div>
+      <div id="case-label"></div>
+    </div>
     <flex-row>
       <icon-button id="remove" icon="${ICONS.trash}"></icon-button>
     </flex-row>
@@ -19,7 +39,8 @@ template.innerHTML = String.raw`
 `;
 
 export class SampleRow extends ShadowBaseElement {
-  private labelElem: HTMLDivElement;
+  private sampleLabelElem: HTMLDivElement;
+  private caseLabelElem: HTMLDivElement;
   private removeElem: IconButton;
 
   private sample: Sample;
@@ -37,10 +58,15 @@ export class SampleRow extends ShadowBaseElement {
   connectedCallback(): void {
     super.connectedCallback();
 
-    this.labelElem = this.root.querySelector("#label");
+    this.sampleLabelElem = this.root.querySelector("#sample-label");
+    this.caseLabelElem = this.root.querySelector("#case-label");
     this.removeElem = this.root.querySelector("#remove");
 
-    this.labelElem.innerHTML = `${this.sample.sampleId} (case: ${this.sample.caseId})`;
+    this.sampleLabelElem.textContent = this.sample.sampleId;
+    this.caseLabelElem.textContent = `Case: ${formatCaseLabel(
+      this.sample.caseId,
+      this.sample.displayCaseId,
+    )}`;
     this.removeElem.addEventListener(
       "click",
       (_e) => {
