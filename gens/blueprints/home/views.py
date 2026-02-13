@@ -38,6 +38,7 @@ def home() -> str:
     parsed_samples = [
         {
             "case_id": case_id,
+            "display_case_id": samples[0].get("display_case_id"),
             "sample_ids": [s["sample_id"] for s in samples],
             "genome_build": genome_build,
             "files_present": len([s for s in samples if not s["files_present"]]) == 0,

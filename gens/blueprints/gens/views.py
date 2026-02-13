@@ -154,6 +154,7 @@ def display_samples(case_id: str):
         for sample in samples_per_case_dict:
             sample_info = {
                 "caseId": sample["case_id"],
+                "displayCaseId": sample.get("display_case_id"),
                 "sampleId": sample["sample_id"],
                 "sampleType": sample.get("sample_type"),
                 "genomeBuild": sample["genome_build"],

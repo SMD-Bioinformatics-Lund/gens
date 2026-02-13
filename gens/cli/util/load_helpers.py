@@ -44,6 +44,7 @@ def load_sample_data(
     meta_files: list[Path],
     sample_type: str | None,
     sex: SampleSex | None,
+    display_case_id: str | None = None,
 ) -> bool:
     db = cli_db.get_cli_db([SAMPLES_COLLECTION])
 
@@ -51,6 +52,7 @@ def load_sample_data(
         {
             "sample_id": sample_id,
             "case_id": case_id,
+            "display_case_id": display_case_id,
             "genome_build": genome_build,
             "baf_file": baf,
             "coverage_file": coverage,

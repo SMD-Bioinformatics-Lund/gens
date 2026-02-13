@@ -77,7 +77,12 @@ def load() -> None:
     "-n",
     "--case-id",
     required=True,
-    help="Id of case",
+    help="ID of case",
+)
+@click.option(
+    "--display-case-id",
+    required=False,
+    help="Display ID of case. If specified, both this and the case ID are shown.",
 )
 @click.option(
     "--meta",
@@ -108,6 +113,7 @@ def sample(
     meta_files: tuple[Path, ...],
     sample_type: str | None,
     sex: SampleSex | None,
+    display_case_id: str | None = None,
 ) -> None:
     """Load a sample into Gens database."""
     was_added = load_sample_data(
@@ -116,6 +122,7 @@ def sample(
         baf=baf,
         coverage=coverage,
         case_id=case_id,
+        display_case_id=display_case_id,
         meta_files=list(meta_files),
         sample_type=sample_type,
         sex=sex,
@@ -160,6 +167,7 @@ def case(config_file: Path) -> None:
                 f'Coverage file for "{sample_config.sample_id}"',
             ),
             case_id=case_config.case_id,
+            display_case_id=case_config.display_case_id,
             meta_files=sample_meta_file_paths,
             sample_type=sample_config.sample_type,
             sex=sample_config.sex,
