@@ -1,4 +1,4 @@
-import { COLORS, ICONS } from "../../constants";
+import { COLORS, FONT_SIZE, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
 import { formatCaseLabel } from "../../util/utils";
 import { IconButton } from "../util/icon_button";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
@@ -15,15 +15,15 @@ template.innerHTML = String.raw`
       display: flex;
       flex-direction: column;
       min-width: 0;
-      gap: 2px;
+      gap: ${SIZES.xxs}px;
     }
     #sample-label {
-      font-weight: 600;
+      font-weight: ${FONT_WEIGHT.header};
       word-break: break-word;
     }
     #case-label {
       color: ${COLORS.darkGray};
-      font-size: 12px;
+      font-size: ${FONT_SIZE.medium}px;
       word-break: break-word;
     }
   </style>
