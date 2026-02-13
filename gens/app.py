@@ -142,9 +142,9 @@ def create_app() -> FastAPI:
         ):
             return RedirectResponse(url=get_docs_login_redirect(request))
         return get_swagger_ui_html(
-            openapi_url="/api/openapi.json",
+            openapi_url="openapi.json",
             title=f"{fastapi_app.title} - Swagger UI",
-            oauth2_redirect_url="/api/docs/oauth2-redirect",
+            oauth2_redirect_url="docs/oauth2-redirect",
         )
 
     @fastapi_app.get("/api/docs/oauth2-redirect", include_in_schema=False)
@@ -164,7 +164,7 @@ def create_app() -> FastAPI:
         ):
             return RedirectResponse(url=get_docs_login_redirect(request))
         return get_redoc_html(
-            openapi_url="/api/openapi.json",
+            openapi_url="openapi.json",
             title=f"{fastapi_app.title} - ReDoc",
         )
 
