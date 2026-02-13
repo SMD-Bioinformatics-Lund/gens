@@ -406,8 +406,6 @@ Export, reset and import of profile
 Steps to prepare a container to run:
 
 ```
-# Otherwise you'll build with outdated files
-$ npm run buildcp
 $ docker build -f Dockerfile -t clinicalgenomicslund/gens:<VERSION> .
 $ docker push clinicalgenomicslund/gens
 ```
