@@ -3,7 +3,7 @@
 import logging
 from typing import Any
 
-from flask import Blueprint, current_app, render_template, request
+from flask import Blueprint, current_app, redirect, render_template, request
 from pymongo.database import Database
 
 from gens.__version__ import VERSION as version
@@ -77,6 +77,18 @@ def public_endpoint(fn: Any) -> Any:
     """Set an endpoint as public"""
     fn.is_public = True
     return fn
+
+
+@home_bp.route("/app", defaults={"subpath": ""}, methods=["GET", "POST"])
+@home_bp.route("/app/", defaults={"subpath": ""}, methods=["GET", "POST"])
+@home_bp.route("/app/<path:subpath>", methods=["GET", "POST"])
+def deprecated_app_redirect(subpath: str):
+    """Redirect deprecated /app-prefixed paths to root-relative routes."""
+    target_path = f"/{subpath}" if subpath else "/"
+    query = request.query_string.decode()
+    if query:
+        target_path = f"{target_path}?{query}"
+    return redirect(target_path, code=308)
 
 
 @home_bp.route("/landing")
