@@ -4,7 +4,7 @@ import {
   getGeneTrackSettings,
 } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
-import { COLORS, PROFILE_SETTINGS_VERSION, TRACK_IDS } from "../constants";
+import { COLORS, TRACK_IDS } from "../constants";
 import { getMetaWarnings } from "../util/meta_warnings";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
@@ -406,7 +406,7 @@ export class GensSession {
   }
 }
 
-function buildTrackLayoutFromTracks(tracks: DataTrackSettings[]) {
+function buildTrackLayoutFromTracks(tracks: DataTrackSettings[]): TrackLayout {
   const order: Set<string> = new Set();
   const hidden: Record<string, boolean> = {};
   const expanded: Record<string, boolean> = {};
@@ -417,11 +417,9 @@ function buildTrackLayoutFromTracks(tracks: DataTrackSettings[]) {
     expanded[pid] = info.isExpanded;
   }
 
-  const layout = {
-    version: PROFILE_SETTINGS_VERSION,
+  return {
     order: Array.from(order),
     hidden,
     expanded,
   };
-  return layout;
 }
