@@ -398,7 +398,12 @@ function addSettingsPageSources(
 
   const resetLayout = () => {
     session.resetTrackLayout();
-    render({ reloadData: true, tracksReordered: true, saveLayoutChange: true });
+    render({
+      reloadData: true,
+      tracksReordered: true,
+      saveLayoutChange: true,
+      colorByChange: true,
+    });
   };
 
   settingsPage.setSources(
