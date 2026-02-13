@@ -59,8 +59,11 @@ def update_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
         )
 
 
-def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
-    """Store a new sample in the database."""
+def create_sample(db: Database[Any], sample_obj: SampleInfo) -> bool:
+    """Store a new sample in the database.
+
+    Return True when inserted, False when a duplicate key prevented insertion.
+    """
     LOG.info(f"Store sample {sample_obj.sample_id} in database")
     samples_c = db.get_collection(SAMPLES_COLLECTION)
     validate_case_genome_build_consistency(
@@ -70,6 +73,7 @@ def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
     )
     try:
         samples_c.insert_one(sample_obj.model_dump(exclude=INDEX_FIELDS))
+        return True
     except DuplicateKeyError:
         LOG.error(
             (
@@ -80,6 +84,7 @@ def create_sample(db: Database[Any], sample_obj: SampleInfo) -> None:
             sample_obj.case_id,
             sample_obj.genome_build,
         )
+        return False
 
 
 def validate_case_genome_build_consistency(

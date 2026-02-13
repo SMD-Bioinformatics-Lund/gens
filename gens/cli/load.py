@@ -110,7 +110,7 @@ def sample(
     sex: SampleSex | None,
 ) -> None:
     """Load a sample into Gens database."""
-    load_sample_data(
+    was_added = load_sample_data(
         sample_id=sample_id,
         genome_build=genome_build,
         baf=baf,
@@ -120,7 +120,13 @@ def sample(
         sample_type=sample_type,
         sex=sex,
     )
-    click.secho("Finished adding a new sample to database ✔", fg="green")
+    if was_added:
+        click.secho("Finished adding a new sample to database ✔", fg="green")
+    else:
+        click.secho(
+            "Failed to add sample",
+            fg="red",
+        )
 
 
 @load.command("case")

@@ -44,7 +44,7 @@ def load_sample_data(
     meta_files: list[Path],
     sample_type: str | None,
     sex: SampleSex | None,
-) -> None:
+) -> bool:
     db = cli_db.get_cli_db([SAMPLES_COLLECTION])
 
     sample_obj = SampleInfo.model_validate(
@@ -59,7 +59,7 @@ def load_sample_data(
             "meta": [parse_meta_file(path) for path in meta_files],
         }
     )
-    create_sample(db, sample_obj)
+    return create_sample(db, sample_obj)
 
 
 def load_sample_annotation_data(
