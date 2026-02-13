@@ -3,8 +3,9 @@
 import re
 from enum import Enum, IntEnum, StrEnum
 
-from pydantic import computed_field, field_validator
+from pydantic import computed_field, field_validator, GetCoreSchemaHandler
 from pydantic.types import PositiveFloat, PositiveInt
+from pydantic_core import core_schema
 
 from .base import RWModel
 
@@ -21,6 +22,27 @@ class DnaStrand(str, Enum):  # TODO migrate to +/-
     FOR = "+"
     REV = "-"
     UNKNOWN = "."
+
+    @classmethod
+    def _from_legacy(cls, v):
+        if v in (1, "+"):
+            return cls.FOR
+        if v in (-1, "-"):
+            return cls.REV
+        if v in (0, ".", None):
+            return cls.UNKNOWN
+        return v
+
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, source_type, handler: GetCoreSchemaHandler
+    ):
+        enum_schema = handler(source_type)
+
+        return core_schema.no_info_before_validator_function(
+            cls._from_legacy,
+            enum_schema,
+        )
 
 
 class GenomeBuild(IntEnum):
