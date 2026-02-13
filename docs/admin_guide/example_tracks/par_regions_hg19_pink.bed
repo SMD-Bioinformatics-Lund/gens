@@ -1,0 +1,6 @@
+# PAR regions for GRCh37/hg19 in BED9 format (Gens compatible)
+# chrom	start	end	name	score	strand	thickStart	thickEnd	itemRgb
+X	60000	2699520	PAR1_X	.	.	.	.	rgb(255,105,180)
+Y	10000	2649520	PAR1_Y	.	.	.	.	rgb(255,105,180)
+X	154931043	155260560	PAR2_X	.	.	.	.	rgb(255,105,180)
+Y	59034049	59363566	PAR2_Y	.	.	.	.	rgb(255,105,180)

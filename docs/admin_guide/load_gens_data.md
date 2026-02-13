@@ -165,6 +165,21 @@ Example:
 
 ```
 
+PAR example tracks are available in this repo:
+
+* `docs/admin_guide/example_tracks/par_regions_hg38_pink.bed`
+* `docs/admin_guide/example_tracks/par_regions_hg19_pink.bed`
+
+Load one of them with:
+
+```bash
+# GRCh38 / hg38
+gens load annotations -b 38 -f docs/admin_guide/example_tracks/par_regions_hg38_pink.bed
+
+# GRCh37 / hg19
+gens load annotations -b 37 -f docs/admin_guide/example_tracks/par_regions_hg19_pink.bed
+```
+
 #### Aed format
 
 This is a custom format written by [ChAS](https://assets.thermofisher.com/TFS-Assets/LSG/manuals/ChAS_Manual.pdf).

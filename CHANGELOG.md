@@ -15,6 +15,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Add support for using a user db+collection from the variant software. This would allow for instance a user running a Scout setup to check that users exists in that db rather than in the Gens db, omitting the need to keep the same users in both. [#698](https://github.com/SMD-Bioinformatics-Lund/gens/pull/698)
 - Session cookie used for authentication of each API request. [#693](https://github.com/SMD-Bioinformatics-Lund/gens/pull/693)
 - A case display name can optionally be added for cases together with the mandatory case ID. [#701](https://github.com/SMD-Bioinformatics-Lund/gens/pull/701)
+- PAR region example tracks. [#681](https://github.com/SMD-Bioinformatics-Lund/gens/pull/681)
 
 ### Changed
 
