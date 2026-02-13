@@ -2,7 +2,7 @@
 # BUILDER NODE #
 ################
 
-FROM node:20.8.1-alpine AS node-builder
+FROM node:24-alpine AS node-builder
 WORKDIR /usr/src/app
 COPY package.json package-lock.json webpack.config.cjs gulpfile.js tsconfig.json ./
 COPY frontend frontend
@@ -23,12 +23,10 @@ COPY gens gens/
 COPY README.md LICENSE pyproject.toml ./
 
 # Copy compiled web assets INTO the python package before building the wheel
-COPY --from=node-builder /usr/src/app/build/css/error.min.css gens/static/css/
-COPY --from=node-builder /usr/src/app/build/css/home.min.css \
-                         /usr/src/app/build/css/landing.min.css \
-                         /usr/src/app/build/css/about.min.css \
-                         gens/blueprints/home/static/
-COPY --from=node-builder /usr/src/app/build/*/gens.min.* gens/blueprints/gens/static/
+COPY --from=node-builder /usr/src/app/build/css/error.min.css /usr/local/lib/python3.12/site-packages/gens/static/css/
+COPY --from=node-builder /usr/src/app/build/css/home.min.css /usr/src/app/build/css/landing.min.css /usr/src/app/build/css/about.min.css /usr/local/lib/python3.12/site-packages/gens/blueprints/home/static/
+COPY --from=node-builder /usr/src/app/build/*/gens.min.* /usr/local/lib/python3.12/site-packages/gens/blueprints/gens/static/
+
 
 RUN apt-get update &&                                                     \
     apt-get upgrade -y &&                                                 \
@@ -87,7 +85,6 @@ CMD gunicorn -k uvicorn.workers.UvicornWorker \
     --chdir /home/worker/ \
     --proxy-protocol \
     --forwarded-allow-ips="10.0.2.100,127.0.0.1" \
-    --log-syslog \
     --access-logfile - \
     --error-logfile - \
     --log-level="warning" \

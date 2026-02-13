@@ -42,6 +42,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Fix latent race condition when adding new samples, which could yield tracks that did not respond to expanding. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
 - Fix such that only samples from the relevant build are displayed in the "add samples" dropdown. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
 - Prevent samples from being loaded into existing cases where other samples have a different build. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
+- Update GitHub workflow action versions and fix Dockerfile paths [#702](https://github.com/SMD-Bioinformatics-Lund/gens/pull/702)
 
 ## 4.4.2
 
@@ -290,6 +291,12 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Color in front-end formatter to deal with the new [0, 0, 0] format (compared to the previous "rgb(0,0,0)" format) (#265)
 - Shift start position +1 in bed and aed files to make the annotations align with the 1-indexed format used elsewhere in Gens (#265)
 
+## 3.0.2 (Solna only)
+
+### Fixed
+
+- Docker file syslog gives bad file descriptor (#101)
+
 ## 3.0.1
 
 ### Changed
@@ -404,6 +411,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 - Fixed cache issue that could result in chromosome information not being updated
 - Fixed max arg error when searching for some genes
+- Fixed bug that prevented updating annotation tracks
 
 ## [2.1.1 (Lund)]
 

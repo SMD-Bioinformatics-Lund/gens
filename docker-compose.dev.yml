@@ -82,6 +82,7 @@ services:
       - 8080:5000
     volumes:
       - ./dump:/dump
+      # remove the dev gens volume mount if you want to use the css and minified js assets from the image itself
       - ./gens:/home/worker/gens
       - ./tests:/home/worker/tests
       - ./utils:/home/worker/utils
