@@ -161,6 +161,7 @@ def get_samples_per_case(
 
         sample_obj = {
             "case_id": sample["case_id"],
+            "display_case_id": sample.get("display_case_id"),
             "sample_id": sample["sample_id"],
             "sample_type": sample.get("sample_type"),
             "sex": sample.get("sex"),
@@ -198,6 +199,7 @@ def get_samples_for_case(
         sample = SampleInfo(
             sample_id=result["sample_id"],
             case_id=result["case_id"],
+            display_case_id=result.get("display_case_id"),
             genome_build=GenomeBuild(int(result["genome_build"])),
             baf_file=baf_file,
             coverage_file=coverage_file,
@@ -237,6 +239,7 @@ def get_sample(
     return SampleInfo(
         sample_id=result["sample_id"],
         case_id=result["case_id"],
+        display_case_id=result.get("display_case_id"),
         genome_build=GenomeBuild(int(result["genome_build"])),
         baf_file=result["baf_file"],
         coverage_file=result["coverage_file"],

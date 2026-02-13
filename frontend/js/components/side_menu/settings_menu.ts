@@ -8,6 +8,7 @@ import {
 } from "../../constants";
 import {
   downloadAsJSON,
+  formatCaseLabel,
   getSampleIdentifierFromID,
   getSampleKey,
   removeChildren,
@@ -577,7 +578,10 @@ export class SettingsMenu extends ShadowBaseElement {
     const rawSamples = this.getAllSamples();
     const allSamples = rawSamples.map((s) => {
       return {
-        label: `${s.sampleId} (case: ${s.caseId})`,
+        label: `${s.sampleId}, case: ${formatCaseLabel(
+          s.caseId,
+          s.displayCaseId,
+        )}`,
         value: getSampleKey(s),
       };
     });

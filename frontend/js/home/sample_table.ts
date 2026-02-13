@@ -1,8 +1,10 @@
 import { DataTable } from "simple-datatables";
 import { ICONS } from "../constants";
+import { formatCaseLabel } from "../util/utils";
 
 export interface SampleInfo {
   case_id: string;
+  display_case_id?: string;
   sample_ids: string[];
   genome_build: number;
   created_at: string;
@@ -89,7 +91,8 @@ export class SamplesTable extends HTMLElement {
     this.tableContainer.hidden = false;
 
     const newRows = sampleInfo.map((s) => {
-      const gensCaseLink = `<a href="${getGensURL(s.case_id, s.genome_build)}">${s.case_id}</a>`;
+      const formattedCaseId = formatCaseLabel(s.case_id, s.display_case_id);
+      const gensCaseLink = `<a href="${getGensURL(s.case_id, s.genome_build)}">${formattedCaseId}</a>`;
       const variantSoftwareCaseLink = variantSoftwareUrl
         ? `(<a href="${variantSoftwareUrl}/case/case_id/${s.case_id}"
                target="_blank"

@@ -80,6 +80,7 @@ export async function samplesListInit(
 
 export async function initCanvases({
   caseId,
+  displayCaseId,
   sampleIds,
   genomeBuild,
   variantSoftwareBaseURL,
@@ -92,6 +93,7 @@ export async function initCanvases({
   warningThresholds,
 }: {
   caseId: string;
+  displayCaseId?: string | null;
   sampleIds: string[];
   genomeBuild: number;
   variantSoftwareBaseURL: string | null;
@@ -116,7 +118,7 @@ export async function initCanvases({
     ? `${variantSoftwareBaseURL}/case/case_id/${caseId}`
     : null;
 
-  headerInfo.initialize(caseId, variantSoftwareCaseUrl, version);
+  headerInfo.initialize(caseId, displayCaseId, variantSoftwareCaseUrl, version);
 
   const inputControls = document.getElementById(
     "input-controls",
@@ -162,6 +164,7 @@ export async function initCanvases({
 
     const result: Sample = {
       caseId: sample.case_id,
+      displayCaseId: sample.display_case_id,
       sampleId: sample.sample_id,
       sampleType: sample.sample_type,
       genomeBuild: sample.genome_build,

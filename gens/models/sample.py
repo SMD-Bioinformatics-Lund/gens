@@ -83,6 +83,7 @@ class SampleInfo(RWModel, CreatedAtModel):
 
     sample_id: str
     case_id: str
+    display_case_id: str | None = None
     genome_build: GenomeBuild
     baf_file: FilePath
     coverage_file: FilePath

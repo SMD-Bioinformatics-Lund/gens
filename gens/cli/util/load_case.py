@@ -29,6 +29,7 @@ class CaseSampleConfig(YamlConfigModel):
 
 class CaseLoadConfig(YamlConfigModel):
     case_id: str
+    display_case_id: str | None = None
     genome_build: GenomeBuild
     samples: list[CaseSampleConfig]
 

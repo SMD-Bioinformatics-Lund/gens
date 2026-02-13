@@ -377,6 +377,17 @@ export function getSampleKey(id: SampleIdentifier): string {
   return `${id.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${id.sampleId}${COMBINED_SAMPLE_ID_DIVIDER}${id.genomeBuild}`;
 }
 
+export function formatCaseLabel(
+  caseId: string,
+  displayCaseId?: string | null,
+): string {
+  if (displayCaseId == null) {
+    return caseId;
+  }
+
+  return `${displayCaseId} (${caseId})`;
+}
+
 export function getSampleIdentifierFromID(id: string): SampleIdentifier {
   const fields = id.split(COMBINED_SAMPLE_ID_DIVIDER);
   if (fields.length !== 3) {
