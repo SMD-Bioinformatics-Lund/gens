@@ -24,6 +24,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Refactor db usage in backend to use a single access point, to simplify both CLI code and unit tests. [#692](https://github.com/SMD-Bioinformatics-Lund/gens/pull/692)
 - Move user management from API to CLI. [#697](https://github.com/SMD-Bioinformatics-Lund/gens/pull/697)
 - Move the `/app` endpoint to `/` and the API endpoint to `/api`. [#698](https://github.com/SMD-Bioinformatics-Lund/gens/pull/698)
+- Remove the "Remove highlights" button from the top bar. [#681](https://github.com/SMD-Bioinformatics-Lund/gens/pull/681)
 
 ### Fixed
 
