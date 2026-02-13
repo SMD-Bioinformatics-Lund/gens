@@ -77,7 +77,9 @@ Configuration options. Note that double underscores (`__`) are used to denote su
 **ldap**
 
 - **server**, LDAP server URL such as `ldap://ldap.example.com`
-- **bind_user_template**, template used to bind directly to the LDAP server. Include `{username}` where the supplied username or email should be inserted, e.g. `uid={username},ou=People,dc=example,dc=com`
+- **bind_user_template**, template used to bind directly to the LDAP server. Supported placeholders are `{username}` / `{email}` (full login value) and `{uid}` / `{localpart}` (substring before `@`).
+  For email-based login where LDAP DN uses `uid`, use:
+  `uid={uid},ou=people,dc=example,dc=com`
 
 ## User management CLI
 

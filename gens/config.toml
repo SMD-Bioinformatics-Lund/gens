@@ -39,4 +39,5 @@ ignore_when = { sex = "M", chromosome = "X" }
 # Example LDAP authentication configuration
 [ldap]
 server = "ldap://ldap.example.com"
-bind_user_template = "uid={username},ou=People,dc=example,dc=com"
+# If users log in with email and LDAP DN is uid-based:
+bind_user_template = "uid={uid},ou=people,dc=example,dc=com"
