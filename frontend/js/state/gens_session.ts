@@ -6,7 +6,7 @@ import {
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS, TRACK_IDS } from "../constants";
 import { getMetaWarnings } from "../util/meta_warnings";
-import { generateID } from "../util/utils";
+import { formatCaseLabel, generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
 import { SessionPosition } from "./session_helpers/session_position";
 import { getArrangedTracks, Tracks } from "./session_helpers/session_tracks";
@@ -102,6 +102,25 @@ export class GensSession {
 
   public getMainSample(): Sample {
     return this.mainSample;
+  }
+
+  public getDisplaySampleLabel(sample: Sample): string {
+    const alias = this.profile.getCaseDisplayAlias(sample.caseId);
+    if (alias != null && alias.trim() !== "") {
+      return alias;
+    }
+    return sample.sampleId;
+  }
+
+  public getDisplayCaseLabel(
+    caseId: string,
+    displayCaseId?: string | null,
+  ): string {
+    const alias = this.profile.getCaseDisplayAlias(caseId);
+    if (alias != null && alias.trim() !== "") {
+      return alias;
+    }
+    return formatCaseLabel(caseId, displayCaseId);
   }
 
   public getMeta(

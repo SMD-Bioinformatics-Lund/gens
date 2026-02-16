@@ -65,7 +65,7 @@ export class HeaderInfo extends ShadowBaseElement {
     caseURL: string | null,
     version: string,
   ) {
-    this.caseIdElem.textContent = formatCaseLabel(caseId, displayCaseId);
+    this.setCaseLabel(formatCaseLabel(caseId, displayCaseId));
     if (caseURL) {
       this.caseIdElem.href = caseURL;
       this.caseIdElem.target = "_blank";
@@ -74,6 +74,10 @@ export class HeaderInfo extends ShadowBaseElement {
       this.caseIdElem.removeAttribute("target");
     }
     this.versionElem.textContent = version;
+  }
+
+  setCaseLabel(label: string) {
+    this.caseIdElem.textContent = label;
   }
 }
 

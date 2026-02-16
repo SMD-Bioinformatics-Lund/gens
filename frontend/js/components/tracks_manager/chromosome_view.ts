@@ -207,7 +207,12 @@ export class ChromosomeView extends ShadowBaseElement {
 
   public render(settings: RenderSettings) {
     const mainSample = this.session.getMainSample();
-    this.sampleLabel.innerHTML = `${mainSample.sampleId} (${mainSample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${mainSample.caseId})`;
+    const sampleLabel = this.session.getDisplaySampleLabel(mainSample);
+    const caseLabel = this.session.getDisplayCaseLabel(
+      mainSample.caseId,
+      mainSample.displayCaseId,
+    );
+    this.sampleLabel.innerHTML = `${sampleLabel} (${mainSample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${caseLabel})`;
 
     for (const track of this.tracks) {
       track.track.render(settings);

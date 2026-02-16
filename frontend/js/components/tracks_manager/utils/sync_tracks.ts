@@ -40,6 +40,7 @@ export async function syncDataTrackSettings(
     samples,
     lastRenderedSamples,
     (id: SampleIdentifier) => session.getSample(id),
+    (sample: Sample) => session.getDisplaySampleLabel(sample),
     (id: SampleIdentifier) => dataSources.getSampleAnnotSources(id),
     () => session.profile.getCoverageRange(),
   );
@@ -63,6 +64,20 @@ export async function syncDataTrackSettings(
 
   for (const removeId of removeIds) {
     removeOne(returnTrackSettings, (setting) => setting.trackId == removeId);
+  }
+
+  for (const setting of returnTrackSettings) {
+    if (setting.sample == null) {
+      continue;
+    }
+    const labelPrefix = session.getDisplaySampleLabel(setting.sample);
+    if (setting.trackType === "dot-cov") {
+      setting.trackLabel = `${labelPrefix} cov`;
+    } else if (setting.trackType === "dot-baf") {
+      setting.trackLabel = `${labelPrefix} baf`;
+    } else if (setting.trackType === "variant") {
+      setting.trackLabel = `${labelPrefix} Variants`;
+    }
   }
 
   returnTrackSettings.push(...sampleSettings);
@@ -95,6 +110,7 @@ async function sampleDiff(
   samples: Sample[],
   lastRenderedSamples: Sample[],
   getSample: (id: SampleIdentifier) => Sample,
+  getSampleDisplayLabel: (sample: Sample) => string,
   getSampleAnnotSources: (
     id: SampleIdentifier,
   ) => Promise<{ id: string; name: string }[]>,
@@ -116,6 +132,7 @@ async function sampleDiff(
   const sampleSettings = await getSampleTrackSettings(
     newCombinedIds,
     getSample,
+    getSampleDisplayLabel,
     getCoverageRange,
     getSampleAnnotSources,
   );
@@ -169,6 +186,7 @@ export function annotationDiff(
 export async function getSampleTrackSettings(
   combinedSampleIds: Set<string>,
   getSample: (id: SampleIdentifier) => Sample,
+  getSampleDisplayLabel: (sample: Sample) => string,
   getCoverageRange: () => Rng,
   getSampleAnnotSources: (
     id: SampleIdentifier,
@@ -181,6 +199,7 @@ export async function getSampleTrackSettings(
 
     const sampleTracks = await getSampleTracks(
       sample,
+      getSampleDisplayLabel,
       getCoverageRange,
       getSampleAnnotSources,
     );
@@ -191,15 +210,17 @@ export async function getSampleTrackSettings(
 
 async function getSampleTracks(
   sampleIdentifier: Sample,
+  getSampleDisplayLabel: (sample: Sample) => string,
   getCoverageRange: () => Rng,
   getSampleAnnotSources: (
     id: SampleIdentifier,
   ) => Promise<{ id: string; name: string }[]>,
 ): Promise<DataTrackSettings[]> {
+  const sampleDisplayLabel = getSampleDisplayLabel(sampleIdentifier);
   const sampleKey = getSampleKey(sampleIdentifier);
   const cov: DataTrackSettings = {
     trackId: `${sampleKey}_${TRACK_IDS.cov}`,
-    trackLabel: `${sampleIdentifier.sampleId} cov`,
+    trackLabel: `${sampleDisplayLabel} cov`,
     trackType: "dot-cov",
     sample: sampleIdentifier,
     height: {
@@ -219,7 +240,7 @@ async function getSampleTracks(
 
   const baf: DataTrackSettings = {
     trackId: `${sampleKey}_${TRACK_IDS.baf}`,
-    trackLabel: `${sampleIdentifier.sampleId} baf`,
+    trackLabel: `${sampleDisplayLabel} baf`,
     trackType: "dot-baf",
     sample: sampleIdentifier,
     height: {
@@ -239,7 +260,7 @@ async function getSampleTracks(
 
   const variants: DataTrackSettings = {
     trackId: `${sampleKey}_${TRACK_IDS.variants}`,
-    trackLabel: `${sampleIdentifier.sampleId} Variants`,
+    trackLabel: `${sampleDisplayLabel} Variants`,
     trackType: "variant",
     sample: sampleIdentifier,
     height: {

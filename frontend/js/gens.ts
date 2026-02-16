@@ -216,12 +216,20 @@ export async function initCanvases({
     allAnnotSources,
     allSamples,
     gensTracks,
+    headerInfo,
+    caseId,
+    displayCaseId,
   );
 
   infoPage.setSources(
     () => session.getSamples(),
     (metaId: string) => session.getMetaWarnings(metaId),
+    (sample: Sample) => session.getDisplaySampleLabel(sample),
+    (sample: Sample) =>
+      session.getDisplayCaseLabel(sample.caseId, sample.displayCaseId),
   );
+
+  headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
 
   const getSearchResults = (query: string) => {
     const annotIds = session
@@ -311,6 +319,9 @@ function addSettingsPageSources(
   allAnnotSources: ApiAnnotationTrack[],
   allSamples: Sample[],
   gensTracks: TracksManager,
+  headerInfo: HeaderInfo,
+  caseId: string,
+  displayCaseId: string | null | undefined,
 ) {
   const onTrackMove = (trackId: string, direction: "up" | "down") => {
     session.tracks.shiftTrack(trackId, direction);
@@ -381,12 +392,19 @@ function addSettingsPageSources(
     render({ mainSampleChanged: true, reloadData: true });
   };
 
+  const onSetCaseDisplayAlias = (targetCaseId: string, alias: string | null) => {
+    session.profile.setCaseDisplayAlias(targetCaseId, alias);
+    headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
+    render({ reloadData: true, mainSampleChanged: true, samplesUpdated: true });
+  };
+
   const getProfile = () => {
     return session.profile.getProfile();
   };
 
   const applyProfile = async (profile: ProfileSettings) => {
     session.loadProfile(profile);
+    headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
     session.loadTrackLayout();
     render({
       reloadData: true,
@@ -398,6 +416,7 @@ function addSettingsPageSources(
 
   const resetLayout = () => {
     session.resetTrackLayout();
+    headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
     render({
       reloadData: true,
       tracksReordered: true,
@@ -423,6 +442,7 @@ function addSettingsPageSources(
     onToggleTrackHidden,
     onToggleTrackExpanded,
     onAssignMainSample,
+    onSetCaseDisplayAlias,
     getProfile,
     applyProfile,
     resetLayout,

@@ -8,7 +8,6 @@ import {
 } from "../../constants";
 import {
   downloadAsJSON,
-  formatCaseLabel,
   getSampleIdentifierFromID,
   getSampleKey,
   removeChildren,
@@ -170,6 +169,19 @@ template.innerHTML = String.raw`
       <div class="header">Import and export profile settings</div>
     </div>
 
+    <div class="header-row">
+      <div class="header">Screenshot display name</div>
+    </div>
+    <flex-row class="spread-row">
+      <div>Current case alias</div>
+      <flex-row class="height-inputs">
+        <input id="case-display-alias" class="height-input" type="text" placeholder="e.g. Demo case">
+        <icon-button id="apply-case-display-alias" icon="${ICONS.refresh}" title="Apply display alias"></icon-button>
+        <icon-button id="clear-case-display-alias" icon="${ICONS.trash}" title="Clear display alias"></icon-button>
+      </flex-row>
+    </flex-row>
+    <div id="case-display-alias-info" class="helper-text"></div>
+
     <flex-row class="spread-row">
       <div>Export profile settings</div>
       <icon-button
@@ -261,6 +273,10 @@ export class SettingsMenu extends ShadowBaseElement {
   private exportProfileSettingsButton: IconButton;
   private importProfileSettingsButton: IconButton;
   private importProfileSettingsInput: HTMLInputElement;
+  private caseDisplayAliasInput: HTMLInputElement;
+  private applyCaseDisplayAliasButton: IconButton;
+  private clearCaseDisplayAliasButton: IconButton;
+  private caseDisplayAliasInfo: HTMLDivElement;
 
   private applyDefaultCovYRangeButton: HTMLButtonElement;
   private variantThresholdInput: HTMLInputElement;
@@ -296,6 +312,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private onToggleTrackHidden: (trackId: string) => void;
   private onToggleTrackExpanded: (trackId: string) => void;
   private onApplyMainSample: (sample: Sample) => void;
+  private onSetCaseDisplayAlias: (caseId: string, alias: string | null) => void;
   private getProfileSettings: () => ProfileSettings;
   private applyProfileSettings: (layout: ProfileSettings) => Promise<void>;
   private onResetLayout: () => void;
@@ -323,6 +340,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onToggleTrackHidden: (trackId: string) => void,
     onToggleTrackExpanded: (trackId: string) => void,
     onApplyMainSample: (sample: Sample) => void,
+    onSetCaseDisplayAlias: (caseId: string, alias: string | null) => void,
     getProfileSettings: () => ProfileSettings,
     applyProfileSettings: (layout: ProfileSettings) => Promise<void>,
     onResetLayout: () => void,
@@ -357,6 +375,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onToggleTrackHidden = onToggleTrackHidden;
     this.onToggleTrackExpanded = onToggleTrackExpanded;
     this.onApplyMainSample = onApplyMainSample;
+    this.onSetCaseDisplayAlias = onSetCaseDisplayAlias;
     this.getProfileSettings = getProfileSettings;
     this.applyProfileSettings = applyProfileSettings;
     this.onResetLayout = onResetLayout;
@@ -389,6 +408,18 @@ export class SettingsMenu extends ShadowBaseElement {
     this.importProfileSettingsInput = this.root.querySelector(
       "#import-settings-input",
     ) as HTMLInputElement;
+    this.caseDisplayAliasInput = this.root.querySelector(
+      "#case-display-alias",
+    ) as HTMLInputElement;
+    this.applyCaseDisplayAliasButton = this.root.querySelector(
+      "#apply-case-display-alias",
+    ) as IconButton;
+    this.clearCaseDisplayAliasButton = this.root.querySelector(
+      "#clear-case-display-alias",
+    ) as IconButton;
+    this.caseDisplayAliasInfo = this.root.querySelector(
+      "#case-display-alias-info",
+    ) as HTMLDivElement;
 
     this.applyDefaultCovYRangeButton = this.root.querySelector(
       "#apply-default-cov-y-range",
@@ -487,6 +518,18 @@ export class SettingsMenu extends ShadowBaseElement {
       this.onApplyMainSample(targetSample);
     });
 
+    this.addElementListener(this.applyCaseDisplayAliasButton, "click", () => {
+      const mainSample = this.session.getMainSample();
+      const alias = this.caseDisplayAliasInput.value.trim();
+      this.onSetCaseDisplayAlias(mainSample.caseId, alias || null);
+    });
+
+    this.addElementListener(this.clearCaseDisplayAliasButton, "click", () => {
+      const mainSample = this.session.getMainSample();
+      this.caseDisplayAliasInput.value = "";
+      this.onSetCaseDisplayAlias(mainSample.caseId, null);
+    });
+
     this.addElementListener(this.annotSelect, "change", () => {
       const ids = this.annotSelect
         .getValues()
@@ -572,20 +615,30 @@ export class SettingsMenu extends ShadowBaseElement {
     ];
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
+    this.updateCaseAliasSection();
   }
 
   private setupSampleSelect() {
     const rawSamples = this.getAllSamples();
     const allSamples = rawSamples.map((s) => {
       return {
-        label: `${s.sampleId}, case: ${formatCaseLabel(
-          s.caseId,
-          s.displayCaseId,
-        )}`,
+        label: `${this.session.getDisplaySampleLabel(s)}, case: ${this.session.getDisplayCaseLabel(s.caseId, s.displayCaseId)}`,
         value: getSampleKey(s),
       };
     });
     this.sampleSelect.setValues(allSamples);
+  }
+
+  private updateCaseAliasSection() {
+    if (!this.caseDisplayAliasInput || !this.caseDisplayAliasInfo) {
+      return;
+    }
+
+    const mainSample = this.session.getMainSample();
+    const currAlias = this.session.profile.getCaseDisplayAlias(mainSample.caseId);
+    this.caseDisplayAliasInput.value = currAlias ?? "";
+    this.caseDisplayAliasInfo.textContent =
+      "Alias replaces sample/case IDs in viewer labels for this case.";
   }
 
   private updateResetLayoutInfo() {
@@ -638,15 +691,26 @@ export class SettingsMenu extends ShadowBaseElement {
 
     const samples = this.getCurrentSamples();
     removeChildren(this.samplesOverview);
-    const samplesSection = getSamplesSection(samples, (sample: Sample) =>
-      this.onRemoveSample(sample),
+    const samplesSection = getSamplesSection(
+      samples,
+      (sample: Sample) => this.onRemoveSample(sample),
+      (sample: Sample) => this.session.getDisplaySampleLabel(sample),
+      (sample: Sample) =>
+        this.session.getDisplayCaseLabel(sample.caseId, sample.displayCaseId),
     );
     this.samplesOverview.appendChild(samplesSection);
 
     const mainSample = this.session.getMainSample();
     const mainSampleId = getSampleKey(mainSample);
-    const mainSampleChoices = getMainSampleChoices(samples, mainSampleId);
+    const mainSampleChoices = getMainSampleChoices(
+      samples,
+      mainSampleId,
+      (sample: Sample) => this.session.getDisplaySampleLabel(sample),
+      (sample: Sample) =>
+        this.session.getDisplayCaseLabel(sample.caseId, sample.displayCaseId),
+    );
     this.mainSampleSelect.setValues(mainSampleChoices);
+    this.updateCaseAliasSection();
 
     removeChildren(this.highlightsOverview);
     const highlightsSection = getHighlightsSection(
@@ -725,13 +789,15 @@ export class SettingsMenu extends ShadowBaseElement {
 function getMainSampleChoices(
   samples: Sample[],
   prevSelected: string | null,
+  getSampleLabel: (sample: Sample) => string,
+  getCaseLabel: (sample: Sample) => string,
 ): InputChoice[] {
   const choices: InputChoice[] = [];
   for (const sample of samples) {
     const id = getSampleKey(sample);
     const choice = {
       value: id,
-      label: `${sample.sampleId} (${sample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${sample.caseId})`,
+      label: `${getSampleLabel(sample)} (${sample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${getCaseLabel(sample)})`,
       selected: prevSelected == id,
     };
     choices.push(choice);
@@ -760,6 +826,8 @@ function getAnnotationChoices(
 function getSamplesSection(
   samples: Sample[],
   removeSample: (sample: Sample) => void,
+  getSampleLabel: (sample: Sample) => string,
+  getCaseLabel: (sample: Sample) => string,
 ): HTMLDivElement {
   const container = document.createElement("div");
   container.style.display = "flex";
@@ -768,7 +836,12 @@ function getSamplesSection(
 
   for (const sample of samples) {
     const sampleRow = new SampleRow();
-    sampleRow.initialize(sample, removeSample);
+    sampleRow.initialize(
+      sample,
+      removeSample,
+      getSampleLabel(sample),
+      getCaseLabel(sample),
+    );
     container.appendChild(sampleRow);
   }
 

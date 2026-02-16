@@ -76,6 +76,8 @@ export class InfoMenu extends ShadowBaseElement {
   private entries!: HTMLDivElement;
   private getSamples!: () => Sample[];
   private getErrors!: (metaId: string) => { row: string; col: string }[];
+  private getSampleLabel!: (sample: Sample) => string;
+  private getCaseLabel!: (sample: Sample) => string;
 
   constructor() {
     super(template);
@@ -84,9 +86,13 @@ export class InfoMenu extends ShadowBaseElement {
   setSources(
     getSamples: () => Sample[],
     getErrors: (metaId: string) => { row: string; col: string }[],
+    getSampleLabel: (sample: Sample) => string,
+    getCaseLabel: (sample: Sample) => string,
   ) {
     this.getSamples = getSamples;
     this.getErrors = getErrors;
+    this.getSampleLabel = getSampleLabel;
+    this.getCaseLabel = getCaseLabel;
   }
 
   connectedCallback(): void {
@@ -104,13 +110,13 @@ export class InfoMenu extends ShadowBaseElement {
     for (const sample of samples) {
       const header = document.createElement("div");
       header.className = "header";
-      header.textContent = sample.sampleId;
+      header.textContent = this.getSampleLabel(sample);
       this.entries.appendChild(header);
 
       const simpleDivs = [];
       const tables = [];
 
-      simpleDivs.push(getEntry({ key: "Case ID", value: sample.caseId }));
+      simpleDivs.push(getEntry({ key: "Case ID", value: this.getCaseLabel(sample) }));
 
       if (sample.sampleType) {
         simpleDivs.push(

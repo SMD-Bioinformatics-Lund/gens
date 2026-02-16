@@ -45,14 +45,24 @@ export class SampleRow extends ShadowBaseElement {
 
   private sample: Sample;
   private onRemoveSample: (sample: Sample) => void;
+  private sampleLabel: string;
+  private caseLabel: string;
 
   constructor() {
     super(template);
   }
 
-  initialize(sample: Sample, onRemoveSample: (sample: Sample) => void) {
+  initialize(
+    sample: Sample,
+    onRemoveSample: (sample: Sample) => void,
+    sampleLabel?: string,
+    caseLabel?: string,
+  ) {
     this.sample = sample;
     this.onRemoveSample = onRemoveSample;
+    this.sampleLabel = sampleLabel ?? sample.sampleId;
+    this.caseLabel =
+      caseLabel ?? formatCaseLabel(this.sample.caseId, this.sample.displayCaseId);
   }
 
   connectedCallback(): void {
@@ -62,11 +72,8 @@ export class SampleRow extends ShadowBaseElement {
     this.caseLabelElem = this.root.querySelector("#case-label");
     this.removeElem = this.root.querySelector("#remove");
 
-    this.sampleLabelElem.textContent = this.sample.sampleId;
-    this.caseLabelElem.textContent = `Case: ${formatCaseLabel(
-      this.sample.caseId,
-      this.sample.displayCaseId,
-    )}`;
+    this.sampleLabelElem.textContent = this.sampleLabel;
+    this.caseLabelElem.textContent = `Case: ${this.caseLabel}`;
     this.removeElem.addEventListener(
       "click",
       (_e) => {

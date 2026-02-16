@@ -735,6 +735,7 @@ type ProfileSettings = {
   profileKey: string;
   fileName?: string;
   layout: TrackLayout | null;
+  caseDisplayAliases?: Record<string, string>;
   colorAnnotationIds: string[];
   variantThreshold: number;
   annotationSelections: string[];
