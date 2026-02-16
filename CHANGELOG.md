@@ -5,11 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
-## unreleased
+## Unreleased
 
-### Fixed 
+### Fixed
 
 - Update GitHub workflow action versions and fix Dockerfile paths [#702](https://github.com/SMD-Bioinformatics-Lund/gens/pull/702)
+- Workaround to fix unmigrated legacy strand type in genomic features [#703](https://github.com/SMD-Bioinformatics-Lund/gens/pull/703)
 
 ## 4.5.0
 
