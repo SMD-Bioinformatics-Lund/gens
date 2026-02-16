@@ -23,9 +23,9 @@ COPY gens gens/
 COPY README.md LICENSE pyproject.toml ./
 
 # Copy compiled web assets INTO the python package before building the wheel
-COPY --from=node-builder /usr/src/app/build/css/error.min.css /usr/local/lib/python3.12/site-packages/gens/static/css/
-COPY --from=node-builder /usr/src/app/build/css/home.min.css /usr/src/app/build/css/landing.min.css /usr/src/app/build/css/about.min.css /usr/local/lib/python3.12/site-packages/gens/blueprints/home/static/
-COPY --from=node-builder /usr/src/app/build/*/gens.min.* /usr/local/lib/python3.12/site-packages/gens/blueprints/gens/static/
+COPY --from=node-builder /usr/src/app/build/css/error.min.css ./gens/static/css/
+COPY --from=node-builder /usr/src/app/build/css/home.min.css /usr/src/app/build/css/landing.min.css /usr/src/app/build/css/about.min.css ./gens/blueprints/home/static/
+COPY --from=node-builder /usr/src/app/build/*/gens.min.* ./gens/blueprints/gens/static/
 
 
 RUN apt-get update &&                                                     \
