@@ -105,7 +105,11 @@ export class GensSession {
   }
 
   public getDisplaySampleLabel(sample: Sample): string {
-    const alias = this.profile.getCaseDisplayAlias(sample.caseId);
+    const alias = this.profile.getSampleDisplayAlias(
+      sample.caseId,
+      sample.sampleId,
+      sample.genomeBuild,
+    );
     if (alias != null && alias.trim() !== "") {
       return alias;
     }

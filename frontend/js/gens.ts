@@ -398,6 +398,16 @@ function addSettingsPageSources(
     render({ reloadData: true, mainSampleChanged: true, samplesUpdated: true });
   };
 
+  const onSetSampleDisplayAlias = (sample: Sample, alias: string | null) => {
+    session.profile.setSampleDisplayAlias(
+      sample.caseId,
+      sample.sampleId,
+      sample.genomeBuild,
+      alias,
+    );
+    render({ reloadData: true, mainSampleChanged: true, samplesUpdated: true });
+  };
+
   const getProfile = () => {
     return session.profile.getProfile();
   };
@@ -443,6 +453,7 @@ function addSettingsPageSources(
     onToggleTrackExpanded,
     onAssignMainSample,
     onSetCaseDisplayAlias,
+    onSetSampleDisplayAlias,
     getProfile,
     applyProfile,
     resetLayout,

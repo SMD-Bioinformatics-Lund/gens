@@ -169,19 +169,6 @@ template.innerHTML = String.raw`
       <div class="header">Import and export profile settings</div>
     </div>
 
-    <div class="header-row">
-      <div class="header">Screenshot display name</div>
-    </div>
-    <flex-row class="spread-row">
-      <div>Current case alias</div>
-      <flex-row class="height-inputs">
-        <input id="case-display-alias" class="height-input" type="text" placeholder="e.g. Demo case">
-        <icon-button id="apply-case-display-alias" icon="${ICONS.refresh}" title="Apply display alias"></icon-button>
-        <icon-button id="clear-case-display-alias" icon="${ICONS.trash}" title="Clear display alias"></icon-button>
-      </flex-row>
-    </flex-row>
-    <div id="case-display-alias-info" class="helper-text"></div>
-
     <flex-row class="spread-row">
       <div>Export profile settings</div>
       <icon-button
@@ -247,6 +234,20 @@ template.innerHTML = String.raw`
       </flex-row>
     </flex-row>
 
+    <div class="header-row">
+      <div class="header">Screenshot display names</div>
+    </div>
+    <flex-row class="spread-row">
+      <div>Current case alias</div>
+      <flex-row class="height-inputs">
+        <input id="case-display-alias" class="height-input" type="text" placeholder="e.g. Demo case">
+        <icon-button id="apply-case-display-alias" icon="${ICONS.refresh}" title="Apply case alias"></icon-button>
+        <icon-button id="clear-case-display-alias" icon="${ICONS.trash}" title="Clear case alias"></icon-button>
+      </flex-row>
+    </flex-row>
+    <div id="sample-alias-controls"></div>
+    <div id="case-display-alias-info" class="helper-text"></div>
+
     <!-- Tracks overview -->
     <div class="header-row">
       <div class="header">Tracks overview</div>
@@ -276,6 +277,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private caseDisplayAliasInput: HTMLInputElement;
   private applyCaseDisplayAliasButton: IconButton;
   private clearCaseDisplayAliasButton: IconButton;
+  private sampleAliasControls: HTMLDivElement;
   private caseDisplayAliasInfo: HTMLDivElement;
 
   private applyDefaultCovYRangeButton: HTMLButtonElement;
@@ -313,6 +315,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private onToggleTrackExpanded: (trackId: string) => void;
   private onApplyMainSample: (sample: Sample) => void;
   private onSetCaseDisplayAlias: (caseId: string, alias: string | null) => void;
+  private onSetSampleDisplayAlias: (sample: Sample, alias: string | null) => void;
   private getProfileSettings: () => ProfileSettings;
   private applyProfileSettings: (layout: ProfileSettings) => Promise<void>;
   private onResetLayout: () => void;
@@ -341,6 +344,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onToggleTrackExpanded: (trackId: string) => void,
     onApplyMainSample: (sample: Sample) => void,
     onSetCaseDisplayAlias: (caseId: string, alias: string | null) => void,
+    onSetSampleDisplayAlias: (sample: Sample, alias: string | null) => void,
     getProfileSettings: () => ProfileSettings,
     applyProfileSettings: (layout: ProfileSettings) => Promise<void>,
     onResetLayout: () => void,
@@ -376,6 +380,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onToggleTrackExpanded = onToggleTrackExpanded;
     this.onApplyMainSample = onApplyMainSample;
     this.onSetCaseDisplayAlias = onSetCaseDisplayAlias;
+    this.onSetSampleDisplayAlias = onSetSampleDisplayAlias;
     this.getProfileSettings = getProfileSettings;
     this.applyProfileSettings = applyProfileSettings;
     this.onResetLayout = onResetLayout;
@@ -417,6 +422,9 @@ export class SettingsMenu extends ShadowBaseElement {
     this.clearCaseDisplayAliasButton = this.root.querySelector(
       "#clear-case-display-alias",
     ) as IconButton;
+    this.sampleAliasControls = this.root.querySelector(
+      "#sample-alias-controls",
+    ) as HTMLDivElement;
     this.caseDisplayAliasInfo = this.root.querySelector(
       "#case-display-alias-info",
     ) as HTMLDivElement;
@@ -616,6 +624,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
     this.updateCaseAliasSection();
+    this.renderSampleAliasControls();
   }
 
   private setupSampleSelect() {
@@ -638,7 +647,68 @@ export class SettingsMenu extends ShadowBaseElement {
     const currAlias = this.session.profile.getCaseDisplayAlias(mainSample.caseId);
     this.caseDisplayAliasInput.value = currAlias ?? "";
     this.caseDisplayAliasInfo.textContent =
-      "Alias replaces sample/case IDs in viewer labels for this case.";
+      "Aliases only affect viewer labels.";
+  }
+
+  private renderSampleAliasControls() {
+    if (!this.sampleAliasControls) {
+      return;
+    }
+
+    removeChildren(this.sampleAliasControls);
+    this.sampleAliasControls.style.display = "flex";
+    this.sampleAliasControls.style.flexDirection = "column";
+    this.sampleAliasControls.style.gap = `${SIZES.xs}px`;
+
+    for (const sample of this.getCurrentSamples()) {
+      const row = document.createElement("flex-row");
+      row.className = "spread-row";
+
+      const label = document.createElement("div");
+      label.textContent = `${sample.sampleId} alias`;
+      row.appendChild(label);
+
+      const controls = document.createElement("flex-row");
+      controls.className = "height-inputs";
+
+      const input = document.createElement("input");
+      input.className = "height-input";
+      input.type = "text";
+      input.placeholder = "e.g. Proband";
+      input.value =
+        this.session.profile.getSampleDisplayAlias(
+          sample.caseId,
+          sample.sampleId,
+          sample.genomeBuild,
+        ) ?? "";
+
+      const applyBtn = document.createElement("button");
+      applyBtn.type = "button";
+      applyBtn.textContent = "Apply";
+
+      const clearBtn = document.createElement("button");
+      clearBtn.type = "button";
+      clearBtn.textContent = "Clear";
+
+      applyBtn.addEventListener("click", () => {
+        this.onSetSampleDisplayAlias(sample, input.value.trim() || null);
+      });
+      clearBtn.addEventListener("click", () => {
+        input.value = "";
+        this.onSetSampleDisplayAlias(sample, null);
+      });
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          this.onSetSampleDisplayAlias(sample, input.value.trim() || null);
+        }
+      });
+
+      controls.appendChild(input);
+      controls.appendChild(applyBtn);
+      controls.appendChild(clearBtn);
+      row.appendChild(controls);
+      this.sampleAliasControls.appendChild(row);
+    }
   }
 
   private updateResetLayoutInfo() {
@@ -711,6 +781,7 @@ export class SettingsMenu extends ShadowBaseElement {
     );
     this.mainSampleSelect.setValues(mainSampleChoices);
     this.updateCaseAliasSection();
+    this.renderSampleAliasControls();
 
     removeChildren(this.highlightsOverview);
     const highlightsSection = getHighlightsSection(
