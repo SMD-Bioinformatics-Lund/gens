@@ -5,7 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
-## TBD
+## Unreleased
+
+### Fixed
+
+- Mark API URL safe for html use [#705](https://github.com/SMD-Bioinformatics-Lund/gens/pull/705)
 
 ## 4.5.0
 

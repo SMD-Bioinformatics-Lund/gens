@@ -84,7 +84,7 @@
             start: startJs,
             end: endJs,
         },
-        gensApiURL: '{{ gens_api_url }}',
+        gensApiURL: '{{ gens_api_url | safe }}',
         mainSampleTypes: {{ main_sample_types | tojson | safe }},
         version: '{{ version }}',
         allSamples: {{ all_samples | tojson | safe }},
