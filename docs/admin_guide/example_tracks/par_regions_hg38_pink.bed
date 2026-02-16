@@ -1,6 +1,6 @@
 # PAR regions for GRCh38/hg38 in BED9 format (Gens compatible)
 # chrom	start	end	name	score	strand	thickStart	thickEnd	itemRgb
-X	10000	2781479	PAR1_X	.	.	.	.	rgb(255,105,180)
-Y	10000	2781479	PAR1_Y	.	.	.	.	rgb(255,105,180)
-X	155701382	156030895	PAR2_X	.	.	.	.	rgb(255,105,180)
-Y	56887902	57217415	PAR2_Y	.	.	.	.	rgb(255,105,180)
+X	10000	2781479	PAR1_X	.	.	.	.	rgb(255,153,153)
+Y	10000	2781479	PAR1_Y	.	.	.	.	rgb(255,153,153)
+X	155701382	156030895	PAR2_X	.	.	.	.	rgb(255,153,153)
+Y	56887902	57217415	PAR2_Y	.	.	.	.	rgb(255,153,153)
