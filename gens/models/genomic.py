@@ -25,13 +25,13 @@ class DnaStrand(str, Enum):  # TODO migrate to +/-
 
     @classmethod
     def _from_legacy(cls, v):
+        if isinstance(v, bool):
+            return v
         if v in (1, "+"):
             return cls.FOR
         if v in (-1, "-"):
             return cls.REV
-        if v in (0, ".", None):
-            return cls.UNKNOWN
-        return v
+        return cls.UNKNOWN if v in (0, ".", None) else v
 
     @classmethod
     def __get_pydantic_core_schema__(

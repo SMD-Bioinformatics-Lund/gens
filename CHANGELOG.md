@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## Unreleased
+
+### Fixed
+
+- Workaround to fix unmigrated legacy strand type in genomic features [#702](https://github.com/SMD-Bioinformatics-Lund/gens/pull/702)
+
 ## 4.5.0
 
 ### Added
@@ -42,7 +48,6 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Fix latent race condition when adding new samples, which could yield tracks that did not respond to expanding. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
 - Fix such that only samples from the relevant build are displayed in the "add samples" dropdown. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
 - Prevent samples from being loaded into existing cases where other samples have a different build. [#691](https://github.com/SMD-Bioinformatics-Lund/gens/pull/691)
-- Workaround to fix unmigrated legacy strand type in genomic features [#702](https://github.com/SMD-Bioinformatics-Lund/gens/pull/702)
 
 ## 4.4.2
 
