@@ -78,8 +78,6 @@ def main(
             "--coverage",
             sample.cov,
         ]
-        if sample.overview:
-            load_sample_cmd += ["--overview-json", sample.overview]
         run_command(load_sample_cmd)
 
     annotation_files = find_annotations(annot_dir)

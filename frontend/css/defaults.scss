@@ -1,9 +1,26 @@
 // Default colors
 $default-font-color: #202231;
 $default-bg-color: #f7f9f9;
+$content-max-width: 600px;
+
+$elevation-shadow:
+  0 2px 4px 0 rgba(0, 0, 0, 0.2),
+  0 3px 10px 0 rgba(0, 0, 0, 0.19);
+
+$alert-error-bg: #fdecec;
+$alert-error-border: #e59a9a;
+$alert-error-text: #7a1111;
+$alert-success-bg: #ecf9f0;
+$alert-success-border: #8bd9a4;
+$alert-success-text: #0a6030;
+
 // font
 $default-font: Arial, Helvetica, sans-serif;
 $default-font-print: "Times New Roman", Times, serif;
+
+@mixin elevation-shadow {
+  box-shadow: $elevation-shadow;
+}
 
 html {
   font-family: $default-font;

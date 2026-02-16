@@ -4,7 +4,7 @@ import {
   getGeneTrackSettings,
 } from "../components/tracks_manager/utils/sync_tracks";
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
-import { COLORS, PROFILE_SETTINGS_VERSION, TRACK_IDS } from "../constants";
+import { COLORS, TRACK_IDS } from "../constants";
 import { getMetaWarnings } from "../util/meta_warnings";
 import { generateID } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
@@ -84,6 +84,7 @@ export class GensSession {
     this.warningThresholds = warningThresholds;
 
     this.profile = new SessionProfiles(defaultProfiles, samples);
+    this.sanitizeProfileColorAnnotationIds();
     this.tracks = new Tracks([]);
     this.chromTracks = new Tracks([]);
 
@@ -136,7 +137,6 @@ export class GensSession {
       );
 
       if (matchedThreshold) {
-        // FIXME: Use string for hover info?
         const warning = getMetaWarnings(
           matchedThreshold,
           val.row_name,
@@ -184,6 +184,22 @@ export class GensSession {
 
   public loadProfile(profile: ProfileSettings): void {
     this.profile.loadProfile(profile);
+    this.sanitizeProfileColorAnnotationIds();
+  }
+
+  /**
+   * The profile may contain annotations that aren't present in the current database
+   * This trims away those IDs
+   */
+  private sanitizeProfileColorAnnotationIds(): void {
+    const availableAnnotationIds = new Set(Object.keys(this.idToAnnotSource));
+
+    const colorAnnotationIds = this.profile
+      .getColorAnnotations()
+      .filter((id) => availableAnnotationIds.has(id));
+    if (colorAnnotationIds.length !== this.profile.getColorAnnotations().length) {
+      this.profile.setColorAnnotations(colorAnnotationIds);
+    }
   }
 
   public getAnnotationSources(settings: {
@@ -196,7 +212,7 @@ export class GensSession {
 
     if (selectedAnnots.length != presentAnnots.length) {
       console.warn(
-        `Not all annotations were present. Selected: ${selectedAnnots.length} present: ${presentAnnots.length}`,
+        `Not all annotations specified in the profile was present in the database. Selected: ${selectedAnnots.length} (${selectedAnnots}) present: ${presentAnnots.length} (${presentAnnots})`,
       );
     }
 
@@ -239,9 +255,12 @@ export class GensSession {
     return this.samples;
   }
 
-  public getSample(caseId: string, sampleId: string): Sample | null {
+  public getSample(sampleIdf: SampleIdentifier): Sample | null {
     const matchedSamples = this.allSamples.filter(
-      (sample) => sample.caseId == caseId && sample.sampleId == sampleId,
+      (sample) =>
+        sample.caseId == sampleIdf.caseId &&
+        sample.sampleId == sampleIdf.sampleId &&
+        sample.genomeBuild == sampleIdf.genomeBuild,
     );
     if (matchedSamples.length == 1) {
       return matchedSamples[0];
@@ -252,20 +271,21 @@ export class GensSession {
     }
   }
 
-  public addSample(sample: Sample) {
-    this.samples.push(sample);
+  public addSample(id: SampleIdentifier) {
+    this.samples.push(id);
     this.profile.updateProfileKey(this.samples);
   }
 
-  public removeSample(sample: Sample): void {
+  public removeSample(id: SampleIdentifier): void {
     const pos = this.samples.findIndex(
       (currSample) =>
-        currSample.caseId === sample.caseId &&
-        currSample.sampleId === sample.sampleId,
+        currSample.caseId === id.caseId &&
+        currSample.sampleId === id.sampleId &&
+        currSample.genomeBuild === id.genomeBuild,
     );
 
     if (pos === -1) {
-      console.warn("Sample not found:", sample);
+      console.warn("Sample not found:", id);
       return;
     }
 
@@ -386,7 +406,7 @@ export class GensSession {
   }
 }
 
-function buildTrackLayoutFromTracks(tracks: DataTrackSettings[]) {
+function buildTrackLayoutFromTracks(tracks: DataTrackSettings[]): TrackLayout {
   const order: Set<string> = new Set();
   const hidden: Record<string, boolean> = {};
   const expanded: Record<string, boolean> = {};
@@ -397,11 +417,9 @@ function buildTrackLayoutFromTracks(tracks: DataTrackSettings[]) {
     expanded[pid] = info.isExpanded;
   }
 
-  const layout = {
-    version: PROFILE_SETTINGS_VERSION,
+  return {
     order: Array.from(order),
     hidden,
     expanded,
   };
-  return layout;
 }

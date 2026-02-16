@@ -1,0 +1,54 @@
+{
+  "realm": "gens-dev",
+  "enabled": true,
+  "displayName": "GENS Dev",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "rememberMe": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "clients": [
+    {
+      "clientId": "gens-dev",
+      "name": "GENS Dev Client",
+      "description": "OAuth client for local GENS development",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "gens-dev-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:5002/authorized",
+        "http://localhost:5000/authorized",
+        "http://127.0.0.1:5002/authorized",
+        "http://127.0.0.1:5000/authorized"
+      ],
+      "webOrigins": [
+        "http://localhost:5002",
+        "http://localhost:5000",
+        "http://127.0.0.1:5002",
+        "http://127.0.0.1:5000"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "dev.user",
+      "enabled": true,
+      "email": "dev.user@example.org",
+      "emailVerified": true,
+      "firstName": "Dev",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "devpass",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

@@ -104,14 +104,20 @@ def get_assembly_info(
     timeout: int = 2,
 ) -> Any:
     """Get assembly info from ensembl."""
-    base_rest_url = {"19": "grch37.rest.ensembl.org", "38": "rest.ensembl.org"}
+    base_rest_url = {
+        "37": "grch37.rest.ensembl.org",
+        "38": "rest.ensembl.org",
+    }
+    build_key = str(genome_build)
+    if build_key not in base_rest_url:
+        raise ValueError(f"Unsupported genome build {genome_build}")
     params: dict[str, str] = {
         "content-type": "application/json",
         "bands": str(bands),
         "synonyms": str(synonyms),
     }
     resp = requests.get(
-        f"https://{base_rest_url[str(genome_build)]}/info/assembly/{specie}",
+        f"https://{base_rest_url[build_key]}/info/assembly/{specie}",
         params=params,
         timeout=timeout,
     )

@@ -15,3 +15,4 @@ types-requests
 types-tabulate
 pydantic_extra_types
 pydantic_settings
+types-PyYAML

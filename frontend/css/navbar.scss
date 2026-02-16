@@ -18,9 +18,7 @@ $menubar-font-color-print: white;
   align-items: center;
   padding-left: 10px;
   // drop shadow
-  box-shadow:
-    0 2px 4px 0 rgba(0, 0, 0, 0.2),
-    0 3px 10px 0 rgba(0, 0, 0, 0.19);
+  @include defaults.elevation-shadow;
 
   #home-link {
     text-decoration: none;

@@ -34,7 +34,15 @@ class AuthMethod(Enum):
 
     OAUTH = "oauth"
     LDAP = "ldap"
+    SIMPLE = "simple"
     DISABLED = "disabled"
+
+
+class AuthUserDb(Enum):
+    """Valid user databases for authentication."""
+
+    GENS = "gens"
+    VARIANT = "variant"
 
 
 class OauthConfig(BaseSettings):
@@ -52,8 +60,9 @@ class LdapConfig(BaseSettings):
     bind_user_template: str = Field(
         default="{username}",
         description=(
-            "Template user to build the bind DN"
-            "The placeholder '{username}' will be replaced with the provided username."
+            "Template used to build the bind DN. "
+            "Available placeholders are '{username}' and '{email}' (full login value), "
+            "plus '{uid}' and '{localpart}' (substring before '@')."
         ),
     )
 
@@ -65,10 +74,20 @@ class MongoDbConfig(BaseSettings):
     database: str | None = None
 
 
+class WarningIgnore(BaseModel):
+    """Conditions for ignoring meta warning thresholds."""
+
+    sex: Literal["M", "F"] | None = None
+    column: str | None = None
+    chromosome: str | None = None
+    row: str | None = None
+
+
 class WarningThreshold(BaseModel):
     """Configuration for meta warning thresholds."""
 
     column: str
+    ignore_when: WarningIgnore | list[WarningIgnore] | None = None
     kind: Literal[
         "estimated_chromosome_count_deviate",
         "threshold_above",
@@ -99,9 +118,21 @@ class Settings(BaseSettings):
         default_factory=lambda: ["proband", "tumor"],
         description="Sample types treated as main samples",
     )
+    secret_key: str = Field(
+        default="pass",
+        description="Flask secret key used for sessions.",
+    )
 
     # Authentication options
     authentication: AuthMethod = AuthMethod.DISABLED
+    auth_user_db: AuthUserDb = Field(
+        default=AuthUserDb.GENS,
+        description="Database to use for authentication user lookups.",
+    )
+    auth_user_collection: str = Field(
+        default="user",
+        description="Collection name used for authentication user lookups.",
+    )
 
     # Oauth options
     oauth: OauthConfig | None = None
@@ -132,7 +163,10 @@ class Settings(BaseSettings):
             "scout_url": self.variant_url,
             "gens_api_url": self.gens_api_url,
             "main_sample_types": self.main_sample_types,
+            "secret_key": self.secret_key,
             "authentication": self.authentication.value,
+            "auth_user_db": self.auth_user_db.value,
+            "auth_user_collection": self.auth_user_collection,
             "oauth": self.oauth,
             "ldap": self.ldap,
             "default_profiles": self.default_profiles,
@@ -151,6 +185,10 @@ class Settings(BaseSettings):
         if self.authentication == AuthMethod.LDAP and self.ldap is None:
             raise ValueError(
                 "LDAP authentication requires you to configure server and bind_user_template"
+            )
+        if self.auth_user_db == AuthUserDb.VARIANT and self.variant_db is None:
+            raise ValueError(
+                "auth_user_db='variant' requires variant_db to be configured"
             )
         return self
 

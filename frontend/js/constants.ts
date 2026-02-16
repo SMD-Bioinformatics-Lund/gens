@@ -86,7 +86,7 @@ export const TRACK_IDS = {
   annot: "annot",
 };
 
-export const PROFILE_SETTINGS_VERSION = 2;
+export const PROFILE_SETTINGS_VERSION = 3;
 
 export const COLORS = {
   white: "#FFFFFF",

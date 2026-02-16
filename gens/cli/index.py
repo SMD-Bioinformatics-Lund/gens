@@ -5,7 +5,7 @@ from os import getenv
 
 import click
 
-from gens.cli.util.util import db_setup
+from gens.cli.util import db as cli_db
 from gens.db.index import INDEXES, create_indexes, update_indexes
 
 log_level = getenv("LOG_LEVEL", "INFO").upper()
@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 @click.option("-u", "--update", help="Update the indexes", is_flag=True)
 def index(build: bool, update: bool) -> None:
     """Create indexes for the database."""
-    db = db_setup(list(INDEXES.keys()))
+    db = cli_db.get_cli_db(list(INDEXES.keys()))
 
     if update:
         n_updated = update_indexes(db)

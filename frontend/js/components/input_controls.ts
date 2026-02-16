@@ -86,9 +86,6 @@ template.innerHTML = String.raw`
       <button title="Toggle marker mode" id="toggle-marker" class='button pan'>
         <span class="fas ${ICONS.marker}"></span>
       </button>
-      <button title="Remove highlights" id="remove-highlights" class='button pan'>
-        <span class="fas ${ICONS.xmark}"></span>
-      </button>
     </div>
 
     <div id="input-controls-right">
@@ -116,7 +113,6 @@ export class InputControls extends HTMLElement {
   private zoomOutButton: HTMLButtonElement;
   private zoomResetButton: HTMLButtonElement;
   private regionField: HTMLInputElement;
-  private removeHighlights: HTMLButtonElement;
   private toggleMarkerButton: HTMLButtonElement;
   private chromosomeViewButton: HTMLButtonElement;
   private infoButton: HTMLButtonElement;
@@ -184,7 +180,6 @@ export class InputControls extends HTMLElement {
       this.resetZoom();
     };
 
-    this.removeHighlights.onclick = () => this.session.removeHighlights();
     this.toggleMarkerButton.onclick = () => this.session.toggleMarkerMode();
 
     this.gensHomeLink.href = session.getGensBaseURL();
@@ -205,7 +200,6 @@ export class InputControls extends HTMLElement {
     this.zoomOutButton = this.querySelector("#zoom-out");
     this.zoomResetButton = this.querySelector("#zoom-reset");
     this.regionField = this.querySelector("#region-field");
-    this.removeHighlights = this.querySelector("#remove-highlights");
     this.toggleMarkerButton = this.querySelector("#toggle-marker");
     this.gensHomeLink = this.querySelector("#gens-home-link");
 

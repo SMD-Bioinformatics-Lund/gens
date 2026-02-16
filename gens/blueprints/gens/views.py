@@ -77,6 +77,7 @@ def display_samples(case_id: str):
     db: Database = current_app.config["GENS_DB"]
 
     sample_id_list = request.args.get("sample_ids")
+    display_case_id: str | None = None
     if not sample_id_list:
 
         samples_collection = db.get_collection(SAMPLES_COLLECTION)
@@ -97,6 +98,7 @@ def display_samples(case_id: str):
             )
 
         sample_ids = [sample.sample_id for sample in case_samples]
+        display_case_id = case_samples[0].display_case_id if case_samples else None
 
         if request.args.get("genome_build") is None:
             genome_build = GenomeBuild(case_samples[0].genome_build)
@@ -112,6 +114,8 @@ def display_samples(case_id: str):
                 )
                 for sample_id in sample_ids
             ]
+            if requested_samples:
+                display_case_id = requested_samples[0].display_case_id
             _validate_sample_files(requested_samples)
         except SampleNotFoundError:
             LOG.exception("Requested sample not found for case %s", case_id)
@@ -138,18 +142,23 @@ def display_samples(case_id: str):
     if parsed_region.end is None:
         chrom_info = get_chromosome_info(db, parsed_region.chromosome, genome_build)
         if chrom_info is None:
-            raise ValueError(
+            LOG.exception(
                 f"Chromosome {parsed_region.chromosome} is not found in the database"
             )
+            return _render_sample_error(
+                f'Chromosome data could not be found for chromosome: "{parsed_region.chromosome}". Has chromosomes been loaded for this build? (Build: {genome_build})'
+            )
+
         parsed_region = parsed_region.model_copy(update={"end": chrom_info.size})
 
     samples_per_case = get_samples_per_case(db.get_collection(SAMPLES_COLLECTION))
 
-    all_samples: list[dict[str, str]] = []
+    all_samples: list[dict[str, str | int | None]] = []
     for samples_per_case_dict in samples_per_case.values():
         for sample in samples_per_case_dict:
             sample_info = {
                 "caseId": sample["case_id"],
+                "displayCaseId": sample.get("display_case_id"),
                 "sampleId": sample["sample_id"],
                 "sampleType": sample.get("sample_type"),
                 "genomeBuild": sample["genome_build"],
@@ -165,6 +174,7 @@ def display_samples(case_id: str):
         start=parsed_region.start,
         end=parsed_region.end,
         case_id=case_id,
+        display_case_id=display_case_id,
         sample_ids=sample_ids,
         all_samples=list(all_samples),
         genome_build=genome_build.value,

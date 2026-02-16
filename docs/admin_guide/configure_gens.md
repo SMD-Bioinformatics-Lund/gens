@@ -34,7 +34,9 @@ services:
 ```
 variant_url = "http://localhost:8000/scout"
 authentication = "oauth"
-gens_api_url = "http://localhost:8080/gens"
+auth_user_db = "gens"
+# auth_user_collection = "user"
+gens_api_url = "http://localhost:5000/api"
 main_sample_types = ["proband", "tumor"]
 
 [gens_db]
@@ -52,10 +54,15 @@ connection = "mongodb://mongodb:27017/scout"
 Configuration options. Note that double underscores (`__`) are used to denote sub-categories, such as **gens_db** and **oauth**, when using environment variables. For example, the envionment variable name for configuring Gens mongodb connection is `GENS_DB__CONNECTION` (`<SUB-CATEGORY>__<VARIABLE>`).
 
 - **scout_url**, base url to Scout.
-- **authentication**, authentication method "oauth", "ldap", "disabled"
+- **authentication**, authentication method "oauth", "ldap", "simple", "disabled"
+- **auth_user_db**, database used for login user lookups: "gens" (default) or "variant" (Scout db via `variant_db` config)
+- **auth_user_collection**, collection used for login user lookups (default: "user")
+- **gens_api_url**, base URL for the Gens API (for example `http://localhost:5000/api/`)
 - **default_annotation_track**, when opening a fresh browser, this track will be preselected. Selected annotation tracks are now stored in the browser session, so if the user changes tracks that choice will persist.
 - **main_sample_types**, sample types handled as the "main" sample for multi-sample cases. I.e. the sample displayed in the overview plot and multi-chromosome view.
 - **default_profiles**, mapping from profile type to default profile JSON. Profile types are calculated by the unique and sorted `sample_type` values joined by `+`. Values are paths to JSON files relative to the config file.
+
+`authentication = "simple"` requires users to log in with email only. Access is granted only if that email exists in the configured auth user database/collection. Only meant to use for testing.
 
 **gens_db**
 
@@ -70,4 +77,24 @@ Configuration options. Note that double underscores (`__`) are used to denote su
 **ldap**
 
 - **server**, LDAP server URL such as `ldap://ldap.example.com`
-- **bind_user_template**, template used to bind directly to the LDAP server. Include `{username}` where the supplied username or email should be inserted, e.g. `uid={username},ou=People,dc=example,dc=com`
+- **bind_user_template**, template used to bind directly to the LDAP server. Supported placeholders are `{username}` / `{email}` (full login value) and `{uid}` / `{localpart}` (substring before `@`).
+  For email-based login where LDAP DN uses `uid`, use:
+  `uid={uid},ou=people,dc=example,dc=com`
+
+## User management CLI
+
+Use the CLI to manage users in the Gens user collection:
+
+```bash
+# List users
+gens users list
+
+# Create user
+gens users create --email user@example.com --name "Example User"
+
+# Show one user
+gens users show --email user@example.com
+
+# Delete user
+gens users delete --email user@example.com --force
+```

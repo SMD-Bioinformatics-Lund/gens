@@ -9,11 +9,6 @@ from fastapi.encoders import jsonable_encoder
 
 from gens.__version__ import VERSION as version
 from gens.crud.search import search_annotations_and_transcripts, text_search_suggestion
-from gens.crud.user import create_user as crud_create_user
-from gens.crud.user import get_user as crud_get_user
-from gens.crud.user import get_users as crud_get_users
-from gens.db.collections import USER_COLLECTION
-from gens.models.base import User
 from gens.models.genomic import GenomeBuild, GenomicRegion
 from gens.models.search import SearchSuggestions
 
@@ -61,23 +56,3 @@ def search_assistant(
     """Suggest hits."""
     result = text_search_suggestion(query, genome_build, db)
     return jsonable_encoder(result)
-
-
-@router.get("/users", tags=[ApiTags.USER])
-def get_users(db: GensDb) -> list[User]:
-    """Get all users in the database."""
-
-    user_col = db.get_collection(USER_COLLECTION)
-    return crud_get_users(user_col)
-
-
-@router.get("/users/user", tags=[ApiTags.USER])
-def get_user(username: str, db: GensDb) -> User:  # type: ignore
-    user_col = db.get_collection(USER_COLLECTION)
-    crud_get_user(user_col, username)
-
-
-@router.post("/users/user", tags=[ApiTags.USER], status_code=HTTPStatus.CREATED)
-def create_user(user_data: User, db: GensDb):
-    user_col = db.get_collection(USER_COLLECTION)
-    crud_create_user(user_col, user_data)

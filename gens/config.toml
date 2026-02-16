@@ -1,6 +1,6 @@
-variant_url = "http://localhost:8000"
+#variant_url = "http://localhost:8000"
 authentication = "disabled"
-gens_api_url = "http://localhost:5000/"
+gens_api_url = "http://localhost:5000/api/"
 main_sample_types = ["proband", "tumor"]
 
 [gens_db]
@@ -14,8 +14,8 @@ connection = "mongodb://mongodb:27017/scout"
 # connection = "mongodb://localhost:27017/gens"
 
 [default_profile_paths]
-"proband" = "profiles/Gens_Singel-default-settings.json"
-"proband+relative" = "profiles/Gens_Trio-default-settings.json"
+"proband" = "example_profiles/Gens_Singel-default-settings.json"
+"proband+relative" = "example_profiles/Gens_Trio-default-settings.json"
 
 [[warning_thresholds]]
 column = "Estimated chromosomal copy numbers"
@@ -34,8 +34,10 @@ column = "Mismatch mother"
 kind = "threshold_above"
 size = 200
 message = "Exceeds max mismatch count"
+ignore_when = { sex = "M", chromosome = "X" }
 
 # Example LDAP authentication configuration
-# [ldap]
-# server = "ldap://ldap.example.com"
-# bind_user_template = "uid={username},ou=People,dc=example,dc=com"
+[ldap]
+server = "ldap://ldap.example.com"
+# If users log in with email and LDAP DN is uid-based:
+bind_user_template = "uid={uid},ou=people,dc=example,dc=com"

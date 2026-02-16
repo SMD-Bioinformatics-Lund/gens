@@ -26,16 +26,24 @@ export class SessionProfiles {
     const profileKey = this.computeProfileSignature(samples);
     this.profileKey = profileKey;
 
-    const userProfile = loadProfileSettings(profileKey);
-    this.defaultProfiles = defaultProfiles;
+    let userProfile = loadProfileSettings(profileKey, PROFILE_SETTINGS_VERSION);
+    if (userProfile != null && userProfile.version !== PROFILE_SETTINGS_VERSION) {
+      console.error(
+        `Gens profile version mismatch for key "${profileKey}". ` +
+          `Found v${userProfile.version ?? "missing"}, expected v${PROFILE_SETTINGS_VERSION}. ` +
+          "Falling back to no profile. Ask your admin to update this profile.",
+      );
+      userProfile = null;
+    }
+    this.defaultProfiles = getVersionCompatibleDefaultProfiles(defaultProfiles);
     this.baseTrackLayout = null;
-    const defaultProfile = cloneProfile(defaultProfiles[profileKey]);
+    const defaultProfile = cloneProfile(this.defaultProfiles[profileKey]);
 
     const baseProfile = {
       version: PROFILE_SETTINGS_VERSION,
       profileKey,
       layout: null,
-      colorAnnotationId: null,
+      colorAnnotationIds: [],
       variantThreshold: DEFAULT_VARIANT_THRES,
       annotationSelections: [],
       coverageRange: DEFAULT_COV_Y_RANGE,
@@ -90,13 +98,13 @@ export class SessionProfiles {
     this.save();
   }
 
-  public setColorAnnotation(id: string | null) {
-    this.profile.colorAnnotationId = id;
+  public setColorAnnotations(ids: string[]) {
+    this.profile.colorAnnotationIds = ids;
     this.save();
   }
 
-  public getColorAnnotation(): string | null {
-    return this.profile.colorAnnotationId;
+  public getColorAnnotations(): string[] {
+    return this.profile.colorAnnotationIds;
   }
 
   public getAnnotationSelections(): string[] {
@@ -120,7 +128,7 @@ export class SessionProfiles {
       version: PROFILE_SETTINGS_VERSION,
       profileKey: this.profileKey,
       layout: null,
-      colorAnnotationId: null,
+      colorAnnotationIds: [],
       variantThreshold: DEFAULT_VARIANT_THRES,
       annotationSelections: [],
       coverageRange: DEFAULT_COV_Y_RANGE,
@@ -190,4 +198,29 @@ function cloneProfile(
   }
 
   return JSON.parse(JSON.stringify(profile)) as ProfileSettings;
+}
+
+/**
+ * Defined default profiles may not have been updated to the latest profile
+ * version (as defined by the constant PROFILE_SETTINGS_VERSION).
+ * These should not be used and give clear errors.
+ */
+function getVersionCompatibleDefaultProfiles(
+  defaultProfiles: Record<string, ProfileSettings>,
+): Record<string, ProfileSettings> {
+  const compatibleProfiles: Record<string, ProfileSettings> = {};
+
+  for (const [profileKey, profile] of Object.entries(defaultProfiles)) {
+    if (profile.version !== PROFILE_SETTINGS_VERSION) {
+      console.error(
+        `Gens profile version mismatch for key "${profileKey}". ` +
+          `Found v${profile.version ?? "missing"}, expected v${PROFILE_SETTINGS_VERSION}. ` +
+          "Ignoring default profile. Ask your admin to update this profile.",
+      );
+      continue;
+    }
+    compatibleProfiles[profileKey] = profile;
+  }
+
+  return compatibleProfiles;
 }

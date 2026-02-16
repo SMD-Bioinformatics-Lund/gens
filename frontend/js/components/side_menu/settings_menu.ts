@@ -8,7 +8,8 @@ import {
 } from "../../constants";
 import {
   downloadAsJSON,
-  getSampleFromID as getSampleIDObjFromID,
+  formatCaseLabel,
+  getSampleIdentifierFromID,
   getSampleKey,
   removeChildren,
 } from "../../util/utils";
@@ -116,7 +117,7 @@ template.innerHTML = String.raw`
     <div class="header">Color tracks by</div>
   </div>
   <div>
-    <choice-select id="color-by-select"></choice-select>
+    <choice-select id="color-by-select" multiple></choice-select>
   </div>
   <flex-row class="header-row">
     <div class="header">Samples</div>
@@ -286,8 +287,8 @@ export class SettingsMenu extends ShadowBaseElement {
   private onRemoveSample: (sample: Sample) => void;
   private getTrackHeights: () => TrackHeights;
   private setTrackHeights: (sizes: TrackHeights) => void;
-  private onColorByChange: (annotId: string | null) => void;
-  private getColorAnnotation: () => string | null;
+  private onColorByChange: (annotIds: string[]) => void;
+  private getColorAnnotations: () => string[];
   private onApplyDefaultCovRange: (rng: Rng) => void;
   private onSetAnnotationSelection: (ids: string[]) => void;
   private onSetGeneListSelection: (ids: string[]) => void;
@@ -296,7 +297,7 @@ export class SettingsMenu extends ShadowBaseElement {
   private onToggleTrackExpanded: (trackId: string) => void;
   private onApplyMainSample: (sample: Sample) => void;
   private getProfileSettings: () => ProfileSettings;
-  private applyProfileSettings: (layout: ProfileSettings) => void;
+  private applyProfileSettings: (layout: ProfileSettings) => Promise<void>;
   private onResetLayout: () => void;
 
   public isInitialized: boolean = false;
@@ -314,7 +315,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onAddSample: (sample: Sample) => Promise<void>,
     onRemoveSample: (sample: Sample) => void,
     setTrackInfo: (trackHeights: TrackHeights) => void,
-    onColorByChange: (annotId: string | null) => void,
+    onColorByChange: (annotIds: string[]) => void,
     onApplyDefaultCovRange: (rng: Rng) => void,
     onSetAnnotationSelection: (ids: string[]) => void,
     onSetGeneListSelection: (ids: string[]) => void,
@@ -323,7 +324,7 @@ export class SettingsMenu extends ShadowBaseElement {
     onToggleTrackExpanded: (trackId: string) => void,
     onApplyMainSample: (sample: Sample) => void,
     getProfileSettings: () => ProfileSettings,
-    applyProfileSettings: (layout: ProfileSettings) => void,
+    applyProfileSettings: (layout: ProfileSettings) => Promise<void>,
     onResetLayout: () => void,
   ) {
     this.session = session;
@@ -346,7 +347,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.getTrackHeights = () => session.profile.getTrackHeights();
     this.setTrackHeights = setTrackInfo;
     this.onColorByChange = onColorByChange;
-    this.getColorAnnotation = () => session.profile.getColorAnnotation();
+    this.getColorAnnotations = () => session.profile.getColorAnnotations();
 
     this.onApplyDefaultCovRange = onApplyDefaultCovRange;
 
@@ -434,11 +435,8 @@ export class SettingsMenu extends ShadowBaseElement {
     this.addElementListener(this.addSampleButton, "click", () => {
       const caseId_sampleId = this.sampleSelect.getValue().value;
 
-      const sampleIdObj = getSampleIDObjFromID(caseId_sampleId);
-      const sample = this.session.getSample(
-        sampleIdObj.caseId,
-        sampleIdObj.sampleId,
-      );
+      const sampleIdObj = getSampleIdentifierFromID(caseId_sampleId);
+      const sample = this.session.getSample(sampleIdObj);
       this.onAddSample(sample);
     });
 
@@ -497,9 +495,10 @@ export class SettingsMenu extends ShadowBaseElement {
     });
 
     this.addElementListener(this.colorBySelect, "change", () => {
-      const val = this.colorBySelect.getValue();
-      const id = val && val.value != "" ? val.value : null;
-      this.onColorByChange(id);
+      const ids = this.colorBySelect
+        .getValues()
+        .map((obj) => obj.value as string);
+      this.onColorByChange(ids);
     });
 
     this.addElementListener(this.geneListSelect, "change", () => {
@@ -566,10 +565,9 @@ export class SettingsMenu extends ShadowBaseElement {
 
     const allAnnotChoices = getAnnotationChoices(this.allAnnotationSources, []);
     const colorChoices = [
-      { label: "None", value: "", selected: this.getColorAnnotation() == null },
       ...allAnnotChoices.map((c) => ({
         ...c,
-        selected: c.value === this.getColorAnnotation(),
+        selected: this.getColorAnnotations().includes(c.value),
       })),
     ];
     this.colorBySelect.setValues(colorChoices);
@@ -580,7 +578,10 @@ export class SettingsMenu extends ShadowBaseElement {
     const rawSamples = this.getAllSamples();
     const allSamples = rawSamples.map((s) => {
       return {
-        label: `${s.sampleId} (case: ${s.caseId})`,
+        label: `${s.sampleId}, case: ${formatCaseLabel(
+          s.caseId,
+          s.displayCaseId,
+        )}`,
         value: getSampleKey(s),
       };
     });
@@ -665,20 +666,12 @@ export class SettingsMenu extends ShadowBaseElement {
     this.coverageYStartElem.value = `${covStart}`;
     this.coverageYEndElem.value = `${covEnd}`;
     if (this.colorBySelect) {
-      const selectedAnnotation = this.getColorAnnotation();
-      const selectedId = selectedAnnotation != null ? selectedAnnotation : "";
-      const choices = this.allAnnotationSources.map((source) => {
-        return {
-          value: source.track_id,
-          label: source.name,
-          selected: source.track_id === selectedId,
-        };
-      });
-      choices.unshift({
-        label: "None",
-        value: "",
-        selected: selectedId === "",
-      });
+      const selectedIds = new Set(this.getColorAnnotations());
+      const choices = this.allAnnotationSources.map((source) => ({
+        value: source.track_id,
+        label: source.name,
+        selected: selectedIds.has(source.track_id),
+      }));
       this.colorBySelect.setValues(choices);
     }
   }
@@ -705,7 +698,7 @@ export class SettingsMenu extends ShadowBaseElement {
       if (!profileSettings) {
         throw new Error("Invalid track layout file");
       }
-      this.applyProfileSettings(profileSettings);
+      await this.applyProfileSettings(profileSettings);
     } catch (error) {
       console.error("Failed to import track layout", error);
       window.alert(

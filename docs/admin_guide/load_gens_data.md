@@ -47,7 +47,6 @@ gens load sample \
     --genome-build 38 \
     --baf /path/to/baf.bed.gz \
     --coverage /path/to/coverage.bed.gz \
-    --overview-json /path/to/overview.json.gz \
     --sample-type proband \
     --sex M
 ```
@@ -164,6 +163,21 @@ Example:
 1	809860	1565798	.	.	.	.	.	0,0,255
 1	852889	1616947	.	.	.	.	.	0,0,255
 
+```
+
+PAR example tracks are available in this repo:
+
+* `docs/admin_guide/example_tracks/par_regions_hg38_pink.bed`
+* `docs/admin_guide/example_tracks/par_regions_hg19_pink.bed`
+
+Load one of them with:
+
+```bash
+# GRCh38 / hg38
+gens load annotations -b 38 -f docs/admin_guide/example_tracks/par_regions_hg38_pink.bed
+
+# GRCh37 / hg19
+gens load annotations -b 37 -f docs/admin_guide/example_tracks/par_regions_hg19_pink.bed
 ```
 
 #### Aed format

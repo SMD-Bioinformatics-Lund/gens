@@ -25,6 +25,10 @@ def init_database_connection(app: Flask) -> None:
     app.config["GENS_DB"] = MongoClient(str(settings.gens_db.connection)).get_database(
         name=settings.gens_db.database
     )
+    if settings.variant_db is not None:
+        app.config["VARIANT_DB"] = MongoClient(
+            str(settings.variant_db.connection)
+        ).get_database(name=settings.variant_db.database)
 
 
 def get_db_connection(mongo_uri: MongoDsn, db_name: str) -> Database[Any]:
