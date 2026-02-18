@@ -64,9 +64,8 @@ export class HeaderInfo extends ShadowBaseElement {
     displayCaseId: string | null | undefined,
     caseURL: string | null,
     version: string,
-    caseAlias?: string | null,
   ) {
-    this.setCaseLabel(getCaseLabel(caseId, displayCaseId, caseAlias));
+    this.setCaseLabel(getCaseLabel(caseId, displayCaseId));
     if (caseURL) {
       this.caseIdElem.href = caseURL;
       this.caseIdElem.target = "_blank";

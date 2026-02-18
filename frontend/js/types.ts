@@ -670,13 +670,11 @@ interface ApiSample {
   baf_index: string;
   case_id: string;
   display_case_id?: string | null;
-  case_alias?: string | null;
   coverage_file: string;
   coverage_index: string;
   created_at: string;
   genome_build: number;
   sample_id: string;
-  sample_alias?: string | null;
   sample_type?: string;
   sex?: string;
   meta: SampleMetaEntry[];

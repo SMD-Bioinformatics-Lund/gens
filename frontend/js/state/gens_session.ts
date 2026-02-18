@@ -109,11 +109,6 @@ export class GensSession {
   }
 
   public getDisplaySampleLabel(sample: Sample): string {
-    const sampleAlias = normalizeAlias(sample.sampleAlias);
-    if (sampleAlias != null) {
-      return sampleAlias;
-    }
-
     const sessionAlias = this.getSessionSampleDisplayAlias(
       sample.caseId,
       sample.sampleId,
@@ -121,6 +116,11 @@ export class GensSession {
     );
     if (sessionAlias != null) {
       return sessionAlias;
+    }
+
+    const sampleAlias = normalizeAlias(sample.sampleAlias);
+    if (sampleAlias != null) {
+      return sampleAlias;
     }
     return sample.sampleId;
   }
@@ -130,14 +130,14 @@ export class GensSession {
     displayCaseId?: string | null,
     caseAlias?: string | null,
   ): string {
-    const normalizedCaseAlias = normalizeAlias(caseAlias);
-    if (normalizedCaseAlias != null) {
-      return normalizedCaseAlias;
-    }
-
     const sessionAlias = this.getSessionCaseDisplayAlias(caseId);
     if (sessionAlias != null) {
       return sessionAlias;
+    }
+
+    const normalizedCaseAlias = normalizeAlias(caseAlias);
+    if (normalizedCaseAlias != null) {
+      return normalizedCaseAlias;
     }
     return formatCaseLabel(caseId, displayCaseId);
   }
@@ -150,9 +150,11 @@ export class GensSession {
     const normalizedAlias = normalizeAlias(alias);
     if (normalizedAlias == null) {
       delete this.caseDisplayAliases[caseId];
-      return;
+    } else {
+      this.caseDisplayAliases[caseId] = normalizedAlias;
     }
-    this.caseDisplayAliases[caseId] = normalizedAlias;
+
+    this.applyCaseAliasToSamples(caseId, normalizedAlias);
   }
 
   public getSessionSampleDisplayAlias(
@@ -174,9 +176,11 @@ export class GensSession {
     const normalizedAlias = normalizeAlias(alias);
     if (normalizedAlias == null) {
       delete this.sampleDisplayAliases[aliasKey];
-      return;
+    } else {
+      this.sampleDisplayAliases[aliasKey] = normalizedAlias;
     }
-    this.sampleDisplayAliases[aliasKey] = normalizedAlias;
+
+    this.applySampleAliasToSamples(caseId, sampleId, genomeBuild, normalizedAlias);
   }
 
   public getMeta(
@@ -486,6 +490,39 @@ export class GensSession {
     genomeBuild: number,
   ): string {
     return `${caseId}__${sampleId}__${genomeBuild}`;
+  }
+
+  private applyCaseAliasToSamples(caseId: string, alias: string | null): void {
+    const applyAlias = (sample: Sample) => {
+      if (sample.caseId !== caseId) {
+        return;
+      }
+      sample.caseAlias = alias;
+    };
+    this.samples.forEach(applyAlias);
+    this.allSamples.forEach(applyAlias);
+    applyAlias(this.mainSample);
+  }
+
+  private applySampleAliasToSamples(
+    caseId: string,
+    sampleId: string,
+    genomeBuild: number,
+    alias: string | null,
+  ): void {
+    const applyAlias = (sample: Sample) => {
+      if (
+        sample.caseId !== caseId ||
+        sample.sampleId !== sampleId ||
+        sample.genomeBuild !== genomeBuild
+      ) {
+        return;
+      }
+      sample.sampleAlias = alias;
+    };
+    this.samples.forEach(applyAlias);
+    this.allSamples.forEach(applyAlias);
+    applyAlias(this.mainSample);
   }
 }
 
