@@ -317,7 +317,10 @@ export class SettingsMenu extends ShadowBaseElement {
   private onToggleTrackExpanded: (trackId: string) => void;
   private onApplyMainSample: (sample: Sample) => void;
   private onSetCaseDisplayAlias: (caseId: string, alias: string | null) => void;
-  private onSetSampleDisplayAlias: (sample: Sample, alias: string | null) => void;
+  private onSetSampleDisplayAlias: (
+    sample: Sample,
+    alias: string | null,
+  ) => void;
   private getProfileSettings: () => ProfileSettings;
   private applyProfileSettings: (layout: ProfileSettings) => Promise<void>;
   private onResetLayout: () => void;
@@ -635,10 +638,12 @@ export class SettingsMenu extends ShadowBaseElement {
     }
 
     const mainSample = this.session.getMainSample();
-    const currAlias = this.session.profile.getCaseDisplayAlias(mainSample.caseId);
+    const currAlias = this.session.getSessionCaseDisplayAlias(
+      mainSample.caseId,
+    );
     this.caseDisplayAliasInput.value = currAlias ?? "";
     this.caseDisplayAliasInfo.textContent =
-      "Aliases only affect viewer labels. Update fields and click apply.";
+      "Aliases only affect viewer labels and reset on page refresh.";
   }
 
   private renderSampleAliasControls() {
@@ -668,7 +673,7 @@ export class SettingsMenu extends ShadowBaseElement {
       input.type = "text";
       input.placeholder = "e.g. Proband";
       input.value =
-        this.session.profile.getSampleDisplayAlias(
+        this.session.getSessionSampleDisplayAlias(
           sample.caseId,
           sample.sampleId,
           sample.genomeBuild,
@@ -756,9 +761,8 @@ export class SettingsMenu extends ShadowBaseElement {
 
     const samples = this.getCurrentSamples();
     removeChildren(this.samplesOverview);
-    const samplesSection = getSamplesSection(
-      samples,
-      (sample: Sample) => this.onRemoveSample(sample),
+    const samplesSection = getSamplesSection(samples, (sample: Sample) =>
+      this.onRemoveSample(sample),
     );
     this.samplesOverview.appendChild(samplesSection);
 

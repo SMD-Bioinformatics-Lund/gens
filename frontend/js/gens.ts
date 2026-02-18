@@ -415,7 +415,7 @@ function addSettingsPageSources(
     targetCaseId: string,
     alias: string | null,
   ) => {
-    session.profile.setCaseDisplayAlias(targetCaseId, alias);
+    session.setSessionCaseDisplayAlias(targetCaseId, alias);
     headerInfo.setCaseLabel(
       session.getDisplayCaseLabel(caseId, displayCaseId, getHeaderCaseAlias()),
     );
@@ -423,7 +423,7 @@ function addSettingsPageSources(
   };
 
   const onSetSampleDisplayAlias = (sample: Sample, alias: string | null) => {
-    session.profile.setSampleDisplayAlias(
+    session.setSessionSampleDisplayAlias(
       sample.caseId,
       sample.sampleId,
       sample.genomeBuild,

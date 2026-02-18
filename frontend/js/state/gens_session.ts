@@ -32,6 +32,8 @@ export class GensSession {
   private mainSample: Sample;
   private samples: Sample[];
   private allSamples: Sample[];
+  private caseDisplayAliases: Record<string, string>;
+  private sampleDisplayAliases: Record<string, string>;
   private chromViewActive: boolean;
   private warningThresholds: WarningThreshold[];
 
@@ -72,6 +74,8 @@ export class GensSession {
 
     this.samples = samples;
     this.allSamples = allSamples;
+    this.caseDisplayAliases = {};
+    this.sampleDisplayAliases = {};
 
     this.idToAnnotSource = {};
     for (const annotSource of allAnnotationSources) {
@@ -110,14 +114,13 @@ export class GensSession {
       return sampleAlias;
     }
 
-    const alias = this.profile.getSampleDisplayAlias(
+    const sessionAlias = this.getSessionSampleDisplayAlias(
       sample.caseId,
       sample.sampleId,
       sample.genomeBuild,
     );
-    const profileAlias = normalizeAlias(alias);
-    if (profileAlias != null) {
-      return profileAlias;
+    if (sessionAlias != null) {
+      return sessionAlias;
     }
     return sample.sampleId;
   }
@@ -132,12 +135,48 @@ export class GensSession {
       return normalizedCaseAlias;
     }
 
-    const alias = this.profile.getCaseDisplayAlias(caseId);
-    const profileAlias = normalizeAlias(alias);
-    if (profileAlias != null) {
-      return profileAlias;
+    const sessionAlias = this.getSessionCaseDisplayAlias(caseId);
+    if (sessionAlias != null) {
+      return sessionAlias;
     }
     return formatCaseLabel(caseId, displayCaseId);
+  }
+
+  public getSessionCaseDisplayAlias(caseId: string): string | null {
+    return this.caseDisplayAliases[caseId] ?? null;
+  }
+
+  public setSessionCaseDisplayAlias(caseId: string, alias: string | null): void {
+    const normalizedAlias = normalizeAlias(alias);
+    if (normalizedAlias == null) {
+      delete this.caseDisplayAliases[caseId];
+      return;
+    }
+    this.caseDisplayAliases[caseId] = normalizedAlias;
+  }
+
+  public getSessionSampleDisplayAlias(
+    caseId: string,
+    sampleId: string,
+    genomeBuild: number,
+  ): string | null {
+    const aliasKey = this.getSampleAliasKey(caseId, sampleId, genomeBuild);
+    return this.sampleDisplayAliases[aliasKey] ?? null;
+  }
+
+  public setSessionSampleDisplayAlias(
+    caseId: string,
+    sampleId: string,
+    genomeBuild: number,
+    alias: string | null,
+  ): void {
+    const aliasKey = this.getSampleAliasKey(caseId, sampleId, genomeBuild);
+    const normalizedAlias = normalizeAlias(alias);
+    if (normalizedAlias == null) {
+      delete this.sampleDisplayAliases[aliasKey];
+      return;
+    }
+    this.sampleDisplayAliases[aliasKey] = normalizedAlias;
   }
 
   public getMeta(
@@ -439,6 +478,14 @@ export class GensSession {
   public saveTrackLayout(): void {
     const layout = buildTrackLayoutFromTracks(this.tracks.getTracks());
     this.profile.setTrackLayout(layout);
+  }
+
+  private getSampleAliasKey(
+    caseId: string,
+    sampleId: string,
+    genomeBuild: number,
+  ): string {
+    return `${caseId}__${sampleId}__${genomeBuild}`;
   }
 }
 
