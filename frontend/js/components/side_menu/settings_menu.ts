@@ -240,12 +240,12 @@ template.innerHTML = String.raw`
       <div class="header">Screenshot display names</div>
     </div>
     <flex-row class="spread-row">
+      <div>Apply aliases</div>
+      <icon-button id="apply-display-aliases" icon="${ICONS.refresh}" title="Apply case and sample aliases"></icon-button>
+    </flex-row>
+    <flex-row class="spread-row">
       <div>Current case alias</div>
-      <flex-row class="height-inputs">
-        <input id="case-display-alias" class="height-input" type="text" placeholder="e.g. Demo case">
-        <icon-button id="apply-case-display-alias" icon="${ICONS.refresh}" title="Apply case alias"></icon-button>
-        <icon-button id="clear-case-display-alias" icon="${ICONS.trash}" title="Clear case alias"></icon-button>
-      </flex-row>
+      <input id="case-display-alias" class="height-input" type="text" placeholder="e.g. Demo case">
     </flex-row>
     <div id="sample-alias-controls"></div>
     <div id="case-display-alias-info" class="helper-text"></div>
@@ -276,11 +276,11 @@ export class SettingsMenu extends ShadowBaseElement {
   private exportProfileSettingsButton: IconButton;
   private importProfileSettingsButton: IconButton;
   private importProfileSettingsInput: HTMLInputElement;
+  private applyDisplayAliasesButton: IconButton;
   private caseDisplayAliasInput: HTMLInputElement;
-  private applyCaseDisplayAliasButton: IconButton;
-  private clearCaseDisplayAliasButton: IconButton;
   private sampleAliasControls: HTMLDivElement;
   private caseDisplayAliasInfo: HTMLDivElement;
+  private sampleAliasInputs: Map<string, HTMLInputElement> = new Map();
 
   private applyDefaultCovYRangeButton: HTMLButtonElement;
   private variantThresholdInput: HTMLInputElement;
@@ -415,15 +415,12 @@ export class SettingsMenu extends ShadowBaseElement {
     this.importProfileSettingsInput = this.root.querySelector(
       "#import-settings-input",
     ) as HTMLInputElement;
+    this.applyDisplayAliasesButton = this.root.querySelector(
+      "#apply-display-aliases",
+    ) as IconButton;
     this.caseDisplayAliasInput = this.root.querySelector(
       "#case-display-alias",
     ) as HTMLInputElement;
-    this.applyCaseDisplayAliasButton = this.root.querySelector(
-      "#apply-case-display-alias",
-    ) as IconButton;
-    this.clearCaseDisplayAliasButton = this.root.querySelector(
-      "#clear-case-display-alias",
-    ) as IconButton;
     this.sampleAliasControls = this.root.querySelector(
       "#sample-alias-controls",
     ) as HTMLDivElement;
@@ -528,16 +525,8 @@ export class SettingsMenu extends ShadowBaseElement {
       this.onApplyMainSample(targetSample);
     });
 
-    this.addElementListener(this.applyCaseDisplayAliasButton, "click", () => {
-      const mainSample = this.session.getMainSample();
-      const alias = this.caseDisplayAliasInput.value.trim();
-      this.onSetCaseDisplayAlias(mainSample.caseId, alias || null);
-    });
-
-    this.addElementListener(this.clearCaseDisplayAliasButton, "click", () => {
-      const mainSample = this.session.getMainSample();
-      this.caseDisplayAliasInput.value = "";
-      this.onSetCaseDisplayAlias(mainSample.caseId, null);
+    this.addElementListener(this.applyDisplayAliasesButton, "click", () => {
+      this.applyDisplayAliases();
     });
 
     this.addElementListener(this.annotSelect, "change", () => {
@@ -649,7 +638,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const currAlias = this.session.profile.getCaseDisplayAlias(mainSample.caseId);
     this.caseDisplayAliasInput.value = currAlias ?? "";
     this.caseDisplayAliasInfo.textContent =
-      "Aliases only affect viewer labels.";
+      "Aliases only affect viewer labels. Update fields and click apply.";
   }
 
   private renderSampleAliasControls() {
@@ -657,6 +646,7 @@ export class SettingsMenu extends ShadowBaseElement {
       return;
     }
 
+    this.sampleAliasInputs.clear();
     removeChildren(this.sampleAliasControls);
     this.sampleAliasControls.style.display = "flex";
     this.sampleAliasControls.style.flexDirection = "column";
@@ -683,33 +673,36 @@ export class SettingsMenu extends ShadowBaseElement {
           sample.sampleId,
           sample.genomeBuild,
         ) ?? "";
+      this.sampleAliasInputs.set(getSampleKey(sample), input);
 
-      const applyBtn = document.createElement("button");
-      applyBtn.type = "button";
-      applyBtn.textContent = "Apply";
-
-      const clearBtn = document.createElement("button");
-      clearBtn.type = "button";
-      clearBtn.textContent = "Clear";
-
-      applyBtn.addEventListener("click", () => {
-        this.onSetSampleDisplayAlias(sample, input.value.trim() || null);
-      });
-      clearBtn.addEventListener("click", () => {
-        input.value = "";
-        this.onSetSampleDisplayAlias(sample, null);
-      });
       input.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-          this.onSetSampleDisplayAlias(sample, input.value.trim() || null);
+          this.applyDisplayAliases();
         }
       });
 
       controls.appendChild(input);
-      controls.appendChild(applyBtn);
-      controls.appendChild(clearBtn);
       row.appendChild(controls);
       this.sampleAliasControls.appendChild(row);
+    }
+  }
+
+  private applyDisplayAliases() {
+    const mainSample = this.session.getMainSample();
+    const caseAlias = this.caseDisplayAliasInput.value.trim();
+
+    const sampleAliases = this.getCurrentSamples().map((sample) => {
+      const input = this.sampleAliasInputs.get(getSampleKey(sample));
+      const alias = input?.value.trim() ?? "";
+      return {
+        sample,
+        alias: alias || null,
+      };
+    });
+
+    this.onSetCaseDisplayAlias(mainSample.caseId, caseAlias || null);
+    for (const { sample, alias } of sampleAliases) {
+      this.onSetSampleDisplayAlias(sample, alias);
     }
   }
 
