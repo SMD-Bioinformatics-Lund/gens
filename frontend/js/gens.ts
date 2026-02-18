@@ -392,7 +392,10 @@ function addSettingsPageSources(
     render({ mainSampleChanged: true, reloadData: true });
   };
 
-  const onSetCaseDisplayAlias = (targetCaseId: string, alias: string | null) => {
+  const onSetCaseDisplayAlias = (
+    targetCaseId: string,
+    alias: string | null,
+  ) => {
     session.profile.setCaseDisplayAlias(targetCaseId, alias);
     headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
     render({ reloadData: true, mainSampleChanged: true, samplesUpdated: true });
