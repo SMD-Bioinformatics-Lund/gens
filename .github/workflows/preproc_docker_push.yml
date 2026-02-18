@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Get branch name
         id: branch-name
@@ -28,9 +28,11 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./utils/
           file: ./utils/Dockerfile
           push: true
+          provenance: mode=max
+          sbom: true
           tags: "clinicalgenomics/gens-preproc:${{ github.event.release.tag_name }}, clinicalgenomics/gens-preproc:latest"
