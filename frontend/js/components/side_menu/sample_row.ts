@@ -1,5 +1,5 @@
 import { COLORS, FONT_SIZE, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
-import { formatCaseLabel } from "../../util/utils";
+import { getCaseLabel, getSampleLabel } from "../../util/utils";
 import { IconButton } from "../util/icon_button";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
@@ -45,24 +45,14 @@ export class SampleRow extends ShadowBaseElement {
 
   private sample: Sample;
   private onRemoveSample: (sample: Sample) => void;
-  private sampleLabel: string;
-  private caseLabel: string;
 
   constructor() {
     super(template);
   }
 
-  initialize(
-    sample: Sample,
-    onRemoveSample: (sample: Sample) => void,
-    sampleLabel?: string,
-    caseLabel?: string,
-  ) {
+  initialize(sample: Sample, onRemoveSample: (sample: Sample) => void) {
     this.sample = sample;
     this.onRemoveSample = onRemoveSample;
-    this.sampleLabel = sampleLabel ?? sample.sampleId;
-    this.caseLabel =
-      caseLabel ?? formatCaseLabel(this.sample.caseId, this.sample.displayCaseId);
   }
 
   connectedCallback(): void {
@@ -72,8 +62,15 @@ export class SampleRow extends ShadowBaseElement {
     this.caseLabelElem = this.root.querySelector("#case-label");
     this.removeElem = this.root.querySelector("#remove");
 
-    this.sampleLabelElem.textContent = this.sampleLabel;
-    this.caseLabelElem.textContent = `Case: ${this.caseLabel}`;
+    this.sampleLabelElem.textContent = getSampleLabel(
+      this.sample.sampleId,
+      this.sample.sampleAlias,
+    );
+    this.caseLabelElem.textContent = `Case: ${getCaseLabel(
+      this.sample.caseId,
+      this.sample.displayCaseId,
+      this.sample.caseAlias,
+    )}`;
     this.removeElem.addEventListener(
       "click",
       (_e) => {

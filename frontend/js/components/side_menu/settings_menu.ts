@@ -8,7 +8,9 @@ import {
 } from "../../constants";
 import {
   downloadAsJSON,
+  getCaseLabel,
   getSampleIdentifierFromID,
+  getSampleLabel,
   getSampleKey,
   removeChildren,
 } from "../../util/utils";
@@ -631,7 +633,7 @@ export class SettingsMenu extends ShadowBaseElement {
     const rawSamples = this.getAllSamples();
     const allSamples = rawSamples.map((s) => {
       return {
-        label: `${this.session.getDisplaySampleLabel(s)}, case: ${this.session.getDisplayCaseLabel(s.caseId, s.displayCaseId)}`,
+        label: `${getSampleLabel(s.sampleId, s.sampleAlias)}, case: ${getCaseLabel(s.caseId, s.displayCaseId, s.caseAlias)}`,
         value: getSampleKey(s),
       };
     });
@@ -764,21 +766,12 @@ export class SettingsMenu extends ShadowBaseElement {
     const samplesSection = getSamplesSection(
       samples,
       (sample: Sample) => this.onRemoveSample(sample),
-      (sample: Sample) => this.session.getDisplaySampleLabel(sample),
-      (sample: Sample) =>
-        this.session.getDisplayCaseLabel(sample.caseId, sample.displayCaseId),
     );
     this.samplesOverview.appendChild(samplesSection);
 
     const mainSample = this.session.getMainSample();
     const mainSampleId = getSampleKey(mainSample);
-    const mainSampleChoices = getMainSampleChoices(
-      samples,
-      mainSampleId,
-      (sample: Sample) => this.session.getDisplaySampleLabel(sample),
-      (sample: Sample) =>
-        this.session.getDisplayCaseLabel(sample.caseId, sample.displayCaseId),
-    );
+    const mainSampleChoices = getMainSampleChoices(samples, mainSampleId);
     this.mainSampleSelect.setValues(mainSampleChoices);
     this.updateCaseAliasSection();
     this.renderSampleAliasControls();
@@ -860,15 +853,13 @@ export class SettingsMenu extends ShadowBaseElement {
 function getMainSampleChoices(
   samples: Sample[],
   prevSelected: string | null,
-  getSampleLabel: (sample: Sample) => string,
-  getCaseLabel: (sample: Sample) => string,
 ): InputChoice[] {
   const choices: InputChoice[] = [];
   for (const sample of samples) {
     const id = getSampleKey(sample);
     const choice = {
       value: id,
-      label: `${getSampleLabel(sample)} (${sample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${getCaseLabel(sample)})`,
+      label: `${getSampleLabel(sample.sampleId, sample.sampleAlias)} (${sample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${getCaseLabel(sample.caseId, sample.displayCaseId, sample.caseAlias)})`,
       selected: prevSelected == id,
     };
     choices.push(choice);
@@ -897,8 +888,6 @@ function getAnnotationChoices(
 function getSamplesSection(
   samples: Sample[],
   removeSample: (sample: Sample) => void,
-  getSampleLabel: (sample: Sample) => string,
-  getCaseLabel: (sample: Sample) => string,
 ): HTMLDivElement {
   const container = document.createElement("div");
   container.style.display = "flex";
@@ -907,12 +896,7 @@ function getSamplesSection(
 
   for (const sample of samples) {
     const sampleRow = new SampleRow();
-    sampleRow.initialize(
-      sample,
-      removeSample,
-      getSampleLabel(sample),
-      getCaseLabel(sample),
-    );
+    sampleRow.initialize(sample, removeSample);
     container.appendChild(sampleRow);
   }
 

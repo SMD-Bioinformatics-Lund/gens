@@ -211,6 +211,7 @@ export class ChromosomeView extends ShadowBaseElement {
     const caseLabel = this.session.getDisplayCaseLabel(
       mainSample.caseId,
       mainSample.displayCaseId,
+      mainSample.caseAlias,
     );
     this.sampleLabel.innerHTML = `${sampleLabel} (${mainSample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${caseLabel})`;
 

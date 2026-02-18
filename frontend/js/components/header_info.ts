@@ -1,5 +1,5 @@
 import { COLORS, FONT_SIZE, FONT_WEIGHT, SIZES } from "../constants";
-import { formatCaseLabel } from "../util/utils";
+import { getCaseLabel } from "../util/utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 
 const template = document.createElement("template");
@@ -64,8 +64,9 @@ export class HeaderInfo extends ShadowBaseElement {
     displayCaseId: string | null | undefined,
     caseURL: string | null,
     version: string,
+    caseAlias?: string | null,
   ) {
-    this.setCaseLabel(formatCaseLabel(caseId, displayCaseId));
+    this.setCaseLabel(getCaseLabel(caseId, displayCaseId, caseAlias));
     if (caseURL) {
       this.caseIdElem.href = caseURL;
       this.caseIdElem.target = "_blank";

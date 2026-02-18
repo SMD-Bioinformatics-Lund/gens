@@ -118,7 +118,17 @@ export async function initCanvases({
     ? `${variantSoftwareBaseURL}/case/case_id/${caseId}`
     : null;
 
-  headerInfo.initialize(caseId, displayCaseId, variantSoftwareCaseUrl, version);
+  const initialCaseAlias =
+    allSamples.find(
+      (sample) => sample.caseId === caseId && sample.genomeBuild === genomeBuild,
+    )?.caseAlias ?? null;
+  headerInfo.initialize(
+    caseId,
+    displayCaseId,
+    variantSoftwareCaseUrl,
+    version,
+    initialCaseAlias,
+  );
 
   const inputControls = document.getElementById(
     "input-controls",
@@ -165,7 +175,9 @@ export async function initCanvases({
     const result: Sample = {
       caseId: sample.case_id,
       displayCaseId: sample.display_case_id,
+      caseAlias: sample.case_alias,
       sampleId: sample.sample_id,
+      sampleAlias: sample.sample_alias,
       sampleType: sample.sample_type,
       genomeBuild: sample.genome_build,
       sex: parsedSex,
@@ -224,12 +236,13 @@ export async function initCanvases({
   infoPage.setSources(
     () => session.getSamples(),
     (metaId: string) => session.getMetaWarnings(metaId),
-    (sample: Sample) => session.getDisplaySampleLabel(sample),
-    (sample: Sample) =>
-      session.getDisplayCaseLabel(sample.caseId, sample.displayCaseId),
   );
 
-  headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
+  const caseAlias =
+    caseSamples.find((sample) => sample.caseId === caseId)?.caseAlias ?? null;
+  headerInfo.setCaseLabel(
+    session.getDisplayCaseLabel(caseId, displayCaseId, caseAlias),
+  );
 
   const getSearchResults = (query: string) => {
     const annotIds = session
@@ -391,13 +404,21 @@ function addSettingsPageSources(
     session.setMainSample(sample);
     render({ mainSampleChanged: true, reloadData: true });
   };
+  const getHeaderCaseAlias = () => {
+    const caseSample =
+      session.getSamples().find((sample) => sample.caseId === caseId) ??
+      allSamples.find((sample) => sample.caseId === caseId);
+    return caseSample?.caseAlias ?? null;
+  };
 
   const onSetCaseDisplayAlias = (
     targetCaseId: string,
     alias: string | null,
   ) => {
     session.profile.setCaseDisplayAlias(targetCaseId, alias);
-    headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
+    headerInfo.setCaseLabel(
+      session.getDisplayCaseLabel(caseId, displayCaseId, getHeaderCaseAlias()),
+    );
     render({ reloadData: true, mainSampleChanged: true, samplesUpdated: true });
   };
 
@@ -417,7 +438,9 @@ function addSettingsPageSources(
 
   const applyProfile = async (profile: ProfileSettings) => {
     session.loadProfile(profile);
-    headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
+    headerInfo.setCaseLabel(
+      session.getDisplayCaseLabel(caseId, displayCaseId, getHeaderCaseAlias()),
+    );
     session.loadTrackLayout();
     render({
       reloadData: true,
@@ -429,7 +452,9 @@ function addSettingsPageSources(
 
   const resetLayout = () => {
     session.resetTrackLayout();
-    headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
+    headerInfo.setCaseLabel(
+      session.getDisplayCaseLabel(caseId, displayCaseId, getHeaderCaseAlias()),
+    );
     render({
       reloadData: true,
       tracksReordered: true,

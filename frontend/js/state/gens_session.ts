@@ -6,7 +6,7 @@ import {
 import { getPortableId } from "../components/tracks_manager/utils/track_layout";
 import { COLORS, TRACK_IDS } from "../constants";
 import { getMetaWarnings } from "../util/meta_warnings";
-import { formatCaseLabel, generateID } from "../util/utils";
+import { formatCaseLabel, generateID, normalizeAlias } from "../util/utils";
 import { SessionProfiles } from "./session_helpers/session_layouts";
 import { SessionPosition } from "./session_helpers/session_position";
 import { getArrangedTracks, Tracks } from "./session_helpers/session_tracks";
@@ -105,13 +105,19 @@ export class GensSession {
   }
 
   public getDisplaySampleLabel(sample: Sample): string {
+    const sampleAlias = normalizeAlias(sample.sampleAlias);
+    if (sampleAlias != null) {
+      return sampleAlias;
+    }
+
     const alias = this.profile.getSampleDisplayAlias(
       sample.caseId,
       sample.sampleId,
       sample.genomeBuild,
     );
-    if (alias != null && alias.trim() !== "") {
-      return alias;
+    const profileAlias = normalizeAlias(alias);
+    if (profileAlias != null) {
+      return profileAlias;
     }
     return sample.sampleId;
   }
@@ -119,10 +125,17 @@ export class GensSession {
   public getDisplayCaseLabel(
     caseId: string,
     displayCaseId?: string | null,
+    caseAlias?: string | null,
   ): string {
+    const normalizedCaseAlias = normalizeAlias(caseAlias);
+    if (normalizedCaseAlias != null) {
+      return normalizedCaseAlias;
+    }
+
     const alias = this.profile.getCaseDisplayAlias(caseId);
-    if (alias != null && alias.trim() !== "") {
-      return alias;
+    const profileAlias = normalizeAlias(alias);
+    if (profileAlias != null) {
+      return profileAlias;
     }
     return formatCaseLabel(caseId, displayCaseId);
   }
