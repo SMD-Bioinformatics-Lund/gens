@@ -32,13 +32,17 @@ Annotated regions can be loaded into the database in either `bed` or `aed` forma
 
 ## Loading samples into Gens
 
-Each sample requires a coverage file and BAF file (both tabix indexed). Provide a sample ID, case ID and genome build when loading. 
+Each sample requires a coverage file and BAF file (both tabix indexed). Provide a sample ID (`--sample-id`), case ID (`--case-id`) and genome build (`--genome-build` or `-b`) when loading. 
 
-Sample type (proband/mother/father, tumor/normal) is needed in cases with multiple samples for Gens to understand what sample to handle as the "main" sample (i.e. display at top, show in overview plot / multi-chromosome view).
+Sample type (proband/mother/father, tumor/normal) is needed in cases with multiple samples for Gens to understand what sample to handle as the "main" sample (i.e. display at top, show in overview plot / multi-chromosome view). It is also used to determine what "user profile" that should be used, i.e. what set of settings and track selection / configurations that should apply to that case.
 
 Sex is not required but might enable optional functionalities in the future (such as adjusting sex chromosome coverage).
 
-Input files can be generated from the standardized coverage output and the gVCF as described in the [generate sample data](./generate_gens_data.md) part of the README. The script creates a pair of tabix indexed fiels named `<SAMPLE_ID>.cov.bed.gz` and `<SAMPLE_ID>.baf.bed.gz` to be loaded into Gens.
+Input files can be generated from the standardized coverage output and the gVCF as described in the [generate sample data](./generate_gens_data.md) part of the README. The script creates a pair of tabix indexed files named `<SAMPLE_ID>.cov.bed.gz` and `<SAMPLE_ID>.baf.bed.gz` to be loaded into Gens.
+
+### Loading a single sample
+
+Samples can be loaded one and one:
 
 ```bash
 gens load sample \
@@ -49,6 +53,58 @@ gens load sample \
     --coverage /path/to/coverage.bed.gz \
     --sample-type proband \
     --sex M
+```
+
+These loaded samples are organized per case and build. I.e. you can compose a trio "example_trio" by loading three separate samples using the sample trio ID and genome build.
+
+### Loading a full case
+
+Alternatively, a full case can be loaded using a Gens YAML file.
+
+Here is a real example:
+
+```
+case_id: 'example_case_id'
+genome_build: 38
+samples:
+  - sample_id: 'hg002'
+    baf: '/access/wgs/plot_data/hg002.baf.bed.gz'
+    coverage: '/access/wgs/plot_data/hg002.cov.bed.gz'
+    sample_type: 'proband'
+    sex: 'M'
+    meta_files:
+      - '/access/wgs/plot_data/hg002.meta.tsv'
+      - '/access/wgs/plot_data/hg002.chrom_meta.tsv'
+    sample_annotations:
+      - file: '/access/wgs/plot_data/hg002.gens_track.roh.bed'
+        name: 'LOH'
+      - file: '/access/wgs/plot_data/hg002.gens_track.upd.bed'
+        name: 'UPS'
+  - sample_id: 'hg004'
+    baf: '/access/wgs/plot_data/hg004.baf.bed.gz'
+    coverage: '/access/wgs/plot_data/hg004.cov.bed.gz'
+    sample_type: 'mother'
+    sex: 'F'
+  - sample_id: 'hg003'
+    baf: '/access/wgs/plot_data/hg003.baf.bed.gz'
+    coverage: '/access/wgs/plot_data/hg003.cov.bed.gz'
+    sample_type: 'father'
+    sex: 'M'
+```
+
+Loaded as such:
+
+```
+gens load case example_case.yaml
+[2026-02-19 07:25:55,875] INFO in samples: Store sample hg002 in database
+Loaded sample "hg002" with 2 meta file(s)
+Loaded sample annotation "LOH" for sample "hg002"
+Loaded sample annotation "UPS" for sample "hg002"
+[2026-02-19 07:25:56,295] INFO in samples: Store sample hg004 in database
+Loaded sample "hg004" with 0 meta file(s)
+[2026-02-19 07:25:56,526] INFO in samples: Store sample hg003 in database
+Loaded sample "hg003" with 0 meta file(s)
+Finished loading case "example_case_id" with 3 sample(s), 2 meta file reference(s), and 2 sample annotation track(s)
 ```
 
 ### Sample meta data
