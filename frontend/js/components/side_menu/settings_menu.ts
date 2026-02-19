@@ -8,8 +8,9 @@ import {
 } from "../../constants";
 import {
   downloadAsJSON,
-  formatCaseLabel,
+  getCaseLabel,
   getSampleIdentifierFromID,
+  getSampleLabel,
   getSampleKey,
   removeChildren,
 } from "../../util/utils";
@@ -235,6 +236,20 @@ template.innerHTML = String.raw`
       </flex-row>
     </flex-row>
 
+    <div class="header-row">
+      <div class="header">Screenshot display names</div>
+    </div>
+    <flex-row class="spread-row">
+      <div>Apply aliases</div>
+      <icon-button id="apply-display-aliases" icon="${ICONS.refresh}" title="Apply case and sample aliases"></icon-button>
+    </flex-row>
+    <flex-row class="spread-row">
+      <div>Current case alias</div>
+      <input id="case-display-alias" class="height-input" type="text" placeholder="e.g. Demo case">
+    </flex-row>
+    <div id="sample-alias-controls"></div>
+    <div id="case-display-alias-info" class="helper-text"></div>
+
     <!-- Tracks overview -->
     <div class="header-row">
       <div class="header">Tracks overview</div>
@@ -261,6 +276,11 @@ export class SettingsMenu extends ShadowBaseElement {
   private exportProfileSettingsButton: IconButton;
   private importProfileSettingsButton: IconButton;
   private importProfileSettingsInput: HTMLInputElement;
+  private applyDisplayAliasesButton: IconButton;
+  private caseDisplayAliasInput: HTMLInputElement;
+  private sampleAliasControls: HTMLDivElement;
+  private caseDisplayAliasInfo: HTMLDivElement;
+  private sampleAliasInputs: Map<string, HTMLInputElement> = new Map();
 
   private applyDefaultCovYRangeButton: HTMLButtonElement;
   private variantThresholdInput: HTMLInputElement;
@@ -296,6 +316,11 @@ export class SettingsMenu extends ShadowBaseElement {
   private onToggleTrackHidden: (trackId: string) => void;
   private onToggleTrackExpanded: (trackId: string) => void;
   private onApplyMainSample: (sample: Sample) => void;
+  private onApplyDisplayAliases: (
+    caseId: string,
+    caseAlias: string | null,
+    sampleAliases: { sample: Sample; alias: string | null }[],
+  ) => void;
   private getProfileSettings: () => ProfileSettings;
   private applyProfileSettings: (layout: ProfileSettings) => Promise<void>;
   private onResetLayout: () => void;
@@ -323,6 +348,11 @@ export class SettingsMenu extends ShadowBaseElement {
     onToggleTrackHidden: (trackId: string) => void,
     onToggleTrackExpanded: (trackId: string) => void,
     onApplyMainSample: (sample: Sample) => void,
+    onApplyDisplayAliases: (
+      caseId: string,
+      caseAlias: string | null,
+      sampleAliases: { sample: Sample; alias: string | null }[],
+    ) => void,
     getProfileSettings: () => ProfileSettings,
     applyProfileSettings: (layout: ProfileSettings) => Promise<void>,
     onResetLayout: () => void,
@@ -357,6 +387,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onToggleTrackHidden = onToggleTrackHidden;
     this.onToggleTrackExpanded = onToggleTrackExpanded;
     this.onApplyMainSample = onApplyMainSample;
+    this.onApplyDisplayAliases = onApplyDisplayAliases;
     this.getProfileSettings = getProfileSettings;
     this.applyProfileSettings = applyProfileSettings;
     this.onResetLayout = onResetLayout;
@@ -389,6 +420,18 @@ export class SettingsMenu extends ShadowBaseElement {
     this.importProfileSettingsInput = this.root.querySelector(
       "#import-settings-input",
     ) as HTMLInputElement;
+    this.applyDisplayAliasesButton = this.root.querySelector(
+      "#apply-display-aliases",
+    ) as IconButton;
+    this.caseDisplayAliasInput = this.root.querySelector(
+      "#case-display-alias",
+    ) as HTMLInputElement;
+    this.sampleAliasControls = this.root.querySelector(
+      "#sample-alias-controls",
+    ) as HTMLDivElement;
+    this.caseDisplayAliasInfo = this.root.querySelector(
+      "#case-display-alias-info",
+    ) as HTMLDivElement;
 
     this.applyDefaultCovYRangeButton = this.root.querySelector(
       "#apply-default-cov-y-range",
@@ -487,6 +530,10 @@ export class SettingsMenu extends ShadowBaseElement {
       this.onApplyMainSample(targetSample);
     });
 
+    this.addElementListener(this.applyDisplayAliasesButton, "click", () => {
+      this.applyDisplayAliases();
+    });
+
     this.addElementListener(this.annotSelect, "change", () => {
       const ids = this.annotSelect
         .getValues()
@@ -572,20 +619,95 @@ export class SettingsMenu extends ShadowBaseElement {
     ];
     this.colorBySelect.setValues(colorChoices);
     this.setupSampleSelect();
+    this.updateCaseAliasSection();
+    this.renderSampleAliasControls();
   }
 
   private setupSampleSelect() {
     const rawSamples = this.getAllSamples();
     const allSamples = rawSamples.map((s) => {
       return {
-        label: `${s.sampleId}, case: ${formatCaseLabel(
-          s.caseId,
-          s.displayCaseId,
-        )}`,
+        label: `${getSampleLabel(s.sampleId, s.sampleAlias)}, case: ${getCaseLabel(s.caseId, s.displayCaseId, s.caseAlias)}`,
         value: getSampleKey(s),
       };
     });
     this.sampleSelect.setValues(allSamples);
+  }
+
+  private updateCaseAliasSection() {
+    if (!this.caseDisplayAliasInput || !this.caseDisplayAliasInfo) {
+      return;
+    }
+
+    const mainSample = this.session.getMainSample();
+    const currAlias = this.session.getSessionCaseDisplayAlias(
+      mainSample.caseId,
+    );
+    this.caseDisplayAliasInput.value = currAlias ?? "";
+    this.caseDisplayAliasInfo.textContent =
+      "Aliases only affect viewer labels and reset on page refresh.";
+  }
+
+  private renderSampleAliasControls() {
+    if (!this.sampleAliasControls) {
+      return;
+    }
+
+    this.sampleAliasInputs.clear();
+    removeChildren(this.sampleAliasControls);
+    this.sampleAliasControls.style.display = "flex";
+    this.sampleAliasControls.style.flexDirection = "column";
+    this.sampleAliasControls.style.gap = `${SIZES.xs}px`;
+
+    for (const sample of this.getCurrentSamples()) {
+      const row = document.createElement("flex-row");
+      row.className = "spread-row";
+
+      const label = document.createElement("div");
+      label.textContent = `${sample.sampleId} alias`;
+      row.appendChild(label);
+
+      const controls = document.createElement("flex-row");
+      controls.className = "height-inputs";
+
+      const input = document.createElement("input");
+      input.className = "height-input";
+      input.type = "text";
+      input.placeholder = "e.g. Proband";
+      input.value =
+        this.session.getSessionSampleDisplayAlias(
+          sample.caseId,
+          sample.sampleId,
+          sample.genomeBuild,
+        ) ?? "";
+      this.sampleAliasInputs.set(getSampleKey(sample), input);
+
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          this.applyDisplayAliases();
+        }
+      });
+
+      controls.appendChild(input);
+      row.appendChild(controls);
+      this.sampleAliasControls.appendChild(row);
+    }
+  }
+
+  private applyDisplayAliases() {
+    const mainSample = this.session.getMainSample();
+    const caseAlias = this.caseDisplayAliasInput.value.trim();
+
+    const sampleAliases = this.getCurrentSamples().map((sample) => {
+      const input = this.sampleAliasInputs.get(getSampleKey(sample));
+      const alias = input?.value.trim() ?? "";
+      return {
+        sample,
+        alias: alias || null,
+      };
+    });
+
+    this.onApplyDisplayAliases(mainSample.caseId, caseAlias || null, sampleAliases);
   }
 
   private updateResetLayoutInfo() {
@@ -647,6 +769,8 @@ export class SettingsMenu extends ShadowBaseElement {
     const mainSampleId = getSampleKey(mainSample);
     const mainSampleChoices = getMainSampleChoices(samples, mainSampleId);
     this.mainSampleSelect.setValues(mainSampleChoices);
+    this.updateCaseAliasSection();
+    this.renderSampleAliasControls();
 
     removeChildren(this.highlightsOverview);
     const highlightsSection = getHighlightsSection(
@@ -731,7 +855,7 @@ function getMainSampleChoices(
     const id = getSampleKey(sample);
     const choice = {
       value: id,
-      label: `${sample.sampleId} (${sample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${sample.caseId})`,
+      label: `${getSampleLabel(sample.sampleId, sample.sampleAlias)} (${sample.sampleType || NO_SAMPLE_TYPE_DEFAULT}, case: ${getCaseLabel(sample.caseId, sample.displayCaseId, sample.caseAlias)})`,
       selected: prevSelected == id,
     };
     choices.push(choice);
