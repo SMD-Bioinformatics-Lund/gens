@@ -1,4 +1,4 @@
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SIZES } from "../constants";
+import { COLORS, FONT_SIZE, FONT_WEIGHT, ICONS, SIZES } from "../constants";
 import { getCaseLabel } from "../util/utils";
 import { ShadowBaseElement } from "./util/shadowbaseelement";
 
@@ -30,21 +30,51 @@ template.innerHTML = String.raw`
     font-weight: ${FONT_WEIGHT.header};
     padding-right: ${SIZES.xs}px;
   }
+  .case-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: ${SIZES.xs}px;
+  }
+  .linkout-wrapper {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  .linkout-icon {
+    font-size: 12px;
+    vertical-align: text-middle;
+  }
   a {
-    color: ${COLORS.white}
+    color: ${COLORS.white};
   }
 </style>
 <div id="container">
 
   <div class="col text">
     <div title="Gens version" class="label" id="version">Version</div>
-    <a title="Case ID" href="" id="case-id" target="_blank">(value)</a>
+    <div class="case-row">
+      <div title="Case ID" id="case-id">(value)</div>
+      <span id="case-linkout-wrapper" class="linkout-wrapper" hidden>
+        (
+        <a
+          id="case-linkout"
+          href=""
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open in external software"
+        ><i class="linkout-icon fa-solid ${ICONS.linkout}"></i></a>
+        )
+      </span>
+    </div>
   </div>
 </div>
 `;
 
 export class HeaderInfo extends ShadowBaseElement {
-  private caseIdElem: HTMLAnchorElement;
+  private caseIdElem: HTMLDivElement;
+  private caseLinkoutElem: HTMLAnchorElement;
+  private caseLinkoutWrapperElem: HTMLSpanElement;
   // private sampleIdsElem: HTMLDivElement;
   private versionElem: HTMLDivElement;
 
@@ -55,6 +85,8 @@ export class HeaderInfo extends ShadowBaseElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.caseIdElem = this.root.querySelector("#case-id");
+    this.caseLinkoutElem = this.root.querySelector("#case-linkout");
+    this.caseLinkoutWrapperElem = this.root.querySelector("#case-linkout-wrapper");
     // this.sampleIdsElem = this.root.querySelector("#sample-ids");
     this.versionElem = this.root.querySelector("#version");
   }
@@ -67,11 +99,11 @@ export class HeaderInfo extends ShadowBaseElement {
   ) {
     this.setCaseLabel(getCaseLabel(caseId, displayCaseId));
     if (caseURL) {
-      this.caseIdElem.href = caseURL;
-      this.caseIdElem.target = "_blank";
+      this.caseLinkoutElem.href = caseURL;
+      this.caseLinkoutWrapperElem.hidden = false;
     } else {
-      this.caseIdElem.removeAttribute("href");
-      this.caseIdElem.removeAttribute("target");
+      this.caseLinkoutWrapperElem.hidden = true;
+      this.caseLinkoutElem.removeAttribute("href");
     }
     this.versionElem.textContent = version;
   }
