@@ -9,7 +9,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
-- Advanced setting allowing users to change how samples and cases are displayed on the fly [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
+- New setting (under "settings -> advanced settings") allowing users to change how samples and cases are displayed on the fly [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
 
 ### Fixed
 
