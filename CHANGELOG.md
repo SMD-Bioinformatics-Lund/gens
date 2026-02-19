@@ -15,7 +15,11 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 - Update GitHub workflow action versions and fix Dockerfile paths [#702](https://github.com/SMD-Bioinformatics-Lund/gens/pull/702)
 - Workaround to fix unmigrated legacy strand type in genomic features [#703](https://github.com/SMD-Bioinformatics-Lund/gens/pull/703)
-- 
+- Verify whether files exist and are non empty on loading and opening samples [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
+- Make sure absolute samples use absolute path [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
+- Fix such that all `--genome-build` CLI inputs also allow the shorthand `-b` flag [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
+- Prompt the user before overwriting sample annotations [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
+- Update docs reflect the latest Gens version by adding the `gens load case` command [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
 
 ## 4.5.0
 
