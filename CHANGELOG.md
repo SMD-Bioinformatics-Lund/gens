@@ -14,6 +14,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Changed
 
 - Allow skipping the trailing "/" for the API URL in the config file [#720](https://github.com/SMD-Bioinformatics-Lund/gens/pull/720)
+- Marker regions have edges. This means that even if zooming far in, a user will still get an indication in the overview plot of where one is looking [#721](https://github.com/SMD-Bioinformatics-Lund/gens/pull/721)
+- The case linkout in the track view is shown as a linkout icon instead of a clickable URL  [#721](https://github.com/SMD-Bioinformatics-Lund/gens/pull/721)
 
 ### Fixed
 

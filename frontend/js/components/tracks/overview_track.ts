@@ -72,6 +72,7 @@ export class OverviewTrack extends CanvasTrack {
       { color: COLORS.transparentYellow, isCreated: true },
       null,
     );
+
     this.trackContainer.appendChild(this.marker);
 
     this.canvas.addEventListener("mousedown", (event) => {
