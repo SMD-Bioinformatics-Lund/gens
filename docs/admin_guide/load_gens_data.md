@@ -57,6 +57,28 @@ gens load sample \
 
 These loaded samples are organized per case and build. I.e. you can compose a trio "example_trio" by loading three separate samples using the sample trio ID and genome build.
 
+### Updating an existing sample
+
+Use `gens update sample` to update sample fields after loading (for example sample type, sex, BAF/coverage paths, or metadata).
+
+```bash
+gens update sample \
+    --sample-id hg002 \
+    --case-id giab-trio \
+    --genome-build 38 \
+    --sample-type proband \
+    --sex M \
+    --meta /path/to/hg002.meta.tsv \
+    --force
+```
+
+Notes:
+
+* `--sample-id`, `--case-id` and `--genome-build` identify the sample to update.
+* `--meta` replaces existing metadata with the same file name on that sample.
+* Without `--force`, Gens asks for confirmation before overwriting existing metadata.
+* Repeat the command with a different `--meta` file to update multiple metadata files.
+
 ### Loading a full case
 
 Alternatively, a full case can be loaded using a Gens YAML file.
