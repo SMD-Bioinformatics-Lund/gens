@@ -33,6 +33,7 @@ def test_load_sample_annotation_creates_documents(
         genome_build=GenomeBuild(38),
         file=bed_file,
         name="trackA",
+        force=False,
     )
 
     track_coll = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION)
@@ -64,6 +65,7 @@ def test_load_sample_annotation_updates_existing(
         genome_build=GenomeBuild(38),
         file=bed1,
         name="trackA",
+        force=False,
     )
 
     track_coll = db.get_collection(SAMPLE_ANNOTATION_TRACKS_COLLECTION)
@@ -80,6 +82,7 @@ def test_load_sample_annotation_updates_existing(
         genome_build=GenomeBuild(38),
         file=bed2,
         name="trackA",
+        force=True,
     )
 
     assert track_coll.count_documents({}) == 1
