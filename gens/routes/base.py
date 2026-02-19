@@ -19,7 +19,6 @@ SearchQueryParam = Annotated[str, Query(alias="q")]
 router = APIRouter()
 
 
-@router.get("")
 @router.get("/")
 async def read_root():
     """Root welcome message."""
