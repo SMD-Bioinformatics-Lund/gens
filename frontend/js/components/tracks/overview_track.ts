@@ -72,9 +72,6 @@ export class OverviewTrack extends CanvasTrack {
       { color: COLORS.transparentYellow, isCreated: true },
       null,
     );
-    // FIXME: Better location?
-    this.marker.style.boxSizing = "border-box"
-    this.marker.style.borderLeft = "";
 
     this.trackContainer.appendChild(this.marker);
 
