@@ -48,14 +48,17 @@ def load_sample_data(
 ) -> bool:
     db = cli_db.get_cli_db([SAMPLES_COLLECTION])
 
+    baf_file = Path(baf).resolve()
+    coverage_file = Path(coverage).resolve()
+
     sample_obj = SampleInfo.model_validate(
         {
             "sample_id": sample_id,
             "case_id": case_id,
             "display_case_id": display_case_id,
             "genome_build": genome_build,
-            "baf_file": baf,
-            "coverage_file": coverage,
+            "baf_file": baf_file,
+            "coverage_file": coverage_file,
             "sample_type": normalize_sample_type(sample_type) if sample_type else None,
             "sex": sex,
             "meta": [parse_meta_file(path) for path in meta_files],
@@ -70,6 +73,7 @@ def load_sample_annotation_data(
     genome_build: GenomeBuild,
     file: Path,
     name: str,
+    force: bool,
 ) -> None:
     db = cli_db.get_cli_db(
         [SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION]
@@ -92,6 +96,12 @@ def load_sample_annotation_data(
         )
         track_id = create_sample_annotation_track(track, db)
     else:
+        if not force:
+            click.confirm(
+                "A sample annotation track with this name already exists for "
+                f"{sample_id}/{case_id} ({genome_build}). Overwrite it?",
+                abort=True,
+            )
         track_id = track_in_db.track_id
 
     bed_records = parse_bed_file(file)
