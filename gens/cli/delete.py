@@ -132,8 +132,8 @@ def case(genome_build: GenomeBuild, case_id: str, force: bool) -> None:
 @click.option("--sample-id", required=True, help="Sample ID")
 @click.option("--case-id", required=True, help="Case ID")
 @click.option(
-    "--genome-build",
     "-b",
+    "--genome-build",
     type=ChoiceType(GenomeBuild),
     required=True,
     help="Genome build",
@@ -198,7 +198,11 @@ def sample_meta(
 @click.option("--sample-id", required=True, help="Sample ID")
 @click.option("--case-id", required=True, help="Case ID")
 @click.option(
-    "--genome-build", type=ChoiceType(GenomeBuild), required=True, help="Genome build"
+    "-b",
+    "--genome-build",
+    type=ChoiceType(GenomeBuild),
+    required=True,
+    help="Genome build",
 )
 @click.option("--name", required=True, help="Name of the annotation track")
 def sample_annotation(
