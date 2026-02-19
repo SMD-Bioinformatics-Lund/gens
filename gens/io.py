@@ -82,7 +82,6 @@ def get_scatter_data(
     zoom_level: Literal["o", "a", "b", "c", "d"],
 ) -> GenomeCoverage:  # type: ignore
     """Development entrypoint for getting the coverage of a region."""
-    # TODO respond with 404 error if file is not found
     sample_obj = get_sample(collection, sample_id, case_id, genome_build)
 
     if data_type == ScatterDataType.COV:
