@@ -100,7 +100,7 @@ def load_sample_annotation_data(
             click.confirm(
                 "A sample annotation track with this name already exists for "
                 f"{sample_id}/{case_id} ({genome_build}). Overwrite it?",
-                abort=True
+                abort=True,
             )
         track_id = track_in_db.track_id
 

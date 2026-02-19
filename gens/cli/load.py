@@ -227,7 +227,11 @@ def case(config_file: Path) -> None:
 )
 @click.option("--file", required=True, type=click.Path(exists=True, path_type=Path))
 @click.option("--name", required=True, help="Name of the annotation track")
-@click.option("--force", is_flag=True, help="Overwrite existing sample annotation track without prompting")
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Overwrite existing sample annotation track without prompting",
+)
 def sample_annotation(
     sample_id: str,
     case_id: str,
