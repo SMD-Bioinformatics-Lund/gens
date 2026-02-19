@@ -4,6 +4,7 @@ import { ShadowBaseElement } from "./util/shadowbaseelement";
 
 const template = document.createElement("template");
 template.innerHTML = String.raw`
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
   #container {
     display: flex;
@@ -41,8 +42,11 @@ template.innerHTML = String.raw`
     flex-direction: row;
     align-items: center;
   }
+  .linkout-wrapper[hidden] {
+    display: none;
+  }
   .linkout-icon {
-    font-size: 12px;
+    font-size: ${FONT_SIZE.medium}px;
     vertical-align: text-middle;
   }
   a {
