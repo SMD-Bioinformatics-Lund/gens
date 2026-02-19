@@ -388,22 +388,39 @@ function addSettingsPageSources(
     session.setMainSample(sample);
     render({ mainSampleChanged: true, reloadData: true });
   };
-  const onSetCaseDisplayAlias = (
+  const onApplyDisplayAliases = (
     targetCaseId: string,
-    alias: string | null,
+    caseAlias: string | null,
+    sampleAliases: { sample: Sample; alias: string | null }[],
   ) => {
-    session.setSessionCaseDisplayAlias(targetCaseId, alias);
-    headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
-    render({ reloadData: true, mainSampleChanged: true, samplesUpdated: true });
-  };
+    let aliasesChanged = false;
+    if (session.getSessionCaseDisplayAlias(targetCaseId) !== caseAlias) {
+      session.setSessionCaseDisplayAlias(targetCaseId, caseAlias);
+      aliasesChanged = true;
+    }
 
-  const onSetSampleDisplayAlias = (sample: Sample, alias: string | null) => {
-    session.setSessionSampleDisplayAlias(
-      sample.caseId,
-      sample.sampleId,
-      sample.genomeBuild,
-      alias,
-    );
+    for (const { sample, alias } of sampleAliases) {
+      const currentAlias = session.getSessionSampleDisplayAlias(
+        sample.caseId,
+        sample.sampleId,
+        sample.genomeBuild,
+      );
+      if (currentAlias === alias) {
+        continue;
+      }
+      session.setSessionSampleDisplayAlias(
+        sample.caseId,
+        sample.sampleId,
+        sample.genomeBuild,
+        alias,
+      );
+      aliasesChanged = true;
+    }
+
+    if (!aliasesChanged) {
+      return;
+    }
+    headerInfo.setCaseLabel(session.getDisplayCaseLabel(caseId, displayCaseId));
     render({ reloadData: true, mainSampleChanged: true, samplesUpdated: true });
   };
 
@@ -451,8 +468,7 @@ function addSettingsPageSources(
     onToggleTrackHidden,
     onToggleTrackExpanded,
     onAssignMainSample,
-    onSetCaseDisplayAlias,
-    onSetSampleDisplayAlias,
+    onApplyDisplayAliases,
     getProfile,
     applyProfile,
     resetLayout,

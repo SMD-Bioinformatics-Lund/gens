@@ -316,10 +316,10 @@ export class SettingsMenu extends ShadowBaseElement {
   private onToggleTrackHidden: (trackId: string) => void;
   private onToggleTrackExpanded: (trackId: string) => void;
   private onApplyMainSample: (sample: Sample) => void;
-  private onSetCaseDisplayAlias: (caseId: string, alias: string | null) => void;
-  private onSetSampleDisplayAlias: (
-    sample: Sample,
-    alias: string | null,
+  private onApplyDisplayAliases: (
+    caseId: string,
+    caseAlias: string | null,
+    sampleAliases: { sample: Sample; alias: string | null }[],
   ) => void;
   private getProfileSettings: () => ProfileSettings;
   private applyProfileSettings: (layout: ProfileSettings) => Promise<void>;
@@ -348,8 +348,11 @@ export class SettingsMenu extends ShadowBaseElement {
     onToggleTrackHidden: (trackId: string) => void,
     onToggleTrackExpanded: (trackId: string) => void,
     onApplyMainSample: (sample: Sample) => void,
-    onSetCaseDisplayAlias: (caseId: string, alias: string | null) => void,
-    onSetSampleDisplayAlias: (sample: Sample, alias: string | null) => void,
+    onApplyDisplayAliases: (
+      caseId: string,
+      caseAlias: string | null,
+      sampleAliases: { sample: Sample; alias: string | null }[],
+    ) => void,
     getProfileSettings: () => ProfileSettings,
     applyProfileSettings: (layout: ProfileSettings) => Promise<void>,
     onResetLayout: () => void,
@@ -384,8 +387,7 @@ export class SettingsMenu extends ShadowBaseElement {
     this.onToggleTrackHidden = onToggleTrackHidden;
     this.onToggleTrackExpanded = onToggleTrackExpanded;
     this.onApplyMainSample = onApplyMainSample;
-    this.onSetCaseDisplayAlias = onSetCaseDisplayAlias;
-    this.onSetSampleDisplayAlias = onSetSampleDisplayAlias;
+    this.onApplyDisplayAliases = onApplyDisplayAliases;
     this.getProfileSettings = getProfileSettings;
     this.applyProfileSettings = applyProfileSettings;
     this.onResetLayout = onResetLayout;
@@ -705,10 +707,7 @@ export class SettingsMenu extends ShadowBaseElement {
       };
     });
 
-    this.onSetCaseDisplayAlias(mainSample.caseId, caseAlias || null);
-    for (const { sample, alias } of sampleAliases) {
-      this.onSetSampleDisplayAlias(sample, alias);
-    }
+    this.onApplyDisplayAliases(mainSample.caseId, caseAlias || null, sampleAliases);
   }
 
   private updateResetLayoutInfo() {
