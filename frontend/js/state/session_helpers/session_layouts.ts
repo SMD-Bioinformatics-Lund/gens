@@ -5,7 +5,12 @@ import {
   DEFAULT_VARIANT_THRES,
   NO_SAMPLE_TYPE_DEFAULT,
 } from "../../constants";
-import { loadProfileSettings, saveProfileToBrowser } from "../../util/storage";
+import { cloneProfile, getVersionCompatibleDefaultProfiles, normalizeProfile, validateProfileCandidate } from "../../profile/user_profile";
+import {
+  loadProfileSettings,
+  saveProfileToBrowser,
+  USER_PROFILE_PREFIX,
+} from "../../util/storage";
 
 const defaultTrackHeights: TrackHeights = {
   bandCollapsed: STYLE.tracks.trackHeight.m,
@@ -26,15 +31,18 @@ export class SessionProfiles {
     const profileKey = this.computeProfileSignature(samples);
     this.profileKey = profileKey;
 
-    let userProfile = loadProfileSettings(profileKey, PROFILE_SETTINGS_VERSION);
-    if (userProfile != null && userProfile.version !== PROFILE_SETTINGS_VERSION) {
-      console.error(
-        `Gens profile version mismatch for key "${profileKey}". ` +
-          `Found v${userProfile.version ?? "missing"}, expected v${PROFILE_SETTINGS_VERSION}. ` +
-          "Falling back to no profile. Ask your admin to update this profile.",
-      );
-      userProfile = null;
+    const loadedUserProfile = loadProfileSettings(
+      profileKey,
+      PROFILE_SETTINGS_VERSION,
+    );
+    const userProfile = validateProfileCandidate(
+      loadedUserProfile,
+      `saved user profile for key "${profileKey}"`,
+    );
+    if (loadedUserProfile != null && userProfile == null) {
+      localStorage.removeItem(`${USER_PROFILE_PREFIX}${profileKey}`);
     }
+
     this.defaultProfiles = getVersionCompatibleDefaultProfiles(defaultProfiles);
     this.baseTrackLayout = null;
     const defaultProfile = cloneProfile(this.defaultProfiles[profileKey]);
@@ -224,7 +232,12 @@ export class SessionProfiles {
   }
 
   public loadProfile(profile: ProfileSettings): void {
-    this.profile = normalizeProfile(profile);
+    const validProfile = validateProfileCandidate(profile, "imported user profile");
+    if (validProfile == null) {
+      this.resetTrackLayout();
+      return;
+    }
+    this.profile = validProfile;
   }
 
   public updateProfileKey(samples: Sample[]): void {
@@ -250,45 +263,5 @@ export class SessionProfiles {
   }
 }
 
-function cloneProfile(
-  profile?: ProfileSettings | null,
-): ProfileSettings | null {
-  if (!profile) {
-    return null;
-  }
 
-  return JSON.parse(JSON.stringify(profile)) as ProfileSettings;
-}
 
-function normalizeProfile(profile: ProfileSettings): ProfileSettings {
-  return {
-    ...profile,
-    caseDisplayAliases: profile.caseDisplayAliases ?? {},
-    sampleDisplayAliases: profile.sampleDisplayAliases ?? {},
-  };
-}
-
-/**
- * Defined default profiles may not have been updated to the latest profile
- * version (as defined by the constant PROFILE_SETTINGS_VERSION).
- * These should not be used and give clear errors.
- */
-function getVersionCompatibleDefaultProfiles(
-  defaultProfiles: Record<string, ProfileSettings>,
-): Record<string, ProfileSettings> {
-  const compatibleProfiles: Record<string, ProfileSettings> = {};
-
-  for (const [profileKey, profile] of Object.entries(defaultProfiles)) {
-    if (profile.version !== PROFILE_SETTINGS_VERSION) {
-      console.error(
-        `Gens profile version mismatch for key "${profileKey}". ` +
-          `Found v${profile.version ?? "missing"}, expected v${PROFILE_SETTINGS_VERSION}. ` +
-          "Ignoring default profile. Ask your admin to update this profile.",
-      );
-      continue;
-    }
-    compatibleProfiles[profileKey] = profile;
-  }
-
-  return compatibleProfiles;
-}

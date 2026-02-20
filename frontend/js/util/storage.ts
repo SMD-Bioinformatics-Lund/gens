@@ -21,8 +21,10 @@ export function loadProfileSettings(
   }
 
   if (expectedVersion != null && stored.version !== expectedVersion) {
-    console.warn(
-      `Expected version ${expectedVersion} and found ${stored.version}. Removing previous entry.`,
+    console.error(
+      `Gens profile validation failed for saved user profile key "${profileKey}". ` +
+        `Expected version ${expectedVersion}, found ${stored.version ?? "missing"}. ` +
+        "Removing invalid saved profile and falling back to default/base profile.",
     );
     localStorage.removeItem(storageKey);
     return null;
