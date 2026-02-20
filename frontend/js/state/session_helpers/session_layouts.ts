@@ -5,7 +5,7 @@ import {
   DEFAULT_VARIANT_THRES,
   NO_SAMPLE_TYPE_DEFAULT,
 } from "../../constants";
-import { cloneProfile, getVersionCompatibleDefaultProfiles, normalizeProfile, validateProfileCandidate } from "../../profile/user_profile";
+import { cloneProfile, getVersionCompatibleDefaultProfiles, normalizeProfile, validateProfileCandidate } from "../profile/user_profile";
 import {
   loadProfileSettings,
   saveProfileToBrowser,

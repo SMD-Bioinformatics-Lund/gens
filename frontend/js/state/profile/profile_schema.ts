@@ -1,4 +1,4 @@
-import { PROFILE_SETTINGS_VERSION } from "../constants";
+import { PROFILE_SETTINGS_VERSION } from "../../constants";
 
 type ProfileSchemaRule = {
   field: keyof ProfileSettings;
