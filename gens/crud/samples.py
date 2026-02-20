@@ -236,13 +236,29 @@ def get_sample(
 
     sample_meta = [MetaEntry.model_validate(m) for m in result.get("meta", [])]
 
+    baf_file = result["baf_file"]
+    cov_file = result["coverage_file"]
+
+    baf_file_missing = not Path(baf_file).is_file()
+    cov_file_missing = not Path(cov_file).is_file()
+
+    nbr_missing = baf_file_missing + cov_file_missing
+
+    if nbr_missing > 0:
+        error_msgs = []
+        if baf_file_missing:
+            error_msgs.append(f"BAF file {baf_file} not found on disk")
+        if cov_file_missing:
+            error_msgs.append(f"Coverage file {cov_file} not found on disk")
+        raise FileNotFoundError("Encountered errors while accessing sample files: " + "\n".join(error_msgs))
+
     return SampleInfo(
         sample_id=result["sample_id"],
         case_id=result["case_id"],
         display_case_id=result.get("display_case_id"),
         genome_build=GenomeBuild(int(result["genome_build"])),
-        baf_file=result["baf_file"],
-        coverage_file=result["coverage_file"],
+        baf_file=baf_file,
+        coverage_file=cov_file,
         sample_type=result.get("sample_type"),
         sex=result.get("sex"),
         meta=sample_meta,

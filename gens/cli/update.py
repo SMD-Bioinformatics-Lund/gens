@@ -14,7 +14,7 @@ from gens.db.collections import (
 )
 from gens.load.meta import parse_meta_file
 from gens.models.genomic import GenomeBuild
-from gens.models.sample import SampleSex
+from gens.models.sample import SampleInfo, SampleSex
 
 log_level = getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
@@ -107,9 +107,9 @@ def sample(
     if sex is not None:
         sample_obj.sex = sex
     if coverage is not None:
-        sample_obj.coverage_file = coverage
+        sample_obj.coverage_file = coverage.resolve()
     if baf is not None:
-        sample_obj.baf_file = baf
+        sample_obj.baf_file = baf.resolve()
 
     if meta_file:
         meta_results = parse_meta_file(meta_file)
@@ -130,6 +130,12 @@ def sample(
             if meta_entry.file_name != meta_results.file_name
         ]
         sample_obj.meta.append(meta_results)
+
+    # Re-validate the full sample object so updates follow the same
+    # file/content validation path as `gens load sample`.
+    sample_obj = SampleInfo.model_validate(
+        sample_obj.model_dump(exclude={"baf_index", "coverage_index"})
+    )
 
     update_sample(db, sample_obj)
     click.secho("Finished updating sample ✔", fg="green")

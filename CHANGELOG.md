@@ -7,11 +7,25 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## Unreleased
 
+### Added
+
+- New setting (under "settings -> advanced settings") allowing users to change how samples and cases are displayed on the fly [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
+
+### Changed
+
+- Allow skipping the trailing "/" for the API URL in the config file [#720](https://github.com/SMD-Bioinformatics-Lund/gens/pull/720)
+- Marker regions have edges. This means that even if zooming far in, a user will still get an indication in the overview plot of where one is looking [#721](https://github.com/SMD-Bioinformatics-Lund/gens/pull/721)
+- The case linkout in the track view is shown as a linkout icon instead of a clickable URL  [#721](https://github.com/SMD-Bioinformatics-Lund/gens/pull/721)
+
 ### Fixed
 
 - Update GitHub workflow action versions and fix Dockerfile paths [#702](https://github.com/SMD-Bioinformatics-Lund/gens/pull/702)
 - Workaround to fix unmigrated legacy strand type in genomic features [#703](https://github.com/SMD-Bioinformatics-Lund/gens/pull/703)
 - Mark API URL safe for html use [#705](https://github.com/SMD-Bioinformatics-Lund/gens/pull/705)
+- Make sure absolute samples use absolute path [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
+- Fix such that all `--genome-build` CLI inputs also allow the shorthand `-b` flag [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
+- Prompt the user before overwriting sample annotations [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
+- Update docs reflect the latest Gens version by adding the `gens load case` and `gens update sample` command. Generally make sure that the CLI docs are up to date. [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
 
 ## 4.5.0
 

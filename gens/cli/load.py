@@ -193,6 +193,7 @@ def case(config_file: Path) -> None:
                 genome_build=case_config.genome_build,
                 file=resolved_sample_annot_file,
                 name=sample_annot.name,
+                force=False,
             )
             total_sample_annotations += 1
             click.secho(
@@ -226,12 +227,18 @@ def case(config_file: Path) -> None:
 )
 @click.option("--file", required=True, type=click.Path(exists=True, path_type=Path))
 @click.option("--name", required=True, help="Name of the annotation track")
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Overwrite existing sample annotation track without prompting",
+)
 def sample_annotation(
     sample_id: str,
     case_id: str,
     genome_build: GenomeBuild,
     file: Path,
     name: str,
+    force: bool,
 ) -> None:
     """Load a sample annotation into Gens database."""
     load_sample_annotation_data(
@@ -240,6 +247,7 @@ def sample_annotation(
         genome_build=genome_build,
         file=file,
         name=name,
+        force=force,
     )
     click.secho("Finished loading sample annotations ✔", fg="green")
 

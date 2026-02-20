@@ -4,7 +4,7 @@ import {
   META_WARNING_ROW_CLASS,
 } from "../../util/meta_warnings";
 import { createTable, formatValue, parseTableFromMeta } from "../../util/table";
-import { removeChildren } from "../../util/utils";
+import { getCaseLabel, getSampleLabel, removeChildren } from "../../util/utils";
 import { getEntry } from "../util/menu_utils";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
@@ -104,13 +104,22 @@ export class InfoMenu extends ShadowBaseElement {
     for (const sample of samples) {
       const header = document.createElement("div");
       header.className = "header";
-      header.textContent = sample.sampleId;
+      header.textContent = getSampleLabel(sample.sampleId, sample.sampleAlias);
       this.entries.appendChild(header);
 
       const simpleDivs = [];
       const tables = [];
 
-      simpleDivs.push(getEntry({ key: "Case ID", value: sample.caseId }));
+      simpleDivs.push(
+        getEntry({
+          key: "Case ID",
+          value: getCaseLabel(
+            sample.caseId,
+            sample.displayCaseId,
+            sample.caseAlias,
+          ),
+        }),
+      );
 
       if (sample.sampleType) {
         simpleDivs.push(

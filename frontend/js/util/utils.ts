@@ -377,6 +377,25 @@ export function getSampleKey(id: SampleIdentifier): string {
   return `${id.caseId}${COMBINED_SAMPLE_ID_DIVIDER}${id.sampleId}${COMBINED_SAMPLE_ID_DIVIDER}${id.genomeBuild}`;
 }
 
+export function normalizeAlias(alias?: string | null): string | null {
+  if (alias == null) {
+    return null;
+  }
+
+  const trimmedAlias = alias.trim();
+  if (trimmedAlias === "") {
+    return null;
+  }
+  return trimmedAlias;
+}
+
+export function getSampleLabel(
+  sampleId: string,
+  sampleAlias?: string | null,
+): string {
+  return normalizeAlias(sampleAlias) ?? sampleId;
+}
+
 export function formatCaseLabel(
   caseId: string,
   displayCaseId?: string | null,
@@ -386,6 +405,14 @@ export function formatCaseLabel(
   }
 
   return `${displayCaseId} (${caseId})`;
+}
+
+export function getCaseLabel(
+  caseId: string,
+  displayCaseId?: string | null,
+  caseAlias?: string | null,
+): string {
+  return normalizeAlias(caseAlias) ?? formatCaseLabel(caseId, displayCaseId);
 }
 
 export function getSampleIdentifierFromID(id: string): SampleIdentifier {
