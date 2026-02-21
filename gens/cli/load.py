@@ -104,6 +104,11 @@ def load() -> None:
     required=False,
     help="Sex of the sample",
 )
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Overwrite existing sample without prompting",
+)
 def sample(
     sample_id: str,
     genome_build: GenomeBuild,
@@ -113,6 +118,7 @@ def sample(
     meta_files: tuple[Path, ...],
     sample_type: str | None,
     sex: SampleSex | None,
+    force: bool = False,
     display_case_id: str | None = None,
 ) -> None:
     """Load a sample into Gens database."""
@@ -126,6 +132,7 @@ def sample(
         meta_files=list(meta_files),
         sample_type=sample_type,
         sex=sex,
+        force=force,
     )
     if was_added:
         click.secho("Finished adding a new sample to database ✔", fg="green")
@@ -171,6 +178,7 @@ def case(config_file: Path) -> None:
             meta_files=sample_meta_file_paths,
             sample_type=sample_config.sample_type,
             sex=sample_config.sex,
+            force=False,
         )
         total_meta_file_refs += len(sample_meta_file_paths)
         click.secho(
