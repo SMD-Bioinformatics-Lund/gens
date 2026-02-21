@@ -24,11 +24,7 @@ const REQUIRED_PROFILE_KEYS = [
   "trackHeights",
 ];
 
-const OPTIONAL_PROFILE_KEYS = [
-  "fileName",
-  "caseDisplayAliases",
-  "sampleDisplayAliases",
-];
+const OPTIONAL_PROFILE_KEYS = ["fileName"];
 
 const ALLOWED_PROFILE_KEYS = new Set([
   ...REQUIRED_PROFILE_KEYS,
@@ -72,8 +68,6 @@ export class SessionProfiles {
       version: PROFILE_SETTINGS_VERSION,
       profileKey,
       layout: null,
-      caseDisplayAliases: {},
-      sampleDisplayAliases: {},
       colorAnnotationIds: [],
       variantThreshold: DEFAULT_VARIANT_THRES,
       annotationSelections: [],
@@ -106,54 +100,6 @@ export class SessionProfiles {
 
   public getTrackHeights(): TrackHeights {
     return this.profile.trackHeights;
-  }
-
-  public getCaseDisplayAlias(caseId: string): string | null {
-    return this.profile.caseDisplayAliases?.[caseId] ?? null;
-  }
-
-  public setCaseDisplayAlias(caseId: string, alias: string | null): void {
-    if (this.profile.caseDisplayAliases == null) {
-      this.profile.caseDisplayAliases = {};
-    }
-
-    if (alias == null || alias.trim() === "") {
-      delete this.profile.caseDisplayAliases[caseId];
-    } else {
-      this.profile.caseDisplayAliases[caseId] = alias.trim();
-    }
-    this.save();
-  }
-
-  public getSampleDisplayAlias(
-    caseId: string,
-    sampleId: string,
-    genomeBuild: number,
-  ): string | null {
-    return (
-      this.profile.sampleDisplayAliases?.[
-        this.getSampleAliasKey(caseId, sampleId, genomeBuild)
-      ] ?? null
-    );
-  }
-
-  public setSampleDisplayAlias(
-    caseId: string,
-    sampleId: string,
-    genomeBuild: number,
-    alias: string | null,
-  ): void {
-    if (this.profile.sampleDisplayAliases == null) {
-      this.profile.sampleDisplayAliases = {};
-    }
-
-    const aliasKey = this.getSampleAliasKey(caseId, sampleId, genomeBuild);
-    if (alias == null || alias.trim() === "") {
-      delete this.profile.sampleDisplayAliases[aliasKey];
-    } else {
-      this.profile.sampleDisplayAliases[aliasKey] = alias.trim();
-    }
-    this.save();
   }
 
   public setTrackHeights(heights: TrackHeights) {
@@ -208,8 +154,6 @@ export class SessionProfiles {
       version: PROFILE_SETTINGS_VERSION,
       profileKey: this.profileKey,
       layout: null,
-      caseDisplayAliases: {},
-      sampleDisplayAliases: {},
       colorAnnotationIds: [],
       variantThreshold: DEFAULT_VARIANT_THRES,
       annotationSelections: [],
@@ -275,13 +219,6 @@ export class SessionProfiles {
 
     return Array.from(types).join("+");
   }
-  private getSampleAliasKey(
-    caseId: string,
-    sampleId: string,
-    genomeBuild: number,
-  ): string {
-    return `${caseId}__${sampleId}__${genomeBuild}`;
-  }
 }
 
 function cloneProfile(
@@ -295,11 +232,7 @@ function cloneProfile(
 }
 
 function normalizeProfile(profile: ProfileSettings): ProfileSettings {
-  return {
-    ...profile,
-    caseDisplayAliases: profile.caseDisplayAliases ?? {},
-    sampleDisplayAliases: profile.sampleDisplayAliases ?? {},
-  };
+  return { ...profile };
 }
 
 /**
