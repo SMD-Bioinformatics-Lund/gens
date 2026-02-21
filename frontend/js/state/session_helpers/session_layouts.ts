@@ -13,6 +13,28 @@ const defaultTrackHeights: TrackHeights = {
   dotExpanded: STYLE.tracks.trackHeight.xl,
 };
 
+const REQUIRED_PROFILE_KEYS = [
+  "version",
+  "profileKey",
+  "layout",
+  "colorAnnotationIds",
+  "variantThreshold",
+  "annotationSelections",
+  "coverageRange",
+  "trackHeights",
+];
+
+const OPTIONAL_PROFILE_KEYS = [
+  "fileName",
+  "caseDisplayAliases",
+  "sampleDisplayAliases",
+];
+
+const ALLOWED_PROFILE_KEYS = new Set([
+  ...REQUIRED_PROFILE_KEYS,
+  ...OPTIONAL_PROFILE_KEYS,
+]);
+
 export class SessionProfiles {
   private profile: ProfileSettings;
   private profileKey: string;
@@ -27,6 +49,13 @@ export class SessionProfiles {
     this.profileKey = profileKey;
 
     let userProfile = loadProfileSettings(profileKey, PROFILE_SETTINGS_VERSION);
+    if (userProfile != null && !hasExpectedProfileSettingsKeys(userProfile)) {
+      logProfileSettingsKeyMismatch(
+        userProfile,
+        `stored user profile for key "${profileKey}"`,
+      );
+      userProfile = null;
+    }
     if (userProfile != null && userProfile.version !== PROFILE_SETTINGS_VERSION) {
       console.error(
         `Gens profile version mismatch for key "${profileKey}". ` +
@@ -224,6 +253,11 @@ export class SessionProfiles {
   }
 
   public loadProfile(profile: ProfileSettings): void {
+    if (!hasExpectedProfileSettingsKeys(profile)) {
+      logProfileSettingsKeyMismatch(profile, "imported profile settings");
+      this.resetTrackLayout();
+      return;
+    }
     this.profile = normalizeProfile(profile);
   }
 
@@ -279,6 +313,13 @@ function getVersionCompatibleDefaultProfiles(
   const compatibleProfiles: Record<string, ProfileSettings> = {};
 
   for (const [profileKey, profile] of Object.entries(defaultProfiles)) {
+    if (!hasExpectedProfileSettingsKeys(profile)) {
+      logProfileSettingsKeyMismatch(
+        profile,
+        `default profile for key "${profileKey}"`,
+      );
+      continue;
+    }
     if (profile.version !== PROFILE_SETTINGS_VERSION) {
       console.error(
         `Gens profile version mismatch for key "${profileKey}". ` +
@@ -291,4 +332,44 @@ function getVersionCompatibleDefaultProfiles(
   }
 
   return compatibleProfiles;
+}
+
+export function hasExpectedProfileSettingsKeys(
+  profile: unknown,
+): profile is ProfileSettings {
+  if (profile == null || typeof profile !== "object" || Array.isArray(profile)) {
+    return false;
+  }
+
+  const keys = Object.keys(profile);
+  const missingKeys = REQUIRED_PROFILE_KEYS.filter((key) => !(key in profile));
+  const unexpectedKeys = keys.filter((key) => !ALLOWED_PROFILE_KEYS.has(key));
+
+  return missingKeys.length === 0 && unexpectedKeys.length === 0;
+}
+
+function logProfileSettingsKeyMismatch(profile: unknown, context: string): void {
+  if (profile == null || typeof profile !== "object" || Array.isArray(profile)) {
+    console.error(
+      `Gens profile key mismatch for ${context}. Expected profile object. Falling back to no profile.`,
+    );
+    return;
+  }
+
+  const keys = Object.keys(profile);
+  const missingKeys = REQUIRED_PROFILE_KEYS.filter((key) => !(key in profile));
+  const unexpectedKeys = keys.filter((key) => !ALLOWED_PROFILE_KEYS.has(key));
+  const mismatchReasons: string[] = [];
+
+  if (missingKeys.length > 0) {
+    mismatchReasons.push(`missing keys: ${missingKeys.join(", ")}`);
+  }
+
+  if (unexpectedKeys.length > 0) {
+    mismatchReasons.push(`unexpected keys: ${unexpectedKeys.join(", ")}`);
+  }
+
+  console.error(
+    `Gens profile key mismatch for ${context}. ${mismatchReasons.join("; ")}. Falling back to no profile.`,
+  );
 }
