@@ -10,6 +10,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Added
 
 - New setting (under "settings -> advanced settings") allowing users to change how samples and cases are displayed on the fly [#709](https://github.com/SMD-Bioinformatics-Lund/gens/pull/709)
+- Key check for loaded profile, giving a clear console error message if the profile contains unexpected fields [#722](https://github.com/SMD-Bioinformatics-Lund/gens/pull/722)
 
 ### Changed
 
