@@ -209,7 +209,7 @@ def test_load_sample_cli_with_string_genome_build_fails(
 
     cli_load.sample.callback(
         sample_id="sample1",
-        genome_build=38,
+        genome_build="38",
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
@@ -238,7 +238,7 @@ def test_load_sample_cli_force_overwrites_without_prompt(
 
     cli_load.sample.callback(
         sample_id="sample1",
-        genome_build=38,
+        genome_build="38",
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",
@@ -254,7 +254,7 @@ def test_load_sample_cli_force_overwrites_without_prompt(
 
     cli_load.sample.callback(
         sample_id="sample1",
-        genome_build=38,
+        genome_build="38",
         baf=baf_file,
         coverage=cov_file,
         case_id="case1",

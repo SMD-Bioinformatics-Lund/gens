@@ -70,9 +70,9 @@ def load_sample_data(
         sample_exists = (
             db.get_collection(SAMPLES_COLLECTION).find_one(
                 {
-                    "sample_id": sample_id,
-                    "case_id": case_id,
-                    "genome_build": genome_build,
+                    "sample_id": sample_obj.sample_id,
+                    "case_id": sample_obj.case_id,
+                    "genome_build": sample_obj.genome_build,
                 }
             )
             is not None
