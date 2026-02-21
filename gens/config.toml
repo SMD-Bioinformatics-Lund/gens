@@ -2,6 +2,8 @@
 authentication = "disabled"
 gens_api_url = "http://localhost:5000/api/"
 main_sample_types = ["proband", "tumor"]
+# Login session lifetime in seconds (default: 86400 = 1 day)
+# login_session_lifetime = 86400
 
 [gens_db]
 connection = "mongodb://mongodb:27017/gens"

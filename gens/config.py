@@ -2,6 +2,7 @@
 
 import json
 import os
+from datetime import timedelta
 from enum import Enum
 from pathlib import Path
 from typing import Any, Literal, Tuple, Type
@@ -122,6 +123,10 @@ class Settings(BaseSettings):
         default="pass",
         description="Flask secret key used for sessions.",
     )
+    login_session_lifetime: timedelta = Field(
+        default=timedelta(days=1),
+        description="Login session lifetime (defaults to 1 day).",
+    )
 
     # Authentication options
     authentication: AuthMethod = AuthMethod.DISABLED
@@ -164,6 +169,7 @@ class Settings(BaseSettings):
             "gens_api_url": self.gens_api_url,
             "main_sample_types": self.main_sample_types,
             "secret_key": self.secret_key,
+            "login_session_lifetime": str(self.login_session_lifetime),
             "authentication": self.authentication.value,
             "auth_user_db": self.auth_user_db.value,
             "auth_user_collection": self.auth_user_collection,

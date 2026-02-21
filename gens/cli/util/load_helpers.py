@@ -21,7 +21,7 @@ from gens.crud.sample_annotations import (
     delete_sample_annotations_for_track,
     get_sample_annotation_track,
 )
-from gens.crud.samples import create_sample
+from gens.crud.samples import create_sample, update_sample
 from gens.db.collections import (
     ANNOTATIONS_COLLECTION,
     SAMPLE_ANNOTATION_TRACKS_COLLECTION,
@@ -44,6 +44,7 @@ def load_sample_data(
     meta_files: list[Path],
     sample_type: str | None,
     sex: SampleSex | None,
+    force: bool = False,
     display_case_id: str | None = None,
 ) -> bool:
     db = cli_db.get_cli_db([SAMPLES_COLLECTION])
@@ -64,6 +65,22 @@ def load_sample_data(
             "meta": [parse_meta_file(path) for path in meta_files],
         }
     )
+
+    if force:
+        sample_exists = (
+            db.get_collection(SAMPLES_COLLECTION).find_one(
+                {
+                    "sample_id": sample_id,
+                    "case_id": case_id,
+                    "genome_build": genome_build,
+                }
+            )
+            is not None
+        )
+        if sample_exists:
+            update_sample(db, sample_obj)
+            return True
+
     return create_sample(db, sample_obj)
 
 

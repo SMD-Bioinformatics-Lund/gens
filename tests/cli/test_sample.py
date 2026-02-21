@@ -214,11 +214,64 @@ def test_load_sample_cli_with_string_genome_build_fails(
         coverage=cov_file,
         case_id="case1",
         meta_files=[meta_file],
+        sample_type="relative",
+        sex="F",
+    )
+
+    assert sample_coll.count_documents({}) == 1
+    rec = sample_coll.find_one({"sample_id": "sample1", "case_id": "case1"})
+    assert rec is not None
+    assert rec["sample_type"] == "proband"
+    assert rec["sex"] == "M"
+
+
+def test_load_sample_cli_force_overwrites_without_prompt(
+    cli_load: ModuleType,
+    tmp_path: Path,
+    db: mongomock.Database,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    baf_file = write_sample_track(tmp_path / "baf.gz")
+    cov_file = write_sample_track(tmp_path / "cov.gz")
+    meta_file = tmp_path / "meta.tsv"
+    meta_file.write_text("type\tvalue\nA\t1\n")
+
+    cli_load.sample.callback(
+        sample_id="sample1",
+        genome_build=38,
+        baf=baf_file,
+        coverage=cov_file,
+        case_id="case1",
+        meta_files=[meta_file],
         sample_type="proband",
         sex="M",
     )
 
+    def _confirm_should_not_be_called(*args: Any, **kwargs: Any) -> bool:
+        raise AssertionError("click.confirm should not be called when force=True")
+
+    monkeypatch.setattr(click, "confirm", _confirm_should_not_be_called)
+
+    cli_load.sample.callback(
+        sample_id="sample1",
+        genome_build=38,
+        baf=baf_file,
+        coverage=cov_file,
+        case_id="case1",
+        meta_files=[meta_file],
+        sample_type="relative",
+        sex="F",
+        force=True,
+    )
+
+    sample_coll = db.get_collection(SAMPLES_COLLECTION)
     assert sample_coll.count_documents({}) == 1
+    rec = sample_coll.find_one(
+        {"sample_id": "sample1", "case_id": "case1", "genome_build": 38}
+    )
+    assert rec is not None
+    assert rec["sample_type"] == "relative"
+    assert rec["sex"] == "F"
 
 
 def test_load_sample_cli_without_display_case_id(

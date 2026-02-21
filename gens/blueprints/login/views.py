@@ -282,6 +282,7 @@ def perform_login(user_dict: LoginUser) -> Response:
     If successful redirect to next page otherwise redirect to the landing page.
     """
     if login_user(user_dict, remember=True):
+        session.permanent = True
         flash(f"You logged in as: {user_dict.name}", "success")
         next_url = session.pop("next_url", None)
         redirect_url = next_url if is_safe_next_url(next_url) else url_for("home.home")
