@@ -284,7 +284,7 @@ export function hasExpectedProfileSettingsKeys(
 function logProfileSettingsKeyMismatch(profile: unknown, context: string): void {
   if (profile == null || typeof profile !== "object" || Array.isArray(profile)) {
     console.error(
-      `Gens profile key mismatch for ${context}. Expected profile object. Falling back to no profile.`,
+      `Gens profile key mismatch for ${context}. Expected profile object. Using fallback profile.`,
     );
     return;
   }
