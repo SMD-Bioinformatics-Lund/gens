@@ -13,6 +13,24 @@ const defaultTrackHeights: TrackHeights = {
   dotExpanded: STYLE.tracks.trackHeight.xl,
 };
 
+const REQUIRED_PROFILE_KEYS = [
+  "version",
+  "profileKey",
+  "layout",
+  "colorAnnotationIds",
+  "variantThreshold",
+  "annotationSelections",
+  "coverageRange",
+  "trackHeights",
+];
+
+const OPTIONAL_PROFILE_KEYS = ["fileName"];
+
+const ALLOWED_PROFILE_KEYS = new Set([
+  ...REQUIRED_PROFILE_KEYS,
+  ...OPTIONAL_PROFILE_KEYS,
+]);
+
 export class SessionProfiles {
   private profile: ProfileSettings;
   private profileKey: string;
@@ -27,6 +45,13 @@ export class SessionProfiles {
     this.profileKey = profileKey;
 
     let userProfile = loadProfileSettings(profileKey, PROFILE_SETTINGS_VERSION);
+    if (userProfile != null && !hasExpectedProfileSettingsKeys(userProfile)) {
+      logProfileSettingsKeyMismatch(
+        userProfile,
+        `stored user profile for key "${profileKey}"`,
+      );
+      userProfile = null;
+    }
     if (userProfile != null && userProfile.version !== PROFILE_SETTINGS_VERSION) {
       console.error(
         `Gens profile version mismatch for key "${profileKey}". ` +
@@ -43,8 +68,6 @@ export class SessionProfiles {
       version: PROFILE_SETTINGS_VERSION,
       profileKey,
       layout: null,
-      caseDisplayAliases: {},
-      sampleDisplayAliases: {},
       colorAnnotationIds: [],
       variantThreshold: DEFAULT_VARIANT_THRES,
       annotationSelections: [],
@@ -77,54 +100,6 @@ export class SessionProfiles {
 
   public getTrackHeights(): TrackHeights {
     return this.profile.trackHeights;
-  }
-
-  public getCaseDisplayAlias(caseId: string): string | null {
-    return this.profile.caseDisplayAliases?.[caseId] ?? null;
-  }
-
-  public setCaseDisplayAlias(caseId: string, alias: string | null): void {
-    if (this.profile.caseDisplayAliases == null) {
-      this.profile.caseDisplayAliases = {};
-    }
-
-    if (alias == null || alias.trim() === "") {
-      delete this.profile.caseDisplayAliases[caseId];
-    } else {
-      this.profile.caseDisplayAliases[caseId] = alias.trim();
-    }
-    this.save();
-  }
-
-  public getSampleDisplayAlias(
-    caseId: string,
-    sampleId: string,
-    genomeBuild: number,
-  ): string | null {
-    return (
-      this.profile.sampleDisplayAliases?.[
-        this.getSampleAliasKey(caseId, sampleId, genomeBuild)
-      ] ?? null
-    );
-  }
-
-  public setSampleDisplayAlias(
-    caseId: string,
-    sampleId: string,
-    genomeBuild: number,
-    alias: string | null,
-  ): void {
-    if (this.profile.sampleDisplayAliases == null) {
-      this.profile.sampleDisplayAliases = {};
-    }
-
-    const aliasKey = this.getSampleAliasKey(caseId, sampleId, genomeBuild);
-    if (alias == null || alias.trim() === "") {
-      delete this.profile.sampleDisplayAliases[aliasKey];
-    } else {
-      this.profile.sampleDisplayAliases[aliasKey] = alias.trim();
-    }
-    this.save();
   }
 
   public setTrackHeights(heights: TrackHeights) {
@@ -179,8 +154,6 @@ export class SessionProfiles {
       version: PROFILE_SETTINGS_VERSION,
       profileKey: this.profileKey,
       layout: null,
-      caseDisplayAliases: {},
-      sampleDisplayAliases: {},
       colorAnnotationIds: [],
       variantThreshold: DEFAULT_VARIANT_THRES,
       annotationSelections: [],
@@ -224,6 +197,11 @@ export class SessionProfiles {
   }
 
   public loadProfile(profile: ProfileSettings): void {
+    if (!hasExpectedProfileSettingsKeys(profile)) {
+      logProfileSettingsKeyMismatch(profile, "imported profile settings");
+      this.resetTrackLayout();
+      return;
+    }
     this.profile = normalizeProfile(profile);
   }
 
@@ -241,13 +219,6 @@ export class SessionProfiles {
 
     return Array.from(types).join("+");
   }
-  private getSampleAliasKey(
-    caseId: string,
-    sampleId: string,
-    genomeBuild: number,
-  ): string {
-    return `${caseId}__${sampleId}__${genomeBuild}`;
-  }
 }
 
 function cloneProfile(
@@ -261,11 +232,7 @@ function cloneProfile(
 }
 
 function normalizeProfile(profile: ProfileSettings): ProfileSettings {
-  return {
-    ...profile,
-    caseDisplayAliases: profile.caseDisplayAliases ?? {},
-    sampleDisplayAliases: profile.sampleDisplayAliases ?? {},
-  };
+  return { ...profile };
 }
 
 /**
@@ -279,6 +246,13 @@ function getVersionCompatibleDefaultProfiles(
   const compatibleProfiles: Record<string, ProfileSettings> = {};
 
   for (const [profileKey, profile] of Object.entries(defaultProfiles)) {
+    if (!hasExpectedProfileSettingsKeys(profile)) {
+      logProfileSettingsKeyMismatch(
+        profile,
+        `default profile for key "${profileKey}"`,
+      );
+      continue;
+    }
     if (profile.version !== PROFILE_SETTINGS_VERSION) {
       console.error(
         `Gens profile version mismatch for key "${profileKey}". ` +
@@ -291,4 +265,44 @@ function getVersionCompatibleDefaultProfiles(
   }
 
   return compatibleProfiles;
+}
+
+export function hasExpectedProfileSettingsKeys(
+  profile: unknown,
+): profile is ProfileSettings {
+  if (profile == null || typeof profile !== "object" || Array.isArray(profile)) {
+    return false;
+  }
+
+  const keys = Object.keys(profile);
+  const missingKeys = REQUIRED_PROFILE_KEYS.filter((key) => !(key in profile));
+  const unexpectedKeys = keys.filter((key) => !ALLOWED_PROFILE_KEYS.has(key));
+
+  return missingKeys.length === 0 && unexpectedKeys.length === 0;
+}
+
+function logProfileSettingsKeyMismatch(profile: unknown, context: string): void {
+  if (profile == null || typeof profile !== "object" || Array.isArray(profile)) {
+    console.error(
+      `Gens profile key mismatch for ${context}. Expected profile object. Using fallback profile.`,
+    );
+    return;
+  }
+
+  const keys = Object.keys(profile);
+  const missingKeys = REQUIRED_PROFILE_KEYS.filter((key) => !(key in profile));
+  const unexpectedKeys = keys.filter((key) => !ALLOWED_PROFILE_KEYS.has(key));
+  const mismatchReasons: string[] = [];
+
+  if (missingKeys.length > 0) {
+    mismatchReasons.push(`missing keys: ${missingKeys.join(", ")}`);
+  }
+
+  if (unexpectedKeys.length > 0) {
+    mismatchReasons.push(`unexpected keys: ${unexpectedKeys.join(", ")}`);
+  }
+
+  console.error(
+    `Gens profile key mismatch for ${context}. ${mismatchReasons.join("; ")}. Falling back to no profile.`,
+  );
 }
