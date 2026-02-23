@@ -1,5 +1,5 @@
 import { COLORS, FONT_SIZE, FONT_WEIGHT, ICONS, SIZES } from "../../constants";
-import { formatCaseLabel } from "../../util/utils";
+import { getCaseLabel, getSampleLabel } from "../../util/utils";
 import { IconButton } from "../util/icon_button";
 import { ShadowBaseElement } from "../util/shadowbaseelement";
 
@@ -62,10 +62,14 @@ export class SampleRow extends ShadowBaseElement {
     this.caseLabelElem = this.root.querySelector("#case-label");
     this.removeElem = this.root.querySelector("#remove");
 
-    this.sampleLabelElem.textContent = this.sample.sampleId;
-    this.caseLabelElem.textContent = `Case: ${formatCaseLabel(
+    this.sampleLabelElem.textContent = getSampleLabel(
+      this.sample.sampleId,
+      this.sample.sampleAlias,
+    );
+    this.caseLabelElem.textContent = `Case: ${getCaseLabel(
       this.sample.caseId,
       this.sample.displayCaseId,
+      this.sample.caseAlias,
     )}`;
     this.removeElem.addEventListener(
       "click",

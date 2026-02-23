@@ -15,6 +15,9 @@ template.innerHTML = String.raw`
       pointer-events: none;
       z-index: ${ZINDICES.trackMarkers};
       background-color: ${COLORS.transparentYellow};
+      box-sizing: border-box;
+      border-left: ${SIZES.one}px solid ${COLORS.lightGray};
+      border-right: ${SIZES.one}px solid ${COLORS.lightGray};
     }
     #close {
       display: none;

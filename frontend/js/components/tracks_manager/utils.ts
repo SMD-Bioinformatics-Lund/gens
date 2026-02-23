@@ -42,7 +42,7 @@ export function createOverviewTrack(
         dotsPerChrom: await getData(),
         xRange: session.pos.getXRange(),
         chromosome: session.pos.getChromosome(),
-        sampleLabel: session.getMainSample().sampleId,
+        sampleLabel: session.getDisplaySampleLabel(session.getMainSample()),
       };
     },
     () => {

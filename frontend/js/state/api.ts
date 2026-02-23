@@ -42,7 +42,10 @@ export class API {
 
   constructor(genomeBuild: number, gensApiURL: string) {
     this.genomeBuild = genomeBuild;
-    this.apiURI = gensApiURL;
+    const urlWithTrailingSlash = gensApiURL.endsWith("/")
+      ? gensApiURL
+      : `${gensApiURL}/`;
+    this.apiURI = urlWithTrailingSlash;
   }
 
   async initialize() {

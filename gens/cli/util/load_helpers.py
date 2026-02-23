@@ -21,7 +21,7 @@ from gens.crud.sample_annotations import (
     delete_sample_annotations_for_track,
     get_sample_annotation_track,
 )
-from gens.crud.samples import create_sample
+from gens.crud.samples import create_sample, update_sample
 from gens.db.collections import (
     ANNOTATIONS_COLLECTION,
     SAMPLE_ANNOTATION_TRACKS_COLLECTION,
@@ -44,9 +44,13 @@ def load_sample_data(
     meta_files: list[Path],
     sample_type: str | None,
     sex: SampleSex | None,
+    force: bool = False,
     display_case_id: str | None = None,
 ) -> bool:
     db = cli_db.get_cli_db([SAMPLES_COLLECTION])
+
+    baf_file = Path(baf).resolve()
+    coverage_file = Path(coverage).resolve()
 
     sample_obj = SampleInfo.model_validate(
         {
@@ -54,13 +58,29 @@ def load_sample_data(
             "case_id": case_id,
             "display_case_id": display_case_id,
             "genome_build": genome_build,
-            "baf_file": baf,
-            "coverage_file": coverage,
+            "baf_file": baf_file,
+            "coverage_file": coverage_file,
             "sample_type": normalize_sample_type(sample_type) if sample_type else None,
             "sex": sex,
             "meta": [parse_meta_file(path) for path in meta_files],
         }
     )
+
+    if force:
+        sample_exists = (
+            db.get_collection(SAMPLES_COLLECTION).find_one(
+                {
+                    "sample_id": sample_obj.sample_id,
+                    "case_id": sample_obj.case_id,
+                    "genome_build": sample_obj.genome_build,
+                }
+            )
+            is not None
+        )
+        if sample_exists:
+            update_sample(db, sample_obj)
+            return True
+
     return create_sample(db, sample_obj)
 
 
@@ -70,6 +90,7 @@ def load_sample_annotation_data(
     genome_build: GenomeBuild,
     file: Path,
     name: str,
+    force: bool,
 ) -> None:
     db = cli_db.get_cli_db(
         [SAMPLE_ANNOTATION_TRACKS_COLLECTION, SAMPLE_ANNOTATIONS_COLLECTION]
@@ -92,6 +113,12 @@ def load_sample_annotation_data(
         )
         track_id = create_sample_annotation_track(track, db)
     else:
+        if not force:
+            click.confirm(
+                "A sample annotation track with this name already exists for "
+                f"{sample_id}/{case_id} ({genome_build}). Overwrite it?",
+                abort=True,
+            )
         track_id = track_in_db.track_id
 
     bed_records = parse_bed_file(file)

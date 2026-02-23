@@ -104,6 +104,11 @@ def load() -> None:
     required=False,
     help="Sex of the sample",
 )
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Overwrite existing sample without prompting",
+)
 def sample(
     sample_id: str,
     genome_build: GenomeBuild,
@@ -113,6 +118,7 @@ def sample(
     meta_files: tuple[Path, ...],
     sample_type: str | None,
     sex: SampleSex | None,
+    force: bool = False,
     display_case_id: str | None = None,
 ) -> None:
     """Load a sample into Gens database."""
@@ -126,6 +132,7 @@ def sample(
         meta_files=list(meta_files),
         sample_type=sample_type,
         sex=sex,
+        force=force,
     )
     if was_added:
         click.secho("Finished adding a new sample to database ✔", fg="green")
@@ -171,6 +178,7 @@ def case(config_file: Path) -> None:
             meta_files=sample_meta_file_paths,
             sample_type=sample_config.sample_type,
             sex=sample_config.sex,
+            force=False,
         )
         total_meta_file_refs += len(sample_meta_file_paths)
         click.secho(
@@ -193,6 +201,7 @@ def case(config_file: Path) -> None:
                 genome_build=case_config.genome_build,
                 file=resolved_sample_annot_file,
                 name=sample_annot.name,
+                force=False,
             )
             total_sample_annotations += 1
             click.secho(
@@ -226,12 +235,18 @@ def case(config_file: Path) -> None:
 )
 @click.option("--file", required=True, type=click.Path(exists=True, path_type=Path))
 @click.option("--name", required=True, help="Name of the annotation track")
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Overwrite existing sample annotation track without prompting",
+)
 def sample_annotation(
     sample_id: str,
     case_id: str,
     genome_build: GenomeBuild,
     file: Path,
     name: str,
+    force: bool,
 ) -> None:
     """Load a sample annotation into Gens database."""
     load_sample_annotation_data(
@@ -240,6 +255,7 @@ def sample_annotation(
         genome_build=genome_build,
         file=file,
         name=name,
+        force=force,
     )
     click.secho("Finished loading sample annotations ✔", fg="green")
 
