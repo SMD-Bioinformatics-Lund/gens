@@ -4,9 +4,11 @@ from pathlib import Path
 from types import ModuleType
 
 import mongomock
+import pytest
+from pydantic import TypeAdapter
 
 from gens.db.collections import CHROMSIZES_COLLECTION
-from gens.models.genomic import GenomeBuild
+from gens.models.genomic import DnaStrand, GenomeBuild
 
 LOG = logging.getLogger(__name__)
 
@@ -108,3 +110,24 @@ def test_load_chromosomes_from_file(
     assert rec["bands"][0]["stain"] == "acen"
     assert rec["bands"][0]["start"] == 1
     assert rec["bands"][0]["end"] == 2
+
+
+@pytest.mark.parametrize(
+    ("legacy_value", "expected"),
+    [
+        (True, DnaStrand.FOR),
+        (False, DnaStrand.REV),
+        (1, DnaStrand.FOR),
+        ("+", DnaStrand.FOR),
+        (-1, DnaStrand.REV),
+        ("-", DnaStrand.REV),
+        (0, DnaStrand.UNKNOWN),
+        (".", DnaStrand.UNKNOWN),
+        (None, DnaStrand.UNKNOWN),
+    ],
+)
+def test_dna_strand_legacy_values_are_coerced(
+    legacy_value: bool | int | str | None, expected: DnaStrand
+) -> None:
+    adapter = TypeAdapter(DnaStrand)
+    assert adapter.validate_python(legacy_value) == expected
