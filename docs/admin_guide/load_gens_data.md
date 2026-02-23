@@ -267,17 +267,17 @@ Example:
 
 PAR example tracks are available in this repo:
 
-* `docs/admin_guide/example_tracks/par_regions_hg38_pink.bed`
-* `docs/admin_guide/example_tracks/par_regions_hg19_pink.bed`
+* `docs/admin_guide/example_tracks/par_regions_hg38_pink.tsv`
+* `docs/admin_guide/example_tracks/par_regions_hg19_pink.tsv`
 
 Load one of them with:
 
 ```bash
 # GRCh38 / hg38
-gens load annotations -b 38 -f docs/admin_guide/example_tracks/par_regions_hg38_pink.bed
+gens load annotations -b 38 -f docs/admin_guide/example_tracks/par_regions_hg38_pink.tsv
 
 # GRCh37 / hg19
-gens load annotations -b 37 -f docs/admin_guide/example_tracks/par_regions_hg19_pink.bed
+gens load annotations -b 37 -f docs/admin_guide/example_tracks/par_regions_hg19_pink.tsv
 ```
 
 #### AED format

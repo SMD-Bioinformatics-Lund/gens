@@ -1,0 +1,5 @@
+chromosome	start	stop	name	color	comments
+X	60000	2699520	PAR1_X	rgb(255,153,153)	More info: https://www.ensembl.org/info/genome/genebuild/human_PARS.html
+Y	10000	2649520	PAR1_Y	rgb(255,153,153)	More info: https://www.ensembl.org/info/genome/genebuild/human_PARS.html
+X	154931043	155260560	PAR2_X	rgb(255,153,153)	More info: https://www.ensembl.org/info/genome/genebuild/human_PARS.html
+Y	59034049	59363566	PAR2_Y	rgb(255,153,153)	More info: https://www.ensembl.org/info/genome/genebuild/human_PARS.html
