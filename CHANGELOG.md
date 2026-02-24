@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## 4.6.1
+
+### Fixed
+
+- Fix such that cancer cases (as indicated by sample type "tumor" or "normal") queries Scout for "cancer_sv" variants instead of "sv" [#726](https://github.com/SMD-Bioinformatics-Lund/gens/pull/726)
+
 ## 4.6.0
 
 ### Added
