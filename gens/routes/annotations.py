@@ -171,8 +171,11 @@ async def get_variants(
     sample_id: str,
     case_id: str,
     chromosome: Chromosome,
-    category: VariantCategory,
     adapter: AdapterDep,
+    category: VariantCategory = Query(
+        VariantCategory.SINGLE_VAR,
+        description="Variant category to include",
+    ),
     start: int = 1,
     end: int | None = None,
     rank_score_threshold: float | None = Query(
