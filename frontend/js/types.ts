@@ -2,6 +2,10 @@ enum VariantCategory {
   SV = "sv",
   SNV = "snv",
   STR = "str",
+  CANCER = "cancer",
+  CANCER_SV = "cancer_sv",
+  MEI = "mei",
+  FUSION = "fusion",
 }
 
 enum VariantSubCategory {
@@ -10,6 +14,7 @@ enum VariantSubCategory {
   DEL = "del",
   INS = "ins",
   DUP = "dup",
+  TDUP = "tdup",
   INV = "inv",
   CNV = "cnv",
   BND = "bnd",
@@ -393,7 +398,7 @@ interface RenderDataSource {
   getGeneListBands: (listId: string, chrom: string) => Promise<RenderBand[]>;
 
   getVariantBands: (
-    id: SampleIdentifier,
+    sample: Sample,
     chrom: string,
     rankScoreThres: number,
   ) => Promise<RenderBand[]>;
