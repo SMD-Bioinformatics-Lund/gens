@@ -11,7 +11,7 @@ gatk PreprocessIntervals                            \
      --reference GRCh38.fa                          \
      --bin-length 100                               \
      --interval-merging-rule OVERLAPPING_ONLY       \
-     -O targets_preprocessed_100bp.interval_list
+     -O targets_preprocessed_100bp_bins.interval_list
 ```
 
 Build a panel of normals (PON). First run this command for all bam files that you want to include in the PON. We have one PON for males and one for females. We have approx. 100 individuals of each sex in the PONs, but less should be fine.

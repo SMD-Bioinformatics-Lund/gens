@@ -29,7 +29,7 @@ It is possible to use the GATK tools to create BAF data as well, but we have fou
 
 Once you have the standardized coverage file from GATK and a gVCF you can create Gens formatted data files using the command below. The script should accept any properly formatted gVCF but only output from GATK HaplotypeCaller and Sentieon DNAscope have been tested.
 
-The script requires that **bgzip** and **tabix** are installed in a $PATH directory.
+The script requires that **bgzip** and **tabix** are installed in a `PATH` directory.
 
 The final output should be two files named: **SAMPLE_ID.baf.bed.gz** and **SAMPLE_ID.cov.bed.gz**
 
@@ -102,4 +102,3 @@ The **o** resolution is used only for the whole genome overview plot. The number
 ## Selection of SNPs for BAF data
 
 We are using all SNPs in gnomAD with an total allele frequency > 5%, which in gnomAD 2.1 is approximately 7.5 million SNPs.
-

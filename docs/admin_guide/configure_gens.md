@@ -15,7 +15,7 @@ Example of how to use environment variables in combination with docker.
 services:
   gens:
     environment:
-      - GENS_DB__CONNECTION=mongodb://mongodb:27017/"
+      - GENS_DB__CONNECTION=mongodb://mongodb:27017/gens
 ```
 
 Example of how-to setup Gens with a custom configuration in a docker environment.
@@ -45,22 +45,26 @@ connection = "mongodb://mongodb:27017/gens"
 [variant_db]
 connection = "mongodb://mongodb:27017/scout"
 
-[default_profiles]
+[oauth]
+client_id = "gens"
+secret = "secret"
+discovery_url = "https://oidc.example.org/.well-known/openid-configuration"
+
+[default_profile_paths]
 "proband+relative" = "profiles/proband_relative.json"
 ```
 
 ## Options
 
-Configuration options. Note that double underscores (`__`) are used to denote sub-categories, such as **gens_db** and **oauth**, when using environment variables. For example, the envionment variable name for configuring Gens mongodb connection is `GENS_DB__CONNECTION` (`<SUB-CATEGORY>__<VARIABLE>`).
+Configuration options. Note that double underscores (`__`) are used to denote sub-categories, such as **gens_db** and **oauth**, when using environment variables. For example, the environment variable name for configuring Gens mongodb connection is `GENS_DB__CONNECTION` (`<SUB-CATEGORY>__<VARIABLE>`).
 
-- **scout_url**, base url to Scout.
+- **variant_url**, base URL to Scout.
 - **authentication**, authentication method "oauth", "ldap", "simple", "disabled"
 - **auth_user_db**, database used for login user lookups: "gens" (default) or "variant" (Scout db via `variant_db` config)
 - **auth_user_collection**, collection used for login user lookups (default: "user")
 - **gens_api_url**, base URL for the Gens API (for example `http://localhost:5000/api/`)
-- **default_annotation_track**, when opening a fresh browser, this track will be preselected. Selected annotation tracks are now stored in the browser session, so if the user changes tracks that choice will persist.
 - **main_sample_types**, sample types handled as the "main" sample for multi-sample cases. I.e. the sample displayed in the overview plot and multi-chromosome view.
-- **default_profiles**, mapping from profile type to default profile JSON. Profile types are calculated by the unique and sorted `sample_type` values joined by `+`. Values are paths to JSON files relative to the config file.
+- **default_profile_paths**, mapping from profile type to default profile JSON. Profile types are calculated by the unique and sorted `sample_type` values joined by `+`. Values are paths to JSON files relative to the config file.
 
 `authentication = "simple"` requires users to log in with email only. Access is granted only if that email exists in the configured auth user database/collection. Only meant to use for testing.
 
@@ -69,9 +73,9 @@ Configuration options. Note that double underscores (`__`) are used to denote su
 - **connection**, mongodb conneciton string
 - **database**, optional database name. Can also be in connection string
 
-**scout_db**
+**variant_db**
 
-- **connection**, mongodb conneciton string
+- **connection**, mongodb connection string
 - **database**, optional database name. Can also be in connection string
 
 **ldap**

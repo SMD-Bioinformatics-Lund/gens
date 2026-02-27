@@ -1,6 +1,6 @@
 ## The samples page
 
-The start page lists all samples found in the database. From here you can open a single sample or all samples within a case. Clicking a sample opens it in the [track view](./tracks_view.md).
+The start page lists all samples found in the database. From here you can open a single sample or all samples within a case. Clicking a sample opens it in the [single-chromosome view](./single_chromosome_view.md).
 
 A search field helps locating specific samples.
 
