@@ -80,6 +80,7 @@ def create_app() -> FastAPI:
     # connect to mongo client
     flask_app.config["DEBUG"] = True
     flask_app.config["SECRET_KEY"] = settings.secret_key
+    flask_app.config["SESSION_COOKIE_NAME"] = settings.session_cookie_name
     flask_app.config["PERMANENT_SESSION_LIFETIME"] = settings.login_session_lifetime
     flask_app.config["REMEMBER_COOKIE_DURATION"] = settings.login_session_lifetime
     if settings.secret_key == "pass":

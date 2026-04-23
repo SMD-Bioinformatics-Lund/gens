@@ -123,6 +123,10 @@ class Settings(BaseSettings):
         default="pass",
         description="Flask secret key used for sessions.",
     )
+    session_cookie_name: str = Field(
+        default="gens_session",
+        description="Cookie name used for the Flask session.",
+    )
     login_session_lifetime: timedelta = Field(
         default=timedelta(days=1),
         description="Login session lifetime (defaults to 1 day).",
@@ -169,6 +173,7 @@ class Settings(BaseSettings):
             "gens_api_url": self.gens_api_url,
             "main_sample_types": self.main_sample_types,
             "secret_key": self.secret_key,
+            "session_cookie_name": self.session_cookie_name,
             "login_session_lifetime": str(self.login_session_lifetime),
             "authentication": self.authentication.value,
             "auth_user_db": self.auth_user_db.value,
