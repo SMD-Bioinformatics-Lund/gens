@@ -17,7 +17,7 @@ The dockerized app consists of 2 containers, the Gens app and a lightweight Mong
 
 Once the server has started you can open the app in your web browser at [http://localhost:5000](http://localhost:5000).
 
-To stop the instance use the command `docker-compose down`.
+To stop the instance use the command `docker compose down`.
 
 ## Local installation
 
@@ -32,11 +32,12 @@ python -m pip install --upgrade pip
 pip install -e .
 ```
 
-You also need to build the javacript and css files and put them into the directory `gens/static/js` and `gens/static/css` respectively. To build the assets you need to have node installed on your system.
+You also need to build the JavaScript and CSS files. To build the assets you need to have Node installed on your system.
 
 ```bash
 npm install
-# This builds the front-end assets and copies them into the correct locations
+# This builds the front-end assets and copies them into
+# gens/blueprints/gens/static and gens/blueprints/home/static
 npm run buildcp
 ```
 
@@ -114,4 +115,4 @@ Seeded OAuth user credentials:
 
 ## Use Scout's database for user validation
 
-To use Scout as the login user database instead of Gens, configure `auth_user_db = "variant"` (or `GENS_AUTH_USER_DB=variant`) and make sure that user exists in Scout's `user` collection.
+To use Scout as the login user database instead of Gens, configure `auth_user_db = "variant"` (or `AUTH_USER_DB=variant`) and make sure that user exists in Scout's `user` collection.
