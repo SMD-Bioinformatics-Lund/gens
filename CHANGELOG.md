@@ -13,7 +13,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
-- Allow configuring the Flask session cookie name with `session_cookie_name` to avoid cookie collisions when Gens shares a host with other Flask apps.
+- Allow configuring the Flask session and remember-me cookie names with `session_cookie_name` and `remember_cookie_name` to avoid cookie collisions when Gens shares a host with other Flask apps.
 
 ## 4.6.0
 

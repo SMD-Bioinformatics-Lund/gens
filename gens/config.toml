@@ -4,6 +4,8 @@ gens_api_url = "http://localhost:5000/api/"
 main_sample_types = ["proband", "tumor"]
 # Session cookie name (default: "gens_session")
 # session_cookie_name = "gens_session"
+# Remember-me cookie name (default: "gens_remember_me")
+# remember_cookie_name = "gens_remember_me"
 # Login session lifetime in seconds (default: 86400 = 1 day)
 # login_session_lifetime = 86400
 

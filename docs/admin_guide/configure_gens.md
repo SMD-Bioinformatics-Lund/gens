@@ -39,6 +39,7 @@ auth_user_db = "gens"
 gens_api_url = "http://localhost:5000/api"
 main_sample_types = ["proband", "tumor"]
 session_cookie_name = "gens_session"
+remember_cookie_name = "gens_remember_me"
 
 [gens_db]
 connection = "mongodb://mongodb:27017/gens"
@@ -66,6 +67,7 @@ Configuration options. Note that double underscores (`__`) are used to denote su
 - **gens_api_url**, base URL for the Gens API (for example `http://localhost:5000/api/`)
 - **main_sample_types**, sample types handled as the "main" sample for multi-sample cases. I.e. the sample displayed in the overview plot and multi-chromosome view.
 - **session_cookie_name**, Flask session cookie name (default: `gens_session`). Set this to an app-specific value when multiple Flask apps share the same host.
+- **remember_cookie_name**, Flask-Login remember cookie name (default: `gens_remember_me`). Set this to an app-specific value when multiple Flask apps share the same host.
 - **default_profile_paths**, mapping from profile type to default profile JSON. Profile types are calculated by the unique and sorted `sample_type` values joined by `+`. Values are paths to JSON files relative to the config file.
 
 `authentication = "simple"` requires users to log in with email only. Access is granted only if that email exists in the configured auth user database/collection. Only meant to use for testing.
