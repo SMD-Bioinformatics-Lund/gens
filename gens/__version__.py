@@ -1,3 +1,3 @@
 """Gens version info."""
 
-VERSION = "4.6.1"
+VERSION = "4.6.2"
