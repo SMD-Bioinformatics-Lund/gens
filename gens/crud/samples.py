@@ -250,7 +250,9 @@ def get_sample(
             error_msgs.append(f"BAF file {baf_file} not found on disk")
         if cov_file_missing:
             error_msgs.append(f"Coverage file {cov_file} not found on disk")
-        raise FileNotFoundError("Encountered errors while accessing sample files: " + "\n".join(error_msgs))
+        raise FileNotFoundError(
+            "Encountered errors while accessing sample files: " + "\n".join(error_msgs)
+        )
 
     return SampleInfo(
         sample_id=result["sample_id"],

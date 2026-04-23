@@ -9,7 +9,16 @@ import { getSampleKey, zip } from "../util/utils";
 const CACHED_ZOOM_LEVELS = ["o", "a", "b", "c"];
 
 // FIXME: This will need to be made configurable eventually
-const DEFAULT_VARIANT_TYPES = ["del", "dup", "tdup"];
+const DEFAULT_VARIANT_CATEGORY = "sv";
+const DEFAULT_VARIANT_SUB_CATEGORIES = [
+  "del",
+  "dup",
+  "tdup",
+  "ins",
+  "inv",
+  "cnv",
+  "bnd",
+];
 const ZOOM_WINDOW_CACHE_MULTIPLIER = 5;
 
 export class API {
@@ -436,18 +445,22 @@ export class API {
     this.transcriptCache[cacheKey] = promise;
     return promise;
   }
-
+  
   private cachedThreshold: number;
   private variantsSampleChromCache: Record<
     string,
     Record<string, Promise<ApiSimplifiedVariant[]>>
   > = {};
   getVariants(
-    sampleIdf: SampleIdentifier,
+    // Sample instead of SampleIdf to retrieve sample type
+    // Later likely an analysis type should be used (i.e. constitutional vs somatic)
+    sample: Sample,
     chrom: string,
     rank_score_threshold: number,
   ): Promise<ApiSimplifiedVariant[]> {
-    const sampleKey = getSampleKey(sampleIdf);
+    const sampleKey = getSampleKey(sample);
+    const selectedCategory = getScoutVariantCategory(sample.sampleType);
+    const categoryChromCacheKey = `${selectedCategory}:${chrom}`;
 
     // Invalidate cache if changing the rank score threshold
     if (this.cachedThreshold != rank_score_threshold) {
@@ -460,25 +473,26 @@ export class API {
     }
 
     const isCached =
-      this.variantsSampleChromCache[sampleKey][chrom] !== undefined;
+      this.variantsSampleChromCache[sampleKey][categoryChromCacheKey] !==
+      undefined;
     if (!isCached) {
       // Note: The genome build is ignored when running this
       // with a Scout backend
       const query = {
-        sample_id: sampleIdf.sampleId,
-        case_id: sampleIdf.caseId,
-        genome_build: sampleIdf.genomeBuild,
+        sample_id: sample.sampleId,
+        case_id: sample.caseId,
+        genome_build: sample.genomeBuild,
         chromosome: chrom,
-        category: "sv",
+        category: selectedCategory,
         start: 1,
         rank_score_threshold,
-        sub_categories: DEFAULT_VARIANT_TYPES,
+        sub_categories: DEFAULT_VARIANT_SUB_CATEGORIES,
       };
       const url = new URL("tracks/variants", this.apiURI).href;
       const variants = get(url, query) as Promise<ApiSimplifiedVariant[]>;
-      this.variantsSampleChromCache[sampleKey][chrom] = variants;
+      this.variantsSampleChromCache[sampleKey][categoryChromCacheKey] = variants;
     }
-    return this.variantsSampleChromCache[sampleKey][chrom];
+    return this.variantsSampleChromCache[sampleKey][categoryChromCacheKey];
   }
 
   private chromCache: Record<string, Promise<ChromosomeInfo>> = {};
@@ -654,4 +668,12 @@ async function getOverviewData(
   }
 
   return chromDatapoints;
+}
+
+function getScoutVariantCategory(sampleType?: string): string {
+  const normalizedType = sampleType?.toLowerCase();
+  if (normalizedType === "normal" || normalizedType === "tumor") {
+    return "cancer_sv";
+  }
+  return DEFAULT_VARIANT_CATEGORY;
 }

@@ -91,6 +91,10 @@ class VariantCategory(StrEnum):
     STRUCTURAL = "str"
     SINGLE_VAR = "sv"
     SINGLE_NT_VAR = "snv"
+    CANCER_SNV = "cancer"
+    CANCER_SV = "cancer_sv"
+    MOBILE_ELEMENT = "mei"
+    FUSION = "fusion"
 
 
 class VariantSubCategory(StrEnum):

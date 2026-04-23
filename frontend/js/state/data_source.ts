@@ -78,11 +78,11 @@ export function getRenderDataSource(
   };
 
   const getVariantBands = async (
-    id: SampleIdentifier,
+    sample: Sample,
     chrom: string,
     variantThres: number,
   ): Promise<RenderBand[]> => {
-    const variantsRaw = await api.getVariants(id, chrom, variantThres);
+    const variantsRaw = await api.getVariants(sample, chrom, variantThres);
     return parseVariants(variantsRaw);
   };
 
