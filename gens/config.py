@@ -131,11 +131,40 @@ class Settings(BaseSettings):
         default="gens_remember_me",
         description="Cookie name used for Flask-Login remember-me state.",
     )
+    remember_cookie_duration: timedelta = Field(
+        default=timedelta(days=30),
+        description="Remember me cookie duration (defaults to 30 days).",
+    )
+    remember_cookie_domain: str | None = Field(
+        default=None,
+        description=(
+            "Domain for remember me cookie. If not set, cookie is only valid for the domain of the Gens API."
+        ),
+    )
+    remember_cookie_path: str = Field(
+        default="/",
+        description="Path for remember me cookie.",
+    )
+    remember_cookie_secure: bool = Field(
+        default=True,
+        description="Restrict remember me cookie to HTTPS connections.",
+    )
+    remember_cookie_httponly: bool = Field(
+        default=True,
+        description="Restrict remember me cookie from JavaScript access.",
+    )
+    remember_cookie_refresh_each_request: bool = Field(
+        default=False,
+        description="Whether to refresh the remember me cookie on each request, extending its lifetime."
+    )
+    remember_cookie_same_site: Literal["Lax", "Strict"] | None = Field(
+        default=None,
+        description="SameSite attribute for remember me cookie. See flask documentation for details: https://flask.palletsprojects.com/en/stable/web-security/#set-cookie-options",
+    )
     login_session_lifetime: timedelta = Field(
         default=timedelta(days=1),
         description="Login session lifetime (defaults to 1 day).",
     )
-
     # Authentication options
     authentication: AuthMethod = AuthMethod.DISABLED
     auth_user_db: AuthUserDb = Field(
