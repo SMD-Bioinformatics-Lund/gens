@@ -17,6 +17,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+- Added more options for configuring flask login cookie management [#736](https://github.com/SMD-Bioinformatics-Lund/gens/pull/736)
 - Allow configuring the Flask session and remember-me cookie names with `session_cookie_name` and `remember_cookie_name` to avoid cookie collisions when Gens shares a host with other Flask apps. - [#733](https://github.com/SMD-Bioinformatics-Lund/gens/pull/733)
 
 ## 4.6.1

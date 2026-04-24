@@ -81,9 +81,21 @@ def create_app() -> FastAPI:
     flask_app.config["DEBUG"] = True
     flask_app.config["SECRET_KEY"] = settings.secret_key
     flask_app.config["SESSION_COOKIE_NAME"] = settings.session_cookie_name
-    flask_app.config["REMEMBER_COOKIE_NAME"] = settings.remember_cookie_name
     flask_app.config["PERMANENT_SESSION_LIFETIME"] = settings.login_session_lifetime
     flask_app.config["REMEMBER_COOKIE_DURATION"] = settings.login_session_lifetime
+
+    # flask login releated settings
+    flask_app.config["REMEMBER_COOKIE_NAME"] = settings.remember_cookie_name
+    flask_app.config["REMEMBER_COOKIE_DURATION"] = settings.remember_cookie_duration
+    flask_app.config["REMEMBER_COOKIE_DOMAIN"] = settings.remember_cookie_domain
+    flask_app.config["REMEMBER_COOKIE_PATH"] = settings.remember_cookie_path
+    flask_app.config["REMEMBER_COOKIE_SECURE"] = settings.remember_cookie_secure
+    flask_app.config["REMEMBER_COOKIE_HTTPONLY"] = settings.remember_cookie_httponly
+    flask_app.config["REMEMBER_COOKIE_REFRESH_EACH_REQUEST"] = (
+        settings.remember_cookie_refresh_each_request
+    )
+    flask_app.config["REMEMBER_COOKIE_SAME_SITE"] = settings.remember_cookie_same_site
+
     if settings.secret_key == "pass":
         LOG.warning(
             "Using default SECRET_KEY value. Configure secret_key in production."
