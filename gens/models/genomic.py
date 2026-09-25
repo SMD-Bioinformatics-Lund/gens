@@ -3,7 +3,7 @@
 import re
 from enum import Enum, IntEnum, StrEnum
 
-from pydantic import GetCoreSchemaHandler, computed_field, field_validator
+from pydantic import computed_field, field_validator, GetCoreSchemaHandler
 from pydantic.types import PositiveFloat, PositiveInt
 from pydantic_core import core_schema
 
@@ -41,7 +41,6 @@ class DnaStrand(str, Enum):  # TODO migrate to +/-
             cls._from_legacy,
             enum_schema,
         )
-
 
 class GenomeBuild(IntEnum):
     """Valid genome builds."""

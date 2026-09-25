@@ -169,7 +169,7 @@ def load_annotations_data(
             )
         except ValueError as err:
             click.secho(
-                f"An error occured when creating loading annotation: {err}",
+                f"An error occurred when loading annotation: {err}",
                 fg="red",
             )
             raise click.Abort() from err
