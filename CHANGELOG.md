@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Fixed
+
+- GitHub actions automation [Solna #137](https://github.com/Clinical-Genomics/gens/pull/137)
+
 ## 4.6.1
 
 ### Fixed
