@@ -5,12 +5,6 @@ This project adheres to [Semantic Versioning](http://semver.org/)
 
 About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
-## [Unreleased]
-
-### Fixed
-
-- GitHub actions automation [Solna #137](https://github.com/Clinical-Genomics/gens/pull/137)
-
 ## 4.6.2
 
 ### Changed
@@ -335,6 +329,8 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 
 ## 3.0.2 (Solna only)
 
+### Fixed
+
 - Docker file syslog gives bad file descriptor [#101](https://github.com/Clinical-Genomics/gens/pull/101)
 
 ## 3.0.1
@@ -342,6 +338,7 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 ### Changed
 
 - Added files for setting up development and deployment-like instances.
+- Throw an error when trying to open a sample without providing a case id.
 
 ### Fixed
 
@@ -419,15 +416,6 @@ About changelog [here](https://keepachangelog.com/en/1.0.0/)
 - Changes the main view's page title to be `sample_name` and adds `sample_name` and `case_id` to the header title
 - Updated external images used in GitHub actions, including tj-actions/branch-names to v7 (fixes a security issue)
 - Updated Python and MongoDB version used in tests workflow to 3.8 and 7 respectively
-
-## [2.1.2 Lund only - Solna version in Unreleased/2.4]
-### Added
-### Changed
- - Changed cached method from simple to file system as it would be thread safe
-### Fixed
- - Fixed cache issue that could result in chromosome information not being updated
- - Fixed max arg error when searching for some genes 
- - Fixed bug that prevented updating annotation tracks
 
 ## [2.1.1 (Solna)]
 
